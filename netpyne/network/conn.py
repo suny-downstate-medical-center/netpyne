@@ -6,7 +6,21 @@ Network class methods to create connections
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
+from builtins import dict
+from builtins import range
+
+from builtins import round
+try:
+    basestring
+except NameError:
+    basestring = str
+from future import standard_library
+standard_library.install_aliases()
 import numpy as np 
 from array import array as arrayFast
 from numbers import Number
@@ -158,7 +172,7 @@ def _findPrePostCellsCondition(self, allCellTags, preConds, postConds):
 # -----------------------------------------------------------------------------
 def _connStrToFunc (self, preCellsTags, postCellsTags, connParam):
     # list of params that have a function passed in as a string
-    paramsStrFunc = [param for param in self.connStringFuncParams+['probability', 'convergence', 'divergence'] if param in connParam and isinstance(connParam[param], str)]  
+    paramsStrFunc = [param for param in self.connStringFuncParams+['probability', 'convergence', 'divergence'] if param in connParam and isinstance(connParam[param], basestring)]  
 
     # dict to store correspondence between string and actual variable
     dictVars = {}  

@@ -6,7 +6,19 @@ Contains Population related classes
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
+from builtins import map
+from builtins import range
+try:
+    basestring
+except NameError:
+    basestring = str
+from future import standard_library
+standard_library.install_aliases()
 from numpy import  pi, sqrt, sin, cos, arccos
 import numpy as np
 from neuron import h # Import NEURON
@@ -171,7 +183,7 @@ class Pop (object):
                 volume = volume * (maxv-minv)
 
         funcLocs = None  # start with no locations as a function of density function
-        if isinstance(self.tags['density'], str): # check if density is given as a function 
+        if isinstance(self.tags['density'], basestring): # check if density is given as a function 
             if shape == 'cuboid':  # only available for cuboids
                 strFunc = self.tags['density']  # string containing function
                 strVars = [var for var in ['xnorm', 'ynorm', 'znorm'] if var in strFunc]  # get list of variables used 
@@ -374,7 +386,7 @@ class Pop (object):
         ix = 0  # segment index
 
         p3dsoma = cell.getSomaPos()
-        nseg = sum([sec['hSec'].nseg for sec in list(cell.secs.values())])
+        nseg = sum([sec['hObj'].nseg for sec in list(cell.secs.values())])
         
         p0 = np.zeros((3, nseg))  # hold the coordinates of segment starting points
         p1 = np.zeros((3, nseg))  # hold the coordinates of segment end points
@@ -382,7 +394,7 @@ class Pop (object):
         d1 = np.zeros(nseg) 
 
         for sec in list(cell.secs.values()):
-            hSec = sec['hSec']
+            hSec = sec['hObj']
             hSec.push()
             n3d = int(h.n3d())  # get number of n3d points in each section
             p3d = np.zeros((3, n3d))  # to hold locations of 3D morphology for the current section

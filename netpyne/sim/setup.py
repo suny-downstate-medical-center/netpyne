@@ -5,7 +5,15 @@ Functions related to the simulation set up
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
+#
+from builtins import str
+from future import standard_library
+standard_library.install_aliases()
 import sys
 import os
 import numpy as np
@@ -51,14 +59,6 @@ def initialize (netParams = None, simConfig = None, net = None):
         sim.setNet(sim.Network())  # or create new network
 
     sim.setNetParams(netParams)  # set network parameters
-
-    if sim.cfg.enableRxD:
-        try:
-            global rxd
-            from neuron import crxd as rxd 
-            sim.net.rxd = {'species': {}, 'regions': {}}  # dictionary for rxd  
-        except:
-            print('cRxD module not available')
 
     if sim.nhosts > 1: sim.cfg.checkErrors = False  # turn of error chceking if using multiple cores
 
@@ -250,6 +250,10 @@ def setupRecording ():
 
     # intrinsic cell variables recording
     if sim.cfg.recordTraces:
+        # if have rxd objects need to run h.finitialize() before setting up recording so pointers available
+        if len(sim.net.params.rxdParams) > 0:
+            h.finitialize()
+
         # get list of cells from argument of plotTraces function
         if 'plotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['plotTraces']:
             cellsPlot = utils.getCellsList(sim.cfg.analysis['plotTraces']['include'])
@@ -260,7 +264,8 @@ def setupRecording ():
         cellsRecord = utils.getCellsList(sim.cfg.recordCells)+cellsPlot
 
         for key in list(sim.cfg.recordTraces.keys()): sim.simData[key] = Dict()  # create dict to store traces
-        for cell in cellsRecord: cell.recordTraces()  # call recordTraces function for each cell
+        for cell in cellsRecord: 
+            cell.recordTraces()  # call recordTraces function for each cell
 
         # record h.t
         if sim.cfg.recordTime and len(sim.simData) > 0:

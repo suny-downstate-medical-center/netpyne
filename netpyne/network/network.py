@@ -6,7 +6,13 @@ Defines Network class which contains cell objects and network-realated methods
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
 from ..specs import ODict
 from neuron import h  # import NEURON
 
@@ -98,6 +104,12 @@ class Network (object):
     # Import subconn methods
     # -----------------------------------------------------------------------------
     from .subconn import fromtodistance, _posFromLoc, _interpolateSegmentSigma, subcellularConn
+
+    # -----------------------------------------------------------------------------
+    # Import rxd methods
+    # -----------------------------------------------------------------------------
+    from .netrxd import addRxD, _addRegions, _addExtracellularRegion, _addSpecies,  \
+        _addStates,  _addReactions, _addRates, _replaceRxDStr
 
     # -----------------------------------------------------------------------------
     # Import shape methods

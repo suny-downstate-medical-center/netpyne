@@ -5,7 +5,19 @@ Functions to plot and analyze information theory-related results
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
+try:
+    basestring
+except NameError:
+    basestring = str
+    
+from builtins import zip
+from future import standard_library
+standard_library.install_aliases()
 from netpyne import __gui__
 
 if __gui__:
@@ -248,7 +260,7 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
      
         # save figure
         if saveFig: 
-            if isinstance(saveFig, str):
+            if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
                 filename = sim.cfg.filename+'_'+'2Dnet.png'

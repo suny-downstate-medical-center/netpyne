@@ -5,7 +5,27 @@ Helper functions to plot and analyse results
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
+from builtins import round
+from builtins import open
+from builtins import range
+
+# required to make json saving work in Python 2/3
+try:
+    to_unicode = unicode
+except NameError:
+    to_unicode = str
+try:
+    basestring
+except NameError:
+    basestring = str
+
+from future import standard_library
+standard_library.install_aliases()
 from netpyne import __gui__
 if __gui__:
     import matplotlib.pyplot as plt
@@ -70,7 +90,7 @@ def _showFigure():
 def _saveFigData(figData, fileName=None, type=''):
     from .. import sim
 
-    if not fileName or not isinstance(fileName, str):
+    if not fileName or not isinstance(fileName, basestring):
         fileName = sim.cfg.filename+'_'+type+'.pkl'
 
     if fileName.endswith('.pkl'): # save to pickle
@@ -80,10 +100,8 @@ def _saveFigData(figData, fileName=None, type=''):
             pickle.dump(figData, fileObj)
 
     elif fileName.endswith('.json'):  # save to json
-        import json
         print(('Saving figure data as %s ... ' % (fileName)))
-        with open(fileName, 'w') as fileObj:
-            json.dump(figData, fileObj)
+        sim.saveJSON(fileName, figData)
     else: 
         print('File extension to save figure data not recognized')
 
@@ -177,7 +195,7 @@ def getCellsInclude(include):
         elif isinstance(condition, int):  # cell gid 
             cellGids.append(condition)
         
-        elif isinstance(condition, str):  # entire pop
+        elif isinstance(condition, basestring):  # entire pop
             if condition in allNetStimLabels:
                 netStimLabels.append(condition)
             else:
@@ -187,7 +205,7 @@ def getCellsInclude(include):
         # when load from json gets converted to list (added as exception)
         elif (isinstance(condition, (list,tuple))  
         and len(condition)==2 
-        and isinstance(condition[0], str) 
+        and isinstance(condition[0], basestring) 
         and isinstance(condition[1], (list,int))):  
             cellsPop = [c['gid'] for c in allCells if c['tags']['pop']==condition[0]]
             if isinstance(condition[1], list):
@@ -200,7 +218,7 @@ def getCellsInclude(include):
                 if isinstance(subcond, int):  # cell gid 
                     cellGids.append(subcond)
         
-                elif isinstance(subcond, str):  # entire pop
+                elif isinstance(subcond, basestring):  # entire pop
                     if subcond in allNetStimLabels:
                         netStimLabels.append(subcond)
                     else:
@@ -233,7 +251,7 @@ def getCellsIncludeTags(include, tags, tagsFormat=None):
             elif isinstance(condition, int):  # cell gid 
                 cellGids.append(condition)
             
-            elif isinstance(condition, str):  # entire pop
+            elif isinstance(condition, basestring):  # entire pop
                 cellGids.extend([gid for gid,c in allCells.items() if c[popIndex]==condition])
             
             elif isinstance(condition, tuple):  # subset of a pop with relative indices
@@ -254,7 +272,7 @@ def getCellsIncludeTags(include, tags, tagsFormat=None):
             elif isinstance(condition, int):  # cell gid 
                 cellGids.append(condition)
             
-            elif isinstance(condition, str):  # entire pop
+            elif isinstance(condition, basestring):  # entire pop
                 cellGids.extend([gid for gid,c in allCells.items() if c['pop']==condition])
             
             elif isinstance(condition, tuple):  # subset of a pop with relative indices

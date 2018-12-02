@@ -8,11 +8,19 @@ Contributors: salvadordura@gmail.com
 
 import os
 import sys
-import tables  # requires installing hdf5 via brew and tables via pip!
-from neuroml.hdf5.NeuroMLXMLParser import NeuroMLXMLParser
-from neuroml.loaders import read_neuroml2_file
-from pyneuroml import pynml
-from . import neuromlFormat # import NetPyNEBuilder
+
+try:
+    import tables  # requires installing hdf5 via brew and tables via pip!
+    from neuroml.hdf5.NeuroMLXMLParser import NeuroMLXMLParser
+    from neuroml.loaders import read_neuroml2_file
+    from pyneuroml import pynml
+    from . import neuromlFormat # import NetPyNEBuilder
+except ImportError:
+    from neuron import h
+    pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
+    if int(pc.id()) == 0:  # only print for master node
+        print('Note: SONATA import failed; import/export functions for SONATA will not be available. \n  To use this feature please install "HDF5" and the "tables" Python package.')
+
 from . import neuronPyHoc
 from .. import sim, specs
 import neuron
@@ -280,8 +288,8 @@ class SONATAImporter():
 
         # recording
         for k,v in self.simulation_config['reports'].items():
-            sim.cfg.recordTraces[k] = {'sec': v['sections'], 'loc': 0.5, 'var': v['variable_name']}
             try:
+                sim.cfg.recordTraces[k] = {'sec': v['sections'], 'loc': 0.5, 'var': v['variable_name']}
                 sim.cfg.analysis.plotTraces = {'include': sim.cfg.node_sets[v['cells']].values()}  # use 'conds' so works for 'model_type' # UPDATE!
             except:
                 pass
@@ -528,7 +536,7 @@ class SONATAImporter():
                 post_gid = self.cell_info[post_node]['gid_from_id'][post_id]
 
 
-                if post_gid in sim.net.lid2gid:
+                if post_gid in sim.net.gid2lid:
 
                     type = self.conn_info[conn]['edge_type_id'][i]
 
@@ -987,15 +995,23 @@ class SONATAImporter():
         else:
             print("Unhandled dataset: %s"%d.name)
 
+
+    # ------------------------------------------------------------------------------------------------------------
+    # Read simulation output from HDF5
+    # ------------------------------------------------------------------------------------------------------------
+
+
     '''
         Search the strings in a config file for a substitutable value, e.g. 
         "morphologies_dir": "$COMPONENT_DIR/morphologies",
     '''
     def subs(self, path):
         #print_v('Checking for %s in %s'%(substitutes.keys(),path))
-        for s in self.substitutes:
+
+        for s in sorted(self.substitutes, key=lambda k: len(k), reverse=True):
             if path.startswith(s):
                 path = path.replace(s,self.substitutes[s])
+
         return path
 
 

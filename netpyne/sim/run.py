@@ -5,7 +5,17 @@ Functions related to running the simulation
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
+from builtins import round
+from builtins import range
+
+from builtins import str
+from future import standard_library
+standard_library.install_aliases()
 import numpy as np
 from neuron import h, init # Import NEURON
 from . import utils
@@ -72,9 +82,9 @@ def preRun ():
                     #stim['hRandom'].Random123(sim.hashStr(stim['source']), cell.gid, stim['seed'])
                     utils._init_stim_randomizer(stim['hRandom'], stim['type'], cell.gid, stim['seed'])
                     stim['hRandom'].negexp(1)
-                    # Check if noiseFromRandom is in stim['hNetStim']; see https://github.com/Neurosim-lab/netpyne/issues/219
-                    if not isinstance(stim['hNetStim'].noiseFromRandom, dict):
-                        stim['hNetStim'].noiseFromRandom(stim['hRandom'])
+                    # Check if noiseFromRandom is in stim['hObj']; see https://github.com/Neurosim-lab/netpyne/issues/219
+                    if not isinstance(stim['hObj'].noiseFromRandom, dict):
+                        stim['hObj'].noiseFromRandom(stim['hRandom'])
 
     # handler for recording LFP
     if sim.cfg.recordLFP:

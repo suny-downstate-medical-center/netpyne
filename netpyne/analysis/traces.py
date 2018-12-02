@@ -5,13 +5,25 @@ Functions to plot and analyze traces-related results
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
+from builtins import range
+from builtins import str
+try:
+    basestring
+except NameError:
+    basestring = str
+from future import standard_library
+standard_library.install_aliases()
 from netpyne import __gui__
 
 if __gui__:
     import matplotlib.pyplot as plt
 import numpy as np
-from .utils import colorList, _showFigure, exception, getCellsInclude
+from .utils import colorList, _showFigure, _saveFigData, exception, getCellsInclude
 
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -84,7 +96,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
     def plotFigPerTrace(subGids):
         for itrace, trace in enumerate(tracesList):
             figs['_trace_'+str(trace)] = plt.figure(figsize=figSize) # Open a new figure
-            fontsiz = 2
+            fontsiz = 12
             for igid, gid in enumerate(subGids):
                 if 'cell_'+str(gid) in sim.allSimData[trace]:
                     data = sim.allSimData[trace]['cell_'+str(gid)][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)]
@@ -182,7 +194,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
  
     # save figure
     if saveFig: 
-        if isinstance(saveFig, str):
+        if isinstance(saveFig, basestring):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'traces.png'
@@ -261,7 +273,7 @@ def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='a
 
     # save figure
     if saveFig: 
-        if isinstance(saveFig, str):
+        if isinstance(saveFig, basestring):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'EPSPamp_'+amp+'.png'

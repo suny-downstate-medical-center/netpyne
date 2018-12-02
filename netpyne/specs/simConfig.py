@@ -5,6 +5,20 @@ SimConfig class includes simulation configuration parameters and methods
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+
+# required to make json saving work in Python 2/3
+try:
+    to_unicode = unicode
+except NameError:
+    to_unicode = str
+
+from builtins import open
+from future import standard_library
+standard_library.install_aliases()
 
 from collections import OrderedDict
 from .dicts import Dict, ODict
@@ -28,7 +42,6 @@ class SimConfig (object):
         self.rand123GlobalIndex = None  # Sets the global index used by all instances of the Random123 instances of Random
         self.createNEURONObj = True  #  create runnable network in NEURON when instantiating netpyne network metadata
         self.createPyStruct = True  # create Python structure (simulator-independent) when instantiating network
-        self.enableRxD = False  # import rxd module
         self.addSynMechs = True  # whether to add synaptich mechanisms or not
         self.includeParamsLabel = True  # include label of param rule that created that cell, conn or stim
         self.gatherOnlySimData = False  # omits gathering of net+cell data thus reducing gatherData time
@@ -103,14 +116,13 @@ class SimConfig (object):
 
         # Save to json file
         if ext == 'json':
-            import json
+            from .. import sim
             print(('Saving simConfig to %s ... ' % (filename)))
-            with open(filename, 'w') as fileObj:
-                json.dump(dataSave, fileObj, indent=4, sort_keys=True)
+            sim.saveJSON(filename, dataSave)
 
     def addAnalysis(self, func, params):
         self.analysis[func] =  params
 
     def todict(self):
-        from sim import replaceDictODict
+        from ..sim import replaceDictODict
         return replaceDictODict(self.__dict__)

@@ -1,4 +1,22 @@
-# Version 0.8.0
+# Version 0.9.1.1
+
+- Fixed minor bug - plot font size changed from 12 to 2
+
+
+# Version 0.9.1
+
+- Updates to NeuroML converter 
+
+- Add scalebar to rxd concentration plot
+
+- Fixed bug so comparisons to basestring work in Python 2 and 3
+
+- Fixed bug in string-based functions representation in GUI
+
+
+# Version 0.9.0
+
+- Added support for reaction-diffusion (RxD) and usage examples
 
 - Improved performanced (speed) of connectivity algorithms 
 
@@ -10,6 +28,10 @@
 
 - Added support for recording spikes from only a subset of cells using e.g. cfg.recordCellsSpikes = ['E2']
 
+- Support for exporting to SONATA standardized network format (Beta) 
+
+- Support for Human Neocortical Neurosolver (HNN) dipole mechanisms
+
 - Added option for filename to saveData()
 
 - Removed pop cellModelClass when saving
@@ -19,6 +41,8 @@
 - Added support for evolutionary algorithm optimization (via Inspyred) and usage example
 
 - cfg.popAvgRates now accepts a time range to calculate rates (e.g. to discard initial period)
+
+- All NEURON objects now accessible via ['hObj'] key within Python network structure
 
 - Fixed bug in batch to allow having only grouped params
 

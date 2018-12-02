@@ -36,4 +36,7 @@ sim.cfg.compactConnFormat = ['preGid', 'sec', 'loc', 'synMech', 'weight', 'delay
 sim.gatherData()
 sim.saveData(include=['net'], filename='out_netInstanceCompact')
 
+# check model output
+sim.checkOutput('saving')
+
 

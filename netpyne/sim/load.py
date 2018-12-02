@@ -5,7 +5,26 @@ Functions related to loading
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
 
+from builtins import open
+from builtins import range
+
+# required to make json saving work in Python 2/3
+try:
+    to_unicode = unicode
+except NameError:
+    to_unicode = str
+try:
+    basestring
+except NameError:
+    basestring = str
+
+from future import standard_library
+standard_library.install_aliases()
 import sys
 from collections import OrderedDict
 from ..specs import Dict, ODict
@@ -22,7 +41,7 @@ def _loadFile (filename):
 
     def _byteify(data, ignore_dicts = False):
         # if this is a unicode string, return its string representation
-        if isinstance(data, str):
+        if isinstance(data, basestring):
             return data.encode('utf-8')
         # if this is a list of values, return list of byteified values
         if isinstance(data, list):
@@ -62,9 +81,8 @@ def _loadFile (filename):
     elif ext == 'json':
         import json
         print(('Loading file %s ... ' % (filename)))
-        with open(filename, 'rb') as fileObj:
-            data = json.load(fileObj, object_hook=_byteify)  # This doesn't work with py3 so need to find solution for both py2 and py3
-
+        with open(filename, 'r') as fileObj:
+            data = json.load(fileObj) # works with py2 and py3
     # load mat file
     elif ext == 'mat':
         from scipy.io import loadmat
@@ -358,13 +376,13 @@ def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, lo
     conns = utils.decimalToFloat(conns)
 
     if saveTags and tags:
-        outFilename = saveTags if isinstance(saveTags, str) else 'filename'[:-4]+'_tags.json'
+        outFilename = saveTags if isinstance(saveTags, basestring) else 'filename'[:-4]+'_tags.json'
         print('Saving tags to %s ...' % (outFilename))
-        with open(outFilename, 'w') as fileObj: json.dump({'tags': tags}, fileObj) 
+        sim.saveJSON(outFilename, {'tags': tags})         
     if saveConns and conns:
-        outFilename = saveConns if isinstance(saveConns, str) else 'filename'[:-4]+'_conns.json'
+        outFilename = saveConns if isinstance(saveConns, basestring) else 'filename'[:-4]+'_conns.json'
         print('Saving conns to %s ...' % (outFilename))
-        with open(outFilename, 'w') as fileObj: json.dump({'conns': conns}, fileObj)
+        sim.saveJSON(outFilename, {'conns': conns})
 
     return tags, conns
 

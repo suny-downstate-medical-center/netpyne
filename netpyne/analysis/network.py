@@ -5,7 +5,24 @@ Functions to plot and analyze connectivity-related results
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
+from builtins import open
+from builtins import next
+from builtins import range
+from builtins import str
+try:
+    basestring
+except NameError:
+    basestring = str
+from builtins import zip
+
+from builtins import round
+from future import standard_library
+standard_library.install_aliases()
 from netpyne import __gui__
 
 if __gui__:
@@ -59,7 +76,7 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
     else:
         cellsPost, cellGidsPost, netStimPopsPost = getCellsInclude(includePost) 
 
-    if isinstance(synMech, str): synMech = [synMech]  # make sure synMech is a list
+    if isinstance(synMech, basestring): synMech = [synMech]  # make sure synMech is a list
     
     # Calculate matrix if grouped by cell
     if groupBy == 'cell': 
@@ -377,7 +394,7 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
         print(missing)
         return None, None, None 
 
-    if isinstance(synMech, str): synMech = [synMech]  # make sure synMech is a list
+    if isinstance(synMech, basestring): synMech = [synMech]  # make sure synMech is a list
     
     # Calculate matrix if grouped by cell
     if groupBy == 'cell': 
@@ -549,7 +566,9 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
         plt.imshow(connMatrix, interpolation='nearest', cmap='jet', vmin=np.nanmin(connMatrix), vmax=np.nanmax(connMatrix))  #_bicolormap(gap=0)
 
         # Plot grid lines
-        plt.hold(True)
+        import matplotlib 
+        if int(matplotlib.__version__.split('.')[0]) == 2: plt.hold(True)
+            
         if groupBy == 'cell':
             cellsPre, cellsPost = pre, post
 
@@ -642,7 +661,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
  
     # save figure
     if saveFig: 
-        if isinstance(saveFig, str):
+        if isinstance(saveFig, basestring):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'conn_'+feature+'.png'
@@ -749,7 +768,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
     if showConns and not tagsFile:
         for postCell in cells:
             for con in postCell['conns']:  # plot connections between cells
-                if not isinstance(con['preGid'], str) and con['preGid'] in cellGids:
+                if not isinstance(con['preGid'], basestring) and con['preGid'] in cellGids:
                     posXpre,posYpre = next(((cell['tags']['x'],cell['tags'][ycoord]) for cell in cells if cell['gid']==con['preGid']), None)  
                     posXpost,posYpost = postCell['tags']['x'], postCell['tags'][ycoord] 
                     color='red'
@@ -779,7 +798,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
  
     # save figure
     if saveFig: 
-        if isinstance(saveFig, str):
+        if isinstance(saveFig, basestring):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'2Dnet.png'
@@ -794,7 +813,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot cell shape
 # -------------------------------------------------------------------------------------------------------------------
-@exception
+#@exception
 def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, showElectrodes = False, synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, 
     iv=False, ivprops=None, includeAxon=True, bkgColor = None, figSize = (10,8), saveData = None, dpi = 300, saveFig = None, showFig = True): 
     ''' 
@@ -849,10 +868,10 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
             # weighNorm
             if cvar == 'weightNorm':
                 for cellPost in cellsPost:
-                    cellSecs = list(cellPost.secs.values()) if includeAxon else [s for s in list(cellPost.secs.values()) if 'axon' not in s['hSec'].hname()] 
+                    cellSecs = list(cellPost.secs.values()) if includeAxon else [s for s in list(cellPost.secs.values()) if 'axon' not in s['hObj'].hname()] 
                     for sec in cellSecs:
                         if 'weightNorm' in sec:
-                            secs.append(sec['hSec'])
+                            secs.append(sec['hObj'])
                             cvals.extend(sec['weightNorm'])
 
                 cvals = np.array(cvals)
@@ -861,18 +880,18 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
             # numSyns
             elif cvar == 'numSyns':
                 for cellPost in cellsPost:
-                    cellSecs = cellPost.secs if includeAxon else {k:s for k,s in cellPost.secs.items() if 'axon' not in s['hSec'].hname()}
+                    cellSecs = cellPost.secs if includeAxon else {k:s for k,s in cellPost.secs.items() if 'axon' not in s['hObj'].hname()}
                     for secLabel,sec in cellSecs.items():
-                        nseg=sec['hSec'].nseg
+                        nseg=sec['hObj'].nseg
                         nsyns = [0] * nseg
-                        secs.append(sec['hSec'])
+                        secs.append(sec['hObj'])
                         conns = [conn for conn in cellPost.conns if conn['sec']==secLabel and conn['preGid'] in cellsPreGids]
                         for conn in conns: nsyns[int(round(conn['loc']*nseg))-1] += 1
                         cvals.extend(nsyns)
 
                 cvals = np.array(cvals)
 
-        if not secs: secs = [s['hSec'] for cellPost in cellsPost for s in list(cellPost.secs.values())]
+        if not secs: secs = [s['hObj'] for cellPost in cellsPost for s in list(cellPost.secs.values())]
         if not includeAxon:         
             secs = [sec for sec in secs if 'axon' not in sec.hname()]
 
@@ -905,7 +924,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
             for cellPost in cellsPost:
                 for sec in list(cellPost.secs.values()):
                     for synMech in sec['synMechs']:
-                        morph.mark_locations(h, sec['hSec'], synMech['loc'], markspec=synStyle, color=synColor, markersize=synSiz)
+                        morph.mark_locations(h, sec['hObj'], synMech['loc'], markspec=synStyle, color=synColor, markersize=synSiz)
         # Electrodes
         if showElectrodes:
             ax = plt.gca()
@@ -925,7 +944,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
 
         # save figure
         if saveFig: 
-            if isinstance(saveFig, str):
+            if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
                 filename = sim.cfg.filename+'_shape.png'
@@ -944,19 +963,19 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
         
         for cell in [c for c in cellsPost]: 
             for sec in list(cell.secs.values()):
-                if 'axon' in sec['hSec'].hname() and not includeAxon: continue
-                sec['hSec'].push()
+                if 'axon' in sec['hObj'].hname() and not includeAxon: continue
+                sec['hObj'].push()
                 secList.append()
                 h.pop_section()
                 if showSyns:
                     for synMech in sec['synMechs']:
-                        if synMech['hSyn']:
+                        if synMech['hObj']:
                             # find pre pop using conn[preGid]
                             # create dict with color for each pre pop; check if exists; increase color counter
                             # colorsPre[prePop] = colorCounter
 
                             # find synMech using conn['loc'], conn['sec'] and conn['synMech']
-                            fig.point_mark(synMech['hSyn'], ivprops['colorSyns'], ivprops['style'], ivprops['siz']) 
+                            fig.point_mark(synMech['hObj'], ivprops['colorSyns'], ivprops['style'], ivprops['siz']) 
 
         fig.observe(secList)
         fig.color_list(secList, ivprops['colorSecs'])
@@ -964,7 +983,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
         fig.show(0) # show real diam
             # save figure
         if saveFig: 
-            if isinstance(saveFig, str):
+            if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
                 filename = sim.cfg.filename+'_'+'shape.ps'

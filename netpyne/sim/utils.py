@@ -8,8 +8,23 @@ Private methods: _mat2dict, _dict2utf8, decimalToFloat, tupleToList, replaceDict
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
 
 
+
+from builtins import next
+from builtins import dict
+from builtins import map
+from builtins import str
+try:
+    basestring
+except NameError:
+    basestring = str
+from future import standard_library
+standard_library.install_aliases()
 from time import time
 import hashlib
 import array
@@ -51,7 +66,7 @@ def getCellsList (include, returnGids=False):
         elif isinstance(condition, int):  # cell gid
             cellGids.append(condition)
 
-        elif isinstance(condition, str):  # entire pop
+        elif isinstance(condition, basestring):  # entire pop
             cellGids.extend(list(sim.net.pops[condition].cellGids))
 
         elif isinstance(condition, tuple) or isinstance(condition, list):  # subset of a pop with relative indices
@@ -126,7 +141,7 @@ def hashStr (obj):
 # Hash function for list of values
 #------------------------------------------------------------------------------
 def hashList(obj):
-    return int(hashlib.md5(array.array('L', obj)).hexdigest()[0:8],16)
+    return int(hashlib.md5(array.array(chr(ord('L')), obj)).hexdigest()[0:8],16)
 
 
 #------------------------------------------------------------------------------
@@ -470,7 +485,7 @@ def _dict2utf8 (obj):
 #unidict = {k.decode('utf8'): v.decode('utf8') for k, v in strdict.items()}
     #print obj
     import collections
-    if isinstance(obj, str):
+    if isinstance(obj, basestring):
         return obj.decode('utf8')
     elif isinstance(obj, collections.Mapping):
         for key in list(obj.keys()):

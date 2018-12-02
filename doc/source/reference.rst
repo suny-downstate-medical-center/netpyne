@@ -36,6 +36,8 @@ The ``netParams`` object of class ``NetParams`` includes all the information nec
 
 * ``stimTargetParams`` - mapping between stimulation sources and target cells. 
 
+* ``rxdParams`` - reaction-diffusion (RxD) components and their parameters. 
+
 
 .. image:: figs/netparams.png
 	:width: 60%
@@ -584,8 +586,8 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 
 .. _stimulation:
 
-Stimulation
-^^^^^^^^^^^^^^^^^^^
+Stimulation parameters
+^^^^^^^^^^^^^^^^^^^^^^^
 
 Two data structures are used to specify cell stimulation parameters: ``stimSourceParams`` to define the parameters of the sources of stimulation; and ``stimTargetParams`` to specify what cells will be applied what source of stimulation (mapping of sources to cells).
 
@@ -664,6 +666,29 @@ The code below shows an example of how to create different types of stimulation 
 
 
 .. _sim_config: 
+
+
+Reaction-Diffusion (RxD) parameters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``rxdParams`` ordered dictionary can be used to define the different RxD components:
+
+	* **regions** - dictionary with RxD Regions (also used to define 'extracellular' regions).
+
+	* **species** - dictionary with RxD Species.
+
+	* **states** - dictionary with RxD States.
+
+	* **reactions** - dictionary with RxD Reactions.
+
+	* **multicompartmentReactions** - dictionary with RxD MultiCompartmentReactions.
+
+	* **rates** - dictionary with RxD Rates.
+
+The parameters of each dictionary follow the same structure as described in the RxD package: https://www.neuron.yale.edu/neuron/static/docs/rxd/index.html 
+
+See usage examples: `RxD buffering example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/rxd_buffering>`_ and `RxD network example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/rxd_buffering>`_. 
+
 
 Simulation configuration
 --------------------------
@@ -957,7 +982,7 @@ Analysis-related functions
 		sim.analysis.plotShape(includePre=['I2'], includePost= [('E5',0)], cvar='numSyns', saveFig=True, showFig=True, iv=0, includeAxon=False)
 
 		# voltage; 1st create list of values (e.g. vsegs) and pass as cvals argument (using matplotlib)
-		vsegs = [seg.v for sec in sim.net.cells[0].secs.values() for seg in sec['hSec']]
+		vsegs = [seg.v for sec in sim.net.cells[0].secs.values() for seg in sec['hObj']]
 		sim.analysis.plotShape(includePost= [0], cvals=vsegs, saveFig=True, iv=0, includeAxon=True)
 
 		# syn locations (using matplotlib) of cell with gid=0
@@ -1305,7 +1330,7 @@ Cell class
 				- ...
 		- 'synMechs' (list)
 			- [0] (Dict)
-				- 'hSyn': NEURON object
+				- 'hObj': NEURON object
 				- 'label'
 				- 'loc'
 

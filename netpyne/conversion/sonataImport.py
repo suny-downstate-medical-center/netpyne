@@ -230,11 +230,14 @@ class SONATAImporter():
         # create pops
         self.createPops()
         
-        # create stimulation (before createCells since spkTimes added to pops)
-        self.createStims()
+        # create NetStims (before createCells since spkTimes added to NetStim pops)
+        self.createNetStims()
 
         # create cells
         self.createCells()
+
+        # create IClamps (after createCells so can can call sim.net.addStims())
+        self.createIClamps()
 
         # create connections
         self.createConns()
@@ -246,7 +249,7 @@ class SONATAImporter():
     # create simulation config 
     # ------------------------------------------------------------------------------------------------------------
     def createSimulationConfig(self):
-        print("\nCreating simulation configuratoon from %s"%(self.config['simulation']))
+        print("\nCreating simulation configuration from %s"%(self.config['simulation']))
 
         # run
         sim.cfg.duration = self.simulation_config['run']['tstop']
@@ -259,11 +262,13 @@ class SONATAImporter():
         sim.cfg.hParams = self.simulation_config['conditions']
 
         # node sets
-        if 'node_sets_file' in self.simulation_config:
-            sim.cfg.node_sets = load_json(os.path.dirname(self.configFile)+'/'+self.simulation_config['node_sets_file']) 
-        elif 'node_sets' in self.simulation_config:
-            sim.cfg.node_sets = self.simulation_config['node_sets']
-        else:
+        try:
+            if 'node_sets_file' in self.simulation_config:
+                print('\n\n HEREEEEEEE!!!!!',os.path.dirname(self.configFile)+'/'+self.simulation_config['node_sets_file'])
+                sim.cfg.node_sets = load_json(os.path.dirname(self.configFile)+'/'+self.simulation_config['node_sets_file']) 
+            elif 'node_sets' in self.simulation_config:
+                sim.cfg.node_sets = self.simulation_config['node_sets']
+        except:
             sim.cfg.node_sets = {}
         
         # inputs - add as 'spkTimes' to external population
@@ -366,16 +371,18 @@ class SONATAImporter():
                     cellRule = {'conds': {'pop': pop_id}, 'secs': secs, 'secLists': secLists, 'globals': globs}
                     
                     # dynamics params
-                    dynamics_params_file = self.subs(self.network_config['components']['biophysical_neuron_models_dir']+'/'+info['model_template']) 
                     if info['model_template'].startswith('nml'):
+                        dynamics_params_file = self.subs(self.network_config['components']['biophysical_neuron_models_dir']+'/'+info['model_template']) 
                         dynamics_params_file = dynamics_params_file.replace('nml:', '')
                         nml_doc = read_neuroml2_file(dynamics_params_file)
                         cell_dynamic_params = nml_doc.cells[0]
                         cellRule = self.setCellRuleDynamicParamsFromNeuroml(cell_dynamic_params, cellRule)
 
-                    elif info['dynamics_params'].startswith('json'):
-                        dynamics_params = load_json(dynamics_params_file)
-                        pass
+                    elif info['dynamics_params'].endswith('json'):
+                        dynamics_params_file = self.subs(self.network_config['components']['biophysical_neuron_models_dir']+'/'+info['dynamics_params']) 
+                        cell_dynamic_params = load_json(dynamics_params_file)
+                        cellRule = self.setCellRuleDynamicParamsFromJson(cell_dynamic_params, cellRule)
+
                                     
                     # set extracted cell params in cellParams rule
                     sim.net.params.cellParams[pop_id] = cellRule
@@ -563,31 +570,67 @@ class SONATAImporter():
         #from IPython import embed; embed()
                     
     # ------------------------------------------------------------------------------------------------------------
-    # Create stimulation
+    # Create NetStims
     # ------------------------------------------------------------------------------------------------------------
-    def createStims(self):
+    def createNetStims(self):
         for input in self.simulation_config['inputs']:
             
             # get input info from sim config
             info = self.simulation_config['inputs'][input]
-            print(" - Adding input: %s which has info: %s"%(input, info)) 
-            node_set = info['node_set']
 
-            # get cell type and pop_id
-            cellType = self.cell_info[node_set]['types'][0]
-            pop_id = self.pop_id_from_type[(node_set, cellType)]
-            
-            # get stpikes
-            from pyneuroml.plot.PlotSpikes import read_sonata_spikes_hdf5_file
-            ids_times = read_sonata_spikes_hdf5_file(self.subs(info['input_file']))
-            spkTimes = [[spk for spk in spks] for k,spks in ids_times.items()] 
-            
-            # add spikes to vecstim pop
-            sim.net.pops[pop_id].tags['spkTimes'] = spkTimes
+            if info['input_type'] == 'spikes':
+
+                print(" - Adding input: %s which has info: %s"%(input, info)) 
+                node_set = info['node_set']
+                # get cell type and pop_id
+                cellType = self.cell_info[node_set]['types'][0]
+                pop_id = self.pop_id_from_type[(node_set, cellType)]
+                
+                # get stpikes
+                from pyneuroml.plot.PlotSpikes import read_sonata_spikes_hdf5_file
+                ids_times = read_sonata_spikes_hdf5_file(self.subs(info['input_file']))
+                spkTimes = [[spk for spk in spks] for k,spks in ids_times.items()] 
+                
+                # add spikes to vecstim pop
+                sim.net.pops[pop_id].tags['spkTimes'] = spkTimes
 
 
     # ------------------------------------------------------------------------------------------------------------
-    # Set cell dynamic params into a cell rule (netParams.cellParams)
+    # Create IClamps
+    # ------------------------------------------------------------------------------------------------------------
+    def createIClamps(self):
+        for input in self.simulation_config['inputs']:
+            
+            # get input info from sim config
+            info = self.simulation_config['inputs'][input]
+
+            if info['input_type'] == 'current_clamp':
+                print(" - Adding input: %s which has info: %s"%(input, info)) 
+                node_set = info['node_set']
+                
+                sim.net.params.stimSourceParams[input] = {
+                    'type': info['module'], 
+                    'delay': info['delay'], 
+                    'dur': info['duration'], 
+                    'amp': info['amp']}
+                
+                sec = info.get('sec', 'soma_0')  # fix this - default name for soma section? how does SONATA know where to stim?
+                loc = info.get('loc', 0.5)
+
+                conds_sonata = sim.cfg.node_sets[node_set]
+                if 'model_type' in conds_sonata:
+                    conds = {'cellModel': conds_sonata['model_type']}
+                sim.net.params.stimTargetParams[input+'->'+node_set] = {
+                    'source': input, 
+                    'conds': conds,
+                    'sec': sec, 
+                    'loc': loc}
+
+        sim.net.addStims()
+
+
+    # ------------------------------------------------------------------------------------------------------------
+    # Set cell dynamic params into a cell rule (netParams.cellParams) from NeuroML
     # ------------------------------------------------------------------------------------------------------------
     def setCellRuleDynamicParamsFromNeuroml(self, cell, cellRule):
         
@@ -751,12 +794,16 @@ class SONATAImporter():
         for cm in cell.biophysical_properties.membrane_properties.channel_density_non_uniform_ghks:
             raise Exception("<channelDensityNonUniformGHK> not yet supported!")
         
-        
-        for vi in cell.biophysical_properties.membrane_properties.init_memb_potentials:
-            
+        for vi in cell.biophysical_properties.membrane_properties.init_memb_potentials:            
             group = 'all' if not vi.segment_groups else vi.segment_groups
             for section_name in seg_grps_vs_nrn_sections[group]:
                 cellRule['secs'][section_name]['vinit'] = pynml.convert_to_units(vi.value,'mV')
+
+        # remove default vinit if vi empty so the global h.v_init is used
+        if len(cell.biophysical_properties.membrane_properties.init_memb_potentials) == 0:
+            group = 'all'
+            for section_name in seg_grps_vs_nrn_sections[group]:
+                del cellRule['secs'][section_name]['vinit']
                     
         for sc in cell.biophysical_properties.membrane_properties.specific_capacitances:
             
@@ -795,6 +842,50 @@ class SONATAImporter():
             else:
                 ion = 'non_specific'
         return ion
+
+
+    # ------------------------------------------------------------------------------------------------------------
+    # Set cell dynamic params into a cell rule (netParams.cellParams) from Json
+    # ------------------------------------------------------------------------------------------------------------
+    def setCellRuleDynamicParamsFromJson(self, cell_dynamic_params, cellRule):
+
+        passive = cell_dynamic_params['passive'][0]
+        conditions = cell_dynamic_params['conditions'][0]
+        genome = cell_dynamic_params['genome']
+
+        # Set passive properties
+        cm_dict = dict([(c['section'], c['cm']) for c in passive['cm']])
+        for secName,sec in cellRule['secs'].items():
+            sec['geom']['Ra'] = passive['ra']
+            sec['geom']['Ra'] = cm_dict[secName.split('_')[0]]
+            sec['mechs'] = {'pas': {'e': passive["e_pas"]}}
+
+        # Insert channels and set parameters
+        for p in genome:
+            sections = [s for s in cellRule['secs'] if s.split('_')[0]== p["section"]]
+
+            for sec in sections:
+                if p["mechanism"] != "":
+                    cellRule['secs'][sec]['mechs'][p['mechanism']] = {p['name'].split('_')[0]: p['value']}
+
+
+        # Set reversal potentials
+        for erev in conditions['erev']:
+            sections = [s for s in cellRule['secs'] if s.split('_')[0] == erev["section"]]
+            for sec in sections:
+                for eion in erev:
+                    if eion.startswith('e'):
+                        if 'ions' not in cellRule['secs'][sec]:
+                            print(sec, eion)
+                            cellRule['secs'][sec]['ions'] = {}
+                        cellRule['secs'][sec]['ions'][eion[1:]] =  {'e': erev[eion]}
+
+
+        if 'v_init' in conditions:
+            for sec in cellRule['secs'].values():
+                sec['vinit'] = conditions['v_init']
+    
+        return cellRule
 
 
     # ------------------------------------------------------------------------------------------------------------

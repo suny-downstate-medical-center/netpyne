@@ -242,8 +242,8 @@ class SONATAImporter():
         # create connections
         self.createConns()
 
-        print('STOP HERE TO AVOID SIMULATING')
-        from IPython import embed; embed()
+        #print('STOP HERE TO AVOID SIMULATING')
+        #from IPython import embed; embed()
 
     # ------------------------------------------------------------------------------------------------------------
     # create simulation config 
@@ -264,7 +264,6 @@ class SONATAImporter():
         # node sets
         try:
             if 'node_sets_file' in self.simulation_config:
-                print('\n\n HEREEEEEEE!!!!!',os.path.dirname(self.configFile)+'/'+self.simulation_config['node_sets_file'])
                 sim.cfg.node_sets = load_json(os.path.dirname(self.configFile)+'/'+self.simulation_config['node_sets_file']) 
             elif 'node_sets' in self.simulation_config:
                 sim.cfg.node_sets = self.simulation_config['node_sets']

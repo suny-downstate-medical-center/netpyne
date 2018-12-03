@@ -137,6 +137,7 @@ def fix_axon_peri_v2(hobj):
     :param hobj: hoc object
     """
     for i,sec in enumerate(hobj.axon):
+        h.pt3dclear(sec=sec)
         if i < 2:
             sec.L = 30
             sec.diam = 1
@@ -227,6 +228,8 @@ class SONATAImporter():
 
         # create and initialize sim object
         sim.initialize() 
+        
+        sim.cfg.verbose=1
         
         # create netpyne simConfig 
         self.createSimulationConfig()

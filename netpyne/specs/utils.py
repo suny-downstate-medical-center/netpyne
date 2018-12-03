@@ -5,13 +5,18 @@ Helper functions for high-level specifications
 
 Contributors: salvador dura@gmail.com
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
 from numbers import Number
 from neuron import h
 
-        
 def validateFunction(strFunc, netParamsVars):
     ''' returns True if "strFunc" can be evaluated'''
-    from math import exp, log, sqrt, int, sin, cos, tan, asin, acos, atan, sinh, cosh, tangh, pi, e 
+    from math import exp, log, sqrt, sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, pi, e
     rand = h.Random()
     stringFuncRandMethods = ['binomial', 'discunif', 'erlang', 'geometric', 'hypergeo', 
         'lognormal', 'negexp', 'normal', 'poisson', 'uniform', 'weibull']

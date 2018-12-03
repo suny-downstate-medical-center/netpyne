@@ -5,6 +5,17 @@ Functions to import cells, synapses and networks from NEURON
 
 Contributors: salvador dura@gmail.com
 """
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+from builtins import range
+from builtins import dict
+
+from builtins import zip
+from builtins import str
+from future import standard_library
+standard_library.install_aliases()
 import os, sys, signal
 from numbers import Number
 from neuron import h
@@ -424,7 +435,9 @@ def getCellParams(cell, varList={}, origGlob={}):
         secListDic = {}
 
     # globals
-    globs = getGlobals(list(varList['mechs'].keys())+list(varList['pointps'].keys()), origGlob=origGlob)
+    mechsList = list(varList['mechs'].keys()) if 'mechs' in varList else []
+    pointpsList = list(varList['pointps'].keys()) if 'pointps' in varList else []
+    globs = getGlobals(mechsList+pointpsList, origGlob=origGlob)
     if 'v_init' in globs:  # set v_init for each section (allows for cells with differnet vinits)
         for sec in list(secDic.values()): sec['vinit'] = globs['v_init']  
 

@@ -5,7 +5,17 @@ Contains generic Cell class
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
+
+from builtins import zip
+from builtins import next
+from builtins import str
+from future import standard_library
+standard_library.install_aliases()
 from numbers import Number
 from copy import deepcopy
 from neuron import h # Import NEURON
@@ -41,7 +51,7 @@ class Cell (object):
         for conn in self.conns:
             if conn['preGid'] == 'NetStim':
                 stimSpikeVecs = h.Vector() # initialize vector to store 
-                conn['hNetcon'].record(stimSpikeVecs)
+                conn['hObj'].record(stimSpikeVecs)
                 sim.simData['stims']['cell_'+str(self.gid)].update({conn['preLabel']: stimSpikeVecs})
 
 
@@ -143,9 +153,9 @@ class Cell (object):
                 netstim.start = params['start']
             netstim.number = params['number']   
                 
-            stimContainer['hNetStim'] = netstim  # add netstim object to dict in stim list
+            stimContainer['hObj'] = netstim  # add netstim object to dict in stim list
 
-            return stimContainer['hNetStim']
+            return stimContainer['hObj']
 
 
     def recordTraces (self):
@@ -182,32 +192,32 @@ class Cell (object):
                     ptr = None
                     if 'loc' in params and params['sec'] in self.secs:
                         if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
-                            ptr = getattr(getattr(self.secs[params['sec']]['hSec'](params['loc']), params['mech']), '_ref_'+params['var'])
+                            ptr = getattr(getattr(self.secs[params['sec']]['hObj'](params['loc']), params['mech']), '_ref_'+params['var'])
                             #print params['var'], ptr
                         elif 'synMech' in params:  # eg. soma(0.5).AMPA._ref_g
                             sec = self.secs[params['sec']]
                             synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech'] and synMech['loc']==params['loc']), None)
-                            ptr = getattr(synMech['hSyn'], '_ref_'+params['var'])
+                            ptr = getattr(synMech['hObj'], '_ref_'+params['var'])
                         else:  # eg. soma(0.5)._ref_v
-                            ptr = getattr(self.secs[params['sec']]['hSec'](params['loc']), '_ref_'+params['var'])
+                            ptr = getattr(self.secs[params['sec']]['hObj'](params['loc']), '_ref_'+params['var'])
                     elif 'synMech' in params:  # special case where want to record from multiple synMechs
                         if 'sec' in params:
                             sec = self.secs[params['sec']]
                             synMechs = [synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech']]
-                            ptr = [getattr(synMech['hSyn'], '_ref_'+params['var']) for synMech in synMechs]
+                            ptr = [getattr(synMech['hObj'], '_ref_'+params['var']) for synMech in synMechs]
                             secLocs = [params.sec+str(synMech['loc']) for synMech in synMechs]
                         else: 
                             ptr = []
                             secLocs = []
                             for secName,sec in self.secs.items():
                                 synMechs = [synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech']]
-                                ptr.extend([getattr(synMech['hSyn'], '_ref_'+params['var']) for synMech in synMechs])
+                                ptr.extend([getattr(synMech['hObj'], '_ref_'+params['var']) for synMech in synMechs])
                                 secLocs.extend([secName+'_'+str(synMech['loc']) for synMech in synMechs])
 
                     else:
                         if 'pointp' in params: # eg. soma.izh._ref_u
                             if params['pointp'] in self.secs[params['sec']]['pointps']:
-                                ptr = getattr(self.secs[params['sec']]['pointps'][params['pointp']]['hPointp'], '_ref_'+params['var'])
+                                ptr = getattr(self.secs[params['sec']]['pointps'][params['pointp']]['hObj'], '_ref_'+params['var'])
                         elif 'var' in params: # point process cell eg. cell._ref_v
                             ptr = getattr(self.hPointp, '_ref_'+params['var'])
 

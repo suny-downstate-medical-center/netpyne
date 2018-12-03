@@ -120,7 +120,7 @@ def runArm(t):
         for cell in sim.net.cells:
             for conn in cell.conns:
                 if 'hSTDP' in conn:
-                    sim.allWeights[-1].append(float(conn['hNetcon'].weight[0])) # save weight only for STDP conns
+                    sim.allWeights[-1].append(float(conn['hObj'].weight[0])) # save weight only for STDP conns
 
     
     

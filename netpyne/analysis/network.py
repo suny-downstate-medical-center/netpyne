@@ -5,7 +5,20 @@ Functions to plot and analyze connectivity-related results
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
+from builtins import open
+from builtins import next
+from builtins import range
+from builtins import str
+from builtins import zip
+
+from builtins import round
+from future import standard_library
+standard_library.install_aliases()
 from netpyne import __gui__
 
 if __gui__:
@@ -549,7 +562,9 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
         plt.imshow(connMatrix, interpolation='nearest', cmap='jet', vmin=np.nanmin(connMatrix), vmax=np.nanmax(connMatrix))  #_bicolormap(gap=0)
 
         # Plot grid lines
-        plt.hold(True)
+        import matplotlib 
+        if int(matplotlib.__version__.split('.')[0]) == 2: plt.hold(True)
+            
         if groupBy == 'cell':
             cellsPre, cellsPost = pre, post
 
@@ -849,10 +864,10 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
             # weighNorm
             if cvar == 'weightNorm':
                 for cellPost in cellsPost:
-                    cellSecs = list(cellPost.secs.values()) if includeAxon else [s for s in list(cellPost.secs.values()) if 'axon' not in s['hSec'].hname()] 
+                    cellSecs = list(cellPost.secs.values()) if includeAxon else [s for s in list(cellPost.secs.values()) if 'axon' not in s['hObj'].hname()] 
                     for sec in cellSecs:
                         if 'weightNorm' in sec:
-                            secs.append(sec['hSec'])
+                            secs.append(sec['hObj'])
                             cvals.extend(sec['weightNorm'])
 
                 cvals = np.array(cvals)
@@ -861,18 +876,18 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
             # numSyns
             elif cvar == 'numSyns':
                 for cellPost in cellsPost:
-                    cellSecs = cellPost.secs if includeAxon else {k:s for k,s in cellPost.secs.items() if 'axon' not in s['hSec'].hname()}
+                    cellSecs = cellPost.secs if includeAxon else {k:s for k,s in cellPost.secs.items() if 'axon' not in s['hObj'].hname()}
                     for secLabel,sec in cellSecs.items():
-                        nseg=sec['hSec'].nseg
+                        nseg=sec['hObj'].nseg
                         nsyns = [0] * nseg
-                        secs.append(sec['hSec'])
+                        secs.append(sec['hObj'])
                         conns = [conn for conn in cellPost.conns if conn['sec']==secLabel and conn['preGid'] in cellsPreGids]
                         for conn in conns: nsyns[int(round(conn['loc']*nseg))-1] += 1
                         cvals.extend(nsyns)
 
                 cvals = np.array(cvals)
 
-        if not secs: secs = [s['hSec'] for cellPost in cellsPost for s in list(cellPost.secs.values())]
+        if not secs: secs = [s['hObj'] for cellPost in cellsPost for s in list(cellPost.secs.values())]
         if not includeAxon:         
             secs = [sec for sec in secs if 'axon' not in sec.hname()]
 
@@ -905,7 +920,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
             for cellPost in cellsPost:
                 for sec in list(cellPost.secs.values()):
                     for synMech in sec['synMechs']:
-                        morph.mark_locations(h, sec['hSec'], synMech['loc'], markspec=synStyle, color=synColor, markersize=synSiz)
+                        morph.mark_locations(h, sec['hObj'], synMech['loc'], markspec=synStyle, color=synColor, markersize=synSiz)
         # Electrodes
         if showElectrodes:
             ax = plt.gca()
@@ -944,19 +959,19 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
         
         for cell in [c for c in cellsPost]: 
             for sec in list(cell.secs.values()):
-                if 'axon' in sec['hSec'].hname() and not includeAxon: continue
-                sec['hSec'].push()
+                if 'axon' in sec['hObj'].hname() and not includeAxon: continue
+                sec['hObj'].push()
                 secList.append()
                 h.pop_section()
                 if showSyns:
                     for synMech in sec['synMechs']:
-                        if synMech['hSyn']:
+                        if synMech['hObj']:
                             # find pre pop using conn[preGid]
                             # create dict with color for each pre pop; check if exists; increase color counter
                             # colorsPre[prePop] = colorCounter
 
                             # find synMech using conn['loc'], conn['sec'] and conn['synMech']
-                            fig.point_mark(synMech['hSyn'], ivprops['colorSyns'], ivprops['style'], ivprops['siz']) 
+                            fig.point_mark(synMech['hObj'], ivprops['colorSyns'], ivprops['style'], ivprops['siz']) 
 
         fig.observe(secList)
         fig.color_list(secList, ivprops['colorSecs'])

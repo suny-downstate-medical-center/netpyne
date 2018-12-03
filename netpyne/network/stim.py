@@ -6,7 +6,13 @@ Methods to create stims in the network
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
 from numbers import Number
 
 
@@ -53,7 +59,9 @@ def addStims (self):
                 postCellsTags = {gid: tags for (gid,tags) in postCellsTags.items() if gid in gidList}
 
             # initialize randomizer in case used in string-based function (see issue #89 for more details)
-            self.rand.Random123(sim.id32('stim_'+source['type']), sim.id32('%d%d'%(len(postCellsTags), sum(postCellsTags))), sim.cfg.seeds['stim'])
+            self.rand.Random123(sim.hashStr('stim_'+source['type']), 
+                                sim.hashList(sorted(postCellsTags)), 
+                                sim.cfg.seeds['stim'])
 
             # calculate params if string-based funcs
             strParams = self._stimStrToFunc(postCellsTags, source, target)

@@ -1,4 +1,11 @@
-# Version 0.8.0
+# Version 0.9.1
+
+- Add scalebar to rxd concentration plot
+
+
+# Version 0.9.0
+
+- Added support for reaction-diffusion (RxD) and usage examples
 
 - Improved performanced (speed) of connectivity algorithms 
 
@@ -6,7 +13,13 @@
 
 - Switched to Python 3 as the default development environment
 
-- Optimized implementation of raste and spikeHist plotting using Pandas
+- Optimized implementation of raster and spikeHist plotting using Pandas
+
+- Added support for recording spikes from only a subset of cells using e.g. cfg.recordCellsSpikes = ['E2']
+
+- Support for exporting to SONATA standardized network format (Beta) 
+
+- Support for Human Neocortical Neurosolver (HNN) dipole mechanisms
 
 - Added option for filename to saveData()
 
@@ -17,6 +30,10 @@
 - Added support for evolutionary algorithm optimization (via Inspyred) and usage example
 
 - cfg.popAvgRates now accepts a time range to calculate rates (e.g. to discard initial period)
+
+- All NEURON objects now accessible via ['hObj'] key within Python network structure
+
+- Fixed bug in batch to allow having only grouped params
 
 - Fixed bug initalizing batch 'mpi_bulletin' and batch tutorial example
 

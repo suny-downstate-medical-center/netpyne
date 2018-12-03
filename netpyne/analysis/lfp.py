@@ -5,7 +5,17 @@ Functions to plot and analyze LFP-related results
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
+from builtins import range
+from builtins import round
+from builtins import str
+
+from future import standard_library
+standard_library.install_aliases()
 from netpyne import __gui__
 
 if __gui__:
@@ -310,7 +320,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             if not includeAxon:
                 i = 0
                 for secName, sec in cell.secs.items():
-                    nseg = sec['hSec'].nseg #.geom.nseg
+                    nseg = sec['hObj'].nseg #.geom.nseg
                     if 'axon' in secName:
                         for j in range(i,i+nseg): del trSegs[j] 
                     i+=nseg

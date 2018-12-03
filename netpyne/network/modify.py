@@ -6,11 +6,17 @@ Network class methods to modify the network instance
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
 
 
 # -----------------------------------------------------------------------------
 # Modify cell params
 # -----------------------------------------------------------------------------
+from future import standard_library
+standard_library.install_aliases()
 def modifyCells (self, params, updateMasterAllCells=False):
     from .. import sim
 

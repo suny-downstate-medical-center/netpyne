@@ -6,8 +6,14 @@ It is imported as "sim" from all other file,  so that any variable or module can
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
 # check for -nogui option
+from future import standard_library
+standard_library.install_aliases()
 import sys
 if '-nogui' in sys.argv:
     import netpyne
@@ -32,13 +38,13 @@ from .run import preRun, runSim, runSimWithIntervalFunc, loadBalance, calculateL
 from .gather import gatherData, _gatherAllCellTags, _gatherAllCellConnPreGids, _gatherCells, fileGather
 
 # import saving functions
-from .save import saveData, distributedSaveHDF5, compactConnFormat, intervalSave
+from .save import saveJSON, saveData, distributedSaveHDF5, compactConnFormat, intervalSave
 
 # import loading functions
 from .load import loadSimCfg, loadNetParams, loadNet, loadSimData, loadAll, loadHDF5, ijsonLoad
 
 # import utils functions (general)
-from .utils import cellByGid, getCellsList, timing, version, gitChangeset, id32,\
+from .utils import cellByGid, getCellsList, timing, version, gitChangeset, hashStr, hashList,\
 	_init_stim_randomizer, unique, checkMemory 
 
 # import utils functions to manipulate objects
@@ -48,7 +54,7 @@ from .utils import copyReplaceItemObj, copyRemoveItemObj, replaceFuncObj, replac
 
 # import wrapper functions
 from .wrappers import create, simulate, intervalSimulate, analyze, createSimulate, \
-	createSimulateAnalyze, load, loadSimulate, loadSimulateAnalyze, \
+	createSimulateAnalyze, intervalCreateSimulateAnalyze, load, loadSimulate, loadSimulateAnalyze, \
 	createExportNeuroML2, importNeuroML2SimulateAnalyze
      
 

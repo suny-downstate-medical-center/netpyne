@@ -10,14 +10,6 @@ from netpyne.batch import Batch
 import numpy as np
 
 
-def createBatch(params):
-	# Create Batch object
-	b = Batch()
-	for k,v in params.items():
-		b.params.append({'label': k, 'values': v})
-	return b
-
-
 def runBatch(b, label):
 	b.batchLabel = label
 	b.saveFolder = 'data/'+b.batchLabel
@@ -30,15 +22,18 @@ def runBatch(b, label):
 
 
 def batchNa():
-	b = createBatch({'dendNa': [0.025, 0.03, 0.035, 0.4],  
-					('IClamp1', 'amp'): list(np.arange(-2.0, 8.0, 0.5)/10.0)})
-	b.initCfg = {'duration': 1.1, 'tau1NMDA': 15}
+	params = {'dendNa': [0.025, 0.03, 0.035, 0.4],  
+			('IClamp1', 'amp'): list(np.arange(-2.0, 8.0, 0.5)/10.0)}
+	initCfg = {'duration': 1.1, 'tau1NMDA': 15}
+	b = Batch(params=params, initCfg=initCfg)
 	runBatch(b, 'batchNa')
 
 
 def batchNMDA():
-	b = createBatch({'tau1NMDA': [10, 15, 20, 25],  
-	  				('NetStim1', 'weight'): list(np.arange(1.0, 10.0, 1.0)/1e4)})
+	params = {'tau1NMDA': [10, 15, 20, 25],  
+	  		 ('NetStim1', 'weight'): list(np.arange(1.0, 10.0, 1.0)/1e4)}
+	initCfg = {'duration': 1.1}
+	b = Batch(params=params, initCfg=initCfg)
 	runBatch(b, 'batchNMDA')
 
 

@@ -5,7 +5,15 @@ Functions related to the simulation set up
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
+#
+from builtins import str
+from future import standard_library
+standard_library.install_aliases()
 import sys
 import os
 import numpy as np
@@ -51,14 +59,6 @@ def initialize (netParams = None, simConfig = None, net = None):
         sim.setNet(sim.Network())  # or create new network
 
     sim.setNetParams(netParams)  # set network parameters
-
-    if sim.cfg.enableRxD:
-        try:
-            global rxd
-            from neuron import crxd as rxd 
-            sim.net.rxd = {'species': {}, 'regions': {}}  # dictionary for rxd  
-        except:
-            print('cRxD module not available')
 
     if sim.nhosts > 1: sim.cfg.checkErrors = False  # turn of error chceking if using multiple cores
 
@@ -216,7 +216,12 @@ def setupRecording ():
 
     # spike recording
     sim.simData.update({name:h.Vector(1e4).resize(0) for name in ['spkt','spkid']})  # initialize
-    sim.pc.spike_record(-1, sim.simData['spkt'], sim.simData['spkid']) # -1 means to record from all cells on this node
+    if sim.cfg.recordCellsSpikes == -1:
+        sim.pc.spike_record(-1, sim.simData['spkt'], sim.simData['spkid']) # -1 means to record from all cells on this node
+    else:
+        recordGidsSpikes = utils.getCellsList(sim.cfg.recordCellsSpikes, returnGids=True)
+        for gid in recordGidsSpikes:
+            sim.pc.spike_record(float(gid), sim.simData['spkt'], sim.simData['spkid']) # -1 means to record from all cells on this node
 
     # stim spike recording
     if 'plotRaster' in sim.cfg.analysis:
@@ -245,6 +250,10 @@ def setupRecording ():
 
     # intrinsic cell variables recording
     if sim.cfg.recordTraces:
+        # if have rxd objects need to run h.finitialize() before setting up recording so pointers available
+        if len(sim.net.params.rxdParams) > 0:
+            h.finitialize()
+
         # get list of cells from argument of plotTraces function
         if 'plotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['plotTraces']:
             cellsPlot = utils.getCellsList(sim.cfg.analysis['plotTraces']['include'])

@@ -5,12 +5,40 @@ Functions related to saving
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
+
+from builtins import range
+from builtins import open
+from future import standard_library
+standard_library.install_aliases()
+
+# required to make json saving work in Python 2/3
+try:
+    to_unicode = unicode
+except NameError:
+    to_unicode = str
 
 from time import time
 from datetime import datetime
 import pickle as pk
 from . import gather
 from . import utils
+
+
+#------------------------------------------------------------------------------
+# Save JSON (Python 2/3 compatible)
+#------------------------------------------------------------------------------
+def saveJSON(fileName, data):
+    import json, io
+    with io.open(fileName, 'w', encoding='utf8') as fileObj:
+        str_ = json.dumps(data,
+                          indent=4, sort_keys=True,
+                          separators=(',', ': '), ensure_ascii=False)
+        fileObj.write(to_unicode(str_))
+
 
 #------------------------------------------------------------------------------
 # Save data
@@ -106,11 +134,10 @@ def saveData (include = None, filename = None):
 
             # Save to json file
             if sim.cfg.saveJson:
-                import json
-                #dataSave = utils.replaceDictODict(dataSave)  # not required since json saves as dict
+                # Make it work for Python 2+3 and with Unicode
                 print(('Saving output as %s ... ' % (filePath+'.json ')))
-                with open(filePath+'.json', 'w') as fileObj:
-                    json.dump(dataSave, fileObj)
+                #dataSave = utils.replaceDictODict(dataSave)  # not required since json saves as dict
+                sim.saveJSON(filePath+'.json', dataSave)
                 print('Finished saving!')
 
             # Save to mat file

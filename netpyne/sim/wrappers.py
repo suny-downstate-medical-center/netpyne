@@ -6,10 +6,16 @@ Contains wrapper functions to create, load, simulate, analyze etc the network
 
 Contributors: salvadordura@gmail.com
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
 #------------------------------------------------------------------------------
 # Wrapper to create network
 #------------------------------------------------------------------------------
+from future import standard_library
+standard_library.install_aliases()
 def create (netParams=None, simConfig=None, output=False):
     ''' Sequence of commands to create network '''
     from .. import sim
@@ -22,9 +28,10 @@ def create (netParams=None, simConfig=None, output=False):
     cells = sim.net.createCells()                 # instantiate network cells based on defined populations
     conns = sim.net.connectCells()                # create connections between cells based on params
     stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
+    rxd = sim.net.addRxD()                    # add reaction-diffusion (RxD)
     simData = sim.setupRecording()             # setup variables to record for each cell (spikes, V traces, etc)
 
-    if output: return (pops, cells, conns, stims, simData)
+    if output: return (pops, cells, conns, rxd, stims, simData)
     
 
 #------------------------------------------------------------------------------
@@ -63,7 +70,7 @@ def analyze ():
 def createSimulate (netParams=None, simConfig=None, output=False):
     ''' Sequence of commands create, simulate and analyse network '''
     from .. import sim
-    (pops, cells, conns, stims, simData) = sim.create(netParams, simConfig, output=True)
+    (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
     sim.simulate() 
 
     if output: return (pops, cells, conns, stims, simData)    
@@ -72,28 +79,35 @@ def createSimulate (netParams=None, simConfig=None, output=False):
 #------------------------------------------------------------------------------
 # Wrapper to create, simulate, and analyse network
 #------------------------------------------------------------------------------
-def createSimulateAnalyze (netParams=None, simConfig=None, output=False, interval=None, distribute=False):
+def createSimulateAnalyze (netParams=None, simConfig=None, output=False, distribute=False):
     ''' Sequence of commands create, simulate and analyse network '''
     from .. import sim
+    (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
+    sim.simulate() 
+    sim.analyze()
+    if output: return (pops, cells, conns, stims, simData)
+    
+#------------------------------------------------------------------------------
+# Wrapper to create, simulate, and analyse network, while saving to master in intervals
+#------------------------------------------------------------------------------
+def intervalCreateSimulateAnalyze (netParams=None, simConfig=None, output=False, interval=None, distribute=False):
+    ''' Sequence of commands create, simulate and analyse network '''
+    import os
+    from .. import sim
     (pops, cells, conns, stims, simData) = sim.create(netParams, simConfig, output=True)
-    if interval:
-        import os
-        try:
-            if sim.rank==0:
-                os.mkdir('temp')
-            sim.intervalSimulate(interval)
-            
-        except OSError:
-            if not os.path.exists('temp'):
-                print(' Could not create temp folder, running without intervals ...')
-                return
-    else:   
-        sim.simulate()
+    try:
+        if sim.rank==0:
+            os.mkdir('temp')
+        sim.intervalSimulate(interval)
+        
+    except OSError:
+        if not os.path.exists('temp'):
+            print(' Could not create temp folder, running without intervals ...')
     sim.pc.barrier()
     sim.analyze()
     if output: return (pops, cells, conns, stims, simData)
     
-
+    
 #------------------------------------------------------------------------------
 # Wrapper to load all, ready for simulation
 #------------------------------------------------------------------------------
@@ -109,11 +123,13 @@ def load (filename, simConfig=None, output=False, instantiate=True, createNEURON
         cells = sim.net.createCells()                 # instantiate network cells based on defined populations
         conns = sim.net.connectCells()                # create connections between cells based on params
         stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
+        rxd = sim.net.addRxD()                    # add reaction-diffusion (RxD)
+
     simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
 
     if output: 
         try:
-            return (pops, cells, conns, stims, simData)
+            return (pops, cells, conns, stims, rxd, simData)
         except:
             pass
 
@@ -155,10 +171,11 @@ def createExportNeuroML2 (netParams=None, simConfig=None, reference=None, connec
     cells = sim.net.createCells()                 # instantiate network cells based on defined populations
     conns = sim.net.connectCells()                # create connections between cells based on params
     stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
+    rxd = sim.net.addRxD()                    # add reaction-diffusion (RxD)
     simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
     sim.exportNeuroML2(reference,connections,stimulations,format)     # export cells and connectivity to NeuroML 2 format
 
-    if output: return (pops, cells, conns, stims, simData)
+    if output: return (pops, cells, conns, stims, rxd, simData)
     
     
 #------------------------------------------------------------------------------

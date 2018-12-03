@@ -34,7 +34,6 @@ def simulate ():
     ''' Sequence of commands to simulate network '''
     from .. import sim
     sim.runSim()         
-    print('running a regular simulate?')             # run parallel Neuron simulation  
     sim.gatherData()                  # gather spiking data and cell info from each node
     
 #------------------------------------------------------------------------------
@@ -43,6 +42,7 @@ def simulate ():
 def intervalSimulate (interval):
     ''' Sequence of commands to simulate network '''
     from .. import sim
+    
     sim.runSimWithIntervalFunc(interval, sim.intervalSave)                      # run parallel Neuron simulation  
     #this gather is justa merging of files
     sim.fileGather()                  # gather spiking data and cell info from each node
@@ -72,7 +72,7 @@ def createSimulate (netParams=None, simConfig=None, output=False):
 #------------------------------------------------------------------------------
 # Wrapper to create, simulate, and analyse network
 #------------------------------------------------------------------------------
-def createSimulateAnalyze (netParams=None, simConfig=None, output=False, interval=None):
+def createSimulateAnalyze (netParams=None, simConfig=None, output=False, interval=None, distribute=False):
     ''' Sequence of commands create, simulate and analyse network '''
     from .. import sim
     (pops, cells, conns, stims, simData) = sim.create(netParams, simConfig, output=True)
@@ -91,7 +91,6 @@ def createSimulateAnalyze (netParams=None, simConfig=None, output=False, interva
         sim.simulate()
     sim.pc.barrier()
     sim.analyze()
-
     if output: return (pops, cells, conns, stims, simData)
     
 

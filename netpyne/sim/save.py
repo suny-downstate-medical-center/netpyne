@@ -271,10 +271,6 @@ def intervalSave (t):
             sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
             sim.allSimData['spkt'], sim.allSimData['spkid'] = list(sim.allSimData['spkt']), list(sim.allSimData['spkid'])
 
-        # sim.net.allPops = ODict() # pops
-        # for popLabel,pop in sim.net.pops.items(): sim.net.allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
-        # 
-        # sim.net.allCells = [c.__dict__ for c in sim.net.cells]
         name = 'temp/data_{:4.0f}.pkl'.format(t)
         with open(name, 'wb') as f:
             pickle.dump(sim.allSimData, f, protocol=2)
@@ -288,4 +284,6 @@ def intervalSave (t):
             if item:
                 item.clear()
                 del item
+    
+    sim.pc.barrier()
 

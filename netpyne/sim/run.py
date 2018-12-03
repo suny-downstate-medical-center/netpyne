@@ -126,7 +126,6 @@ def runSimWithIntervalFunc (interval, func):
     sim.pc.barrier()
     sim.timing('start', 'runTime')
     preRun()
-    # init()
     h.finitialize(float(sim.cfg.hParams['v_init']))
 
     if sim.rank == 0: print('\nRunning with interval func  ...')

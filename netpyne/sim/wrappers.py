@@ -52,7 +52,7 @@ def intervalSimulate (interval):
     
     sim.runSimWithIntervalFunc(interval, sim.intervalSave)                      # run parallel Neuron simulation  
     #this gather is justa merging of files
-    sim.fileGather()                  # gather spiking data and cell info from each node
+    sim.fileGather()                  # gather spiking data and cell info from saved file
     
 #------------------------------------------------------------------------------
 # Wrapper to simulate network
@@ -97,12 +97,15 @@ def intervalCreateSimulateAnalyze (netParams=None, simConfig=None, output=False,
     (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
     try:
         if sim.rank==0:
-            os.mkdir('temp')
+            if os.path.exists('temp'):
+                for f in os.listdir('temp'):
+                    os.unlink('temp/{}'.format(f))
+            else:
+                os.mkdir('temp')
         sim.intervalSimulate(interval)
-        
-    except OSError:
-        if not os.path.exists('temp'):
-            print(' Could not create temp folder, running without intervals ...')
+    except:
+        print('Error running with interval')
+        return
     sim.pc.barrier()
     sim.analyze()
     if output: return (pops, cells, conns, stims, simData)

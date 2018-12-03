@@ -239,13 +239,8 @@ def compactConnFormat():
     for cell in sim.net.cells:
         newConns = [[conn[param] for param in connFormat] for conn in cell.conns]
         del cell.conns
-        cell.conns = newConns
-        
-#------------------------------------------------------------------------------
-# Saves data within each node
-#------------------------------------------------------------------------------
-def distributedSave():
-    pass
+        cell.conns = newConns 
+
 #------------------------------------------------------------------------------
 # Gathers data in master and saves it mid run
 #------------------------------------------------------------------------------
@@ -303,7 +298,7 @@ def intervalSave (t):
             sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
             sim.allSimData['spkt'], sim.allSimData['spkid'] = list(sim.allSimData['spkt']), list(sim.allSimData['spkid'])
 
-        name = 'temp/data_{:4.0f}.pkl'.format(t)
+        name = 'temp/data_{:0.0f}.pkl'.format(t)
         with open(name, 'wb') as f:
             pickle.dump(sim.allSimData, f, protocol=2)
 

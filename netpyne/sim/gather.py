@@ -263,32 +263,31 @@ def gatherData (gatherLFP = True):
 def fileGather (gatherLFP = True):
     import os, pickle
     from .. import sim
-    sim.pc.barrier()
     
     sim.timing('start', 'gatherTime')
 
-    
-    test = Dict()
+    # iterate through the saved files and concat their data
+    fileData = Dict()
     if sim.rank == 0:
         for f in os.listdir('temp'):
-            print(f)
             with open('temp/' + f, 'rb') as data:
                 temp = pickle.load(data)
                 for k in temp.keys():
-                    if k in test:
+                    if k in fileData:
                         if isinstance(temp[k], list):
-                            test[k] = test[k] + temp[k]
+                            fileData[k] = fileData[k] + temp[k]
                         elif isinstance(temp[k], dict):
-                            test[k].update(temp[k])
+                            fileData[k].update(temp[k])
                     else:
-                        test[k] = temp[k] 
+                        fileData[k] = temp[k] 
+
     
     simDataVecs = ['spkt','spkid','stims']+list(sim.cfg.recordTraces.keys())
     singleNodeVecs = ['t']
 
     if sim.rank == 0:
         sim.allSimData = Dict()
-        sim.allSimData.update(test)
+        sim.allSimData.update(fileData)
     
     
         if len(sim.allSimData['spkt']) > 0:
@@ -339,54 +338,8 @@ def fileGather (gatherLFP = True):
 
         # gather only sim data
         if getattr(sim.cfg, 'gatherOnlySimData', False):
-            nodeData = {'simData': sim.simData}
-            data = [None]*sim.nhosts
-            data[0] = {}
-            for k,v in nodeData.items():
-                data[0][k] = v
-            gather = sim.pc.py_alltoall(data)
-            sim.pc.barrier()
-            if sim.rank == 0: # simData
-                print('  Gathering only sim data...')
-                sim.allSimData = Dict()
-                for k in list(gather[0]['simData'].keys()):  # initialize all keys of allSimData dict
-                    if gatherLFP and k == 'LFP':
-                        sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
-                    else:
-                        sim.allSimData[k] = {}
-
-                for key in singleNodeVecs: # store single node vectors (eg. 't')
-                    sim.allSimData[key] = list(nodeData['simData'][key])
-
-                # fill in allSimData taking into account if data is dict of h.Vector (code needs improvement to be more generic)
-                for node in gather:  # concatenate data from each node
-                    for key,val in node['simData'].items():  # update simData dics of dics of h.Vector
-                        if key in simDataVecs:          # simData dicts that contain Vectors
-                            if isinstance(val, dict):
-                                for cell,val2 in val.items():
-                                    if isinstance(val2,dict):
-                                        sim.allSimData[key].update(Dict({cell:Dict()}))
-                                        for stim,val3 in val2.items():
-                                            sim.allSimData[key][cell].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
-                                    else:
-                                        sim.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
-                            else:
-                                sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
-                        elif gatherLFP and key == 'LFP':
-                            sim.allSimData[key] += np.array(val)
-                        elif key not in singleNodeVecs:
-                            sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
-    
-                
-                if len(sim.allSimData['spkt']) > 0:
-                    sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
-                    sim.allSimData['spkt'], sim.allSimData['spkid'] = list(sim.allSimData['spkt']), list(sim.allSimData['spkid'])
-
-                sim.net.allPops = ODict() # pops
-                for popLabel,pop in sim.net.pops.items(): sim.net.allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
-
-                sim.net.allCells = [c.__dict__ for c in sim.net.cells]
-        # gather cells, pops and sim data
+            pass
+        # gather the non-simData
         else:
             # nodeData = {'netCells': [c.__getstate__() for c in sim.net.cells], 'netPopsCellGids': netPopsCellGids, 'simData': sim.simData}
             nodeData = {'netCells': [c.__getstate__() for c in sim.net.cells], 'netPopsCellGids': netPopsCellGids}
@@ -420,7 +373,6 @@ def fileGather (gatherLFP = True):
                 for popLabel,pop in allPops.items():
                     pop['cellGids'] = sorted(allPopsCellGids[popLabel])
                 sim.net.allPops = allPops
-                print('or here')
         # clean to avoid mem leaks
         for node in gather:
             if node:

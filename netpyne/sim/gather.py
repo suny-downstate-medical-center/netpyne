@@ -271,13 +271,17 @@ def fileGather (gatherLFP = True):
     test = Dict()
     if sim.rank == 0:
         for f in os.listdir('temp'):
+            print(f)
             with open('temp/' + f, 'rb') as data:
                 temp = pickle.load(data)
                 for k in temp.keys():
-                    if hasattr(test, k):
-                        test[k] = temp[k]
+                    if k in test:
+                        if isinstance(temp[k], list):
+                            test[k] = test[k] + temp[k]
+                        elif isinstance(temp[k], dict):
+                            test[k].update(temp[k])
                     else:
-                        test[k] = test[k].extend(temp[k])  
+                        test[k] = temp[k] 
     
     simDataVecs = ['spkt','spkid','stims']+list(sim.cfg.recordTraces.keys())
     singleNodeVecs = ['t']

@@ -240,7 +240,12 @@ def compactConnFormat():
         newConns = [[conn[param] for param in connFormat] for conn in cell.conns]
         del cell.conns
         cell.conns = newConns
-
+        
+#------------------------------------------------------------------------------
+# Saves data within each node
+#------------------------------------------------------------------------------
+def distributedSave():
+    pass
 #------------------------------------------------------------------------------
 # Gathers data in master and saves it mid run
 #------------------------------------------------------------------------------
@@ -311,6 +316,11 @@ def intervalSave (t):
             if item:
                 item.clear()
                 del item
-    
+
     sim.pc.barrier()
+    
+    for k, v in sim.simData.items():
+        if k in ['spkt', 'spkid']:
+            v.resize(0)
+
 

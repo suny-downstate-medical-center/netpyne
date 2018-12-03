@@ -94,7 +94,7 @@ def intervalCreateSimulateAnalyze (netParams=None, simConfig=None, output=False,
     ''' Sequence of commands create, simulate and analyse network '''
     import os
     from .. import sim
-    (pops, cells, conns, stims, simData) = sim.create(netParams, simConfig, output=True)
+    (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
     try:
         if sim.rank==0:
             os.mkdir('temp')

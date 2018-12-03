@@ -267,13 +267,12 @@ class SONATAImporter():
         sim.cfg.hParams = self.simulation_config['conditions']
 
         # node sets
-        try:
-            if 'node_sets_file' in self.simulation_config:
-                sim.cfg.node_sets = load_json(os.path.dirname(self.configFile)+'/'+self.simulation_config['node_sets_file']) 
-            elif 'node_sets' in self.simulation_config:
-                sim.cfg.node_sets = self.simulation_config['node_sets']
-        except:
-            sim.cfg.node_sets = {}
+        if 'node_sets_file' in self.simulation_config:
+            sim.cfg.node_sets = load_json(os.path.dirname(self.configFile)+'/'+self.simulation_config['node_sets_file']) 
+        elif 'node_sets' in self.simulation_config:
+            sim.cfg.node_sets = self.simulation_config['node_sets']
+        else:
+            sim.cfg_node_sets = {}
         
         # inputs - add as 'spkTimes' to external population
 
@@ -907,23 +906,15 @@ class SONATAImporter():
         else:
             print("Unhandled dataset: %s"%d.name)
 
-
-    # ------------------------------------------------------------------------------------------------------------
-    # Read simulation output from HDF5
-    # ------------------------------------------------------------------------------------------------------------
-
-
     '''
         Search the strings in a config file for a substitutable value, e.g. 
         "morphologies_dir": "$COMPONENT_DIR/morphologies",
     '''
     def subs(self, path):
         #print_v('Checking for %s in %s'%(substitutes.keys(),path))
-
-        for s in sorted(self.substitutes, key=lambda k: len(k), reverse=True):
+        for s in self.substitutes: 
             if path.startswith(s):
                 path = path.replace(s,self.substitutes[s])
-
         return path
 
 

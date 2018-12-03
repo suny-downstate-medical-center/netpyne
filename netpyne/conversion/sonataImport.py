@@ -272,7 +272,7 @@ class SONATAImporter():
         elif 'node_sets' in self.simulation_config:
             sim.cfg.node_sets = self.simulation_config['node_sets']
         else:
-            sim.cfg.node_sets = {}
+            sim.cfg_node_sets = {}
         
         # inputs - add as 'spkTimes' to external population
 
@@ -912,7 +912,7 @@ class SONATAImporter():
     '''
     def subs(self, path):
         #print_v('Checking for %s in %s'%(substitutes.keys(),path))
-        for s in self.substitutes:
+        for s in self.substitutes: 
             if path.startswith(s):
                 path = path.replace(s,self.substitutes[s])
         return path

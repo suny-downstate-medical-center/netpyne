@@ -1,6 +1,11 @@
+# Version 0.9.2
+
+- Improved Python cell template import so can read section names from a Python list of sections
+
+
 # Version 0.9.1.1
 
-- Fixed minor bug - axis font size changed from 12 to 2 by accident (change required for GUI)
+- Fixed minor bug - axis font size changed from 12 to 2 by accident (change required for NetPyNE-UI)
 
 
 # Version 0.9.1

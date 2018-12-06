@@ -60,4 +60,4 @@ simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'NFFT'
 
 
 # Create network and run simulation
-sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
+#sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    

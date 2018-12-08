@@ -294,7 +294,6 @@ def getCellParams(cell, varList={}, origGlob={}):
             for k, v in dirCellObject.items():
                 try:   
                     dirCellHnames.update({v.hname(): k})
-                    print(k,v)
                 except:
                     pass
         else:

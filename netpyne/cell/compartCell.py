@@ -1157,6 +1157,7 @@ class CompartCell (Cell):
         from .. import sim
 
         from numpy import cumsum
+
         if 'L' in self.secs[secList[0]]['geom']:
             secLengths = [self.secs[s]['geom']['L'] for s in secList]
         elif getattr(self.secs[secList[0]]['hObj'], 'L', None):

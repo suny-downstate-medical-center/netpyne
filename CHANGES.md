@@ -1,6 +1,7 @@
 # Version 0.9.2
 
-- Improved Python cell template import so can read section names from a Python list of sections
+- Improved Python cell template import so can read section names from a Python list or dict of sections
+
 
 
 # Version 0.9.1.1

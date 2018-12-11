@@ -136,16 +136,17 @@ def fix_axon_peri_v2(hobj):
     """Replace reconstructed axon with a stub
     :param hobj: hoc object
     """
-    for i,sec in enumerate(hobj.axon):
-        h.pt3dclear(sec=sec)
-        if i < 2:
-            sec.L = 30
-            sec.diam = 1
-        else:
-            sec.L = 1e-6
-            sec.diam = 1
+    if hasattr(hobj, 'axon'):
+        for i,sec in enumerate(hobj.axon):
+            h.pt3dclear(sec=sec)
+            if i < 2:
+                sec.L = 30
+                sec.diam = 1
+            else:
+                sec.L = 1e-6
+                sec.diam = 1
 
-    h.define_shape()
+        h.define_shape()
 
 def fix_sec_nseg(secs, dL):
     """ Set nseg of sections based on dL param: section.nseg = 1 + 2 * int(section.L / (2*dL))
@@ -235,8 +236,9 @@ class SONATAImporter():
         self.createSimulationConfig()
 
         # add compiled mod folder
-        modFolder = self.subs(self.network_config['components']['mechanisms_dir'])+'/modfiles'
-        neuron.load_mechanisms(str(modFolder))
+        if 'mechanisms_dir' in self.network_config['components']:
+            modFolder = self.subs(self.network_config['components']['mechanisms_dir'])+'/modfiles'
+            neuron.load_mechanisms(str(modFolder))
 
         # create pops
         self.createPops()
@@ -273,12 +275,16 @@ class SONATAImporter():
         sim.cfg.hParams = self.simulation_config['conditions']
 
         # node sets
+        
+        #import IPython; IPython.embed()
+
         try:
             if 'node_sets_file' in self.simulation_config:
-                sim.cfg.node_sets = load_json(os.path.dirname(self.configFile)+'/'+self.simulation_config['node_sets_file']) 
+                sim.cfg.node_sets = load_json(self.subs(self.simulation_config['node_sets_file']))
             elif 'node_sets' in self.simulation_config:
                 sim.cfg.node_sets = self.simulation_config['node_sets']
         except:
+            print('Could not load node_sets...')
             sim.cfg.node_sets = {}
         
         # inputs - add as 'spkTimes' to external population
@@ -653,6 +659,7 @@ class SONATAImporter():
                       
             group = 'all' if not cm.segment_groups else cm.segment_groups
             for section_name in seg_grps_vs_nrn_sections[group]:
+
                 gmax = pynml.convert_to_units(cm.cond_density,'S_per_cm2')
                 if cm.ion_channel=='pas':
                     mech = {'g':gmax}
@@ -821,21 +828,24 @@ class SONATAImporter():
             for section_name in seg_grps_vs_nrn_sections[group]:
                 cellRule['secs'][section_name]['geom']['cm'] = pynml.convert_to_units(sc.value,'uF_per_cm2')
                     
-        for ra in cell.biophysical_properties.intracellular_properties.resistivities:
-            
-            group = 'all' if not ra.segment_groups else ra.segment_groups
-            for section_name in seg_grps_vs_nrn_sections[group]:
-                cellRule['secs'][section_name]['geom']['Ra'] = pynml.convert_to_units(ra.value,'ohm_cm')
+        if hasattr(cell.biophysical_properties.intracellular_properties, 'resistivities'):
+            for ra in cell.biophysical_properties.intracellular_properties.resistivities:
                 
-        for specie in cell.biophysical_properties.intracellular_properties.species:
-            
-            group = 'all' if not specie.segment_groups else specie.segment_groups
-            for section_name in seg_grps_vs_nrn_sections[group]:
-                cellRule['secs'][section_name]['ions'][specie.ion]['o'] = pynml.convert_to_units(specie.initial_ext_concentration,'mM')
-                cellRule['secs'][section_name]['ions'][specie.ion]['i'] = pynml.convert_to_units(specie.initial_concentration,'mM')
+                group = 'all' if not ra.segment_groups else ra.segment_groups
+                for section_name in seg_grps_vs_nrn_sections[group]:
+                    cellRule['secs'][section_name]['geom']['Ra'] = pynml.convert_to_units(ra.value,'ohm_cm')
+
+        if hasattr(cell.biophysical_properties.intracellular_properties, 'species'):
+                        
+            for specie in cell.biophysical_properties.intracellular_properties.species:
                 
-                cellRule['secs'][section_name]['mechs'][specie.concentration_model] = {}
-                
+                group = 'all' if not specie.segment_groups else specie.segment_groups
+                for section_name in seg_grps_vs_nrn_sections[group]:
+                    cellRule['secs'][section_name]['ions'][specie.ion]['o'] = pynml.convert_to_units(specie.initial_ext_concentration,'mM')
+                    cellRule['secs'][section_name]['ions'][specie.ion]['i'] = pynml.convert_to_units(specie.initial_concentration,'mM')
+                    
+                    cellRule['secs'][section_name]['mechs'][specie.concentration_model] = {}
+                    
         
         return cellRule
         

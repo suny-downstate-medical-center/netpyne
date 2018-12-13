@@ -528,8 +528,6 @@ def fromListConn (self, preCellsTags, postCellsTags, connParam):
             connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellsTags[orderedPreGids[preId]], postCellsTags[orderedPostGids[postId]]) 
             for k,v in connParam[paramStrFunc+'Vars'].items()}) for preId,postId in connParam['connList']}
 
-        print(len(connParam[paramStrFunc[:-4]+'List']))
-
     if 'weight' in connParam and isinstance(connParam['weight'], list): 
         connParam['weightFromList'] = list(connParam['weight'])  # if weight is a list, copy to weightFromList
     if 'delay' in connParam and isinstance(connParam['delay'], list): 

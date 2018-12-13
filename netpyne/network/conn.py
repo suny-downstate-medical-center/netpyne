@@ -517,8 +517,6 @@ def fromListConn (self, preCellsTags, postCellsTags, connParam):
     ''' Generates connections between all pre and post-syn cells based list of relative cell ids'''
     if sim.cfg.verbose: print('Generating set of connections from list (rule: %s) ...' % (connParam['label']))
 
-    #self.rand.Random123(0, 0, sim.cfg.seeds['conn'])  # init randomizer
-
     orderedPreGids = sorted(preCellsTags)
     orderedPostGids = sorted(postCellsTags)
 
@@ -526,9 +524,11 @@ def fromListConn (self, preCellsTags, postCellsTags, connParam):
     paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
     for paramStrFunc in paramsStrFunc:
         # replace lambda function (with args as dict of lambda funcs) with list of values
-        connParam[paramStrFunc[:-4]+'List'] = {(preGid,postGid): connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellsTags[preGid], postCellsTags[postGid]) for k,v in connParam[paramStrFunc+'Vars'].items()})  
-                for preGid in orderedPreGids for postGid in orderedPostGids}
+        connParam[paramStrFunc[:-4]+'List'] = {(orderedPreGids[preId],orderedPostGids[postId]): 
+            connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellsTags[orderedPreGids[preId]], postCellsTags[orderedPostGids[postId]]) 
+            for k,v in connParam[paramStrFunc+'Vars'].items()}) for preId,postId in connParam['connList']}
 
+        print(len(connParam[paramStrFunc[:-4]+'List']))
 
     if 'weight' in connParam and isinstance(connParam['weight'], list): 
         connParam['weightFromList'] = list(connParam['weight'])  # if weight is a list, copy to weightFromList

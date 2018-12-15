@@ -4,7 +4,7 @@
 
 - Fixed replicability issue across different number of cores when using 'connList' connectivity rules
 
-- Improved efficiency of 'connList' connectivity rules
+- Improved speed performance of 'connList' connectivity rules
 
 
 # Version 0.9.1.1

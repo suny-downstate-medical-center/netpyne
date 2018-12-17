@@ -47,6 +47,13 @@ def initialize (netParams = None, simConfig = None, net = None):
     sim.createParallelContext()  # inititalize PC, nhosts and rank
     sim.cvode = h.CVode()
 
+    if hasattr(simConfig,'use_local_dt') and simConfig.use_local_dt:
+        try:
+            sim.cvode.use_local_dt(1)
+            if simConfig.verbose: print('Using local dt.')
+        except:
+            if simConfig.verbose: 'Error Failed to use local dt.'
+
     sim.setSimCfg(simConfig)  # set simulation configuration
 
     if sim.rank==0:
@@ -271,7 +278,11 @@ def setupRecording ():
         if sim.cfg.recordTime and len(sim.simData) > 0:
             try:
                 sim.simData['t'] = h.Vector() #sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
-                sim.simData['t'].record(h._ref_t, sim.cfg.recordStep)
+                if hasattr(sim.cfg,'use_local_dt') and sim.cfg.use_local_dt:
+                    # sim.simData['t'] = h.Vector(int(sim.cfg.duration/sim.cfg.recordStep)+1) #sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
+                    sim.simData['t'].indgen(0,sim.cfg.duration,sim.cfg.recordStep)
+                else:
+                    sim.simData['t'].record(h._ref_t, sim.cfg.recordStep)
             except:
                 if sim.cfg.verbose: 'Error recording h.t (could be due to no sections existing)'
 

@@ -230,7 +230,11 @@ class Cell (object):
                             sim.simData[key]['cell_'+str(self.gid)] = {}
                             for ptrItem,secLoc in zip(ptr, secLocs):
                                 sim.simData[key]['cell_'+str(self.gid)][secLoc] = h.Vector(sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
-                                sim.simData[key]['cell_'+str(self.gid)][secLoc].record(ptrItem, sim.cfg.recordStep)
+                                if hasattr(sim.cfg,'use_local_dt') and sim.cfg.use_local_dt:
+                                    sim.cvode.record(ptrItem, sim.simData[key]['cell_'+str(self.gid)][secLoc],
+                                                     sim.simData['t'], 1)
+                                else:
+                                    sim.simData[key]['cell_'+str(self.gid)][secLoc].record(ptrItem, sim.cfg.recordStep)
                         else:
                             sim.simData[key]['cell_'+str(self.gid)] = h.Vector(sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
                             sim.simData[key]['cell_'+str(self.gid)].record(ptr, sim.cfg.recordStep)

@@ -357,7 +357,8 @@ class SONATAImporter():
                 popTags['numCells'] = size
                 popTags['pop'] = pop_id
                 popTags['ei'] = info['ei'] if 'ei' in info else ''
-                sim.net.pops[pop_id] = sim.Pop(pop_id, popTags) 
+                sim.net.pops[pop_id] = sim.Pop(pop_id, popTags)
+                sim.net.params.popParams[pop_id] = popTags
 
                 # create population cell template (sections) from morphology and dynamics params files
                 if model_type == 'biophysical':
@@ -381,6 +382,15 @@ class SONATAImporter():
                     if self.setdLNseg:
                         fix_sec_nseg(secs, sim.cfg.dL)
 
+                    # make soma first segment (x,y,z) = (0,0,0)
+                    somaLabel = next((s for s in secs.keys() if 'soma' in s), None)
+                    somaPt = secs[somaLabel]['geom']['pt3d'][0]
+                    for secLabel in secs:
+                        for ipt3d in range(len(secs[secLabel]['geom']['pt3d'])):
+                            origPt = secs[secLabel]['geom']['pt3d'][ipt3d]
+                            newpt = (origPt[0] - somaPt[0], origPt[1] - somaPt[1], origPt[2] - somaPt[2], origPt[3])
+                            secs[secLabel]['geom']['pt3d'][ipt3d] = newpt
+    
                     # create mapping of sec ids
                     secLists['SONATA_sec_id'] = [sim.conversion.getSecName(sec) for sec in cellMorph.all]
 

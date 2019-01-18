@@ -47,13 +47,6 @@ def initialize (netParams = None, simConfig = None, net = None):
     sim.createParallelContext()  # inititalize PC, nhosts and rank
     sim.cvode = h.CVode()
 
-    if hasattr(simConfig,'use_local_dt') and simConfig.use_local_dt:
-        try:
-            sim.cvode.use_local_dt(1)
-            if simConfig.verbose: print('Using local dt.')
-        except:
-            if simConfig.verbose: 'Error Failed to use local dt.'
-
     sim.setSimCfg(simConfig)  # set simulation configuration
 
     if sim.rank==0:
@@ -121,6 +114,8 @@ def setSimCfg (cfg):
     if sim.cfg.simLabel and sim.cfg.saveFolder:
         sim.cfg.filename = sim.cfg.saveFolder+'/'+sim.cfg.simLabel
 
+    if sim.cfg.duration > 0:
+        sim.cfg.duration = float(sim.cfg.duration)
 
 #------------------------------------------------------------------------------
 # Create parallel context
@@ -280,7 +275,8 @@ def setupRecording ():
                 sim.simData['t'] = h.Vector() #sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
                 if hasattr(sim.cfg,'use_local_dt') and sim.cfg.use_local_dt:
                     # sim.simData['t'] = h.Vector(int(sim.cfg.duration/sim.cfg.recordStep)+1) #sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
-                    sim.simData['t'].indgen(0,sim.cfg.duration,sim.cfg.recordStep)
+                    recordStep = 0.1 if sim.cfg.recordStep == 'adaptive' else sim.cfg.recordStep
+                    sim.simData['t'].indgen(0,sim.cfg.duration,recordStep)
                 else:
                     sim.simData['t'].record(h._ref_t, sim.cfg.recordStep)
             except:

@@ -197,7 +197,6 @@ class Cell (object):
                     if 'loc' in params and params['sec'] in self.secs:
                         if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
                             ptr = getattr(getattr(self.secs[params['sec']]['hObj'](params['loc']), params['mech']), '_ref_'+params['var'])
-                            #print params['var'], ptr
                         elif 'synMech' in params:  # eg. soma(0.5).AMPA._ref_g
                             sec = self.secs[params['sec']]
                             synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech'] and synMech['loc']==params['loc']), None)
@@ -229,15 +228,39 @@ class Cell (object):
                         if isinstance(ptr, list):
                             sim.simData[key]['cell_'+str(self.gid)] = {}
                             for ptrItem,secLoc in zip(ptr, secLocs):
-                                sim.simData[key]['cell_'+str(self.gid)][secLoc] = h.Vector(sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
-                                if hasattr(sim.cfg,'use_local_dt') and sim.cfg.use_local_dt:
-                                    sim.cvode.record(ptrItem, sim.simData[key]['cell_'+str(self.gid)][secLoc],
-                                                     sim.simData['t'], 1)
+                                if sim.cfg.recordStep == 'adaptive':
+                                    recordStep = 0.1
                                 else:
+                                    recordStep = sim.cfg.recordStep
+                                if hasattr(sim.cfg,'use_local_dt') and sim.cfg.use_local_dt:
+                                    self.secs[params['sec']]['hObj'].push()
+                                    if hasattr(sim.cfg,'recordStep') and sim.cfg.recordStep == 'adaptive':
+                                        sim.simData[key]['cell_time_'+str(self.gid)][secLoc] = h.Vector()
+                                        sim.cvode.record(ptrItem, sim.simData[key]['cell_'+str(self.gid)][secLoc],
+                                                         sim.simData[key]['cell_time_'+str(self.gid)][secLoc])
+                                    else:
+                                        sim.simData[key]['cell_'+str(self.gid)][secLoc] = h.Vector(sim.cfg.duration/recordStep+1).resize(0)
+                                        sim.cvode.record(ptrItem, sim.simData[key]['cell_'+str(self.gid)][secLoc],
+                                                         sim.simData['t'], 1)
+                                    h.pop_section()
+                                else:
+                                    sim.simData[key]['cell_'+str(self.gid)][secLoc] = h.Vector(sim.cfg.duration/recordStep+1).resize(0)
                                     sim.simData[key]['cell_'+str(self.gid)][secLoc].record(ptrItem, sim.cfg.recordStep)
                         else:
-                            sim.simData[key]['cell_'+str(self.gid)] = h.Vector(sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
-                            sim.simData[key]['cell_'+str(self.gid)].record(ptr, sim.cfg.recordStep)
+                            if hasattr(sim.cfg,'use_local_dt') and sim.cfg.use_local_dt:
+                                self.secs[params['sec']]['hObj'].push()
+                                sim.simData[key]['cell_'+str(self.gid)] = h.Vector()
+                                if hasattr(sim.cfg,'recordStep') and sim.cfg.recordStep == 'adaptive':
+                                    sim.simData[key]['cell_time_'+str(self.gid)] = h.Vector()
+                                    sim.cvode.record(ptr, sim.simData[key]['cell_'+str(self.gid)],
+                                                     sim.simData[key]['cell_time_'+str(self.gid)])
+                                else:
+                                    sim.cvode.record(ptr, sim.simData[key]['cell_'+str(self.gid)],
+                                                     sim.simData['t'], 1)                            
+                                h.pop_section()
+                            else:
+                                sim.simData[key]['cell_'+str(self.gid)] = h.Vector(sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
+                                sim.simData[key]['cell_'+str(self.gid)].record(ptr, sim.cfg.recordStep)
                         if sim.cfg.verbose: print('  Recording ', key, 'from cell ', self.gid, ' with parameters: ',str(params))
                 except:
                     if sim.cfg.verbose: print('  Cannot record ', key, 'from cell ', self.gid)

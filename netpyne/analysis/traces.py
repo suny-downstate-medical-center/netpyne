@@ -29,7 +29,7 @@ from .utils import colorList, _showFigure, _saveFigData, exception, getCellsIncl
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot recorded cell traces (V, i, g, etc.)
 # -------------------------------------------------------------------------------------------------------------------
-@exception
+# @exception
 def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False, colors = None, ylim = None, axis='on',
     figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
@@ -55,7 +55,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
     '''
     from .. import sim
 
-    print('Plotting recorded cell traces ...')
+    print('Plotting recorded cell traces ...',oneFigPer)
 
     if include is None:  # if none, record from whatever was recorded
         if 'plotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['plotTraces']:
@@ -98,9 +98,17 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
             figs['_trace_'+str(trace)] = plt.figure(figsize=figSize) # Open a new figure
             fontsiz = 12
             for igid, gid in enumerate(subGids):
+                # print('cell_'+str(gid),sim.allSimData[trace])
+                # print('recordStep',recordStep)
                 if 'cell_'+str(gid) in sim.allSimData[trace]:
-                    data = sim.allSimData[trace]['cell_'+str(gid)][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)]
-                    t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
+                    if recordStep == 'adaptive':
+                        t = np.array(sim.allSimData[trace]['cell_time_'+str(gid)])
+                        t_indexes = t.__ge__(timeRange[0]).__and__(t.__le__(timeRange[1]))
+                        data = np.array(sim.allSimData[trace]['cell_'+str(gid)])[t_indexes]
+                        t = t[t_indexes]
+                    else:
+                        data = sim.allSimData[trace]['cell_'+str(gid)][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)]
+                        t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
                     tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
                     color = colorList2[igid%len(colorList2)]
                     if not overlay:

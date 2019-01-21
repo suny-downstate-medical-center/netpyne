@@ -82,11 +82,6 @@ NOTE on backward replicability: Due to several performance improvements and bug 
 
 - Added netParams.correctBorder to compensate distance-dependent connectivity border effect
 
-<<<<<<< HEAD
-- Added support for HNN
-
-- Fixed bug setting v_init
-=======
 - Added option to run jobs directly on multiple mpi cores via Batch class 
 
 - Added option for custom text in PBS or SLURM scripts to submit batch jobs
@@ -113,7 +108,6 @@ NOTE on backward replicability: Due to several performance improvements and bug 
 
 - Fixed bug: delete sections after import cell only if section exists
 
->>>>>>> development
 
 # Version 0.7.8
 

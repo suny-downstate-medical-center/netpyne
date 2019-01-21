@@ -5,17 +5,19 @@ What is NetPyNE?
 ----------------
 
 NetPyNE (**Net**\ works using **Py**\ thon and **NE**\ URON) is a python package to facilitate the development, parallel simulation and analysis of biological neuronal networks using the NEURON simulator.
-Although NEURON already enables multiscale simulation ranging from the molecular to the network level, NEURON for networks, often requiring parallel simulations, requires substantial programming. NetPyNE greatly facilitates the development and parallel simulation of biological neuronal networks in NEURON for experimentalists. NetPyNE is also intended for experienced modelers, providing powerful features to incorporate complex anatomical and physiological data into models.
+Although NEURON already enables multiscale simulation ranging from the molecular to the network level, NEURON for networks, often requiring parallel simulations, requires substantial programming. NetPyNE greatly facilitates the development and parallel simulation of biological neuronal networks in NEURON for students and experimentalists. NetPyNE is also intended for experienced modelers, providing powerful features to incorporate complex anatomical and physiological data into models.
 
 For a more detailed overview of NetPyNE see:
 
-- `SLIDES for Computational Neuroscience conference CNS17 <http://neurosimlab.org/salvadord/netpyne.pdf>`_
+- `BioRxiv paper <https://www.biorxiv.org/content/early/2018/11/03/461137>`_
 
-- `POSTER for Computational Neuroscience conference CNS16 <http://neurosimlab.org/salvadord/CNS16_poster.pdf>`_ 
+- `SLIDES for Computational Neuroscience conference CNS17 <http://it.neurosim.downstate.edu/salvadord/netpyne.pdf>`_
+
+- `POSTER for Computational Neuroscience conference CNS16 <http://it.neurosim.downstate.edu/salvadord/CNS16_poster.pdf>`_ 
 
 |
 
-.. image:: figs/netpyne_gui.png
+.. image:: figs/schematic.png
 	:width: 70%	
 	:align: center
 
@@ -30,12 +32,8 @@ Using the high-level network specifications, NetPyNE instantiates the full model
 
 NetPyNE has been used to develop a variety of multiscale models: primary motor cortex with cortical depth-dependent connectivity; the claustrum; and sensorimotor cortex that learns to control a virtual arm. The package is easily installed via pip, and includes comprehensive online documentation, a step-by-step tutorial and example networks.
 
-NetPyNE structure
------------------
+NetPyNE has also been integrated with other tools in theneuroscience community: it adds flexibility to the Human Neocortical Neurosolver (https://hnn.brown.edu/) cortical model, is used by Open Source Brain (www.opensourcebrain.org) to run parallel simulation of NeuroML-based NEURON models, and is available to run simulations on XSEDE supercomputers via the Neuroscience Gateway (www.nsgportal.org).
 
-.. image:: figs/schematic.png
-	:width: 80%	
-	:align: center
 
 Major Features
 --------------
@@ -110,6 +108,10 @@ Publications
 About NetPyNE 
 ^^^^^^^^^^^^^^^^
 
+- Dura-Bernal S, Suter B, Gleeson P, Cantarelli M, Quintana A, Rodriguez F, Kedziora DJ, Chadderdon GL, Kerr CC, Neymotin SA, McDougal R, Hines M, Shepherd GMG, Lytton WW. (2018) NetPyNE: a tool for data-driven multiscale modeling of brain circuits. `bioRxiv 461137 <https://www.biorxiv.org/content/early/2018/11/03/461137>`_
+
+- Dura-Bernal S, Suter BA, Quintana A, Cantarelli M, Gleeson P, Rodriguez F, Neymotin SA, Hines M, Shepherd GMG, Lytton WW. **NetPyNE: a GUI-based tool to build, simulate and analyze large-scale, data-driven network models in parallel NEURON.** *Society for Neuroscience (SfN), 2018*.
+
 - Dura-Bernal S, Suter BA, Neymotin SA, Shepherd GMG, Lytton WW. **Modeling the subcellular distribution of synaptic connections in cortical microcircuits.** *Society for Neuroscience (SFN), 2016*.
 
 - Dura-Bernal S, Suter BA, Neymotin SA, Kerr CC, Quintana A, Gleeson P, Shepherd GMG, Lytton WW. **NetPyNE: a Python package for NEURON to facilitate development and parallel simulation of biological neuronal networks.** *Computational Neuroscience (CNS), 2016.*
@@ -122,6 +124,9 @@ About NetPyNE
 Using NetPyNE
 ^^^^^^^^^^^^^^^^^^
 
+- Romaro C, Araujo Najman F, Dura-Bernal S, Roque AC. **Implementation of the Potjans-Diesmann cortical microcircuit model in NetPyNE/NEURON with rescaling option.** *Computational Neuroscience (CNS), 2018.*
+
+- Rodriguez F. **Dentate gyrus network model.** *Computational Neuroscience (CNS), 2018.*
 
 - Lytton WW, Seidenstein AH, Dura-Bernal S, McDougal RA, Schurmann F, Hines ML. **Simulation neurotechnologies for advancing brain research: Parallelizing large networks in NEURON.** *Neural Computation, 2016.*
 

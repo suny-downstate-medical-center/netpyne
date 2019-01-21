@@ -1,6 +1,16 @@
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 # Code adapted from https://github.com/ahwillia/PyNeuron-Toolbox under MIT license
 
-from __future__ import division
+
+from builtins import zip
+from builtins import range
+
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
 import numpy as np
 import pylab as plt
 from matplotlib.pyplot import cm
@@ -12,7 +22,7 @@ import numbers
 h.load_file('stdlib.hoc')
 h.load_file('import3d.hoc')
 
-class Cell:
+class Cell(object):
     def __init__(self,name='neuron',soma=None,apic=None,dend=None,axon=None):
         self.soma = soma if soma is not None else []
         self.apic = apic if apic is not None else []
@@ -80,7 +90,7 @@ def load(filename, fileformat=None, cell=None, use_axon=True, xshift=0, yshift=0
 
     # get a list of the swc section objects
     swc_secs = i3d.swc.sections
-    swc_secs = [swc_secs.object(i) for i in xrange(int(swc_secs.count()))]
+    swc_secs = [swc_secs.object(i) for i in range(int(swc_secs.count()))]
 
     # initialize the lists of sections
     sec_list = {1: cell.soma, 2: cell.axon, 3: cell.dend, 4: cell.apic}
@@ -113,7 +123,7 @@ def load(filename, fileformat=None, cell=None, use_axon=True, xshift=0, yshift=0
                         swc_sec.raw.getval(2, 0), sec=sec)
 
         j = swc_sec.first
-        xx, yy, zz = [swc_sec.raw.getrow(i).c(j) for i in xrange(3)]
+        xx, yy, zz = [swc_sec.raw.getrow(i).c(j) for i in range(3)]
         dd = swc_sec.d.c(j)
         if swc_sec.iscontour_:
             # never happens in SWC files, but can happen in other formats supported
@@ -556,58 +566,3 @@ def branch_precedence(h):
     return [ secdict[sec] for sec in seclist ]
 
 
-from neuron import h
-from neuron.rxd.morphology import parent, parent_loc
-import json
-
-def morphology_to_dict(sections, outfile=None):
-    section_map = {sec: i for i, sec in enumerate(sections)}
-    result = []
-    h.define_shape()
-
-    for sec in sections:
-        my_parent = parent(sec)
-        my_parent_loc = -1 if my_parent is None else parent_loc(sec, my_parent)
-        my_parent = -1 if my_parent is None else section_map[my_parent]
-        n3d = int(h.n3d(sec=sec))
-        result.append({
-            'section_orientation': h.section_orientation(sec=sec),
-            'parent': my_parent,
-            'parent_loc': my_parent_loc,
-            'x': [h.x3d(i, sec=sec) for i in xrange(n3d)],
-            'y': [h.y3d(i, sec=sec) for i in xrange(n3d)],
-            'z': [h.z3d(i, sec=sec) for i in xrange(n3d)],
-            'diam': [h.diam3d(i, sec=sec) for i in xrange(n3d)],
-            'name': sec.hname()           
-        })
-
-    if outfile is not None:
-        with open(outfile, 'w') as f:
-            json.dump(result, f)
-
-    return result
-
-
-def load_json(morphfile):
-
-    with open(morphfile, 'r') as f:
-        secdata = json.load(morphfile)
-
-    seclist = []
-    for sd in secdata:
-        # make section
-        sec = h.Section(name=sd['name'])
-        seclist.append(sec)
-
-
-        # make 3d morphology
-        for x,y,z,d in zip(sd['x'], sd['y'], sd['z'], sd('diam')): 
-            h.pt3dadd(x, y, z, d, sec=sec)
-
-    # connect children to parent compartments
-    for sec,sd in zip(seclist,secdata):
-        if sd['parent_loc'] >= 0:
-            parent_sec = sec_list[sd['parent']]
-            sec.connect(parent_sec(sd['parent_loc']), sd['section_orientation'])
-
-    return seclist

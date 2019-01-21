@@ -3,6 +3,8 @@
 from neuron import h
 from math import exp,log
 
+h.load_file('stdrun.hoc')
+
 Vrest       = -88.5366550238 
 h.v_init = -75.0413649414 
 h.celsius     = 34.0 # for in vitro opt
@@ -199,9 +201,9 @@ class SPI6 ():
 #
 def prmstr (p,s,fctr=2.0,shift=5.0):
   if p == 0.0:
-    print s,'=',str(p-shift),str(p+shift),str(p),'True'
+    print(s,'=',str(p-shift),str(p+shift),str(p),'True')
   elif p < 0.0:
-    print s, '=',str(p*fctr),str(p/fctr),str(p),'True'
+    print(s, '=',str(p*fctr),str(p/fctr),str(p),'True')
   else:
-    print s, ' = ' , str(p/fctr), str(p*fctr), str(p), 'True'
+    print(s, ' = ' , str(p/fctr), str(p*fctr), str(p), 'True')
 

@@ -38,8 +38,8 @@ def evaluate_netparams(candidates, args):
         fitnessCandidates.append(fitness)
 
         # print candidate parameters, firing rate, and fitness
-        print '\n CHILD/CANDIDATE %d: Network with prob:%.2f, weight:%.2f, delay:%.1f \n  firing rate: %.1f, FITNESS = %.2f \n'\
-        %(icand, cand[0], cand[1], cand[2], netFiring, fitness)
+        print('\n CHILD/CANDIDATE %d: Network with prob:%.2f, weight:%.2f, delay:%.1f \n  firing rate: %.1f, FITNESS = %.2f \n'\
+        %(icand, cand[0], cand[1], cand[2], netFiring, fitness))
 
 
     return fitnessCandidates

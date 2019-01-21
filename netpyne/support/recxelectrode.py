@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 # Allen Institute Software License - This software license is the 2-clause BSD license plus clause a third
 # clause that prohibits redistribution for commercial purposes without further permission.
 #
@@ -28,6 +32,9 @@
 # Adapted to NetPyNE by salvadordura@gmail.com
 # 
 
+from builtins import range
+from future import standard_library
+standard_library.install_aliases()
 import numpy as np
 import math
 
@@ -48,7 +55,7 @@ class RecXElectrode(object):
             self.nsites = self.pos.shape[0]
             self.transferResistances = {}
         except:
-               print 'Error creating extracellular electrode: sim.cfg.recordLFP should contain a list of x,y,z locations'
+               print('Error creating extracellular electrode: sim.cfg.recordLFP should contain a list of x,y,z locations')
                return None
 
         self.nsites = self.pos.shape[1]
@@ -75,7 +82,7 @@ class RecXElectrode(object):
         tr = np.zeros((self.nsites,nseg))
         # tr_NEURON = np.zeros((self.nsites,nseg))  # used to compare with NEURON extracellular example
 
-        for j in xrange(self.nsites):   # calculate mapping for each site on the electrode
+        for j in range(self.nsites):   # calculate mapping for each site on the electrode
             rel = np.expand_dims(self.pos[:, j], axis=1)   # coordinates of a j-th site on the electrode
             rel_05 = rel - r05  # distance between electrode and segment centers
             r2 = np.einsum('ij,ij->j', rel_05, rel_05)    # compute dot product column-wise, the resulting array has as many columns as original

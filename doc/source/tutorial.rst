@@ -77,7 +77,7 @@ We begin with an overview of the Python objects where you will define all your n
 Network parameters (Tutorial 2)
 -------------------------------
 
-The ``netParams`` object includes all the information necessary to define your network. It is compoased of the following 7 ordered dictionaries:
+The ``netParams`` object includes all the information necessary to define your network. It is compoased of the following 8 ordered dictionaries:
 
 * ``popParams`` - populations in the network and their parameters
 
@@ -91,7 +91,9 @@ The ``netParams`` object includes all the information necessary to define your n
 
 * ``stimSourceParams`` - stimulation sources parameters. 
 
-* ``stimTargetParams`` - mapping between stimulation sources and target cells . 
+* ``stimTargetParams`` - mapping between stimulation sources and target cells. 
+
+* ``rxdParams`` - reaction-diffusion (RxD) components and their parameters. 
 
 
 .. image:: figs/netparams.png
@@ -903,15 +905,25 @@ To plot the LFP use the ``sim.analysis.plotLFP()`` method. This allows to plot f
 
 The first example ( :download:`cell_lfp.py <../../examples/LFPrecording/cell_lfp.py>`) shows LFP recording for a single cell -- M1 corticospinal neuron --  with 700+ compartments (segments) and multiple somatic and dendritic ionic channels. The cell parameters are loaded from a .json file. The cell receives NetStim input to its soma via an excitatory synapse. Ten LFP electrodes are placed at both sides of the neuron at 5 different cortical depths. The soma voltage, LFP time-resolved signal and the 3D locations of the electrodes are plotted:
 
-.. image:: ../../examples/LFPrecording/lfp_cell.png
+.. image:: figs/lfp_cell.png
 	:width: 60%
 	:align: center
 
 The second example ( :download:`net_lfp.py <<../../examples/LFPrecording/net_lfp.py>`) shows LFP recording for a network very similar to that shown in Tutorial 5. However, in this case, the cells have been replaced with a more realistic model: a 6-compartment M1 corticostriatal neuron with multiple ionic channels. The cell parameters are loaded from a .json file. Cell receive NetStim inputs and include excitatory and inhibitory connections. Four LFP electrodes are placed at different cortical depths. The raster plot and LFP time-resolved signal, PSD, spectrogram and 3D locations of the electrodes are plotted:
 
-.. image:: ../../examples/LFPrecording/lfp_net.png
+.. image:: figs/lfp_net.png
 	:width: 90%
 	:align: center
-	
+
+
+Network with Reaction-Diffusion (RxD) (Tutorial 10)
+---------------------------------------------------
+
+NetPyNE's high-level specifications also supports `NEURON's reaction-diffusion (RxD) <https://www.neuron.yale.edu/neuron/static/docs/rxd/index.html>`_  components. RxD enables to specify the diffusion of molecules (\eg\ calcium, potassium or IP3) intracellularly, subcellularly (by including organelles such as endoplasmic reticulum and mitochondria), and extracellularly is the context of signaling and enzymatic processing -- \eg\ metabolism, phosphorylation, buffering, second messenger cascades.
+This helps to couple molecular-level chemophysiology to the classical electrophysiology at subcellular, cellular and network scales. 
+
+The ``netParams.rxdParams`` dictionary can be used to define the different RxD components: ``regions``, ``species``, ``states``, ``reactions``, ``multicompartmentReactions`` and ``rates``. Example models that include RxD components in single cells and networks are included in the \examples folder: `RxD buffering example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/rxd_buffering>`_ and `RxD network example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/rxd_buffering>`_. RxD also works with parallel simulations.
+
+
 
 .. seealso:: For a comprehensive description of all the features available in NetPyNE see :ref:`package_reference`.

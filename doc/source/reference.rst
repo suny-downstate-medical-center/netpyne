@@ -36,6 +36,8 @@ The ``netParams`` object of class ``NetParams`` includes all the information nec
 
 * ``stimTargetParams`` - mapping between stimulation sources and target cells. 
 
+* ``rxdParams`` - reaction-diffusion (RxD) components and their parameters. 
+
 
 .. image:: figs/netparams.png
 	:width: 60%
@@ -584,8 +586,8 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 
 .. _stimulation:
 
-Stimulation
-^^^^^^^^^^^^^^^^^^^
+Stimulation parameters
+^^^^^^^^^^^^^^^^^^^^^^^
 
 Two data structures are used to specify cell stimulation parameters: ``stimSourceParams`` to define the parameters of the sources of stimulation; and ``stimTargetParams`` to specify what cells will be applied what source of stimulation (mapping of sources to cells).
 
@@ -665,6 +667,29 @@ The code below shows an example of how to create different types of stimulation 
 
 .. _sim_config: 
 
+
+Reaction-Diffusion (RxD) parameters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``rxdParams`` ordered dictionary can be used to define the different RxD components:
+
+	* **regions** - dictionary with RxD Regions (also used to define 'extracellular' regions).
+
+	* **species** - dictionary with RxD Species.
+
+	* **states** - dictionary with RxD States.
+
+	* **reactions** - dictionary with RxD Reactions.
+
+	* **multicompartmentReactions** - dictionary with RxD MultiCompartmentReactions.
+
+	* **rates** - dictionary with RxD Rates.
+
+The parameters of each dictionary follow the same structure as described in the RxD package: https://www.neuron.yale.edu/neuron/static/docs/rxd/index.html 
+
+See usage examples: `RxD buffering example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/rxd_buffering>`_ and `RxD network example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/rxd_buffering>`_. 
+
+
 Simulation configuration
 --------------------------
 
@@ -699,6 +724,7 @@ Related to recording:
 
 * **recordCells** - List of cells from which to record traces. Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All cells selected in the ``include`` argument of ``simConfig.analysis['plotTraces']`` will be automatically included in ``recordCells``. (default: [])
 * **recordTraces** - Dict of traces to record (default: {} ; example: {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}})
+* **recordSpikesGids** - List of cells to record spike times from  (-1 to record from all). Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. (default: -1)
 * **recordStim** - Record spikes of cell stims (default: False)
 * **recordLFP** - 3D locations of local field potential (LFP) electrodes, e.g. [[50, 100, 50], [50, 200, 50]] (note the y coordinate represents depth, so will be represented as a negative value when plotted). The LFP signal in each electrode is obtained by summing the extracellular potential contributed by each neuronal segment, calculated using the "line source approximation" and assuming an Ohmic medium with conductivity |sigma| = 0.3 mS/mm. Stored in ``sim.allSimData['LFP']``. (default: False).
 * **saveLFPCells** - Store LFP generated individually by each cell in ``sim.allSimData['LFPCells']`` 
@@ -903,7 +929,7 @@ Analysis-related functions
     Plot LFP / extracellular electrode recordings (time-resolved, power spectral density, time-frequency and 3D locations)
     
     - *electrodes*:: List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (['avg', 'all', 0, 1, ...])
-    - *plots*: list of plot types to show (['timeSeries', 'PSD', 'timeFreq', 'locations']) 
+    - *plots*: list of plot types to show (['timeSeries', 'PSD', 'spectrogram', 'locations']) 
     - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
     - *NFFT*: Number of data points used in each block for the PSD and time-freq FFT (int, power of 2)
     - *noverlap*: Number of points of overlap between segments for PSD and time-freq (int, < nperseg)
@@ -956,7 +982,7 @@ Analysis-related functions
 		sim.analysis.plotShape(includePre=['I2'], includePost= [('E5',0)], cvar='numSyns', saveFig=True, showFig=True, iv=0, includeAxon=False)
 
 		# voltage; 1st create list of values (e.g. vsegs) and pass as cvals argument (using matplotlib)
-		vsegs = [seg.v for sec in sim.net.cells[0].secs.values() for seg in sec['hSec']]
+		vsegs = [seg.v for sec in sim.net.cells[0].secs.values() for seg in sec['hObj']]
 		sim.analysis.plotShape(includePost= [0], cvals=vsegs, saveFig=True, iv=0, includeAxon=True)
 
 		# syn locations (using matplotlib) of cell with gid=0
@@ -1304,7 +1330,7 @@ Cell class
 				- ...
 		- 'synMechs' (list)
 			- [0] (Dict)
-				- 'hSyn': NEURON object
+				- 'hObj': NEURON object
 				- 'label'
 				- 'loc'
 

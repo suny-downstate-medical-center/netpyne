@@ -19,6 +19,7 @@ try:
 except NameError:
     basestring = str
 
+from neuron import h
 import numpy as np
 
 def createRhythmicPattern(params, rand):
@@ -39,15 +40,16 @@ def createRhythmicPattern(params, rand):
     start = params['start']
     # If start is -1, randomize start time of inputs
     if start == -1:
-        startMin = getattr(params, 'startMin', 25.)
-        startMax = getattr(params, 'startMax', 125.)
+        startMin = params.get('startMin', 25.)
+        startMax = params.get('startMax', 125.)
         start = rand.uniform(startMin, startMax)
-    elif getattr(params, 'startStd', -1) > 0.0: # randomize start time based on startStd
+    elif params.get('startStd', -1) > 0.0: # randomize start time based on startStd
         start = rand.normal(start, params['startStd']) # start time uses different prng
-    freq = getattr(params, 'freq', 0)
-    freqStd = getattr(params, 'freqStd', 0)
-    eventsPerCycle = getattr(params, 'eventsPerCycle', 2) 
-    distribution = getattr(params, 'distribution', 'normal')
+    freq = params.get('freq', 0)
+    freqStd = params.get('freqStd', 0)
+    eventsPerCycle = params.get('eventsPerCycle', 2) 
+    distribution = params.get('distribution', 'normal')
+
     if eventsPerCycle > 2 or eventsPerCycle <= 0:
         print("eventsPerCycle should be either 1 or 2, trying 2")
         eventsPerCycle = 2
@@ -98,7 +100,7 @@ def createRhythmicPattern(params, rand):
     else:
         print("Indicated distribution not recognized. Not making any alpha feeds.")
         t_input = []
-    return t_input
+    return np.array(t_input)
 
 def createPoissonPattern(params):
     pass

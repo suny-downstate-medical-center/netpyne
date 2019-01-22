@@ -154,20 +154,24 @@ class PointCell (Cell):
 
             # spikePattern
             elif 'spikePattern' in self.params:
-                patternType = getattr(self.params['spikePattern'], 'type', None)
+                patternType = self.params['spikePattern'].get('type', None)
                 rand = h.Random()
                 rand.Random123(sim.hashStr('vecstim_spikePattern'), self.gid, self.params['seed'])
 
                 if patternType == 'rhythmic':
-                    from inputs import createRhythmicPattern
-                    spkTimes = createRhythmicPattern(self.params['spikePattern'])
+                    from .inputs import createRhythmicPattern
+                    spkTimes = createRhythmicPattern(self.params['spikePattern'], rand)
                 elif patternType == 'poisson':
-                    from inputs import createPoissonPattern
-                    spkTimes = createPoissonPattern(self.params['spikePattern'])                    
+                    from .inputs import createPoissonPattern
+                    spkTimes = createPoissonPattern(self.params['spikePattern'], rand)                    
                 elif patternType == 'gauss':
-                    from inputs import createGaussPattern
-                    spkTimes = createGaussPattern(self.params['spikePattern'])                    
-
+                    from .inputs import createGaussPattern
+                    spkTimes = createGaussPattern(self.params['spikePattern'], rand)                    
+                else:
+                    print('\nError: invalid spikePattern type %s' % (patternType))
+                    return
+                
+                vec = h.Vector(len(spkTimes))
 
             # if spkTimess
             elif 'spkTimes' in self.params:

@@ -311,8 +311,6 @@ class CompartCell (Cell):
         excludeMechs = ['dipole']  # dipole is special case 
         mechInsertError = False  # flag to print error inserting mechanisms
 
-        excludeMechs = ['dipole']  # dipole is special case 
-
         # set params for all sections
         for sectName,sectParams in prop['secs'].items(): 
             # create section

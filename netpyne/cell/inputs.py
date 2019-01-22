@@ -32,7 +32,7 @@ def createRhythmicPattern(params, rand):
     - freqStd: standard deviation of oscillatory frequency (Hz)
     - distribution: distribution type fo oscillatory frequencies; either 'normal' or 'uniform'
     - eventsPerCycle: spikes/burst per cycle; should be either 1 or 2
-    - repeats: number of times to repeat input pattern. [cycles??]
+    - repeats: number of times to repeat input pattern (equivalent to number of inputs) 
     - stop: maximum time for last spike of pattern (ms)
     '''
     # start is always defined

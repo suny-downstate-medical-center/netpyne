@@ -411,23 +411,6 @@ class CompartCell (Cell):
 
             # add distributed mechanisms 
             if 'mechs' in sectParams:
-<<<<<<< HEAD:netpyne/cell.py
-                for mechName,mechParams in sectParams['mechs'].iteritems(): 
-                    if mechName not in excludeMechs: 
-                        if mechName not in sec['mechs']: 
-                            sec['mechs'][mechName] = Dict()
-                        sec['hSec'].insert(mechName)
-                        for mechParamName,mechParamValue in mechParams.iteritems():  # add params of the mechanism
-                            mechParamValueFinal = mechParamValue
-                            for iseg,seg in enumerate(sec['hSec']):  # set mech params for each segment
-                                if type(mechParamValue) in [list]: 
-                                    if len(mechParamValue) == 1: 
-                                        mechParamValueFinal = mechParamValue[0]
-                                    else:
-                                        mechParamValueFinal = mechParamValue[iseg]
-                                if mechParamValueFinal is not None:  # avoid setting None values
-                                    setattr(getattr(seg, mechName), mechParamName,mechParamValueFinal)
-=======
                 for mechName,mechParams in sectParams['mechs'].items(): 
                     if mechName not in sec['mechs']: 
                         sec['mechs'][mechName] = Dict()
@@ -448,7 +431,6 @@ class CompartCell (Cell):
                                     mechParamValueFinal = mechParamValue[iseg]
                             if mechParamValueFinal is not None:  # avoid setting None values
                                 setattr(getattr(seg, mechName), mechParamName,mechParamValueFinal)
->>>>>>> development:netpyne/cell/compartCell.py
                             
             # add ions
             if 'ions' in sectParams:
@@ -508,22 +490,14 @@ class CompartCell (Cell):
                     sec['hObj'].connect(self.secs[sectParams['topol']['parentSec']]['hObj'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
 
         # add dipoles
-<<<<<<< HEAD:netpyne/cell.py
-        for sectName,sectParams in prop['secs'].iteritems():
-            pass
-=======
         for sectName,sectParams in prop['secs'].items():
->>>>>>> development:netpyne/cell/compartCell.py
             sec = self.secs[sectName]
             if 'mechs' in sectParams and 'dipole' in sectParams['mechs']:
                self.__dipoleInsert(sectName, sec)  # add dipole mechanisms to each section
 
-<<<<<<< HEAD:netpyne/cell.py
-=======
         # Print message about error inserting mechanisms
         if mechInsertError:
             print("ERROR: Some mechanisms and/or ions were not inserted (for details run with cfg.verbose=True). Make sure the required mod files are compiled.")
->>>>>>> development:netpyne/cell/compartCell.py
 
     def addSynMechsNEURONObj(self):
         # set params for all sections

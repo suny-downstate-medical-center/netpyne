@@ -148,11 +148,26 @@ class PointCell (Cell):
                         negexpInterval = np.array(vec.c(0,len(fixedInterval)-1))                  
                         spkTimes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
 
-
-
                     else:
                         print('\nError: exceeded the maximum number of VecStim spikes per cell (%d > %d)' % (numSpks, maxReproducibleSpks))
                         return
+
+            # spikePattern
+            elif 'spikePattern' in self.params:
+                patternType = getattr(self.params['spikePattern'], 'type', None)
+                rand = h.Random()
+                rand.Random123(sim.hashStr('vecstim_spikePattern'), self.gid, self.params['seed'])
+
+                if patternType == 'rhythmic':
+                    from inputs import createRhythmicPattern
+                    spkTimes = createRhythmicPattern(self.params['spikePattern'])
+                elif patternType == 'poisson':
+                    from inputs import createPoissonPattern
+                    spkTimes = createPoissonPattern(self.params['spikePattern'])                    
+                elif patternType == 'gauss':
+                    from inputs import createGaussPattern
+                    spkTimes = createGaussPattern(self.params['spikePattern'])                    
+
 
             # if spkTimess
             elif 'spkTimes' in self.params:

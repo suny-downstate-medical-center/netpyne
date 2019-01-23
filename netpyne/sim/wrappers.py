@@ -49,7 +49,6 @@ def simulate ():
 def intervalSimulate (interval):
     ''' Sequence of commands to simulate network '''
     from .. import sim
-    
     sim.runSimWithIntervalFunc(interval, sim.intervalSave)                      # run parallel Neuron simulation  
     #this gather is justa merging of files
     sim.fileGather()                  # gather spiking data and cell info from saved file
@@ -103,8 +102,8 @@ def intervalCreateSimulateAnalyze (netParams=None, simConfig=None, output=False,
             else:
                 os.mkdir('temp')
         sim.intervalSimulate(interval)
-    except:
-        print('Error running with interval')
+    except Exception as e:
+        print(e)
         return
     sim.pc.barrier()
     sim.analyze()

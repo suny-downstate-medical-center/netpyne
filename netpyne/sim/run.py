@@ -133,7 +133,7 @@ def runSimWithIntervalFunc (interval, func):
     while round(h.t) < sim.cfg.duration:
         sim.pc.psolve(min(sim.cfg.duration, h.t+interval))
         func(h.t) # function to be called at intervals
-
+    
     sim.pc.barrier() # Wait for all hosts to get to this point
     sim.timing('stop', 'runTime')
     if sim.rank==0:

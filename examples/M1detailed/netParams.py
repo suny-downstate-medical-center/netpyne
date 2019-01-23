@@ -1,9 +1,6 @@
-
 """
 netParams.py 
-
 High-level specifications for M1 network model using NetPyNE
-
 Contributors: salvadordura@gmail.com
 """
 
@@ -203,7 +200,7 @@ if 'SOM_simple' not in loadCellParams:
 
 #------------------------------------------------------------------------------
 ## load densities
-with open('cells/cellDensity.pkl', 'rb') as fileObj: density = pickle.load(fileObj)['density']
+with open('cells/cellDensity.pkl', 'r') as fileObj: density = pickle.load(fileObj)['density']
 
 density = {k: [x * cfg.scaleDensity for x in v] for k,v in density.items()}
 
@@ -231,8 +228,7 @@ if cfg.singleCellPops:
 ## Long-range input populations (VecStims)
 if cfg.addLongConn:
 	## load experimentally based parameters for long range inputs
-	with open('conn/conn_long.pkl', 'rb') as fileObj: 
-		connLongData = pickle.load(fileObj, encoding='latin1')
+	with open('conn/conn_long.pkl', 'r') as fileObj: connLongData = pickle.load(fileObj)
 	#ratesLong = connLongData['rates']
 
 	numCells = cfg.numCellsLong
@@ -279,7 +275,7 @@ if cfg.addPulses:
 # Current inputs (IClamp)
 #------------------------------------------------------------------------------
 if cfg.addIClamp:
-	for key in [k for k in dir(cfg) if k.startswith('IClamp')]:
+ 	for key in [k for k in dir(cfg) if k.startswith('IClamp')]:
 		params = getattr(cfg, key, None)
 		[pop,sec,loc,start,dur,amp] = [params[s] for s in ['pop','sec','loc','start','dur','amp']]
 
@@ -287,7 +283,7 @@ if cfg.addIClamp:
 
 		# add stim source
 		netParams.stimSourceParams[key] = {'type': 'IClamp', 'delay': start, 'dur': dur, 'amp': amp}
-
+		
 		# connect stim source to target
 		netParams.stimTargetParams[key+'_'+pop] =  {
 			'source': key, 
@@ -299,39 +295,39 @@ if cfg.addIClamp:
 # NetStim inputs
 #------------------------------------------------------------------------------
 if cfg.addNetStim:
-	for key in [k for k in dir(cfg) if k.startswith('NetStim')]:
-		params = getattr(cfg, key, None)
-		[pop, ynorm, sec, loc, synMech, synMechWeightFactor, start, interval, noise, number, weight, delay] = \
-		[params[s] for s in ['pop', 'ynorm', 'sec', 'loc', 'synMech', 'synMechWeightFactor', 'start', 'interval', 'noise', 'number', 'weight', 'delay']] 
+    for key in [k for k in dir(cfg) if k.startswith('NetStim')]:
+    	params = getattr(cfg, key, None)
+    	[pop, ynorm, sec, loc, synMech, synMechWeightFactor, start, interval, noise, number, weight, delay] = \
+    	[params[s] for s in ['pop', 'ynorm', 'sec', 'loc', 'synMech', 'synMechWeightFactor', 'start', 'interval', 'noise', 'number', 'weight', 'delay']] 
 
-		# cfg.analysis['plotTraces']['include'] = [(pop,0)]
+        # cfg.analysis['plotTraces']['include'] = [(pop,0)]
 
-		if synMech == ESynMech:
-		    wfrac = cfg.synWeightFractionEE
-		elif synMech == SOMESynMech:
-		    wfrac = cfg.synWeightFractionSOME
-		else:
-		    wfrac = [1.0]
+        if synMech == ESynMech:
+            wfrac = cfg.synWeightFractionEE
+        elif synMech == SOMESynMech:
+            wfrac = cfg.synWeightFractionSOME
+        else:
+            wfrac = [1.0]
 
-		# add stim source
-		netParams.stimSourceParams[key] = {'type': 'NetStim', 'start': start, 'interval': interval, 'noise': noise, 'number': number}
+        # add stim source
+        netParams.stimSourceParams[key] = {'type': 'NetStim', 'start': start, 'interval': interval, 'noise': noise, 'number': number}
 
-		# connect stim source to target
-		# for i, syn in enumerate(synMech):
-		netParams.stimTargetParams[key+'_'+pop] =  {
-		    'source': key, 
-		    'conds': {'pop': pop, 'ynorm': ynorm},
-		    'sec': sec, 
-		    'loc': loc,
-		    'synMech': synMech,
-		    'weight': weight,
-		    'synMechWeightFactor': synMechWeightFactor,
-		    'delay': delay}
+        # connect stim source to target
+        # for i, syn in enumerate(synMech):
+        netParams.stimTargetParams[key+'_'+pop] =  {
+            'source': key, 
+            'conds': {'pop': pop, 'ynorm': ynorm},
+            'sec': sec, 
+            'loc': loc,
+            'synMech': synMech,
+            'weight': weight,
+            'synMechWeightFactor': synMechWeightFactor,
+            'delay': delay}
 
 #------------------------------------------------------------------------------
 # Local connectivity parameters
 #------------------------------------------------------------------------------
-with open('conn/conn.pkl', 'rb') as fileObj: connData = pickle.load(fileObj, encoding='latin1')
+with open('conn/conn.pkl', 'r') as fileObj: connData = pickle.load(fileObj)
 pmat = connData['pmat']
 wmat = connData['wmat']
 bins = connData['bins']
@@ -381,7 +377,7 @@ if cfg.addConn and (cfg.EPVGain > 0.0 or cfg.ESOMGain > 0.0):
 	postTypes = ['PV', 'SOM']
 	ESynMech = ['AMPA','NMDA']
 	lGain = [cfg.EPVGain, cfg.ESOMGain] # E -> PV or E -> SOM
-	for i,(label, preBinLabel, postBinLabel) in enumerate(zip(labelsConns,labelPreBins, labelPostBins)):
+  	for i,(label, preBinLabel, postBinLabel) in enumerate(zip(labelsConns,labelPreBins, labelPostBins)):
 		for ipre, preBin in enumerate(bins[preBinLabel]):
 			for ipost, postBin in enumerate(bins[postBinLabel]):
 				ruleLabel = 'EI_'+str(i)+'_'+str(ipre)+'_'+str(ipost)
@@ -423,7 +419,7 @@ if cfg.addConn and (cfg.IEGain > 0.0 or cfg.IIGain > 0.0):
 	IEdisynBiases = [None, cfg.IEdisynapticBias, cfg.IEdisynapticBias, None, cfg.IEdisynapticBias, cfg.IEdisynapticBias]
 	disynapticBias = None  # default, used for I->I
 
-	for i,(preCellType, ynorm, IEweight, IIweight, IEdisynBias) in enumerate(zip(preCellTypes, ynorms, IEweights, IIweights, IEdisynBiases)):
+  	for i,(preCellType, ynorm, IEweight, IIweight, IEdisynBias) in enumerate(zip(preCellTypes, ynorms, IEweights, IIweights, IEdisynBiases)):
 		for ipost, postCellType in enumerate(postCellTypes):
 			for cellModel in cellModels:
 				if postCellType == 'PV':	# postsynaptic I cell

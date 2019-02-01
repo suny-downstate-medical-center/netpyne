@@ -6,6 +6,13 @@
 
 - Improved speed performance of 'connList' connectivity rules
 
+# Version 0.9.1.3
+
+- Removed deprecated hold function from plotConn
+
+# Version 0.9.1.2
+
+- Set 'pandas==0.23.4' to avoid error 
 
 # Version 0.9.1.1
 

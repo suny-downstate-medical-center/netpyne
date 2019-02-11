@@ -104,36 +104,38 @@ def fix_axon_peri(hobj):
     """Replace reconstructed axon with a stub
     :param hobj: hoc object
     """
-    for i,sec in enumerate(hobj.axon):
-        hobj.axon[i] = None
+    if hasattr(hobj, 'axon'):
+        for i, sec in enumerate(hobj.axon):
+            #h.delete_section(sec=sec)
+            hobj.axon[i] = None
 
-    for i,sec in enumerate(hobj.all):
-        if 'axon' in sec.name():
-            hobj.all[i] = None
+        for i,sec in enumerate(hobj.all):
+            if 'axon' in sec.name():
+                hobj.all[i] = None
 
-    hobj.all = [sec for sec in hobj.all if sec is not None]
+        hobj.all = [sec for sec in hobj.all if sec is not None]
 
-    hobj.axon = None
+        hobj.axon = None
 
-    #h.execute('create axon[2]', hobj)
-    hobj.axon = [h.Section(name='axon[0]'), h.Section(name='axon[1]')]
-    hobj.axonal = []
+        #h.execute('create axon[2]', hobj)
+        hobj.axon = [h.Section(name='axon[0]'), h.Section(name='axon[1]')]
+        hobj.axonal = []
 
-    for sec in hobj.axon:
-        sec.L = 30
-        sec.diam = 1
-        hobj.axonal.append(sec)
-        hobj.all.append(sec)  # need to remove this comment
+        for sec in hobj.axon:
+            sec.L = 30
+            sec.diam = 1
+            hobj.axonal.append(sec)
+            hobj.all.append(sec)  # need to remove this comment
 
-    hobj.axon[0].connect(hobj.soma[0], 0.5, 0)
-    hobj.axon[1].connect(hobj.axon[0], 1, 0)
+        hobj.axon[0].connect(hobj.soma[0], 0.5, 0)
+        hobj.axon[1].connect(hobj.axon[0], 1, 0)
 
-    h.define_shape()
+        h.define_shape()
 
 
-# replace axon with AIS stub (keep order)
+# replace axon with AIS stub (keep order) 
 def fix_axon_peri_v2(hobj):
-    """Replace reconstructed axon with a stub
+    """Replace reconstructed axon with a stub (keep order); BBP version
     :param hobj: hoc object
     """
     if hasattr(hobj, 'axon'):
@@ -147,6 +149,8 @@ def fix_axon_peri_v2(hobj):
                 sec.diam = 1
 
         h.define_shape()
+
+
 
 def fix_sec_nseg(secs, dL):
     """ Set nseg of sections based on dL param: section.nseg = 1 + 2 * int(section.L / (2*dL))
@@ -201,13 +205,13 @@ class SONATAImporter():
 
         # read config files
         filename = os.path.abspath(configFile)
-        rootFolder = os.path.dirname(configFile)
+        self.rootFolder = os.path.dirname(configFile)
         
         self.config = load_json(filename)
-        self.substitutes = {'../': '%s/../'%rootFolder,
-                            './': '%s/'%rootFolder,
-                            '.': '%s/'%rootFolder,
-                       '${configdir}': '%s'%rootFolder}
+        self.substitutes = {'../': '%s/../'%self.rootFolder,
+                            './': '%s/'%self.rootFolder,
+                            '.': '%s/'%self.rootFolder,
+                       '${configdir}': '%s'%self.rootFolder}
 
         if 'network' in self.config:
             self.network_config = load_json(self.subs(self.config['network']))
@@ -278,14 +282,16 @@ class SONATAImporter():
         
         #import IPython; IPython.embed()
 
-        try:
-            if 'node_sets_file' in self.simulation_config:
-                sim.cfg.node_sets = load_json(self.subs(self.simulation_config['node_sets_file']))
-            elif 'node_sets' in self.simulation_config:
-                sim.cfg.node_sets = self.simulation_config['node_sets']
-        except:
-            print('Could not load node_sets...')
-            sim.cfg.node_sets = {}
+        #try:
+        if 'node_sets_file' in self.simulation_config:
+            print(self.subs(self.rootFolder+'/'+self.simulation_config['node_sets_file']))
+
+            sim.cfg.node_sets = load_json(self.subs(self.rootFolder+'/'+self.simulation_config['node_sets_file']))
+        elif 'node_sets' in self.simulation_config:
+            sim.cfg.node_sets = self.simulation_config['node_sets']
+        # except:
+        #     print('Could not load node_sets...')
+        #     sim.cfg.node_sets = {}
         
         # inputs - add as 'spkTimes' to external population
 
@@ -374,7 +380,7 @@ class SONATAImporter():
 
                     # replace axon with AIS stub
                     if self.replaceAxon:
-                        fix_axon_peri_v2(cellMorph)
+                        fix_axon_peri(cellMorph)
 
                     # extract netpyne parameters
                     secs, secLists, synMechs, globs = neuronPyHoc.getCellParams(cellMorph)
@@ -644,6 +650,7 @@ class SONATAImporter():
                 loc = info.get('loc', 0.5)
 
                 conds_sonata = sim.cfg.node_sets[node_set]
+
                 if 'model_type' in conds_sonata:
                     conds = {'cellModel': conds_sonata['model_type']}
                 sim.net.params.stimTargetParams[input+'->'+node_set] = {
@@ -845,6 +852,15 @@ class SONATAImporter():
                 for section_name in seg_grps_vs_nrn_sections[group]:
                     cellRule['secs'][section_name]['geom']['Ra'] = pynml.convert_to_units(ra.value,'ohm_cm')
 
+        concentrationModelParams = {}
+        excludeConcentrationModel = ['id', 'type', 'ion']
+        if hasattr(cell, 'concentrationModel'):
+            concentrationModelParams[cell.concentratrionModel.id] = {}
+            for param in cell.concentratrionModel:
+                if param not in excludeConcentrationModel:
+                    concentrationModelParams[cell.concentratrionModel.id][param] = getattr(cell.concentratrionModel, param)
+
+        
         if hasattr(cell.biophysical_properties.intracellular_properties, 'species'):
                         
             for specie in cell.biophysical_properties.intracellular_properties.species:
@@ -853,8 +869,9 @@ class SONATAImporter():
                 for section_name in seg_grps_vs_nrn_sections[group]:
                     cellRule['secs'][section_name]['ions'][specie.ion]['o'] = pynml.convert_to_units(specie.initial_ext_concentration,'mM')
                     cellRule['secs'][section_name]['ions'][specie.ion]['i'] = pynml.convert_to_units(specie.initial_concentration,'mM')
-                    
-                    cellRule['secs'][section_name]['mechs'][specie.concentration_model] = {}
+                    #cellRule['secs'][section_name]['mechs'][cell.concentratrionModel] = concentrationModelParams
+                    #print(cell.concentratrionModel)
+                    print(concentrationModelParams)
                     
         
         return cellRule

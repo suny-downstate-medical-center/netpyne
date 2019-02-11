@@ -156,11 +156,19 @@ class PointCell (Cell):
             elif 'spikePattern' in self.params:
                 patternType = self.params['spikePattern'].get('type', None)
                 rand = h.Random()
-                rand.Random123(sim.hashStr('vecstim_spikePattern'), self.gid, self.params['seed'])
+
+                # if sync, don't initialize randomizer based on gid
+                if self.params.get('sync', False):
+                    rand.Random123(sim.hashStr('vecstim_spikePattern'), self.params['seed'])
+                else:
+                    rand.Random123(sim.hashStr('vecstim_spikePattern'), self.gid, self.params['seed'])
 
                 if patternType == 'rhythmic':
                     from .inputs import createRhythmicPattern
                     spkTimes = createRhythmicPattern(self.params['spikePattern'], rand)
+                elif patternType == 'evoked':
+                    from .inputs import createEvokedPattern
+                    spkTimes = createEvokedPattern(self.params['spikePattern'], rand) 
                 elif patternType == 'poisson':
                     from .inputs import createPoissonPattern
                     spkTimes = createPoissonPattern(self.params['spikePattern'], rand)                    

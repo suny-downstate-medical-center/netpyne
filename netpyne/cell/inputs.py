@@ -102,6 +102,30 @@ def createRhythmicPattern(params, rand):
         t_input = []
     return np.array(t_input)
 
+def createEvokedPattern(params, rand, inc = 0):
+    ''' creates the ongoing external inputs (rhythmic)
+    input params:
+    - start: time of first spike. if -1, uniform distribution between startMin and startMax (ms)
+    - inc: increase in time of first spike; from cfg.inc_evinput (ms)
+    - sigma: standard deviation of start (ms)
+    '''
+
+    # assign the params
+    mu = params['start'] + inc
+    sigma = params['startStd']  # self.p_ext[self.celltype][3] # index 3 is sigma_t_ (stdev)
+    numspikes = int(params['numspikes'])
+    # if a non-zero sigma is specified
+    if sigma:
+        val_evoked = rand.uniform(mu, sigma, numspikes) 
+    else:
+        # if sigma is specified at 0
+        val_evoked = np.array([mu] * numspikes)
+    val_evoked = val_evoked[val_evoked > 0]
+    # vals must be sorted
+    val_evoked.sort()
+    return val_evoked
+
+
 def createPoissonPattern(params):
     pass
 

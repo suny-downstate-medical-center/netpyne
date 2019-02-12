@@ -192,51 +192,90 @@ class Cell (object):
                         break
                         
             if conditionsMet:
-                try:
-                    ptr = None
-                    if 'loc' in params and params['sec'] in self.secs:
-                        if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
-                            ptr = getattr(getattr(self.secs[params['sec']]['hObj'](params['loc']), params['mech']), '_ref_'+params['var'])
-                            #print params['var'], ptr
-                        elif 'synMech' in params:  # eg. soma(0.5).AMPA._ref_g
-                            sec = self.secs[params['sec']]
-                            synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech'] and synMech['loc']==params['loc']), None)
-                            ptr = getattr(synMech['hObj'], '_ref_'+params['var'])
-                        else:  # eg. soma(0.5)._ref_v
-                            ptr = getattr(self.secs[params['sec']]['hObj'](params['loc']), '_ref_'+params['var'])
-                    elif 'synMech' in params:  # special case where want to record from multiple synMechs
-                        if 'sec' in params:
-                            sec = self.secs[params['sec']]
+                # try:
+                ptr = None
+                if 'loc' in params and params['sec'] in self.secs:
+                    if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
+                        ptr = getattr(getattr(self.secs[params['sec']]['hObj'](params['loc']), params['mech']), '_ref_'+params['var'])
+                    elif 'synMech' in params:  # eg. soma(0.5).AMPA._ref_g
+                        sec = self.secs[params['sec']]
+                        synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech'] and synMech['loc']==params['loc']), None)
+                        ptr = getattr(synMech['hObj'], '_ref_'+params['var'])
+                    else:  # eg. soma(0.5)._ref_v
+                        ptr = getattr(self.secs[params['sec']]['hObj'](params['loc']), '_ref_'+params['var'])
+                elif 'synMech' in params:  # special case where want to record from multiple synMechs
+                    if 'sec' in params:
+                        sec = self.secs[params['sec']]
+                        synMechs = [synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech']]
+                        ptr = [getattr(synMech['hObj'], '_ref_'+params['var']) for synMech in synMechs]
+                        secLocs = [params.sec+str(synMech['loc']) for synMech in synMechs]
+                    else: 
+                        ptr = []
+                        secLocs = []
+                        for secName,sec in self.secs.items():
                             synMechs = [synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech']]
-                            ptr = [getattr(synMech['hObj'], '_ref_'+params['var']) for synMech in synMechs]
-                            secLocs = [params.sec+str(synMech['loc']) for synMech in synMechs]
-                        else: 
+                            ptr.extend([getattr(synMech['hObj'], '_ref_'+params['var']) for synMech in synMechs])
+                            secLocs.extend([secName+'_'+str(synMech['loc']) for synMech in synMechs])
+
+                else:
+                    if 'pointp' in params: # eg. soma.izh._ref_u
+                        if params['pointp'] in self.secs[params['sec']]['pointps']:
+                            ptr = getattr(self.secs[params['sec']]['pointps'][params['pointp']]['hObj'], '_ref_'+params['var'])
+                    elif 'conns' in params: # e.g. cell.conns
+                        if 'mech' in params:
                             ptr = []
                             secLocs = []
-                            for secName,sec in self.secs.items():
-                                synMechs = [synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech']]
-                                ptr.extend([getattr(synMech['hObj'], '_ref_'+params['var']) for synMech in synMechs])
-                                secLocs.extend([secName+'_'+str(synMech['loc']) for synMech in synMechs])
+                            for conn_idx,conn in enumerate(self.conns):
+                                if params['mech'] in conn.keys():
+                                    # print("CONN",conn)
+                                    ptr.extend([getattr(conn[params['mech']]['hObj'], '_ref_'+params['var'])])
+                                    secLocs.extend([params['sec']+'_conn_'+str(conn_idx)])
+                        else:
+                            print("Error!!! Specify conn mech to record from.") 
+                    elif 'var' in params: # point process cell eg. cell._ref_v
+                        ptr = getattr(self.hPointp, '_ref_'+params['var'])
 
-                    else:
-                        if 'pointp' in params: # eg. soma.izh._ref_u
-                            if params['pointp'] in self.secs[params['sec']]['pointps']:
-                                ptr = getattr(self.secs[params['sec']]['pointps'][params['pointp']]['hObj'], '_ref_'+params['var'])
-                        elif 'var' in params: # point process cell eg. cell._ref_v
-                            ptr = getattr(self.hPointp, '_ref_'+params['var'])
-
-                    if ptr:  # if pointer has been created, then setup recording
-                        if isinstance(ptr, list):
-                            sim.simData[key]['cell_'+str(self.gid)] = {}
-                            for ptrItem,secLoc in zip(ptr, secLocs):
-                                sim.simData[key]['cell_'+str(self.gid)][secLoc] = h.Vector(sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
+                if ptr:  # if pointer has been created, then setup recording
+                    if isinstance(ptr, list):
+                        sim.simData[key]['cell_'+str(self.gid)] = {}
+                        for ptrItem,secLoc in zip(ptr, secLocs):
+                            if sim.cfg.recordStep == 'adaptive':
+                                recordStep = 0.1
+                            else:
+                                recordStep = sim.cfg.recordStep
+                            if hasattr(sim.cfg,'use_local_dt') and sim.cfg.use_local_dt:
+                                self.secs[params['sec']]['hObj'].push()
+                                if hasattr(sim.cfg,'recordStep') and sim.cfg.recordStep == 'adaptive':
+                                    sim.simData[key]['cell_time_'+str(self.gid)][secLoc] = h.Vector()
+                                    sim.simData[key]['cell_'+str(self.gid)][secLoc] = h.Vector()
+                                    sim.cvode.record(ptrItem, sim.simData[key]['cell_'+str(self.gid)][secLoc],
+                                                     sim.simData[key]['cell_time_'+str(self.gid)][secLoc])
+                                else:
+                                    sim.simData[key]['cell_'+str(self.gid)][secLoc] = h.Vector(sim.cfg.duration/recordStep+1).resize(0)
+                                    sim.cvode.record(ptrItem, sim.simData[key]['cell_'+str(self.gid)][secLoc],
+                                                     sim.simData['t'], 1)
+                                h.pop_section()
+                            else:
+                                sim.simData[key]['cell_'+str(self.gid)][secLoc] = h.Vector(sim.cfg.duration/recordStep+1).resize(0)
                                 sim.simData[key]['cell_'+str(self.gid)][secLoc].record(ptrItem, sim.cfg.recordStep)
+                    else:
+                        if hasattr(sim.cfg,'use_local_dt') and sim.cfg.use_local_dt:
+                            self.secs[params['sec']]['hObj'].push()
+                            sim.simData[key]['cell_'+str(self.gid)] = h.Vector()
+                            if hasattr(sim.cfg,'recordStep') and sim.cfg.recordStep == 'adaptive':
+                                sim.simData[key]['cell_time_'+str(self.gid)] = h.Vector()
+                                sim.cvode.record(ptr, sim.simData[key]['cell_'+str(self.gid)],
+                                                 sim.simData[key]['cell_time_'+str(self.gid)])
+                            else:
+                                sim.cvode.record(ptr, sim.simData[key]['cell_'+str(self.gid)],
+                                                 sim.simData['t'], 1)                            
+                            h.pop_section()
                         else:
                             sim.simData[key]['cell_'+str(self.gid)] = h.Vector(sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
                             sim.simData[key]['cell_'+str(self.gid)].record(ptr, sim.cfg.recordStep)
-                        if sim.cfg.verbose: print('  Recording ', key, 'from cell ', self.gid, ' with parameters: ',str(params))
-                except:
-                    if sim.cfg.verbose: print('  Cannot record ', key, 'from cell ', self.gid)
+                    if sim.cfg.verbose: print('  Recording ', key, 'from cell ', self.gid, ' with parameters: ',str(params))
+                # except:
+                #     if sim.cfg.verbose: print('  Cannot record ', key, 'from cell ', self.gid)
             else:
                 if sim.cfg.verbose: print('  Conditions preclude recording ', key, ' from cell ', self.gid)
         #else:

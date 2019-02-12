@@ -55,7 +55,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
     '''
     from .. import sim
 
-    print('Plotting recorded cell traces ...')
+    print('Plotting recorded cell traces ...',oneFigPer)
 
     if include is None:  # if none, record from whatever was recorded
         if 'plotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['plotTraces']:
@@ -98,15 +98,59 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
             figs['_trace_'+str(trace)] = plt.figure(figsize=figSize) # Open a new figure
             fontsiz = 12
             for igid, gid in enumerate(subGids):
+                # print('recordStep',recordStep)
                 if 'cell_'+str(gid) in sim.allSimData[trace]:
-                    data = sim.allSimData[trace]['cell_'+str(gid)][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)]
-                    t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
+                    fullTrace = sim.allSimData[trace]['cell_'+str(gid)]
+                    if isinstance(fullTrace, dict):
+                        if recordStep == 'adaptive':
+                            t = []
+                            t_indexes = []
+                            data = []
+                            lenData = []
+                            for key in list(fullTrace.keys()):
+                                t.append(np.array(sim.allSimData[trace]['cell_time_'+str(gid)][key]))
+                                t_indexes.append(t[-1].__ge__(timeRange[0]).__and__(t[-1].__le__(timeRange[1])))
+                                data.append(np.array(fullTrace[key])[t_indexes[-1]])
+                                lenData = len(data[-1])
+                                t[-1] = t[-1][t_indexes[-1]]
+                        else:
+                            data = [fullTrace[key][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)] for key in list(fullTrace.keys())]
+                            lenData = len(data[0])
+                            data = np.transpose(np.array(data))
+                            t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
+                    else:
+                        if recordStep == 'adaptive':
+                            t = np.array(sim.allSimData[trace]['cell_time_'+str(gid)])
+                            t_indexes = t.__ge__(timeRange[0]).__and__(t.__le__(timeRange[1]))
+                            data = np.array(sim.allSimData[trace]['cell_'+str(gid)])[t_indexes]
+                            lenData = len(data)
+                            t = t[t_indexes]
+                        else:
+                            data = fullTrace[int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)]
+                            lenData = len(data)
+                            t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
                     tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
                     color = colorList2[igid%len(colorList2)]
                     if not overlay:
                         plt.subplot(len(subGids),1,igid+1)
                         plt.ylabel(trace, fontsize=fontsiz)
-                    plt.plot(t[:len(data)], data, linewidth=1.5, color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                    if recordStep == 'adaptive':
+                        if isinstance(data, list):
+                            for tl,dl in zip(t,data):
+                                plt.plot(tl[:len(dl)], dl, linewidth=1.5,
+                                         color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                        else:
+                            plt.plot(t, data, linewidth=1.5,
+                                     color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                            plt.plot(t, data, linewidth=1.5, color=color, label=trace)
+                    else:
+                        if isinstance(data, list):
+                            for tl,dl in zip(t,data):
+                                plt.plot(tl[:len(dl)], dl, linewidth=1.5,
+                                         color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                        else:
+                            plt.plot(t[:len(data)], data, linewidth=1.5,
+                                     color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
                     plt.xlabel('Time (ms)', fontsize=fontsiz)
                     plt.xlim(timeRange)
                     if ylim: plt.ylim(ylim)
@@ -121,11 +165,12 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                     unitsx='ms', unitsy='mV', scalex=1, scaley=1, loc=1, pad=-1, borderpad=0.5, sep=4, prop=None, barcolor="black", barwidth=3)   
                 plt.axis(axis) 
 
-            if overlay:
+            if overlay and len(subGids) < 20:
                 #maxLabelLen = 10
                 #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen)) 
                 #plt.legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
                 plt.legend()
+
 
     # Plot one fig per cell
     if oneFigPer == 'cell':
@@ -136,19 +181,50 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                 if 'cell_'+str(gid) in sim.allSimData[trace]:
                     fullTrace = sim.allSimData[trace]['cell_'+str(gid)]
                     if isinstance(fullTrace, dict):
-                        data = [fullTrace[key][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)] for key in list(fullTrace.keys())]
-                        lenData = len(data[0])
-                        data = np.transpose(np.array(data))
+                        if recordStep == 'adaptive':
+                            t = []
+                            t_indexes = []
+                            data = []
+                            lenData = []
+                            for key in list(fullTrace.keys()):
+                                t.append(np.array(sim.allSimData[trace]['cell_time_'+str(gid)][key]))
+                                t_indexes.append(t[-1].__ge__(timeRange[0]).__and__(t[-1].__le__(timeRange[1])))
+                                data.append(np.array(fullTrace[key])[t_indexes[-1]])
+                                lenData = len(data[-1])
+                                t[-1] = t[-1][t_indexes[-1]]
+                        else:
+                                data = [fullTrace[key][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)] for key in list(fullTrace.keys())]
+                                lenData = len(data[0])
+                                data = np.transpose(np.array(data))
+                                t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
                     else:
-                        data = fullTrace[int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)]
-                        lenData = len(data)
-                    t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
+                        if recordStep == 'adaptive':
+                            t = np.array(sim.allSimData[trace]['cell_time_'+str(gid)])
+                            t_indexes = t.__ge__(timeRange[0]).__and__(t.__le__(timeRange[1]))
+                            data = np.array(sim.allSimData[trace]['cell_'+str(gid)])[t_indexes]
+                            lenData = len(data)
+                            t = t[t_indexes]
+                        else:
+                            data = fullTrace[int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)]
+                            lenData = len(data)
+                            t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
                     tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
                     color = colorList2[itrace%len(colorList2)]
                     if not overlay:
                         plt.subplot(len(tracesList),1,itrace+1)
                         color = 'blue'
-                    plt.plot(t[:lenData], data, linewidth=1.5, color=color, label=trace)
+                    if recordStep == 'adaptive':
+                        if isinstance(data, list):
+                            for tl,dl in zip(t,data):
+                                plt.plot(tl, dl, linewidth=1.5, color=color, label=trace)
+                        else:
+                            plt.plot(t, data, linewidth=1.5, color=color, label=trace)
+                    else:
+                        if isinstance(data, list):
+                            for tl,dl in zip(t,data):
+                                plt.plot(tl[:lenData], dl, linewidth=1.5, color=color, label=trace)
+                        else:
+                            plt.plot(t[:lenData], data, linewidth=1.5, color=color, label=trace)
                     plt.xlabel('Time (ms)', fontsize=fontsiz)
                     plt.ylabel(trace, fontsize=fontsiz)
                     plt.xlim(timeRange)

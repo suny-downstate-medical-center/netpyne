@@ -27,6 +27,7 @@ from . import utils
 def preRun ():
     from .. import sim
 
+
     # set initial v of cells
     for cell in sim.net.cells:
        sim.fih.append(h.FInitializeHandler(0, cell.initV))
@@ -102,6 +103,13 @@ def preRun ():
 def runSim ():
     from .. import sim
 
+    sim.pc.barrier()
+    if hasattr(sim.cfg,'use_local_dt') and sim.cfg.use_local_dt:
+        try:
+            sim.cvode.use_local_dt(1)
+            if not sim.cfg.verbose: print('Using local dt.')
+        except:
+            if sim.cfg.verbose: 'Error Failed to use local dt.'
     sim.pc.barrier()
     sim.timing('start', 'runTime')
     preRun()

@@ -107,7 +107,8 @@ def createEvokedPattern(params, rand, inc = 0):
     input params:
     - start: time of first spike. if -1, uniform distribution between startMin and startMax (ms)
     - inc: increase in time of first spike; from cfg.inc_evinput (ms)
-    - sigma: standard deviation of start (ms)
+    - startStd: standard deviation of start (ms)
+    - numspikes: totalk number of spikes to generate 
     '''
 
     # assign the params
@@ -116,7 +117,11 @@ def createEvokedPattern(params, rand, inc = 0):
     numspikes = int(params['numspikes'])
     # if a non-zero sigma is specified
     if sigma:
-        val_evoked = rand.uniform(mu, sigma, numspikes) 
+        # val_evoked = rand.uniform(mu, sigma, numspikes)
+        vec_evoked = h.Vector(int(numspikes))
+        rand.normal(mu, sigma)
+        vec_evoked.setrand(rand)
+        val_evoked = np.array(vec_evoked)
     else:
         # if sigma is specified at 0
         val_evoked = np.array([mu] * numspikes)
@@ -126,9 +131,58 @@ def createEvokedPattern(params, rand, inc = 0):
     return val_evoked
 
 
-def createPoissonPattern(params):
-    pass
+def createPoissonPattern(params, rand):
+    ''' creates external Poisson inputs
+    input params:
+    - start: time of first spike. if -1, uniform distribution between startMin and startMax (ms)
+    - interval: increase in time of first spike; from cfg.inc_evinput (ms)
+    - frequency: standard deviation of start (ms)
+    - numspikes: totalk number of spikes to generate 
+    '''
+
+    # new external pois designation
+    t0 = params['start'] # self.p_ext['t_interval'][0]
+    T = params['interval'] #self.p_ext['t_interval'][1]
+    lamtha = params['frequency'] # self.p_ext[self.celltype][3] # index 3 is frequency (lamtha)
+    # values MUST be sorted for VecStim()!
+    # start the initial value
+    if lamtha > 0.:
+        t_gen = t0 + (-1000. * np.log(1. - rand.uniform(0,1)) / lamtha)
+        val_pois = np.array([])
+        if t_gen < T: np.append(val_pois, t_gen)
+        # vals are guaranteed to be monotonically increasing, no need to sort
+        while t_gen < T:
+            # so as to not clobber confusingly base off of t_gen ...
+            t_gen += (-1000. * np.log(1. - rand.uniform(0,1)) / lamtha)
+            if t_gen < T: val_pois = np.append(val_pois, t_gen)
+        else:
+            val_pois = np.array([])
+
+    return val_pois
+
+
 
 def createGaussPattern(params):
     pass
+    '''    # print("__create_extgauss")
+    # assign the params
+    if self.p_ext[self.celltype][0] <= 0.0 and \
+       self.p_ext[self.celltype][1] <= 0.0: return False # 0 ampa and 0 nmda weight
+    # print('gauss params:',self.p_ext[self.celltype])
+    mu = self.p_ext[self.celltype][3]
+    sigma = self.p_ext[self.celltype][4]
+    # mu and sigma values come from p
+    # one single value from Gaussian dist.
+    # values MUST be sorted for VecStim()!
+    val_gauss = self.prng.normal(mu, sigma, 50)
+    # val_gauss = np.random.normal(mu, sigma, 50)
+    # remove non-zero values brute force-ly
+    val_gauss = val_gauss[val_gauss > 0]
+    # sort values - critical for nrn
+    val_gauss.sort()
+    # if len(val_gauss)>0: print('val_gauss:',val_gauss)
+    # Convert array into nrn vector
+    self.eventvec.from_python(val_gauss)
+    return self.eventvec.size() > 0
+    '''
 

@@ -14,7 +14,8 @@ try:
     from neuroml.hdf5.NeuroMLXMLParser import NeuroMLXMLParser
     from neuroml.loaders import read_neuroml2_file
     from pyneuroml import pynml
-    from . import neuromlFormat # import NetPyNEBuilder
+    from . import neuromlFormat  # import NetPyNEBuilder
+    from bmtk.simulator.bionet.nml_reader import NMLTree
 except ImportError:
     from neuron import h
     pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
@@ -406,8 +407,11 @@ class SONATAImporter():
                     if info['model_template'].startswith('nml'):
                         dynamics_params_file = self.subs(self.network_config['components']['biophysical_neuron_models_dir']+'/'+info['model_template']) 
                         dynamics_params_file = dynamics_params_file.replace('nml:', '')
-                        nml_doc = read_neuroml2_file(dynamics_params_file)
-                        cell_dynamic_params = nml_doc.cells[0]
+
+                        #nml_doc = read_neuroml2_file(dynamics_params_file)
+                        #cell_dynamic_params = nml_doc.cells[0]
+                        cell_dynamic_params = NMLTree(dynamics_params_file)
+
                         cellRule = self.setCellRuleDynamicParamsFromNeuroml(cell_dynamic_params, cellRule)
 
                     elif info['dynamics_params'].endswith('json'):
@@ -661,11 +665,51 @@ class SONATAImporter():
 
         sim.net.addStims()
 
+    # ------------------------------------------------------------------------------------------------------------
+    # Set cell dynamic params into a cell rule (netParams.cellParams) from NeuroML
+    # ------------------------------------------------------------------------------------------------------------
+    def setCellRuleDynamicParamsFromNeuroml(self, nml_params, cellRule):
+
+        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # import IPython; IPython.embed()
+
+        # Iterate through the NML tree by section and use the properties to manually create cell mechanisms
+        section_lists = [(sec, sec.split('_')[0][:4]) for sec in cellRule['secs']]
+        for sec, sec_type in section_lists:
+            for prop_name, prop_obj in nml_params[sec_type].items():
+                if prop_obj.element_tag() == 'resistivity':
+                    cellRule['secs'][sec]['geom']['Ra'] = prop_obj.value
+
+                elif prop_obj.element_tag() == 'specificCapacitance':
+                    cellRule['secs'][sec]['geom']['cm'] = prop_obj.value
+
+                elif prop_obj.element_tag() == 'channelDensity' and prop_obj.ion_channel == 'pas':
+                    cellRule['secs'][sec]['mechs']['pas'] = {'g': prop_obj.cond_density, 'e': prop_obj.erev}
+
+                elif prop_obj.element_tag() == 'channelDensity' or prop_obj.element_tag() == 'channelDensityNernst':
+                    cellRule['secs'][sec]['mechs'][prop_obj.ion_channel] = {prop_obj.id.split('_')[0]: prop_obj.cond_density}
+                    if 'ions' not in cellRule['secs'][sec]:
+                        cellRule['secs'][sec]['ions'] = {}
+                    if prop_obj.ion == 'na' and prop_obj:
+                        cellRule['secs'][sec]['ions']['na'] ={'e': prop_obj.erev}
+                        #sec.ena = prop_obj.erev
+                    elif prop_obj.ion == 'k':
+                        cellRule['secs'][sec]['ions']['k'] ={'e': prop_obj.erev}
+                        # sec.ek = prop_obj.erev
+
+                elif prop_obj.element_tag() == 'concentrationModel':
+                    cellRule['secs'][sec]['mechs'][prop_obj.id] = {'gamma': prop_obj.gamma, 'decay': prop_obj.decay}
+                    #sec.insert(prop_obj.id)
+                    # setattr(sec, 'gamma_' + prop_obj.type, prop_obj.gamma)
+                    # setattr(sec, 'decay_' + prop_obj.type, prop_obj.decay)
+
+        return cellRule
+        
 
     # ------------------------------------------------------------------------------------------------------------
     # Set cell dynamic params into a cell rule (netParams.cellParams) from NeuroML
     # ------------------------------------------------------------------------------------------------------------
-    def setCellRuleDynamicParamsFromNeuroml(self, cell, cellRule):
+    def setCellRuleDynamicParamsFromNeuroml_old(self, cell, cellRule):
         
         segGroupKeys = set([sec.split('_')[0] for sec in cellRule['secs']])
         seg_grps_vs_nrn_sections = {segGroup: [sec for sec in cellRule['secs'] if sec.startswith(segGroup)] for segGroup in segGroupKeys}

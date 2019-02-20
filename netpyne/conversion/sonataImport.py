@@ -15,7 +15,7 @@ try:
     from neuroml.loaders import read_neuroml2_file
     from pyneuroml import pynml
     from . import neuromlFormat  # import NetPyNEBuilder
-    from bmtk.simulator.bionet.nml_reader import NMLTree
+    from  netpyne.support.nml_reader  import NMLTree
 except ImportError:
     from neuron import h
     pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
@@ -285,9 +285,10 @@ class SONATAImporter():
 
         #try:
         if 'node_sets_file' in self.simulation_config:
-            print(self.subs(self.rootFolder+'/'+self.simulation_config['node_sets_file']))
-
-            sim.cfg.node_sets = load_json(self.subs(self.rootFolder+'/'+self.simulation_config['node_sets_file']))
+            #print(self.substitutes)
+            #print(self.subs(self.rootFolder + '/' + self.simulation_config['node_sets_file']))
+            # TEMPORARY FIX - FIX!
+            sim.cfg.node_sets = load_json(self.subs(self.rootFolder+'/'+self.simulation_config['node_sets_file']).replace('$BASE_DIR',''))
         elif 'node_sets' in self.simulation_config:
             sim.cfg.node_sets = self.simulation_config['node_sets']
         # except:

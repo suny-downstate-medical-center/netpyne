@@ -29,5 +29,6 @@ sim.cfg.recordCells = range(10)
 sim.cfg.analysis['plotTraces'] = {}  # needed for 9 cell example
 sim.setupRecording()
 sim.simulate()
-fig = sim.analysis.plotRaster(figSize=(14,8), dpi=300, saveFig='model_output_raster_axonv2_dl_300cells.png', marker='.', markerSize=3)
+includePops = [p for p in sim.net.pops if p not in ['external_virtual_100']]
+fig = sim.analysis.plotRaster(include=includePops, figSize=(14,8), dpi=300, saveFig='model_output_raster_axonv2_dl_300cells.png', marker='.', markerSize=3)
 fig = sim.analysis.plotTraces(figSize=(10,14), oneFigPer='trace', include=range(10), saveFig='model_output_traces_axonv2_dl_300cells.png')

@@ -385,17 +385,26 @@ class SONATAImporter():
 
                     # extract netpyne parameters
                     secs, secLists, synMechs, globs = neuronPyHoc.getCellParams(cellMorph)
+                    
+                    # remove sec vinits since imported temporary cell with morph
+                    for secName in secs:
+                        del secs[secName]['vinit']                        
 
                     if self.setdLNseg:
                         fix_sec_nseg(secs, sim.cfg.dL)
 
-                    # make soma first segment (x,y,z) = (0,0,0)
+                    # make soma mid segment (x,y,z) = (0,0,0)
                     somaLabel = next((s for s in secs.keys() if 'soma' in s), None)
-                    somaPt = secs[somaLabel]['geom']['pt3d'][0]
+                    somaPtFirst = secs[somaLabel]['geom']['pt3d'][0]
+                    somaPtLast = secs[somaLabel]['geom']['pt3d'][-1]
+                    somaPt = [(p1+p2)/2.0 for p1,p2 in zip(somaPtFirst, somaPtLast)]
                     for secLabel in secs:
                         for ipt3d in range(len(secs[secLabel]['geom']['pt3d'])):
                             origPt = secs[secLabel]['geom']['pt3d'][ipt3d]
-                            newpt = (origPt[0] - somaPt[0], origPt[1] - somaPt[1], origPt[2] - somaPt[2], origPt[3])
+                            offsetX = 0.0
+                            if 'apic' in secLabel:
+                                offsetX = 0.0
+                            newpt = (origPt[0] - somaPt[0] + offsetX, origPt[1] - somaPt[1], origPt[2] - somaPt[2], origPt[3])
                             secs[secLabel]['geom']['pt3d'][ipt3d] = newpt
     
                     # create mapping of sec ids

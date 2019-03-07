@@ -642,10 +642,10 @@ class CompartCell (Cell):
         if params.get('loc') is None: params['loc'] = 0.5 # if no loc, set default
         if params.get('synsPerConn') is None: params['synsPerConn'] = 1 # if no synsPerConn, set default
 
-        # Avoid self connections
+        # Warning if self connections
         if params['preGid'] == self.gid:
-            if sim.cfg.verbose: print('  Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
-            return  # if self-connection return
+            if sim.cfg.verbose: print('  Warning: created self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
+            #return  # if self-connection return
 
         # Get list of section labels
         secLabels = self._setConnSections(params)

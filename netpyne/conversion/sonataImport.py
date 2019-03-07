@@ -152,7 +152,6 @@ def fix_axon_peri_v2(hobj):
         h.define_shape()
 
 
-
 def fix_sec_nseg(secs, dL):
     """ Set nseg of sections based on dL param: section.nseg = 1 + 2 * int(section.L / (2*dL))
     :param secs: netpyne dictionary with all sections 
@@ -162,6 +161,14 @@ def fix_sec_nseg(secs, dL):
     for secName in secs:
         secs[secName]['geom']['nseg'] = 1 + 2 * int(secs[secName]['geom']['L'] / (2*dL))
 
+
+def swap_soma_xy(secs):
+    '''
+    Swap soma x and y coords so cylinder is vertical instead of horizontal
+    '''
+    for secName in [sec for sec in secs if 'soma' in sec]:
+        for i,pt in enumerate(secs[secName]['geom']['pt3d']):
+            secs[secName]['geom']['pt3d'][i] = (pt[1], pt[0], pt[2], pt[3])
 
 # ------------------------------------------------------------------------------------------------------------
 # Import SONATA 
@@ -198,11 +205,12 @@ class SONATAImporter():
     # ------------------------------------------------------------------------------------------------------------
     # Import a network by reading all the SONATA files and creating the NetPyNE structures
     # ------------------------------------------------------------------------------------------------------------
-    def importNet(self, configFile, replaceAxon=True, setdLNseg=True):
+    def importNet(self, configFile, replaceAxon=True, setdLNseg=True, swapSomaXY=True):
 
         self.configFile = configFile
         self.replaceAxon = replaceAxon
         self.setdLNseg = setdLNseg
+        self.swapSomaXY = swapSomaXY
 
         # read config files
         filename = os.path.abspath(configFile)
@@ -391,8 +399,13 @@ class SONATAImporter():
                     for secName in secs:
                         del secs[secName]['vinit']                        
 
+                    # fix nseg based on dL
                     if self.setdLNseg:
                         fix_sec_nseg(secs, sim.cfg.dL)
+
+                    # invert y coordinates
+                    if self.swapSomaXY:
+                        swap_soma_xy(secs)
 
                     # make soma mid segment (x,y,z) = (0,0,0)
                     somaLabel = next((s for s in secs.keys() if 'soma' in s), None)
@@ -483,7 +496,7 @@ class SONATAImporter():
 
                 if model_type == 'biophysical':
                     cellTags['x'] = cellLocs[node_group_id][icell]['x'] # set x location (um)
-                    cellTags['y'] = cellLocs[node_group_id][icell]['y'] # set y location (um)
+                    cellTags['y'] = -1*cellLocs[node_group_id][icell]['y'] # set y location (um) (reversed since netpyne assumes depth)
                     cellTags['z'] = cellLocs[node_group_id][icell]['z'] # set z location (um)
                     cellTags['xnorm'] = cellTags['x'] / sim.net.params.sizeX # set x location (um)
                     cellTags['ynorm'] = cellTags['y'] / sim.net.params.sizeY # set y location (um)

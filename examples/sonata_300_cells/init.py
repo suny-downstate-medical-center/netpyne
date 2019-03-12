@@ -22,15 +22,16 @@ sonataConfigFile = rootFolder+'config.json'
 # Options
 importSonataModel = 1
 saveForGUI = 0
-saveJsonPsection = 0
+saveJsonPsection = 1
 saveJsonConns = 0
-runPlot = 1
-compare = 1
+runPlot = 0
+compare = 0
 
 # Improt SONATA model and instantiate in netpyne
 if importSonataModel:
     sonataImporter = sonataImport.SONATAImporter()
     sonataImporter.importNet(sonataConfigFile, replaceAxon=True, setdLNseg=True)
+
 
 # code to save network to json so can read from NetPyNE-UI
 if saveForGUI:
@@ -62,7 +63,7 @@ if saveForGUI:
 if saveJsonPsection:
     import json
     data = {}
-    remove = ['cell', 'regions','species', 'point_processes', 'hoc_internal_name', 'name']#, 'morphology'] , 
+    remove = ['cell', 'regions','species', 'point_processes', 'hoc_internal_name', 'name', 'morphology']
     removeMorph = ['parent', 'trueparent']
     for icell, c in enumerate(sim.net.cells):
         try:
@@ -72,9 +73,9 @@ if saveJsonPsection:
                 data[icell][name] = sec['hObj'].psection()
                 for x in remove:
                     del data[icell][name][x]
-                for key in removeMorph:
-                    if key in data[icell][name]['morphology']:
-                        del data[icell][name]['morphology'][key]
+                # for key in removeMorph:
+                #     if key in data[icell][name]['morphology']:
+                #         del data[icell][name]['morphology'][key]
                         # data[icell][name]['morphology'][key] = str(data[icell][name]['morphology'][key])
         except:
             print('Error processing %d'%(icell))
@@ -115,13 +116,14 @@ if saveJsonConns:
 # run simulation and plot raster+traces
 if runPlot:
     sim.cfg.recordTraces = {'V_soma':{'sec':'soma_0','loc':0.5,'var':'v'}}
-    sim.cfg.recordCells = range(270,280)
+    sim.cfg.recordCells = range(9)
     sim.cfg.analysis['plotTraces'] = {}  # needed for 9 cell example
+    sim.cfg.cache_efficient = True
     sim.setupRecording()
     sim.simulate()
     includePops = [p for p in sim.net.pops if p not in ['external_virtual_100']]
-    fig = sim.analysis.plotRaster(include=includePops, spikeHist='subplot', spikeHistBin=10, figSize=(14,8), dpi=300, saveFig='model_output_raster_axonv2_dl_300cells_noconns.png', marker='.', markerSize=3)
-    fig = sim.analysis.plotTraces(figSize=(10,14), oneFigPer='trace', include=range(10), saveFig='model_output_traces_axonv2_dl_300cells_noconns.png')
+    fig = sim.analysis.plotRaster(include=includePops, spikeHist='subplot', spikeHistBin=10, figSize=(14,8), dpi=300, saveFig='model_output_raster_axonv2_dl_300cells.png', marker='.', markerSize=3)
+    #fig = sim.analysis.plotTraces(figSize=(10,14), oneFigPer='trace', include=range(10), saveFig='model_output_traces_axonv2_dl_300cells.png')
 
 
 # Compare with SONATA data
@@ -133,7 +135,7 @@ if compare:
         netpyneTraces.append(np.array(sim.simData['V_soma']['cell_' + str(c)]))
         netpyneTracesList.append(list(sim.simData['V_soma']['cell_' + str(c)]))
 
-    with open(outFolder+'netpyne_traces_300cells_270-280.json', 'w') as f:
+    with open(outFolder+'netpyne_traces_300cells.json', 'w') as f:
         json.dump(netpyneTracesList, f)
 
 
@@ -143,7 +145,7 @@ if compare:
     bmtkTraces = np.array(h5data['data'])  # shape (30000, 9)
 
 
-    # store netpyne traces
+    # store netpyne spikes
     netpyneSpkt = np.array(sim.simData.spkt)
     netpyneSpkid = np.array(sim.simData.spkid)
 
@@ -186,7 +188,7 @@ if compare:
     recordStep = sim.cfg.recordStep
     timeRange = [0, sim.cfg.duration]
     fontsiz=8
-    ylim = [0,300]
+    ylim = [0,299]
     figSize = (10,6)
     fig = plt.figure(figsize=figSize)  # Open a new figure
 

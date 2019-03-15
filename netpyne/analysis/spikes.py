@@ -341,6 +341,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         keep = keep + list(set(orderBy) - set(keep))
     elif orderBy not in keep:
         keep.append(orderBy)
+
     df = df[keep]
 
     popLabels = [pop for pop in sim.net.allPops if pop in df['pop'].unique()] #preserves original ordering

@@ -30,13 +30,13 @@ def plotDipole():
     from .. import sim
     from bokeh.plotting import figure, show, output_file
 
-    x = np.linspace(0, 4*np.pi, 100)
-    y = np.sin(x)
-
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
     fig = figure(title="HNN Diple Plot", tools=TOOLS)
 
-    fig.line(x, y, legend="sin(x)")
-    output_file("hnn_dipole.html", title="HNN Dipole Plot")
+    spkt = sim.allSimData['spkt']
+    spkid = sim.allSimData['spkid']
+    fig.scatter(spkt, spkid, size=1, legend="all spikes")
+
+    output_file("hnn_dipole.html", title="HNN Dipole Plot (spikes for now!)")
     show(fig)  # open a browser 

@@ -107,7 +107,7 @@ def runSim ():
     if hasattr(sim.cfg,'use_local_dt') and sim.cfg.use_local_dt:
         try:
             sim.cvode.use_local_dt(1)
-            if not sim.cfg.verbose: print('Using local dt.')
+            if sim.cfg.verbose: print('Using local dt.')
         except:
             if sim.cfg.verbose: 'Error Failed to use local dt.'
     sim.pc.barrier()

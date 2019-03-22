@@ -240,9 +240,3 @@ def compactConnFormat():
         newConns = [[conn[param] for param in connFormat] for conn in cell.conns]
         del cell.conns
         cell.conns = newConns
-
-
-
-
-
- 

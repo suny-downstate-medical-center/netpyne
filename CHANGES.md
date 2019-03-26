@@ -6,6 +6,8 @@
 
 - Improved speed performance of 'connList' connectivity rules
 
+- Fixed bug saving evol output file
+
 # Version 0.9.1.3
 
 - Removed deprecated hold function from plotConn

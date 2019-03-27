@@ -111,6 +111,7 @@ def runSim ():
     if sim.rank == 0: print(('\nRunning simulation for %s ms...'%sim.cfg.duration))
     sim.pc.psolve(sim.cfg.duration)
 
+    print('FINISHED!')
     sim.pc.barrier() # Wait for all hosts to get to this point
     sim.timing('stop', 'runTime')
     if sim.rank==0:

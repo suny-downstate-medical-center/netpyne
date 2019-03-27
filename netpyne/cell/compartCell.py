@@ -333,7 +333,8 @@ class CompartCell (Cell):
                     y = -self.tags['y'] # Neuron y-axis positive = upwards, so assume pia=0 and cortical depth = neg
                     z = self.tags['z']
                     for pt3d in sectParams['geom']['pt3d']:
-                        h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hObj'])
+                        #h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hObj'])
+                        h.pt3dadd(pt3d[0], pt3d[1], pt3d[2], pt3d[3], sec=sec['hObj'])
 
             # add distributed mechanisms 
             if 'mechs' in sectParams:

@@ -404,22 +404,22 @@ class SONATAImporter():
                         fix_sec_nseg(secs, sim.cfg.dL)
 
                     # invert y coordinates
-                    if self.swapSomaXY:
-                        swap_soma_xy(secs)
+                    # if self.swapSomaXY:
+                    #    swap_soma_xy(secs)
 
                     # make soma mid segment (x,y,z) = (0,0,0)
-                    somaLabel = next((s for s in secs.keys() if 'soma' in s), None)
-                    somaPtFirst = secs[somaLabel]['geom']['pt3d'][0]
-                    somaPtLast = secs[somaLabel]['geom']['pt3d'][-1]
-                    somaPt = [(p1+p2)/2.0 for p1,p2 in zip(somaPtFirst, somaPtLast)]
-                    for secLabel in secs:
-                        for ipt3d in range(len(secs[secLabel]['geom']['pt3d'])):
-                            origPt = secs[secLabel]['geom']['pt3d'][ipt3d]
-                            offsetX = 0.0
-                            if 'apic' in secLabel:
-                                offsetX = 0.0
-                            newpt = (origPt[0] - somaPt[0] + offsetX, origPt[1] - somaPt[1], origPt[2] - somaPt[2], origPt[3])
-                            secs[secLabel]['geom']['pt3d'][ipt3d] = newpt
+                    # somaLabel = next((s for s in secs.keys() if 'soma' in s), None)
+                    # somaPtFirst = secs[somaLabel]['geom']['pt3d'][0]
+                    # somaPtLast = secs[somaLabel]['geom']['pt3d'][-1]
+                    # somaPt = [(p1+p2)/2.0 for p1,p2 in zip(somaPtFirst, somaPtLast)]
+                    # for secLabel in secs:
+                    #     for ipt3d in range(len(secs[secLabel]['geom']['pt3d'])):
+                    #         origPt = secs[secLabel]['geom']['pt3d'][ipt3d]
+                    #         offsetX = 0.0
+                    #         if 'apic' in secLabel:
+                    #             offsetX = 0.0
+                    #         newpt = (origPt[0] - somaPt[0] + offsetX, origPt[1] - somaPt[1], origPt[2] - somaPt[2], origPt[3])
+                    #         secs[secLabel]['geom']['pt3d'][ipt3d] = newpt
     
                     # create mapping of sec ids
                     secLists['SONATA_sec_id'] = [sim.conversion.getSecName(sec) for sec in cellMorph.all]
@@ -521,7 +521,7 @@ class SONATAImporter():
                             cellTags['params']['spkTimes'] = pop.tags['spkTimes'] # 1D list (same for all)
 
                 sim.net.cells.append(pop.cellModelClass(gid, cellTags)) # instantiate Cell object
-                print(('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(icell, numCells, gid, pop_id, sim.rank)))
+                print(('Cell %d/%d (gid=%d) of pop %s, on node %d, ' % (icell, numCells, gid, pop_id, sim.rank)))
 
             sim.net.lastGid = sim.net.lastGid + numCells 
 
@@ -692,9 +692,6 @@ class SONATAImporter():
     # Set cell dynamic params into a cell rule (netParams.cellParams) from NeuroML
     # ------------------------------------------------------------------------------------------------------------
     def setCellRuleDynamicParamsFromNeuroml(self, nml_params, cellRule):
-
-        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        # import IPython; IPython.embed()
 
         # Iterate through the NML tree by section and use the properties to manually create cell mechanisms
         section_lists = [(sec, sec.split('_')[0][:4]) for sec in cellRule['secs']]

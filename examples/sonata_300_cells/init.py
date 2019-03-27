@@ -24,8 +24,8 @@ importSonataModel = 1
 saveForGUI = 0
 saveJsonPsection = 1
 saveJsonConns = 0
-runPlot = 0
-compare = 0
+runPlot = 1
+compare = 1
 
 # Improt SONATA model and instantiate in netpyne
 if importSonataModel:
@@ -63,7 +63,7 @@ if saveForGUI:
 if saveJsonPsection:
     import json
     data = {}
-    remove = ['cell', 'regions','species', 'point_processes', 'hoc_internal_name', 'name', 'morphology']
+    remove = ['cell', 'regions','species', 'point_processes', 'hoc_internal_name', 'name']#, 'morphology']
     removeMorph = ['parent', 'trueparent']
     for icell, c in enumerate(sim.net.cells):
         try:
@@ -73,10 +73,10 @@ if saveJsonPsection:
                 data[icell][name] = sec['hObj'].psection()
                 for x in remove:
                     del data[icell][name][x]
-                # for key in removeMorph:
-                #     if key in data[icell][name]['morphology']:
-                #         del data[icell][name]['morphology'][key]
-                        # data[icell][name]['morphology'][key] = str(data[icell][name]['morphology'][key])
+                for key in removeMorph:
+                    if key in data[icell][name]['morphology']:
+                        del data[icell][name]['morphology'][key]
+                        #data[icell][name]['morphology'][key] = str(data[icell][name]['morphology'][key])
         except:
             print('Error processing %d'%(icell))
 

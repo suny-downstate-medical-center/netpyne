@@ -337,7 +337,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 
     #save figure data
     if saveData:
-        figData = {'LFP': lfp, 'electrodes': electrodes, 'timeRange': timeRange,
+        figData = {'LFP': lfp, 'log_spec': logx_spec, 'freqs': f[f<maxFreq], 't': t_spec*1000.0, 'electrodes': electrodes, 'timeRange': timeRange,
          'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
     
         _saveFigData(figData, saveData, 'lfp')
@@ -346,5 +346,5 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
     # show fig 
     if showFig: _showFigure()
 
-    return figs, {'LFP': lfp, 'electrodes': electrodes, 'saveData': saveData}
+    return figs, {'LFP': lfp, 'log_spec': logx_spec, 'freqs': f[f<maxFreq], 't': t_spec*1000.0, 'electrodes': electrodes, 'saveData': saveData}
 

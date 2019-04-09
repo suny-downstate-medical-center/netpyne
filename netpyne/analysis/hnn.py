@@ -35,7 +35,7 @@ def plotDipole():
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
-    fig = figure(title="HNN Diple Plot", tools=TOOLS)
+    fig = figure(title="HNN Dipole Plot", tools=TOOLS)
 
     spkt = sim.allSimData['spkt']
     spkid = sim.allSimData['spkid']

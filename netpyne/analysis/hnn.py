@@ -28,7 +28,10 @@ import numpy as np
 @exception
 def plotDipole():
     from .. import sim
-    from bokeh.plotting import figure, show, output_file
+    from bokeh.plotting import figure
+    from bokeh.resources import CDN
+    from bokeh.embed import file_html
+    from bokeh.layouts import layout
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
@@ -38,5 +41,7 @@ def plotDipole():
     spkid = sim.allSimData['spkid']
     fig.scatter(spkt, spkid, size=1, legend="all spikes")
 
-    output_file("hnn_dipole.html", title="HNN Dipole Plot (spikes for now!)")
-    show(fig)  # open a browser 
+    plot_layout = layout(fig, sizing_mode='scale_both')
+    html = file_html(plot_layout, CDN, title="HNN Dipole Plot (spikes for now!)")
+
+    return html

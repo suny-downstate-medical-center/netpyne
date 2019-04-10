@@ -6,7 +6,10 @@
 
 - Improved speed performance of 'connList' connectivity rules
 
+- Updated RxD calcium buffering example
+
 - Fixed bug saving evol output file
+
 
 # Version 0.9.1.3
 

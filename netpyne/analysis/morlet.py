@@ -18,6 +18,9 @@ import numpy as np
 import scipy.signal as sps
 import matplotlib.pyplot as plt
 
+def index2ms (idx, sampr): return 1e3*idx/sampr # index to millisecond; sampr=sampling rate in Hz
+def ms2index (ms, sampr): return int(sampr*ms/1e3) # millisecond to index; sampr=sampling rate in Hz
+
 # calculate the Morlet wavelet for central frequency f
 def Morlet (sampr, freq, width=7.0):
   """ Morlet's wavelet for frequency f and time t

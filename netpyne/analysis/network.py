@@ -813,7 +813,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, showElectrodes = False, synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, 
-    iv=False, ivprops=None, includeAxon=True, bkgColor = None, figSize = (10,8), saveData = None, dpi = 300, saveFig = None, showFig = True): 
+    iv=False, ivprops=None, includeAxon=True, bkgColor = None, fontSize = 12, figSize = (10,8), saveData = None, dpi = 300, saveFig = None, showFig = True): 
     ''' 
     Plot 3D cell shape using NEURON Interview PlotShape
         - includePre: (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of presynaptic cells to consider 
@@ -907,8 +907,8 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
         if cvals is not None and len(cvals)>0: 
             sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=np.min(cvals), vmax=np.max(cvals)))
             sm._A = []  # fake up the array of the scalar mappable
-            cb = plt.colorbar(sm, fraction=0.15, shrink=0.5, pad=0.01, aspect=20)    
-            if cvar: cb.set_label(cbLabels[cvar], rotation=90)
+            cb = plt.colorbar(sm, fraction=0.15, shrink=0.5, pad=0.05, aspect=20)    
+            if cvar: cb.set_label(cbLabels[cvar], rotation=90, fontsize=fontSize)
 
         if bkgColor:
             shapeax.w_xaxis.set_pane_color(bkgColor)
@@ -935,7 +935,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
                 marker='v', depthshade=False, edgecolors='k', linewidth=2)
             for i in range(coords.shape[0]):
                 ax.text(coords[i,0],coords[i,1],coords[i,2], '  '+str(showElectrodes[i]), fontweight='bold' )
-            cb.set_label('Segment total transfer resistance to electrodes (kiloohm)', rotation=90, fontsize=12)
+            cb.set_label('Segment total transfer resistance to electrodes (kiloohm)', rotation=90, fontsize=fontSize)
 
         #plt.title(str(includePre)+' -> '+str(includePost) + ' ' + str(cvar))
         shapeax.set_xticklabels([])

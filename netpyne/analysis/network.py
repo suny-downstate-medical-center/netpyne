@@ -563,7 +563,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
         fig.subplots_adjust(bottom=0.02) # Less space on bottom
         h = plt.axes()
 
-        plt.imshow(connMatrix, interpolation='nearest', cmap='jet', vmin=np.nanmin(connMatrix), vmax=np.nanmax(connMatrix))  #_bicolormap(gap=0)
+        plt.imshow(connMatrix, interpolation='nearest', cmap='viridis', vmin=np.nanmin(connMatrix), vmax=np.nanmax(connMatrix))  #_bicolormap(gap=0)
 
         # Plot grid lines
             
@@ -811,7 +811,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot cell shape
 # -------------------------------------------------------------------------------------------------------------------
-#@exception
+@exception
 def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, showElectrodes = False, synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, 
     iv=False, ivprops=None, includeAxon=True, bkgColor = None, figSize = (10,8), saveData = None, dpi = 300, saveFig = None, showFig = True): 
     ''' 
@@ -901,10 +901,10 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
         shapeax.azim=-90 # -90
         shapeax.dist=dist*shapeax.dist
         plt.axis('equal')
-        cmap=plt.cm.jet  #plt.cm.rainbow #plt.cm.jet #YlOrBr_r
+        cmap = plt.cm.viridis #plt.cm.jet  #plt.cm.rainbow #plt.cm.jet #YlOrBr_r
         morph.shapeplot(h,shapeax, sections=secs, cvals=cvals, cmap=cmap)
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
-        if not cvals==None and len(cvals)>0: 
+        if cvals is not None and len(cvals)>0: 
             sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=np.min(cvals), vmax=np.max(cvals)))
             sm._A = []  # fake up the array of the scalar mappable
             cb = plt.colorbar(sm, fraction=0.15, shrink=0.5, pad=0.01, aspect=20)    

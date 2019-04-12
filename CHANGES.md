@@ -10,6 +10,7 @@
 
 - Fixed bug saving evol output file
 
+- Fixed bug in plotShape()
 
 # Version 0.9.1.3
 

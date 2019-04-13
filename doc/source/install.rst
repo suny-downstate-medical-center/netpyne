@@ -3,9 +3,11 @@
 Installation
 =======================================
 
-To install only the NetPyNE package (without the GUI) please follow these instructions.
+To install only the NetPyNE package (without the GUI) please follow these instructions in the :ref:`install_only_netpyne` section below.
 
-To install both NetPyNE and the **NetPyNE GUI** (note the GUI is called NetPyNE-UI) go straight to the :ref:`install_gui` section below. Note that NetPyNE-UI only supports Python 3. The :ref:`install_gui` includes installation instructions for NEURON, NetPyNE and NetPyNE-UI, using specific versions that have been fully tested. 
+To install both NetPyNE and the **NetPyNE GUI** (the GUI is called NetPyNE-UI) go straight to the :ref:`install_gui` section below. Note that the NetPyNE-UI only supports Python 3. The :ref:`install_gui` includes installation instructions for NEURON, NetPyNE and NetPyNE-UI, using specific versions that have been fully tested with the GUI.
+
+If you have any issues during the installation please post a message with the details to the `NetPyNE forum <www.netpyne.org/forum>`_ or the `NetPyNE GitHub issues <https://github.com/Neurosim-lab/netpyne/issues>`_ .  
 
 
 ..`install_only_netpyne`
@@ -65,5 +67,11 @@ The NetPyNE package source files, as well as example models, are available via G
 Installing NetPyNE and the NetPyNE GUI (alpha version)
 ------------------------------------------------------
 
-You can install the tool via `pip <https://github.com/Neurosim-lab/NetPyNE-UI/wiki/Pip-installation>`_ (requires `NEURON <https://github.com/Neurosim-lab/NetPyNE-UI/wiki/Installing-NEURON-crxd-Version>`_ ), or using our pre-packaged `Docker <https://github.com/Neurosim-lab/NetPyNE-UI/wiki/Docker-installation>`_ or `Virtual Machine <https://github.com/Neurosim-lab/NetPyNE-UI/wiki/Virtual-Machine-Installation>`_.
+The `NetPyNE-UI GitHub Wiki <https://github.com/Neurosim-lab/NetPyNE-UI/wiki>`_ provides instructions to install NEURON, NetPyNE and NetPyNE-UI, using specific versions that have been fully tested with the GUI. There are 3 alternative ways to do this:
+
+`1) Install using pip <https://github.com/Neurosim-lab/NetPyNE-UI/wiki/Pip-installation>`_ - Installs NetPyNE and NetPyNE-UI on your system via a simple pip command, but requires having `NEURON already installed (see instructions) <https://github.com/Neurosim-lab/NetPyNE-UI/wiki/Installing-NEURON-(version-7.6.2-with-crxd)>`_.
+
+`2) Install using Docker <https://github.com/Neurosim-lab/NetPyNE-UI/wiki/Docker-installation>`_ - Pre-packaged installation that includes everything you need in a Docker container: NEURON, NetPyNE and NetPyNE-UI. 
+
+`3) Virtual machine <https://github.com/Neurosim-lab/NetPyNE-UI/wiki/Virtual-Machine-Installation>`_ - Download a virtual machine image with everything pre-installed. Requires the Virtual Box software.  
 

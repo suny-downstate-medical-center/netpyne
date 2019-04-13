@@ -516,8 +516,7 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
 ## Plot connectivity
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', groupByIntervalPre = None, groupByIntervalPost = None,
-            graphType = 'matrix', synOrConn = 'syn', synMech = None, connsFile = None, tagsFile = None, clim = None, saveData = None, saveFig = None, showFig = True): 
+def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', groupByIntervalPre = None, groupByIntervalPost = None, graphType = 'matrix', synOrConn = 'syn', synMech = None, connsFile = None, tagsFile = None, clim = None, fontSize = 12, saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot network connectivity
         - includePre (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
@@ -553,6 +552,9 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
     if connMatrix is None:
         print("Error calculating connMatrix in plotConn()")
         return None
+
+    # set font size
+    plt.rcParams.update({'font.size': fontSize})
 
     # matrix plot
     if graphType == 'matrix':
@@ -675,7 +677,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
 ## Plot 2D representation of network cell positions and connections
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns = True, popColors = None, 
+def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns = True, popColors = None, fontSize = 12,
                 tagsFile = None, saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot 2D representation of network cell positions and connections
@@ -779,7 +781,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
     plt.ylabel(ycoord+' (um)') 
     plt.xlim([min(posX)-0.05*max(posX),1.05*max(posX)]) 
     plt.ylim([min(posY)-0.05*max(posY),1.05*max(posY)])
-    fontsiz = 12
+    fontsiz = fontSize
 
     for popLabel in popLabels:
         plt.plot(0,0,color=popColors[popLabel],label=popLabel)

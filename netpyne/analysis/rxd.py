@@ -23,8 +23,11 @@ from .utils import exception, _showFigure, _saveFigData
 ## Plot RxD concentration
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotRxDConcentration(speciesLabel, regionLabel, plane='xy', showFig=True):
+def plotRxDConcentration(speciesLabel, regionLabel, plane='xy', fontSize=12, showFig=True):
     from .. import sim
+    # set font size
+    plt.rcParams.update({'font.size': fontSize})
+
     species = sim.net.rxd['species'][speciesLabel]['hObj']
     region = sim.net.rxd['regions'][regionLabel]['hObj']
     fig=plt.figure(figsize=(4,10))

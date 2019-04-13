@@ -728,7 +728,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 @exception
 def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], bins = 50,
                  popColors = [], histlogy = False, histlogx = False, histmin = 0.0, density = False, includeRate0=False, legendLabels = None, normfit = False,
-                 fontsize=14, histShading=True, xlim = None, dpi = 100, figSize = (6,8), saveData = None, saveFig = None, showFig = True, **kwargs): 
+                  histShading=True, xlim = None, dpi = 100, figSize = (6,8), fontSize=12, saveData = None, saveFig = None, showFig = True, **kwargs): 
     ''' 
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -756,7 +756,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
     colors = []
     params = {
         'axes.labelsize': 14,
-        'font.size': 14,
+        'font.size': fontSize,
         'legend.fontsize': 14,
         'xtick.labelsize': 14,
         'ytick.labelsize': 14,
@@ -778,7 +778,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
     for stat in stats:
         # create fig
         fig,ax1 = plt.subplots(figsize=figSize)
-        fontsiz = fontsize 
+        fontsiz = fontSize
         xlabel = xlabels[stat]
 
         statData = []

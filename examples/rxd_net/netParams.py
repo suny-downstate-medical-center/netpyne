@@ -36,7 +36,7 @@ netParams.synMechParams['inh'] = {'mod': 'Exp2Syn', 'tau1': 0.6, 'tau2': 8.5, 'e
 
 #------------------------------------------------------------------------------
 # Stimulation parameters
-netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 20, 'noise': 0.3}
+netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 25, 'noise': 0.8}
 netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'cellType': ['E','I']}, 'weight': 0.01, 'sec': 'soma', 'delay': 'max(1, normal(5,2))', 'synMech': 'exc'}
 
 #------------------------------------------------------------------------------

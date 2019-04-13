@@ -110,9 +110,10 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                         plt.ylabel(trace, fontsize=fontSize)
                     plt.plot(t[:len(data)], data, linewidth=1.5, color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
                     plt.xlabel('Time (ms)', fontsize=fontSize)
+                    plt.ylabel('mV', fontsize=fontSize)  ## REMOVEEE
                     plt.xlim(timeRange)
                     if ylim: plt.ylim(ylim)
-                    plt.title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                    plt.title('%s '%(trace))
                     
             if axis == 'off':  # if no axis, add scalebar
                 ax = plt.gca()
@@ -127,7 +128,8 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                 #maxLabelLen = 10
                 #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen)) 
                 #plt.legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
-                plt.legend()
+                plt.legend()  # PUT BACK!!!!!!
+                pass
 
     # Plot one fig per cell
     if oneFigPer == 'cell':

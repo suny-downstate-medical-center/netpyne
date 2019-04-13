@@ -3,16 +3,16 @@
 Installation
 =======================================
 
-To install only the NetPyNE package (without the GUI) please follow these instructions in the :ref:`install_only_netpyne` section below.
+See here instructions to :ref:`install_only_netpyne`.
 
-To install both NetPyNE and the **NetPyNE GUI** (the GUI is called NetPyNE-UI) go straight to the :ref:`install_gui` section below. Note that the NetPyNE-UI only supports Python 3. The :ref:`install_gui` includes installation instructions for NEURON, NetPyNE and NetPyNE-UI, using specific versions that have been fully tested with the GUI.
+See here instructions to :ref:`install_gui` section below. Note that the NetPyNE GUI only supports Python 3. The :ref:`install_gui` section also includes installation instructions for NEURON and NetPyNE, using specific versions that have been fully tested with the GUI.
 
 If you have any issues during the installation please post a message with the details to the `NetPyNE forum <www.netpyne.org/forum>`_ or the `NetPyNE GitHub issues <https://github.com/Neurosim-lab/netpyne/issues>`_ .  
 
 
-..`install_only_netpyne`
+.. `install_only_netpyne`
 
-Installing only NetPyNE (without the GUI) 
+Install only NetPyNE (without the GUI) 
 ------------------------------------------
 
 Requirements 
@@ -64,7 +64,7 @@ The NetPyNE package source files, as well as example models, are available via G
 
 .. _install_gui:
 
-Installing NetPyNE and the NetPyNE GUI (alpha version)
+Install NetPyNE and the NetPyNE GUI (alpha version)
 ------------------------------------------------------
 
 The `NetPyNE-UI GitHub Wiki <https://github.com/Neurosim-lab/NetPyNE-UI/wiki>`_ provides instructions to install NEURON, NetPyNE and NetPyNE-UI, using specific versions that have been fully tested with the GUI. There are 3 alternative ways to do this:

@@ -895,6 +895,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
 
         # Plot shapeplot
         cbLabels = {'numSyns': 'number of synapses', 'weightNorm': 'weight scaling'}
+        plt.rcParams.update({'font.size': fontSize})
         fig=plt.figure(figsize=figSize)
         shapeax = plt.subplot(111, projection='3d')
         shapeax.elev=90 # 90 

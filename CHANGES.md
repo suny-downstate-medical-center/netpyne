@@ -8,6 +8,8 @@
 
 - Updated RxD calcium buffering example
 
+- Added 'fontSize' argument to several plots
+
 - Fixed bug saving evol output file
 
 - Fixed bug in plotShape()

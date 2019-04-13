@@ -293,8 +293,8 @@ def plotSyncs (include =['allCells', 'eachPop'], timeRanges = None, timeRangeLab
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
-        spikeHist = None, spikeHistBin = 5, syncLines = False, lw = 2, marker = '|', markerSize=5, popColors = None, figSize = (10,8), dpi = 100, saveData = None, saveFig = None,
-        showFig = True):
+        spikeHist=None, spikeHistBin=5, syncLines=False, lw=2, marker='|', markerSize=5, popColors=None, figSize=(10, 8), fontSize=12,
+        dpi = 100, saveData = None, saveFig = None, showFig = True):
     '''
     Raster plot of network cells
         - include (['all',|'allCells',|'allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to include (default: 'allCells')
@@ -417,15 +417,18 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         timeRange[1] =  sel['spkt'].max()
 
     # Calculate spike histogram
-
     if spikeHist:
         histo = np.histogram(sel['spkt'].tolist(), bins = np.arange(timeRange[0], timeRange[1], spikeHistBin))
         histoT = histo[1][:-1]+spikeHistBin/2
         histoCount = histo[0]
-    # Plot spikes
-    fig,ax1 = plt.subplots(figsize=figSize)
-    fontsiz = 12
 
+    # Plot spikes
+    # set font size
+    plt.rcParams.update({'font.size': fontSize})
+
+    fig,ax1 = plt.subplots(figsize=figSize)
+    fontsiz = fontSize
+ 
     if spikeHist == 'subplot':
         gs = gridspec.GridSpec(2, 1,height_ratios=[2,1])
         ax1=plt.subplot(gs[0])

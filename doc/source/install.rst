@@ -10,7 +10,7 @@ See here instructions to :ref:`install_gui` section below. Note that the NetPyNE
 If you have any issues during the installation please post a message with the details to the `NetPyNE forum <www.netpyne.org/forum>`_ or the `NetPyNE GitHub issues <https://github.com/Neurosim-lab/netpyne/issues>`_ .  
 
 
-.. `install_only_netpyne`
+.. _install_only_netpyne:
 
 Install only NetPyNE (without the GUI) 
 ------------------------------------------

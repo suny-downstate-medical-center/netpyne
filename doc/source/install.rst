@@ -3,9 +3,11 @@
 Installation
 =======================================
 
-See here instructions to :ref:`install_only_netpyne`.
+Please select the type of installation you want:
 
-See here instructions to :ref:`install_gui` section below. Note that the NetPyNE GUI only supports Python 3. The :ref:`install_gui` section also includes installation instructions for NEURON and NetPyNE, using specific versions that have been fully tested with the GUI.
+- :ref:`install_only_netpyne`.
+
+- :ref:`install_gui`. This link also includes installation instructions for NEURON and NetPyNE, using specific versions that have been fully tested with the GUI. Note that the NetPyNE GUI only supports Python 3.
 
 If you have any issues during the installation please post a message with the details to the `NetPyNE forum <www.netpyne.org/forum>`_ or the `NetPyNE GitHub issues <https://github.com/Neurosim-lab/netpyne/issues>`_ .  
 
@@ -20,15 +22,17 @@ Requirements
 
 The NetPyNE package requires:
 
-- Python 2 or 3 (2.7, 3.6 and 3.7 are supported). If you don't have it already installed, download it from the `official Python web <www.python.org>`_ . Alternatively, you can download the `Anaconda Distribution <www.anaconda.com/distribution/>`_ which also includes several data science and visualization packages.
+- Python 2 or 3 (2.7, 3.6 and 3.7 are supported). If you don't have it installed, download it from the `official Python web <www.python.org>`_. Alternatively, you can download the `Anaconda Distribution <www.anaconda.com/distribution/>`_ which also includes several data science and visualization packages.
 
-- The NEURON simulator. If you don't have it already installed, see NEURON's `installation instructions <http://www.neuron.yale.edu/neuron/download/>`_ . If you would like to run parallelized simulations, please ensure you install NEURON with MPI support (`OpenMPI <https://www.open-mpi.org/>`_ ). 
 
-- The ``pip`` tool for installing Python packages. If you don't have it already installed, see `pip installation here <https://pip.pypa.io/en/stable/installing/>`_ .
+- The NEURON simulator. If you don't have it already installed, see NEURON's `installation instructions <http://www.neuron.yale.edu/neuron/download/>`_. If you would like to run parallelized simulations, please ensure you install NEURON with MPI support (`OpenMPI <https://www.open-mpi.org/>`_). 
+
+
+- The ``pip`` tool for installing Python packages. If you don't have it already installed, see `pip installation here <https://pip.pypa.io/en/stable/installing/>`_.
 
 
 Install the latest released version of NetPyNE via pip (Recommended)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Linux or Mac OS:  ``pip install netpyne`` 
 
@@ -45,22 +49,19 @@ Linux or Mac OS: ``pip install netpyne -U``
 Windows: ``python -m pip install -U netpyne`` 
 
 
-Install the development version of NetPyNE via pip 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Install the development version of NetPyNE via GitHub and pip
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This will install the version in the GitHub "development" branch -- it will include some of the latest enhancements and bug fixes, but could also include temporary bugs:
+The NetPyNE package source files, as well as example models, are available via GitHub at: https://github.com/Neurosim-lab/netpyne. The following instructions will install the version in the GitHub "development" branch -- it will include some of the latest enhancements and bug fixes, but could also include temporary bugs:
 
-1) git clone https://github.com/Neurosim-lab/netpyne.git
-2) cd netpyne
-3) git checkout development
-4) pip install -e .
+1) ``git clone https://github.com/Neurosim-lab/netpyne.git``
+2) ``cd netpyne``
+3) ``git checkout development``
+4) ``pip install -e .``
 
-pip will add a symlink in the default python packages folder to the cloned netpyne folder (so you don't need to modify PYTHONPATH). If new changes are available just need to pull from cloned netpyne repo.
+pip will add a symlink in the default python packages folder to the cloned netpyne folder (so you don't need to modify PYTHONPATH). If new changes are available just need to ``git pull`` from cloned netpyne repo.
 
-
-Install NetPyNE via Github (for developers) 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The NetPyNE package source files, as well as example models, are available via GitHub at: https://github.com/Neurosim-lab/netpyne
+This version can also be used by developers interested in extending the package. 
 
 .. _install_gui:
 

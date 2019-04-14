@@ -3,11 +3,11 @@
 Installation
 =======================================
 
-Please select the type of installation you want:
+Please select the type of installation you would like:
 
-- :ref:`install_only_netpyne`.
-|
-- :ref:`install_gui`. This link also includes installation instructions for NEURON and NetPyNE, using specific versions that have been fully tested with the GUI. Note that the NetPyNE GUI only supports Python 3.
+Option 1: :ref:`install_only_netpyne`.
+
+Option 2: :ref:`install_gui`. This link also includes installation instructions for NEURON and NetPyNE, using specific versions that have been fully tested with the GUI. Note that the NetPyNE GUI only supports Python 3.
 
 If you have any issues during the installation please post a message with the details to the `NetPyNE forum <www.netpyne.org/forum>`_ or the `NetPyNE GitHub issues <https://github.com/Neurosim-lab/netpyne/issues>`_ .  
 

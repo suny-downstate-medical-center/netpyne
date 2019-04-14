@@ -46,8 +46,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'netpyne_doc'
-copyright = '2018, Salvador Dura-Bernal (Neurosim lab)'
+project = 'NetPyNE Documentation'
+copyright = '2019, Salvador Dura-Bernal (Neurosim lab)'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

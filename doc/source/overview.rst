@@ -75,7 +75,7 @@ Major Features
     * Used to develop models of many different brain regions and phenomena. See `full list of models <www.netpyne.org/models>`_.
     * Integrated with the Human Neocortical Neurosolver (https://hnn.brown.edu/) to add flexibility to its cortical model 
     * Used by Open Source Brain (www.opensourcebrain.org) to run parallel simulation of NeuroML-based NEURON models
-    * Available to run simulations on XSEDE supercomputers via the `Neuroscience Gateway <www.nsgportal.org>`_.
+    * Available to run simulations on XSEDE supercomputers via the `Neuroscience Gateway <www.nsgportal.org>`_. 
 
 Questions, suggestions and contributions
 -----------------------------------------

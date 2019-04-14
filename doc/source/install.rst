@@ -7,7 +7,7 @@ Please select the type of installation you would like:
 
 Option 1: :ref:`install_only_netpyne`.
 
-Option 2: :ref:`install_gui`. This link also includes installation instructions for NEURON and NetPyNE, using specific versions that have been fully tested with the GUI. Note that the NetPyNE GUI only supports Python 3.
+Option 2: :ref:`install_gui`. This link includes installation instructions for NEURON and NetPyNE, using specific versions that have been fully tested with the GUI. Note that the NetPyNE GUI only supports Python 3.
 
 If you have any issues during the installation please post a message with the details to the `NetPyNE forum <www.netpyne.org/forum>`_ or the `NetPyNE GitHub issues <https://github.com/Neurosim-lab/netpyne/issues>`_ .  
 
@@ -20,13 +20,13 @@ Install only NetPyNE (without the GUI)
 Requirements 
 ^^^^^^^^^^^^^^^^^^
 
-The NetPyNE package requires:
+Before installing NetPyNE, please ensure you have the following installed:
 
-- Python 2 or 3 (2.7, 3.6 and 3.7 are supported). If you don't have it installed, download it from the `official Python web <www.python.org>`_. Alternatively, you can download the `Anaconda Distribution <www.anaconda.com/distribution/>`_ which also includes several data science and visualization packages.
-|
-- The NEURON simulator. If you don't have it already installed, see NEURON's `installation instructions <http://www.neuron.yale.edu/neuron/download/>`_. If you would like to run parallelized simulations, please ensure you install NEURON with MPI support (`OpenMPI <https://www.open-mpi.org/>`_). 
-|
-- The ``pip`` tool for installing Python packages. If you don't have it already installed, see `pip installation here <https://pip.pypa.io/en/stable/installing/>`_.
+1) Python 2 or 3 (2.7, 3.6 and 3.7 are supported). Download from the `official Python web <www.python.org>`_. Alternatively, you can download the `Anaconda Distribution <www.anaconda.com/distribution/>`_ which also includes several data science and visualization packages.
+
+2) The NEURON simulator. See NEURON's `installation instructions <http://www.neuron.yale.edu/neuron/download/>`_. If you would like to run parallelized simulations, please ensure you install NEURON with MPI support (`OpenMPI <https://www.open-mpi.org/>`_). 
+
+3) The ``pip`` tool for installing Python packages. See `pip installation here <https://pip.pypa.io/en/stable/installing/>`_.
 
 
 Install the latest released version of NetPyNE via pip (Recommended)

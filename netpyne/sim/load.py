@@ -18,6 +18,10 @@ try:
     to_unicode = unicode
 except NameError:
     to_unicode = str
+try:
+    basestring
+except NameError:
+    basestring = str
 
 from future import standard_library
 standard_library.install_aliases()
@@ -37,7 +41,7 @@ def _loadFile (filename):
 
     def _byteify(data, ignore_dicts = False):
         # if this is a unicode string, return its string representation
-        if isinstance(data, str):
+        if isinstance(data, basestring):
             return data.encode('utf-8')
         # if this is a list of values, return list of byteified values
         if isinstance(data, list):
@@ -372,11 +376,11 @@ def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, lo
     conns = utils.decimalToFloat(conns)
 
     if saveTags and tags:
-        outFilename = saveTags if isinstance(saveTags, str) else 'filename'[:-4]+'_tags.json'
+        outFilename = saveTags if isinstance(saveTags, basestring) else 'filename'[:-4]+'_tags.json'
         print('Saving tags to %s ...' % (outFilename))
         sim.saveJSON(outFilename, {'tags': tags})         
     if saveConns and conns:
-        outFilename = saveConns if isinstance(saveConns, str) else 'filename'[:-4]+'_conns.json'
+        outFilename = saveConns if isinstance(saveConns, basestring) else 'filename'[:-4]+'_conns.json'
         print('Saving conns to %s ...' % (outFilename))
         sim.saveJSON(outFilename, {'conns': conns})
 

@@ -1,6 +1,41 @@
+# Version 0.9.2
+
+- Improved Python cell template import so can read section names from a Python list or dict of sections
+
+- Fixed replicability issue across different number of cores when using 'connList' connectivity rules
+
+- Improved speed performance of 'connList' connectivity rules
+
+- Updated RxD calcium buffering example
+
+- Added 'fontSize' argument to several plots
+
+- Fixed bug saving evol output file
+
+- Fixed bug in plotShape()
+
+# Version 0.9.1.3
+
+- Removed deprecated hold function from plotConn
+
+# Version 0.9.1.2
+
+- Set 'pandas==0.23.4' to avoid error 
+
+# Version 0.9.1.1
+
+- Fixed minor bug - axis font size changed from 12 to 2 by accident (change required for NetPyNE-UI)
+
+
 # Version 0.9.1
 
+- Updates to NeuroML converter 
+
 - Add scalebar to rxd concentration plot
+
+- Fixed bug so comparisons to basestring work in Python 2 and 3
+
+- Fixed bug in string-based functions representation in GUI
 
 
 # Version 0.9.0

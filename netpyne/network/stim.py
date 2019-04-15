@@ -14,6 +14,10 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 from numbers import Number
+try:
+    basestring
+except NameError:
+    basestring = str
 
 
 # -----------------------------------------------------------------------------
@@ -153,7 +157,7 @@ def _stimStrToFunc (self, postCellsTags, sourceParams, targetParams):
     params.update(targetParams)
 
     paramsStrFunc = [param for param in self.stimStringFuncParams+self.connStringFuncParams 
-        if param in params and isinstance(params[param], str) and params[param] not in ['variable']]  
+        if param in params and isinstance(params[param], basestring) and params[param] not in ['variable']]  
 
     # dict to store correspondence between string and actual variable
     dictVars = {}   

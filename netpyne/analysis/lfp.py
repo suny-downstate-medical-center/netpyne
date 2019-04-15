@@ -13,6 +13,10 @@ from __future__ import absolute_import
 from builtins import range
 from builtins import round
 from builtins import str
+try:
+    basestring
+except NameError:
+    basestring = str
 
 from future import standard_library
 standard_library.install_aliases()
@@ -31,8 +35,7 @@ from .utils import colorList, exception, _saveFigData, _showFigure, _smooth1d
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange = None, NFFT = 256, noverlap = 128, 
-    nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, logx=False, logy=False, norm=False, dpi = 200, overlay=False, filtFreq = False, filtOrder=3, detrend=False,
-    colors = None, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
+    nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, logx=False, logy=False, norm=False, dpi = 200, overlay=False, filtFreq = False, filtOrder=3, detrend=False, fontSize=14, colors = None, maxPlots=8, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot LFP
         - electrodes (list): List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (default: ['avg', 'all'])
@@ -62,7 +65,10 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
     print('Plotting LFP ...')
 
     if not colors: colors = colorList
-
+    
+    # set font size
+    plt.rcParams.update({'font.size': fontSize})
+    
     # time range
     if timeRange is None:
         timeRange = [0,sim.cfg.duration]
@@ -101,10 +107,10 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 
     # plotting
     figs = []
-    fontsiz = 14
-    maxPlots = 8.0
+    #maxPlots = 8.0
     
-    data = {'lfp':lfp}  # returned data
+    data = {'lfp': lfp}  # returned data
+
 
     # time series -----------------------------------------
     if 'timeSeries' in plots:
@@ -126,7 +132,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
                 lw=1.0
             plt.plot(t, -lfpPlot+(i*ydisp), color=color, linewidth=lw)
             if len(electrodes) > 1:
-                plt.text(timeRange[0]-0.07*(timeRange[1]-timeRange[0]), (i*ydisp), elec, color=color, ha='center', va='top', fontsize=fontsiz, fontweight='bold')
+                plt.text(timeRange[0]-0.07*(timeRange[1]-timeRange[0]), (i*ydisp), elec, color=color, ha='center', va='top', fontsize=fontSize, fontweight='bold')
 
         ax = plt.gca()
 
@@ -136,12 +142,12 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 
         # format plot
         if len(electrodes) > 1:
-            plt.text(timeRange[0]-0.14*(timeRange[1]-timeRange[0]), (len(electrodes)*ydisp)/2.0, 'LFP electrode', color='k', ha='left', va='bottom', fontsize=fontsiz, rotation=90)
+            plt.text(timeRange[0]-0.14*(timeRange[1]-timeRange[0]), (len(electrodes)*ydisp)/2.0, 'LFP electrode', color='k', ha='left', va='bottom', fontSize=fontSize, rotation=90)
             plt.ylim(-offset, (len(electrodes))*ydisp)
         else:       
-            plt.suptitle('LFP Signal', fontsize=fontsiz, fontweight='bold')
+            plt.suptitle('LFP Signal', fontSize=fontSize, fontweight='bold')
         ax.invert_yaxis()
-        plt.xlabel('time (ms)', fontsize=fontsiz)
+        plt.xlabel('time (ms)', fontsize=fontSize)
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.spines['left'].set_visible(False)
@@ -167,7 +173,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
                 unitsx='ms', loc=3, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
         # save figure
         if saveFig: 
-            if isinstance(saveFig, str):
+            if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
                 filename = sim.cfg.filename+'_'+'lfp.png'
@@ -178,7 +184,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         if overlay:
             figs.append(plt.figure(figsize=figSize))
         else:
-            numCols = np.round(len(electrodes) / maxPlots) + 1
+            numCols = 1# np.round(len(electrodes) / maxPlots) + 1
             figs.append(plt.figure(figsize=(figSize[0]*numCols, figSize[1])))
             #import seaborn as sb
 
@@ -215,8 +221,8 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             plt.plot(freqs[freqs<maxFreq], signal[freqs<maxFreq], linewidth=lw, color=color, label='Electrode %s'%(str(elec)))
             plt.xlim([0, maxFreq])
             if len(electrodes) > 1 and not overlay:
-                plt.title('Electrode %s'%(str(elec)), fontsize=fontsiz-2)
-            plt.ylabel('dB/Hz', fontsize=fontsiz)
+                plt.title('Electrode %s'%(str(elec)), fontsize=fontSize)
+            plt.ylabel('dB/Hz', fontsize=fontSize)
             
             # ALTERNATIVE PSD CALCULATION USING WELCH
             # from http://joelyancey.com/lfp-python-practice/
@@ -232,11 +238,11 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             # plt.ylabel('$uV^{2}/Hz$',size=fontsiz)
 
         # format plot
-        plt.xlabel('Frequency (Hz)', fontsize=fontsiz)
+        plt.xlabel('Frequency (Hz)', fontsize=fontSize)
         if overlay:
-            plt.legend(fontsize=fontsiz)
+            plt.legend(fontsize=fontSize)
         plt.tight_layout()
-        plt.suptitle('LFP Power Spectral Density', fontsize=fontsiz, fontweight='bold') # add yaxis in opposite side
+        plt.suptitle('LFP Power Spectral Density', fontsize=fontSize, fontweight='bold') # add yaxis in opposite side
         plt.subplots_adjust(bottom=0.08, top=0.92)
 
 
@@ -246,7 +252,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 
         # save figure
         if saveFig: 
-            if isinstance(saveFig, str):
+            if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
                 filename = sim.cfg.filename+'_'+'lfp_psd.png'
@@ -255,12 +261,12 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
     # Spectrogram ------------------------------
     if 'spectrogram' in plots:
         import matplotlib.cm as cm
-        numCols = np.round(len(electrodes) / maxPlots) + 1
+        numCols = 1 #np.round(len(electrodes) / maxPlots) + 1
         figs.append(plt.figure(figsize=(figSize[0]*numCols, figSize[1])))
         #t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
+        logx_spec = []
             
         from scipy import signal as spsig
-        logx_spec = []
         
         for i,elec in enumerate(electrodes):
             if elec == 'avg':
@@ -285,8 +291,8 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
                 color = colorList[i%len(colorList)]
                 lw=1.0
-            plt.pcolormesh(x_mesh, y_mesh, logx_spec[i], cmap=cm.jet, vmin=vmin, vmax=vmax)
-            plt.colorbar(label='dB/Hz')
+            plt.pcolormesh(x_mesh, y_mesh, logx_spec[i], cmap=cm.viridis , vmin=vmin, vmax=vmax)
+            plt.colorbar(label='dB/Hz', ticks=[np.ceil(vmin), np.floor(vmax)])
             if logy:
                 plt.yscale('log')
                 plt.ylabel('Log-frequency (Hz)')
@@ -294,18 +300,18 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
                     yticks = tuple(logy)
                     plt.yticks(yticks, yticks)
             else:
-                plt.ylabel('Frequency (Hz)')
+                plt.ylabel('(Hz)')
             if len(electrodes) > 1:
-                plt.title('Electrode %s'%(str(elec)), fontsize=fontsiz-2)
+                plt.title('Electrode %s'%(str(elec)), fontsize=fontSize-2)
 
-        plt.xlabel('time (ms)', fontsize=fontsiz)
+        plt.xlabel('time (ms)', fontsize=fontSize)
         plt.tight_layout()
-        plt.suptitle('LFP spectrogram', size=fontsiz, fontweight='bold')
+        plt.suptitle('LFP spectrogram', size=fontSize, fontweight='bold')
         plt.subplots_adjust(bottom=0.08, top=0.90)
         
         # save figure
         if saveFig: 
-            if isinstance(saveFig, str):
+            if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
                 filename = sim.cfg.filename+'_'+'lfp_timefreq.png'
@@ -327,14 +333,19 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             cvals.extend(trSegs)  
             
         includePost = [c.gid for c in sim.net.compartCells]
-        fig = sim.analysis.plotShape(includePost=includePost, showElectrodes=electrodes, cvals=cvals, includeAxon=includeAxon, dpi=dpi, saveFig=saveFig, showFig=showFig, figSize=figSize)[0]
+        fig = sim.analysis.plotShape(includePost=includePost, showElectrodes=electrodes, cvals=cvals, includeAxon=includeAxon, dpi=dpi,
+        fontSize=fontSize, saveFig=saveFig, showFig=showFig, figSize=figSize)[0]
         figs.append(fig)
 
 
+    outputData = {'LFP': lfp, 'electrodes': electrodes, 'timeRange': timeRange, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+
+    if 'spectrogram' in plots:
+        outputData.update({'log_spec': logx_spec, 'freqs': f[f<maxFreq], 't': t_spec*1000.0})
+
     #save figure data
     if saveData:
-        figData = {'LFP': lfp, 'electrodes': electrodes, 'timeRange': timeRange,
-         'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+        figData = outputData
     
         _saveFigData(figData, saveData, 'lfp')
 
@@ -342,5 +353,4 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
     # show fig 
     if showFig: _showFigure()
 
-    return figs, {'LFP': lfp, 'electrodes': electrodes, 'saveData': saveData}
-
+    return figs, outputData

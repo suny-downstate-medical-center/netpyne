@@ -40,6 +40,79 @@ def saveJSON(fileName, data):
         fileObj.write(to_unicode(str_))
 
 
+
+#------------------------------------------------------------------------------
+# Save to NSDF format
+#------------------------------------------------------------------------------
+# https://github.com/nsdf/nsdf
+
+def saveNSDF(sim):
+    import nsdf
+    nsdf.dialect.ONED = nsdf.NSDFWriter.add_event_1d
+    dialect = nsdf.dialect.ONED 
+    writer = nsdf.NSDFWriter('netpyne_test_{}.h5'.format(dialect),
+                                mode='w', dialect=dialect)
+    event_data = nsdf.EventData('spiketime', unit='ms', dtype=FLOATDTYPE)
+
+    for spkid, spkt in zip(sim.allSimData['spkt'], sim.allSimData['spkt']):
+        event_data.put_data(spkid, spkt)
+        writer.title = 'NSDF file for NetPyNE'
+
+
+    '''
+    # Storing recorded traces
+            import nsdf
+            writer = nsdf.NSDFWriter('hay_currents_nsdf.h5', mode='w')
+            curr_source_ds = writer.add_uniform_ds('hay_currs', i_cp_names)
+            data_obj_1 = nsdf.UniformData('i', unit='nA')
+            data_obj_2 = nsdf.UniformData('i_pas', unit='nA')
+            data_obj_3 = nsdf.UniformData('i_cap', unit='nA')
+            data_obj_4 = nsdf.UniformData('i_ca', unit='nA')
+            data_obj_5 = nsdf.UniformData('i_na', unit='nA')
+            data_obj_6 = nsdf.UniformData('i_k', unit='nA')
+            data_obj_7 = nsdf.UniformData('i_ih', unit='nA')
+
+            for ii,source in enumerate(i_cp_names):
+                data_obj_1.put_data(source, total_hdf5[ii])
+                data_obj_2.put_data(source, i_pas_hdf5[ii])
+                data_obj_3.put_data(source, i_cap_hdf5[ii])
+                data_obj_4.put_data(source, i_ca_hdf5[ii])
+                data_obj_5.put_data(source, i_na_hdf5[ii])
+                data_obj_6.put_data(source, i_k_hdf5[ii])
+                data_obj_7.put_data(source, i_ih_hdf5[ii])
+            data_obj_1.set_dt(0.25, unit='ms')
+            data_obj_2.set_dt(0.25, unit='ms')
+            data_obj_3.set_dt(0.25, unit='ms')
+            data_obj_4.set_dt(0.25, unit='ms')
+            data_obj_5.set_dt(0.25, unit='ms')
+            data_obj_6.set_dt(0.25, unit='ms')
+            data_obj_7.set_dt(0.25, unit='ms')
+        
+            v_source_ds = writer.add_uniform_ds('hay_v', ['soma','dend', 'dend2'])
+            ele_source_ds = writer.add_uniform_ds('hay_ele', ['iclamp','epsp'])
+            data_obj_8 = nsdf.UniformData('v', unit='mV')
+            for ii,source in enumerate(['soma','dend', 'dend2']):
+                data_obj_8.put_data(source, v_all[ii])
+            data_obj_9 = nsdf.UniformData('electronics', unit='nA')
+            data_obj_9.put_data('iclamp', i_clamp_curr*-1.)
+            data_obj_9.put_data('epsp', epsp_curr)
+
+            data_obj_8.set_dt(0.25, unit='ms')
+            data_obj_9.set_dt(0.25, unit='ms')
+
+            writer.add_uniform_data(curr_source_ds, data_obj_1)
+            writer.add_uniform_data(curr_source_ds, data_obj_2)
+            writer.add_uniform_data(curr_source_ds, data_obj_3)
+            writer.add_uniform_data(curr_source_ds, data_obj_4)
+            writer.add_uniform_data(curr_source_ds, data_obj_5)
+            writer.add_uniform_data(curr_source_ds, data_obj_6)
+            writer.add_uniform_data(curr_source_ds, data_obj_7)
+
+            writer.add_uniform_data(v_source_ds, data_obj_8)
+            writer.add_uniform_data(ele_source_ds, data_obj_9)
+    '''
+
+
 #------------------------------------------------------------------------------
 # Save data
 #------------------------------------------------------------------------------

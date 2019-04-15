@@ -387,8 +387,12 @@ if neuromlExists:
                                                                       z=dist[2],
                                                                       diameter=dist[3])
 
+                        nml_seg_section = neuroml.SegmentGroup(id='%s_SECTION'%np_sec_name, neuro_lex_id="sao864921383")
+                        nml_seg_section.members.append(neuroml.Member(segments=count))
+                        cell.morphology.segment_groups.append(nml_seg_section)
+                        
                         nml_seg_group = neuroml.SegmentGroup(id='%s_group'%np_sec_name)
-                        nml_seg_group.members.append(neuroml.Member(segments=count))
+                        nml_seg_group.includes.append(neuroml.Include(segment_groups=nml_seg_section.id))
                         cell.morphology.segment_groups.append(nml_seg_group)
 
 
@@ -408,8 +412,12 @@ if neuromlExists:
                         mp.specific_capacitances.append(neuroml.SpecificCapacitance(value="%s uF_per_cm2"%cm, 
                                                                    segment_groups=nml_seg_group.id))
 
-
-                        mp.init_memb_potentials.append(neuroml.InitMembPotential(value="%s mV"%'-65'))
+                        vinit = np_sec['vinit'] if 'vinit' in np_sec else -65
+                        
+                        if isinstance(vinit,dict) and len(vinit)==0:
+                            vinit = -65
+                            
+                        mp.init_memb_potentials.append(neuroml.InitMembPotential(value="%s mV"%vinit))
 
                         mp.spike_threshes.append(neuroml.SpikeThresh(value="%s mV"%sim.net.params.defaultThreshold))
 

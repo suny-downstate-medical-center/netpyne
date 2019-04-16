@@ -334,10 +334,18 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
     if isinstance(orderBy, basestring) and orderBy not in cells[0]['tags']:  # if orderBy property doesn't exist or is not numeric, use gid
         orderBy = 'gid'
+    elif orderBy is 'pop':
+        df['popInd'] = df['pop'].astype('category')
+        df['popInd'].cat.set_categories(sim.net.pops.keys(), inplace=True)
+        orderBy='popInd'
     elif isinstance(orderBy, basestring) and not isinstance(cells[0]['tags'][orderBy], Number):
         orderBy = 'gid'
-
+        
     if isinstance(orderBy, list):
+        if 'pop' in orderBy:
+            df['popInd'] = df['pop'].astype('category')
+            df['popInd'].cat.set_categories(sim.net.pops.keys(), inplace=True)
+            orderBy[orderBy.index('pop')] = 'popInd'
         keep = keep + list(set(orderBy) - set(keep))
     elif orderBy not in keep:
         keep.append(orderBy)

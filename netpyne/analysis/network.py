@@ -943,7 +943,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
 
         #plt.title(str(includePre)+' -> '+str(includePost) + ' ' + str(cvar))
         shapeax.set_xticklabels([])
-        #shapeax.set_yticklabels([])
+        shapeax.set_yticklabels([])
         shapeax.set_zticklabels([])
         #shapeax.set_ylabel('y location (um)')
 

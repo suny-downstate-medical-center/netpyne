@@ -462,9 +462,9 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     if syncLines:
         for spkt in sel['spkt'].tolist():
             ax1.plot((spkt, spkt), (0, len(cells)+numNetStims), 'r-', linewidth=0.1)
-        plt.title('cells=%i syns/cell=%0.1f rate=%0.1f Hz sync=%0.2f' % (numCells,connsPerCell,firingRate,syncMeasure()), fontsize=fontsiz)
+        plt.title('cells=%i   syns/cell=%0.1f   rate=%0.1f Hz   sync=%0.2f' % (numCells,connsPerCell,firingRate,syncMeasure()), fontsize=fontsiz)
     else:
-        plt.title('cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (numCells,connsPerCell,firingRate), fontsize=fontsiz)
+        plt.title('cells=%i   syns/cell=%0.1f   rate=%0.1f Hz' % (numCells,connsPerCell,firingRate), fontsize=fontsiz)
     # Axis
     ax1.set_xlabel('Time (ms)', fontsize=fontsiz)
     ax1.set_ylabel(ylabelText, fontsize=fontsiz)
@@ -755,11 +755,11 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
     # Set plot style
     colors = []
     params = {
-        'axes.labelsize': 14,
+        'axes.labelsize': fontSize,
         'font.size': fontSize,
-        'legend.fontsize': 14,
-        'xtick.labelsize': 14,
-        'ytick.labelsize': 14,
+        'legend.fontsize': fontSize,
+        'xtick.labelsize': fontSize,
+        'ytick.labelsize': fontSize,
         'text.usetex': False,
         }
     plt.rcParams.update(params)

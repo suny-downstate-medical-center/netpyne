@@ -35,4 +35,4 @@ sim.analysis.plotData()         			# plot spike raster
 
 
 sim.analysis.plotShape(includePost = ['PT5B'], includePre = ['TVL'], includeAxon = 0, cvar = 'numSyns', dist = 0.58,
-    figSize=(7,7), bkgColor=(0.9,0.9,0.9,1.0), fontSize=16, saveFig='paper_fig3.png', showFig=1)
+    figSize=(7,7), bkgColor=(0.9,0.9,0.9,1.0), fontSize=16, saveFig='paper_fig3C.png', showFig=1)

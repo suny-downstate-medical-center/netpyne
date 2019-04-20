@@ -33,8 +33,8 @@ simConfig.filename = 'cell_lfp'  # Set file output name
 
 simConfig.recordLFP = [[x, y, 35] for y in range(280, 1000, 150) for x in [30, 90]]
 
-simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True, 'saveFig': 'paper_fig6Ai', 'figSize': (12,6), 'fontSize': 18} # Plot a raster
-simConfig.analysis['plotLFP'] = {'electrodes': ['avg','all'], 'includeAxon': False, 'figSize': (6,10), 'NFFT': 256, 'noverlap': 48, 'nperseg': 64, 'saveFig': 'paper_fig6Aii', 'fontSize': 18, 'maxPlots': 8} 
+simConfig.analysis['plotTraces'] = {'include': [('E',0)], 'oneFigPer':'cell', 'overlay': False, 'figSize': (5,4), 'fontSize':18, 'saveFig': 'paper_fig6Ai.png'} # Plot recorded traces for this list of cells
+simConfig.analysis['plotLFP'] = {'includeAxon': False, 'plots': ['timeSeries', 'locations'], 'figSize': (5.5,9), 'fontSize':18, 'saveFig': 'paper_fig6Aii.png'} 
 
 
 # Create network and run simulation

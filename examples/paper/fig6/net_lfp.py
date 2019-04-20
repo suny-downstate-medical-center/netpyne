@@ -51,12 +51,13 @@ simConfig.duration = 3.0*1e3           # Duration of the simulation, in ms
 simConfig.dt = 0.1                # Internal integration timestep to use
 simConfig.verbose = False            # Show detailed messages 
 simConfig.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
-simConfig.filename = 'paper_fig6B'   # Set file output name
+simConfig.filename = 'net_lfp'   # Set file output name
 
 simConfig.recordLFP = [[-15, y, 1.0*netParams.sizeZ] for y in range(int(netParams.sizeY/5.0), int(netParams.sizeY), int(netParams.sizeY/5.0))]
 
-simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True, 'saveFig': 'fig6Bi.png', 'figSize': (12,6), 'fontSize': 18} # Plot a raster
-simConfig.analysis['plotLFP'] = {'electrodes': ['avg', 'all'], 'includeAxon': False, 'figSize': (6, 10), 'NFFT': 256, 'noverlap': 48, 'nperseg': 64, 'saveFig': True, 'fontSize': 18, 'maxPlots': 8}
+simConfig.analysis['plotTraces'] = {'include': [('E',0)], 'oneFigPer':'cell', 'overlay': False, 'figSize': (5,4), 'fontSize':18, 'saveFig': 'paper_fig6Bi.png'} # Plot recorded traces for this list of cells
+simConfig.analysis['plotLFP'] = {'includeAxon': False, 'plots': ['timeSeries', 'locations'], 'figSize': (5.5,9), 'fontSize':18, 'saveFig': 'paper_fig6Bii.png'} 
+
 
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    

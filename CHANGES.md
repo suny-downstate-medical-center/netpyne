@@ -14,6 +14,9 @@
 
 - Fixed bug in plotShape()
 
+- Fixed bug in plotSpikeStats()
+
+
 # Version 0.9.1.3
 
 - Removed deprecated hold function from plotConn

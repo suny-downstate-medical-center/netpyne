@@ -64,57 +64,52 @@ simConfig = specs.SimConfig()        # object of class SimConfig to store simula
 simConfig.duration = 1*1e3           # Duration of the simulation, in ms
 simConfig.dt = 0.025                # Internal integration timestep to use
 simConfig.verbose = False            # Show detailed messages 
+simConfig.recordCells = [('E2',0), ('E4', 0), ('E5', 5)]
 simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 simConfig.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'model_output'  # Set file output name
 simConfig.savePickle = False         # Save params, network and sim output to pickle file
 simConfig.saveMat = False         # Save params, network and sim output to pickle file
 
-
 #simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True}      # Plot a raster
-simConfig.analysis['plotTraces'] = {'include': [('E2',0), ('E4', 0), ('E5', 5)]}      # Plot recorded traces for this list of cells
+#simConfig.analysis['plotTraces'] = {'include': [('E2',0), ('E4', 0), ('E5', 5)]}      # Plot recorded traces for this list of cells
 #simConfig.analysis['plot2Dnet'] = True            # plot 2D visualization of cell positions and connections
 #simConfig.analysis['plotConn'] = True             # plot connectivity matrix
 
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
 
+from matplotlib import pyplot as plt
+
 # fig 5A
 sim.analysis.plotConn(includePre=['E2','I2','E4','I4','E5','I5'], includePost=['E2','I2','E4','I4','E5','I5'], fontSize=20)
-From matplotlib import pyplot as plt
 h=plt.axes()
 h.xaxis.set_label_coords(0.5, 1.10)
 plt.title ('Connection strength matrix', y=1.12)
-plt.savefig('/u/salvadord/Desktop/netpyne_fig5A.png')
+plt.savefig('paper_fig5A.png')
 
 # fig 5B
 sim.analysis.plotConn(includePre=['E2','I2','E4','I4','E5','I5'], includePost=['E2','I2','E4','I4','E5','I5'], fontSize=20, feature='convergence', graphType='bar')
 plt.title ('Connection convergence stacked bar graph', y=1.08)
 plt.tight_layout()
-plt.savefig('/u/salvadord/Desktop/fig5B.png')
-
+plt.savefig('paper_fig5B.png')
 
 # fig 5C
-sim.analysis.plot2Dnet(include=['E2','I2','E5','I5'], figSize=(8,10), fontSize=18, showConns=True); 
-plt.tight_layout(); 
-plt.savefig('/u/salvadord/Desktop/netpyne_fig5C')
+sim.analysis.plot2Dnet(include=['E2','I2','E5','I5'], figSize=(8,10), fontSize=18, showConns=True)
+plt.tight_layout()
+plt.savefig('paper_fig5C')
 
 # fig 5D
-sim.analysis.plotConn(includePre=['E2','I2','E4','I4','E5','I5'], includePost=['E2','I2','E4','I4','E5','I5'], fontSize=20)
-From matplotlib import pyplot as plt
-h=plt.axes()
-h.xaxis.set_label_coords(0.5, 1.10)
-plt.title ('Connection strength matrix', y=1.12)
-plt.savefig('/u/salvadord/Desktop/netpyne_fig5C.png')
+sim.analysis.plotTraces(timeRange=[0,200], oneFigPer='trace', overlay=1, fontSize=18)
+plt.savefig('paper_fig5D.png')
 
 # fig 5E
 sim.analysis.plotRaster(fontSize=18, orderInverse=1)
-from matplotlib import pyplot as plt; plt.tightlayout()
-plt.savefig('/u/salvadord/Desktop/fig5E.png')
+plt.savefig('paper_fig5E.png')
 
 # fig 5F
 sim.analysis.plotSpikeStats(stats=['rate'], include=['I5','E5','I4','E4','I2','E2'], fontSize=18)
-plt.savefig('/u/salvadord/Desktop/fig5F.png')
+plt.savefig('paper_fig5F.png')
 
 
 

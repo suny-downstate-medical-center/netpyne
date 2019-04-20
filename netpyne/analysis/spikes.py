@@ -902,7 +902,6 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
             plt.xlabel(xlabel, fontsize=fontsiz)
             plt.ylabel('Population', fontsize=fontsiz) 
 
-            import IPython; IPython.embed()
             icolor=0
             borderColor = 'k'
             for i in range(0, len(bp['boxes'])):

@@ -81,15 +81,17 @@ sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)
 
 from matplotlib import pyplot as plt
 
+pops = ['E2', 'I2', 'E4', 'I4', 'E5', 'I5']
+
 # fig 5A
-sim.analysis.plotConn(includePre=['E2','I2','E4','I4','E5','I5'], includePost=['E2','I2','E4','I4','E5','I5'], fontSize=20)
+sim.analysis.plotConn(includePre=pops, includePost=pops, fontSize=20)
 h=plt.axes()
 h.xaxis.set_label_coords(0.5, 1.10)
 plt.title ('Connection strength matrix', y=1.12)
 plt.savefig('paper_fig5A.png')
 
 # fig 5B
-sim.analysis.plotConn(includePre=['E2','I2','E4','I4','E5','I5'], includePost=['E2','I2','E4','I4','E5','I5'], fontSize=20, feature='convergence', graphType='bar')
+sim.analysis.plotConn(includePre=pops, includePost=pops, fontSize=20, feature='convergence', graphType='bar')
 plt.title ('Connection convergence stacked bar graph', y=1.08)
 plt.tight_layout()
 plt.savefig('paper_fig5B.png')
@@ -108,7 +110,7 @@ sim.analysis.plotRaster(fontSize=18, orderInverse=1)
 plt.savefig('paper_fig5E.png')
 
 # fig 5F
-sim.analysis.plotSpikeStats(stats=['rate'], include=['I5','E5','I4','E4','I2','E2'], fontSize=18)
+sim.analysis.plotSpikeStats(stats=['rate'], include=pops, fontSize=18)
 plt.savefig('paper_fig5F.png')
 
 

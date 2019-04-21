@@ -57,7 +57,7 @@ def _loadFile (filename):
         return data
 
     if hasattr(sim, 'cfg') and sim.cfg.timing: sim.timing('start', 'loadFileTime')
-    ext = os.path.basename(filename).split('.')[1]
+    ext = os.path.basename(filename).split('.')[-1]
 
     # load pickle file
     if ext == 'pkl':
@@ -132,7 +132,7 @@ def _loadFile (filename):
         sim.timing('stop', 'loadFileTime')
         print(('  Done; file loading time = %0.2f s' % sim.timingData['loadFileTime']))
 
-
+    
     return data
 
 
@@ -140,7 +140,7 @@ def _loadFile (filename):
 # Load simulation config from file
 #------------------------------------------------------------------------------
 def loadSimCfg (filename, data=None, setLoaded=True):
-    if not data: 
+    if not data:
         data = _loadFile(filename)
     print('Loading simConfig...')
     if 'simConfig' in data:

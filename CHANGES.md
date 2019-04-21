@@ -16,6 +16,8 @@
 
 - Fixed bug in plotSpikeStats()
 
+- Fixed bug loading files with colons
+
 
 # Version 0.9.1.3
 

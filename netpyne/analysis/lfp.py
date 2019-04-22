@@ -300,6 +300,10 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
                 F = spec[i].f
                 S = spec[i].TFR
                 vc = [vmin, vmax]
+                if norm:
+                    S = S / vmax
+                    vc = [0,1]
+                
                 plt.imshow(S, extent=(np.amin(T), np.amax(T), np.amin(F), np.amax(F)), origin='lower', interpolation='None', aspect='auto', vmin=vc[0], vmax=vc[1], cmap=plt.get_cmap('viridis'))
                 plt.colorbar(label='Power')
                 plt.ylabel('Hz')

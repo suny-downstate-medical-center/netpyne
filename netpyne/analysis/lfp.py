@@ -33,7 +33,7 @@ from .utils import colorList, exception, _saveFigData, _showFigure, _smooth1d
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot LFP (time-resolved, power spectral density, time-frequency and 3D locations)
 # -------------------------------------------------------------------------------------------------------------------
-#@exception
+@exception
 def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange=None, NFFT=256, noverlap=128, 
     nperseg=256, minFreq=1, maxFreq=100, stepFreq=1, smooth=0, separation=1.0, includeAxon=True, logx=False, logy=False, norm=False, dpi=200, overlay=False, filtFreq = False, filtOrder=3, detrend=False, specType='morlet', fontSize=14, colors = None, maxPlots=8, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
@@ -387,7 +387,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         outputData.update({'allFreqs': allFreqs, 'allSignal': allSignal})
     
     if 'spectrogram' in plots:
-        outputData.update({'log_spec': spec, 't': t_spec*1000.0, 'freqs': f[f<=maxFreq]})
+        outputData.update({'spec': spec, 't': t_spec*1000.0, 'freqs': f[f<=maxFreq]})
 
     #save figure data
     if saveData:

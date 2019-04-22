@@ -282,7 +282,6 @@ def plotSyncs (include =['allCells', 'eachPop'], timeRanges = None, timeRangeLab
         figData = {'includeList': includeList, 'timeRanges': timeRanges, 'syncs': syncs}
 
         _saveFigData(figData, saveData, 'raster')
- 
 
 
     return fig1, syncs

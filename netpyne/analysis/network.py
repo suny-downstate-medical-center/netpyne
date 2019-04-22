@@ -904,7 +904,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
         shapeax.azim=-90 # -90
         shapeax.dist=dist*shapeax.dist
         plt.axis('equal')
-        cmap = plt.cm.viridis #plt.cm.jet  #plt.cm.rainbow #plt.cm.jet #YlOrBr_r
+        cmap = plt.cm.jet# plt.cm.viridis #plt.cm.jet  #plt.cm.rainbow #plt.cm.jet #YlOrBr_r
         morph.shapeplot(h,shapeax, sections=secs, cvals=cvals, cmap=cmap)
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
         if cvals is not None and len(cvals)>0: 

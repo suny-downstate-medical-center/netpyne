@@ -33,7 +33,7 @@ from .utils import colorList, exception, _saveFigData, _showFigure, _smooth1d
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot LFP (time-resolved, power spectral density, time-frequency and 3D locations)
 # -------------------------------------------------------------------------------------------------------------------
-@exception
+#@exception
 def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange=None, NFFT=256, noverlap=128, 
     nperseg=256, minFreq=1, maxFreq=100, stepFreq=1, smooth=0, separation=1.0, includeAxon=True, logx=False, logy=False, norm=False, dpi=200, overlay=False, filtFreq = False, filtOrder=3, detrend=False, specType='morlet', fontSize=14, colors = None, maxPlots=8, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
@@ -286,22 +286,23 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
                     lfpPlot = np.mean(lfp, axis=1)
                 elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
                     lfpPlot = lfp[:, elec]
-            fs = int(1000.0 / sim.cfg.recordStep)
-            t_spec = np.linspace(0, index2ms(len(lfpPlot), fs), len(lfpPlot))
-            spec.append(MorletSpec(lfpPlot, fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq))
-            
-            vmin = np.array(logx_spec).min()
-            vmax = np.array(logx_spec).max()
+                fs = int(1000.0 / sim.cfg.recordStep)
+                t_spec = np.linspace(0, index2ms(len(lfpPlot), fs), len(lfpPlot))
+                spec.append(MorletSpec(lfpPlot, fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq))
+                
+            f = np.linspace(minFreq, maxFreq, stepFreq)  # only used as output for user
+
+            vmin = np.array([s.TFR for s in spec]).min()
+            vmax = np.array([s.TFR for s in spec]).max()
             for i,elec in enumerate(electrodes):
                 plt.subplot(np.ceil(len(electrodes) / numCols), numCols, i + 1)
-                
                 T = timeRange
                 F = spec[i].f
                 S = spec[i].TFR
                 vc = [vmin, vmax]
                 plt.imshow(S, extent=(np.amin(T), np.amax(T), np.amin(F), np.amax(F)), origin='lower', interpolation='None', aspect='auto', vmin=vc[0], vmax=vc[1], cmap=plt.get_cmap('viridis'))
                 plt.colorbar(label='Power')
-                plt.ylabel('Frequency (Hz)')
+                plt.ylabel('Hz')
                 plt.tight_layout()                
                 if len(electrodes) > 1:
                     plt.title('Electrode %s' % (str(elec)), fontsize=fontSize - 2)
@@ -310,7 +311,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         elif specType == 'fft':
 
             from scipy import signal as spsig
-            logx_spec = []
+            spec = []
             
             for i,elec in enumerate(electrodes):
                 if elec == 'avg':
@@ -323,13 +324,13 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
                 f, t_spec, x_spec = spsig.spectrogram(lfpPlot, fs=fs, window='hanning',
                 detrend=mlab.detrend_none, nperseg=nperseg, noverlap=noverlap, nfft=NFFT,  mode='psd')
                 x_mesh, y_mesh = np.meshgrid(t_spec*1000.0, f[f<maxFreq])
-                logx_spec.append(10*np.log10(x_spec[f<maxFreq]))
+                spec.append(10*np.log10(x_spec[f<maxFreq]))
 
-            vmin = np.array(logx_spec).min()
-            vmax = np.array(logx_spec).max()
+            vmin = np.array(spec).min()
+            vmax = np.array(spec).max()
             for i,elec in enumerate(electrodes):
                 plt.subplot(np.ceil(len(electrodes)/numCols), numCols, i+1)
-                plt.pcolormesh(x_mesh, y_mesh, logx_spec[i], cmap=cm.viridis, vmin=vmin, vmax=vmax)
+                plt.pcolormesh(x_mesh, y_mesh, spec[i], cmap=cm.viridis, vmin=vmin, vmax=vmax)
                 plt.colorbar(label='dB/Hz', ticks=[np.ceil(vmin), np.floor(vmax)])
                 if logy:
                     plt.yscale('log')
@@ -378,8 +379,11 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 
     outputData = {'LFP': lfp, 'electrodes': electrodes, 'timeRange': timeRange, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
 
+    if 'PSD' in plots:
+        outputData.update({'allFreqs': allFreqs, 'allSignal': allSignal})
+    
     if 'spectrogram' in plots:
-        outputData.update({'log_spec': logx_spec, 'freqs': f[f<maxFreq], 't': t_spec*1000.0})
+        outputData.update({'log_spec': spec, 't': t_spec*1000.0, 'freqs': f[f<=maxFreq]})
 
     #save figure data
     if saveData:

@@ -290,7 +290,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
                 t_spec = np.linspace(0, index2ms(len(lfpPlot), fs), len(lfpPlot))
                 spec.append(MorletSpec(lfpPlot, fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq))
                 
-            f = np.linspace(minFreq, maxFreq, stepFreq)  # only used as output for user
+            f = np.array(range(minFreq, maxFreq+1, stepFreq))  # only used as output for user
 
             vmin = np.array([s.TFR for s in spec]).min()
             vmax = np.array([s.TFR for s in spec]).max()
@@ -298,11 +298,14 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
                 plt.subplot(np.ceil(len(electrodes) / numCols), numCols, i + 1)
                 T = timeRange
                 F = spec[i].f
-                S = spec[i].TFR
-                vc = [vmin, vmax]
                 if norm:
-                    S = S / vmax
-                    vc = [0,1]
+                    spec[i].TFR = spec[i].TFR / vmax
+                    S = spec[i].TFR
+                    vc = [0, 1]
+                else:
+                    S = spec[i].TFR
+                    vc = [vmin, vmax]
+
                 
                 plt.imshow(S, extent=(np.amin(T), np.amax(T), np.amin(F), np.amax(F)), origin='lower', interpolation='None', aspect='auto', vmin=vc[0], vmax=vc[1], cmap=plt.get_cmap('viridis'))
                 plt.colorbar(label='Power')

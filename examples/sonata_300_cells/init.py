@@ -20,12 +20,15 @@ outFolder = '/u/salvadord/Documents/ISB/Models/netpyne_repo/examples/sonata_300_
 sonataConfigFile = rootFolder+'config.json'
 
 # Options
-importSonataModel = 1
+importSonataModel = 0
 saveForGUI = 0
-saveJsonPsection = 1
+saveJsonPsection = 0
 saveJsonConns = 0
-runPlot = 1
-compare = 1
+runPlot = 0
+compareRaster = 0
+compareTraces = 0
+saveSpikesToBMTK = 1
+plotSpikesUsingBMTK = 1
 
 # Improt SONATA model and instantiate in netpyne
 if importSonataModel:
@@ -122,12 +125,48 @@ if runPlot:
     sim.setupRecording()
     sim.simulate()
     includePops = [p for p in sim.net.pops if p not in ['external_virtual_100']]
-    fig = sim.analysis.plotRaster(include=includePops, spikeHist='subplot', spikeHistBin=10, figSize=(14,8), dpi=300, saveFig='model_output_raster_axonv2_dl_300cells.png', marker='.', markerSize=3)
+    fig = sim.analysis.plotRaster(include=includePops, spikeHist='subplot', spikeHistBin=10, figSize=(14, 8), dpi=300, saveFig='model_output_raster_axonv2_dl_300cells.png', marker='.', markerSize=3)
+    data = {'spkt': list(sim.simData.spkt), 'spkid': list(sim.simData.spkid)}
+    with open('300cells_spikes_netpyne.json', 'w') as f:
+        json.dump(data, f)
     #fig = sim.analysis.plotTraces(figSize=(10,14), oneFigPer='trace', include=range(10), saveFig='model_output_traces_axonv2_dl_300cells.png')
 
 
 # Compare with SONATA data
-if compare:
+if compareRaster:
+    # store netpyne spikes
+    with open('300cells_spikes_netpyne.json', 'r') as f:
+        d=json.load(f)
+    netpyneSpkt = np.array(d['spkt'])
+    netpyneSpkid = np.array(d['spkid'])
+
+    # load spiks from bmtk HDF5
+    dataFile=rootFolder+'output/spikes.h5'
+    h5data = h5py.File(dataFile, 'r')
+    bmtkSpkt = np.array(h5data['spikes']['timestamps']) 
+    bmtkSpkid = np.array(h5data['spikes']['gids']) 
+
+    # plot both spike times overlayed
+    recordStep = sim.cfg.recordStep
+    timeRange = [0, sim.cfg.duration]
+    fontsiz=8
+    ylim = [0,299]
+    figSize = (10,6)
+    fig = plt.figure(figsize=figSize)  # Open a new figure
+
+    plt.ylabel('Gid', fontsize=fontsiz)
+    plt.scatter(netpyneSpkt, netpyneSpkid, s=1.5, color='red', label='NetPyNE')
+    plt.scatter(bmtkSpkt, bmtkSpkid, s=0.5, color='green', label='BioNet')  # linestyle=':'
+    plt.xlabel('Time (ms)', fontsize=fontsiz)
+    plt.xlim(timeRange)
+    plt.legend(loc='upper right', bbox_to_anchor=(1.25, 1.0))
+    plt.ylim(ylim)
+    plt.ion()
+    plt.tight_layout()
+    plt.savefig(outFolder+'comparison_raster.png', dpi=300)
+    plt.show()
+
+if compareTraces:
     # store netpyne traces
     netpyneTraces = []
     netpyneTracesList = []
@@ -138,24 +177,10 @@ if compare:
     with open(outFolder+'netpyne_traces_300cells.json', 'w') as f:
         json.dump(netpyneTracesList, f)
 
-
     # load traces from bmtk HDF5
     dataFile=rootFolder+'output/membrane_potential.h5'
     h5data = h5py.File(dataFile, 'r')
     bmtkTraces = np.array(h5data['data'])  # shape (30000, 9)
-
-
-    # store netpyne spikes
-    netpyneSpkt = np.array(sim.simData.spkt)
-    netpyneSpkid = np.array(sim.simData.spkid)
-
-
-    # load spiks from bmtk HDF5
-    dataFile=rootFolder+'output/spikes.h5'
-    h5data = h5py.File(dataFile, 'r')
-    bmtkSpkt = np.array(h5data['spikes']['timestamps']) 
-    bmtkSpkid = np.array(h5data['spikes']['gids']) 
-
 
     # plot both traces overlayed
     recordStep = sim.cfg.recordStep
@@ -183,23 +208,43 @@ if compare:
     plt.savefig(outFolder+'comparison_traces_270-280.png')
     plt.show()
 
+# save netpyne spikes to bmtk format
+if saveSpikesToBMTK:
+    # load netpyne spikes
+    with open('300cells_spikes_netpyne.json', 'r') as f:
+        d=json.load(f)
+    netpyneSpkt = list(d['spkt'])
+    netpyneSpkid = list(d['spkid'])
 
-    # plot both spike times overlayed
-    recordStep = sim.cfg.recordStep
-    timeRange = [0, sim.cfg.duration]
-    fontsiz=8
-    ylim = [0,299]
-    figSize = (10,6)
-    fig = plt.figure(figsize=figSize)  # Open a new figure
+    event_file = 'netpyne_spikes.h5'
+    print('Resaving netpyne spike data to %s'%event_file)
+    import tables   # pytables for HDF5 support
+    h5file=tables.open_file(event_file,mode='w')
+    spike_grp = h5file.create_group("/", 'spikes')
+    gids = netpyneSpkid
+    spiketimes = netpyneSpkt
+    # for nml_q in events:
+    #     nml_pop, nml_index = _get_nml_pop_id(nml_q)
+    #     (sonata_node, sonata_node_id)  = sr.nml_ids_vs_gids[nml_pop][nml_index]
+    #     for t in events[nml_q]:
+    #         gids.append(sonata_node_id)
+    #         spiketimes.append(t*1000.0)
 
-    plt.ylabel('Gid', fontsize=fontsiz)
-    plt.scatter(netpyneSpkt, netpyneSpkid, s=1.5, color='red', label='NetPyNE')
-    plt.scatter(bmtkSpkt, bmtkSpkid, s=0.5, color='green', label='BioNet')  # linestyle=':'
-    plt.xlabel('Time (ms)', fontsize=fontsiz)
-    plt.xlim(timeRange)
-    plt.legend(loc='upper right', bbox_to_anchor=(1.25, 1.0))
-    plt.ylim(ylim)
-    plt.ion()
-    plt.tight_layout()
-    plt.savefig(outFolder+'comparison_raster.png', dpi=300)
-    plt.show()
+    h5file.create_array(spike_grp, 'gids', gids)
+    h5file.create_array(spike_grp, 'timestamps', spiketimes)
+
+    h5file.close()
+
+
+if plotSpikesUsingBMTK:
+    from bmtk.analyzer.spike_trains import raster_plot
+    
+    raster_plot(rootFolder + '/network/internal_nodes.h5', rootFolder + '/network/internal_node_types.csv', rootFolder + '/output/spikes.h5', group_key='node_type_id', title='Simulator: BMTK', save_as=None, show=0)
+    ax = plt.gcf().get_axes()[0]
+    ax.get_legend().remove()
+    plt.savefig('bmtk_300_cells_raster.png', dpi=300)
+    
+    raster_plot(rootFolder + '/network/internal_nodes.h5', rootFolder + '/network/internal_node_types.csv', 'netpyne_spikes.h5', group_key='node_type_id', title='Simulator: NetPyNE', save_as=None, show=0)
+    ax = plt.gcf().get_axes()[0]
+    ax.get_legend().remove()
+    plt.savefig('netpyne_300_cells_raster.png', dpi=300)

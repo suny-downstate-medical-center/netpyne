@@ -462,9 +462,9 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     if syncLines:
         for spkt in sel['spkt'].tolist():
             ax1.plot((spkt, spkt), (0, len(cells)+numNetStims), 'r-', linewidth=0.1)
-        plt.title('cells=%i syns/cell=%0.1f rate=%0.1f Hz sync=%0.2f' % (numCells,connsPerCell,firingRate,syncMeasure()), fontsize=fontsiz)
+        plt.title('cells=%i   syns/cell=%0.1f   rate=%0.1f Hz   sync=%0.2f' % (numCells,connsPerCell,firingRate,syncMeasure()), fontsize=fontsiz)
     else:
-        plt.title('cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (numCells,connsPerCell,firingRate), fontsize=fontsiz)
+        plt.title('cells=%i   syns/cell=%0.1f   rate=%0.1f Hz' % (numCells,connsPerCell,firingRate), fontsize=fontsiz)
     # Axis
     ax1.set_xlabel('Time (ms)', fontsize=fontsiz)
     ax1.set_ylabel(ylabelText, fontsize=fontsiz)
@@ -755,11 +755,11 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
     # Set plot style
     colors = []
     params = {
-        'axes.labelsize': 14,
+        'axes.labelsize': fontSize,
         'font.size': fontSize,
-        'legend.fontsize': 14,
-        'xtick.labelsize': 14,
-        'ytick.labelsize': 14,
+        'legend.fontsize': fontSize,
+        'xtick.labelsize': fontSize,
+        'ytick.labelsize': fontSize,
         'text.usetex': False,
         }
     plt.rcParams.update(params)
@@ -897,7 +897,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
         if graphType == 'boxplot':
             meanpointprops = dict(marker=(5,1,0), markeredgecolor='black', markerfacecolor='white')
             labels = legendLabels if legendLabels else include
-            bp=plt.boxplot(statData, labels=labels, notch=False, sym='k+', meanprops=meanpointprops, 
+            bp=plt.boxplot(statData, labels=labels[::-1], notch=False, sym='k+', meanprops=meanpointprops, 
                         whis=1.5, widths=0.6, vert=False, showmeans=True, patch_artist=True)
             plt.xlabel(xlabel, fontsize=fontsiz)
             plt.ylabel('Population', fontsize=fontsiz) 
@@ -1081,9 +1081,9 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot spike histogram
 # -------------------------------------------------------------------------------------------------------------------
-exception
-def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, maxFreq = 100, NFFT = 256, noverlap = 128, smooth = 0, overlay=True, ylim = None, 
-    popColors = {}, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+@exception
+def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, maxFreq=100, NFFT=256, noverlap=128, smooth=0, overlay=True,
+    ylim = None, popColors = {}, fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True): 
     ''' 
     Plot firing rate power spectral density (PSD)
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -1124,9 +1124,13 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 
     # create fig
     fig,ax1 = plt.subplots(figsize=figSize)
-    fontsiz = 12
-    
-    allPower, allSignal, allFreqs=[], [], []
+    fontsiz = fontSize
+
+    # set font size
+    plt.rcParams.update({'font.size': fontSize})
+        
+    allPower, allSignal, allFreqs = [], [], []
+
     # Plot separate line for each entry in include
     for iplot,subset in enumerate(include):
         cells, cellGids, netStimLabels = getCellsInclude([subset])   

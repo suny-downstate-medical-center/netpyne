@@ -57,7 +57,7 @@ def _loadFile (filename):
         return data
 
     if hasattr(sim, 'cfg') and sim.cfg.timing: sim.timing('start', 'loadFileTime')
-    ext = os.path.basename(filename).split('.')[1]
+    ext = os.path.basename(filename).split('.')[-1]
 
     # load pickle file
     if ext == 'pkl':

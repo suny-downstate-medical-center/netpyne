@@ -34,8 +34,8 @@ from .utils import colorList, exception, _saveFigData, _showFigure, _smooth1d
 ## Plot LFP (time-resolved, power spectral density, time-frequency and 3D locations)
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange = None, NFFT = 256, noverlap = 128, 
-    nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, logx=False, logy=False, norm=False, dpi = 200, overlay=False, filtFreq = False, filtOrder=3, detrend=False, fontSize=14, colors = None, maxPlots=8, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
+def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange=None, NFFT=256, noverlap=128, 
+    nperseg=256, minFreq=1, maxFreq=100, stepFreq=1, smooth=0, separation=1.0, includeAxon=True, logx=False, logy=False, norm=False, dpi=200, overlay=False, filtFreq = False, filtOrder=3, detrend=False, specType='morlet', fontSize=14, colors = None, maxPlots=8, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot LFP
         - electrodes (list): List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (default: ['avg', 'all'])
@@ -43,11 +43,22 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
         - NFFT (int, power of 2): Number of data points used in each block for the PSD and time-freq FFT (default: 256)
         - noverlap (int, <nperseg): Number of points of overlap between segments for PSD and time-freq (default: 128)
+        - minFreq (float)
         - maxFreq (float): Maximum frequency shown in plot for PSD and time-freq (default: 100 Hz)
+        - stepFreq (float)
         - nperseg (int): Length of each segment for time-freq (default: 256)
         - smooth (int): Window size for smoothing LFP; no smoothing if 0 (default: 0)
         - separation (float): Separation factor between time-resolved LFP plots; multiplied by max LFP value (default: 1.0)
         - includeAxon (boolean): Whether to show the axon in the location plot (default: True)
+        - logx (boolean)
+        - logy (boolean)
+        - norm (boolean)
+        - filtFreq (float)
+        - filtOrder (int)
+        - detrend (false)
+        - specType ('morlet'|'fft')
+        - overlay (boolean)
+        - dpi (int) 
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
             if set to True uses filename from simConfig (default: None)
@@ -245,7 +256,6 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         plt.suptitle('LFP Power Spectral Density', fontsize=fontSize, fontweight='bold') # add yaxis in opposite side
         plt.subplots_adjust(bottom=0.08, top=0.92)
 
-
         if logx:
             pass
         #from IPython import embed; embed()
@@ -264,45 +274,81 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         numCols = 1 #np.round(len(electrodes) / maxPlots) + 1
         figs.append(plt.figure(figsize=(figSize[0]*numCols, figSize[1])))
         #t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
-        logx_spec = []
-            
-        from scipy import signal as spsig
         
-        for i,elec in enumerate(electrodes):
-            if elec == 'avg':
-                lfpPlot = np.mean(lfp, axis=1)
-            elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
-                lfpPlot = lfp[:, elec]
-            # creates spectrogram over a range of data 
-            # from: http://joelyancey.com/lfp-python-practice/
-            fs = int(1000.0/sim.cfg.recordStep)
-            f, t_spec, x_spec = spsig.spectrogram(lfpPlot, fs=fs, window='hanning',
-            detrend=mlab.detrend_none, nperseg=nperseg, noverlap=noverlap, nfft=NFFT,  mode='psd')
-            x_mesh, y_mesh = np.meshgrid(t_spec*1000.0, f[f<maxFreq])
-            logx_spec.append(10*np.log10(x_spec[f<maxFreq]))
 
-        vmin = np.array(logx_spec).min()
-        vmax = np.array(logx_spec).max()
-        for i,elec in enumerate(electrodes):
-            plt.subplot(np.ceil(len(electrodes)/numCols), numCols, i+1)
-            if elec == 'avg':
-                color = 'k'
-                lw=1.0
-            elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
-                color = colorList[i%len(colorList)]
-                lw=1.0
-            plt.pcolormesh(x_mesh, y_mesh, logx_spec[i], cmap=cm.viridis , vmin=vmin, vmax=vmax)
-            plt.colorbar(label='dB/Hz', ticks=[np.ceil(vmin), np.floor(vmax)])
-            if logy:
-                plt.yscale('log')
-                plt.ylabel('Log-frequency (Hz)')
-                if isinstance(logy, list):
-                    yticks = tuple(logy)
-                    plt.yticks(yticks, yticks)
-            else:
-                plt.ylabel('(Hz)')
-            if len(electrodes) > 1:
-                plt.title('Electrode %s'%(str(elec)), fontsize=fontSize-2)
+        if specType == 'morlet':
+            from ..support.morlet import MorletSpec, index2ms
+
+            spec = []
+            
+            for i,elec in enumerate(electrodes):
+                if elec == 'avg':
+                    lfpPlot = np.mean(lfp, axis=1)
+                elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
+                    lfpPlot = lfp[:, elec]
+                fs = int(1000.0 / sim.cfg.recordStep)
+                t_spec = np.linspace(0, index2ms(len(lfpPlot), fs), len(lfpPlot))
+                spec.append(MorletSpec(lfpPlot, fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq))
+                
+            f = np.array(range(minFreq, maxFreq+1, stepFreq))  # only used as output for user
+
+            vmin = np.array([s.TFR for s in spec]).min()
+            vmax = np.array([s.TFR for s in spec]).max()
+            for i,elec in enumerate(electrodes):
+                plt.subplot(np.ceil(len(electrodes) / numCols), numCols, i + 1)
+                T = timeRange
+                F = spec[i].f
+                if norm:
+                    spec[i].TFR = spec[i].TFR / vmax
+                    S = spec[i].TFR
+                    vc = [0, 1]
+                else:
+                    S = spec[i].TFR
+                    vc = [vmin, vmax]
+
+                
+                plt.imshow(S, extent=(np.amin(T), np.amax(T), np.amin(F), np.amax(F)), origin='lower', interpolation='None', aspect='auto', vmin=vc[0], vmax=vc[1], cmap=plt.get_cmap('viridis'))
+                plt.colorbar(label='Power')
+                plt.ylabel('Hz')
+                plt.tight_layout()                
+                if len(electrodes) > 1:
+                    plt.title('Electrode %s' % (str(elec)), fontsize=fontSize - 2)
+
+
+        elif specType == 'fft':
+
+            from scipy import signal as spsig
+            spec = []
+            
+            for i,elec in enumerate(electrodes):
+                if elec == 'avg':
+                    lfpPlot = np.mean(lfp, axis=1)
+                elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
+                    lfpPlot = lfp[:, elec]
+                # creates spectrogram over a range of data 
+                # from: http://joelyancey.com/lfp-python-practice/
+                fs = int(1000.0/sim.cfg.recordStep)
+                f, t_spec, x_spec = spsig.spectrogram(lfpPlot, fs=fs, window='hanning',
+                detrend=mlab.detrend_none, nperseg=nperseg, noverlap=noverlap, nfft=NFFT,  mode='psd')
+                x_mesh, y_mesh = np.meshgrid(t_spec*1000.0, f[f<maxFreq])
+                spec.append(10*np.log10(x_spec[f<maxFreq]))
+
+            vmin = np.array(spec).min()
+            vmax = np.array(spec).max()
+            for i,elec in enumerate(electrodes):
+                plt.subplot(np.ceil(len(electrodes)/numCols), numCols, i+1)
+                plt.pcolormesh(x_mesh, y_mesh, spec[i], cmap=cm.viridis, vmin=vmin, vmax=vmax)
+                plt.colorbar(label='dB/Hz', ticks=[np.ceil(vmin), np.floor(vmax)])
+                if logy:
+                    plt.yscale('log')
+                    plt.ylabel('Log-frequency (Hz)')
+                    if isinstance(logy, list):
+                        yticks = tuple(logy)
+                        plt.yticks(yticks, yticks)
+                else:
+                    plt.ylabel('(Hz)')
+                if len(electrodes) > 1:
+                    plt.title('Electrode %s'%(str(elec)), fontsize=fontSize-2)
 
         plt.xlabel('time (ms)', fontsize=fontSize)
         plt.tight_layout()
@@ -340,8 +386,11 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 
     outputData = {'LFP': lfp, 'electrodes': electrodes, 'timeRange': timeRange, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
 
+    if 'PSD' in plots:
+        outputData.update({'allFreqs': allFreqs, 'allSignal': allSignal})
+    
     if 'spectrogram' in plots:
-        outputData.update({'log_spec': logx_spec, 'freqs': f[f<maxFreq], 't': t_spec*1000.0})
+        outputData.update({'spec': spec, 't': t_spec*1000.0, 'freqs': f[f<=maxFreq]})
 
     #save figure data
     if saveData:

@@ -15,7 +15,7 @@ If you have any issues during the installation please post a message with the de
 .. _install_only_netpyne:
 
 Install only NetPyNE (without the GUI) 
-------------------------------------------
+-----------------------------------------
 
 Requirements 
 ^^^^^^^^^^^^^^^^^^

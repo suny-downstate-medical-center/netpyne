@@ -896,7 +896,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
             secs = [sec for sec in secs if 'axon' not in sec.hname()]
 
         # Plot shapeplot
-        cbLabels = {'numSyns': 'number of synapses', 'weightNorm': 'weight scaling'}
+        cbLabels = {'numSyns': 'number of synapses per segment', 'weightNorm': 'weight scaling'}
         plt.rcParams.update({'font.size': fontSize})
         fig=plt.figure(figsize=figSize)
         shapeax = plt.subplot(111, projection='3d')
@@ -926,6 +926,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
                 for sec in list(cellPost.secs.values()):
                     for synMech in sec['synMechs']:
                         morph.mark_locations(h, sec['hObj'], synMech['loc'], markspec=synStyle, color=synColor, markersize=synSiz)
+        
         # Electrodes
         if showElectrodes:
             ax = plt.gca()
@@ -942,6 +943,9 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
 
         #plt.title(str(includePre)+' -> '+str(includePost) + ' ' + str(cvar))
         shapeax.set_xticklabels([])
+        shapeax.set_yticklabels([])
+        shapeax.set_zticklabels([])
+        #shapeax.set_ylabel('y location (um)')
 
         # save figure
         if saveFig: 

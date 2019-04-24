@@ -239,12 +239,12 @@ if saveSpikesToBMTK:
 if plotSpikesUsingBMTK:
     from bmtk.analyzer.spike_trains import raster_plot
     
-    raster_plot(rootFolder + '/network/internal_nodes.h5', rootFolder + '/network/internal_node_types.csv', rootFolder + '/output/spikes.h5', group_key='node_type_id', title='Simulator: BMTK', save_as=None, show=0)
+    raster_plot(rootFolder + '/network/internal_nodes.h5', rootFolder + '/network/internal_node_types.csv', rootFolder + '/output/spikes.h5', group_key='node_type_id', title='Simulator: NEURON via BMTK', save_as=None, show=0)
     ax = plt.gcf().get_axes()[0]
     ax.get_legend().remove()
     plt.savefig('bmtk_300_cells_raster.png', dpi=300)
     
-    raster_plot(rootFolder + '/network/internal_nodes.h5', rootFolder + '/network/internal_node_types.csv', 'netpyne_spikes.h5', group_key='node_type_id', title='Simulator: NetPyNE', save_as=None, show=0)
+    raster_plot(rootFolder + '/network/internal_nodes.h5', rootFolder + '/network/internal_node_types.csv', 'netpyne_spikes.h5', group_key='node_type_id', title='Simulator: NEURON via NetPyNE', save_as=None, show=0)
     ax = plt.gcf().get_axes()[0]
     ax.get_legend().remove()
     plt.savefig('netpyne_300_cells_raster.png', dpi=300)

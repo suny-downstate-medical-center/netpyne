@@ -52,19 +52,25 @@ def iplotRaster():
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotDipole(expData):
+    '''
+    expData: experimental data; a dict with ['x'] and ['y'] 1-d vectors (either lists or np.arrays) of same length
+    '''
     from .. import sim
     from bokeh.plotting import figure
     from bokeh.resources import CDN
     from bokeh.embed import file_html
     from bokeh.layouts import layout
+    #from bokeh.plotting import figure, show, output_file
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
     fig = figure(title="Dipole Plot", tools=TOOLS)
 
-    fig.plot(expData, legend="Experiment")
+    fig.line(expData['x'], expData['y'], legend="Experiment")
 
     plot_layout = layout(fig, sizing_mode='scale_both')
     html = file_html(plot_layout, CDN, title="Dipole Plot")
+
+    #show(fig)
 
     return html

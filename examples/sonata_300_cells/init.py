@@ -20,15 +20,15 @@ outFolder = '/u/salvadord/Documents/ISB/Models/netpyne_repo/examples/sonata_300_
 sonataConfigFile = rootFolder+'config.json'
 
 # Options
-importSonataModel = 0
+importSonataModel = 1
 saveForGUI = 0
 saveJsonPsection = 0
 saveJsonConns = 0
-runPlot = 0
-compareRaster = 0
+runPlot = 1
+compareRaster = 1
 compareTraces = 0
-saveSpikesToBMTK = 1
-plotSpikesUsingBMTK = 1
+saveSpikesToBMTK = 0
+plotSpikesUsingBMTK = 0
 
 # Improt SONATA model and instantiate in netpyne
 if importSonataModel:
@@ -39,6 +39,8 @@ if importSonataModel:
 # code to save network to json so can read from NetPyNE-UI
 if saveForGUI:
     sim.cfg.saveJson = True
+    sim.cfg.pt3dRelativeToCellLocation = False  # Make cell 3d points relative to the cell x,y,z location
+    sim.cfg.invertedYCoord = False  # Make y-axis coordinate negative so they represent depth when visualized (0 at the top)
     #for k,v in sim.net.params.popParams.items():
     #    v['numCells'] = 20
     sim.cfg.saveDataInclude = ['netParams', 'net'] # 'simConfig', 
@@ -122,6 +124,9 @@ if runPlot:
     sim.cfg.recordCells = range(9)
     sim.cfg.analysis['plotTraces'] = {}  # needed for 9 cell example
     sim.cfg.cache_efficient = True
+    sim.cfg.pt3dRelativeToCellLocation = False  # Make cell 3d points relative to the cell x,y,z location
+    sim.cfg.invertedYCoord = False  # Make y-axis coordinate negative so they represent depth when visualized (0 at the top)
+ 
     sim.setupRecording()
     sim.simulate()
     includePops = [p for p in sim.net.pops if p not in ['external_virtual_100']]

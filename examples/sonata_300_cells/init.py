@@ -39,8 +39,6 @@ if importSonataModel:
 # code to save network to json so can read from NetPyNE-UI
 if saveForGUI:
     sim.cfg.saveJson = True
-    sim.cfg.pt3dRelativeToCellLocation = False  # Make cell 3d points relative to the cell x,y,z location
-    sim.cfg.invertedYCoord = False  # Make y-axis coordinate negative so they represent depth when visualized (0 at the top)
     #for k,v in sim.net.params.popParams.items():
     #    v['numCells'] = 20
     sim.cfg.saveDataInclude = ['netParams', 'net'] # 'simConfig', 
@@ -124,8 +122,6 @@ if runPlot:
     sim.cfg.recordCells = range(9)
     sim.cfg.analysis['plotTraces'] = {}  # needed for 9 cell example
     sim.cfg.cache_efficient = True
-    sim.cfg.pt3dRelativeToCellLocation = False  # Make cell 3d points relative to the cell x,y,z location
-    sim.cfg.invertedYCoord = False  # Make y-axis coordinate negative so they represent depth when visualized (0 at the top)
  
     sim.setupRecording()
     sim.simulate()

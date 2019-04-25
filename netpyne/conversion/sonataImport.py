@@ -277,6 +277,10 @@ class SONATAImporter():
     def createSimulationConfig(self):
         print("\nCreating simulation configuration from %s"%(self.config['simulation']))
 
+        # set conditions required to replicate SONATA imported models
+        sim.cfg.pt3dRelativeToCellLocation = False  # Make cell 3d points relative to the cell x,y,z location
+        sim.cfg.invertedYCoord = False  # Make y-axis coordinate negative so they represent depth when visualized (0 at the top)
+
         # run
         sim.cfg.duration = self.simulation_config['run']['tstop']
         sim.cfg.dt = self.simulation_config['run']['dt']
@@ -1099,15 +1103,23 @@ class SONATAImporter():
         else:
             print("Unhandled dataset: %s"%d.name)
 
+
+    # ------------------------------------------------------------------------------------------------------------
+    # Read simulation output from HDF5
+    # ------------------------------------------------------------------------------------------------------------
+
+
     '''
         Search the strings in a config file for a substitutable value, e.g. 
         "morphologies_dir": "$COMPONENT_DIR/morphologies",
     '''
     def subs(self, path):
         #print_v('Checking for %s in %s'%(substitutes.keys(),path))
-        for s in self.substitutes: 
+
+        for s in sorted(self.substitutes, key=lambda k: len(k), reverse=True):
             if path.startswith(s):
                 path = path.replace(s,self.substitutes[s])
+
         return path
 
 

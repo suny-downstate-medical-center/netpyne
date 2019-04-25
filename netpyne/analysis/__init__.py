@@ -66,4 +66,4 @@ from .rxd import plotRxDConcentration
 # -------------------------------------------------------------------------------------------------------------------
 # Import HNN-related functions
 # -------------------------------------------------------------------------------------------------------------------
-from .hnn import plotDipole
+from .interactive import iplotDipole, iplotRaster

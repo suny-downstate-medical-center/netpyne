@@ -23,10 +23,10 @@ import numpy as np
 
 
 # -------------------------------------------------------------------------------------------------------------------
-## Plot HNN dipole 
+## Plot interactive raster 
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotDipole():
+def iplotRaster():
     from .. import sim
     from bokeh.plotting import figure
     from bokeh.resources import CDN
@@ -35,13 +35,36 @@ def plotDipole():
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
-    fig = figure(title="HNN Dipole Plot", tools=TOOLS)
+    fig = figure(title="Raster Plot", tools=TOOLS)
 
     spkt = sim.allSimData['spkt']
     spkid = sim.allSimData['spkid']
     fig.scatter(spkt, spkid, size=1, legend="all spikes")
 
     plot_layout = layout(fig, sizing_mode='scale_both')
-    html = file_html(plot_layout, CDN, title="HNN Dipole Plot (spikes for now!)")
+    html = file_html(plot_layout, CDN, title="Raster Plot")
+
+    return html
+
+
+# -------------------------------------------------------------------------------------------------------------------
+## Plot interactive dipole 
+# -------------------------------------------------------------------------------------------------------------------
+@exception
+def iplotDipole(expData):
+    from .. import sim
+    from bokeh.plotting import figure
+    from bokeh.resources import CDN
+    from bokeh.embed import file_html
+    from bokeh.layouts import layout
+
+    TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
+
+    fig = figure(title="Dipole Plot", tools=TOOLS)
+
+    fig.plot(expData, legend="Experiment")
+
+    plot_layout = layout(fig, sizing_mode='scale_both')
+    html = file_html(plot_layout, CDN, title="Dipole Plot")
 
     return html

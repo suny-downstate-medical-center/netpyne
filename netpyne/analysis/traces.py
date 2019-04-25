@@ -30,7 +30,7 @@ from .utils import colorList, _showFigure, _saveFigData, exception, getCellsIncl
 ## Plot recorded cell traces (V, i, g, etc.)
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False, colors = None, ylim = None, axis='on',
+def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False, colors = None, ylim = None, axis='on', fontSize=12,
     figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot recorded traces
@@ -92,11 +92,13 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
     figs = {}
     tracesData = []
 
+    # set font size
+    plt.rcParams.update({'font.size': fontSize})
+
     # Plot one fig per trace for given cell list
     def plotFigPerTrace(subGids):
         for itrace, trace in enumerate(tracesList):
             figs['_trace_'+str(trace)] = plt.figure(figsize=figSize) # Open a new figure
-            fontsiz = 12
             for igid, gid in enumerate(subGids):
                 if 'cell_'+str(gid) in sim.allSimData[trace]:
                     data = sim.allSimData[trace]['cell_'+str(gid)][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)]
@@ -105,12 +107,13 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                     color = colorList2[igid%len(colorList2)]
                     if not overlay:
                         plt.subplot(len(subGids),1,igid+1)
-                        plt.ylabel(trace, fontsize=fontsiz)
+                        plt.ylabel(trace, fontsize=fontSize)
                     plt.plot(t[:len(data)], data, linewidth=1.5, color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
-                    plt.xlabel('Time (ms)', fontsize=fontsiz)
+                    plt.xlabel('Time (ms)', fontsize=fontSize)
+                    plt.ylabel('mV', fontsize=fontSize)  ## REMOVEEE
                     plt.xlim(timeRange)
                     if ylim: plt.ylim(ylim)
-                    plt.title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                    plt.title('%s '%(trace))
                     
             if axis == 'off':  # if no axis, add scalebar
                 ax = plt.gca()
@@ -125,7 +128,8 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                 #maxLabelLen = 10
                 #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen)) 
                 #plt.legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
-                plt.legend()
+                plt.legend()  # PUT BACK!!!!!!
+                pass
 
     # Plot one fig per cell
     if oneFigPer == 'cell':
@@ -149,8 +153,8 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                         plt.subplot(len(tracesList),1,itrace+1)
                         color = 'blue'
                     plt.plot(t[:lenData], data, linewidth=1.5, color=color, label=trace)
-                    plt.xlabel('Time (ms)', fontsize=fontsiz)
-                    plt.ylabel(trace, fontsize=fontsiz)
+                    plt.xlabel('Time (ms)', fontsize=fontSize)
+                    plt.ylabel(trace, fontsize=fontSize)
                     plt.xlim(timeRange)
                     if ylim: plt.ylim(ylim)
                     if itrace==0: plt.title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))

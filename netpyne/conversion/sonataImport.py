@@ -1099,23 +1099,15 @@ class SONATAImporter():
         else:
             print("Unhandled dataset: %s"%d.name)
 
-
-    # ------------------------------------------------------------------------------------------------------------
-    # Read simulation output from HDF5
-    # ------------------------------------------------------------------------------------------------------------
-
-
     '''
         Search the strings in a config file for a substitutable value, e.g. 
         "morphologies_dir": "$COMPONENT_DIR/morphologies",
     '''
     def subs(self, path):
         #print_v('Checking for %s in %s'%(substitutes.keys(),path))
-
-        for s in sorted(self.substitutes, key=lambda k: len(k), reverse=True):
+        for s in self.substitutes: 
             if path.startswith(s):
                 path = path.replace(s,self.substitutes[s])
-
         return path
 
 

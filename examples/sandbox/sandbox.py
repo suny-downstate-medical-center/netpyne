@@ -10,11 +10,15 @@ netParams.propVelocity = 100.0 # propagation velocity (um/ms)
 netParams.probLengthConst = 150.0 # length constant for conn probability (um)
 
 ## Population parameters
-netParams.popParams['I2'] = {'cellType': 'PYR', 'numCells': 40, 'cellModel': 'HH_simple'}
-netParams.popParams['I3'] = {'cellType': 'PYR', 'numCells': 50, 'cellModel': 'HH_simple'}
+netParams.popParams['I1'] = {'cellType': 'PYR', 'numCells': 100, 'cellModel': 'HH_simple'}
+netParams.popParams['I1a'] = {'cellType': 'PYR', 'numCells': 50, 'cellModel': 'HH_simple'}
 
-netParams.popParams['input'] = {'numCells': 100, 'cellModel': 'NetStim', 'rate': 20, 'noise': 0.75}
-netParams.popParams['input2'] = {'numCells': 50, 'cellModel': 'NetStim', 'rate': 20, 'noise': 0.75}
+netParams.popParams['I2'] = {'cellType': 'PYR', 'numCells': 500, 'cellModel': 'HH_simple'}
+#netParams.popParams['I3'] = {'cellType': 'PYR', 'numCells': 4, 'cellModel': 'HH_simple'}
+
+netParams.popParams['input1a'] = {'numCells': 500, 'cellModel': 'NetStim', 'rate': 20, 'noise': 0.75}
+netParams.popParams['input'] = {'numCells': 500, 'cellModel': 'NetStim', 'rate': 40, 'noise': 1.0}
+#netParams.popParams['input2'] = {'numCells': 50, 'cellModel': 'NetStim', 'rate': 20, 'noise': 0.75}
 
 
 ## Cell property rules
@@ -28,25 +32,29 @@ netParams.cellParams['PYR'] = cellRule                          # add dict to li
 
 # ## Synaptic mechanism parameters
 netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.8, 'tau2': 5.3, 'e': 0}  # NMDA synaptic mechanism
-netParams.synMechParams['inh'] = {'mod': 'Exp2Syn', 'tau1': 0.6, 'tau2': 8.5, 'e': -75}  # GABA synaptic mechanism
+#netParams.synMechParams['inh'] = {'mod': 'Exp2Syn', 'tau1': 0.6, 'tau2': 8.5, 'e': -75}  # GABA synaptic mechanism
 
+import numpy as np
+auxConn=np.array([range(0,10),range(0,10)])
 
 netParams.connParams['input->I'] = {
-  'preConds': {'pop': ['input','input2', 'I2', 'I3']}, 
+  'preConds': {'pop': ['input']}, 
   'postConds': {'cellType': ['PYR']},  #  E -> all (100-1000 um)
-  'divergence': '20*pre_ynorm',                  # probability of connection
-  'weight': 0.5,         # synaptic wight 
-  'delay': 2,      # transmission delay (ms) 
+  'connList': auxConn.T,                  # probability of connection
+  'weight': ' normal(0, 4)',         # synaptic wight 
+  'delay': 1,      # transmission delay (ms) 
   'synMech': 'exc',
   'sec': 'soma'}                     # synaptic mechanism 
 
 
-# # All->I; apical dendrites (no sCRACM)
-# netParams.subConnParams['All->I'] = {
-#   'preConds': {'pop': ['input','input2', 'I2', 'I3']}, 
-#   'postConds': {'cellType': ['SOM', 'PV']},  
-#   'sec': ['soma','dend'],
-#   'density': 'uniform'} 
+netParams.connParams['I->I'] = {
+  'preConds': {'pop': ['I2']}, 
+  'postConds': {'cellType': ['PYR']},  #  E -> all (100-1000 um)
+  'probability': 0.5,                  # probability of connection
+  'weight': 0.5,         # synaptic wight 
+  'delay': 1,      # transmission delay (ms) 
+  'synMech': 'exc',
+  'sec': 'soma'}                     # synaptic mechanism 
 
 
 # Simulation configuration
@@ -60,7 +68,7 @@ simConfig.printSynsAfterRule = True
 simConfig.recordTraces ={'V': {'sec': 'soma', 'loc': 0.5, 'var':'v'}}
 simConfig.saveJson=1
 
-simConfig.recordCellsSpikes = ['I2', 'input']
+#simConfig.recordCellsSpikes = ['I2', 'input']
 
 
 lfp=0
@@ -85,9 +93,9 @@ sim.net.addStims()              # add network stimulation
 sim.net.connectCells()                  # create connections between cells based on params
 sim.setupRecording()                    # setup variables to record for each cell (spikes, V traces, etc)
 sim.runSim()                            # run parallel Neuron simulation  
-#sim.distributedSaveHDF5()
+# #sim.distributedSaveHDF5()
 sim.gatherData()                        # gather spiking data and cell info from each node
-sim.saveData()                          # save params, cell info and sim output to file (pickle,mat,txt,etc)#
+# sim.saveData()                          # save params, cell info and sim output to file (pickle,mat,txt,etc)#
 sim.analysis.plotData()               # plot spike raster etc
 
 #conns, connFormat = sim.loadHDF5(sim.cfg.filename+'.h5')

@@ -40,10 +40,19 @@ def create (netParams=None, simConfig=None, output=False):
 def simulate ():
     ''' Sequence of commands to simulate network '''
     from .. import sim
-    sim.runSim()                      # run parallel Neuron simulation  
+    sim.runSim()         
     sim.gatherData()                  # gather spiking data and cell info from each node
     
-
+#------------------------------------------------------------------------------
+# Wrapper to simulate network
+#------------------------------------------------------------------------------
+def intervalSimulate (interval):
+    ''' Sequence of commands to simulate network '''
+    from .. import sim
+    sim.runSimWithIntervalFunc(interval, sim.intervalSave)                      # run parallel Neuron simulation  
+    #this gather is justa merging of files
+    sim.fileGather()                  # gather spiking data and cell info from saved file
+    
 #------------------------------------------------------------------------------
 # Wrapper to simulate network
 #------------------------------------------------------------------------------
@@ -75,10 +84,32 @@ def createSimulateAnalyze (netParams=None, simConfig=None, output=False):
     (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
     sim.simulate() 
     sim.analyze()
-
     if output: return (pops, cells, conns, stims, simData)
-
-
+    
+#------------------------------------------------------------------------------
+# Wrapper to create, simulate, and analyse network, while saving to master in intervals
+#------------------------------------------------------------------------------
+def intervalCreateSimulateAnalyze (netParams=None, simConfig=None, output=False, interval=None):
+    ''' Sequence of commands create, simulate and analyse network '''
+    import os
+    from .. import sim
+    (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
+    try:
+        if sim.rank==0:
+            if os.path.exists('temp'):
+                for f in os.listdir('temp'):
+                    os.unlink('temp/{}'.format(f))
+            else:
+                os.mkdir('temp')
+        sim.intervalSimulate(interval)
+    except Exception as e:
+        print(e)
+        return
+    sim.pc.barrier()
+    sim.analyze()
+    if output: return (pops, cells, conns, stims, simData)
+    
+    
 #------------------------------------------------------------------------------
 # Wrapper to load all, ready for simulation
 #------------------------------------------------------------------------------

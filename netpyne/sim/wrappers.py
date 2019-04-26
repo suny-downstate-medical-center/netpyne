@@ -78,7 +78,7 @@ def createSimulate (netParams=None, simConfig=None, output=False):
 #------------------------------------------------------------------------------
 # Wrapper to create, simulate, and analyse network
 #------------------------------------------------------------------------------
-def createSimulateAnalyze (netParams=None, simConfig=None, output=False, distribute=False):
+def createSimulateAnalyze (netParams=None, simConfig=None, output=False):
     ''' Sequence of commands create, simulate and analyse network '''
     from .. import sim
     (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
@@ -89,7 +89,7 @@ def createSimulateAnalyze (netParams=None, simConfig=None, output=False, distrib
 #------------------------------------------------------------------------------
 # Wrapper to create, simulate, and analyse network, while saving to master in intervals
 #------------------------------------------------------------------------------
-def intervalCreateSimulateAnalyze (netParams=None, simConfig=None, output=False, interval=None, distribute=False):
+def intervalCreateSimulateAnalyze (netParams=None, simConfig=None, output=False, interval=None):
     ''' Sequence of commands create, simulate and analyse network '''
     import os
     from .. import sim

@@ -757,7 +757,6 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
     '''
 
     from .. import sim
-
     print('Plotting spike stats...')
 
     # Set plot style
@@ -856,8 +855,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
                     else:
                         rates = [spkinds.count(gid)*toRate for gid in set(spkinds)] \
                             if len(spkinds)>0 else [0] #cellGids] #set(spkinds)] 
-
-                    statData.insert(0, rates)
+                    statData.append(rates)
 
 
                 # Inter-spike interval (ISI) coefficient of variation (CV) stats
@@ -867,7 +865,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
                         for gid in set(spkinds)]
                     isimat = [[t - s for s, t in zip(spks, spks[1:])] for spks in spkmat if len(spks)>10]
                     isicv = [np.std(x) / np.mean(x) if len(x)>0 else 0 for x in isimat] # if len(x)>0] 
-                    statData.insert(0, isicv) 
+                    statData.append(isicv) 
 
 
                 # synchrony
@@ -890,7 +888,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
                         syncMat = np.mean(pyspike.spike_sync_matrix(spkmat), 0)
                         
 
-                    statData.insert(0, syncMat)
+                    statData.append(syncMat)
 
             colors.insert(0, popColors[subset] if subset in popColors 
                 else colorList[iplot%len(colorList)])  # colors in inverse order

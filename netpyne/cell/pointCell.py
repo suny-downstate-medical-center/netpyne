@@ -80,6 +80,7 @@ class PointCell (Cell):
 
         # add random num generator, and set number and seed for NetStims
         if self.tags['cellModel'] == 'NetStim':
+            print("Creating a NetStim pointcell")
             rand = h.Random()
             self.hRandom = rand 
             if 'number' not in self.params:

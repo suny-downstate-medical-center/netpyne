@@ -516,8 +516,7 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
 ## Plot connectivity
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', groupByIntervalPre = None, groupByIntervalPost = None,
-            graphType = 'matrix', synOrConn = 'syn', synMech = None, connsFile = None, tagsFile = None, clim = None, saveData = None, saveFig = None, showFig = True): 
+def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', groupByIntervalPre = None, groupByIntervalPost = None, graphType = 'matrix', synOrConn = 'syn', synMech = None, connsFile = None, tagsFile = None, clim = None, fontSize = 12, saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot network connectivity
         - includePre (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
@@ -554,6 +553,9 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
         print("Error calculating connMatrix in plotConn()")
         return None
 
+    # set font size
+    plt.rcParams.update({'font.size': fontSize})
+
     # matrix plot
     if graphType == 'matrix':
         # Create plot
@@ -563,7 +565,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
         fig.subplots_adjust(bottom=0.02) # Less space on bottom
         h = plt.axes()
 
-        plt.imshow(connMatrix, interpolation='nearest', cmap='jet', vmin=np.nanmin(connMatrix), vmax=np.nanmax(connMatrix))  #_bicolormap(gap=0)
+        plt.imshow(connMatrix, interpolation='nearest', cmap='viridis', vmin=np.nanmin(connMatrix), vmax=np.nanmax(connMatrix))  #_bicolormap(gap=0)
 
         # Plot grid lines
             
@@ -675,7 +677,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
 ## Plot 2D representation of network cell positions and connections
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns = True, popColors = None, 
+def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns = True, popColors = None, fontSize = 12,
                 tagsFile = None, saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot 2D representation of network cell positions and connections
@@ -779,7 +781,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
     plt.ylabel(ycoord+' (um)') 
     plt.xlim([min(posX)-0.05*max(posX),1.05*max(posX)]) 
     plt.ylim([min(posY)-0.05*max(posY),1.05*max(posY)])
-    fontsiz = 12
+    fontsiz = fontSize
 
     for popLabel in popLabels:
         plt.plot(0,0,color=popColors[popLabel],label=popLabel)
@@ -811,9 +813,9 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot cell shape
 # -------------------------------------------------------------------------------------------------------------------
-#@exception
+@exception
 def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, showElectrodes = False, synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, 
-    iv=False, ivprops=None, includeAxon=True, bkgColor = None, figSize = (10,8), saveData = None, dpi = 300, saveFig = None, showFig = True): 
+    iv=False, ivprops=None, includeAxon=True, bkgColor = None, fontSize = 12, figSize = (10,8), saveData = None, dpi = 300, saveFig = None, showFig = True): 
     ''' 
     Plot 3D cell shape using NEURON Interview PlotShape
         - includePre: (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of presynaptic cells to consider 
@@ -894,21 +896,22 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
             secs = [sec for sec in secs if 'axon' not in sec.hname()]
 
         # Plot shapeplot
-        cbLabels = {'numSyns': 'number of synapses', 'weightNorm': 'weight scaling'}
+        cbLabels = {'numSyns': 'number of synapses per segment', 'weightNorm': 'weight scaling'}
+        plt.rcParams.update({'font.size': fontSize})
         fig=plt.figure(figsize=figSize)
         shapeax = plt.subplot(111, projection='3d')
         shapeax.elev=90 # 90 
         shapeax.azim=-90 # -90
         shapeax.dist=dist*shapeax.dist
         plt.axis('equal')
-        cmap=plt.cm.jet  #plt.cm.rainbow #plt.cm.jet #YlOrBr_r
+        cmap = plt.cm.viridis #plt.cm.jet  #plt.cm.rainbow #plt.cm.jet #YlOrBr_r
         morph.shapeplot(h,shapeax, sections=secs, cvals=cvals, cmap=cmap)
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
-        if not cvals==None and len(cvals)>0: 
+        if cvals is not None and len(cvals)>0: 
             sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=np.min(cvals), vmax=np.max(cvals)))
             sm._A = []  # fake up the array of the scalar mappable
-            cb = plt.colorbar(sm, fraction=0.15, shrink=0.5, pad=0.01, aspect=20)    
-            if cvar: cb.set_label(cbLabels[cvar], rotation=90)
+            cb = plt.colorbar(sm, fraction=0.15, shrink=0.5, pad=0.05, aspect=20)    
+            if cvar: cb.set_label(cbLabels[cvar], rotation=90, fontsize=fontSize)
 
         if bkgColor:
             shapeax.w_xaxis.set_pane_color(bkgColor)
@@ -923,6 +926,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
                 for sec in list(cellPost.secs.values()):
                     for synMech in sec['synMechs']:
                         morph.mark_locations(h, sec['hObj'], synMech['loc'], markspec=synStyle, color=synColor, markersize=synSiz)
+        
         # Electrodes
         if showElectrodes:
             ax = plt.gca()
@@ -935,10 +939,13 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
                 marker='v', depthshade=False, edgecolors='k', linewidth=2)
             for i in range(coords.shape[0]):
                 ax.text(coords[i,0],coords[i,1],coords[i,2], '  '+str(showElectrodes[i]), fontweight='bold' )
-            cb.set_label('Segment total transfer resistance to electrodes (kiloohm)', rotation=90, fontsize=12)
+            cb.set_label('Segment total transfer resistance to electrodes (kiloohm)', rotation=90, fontsize=fontSize)
 
         #plt.title(str(includePre)+' -> '+str(includePost) + ' ' + str(cvar))
         shapeax.set_xticklabels([])
+        shapeax.set_yticklabels([])
+        shapeax.set_zticklabels([])
+        #shapeax.set_ylabel('y location (um)')
 
         # save figure
         if saveFig: 

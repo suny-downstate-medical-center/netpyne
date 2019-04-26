@@ -6,6 +6,21 @@
 
 - Improved speed performance of 'connList' connectivity rules
 
+- Updated RxD calcium buffering example
+
+- Added 'fontSize' argument to several plots
+
+- Fixed bug saving evol output file
+
+- Fixed bug in plotShape()
+
+- Fixed bug in plotSpikeStats()
+
+- Fixed bug loading files with colons
+
+- Fixed issue sorting raster by population and y coord
+
+
 # Version 0.9.1.3
 
 - Removed deprecated hold function from plotConn

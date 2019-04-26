@@ -18,6 +18,8 @@
 
 - Fixed bug loading files with colons
 
+- Fixed issue sorting raster by population and y coord
+
 
 # Version 0.9.1.3
 

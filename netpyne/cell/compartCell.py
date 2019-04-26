@@ -17,6 +17,11 @@ from builtins import range
 
 from builtins import round
 from builtins import str
+try:
+  basestring
+except NameError:
+  basestring = str
+
 from future import standard_library
 standard_library.install_aliases()
 from numbers import Number
@@ -62,7 +67,7 @@ class CompartCell (Cell):
             rand.Random123(self.gid)
             self.randRotationAngle = rand.uniform(0, 6.2832)  # 0 to 2pi
 
-
+        
         for propLabel, prop in sim.net.params.cellParams.items():  # for each set of cell properties
             conditionsMet = 1
             for (condKey,condVal) in prop['conds'].items():  # check if all conditions are met
@@ -71,7 +76,7 @@ class CompartCell (Cell):
                         if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
                             conditionsMet = 0
                             break
-                    elif isinstance(condVal[0], str):
+                    elif isinstance(condVal[0], basestring):
                         if self.tags.get(condKey) not in condVal:
                             conditionsMet = 0
                             break 
@@ -104,7 +109,7 @@ class CompartCell (Cell):
                     if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
                         conditionsMet = 0
                         break
-                elif isinstance(condVal[0], str):
+                elif isinstance(condVal[0], basestring):
                     if self.tags.get(condKey) not in condVal:
                         conditionsMet = 0
                         break 
@@ -304,7 +309,8 @@ class CompartCell (Cell):
         from .. import sim
 
         excludeMechs = ['dipole']  # dipole is special case 
-        
+        mechInsertError = False  # flag to print error inserting mechanisms
+
         # set params for all sections
         for sectName,sectParams in prop['secs'].items(): 
             # create section
@@ -337,7 +343,9 @@ class CompartCell (Cell):
                     try:
                         sec['hObj'].insert(mechName)
                     except:
-                        print('# Error inserting %s mechanims in %s section! (check mod files are compiled)'%(mechName, sectName)) 
+                        mechInsertError = True
+                        if sim.cfg.verbose: 
+                            print('# Error inserting %s mechanims in %s section! (check mod files are compiled)'%(mechName, sectName)) 
                         continue
                     for mechParamName,mechParamValue in mechParams.items():  # add params of the mechanism
                         mechParamValueFinal = mechParamValue
@@ -358,7 +366,9 @@ class CompartCell (Cell):
                     try:
                         sec['hObj'].insert(ionName+'_ion')    # insert mechanism
                     except:
-                        print('# Error inserting %s ion in %s section!'%(ionName, sectName)) 
+                        mechInsertError = True
+                        if sim.cfg.verbose:
+                            print('# Error inserting %s ion in %s section!'%(ionName, sectName)) 
                         continue
                     for ionParamName,ionParamValue in ionParams.items():  # add params of the mechanism
                         ionParamValueFinal = ionParamValue
@@ -397,7 +407,10 @@ class CompartCell (Cell):
                             pointpParamValue = self.gid
                         if pointpParamName not in ['mod', 'loc', 'vref', 'synList'] and not pointpParamName.startswith('_'):
                             setattr(sec['pointps'][pointpName]['hObj'], pointpParamName, pointpParamValue)
-
+                    if 'params' in self.tags.keys(): # modify cell specific params
+                      for pointpParamName,pointpParamValue in self.tags['params'].items():
+                        setattr(sec['pointps'][pointpName]['hObj'], pointpParamName, pointpParamValue)
+                            
         # set topology 
         for sectName,sectParams in prop['secs'].items():  # iterate sects again for topology (ensures all exist)
             sec = self.secs[sectName]  # pointer to section # pointer to child sec
@@ -411,6 +424,9 @@ class CompartCell (Cell):
             if 'mechs' in sectParams and 'dipole' in sectParams['mechs']:
                self.__dipoleInsert(sectName, sec)  # add dipole mechanisms to each section
 
+        # Print message about error inserting mechanisms
+        if mechInsertError:
+            print("ERROR: Some mechanisms and/or ions were not inserted (for details run with cfg.verbose=True). Make sure the required mod files are compiled.")
 
     def addSynMechsNEURONObj(self):
         # set params for all sections
@@ -598,7 +614,7 @@ class CompartCell (Cell):
                                 if synMech.get(condKey) < condVal[0] or synMech.get(condKey) > condVal[1]:
                                     conditionsMet = 0
                                     break
-                            elif isinstance(condVal, list) and isinstance(condVal[0], str):
+                            elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
                                 if synMech.get(condKey) not in condVal:
                                     conditionsMet = 0
                                     break 
@@ -805,7 +821,7 @@ class CompartCell (Cell):
                         if compareTo < condVal[0] or compareTo > condVal[1]:
                             conditionsMet = 0
                             break
-                    elif isinstance(condVal, list) and isinstance(condVal[0], str):
+                    elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
                         if compareTo not in condVal:
                             conditionsMet = 0
                             break 
@@ -820,7 +836,7 @@ class CompartCell (Cell):
                         if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
                             conditionsMet = 0
                             break
-                    elif isinstance(condVal, list) and isinstance(condVal[0], str):
+                    elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
                         if self.tags.get(condKey) not in condVal:
                             conditionsMet = 0
                             break 
@@ -873,7 +889,7 @@ class CompartCell (Cell):
                             if stim.get(condKey) < condVal[0] or stim.get(condKey) > condVal[1]:
                                 conditionsMet = 0
                                 break
-                        elif isinstance(condVal, list) and isinstance(condVal[0], str):
+                        elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
                             if stim.get(condKey) not in condVal:
                                 conditionsMet = 0
                                 break 
@@ -916,7 +932,7 @@ class CompartCell (Cell):
     def addStim (self, params):
         from .. import sim
 
-        if not params['sec'] or (isinstance(params['sec'], str) and not params['sec'] in list(self.secs.keys())+list(self.secLists.keys())):  
+        if not params['sec'] or (isinstance(params['sec'], basestring) and not params['sec'] in list(self.secs.keys())+list(self.secLists.keys())):  
             if sim.cfg.verbose: print('  Warning: no valid sec specified for stim on cell gid=%d so using soma or 1st available. Existing secs: %s; params: %s'%(self.gid, list(self.secs.keys()),params))
             if 'soma' in self.secs:  
                 params['sec'] = 'soma'  # use 'soma' if exists
@@ -1017,7 +1033,7 @@ class CompartCell (Cell):
         from .. import sim
 
         # if no section specified or single section specified does not exist
-        if not params.get('sec') or (isinstance(params.get('sec'), str) and not params.get('sec') in list(self.secs.keys())+list(self.secLists.keys())):  
+        if not params.get('sec') or (isinstance(params.get('sec'), basestring) and not params.get('sec') in list(self.secs.keys())+list(self.secLists.keys())):  
             if sim.cfg.verbose: print('  Warning: no valid sec specified for connection to cell gid=%d so using soma or 1st available'%(self.gid))
             if 'soma' in self.secs:  
                 params['sec'] = 'soma'  # use 'soma' if exists
@@ -1144,6 +1160,7 @@ class CompartCell (Cell):
         from .. import sim
 
         from numpy import cumsum
+
         if 'L' in self.secs[secList[0]]['geom']:
             secLengths = [self.secs[s]['geom']['L'] for s in secList]
         elif getattr(self.secs[secList[0]]['hObj'], 'L', None):
@@ -1248,7 +1265,7 @@ class CompartCell (Cell):
         z = self.tags['z']
                 
         for sec in list(self.secs.values()):
-            if 'pt3d' not in sec['geom']:  # only cells that didn't have pt3d before
+            if 'geom' in sec and 'pt3d' not in sec['geom']:  # only cells that didn't have pt3d before
                 sec['geom']['pt3d'] = []
                 sec['hObj'].push()
                 n3d = int(h.n3d())  # get number of n3d points in each section

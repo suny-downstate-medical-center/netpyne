@@ -13,7 +13,10 @@ from __future__ import absolute_import
 
 from builtins import map
 from builtins import range
-
+try:
+    basestring
+except NameError:
+    basestring = str
 from future import standard_library
 standard_library.install_aliases()
 from numpy import  pi, sqrt, sin, cos, arccos
@@ -180,7 +183,7 @@ class Pop (object):
                 volume = volume * (maxv-minv)
 
         funcLocs = None  # start with no locations as a function of density function
-        if isinstance(self.tags['density'], str): # check if density is given as a function 
+        if isinstance(self.tags['density'], basestring): # check if density is given as a function 
             if shape == 'cuboid':  # only available for cuboids
                 strFunc = self.tags['density']  # string containing function
                 strVars = [var for var in ['xnorm', 'ynorm', 'znorm'] if var in strFunc]  # get list of variables used 
@@ -290,7 +293,7 @@ class Pop (object):
                     cellTags[coord] = cellTags[coord+'norm']*getattr(sim.net.params, 'size'+coord.upper())  # calculate norm coord
                 else:
                     cellTags[coord+'norm'] = cellTags[coord] = 0
-            if 'params' in cellTags:  # if VecStim, copy spike times to params
+            if 'cellModel' in self.tags.keys() and self.tags['cellModel'] == 'Vecstim':  # if VecStim, copy spike times to params
                 cellTags['params']['spkTimes'] = self.tags['cellsList'][i]['spkTimes']
             cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
             if sim.cfg.verbose: print(('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tags['numCells']-1, gid, i, sim.rank)))

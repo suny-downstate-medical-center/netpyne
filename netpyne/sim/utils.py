@@ -19,6 +19,10 @@ from builtins import next
 from builtins import dict
 from builtins import map
 from builtins import str
+try:
+    basestring
+except NameError:
+    basestring = str
 from future import standard_library
 standard_library.install_aliases()
 from time import time
@@ -62,7 +66,7 @@ def getCellsList (include, returnGids=False):
         elif isinstance(condition, int):  # cell gid
             cellGids.append(condition)
 
-        elif isinstance(condition, str):  # entire pop
+        elif isinstance(condition, basestring):  # entire pop
             cellGids.extend(list(sim.net.pops[condition].cellGids))
 
         elif isinstance(condition, tuple) or isinstance(condition, list):  # subset of a pop with relative indices
@@ -137,7 +141,7 @@ def hashStr (obj):
 # Hash function for list of values
 #------------------------------------------------------------------------------
 def hashList(obj):
-    return int(hashlib.md5(array.array('L', obj)).hexdigest()[0:8],16)
+    return int(hashlib.md5(array.array(chr(ord('L')), obj)).hexdigest()[0:8],16)
 
 
 #------------------------------------------------------------------------------
@@ -183,17 +187,17 @@ def checkMemory ():
 #------------------------------------------------------------------------------
 # Replace item with specific key from dict or list (used to remove h objects)
 #------------------------------------------------------------------------------
-def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
+def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT', exclude_list=[]):
     if type(obj) == list:
         if objCopy=='ROOT':
             objCopy = []
         for item in obj:
             if isinstance(item, list):
                 objCopy.append([])
-                copyReplaceItemObj(item, keystart, newval, objCopy[-1])
+                copyReplaceItemObj(item, keystart, newval, objCopy[-1], exclude_list)
             elif isinstance(item, (dict, Dict)):
                 objCopy.append({})
-                copyReplaceItemObj(item, keystart, newval, objCopy[-1])
+                copyReplaceItemObj(item, keystart, newval, objCopy[-1], exclude_list)
             else:
                 objCopy.append(item)
 
@@ -203,11 +207,11 @@ def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
         for key,val in obj.items():
             if type(val) in [list]:
                 objCopy[key] = []
-                copyReplaceItemObj(val, keystart, newval, objCopy[key])
+                copyReplaceItemObj(val, keystart, newval, objCopy[key], exclude_list)
             elif isinstance(val, (dict, Dict)):
                 objCopy[key] = {}
-                copyReplaceItemObj(val, keystart, newval, objCopy[key])
-            elif key.startswith(keystart):
+                copyReplaceItemObj(val, keystart, newval, objCopy[key], exclude_list)
+            elif key.startswith(keystart) and key not in exclude_list:
                 objCopy[key] = newval
             else:
                 objCopy[key] = val
@@ -217,17 +221,17 @@ def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT'):
 #------------------------------------------------------------------------------
 # Remove item with specific key from dict or list (used to remove h objects)
 #------------------------------------------------------------------------------
-def copyRemoveItemObj (obj, keystart,  objCopy='ROOT'):
+def copyRemoveItemObj (obj, keystart,  objCopy='ROOT', exclude_list=[]):
     if type(obj) == list:
         if objCopy=='ROOT':
             objCopy = []
         for item in obj:
             if isinstance(item, list):
                 objCopy.append([])
-                copyRemoveItemObj(item, keystart, objCopy[-1])
+                copyRemoveItemObj(item, keystart, objCopy[-1], exclude_list)
             elif isinstance(item, (dict, Dict)):
                 objCopy.append({})
-                copyRemoveItemObj(item, keystart,  objCopy[-1])
+                copyRemoveItemObj(item, keystart,  objCopy[-1], exclude_list)
             else:
                 objCopy.append(item)
 
@@ -237,11 +241,11 @@ def copyRemoveItemObj (obj, keystart,  objCopy='ROOT'):
         for key,val in obj.items():
             if type(val) in [list]:
                 objCopy[key] = []
-                copyRemoveItemObj(val, keystart, objCopy[key])
+                copyRemoveItemObj(val, keystart, objCopy[key], exclude_list)
             elif isinstance(val, (dict, Dict)):
                 objCopy[key] = {}
-                copyRemoveItemObj(val, keystart, objCopy[key])
-            elif key.startswith(keystart):
+                copyRemoveItemObj(val, keystart, objCopy[key], exclude_list)
+            elif key.startswith(keystart) and key not in exclude_list:
                 objCopy.pop(key, None)
             else:
                 objCopy[key] = val
@@ -251,17 +255,17 @@ def copyRemoveItemObj (obj, keystart,  objCopy='ROOT'):
 #------------------------------------------------------------------------------
 # Replace item with specific key from dict or list (used to remove h objects)
 #------------------------------------------------------------------------------
-def replaceItemObj (obj, keystart, newval):
+def replaceItemObj (obj, keystart, newval, exclude_list=[]):
     if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict]:
-                replaceItemObj(item, keystart, newval)
+                replaceItemObj(item, keystart, newval, exclude_list)
 
     elif type(obj) == dict:
         for key,val in obj.items():
             if type(val) in [list, dict]:
-                replaceItemObj(val, keystart, newval)
-            if key.startswith(keystart):
+                replaceItemObj(val, keystart, newval, exclude_list)
+            if key.startswith(keystart) and key not in exclude_list:
                 obj[key] = newval
     return obj
 
@@ -481,7 +485,7 @@ def _dict2utf8 (obj):
 #unidict = {k.decode('utf8'): v.decode('utf8') for k, v in strdict.items()}
     #print obj
     import collections
-    if isinstance(obj, str):
+    if isinstance(obj, basestring):
         return obj.decode('utf8')
     elif isinstance(obj, collections.Mapping):
         for key in list(obj.keys()):

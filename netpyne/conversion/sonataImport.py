@@ -247,8 +247,8 @@ class SONATAImporter():
         # create connections
         self.createConns()
 
-        print('STOP HERE TO AVOID SIMULATING')
-        from IPython import embed; embed()
+        #print('STOP HERE TO AVOID SIMULATING')
+        #from IPython import embed; embed()
 
     # ------------------------------------------------------------------------------------------------------------
     # create simulation config 
@@ -272,7 +272,7 @@ class SONATAImporter():
         elif 'node_sets' in self.simulation_config:
             sim.cfg.node_sets = self.simulation_config['node_sets']
         else:
-            sim.cfg.node_sets = {}
+            sim.cfg_node_sets = {}
         
         # inputs - add as 'spkTimes' to external population
 
@@ -284,8 +284,8 @@ class SONATAImporter():
 
         # recording
         for k,v in self.simulation_config['reports'].items():
-            sim.cfg.recordTraces[k] = {'sec': v['sections'], 'loc': 0.5, 'var': v['variable_name']}
             try:
+                sim.cfg.recordTraces[k] = {'sec': v['sections'], 'loc': 0.5, 'var': v['variable_name']}
                 sim.cfg.analysis.plotTraces = {'include': sim.cfg.node_sets[v['cells']].values()}  # use 'conds' so works for 'model_type' # UPDATE!
             except:
                 pass
@@ -530,7 +530,7 @@ class SONATAImporter():
                 post_gid = self.cell_info[post_node]['gid_from_id'][post_id]
 
 
-                if post_gid in sim.net.lid2gid:
+                if post_gid in sim.net.gid2lid:
 
                     type = self.conn_info[conn]['edge_type_id'][i]
 
@@ -573,6 +573,7 @@ class SONATAImporter():
     # ------------------------------------------------------------------------------------------------------------
     # Create stimulation
     # ------------------------------------------------------------------------------------------------------------
+    # NOTE: need to add support for ICLamps!!
     def createStims(self):
         for input in self.simulation_config['inputs']:
             
@@ -911,7 +912,7 @@ class SONATAImporter():
     '''
     def subs(self, path):
         #print_v('Checking for %s in %s'%(substitutes.keys(),path))
-        for s in self.substitutes:
+        for s in self.substitutes: 
             if path.startswith(s):
                 path = path.replace(s,self.substitutes[s])
         return path

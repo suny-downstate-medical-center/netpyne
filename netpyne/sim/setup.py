@@ -114,6 +114,8 @@ def setSimCfg (cfg):
     if sim.cfg.simLabel and sim.cfg.saveFolder:
         sim.cfg.filename = sim.cfg.saveFolder+'/'+sim.cfg.simLabel
 
+    if sim.cfg.duration > 0:
+        sim.cfg.duration = float(sim.cfg.duration)
 
 #------------------------------------------------------------------------------
 # Create parallel context
@@ -264,13 +266,19 @@ def setupRecording ():
         cellsRecord = utils.getCellsList(sim.cfg.recordCells)+cellsPlot
 
         for key in list(sim.cfg.recordTraces.keys()): sim.simData[key] = Dict()  # create dict to store traces
-        for cell in cellsRecord: cell.recordTraces()  # call recordTraces function for each cell
+        for cell in cellsRecord: 
+            cell.recordTraces()  # call recordTraces function for each cell
 
         # record h.t
         if sim.cfg.recordTime and len(sim.simData) > 0:
             try:
                 sim.simData['t'] = h.Vector() #sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
-                sim.simData['t'].record(h._ref_t, sim.cfg.recordStep)
+                if hasattr(sim.cfg,'use_local_dt') and sim.cfg.use_local_dt:
+                    # sim.simData['t'] = h.Vector(int(sim.cfg.duration/sim.cfg.recordStep)+1) #sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
+                    recordStep = 0.1 if sim.cfg.recordStep == 'adaptive' else sim.cfg.recordStep
+                    sim.simData['t'].indgen(0,sim.cfg.duration,recordStep)
+                else:
+                    sim.simData['t'].record(h._ref_t, sim.cfg.recordStep)
             except:
                 if sim.cfg.verbose: 'Error recording h.t (could be due to no sections existing)'
 

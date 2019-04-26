@@ -19,6 +19,10 @@ try:
     to_unicode = unicode
 except NameError:
     to_unicode = str
+try:
+    basestring
+except NameError:
+    basestring = str
 
 from future import standard_library
 standard_library.install_aliases()
@@ -86,7 +90,7 @@ def _showFigure():
 def _saveFigData(figData, fileName=None, type=''):
     from .. import sim
 
-    if not fileName or not isinstance(fileName, str):
+    if not fileName or not isinstance(fileName, basestring):
         fileName = sim.cfg.filename+'_'+type+'.pkl'
 
     if fileName.endswith('.pkl'): # save to pickle
@@ -191,7 +195,7 @@ def getCellsInclude(include):
         elif isinstance(condition, int):  # cell gid 
             cellGids.append(condition)
         
-        elif isinstance(condition, str):  # entire pop
+        elif isinstance(condition, basestring):  # entire pop
             if condition in allNetStimLabels:
                 netStimLabels.append(condition)
             else:
@@ -201,7 +205,7 @@ def getCellsInclude(include):
         # when load from json gets converted to list (added as exception)
         elif (isinstance(condition, (list,tuple))  
         and len(condition)==2 
-        and isinstance(condition[0], str) 
+        and isinstance(condition[0], basestring) 
         and isinstance(condition[1], (list,int))):  
             cellsPop = [c['gid'] for c in allCells if c['tags']['pop']==condition[0]]
             if isinstance(condition[1], list):
@@ -214,7 +218,7 @@ def getCellsInclude(include):
                 if isinstance(subcond, int):  # cell gid 
                     cellGids.append(subcond)
         
-                elif isinstance(subcond, str):  # entire pop
+                elif isinstance(subcond, basestring):  # entire pop
                     if subcond in allNetStimLabels:
                         netStimLabels.append(subcond)
                     else:
@@ -247,7 +251,7 @@ def getCellsIncludeTags(include, tags, tagsFormat=None):
             elif isinstance(condition, int):  # cell gid 
                 cellGids.append(condition)
             
-            elif isinstance(condition, str):  # entire pop
+            elif isinstance(condition, basestring):  # entire pop
                 cellGids.extend([gid for gid,c in allCells.items() if c[popIndex]==condition])
             
             elif isinstance(condition, tuple):  # subset of a pop with relative indices
@@ -268,7 +272,7 @@ def getCellsIncludeTags(include, tags, tagsFormat=None):
             elif isinstance(condition, int):  # cell gid 
                 cellGids.append(condition)
             
-            elif isinstance(condition, str):  # entire pop
+            elif isinstance(condition, basestring):  # entire pop
                 cellGids.extend([gid for gid,c in allCells.items() if c['pop']==condition])
             
             elif isinstance(condition, tuple):  # subset of a pop with relative indices
@@ -316,9 +320,16 @@ def invertDictMapping(d):
 # -------------------------------------------------------------------------------------------------------------------
 def getSpktSpkid(cellGids=[], timeRange=None, allCells=False):
     '''return spike ids and times; with allCells=True just need to identify slice of time so can omit cellGids'''
-    import pandas as pd
     from .. import sim
-    df = pd.DataFrame(pd.lib.to_object_array([sim.allSimData['spkt'], sim.allSimData['spkid']]).transpose(), columns=['spkt', 'spkid'])
+    import pandas as pd
+    
+    try: # Pandas 0.24 and later
+        from pandas import _lib as pandaslib
+    except: # Pandas 0.23 and earlier
+        from pandas import lib as pandaslib
+    df = pd.DataFrame(pandaslib.to_object_array([sim.allSimData['spkt'], sim.allSimData['spkid']]).transpose(), columns=['spkt', 'spkid'])
+    #df = pd.DataFrame(pd.lib.to_object_array([sim.allSimData['spkt'], sim.allSimData['spkid']]).transpose(), columns=['spkt', 'spkid'])
+    
     if timeRange:
         min, max = [int(df['spkt'].searchsorted(timeRange[i])) for i in range(2)] # binary search faster than query
     else: # timeRange None or empty list means all times

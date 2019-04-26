@@ -7,21 +7,19 @@ Contributors: salvadordura@gmail.com
 """
 from __future__ import print_function
 from __future__ import division
-from __future__ import unicode_literals
 from __future__ import absolute_import
 
 
 from builtins import str
 
 from builtins import range
-from future import standard_library
-standard_library.install_aliases()
+
 try:
     import neuroml
     from pyneuroml import pynml
     from pyneuroml import __version__ as pynml_ver
     from distutils.version import StrictVersion
-    min_pynml_ver_required = '0.3.11' # pyNeuroML will have a dependency on the correct version of libNeuroML...
+    min_pynml_ver_required = '0.3.13' # pyNeuroML will have a dependency on the correct version of libNeuroML...
     
     if not StrictVersion(pynml_ver)>=StrictVersion(min_pynml_ver_required):
         from neuron import h
@@ -630,7 +628,7 @@ if neuromlExists:
         nml_file_name = '%s.net.nml'%reference
         
         if format=='xml':
-
+            print("Writing %s to %s (%s)"%(nml_doc, nml_file_name, nml_file_name.__class__))
             writers.NeuroMLWriter.write(nml_doc, nml_file_name)
         elif format=='hdf5':
             

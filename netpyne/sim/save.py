@@ -532,5 +532,3 @@ def saveInNode(gatherLFP=True, include=None, filename=None):
         # return full path
         import os
         return os.getcwd() + '/' + filePath
-
-

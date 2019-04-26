@@ -282,10 +282,26 @@ def getCellParams(cell, varList={}, origGlob={}):
     # create dict with hname of each element in dir(cell)
     dirCellHnames = {}  
     for dirCellName in dirCell:
-        try:
-            dirCellHnames.update({getattr(cell, dirCellName).hname(): dirCellName})
-        except:
-            pass
+        dirCellObject = getattr(cell, dirCellName)
+        if isinstance(dirCellObject, list):
+            for i, dirCellObjectItem in enumerate(dirCellObject):
+                try:   
+                    if dirCellObjectItem.hname() not in dirCellHnames: # give preference to dict entries 
+                        dirCellHnames.update({dirCellObjectItem.hname(): dirCellName+'_'+str(i)})
+                except:
+                    pass
+        elif isinstance(dirCellObject, dict):
+            for k, v in dirCellObject.items():
+                try:   
+                    dirCellHnames.update({v.hname(): k})
+                except:
+                    pass
+        else:
+            try:   
+                dirCellHnames.update({dirCellObject.hname(): dirCellName})
+            except:
+                pass
+
     # create dict with dir(cell) name corresponding to each hname 
     dirCellSecNames = {} 
     for sec in secs:

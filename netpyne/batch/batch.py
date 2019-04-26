@@ -61,8 +61,7 @@ def runJob(script, cfgSavePath, netParamsSavePath):
     command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath) 
     print(command+'\n')
     proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
-    print(proc.stdout.read())
-
+    print(proc.stdout.read().decode())
 
 # -------------------------------------------------------------------------------
 # function to create a folder if it does not exist
@@ -440,7 +439,7 @@ wait
                             print('Submitting job ',jobName)
                             # master/slave bulletin board schedulling of jobs
                             pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath)
-                        
+                            
                         else:
                             print("Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'")
                             import sys
@@ -449,7 +448,10 @@ wait
                     sleep(1) # avoid saturating scheduler
             print("-"*80)
             print("   Finished submitting jobs for grid parameter exploration   ")
-            print("-"*80)
+            print("-" * 80)
+            while pc.working():
+                sleep(1)
+
 
 
         # -------------------------------------------------------------------------------

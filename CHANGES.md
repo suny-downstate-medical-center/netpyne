@@ -8,7 +8,13 @@
 
 - Updated RxD calcium buffering example
 
+- Added netClamp example 
+
+- Added support for recording and plotting variable time step
+
 - Added 'fontSize' argument to several plots
+
+- Fixed issue completing batches in Python 3
 
 - Fixed bug saving evol output file
 

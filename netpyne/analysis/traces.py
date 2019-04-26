@@ -217,17 +217,13 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                         plt.subplot(len(tracesList),1,itrace+1)
                         color = 'blue'
                     if recordStep == 'adaptive':
-                        if isinstance(data, list):
+                        if isinstance(data, list) and isinstance(data[0], (list, np.array)):
                             for tl,dl in zip(t,data):
                                 plt.plot(tl, dl, linewidth=1.5, color=color, label=trace)
                         else:
                             plt.plot(t, data, linewidth=1.5, color=color, label=trace)
                     else:
-                        if isinstance(data, list):
-                            for tl,dl in zip(t,data):
-                                plt.plot(tl[:lenData], dl, linewidth=1.5, color=color, label=trace)
-                        else:
-                            plt.plot(t[:lenData], data, linewidth=1.5, color=color, label=trace)
+                        plt.plot(t[:lenData], data, linewidth=1.5, color=color, label=trace)
                     plt.xlabel('Time (ms)', fontsize=fontsiz)
                     plt.ylabel(trace, fontsize=fontsiz)
                     plt.xlim(timeRange)

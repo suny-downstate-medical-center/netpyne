@@ -780,11 +780,12 @@ Wrappers:
 * **sim.load(filename)** - wrapper to initialize, load net from file, and setup recording.
 
 * **sim.createSimulate(simConfig, netParams)** - wrapper to create and simulate the network.
-* **sim.createSimulateAnalyze(simConfig, netParams)** - wrapper to create, simulate and analyse the network.
+* **sim.createSimulateAnalyze(simConfig, netParams)** - wrapper to create, simulate and analyze the network.
+* **sim.intervalCreateSimulateAnalyze(simConfig, cfg, interval=t)** - wrapper to create, simulate and analyze the network, saving simulation output every t ms.
 * **sim.createExportNeuroML2(simConfig, netParams)** - wrapper to create and export network to NeuroML2.
 
 * **sim.loadSimulate(simConfig, netParams)** - wrapper to load and simulate network.
-* **sim.loadSimulateAnalyze(simConfig, netParams)** - wrapper to load, simulate and analyse the network.
+* **sim.loadSimulateAnalyze(simConfig, netParams)** - wrapper to load, simulate and analyze the network.
 
 
 Initialize and set up:

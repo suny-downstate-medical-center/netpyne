@@ -1,5 +1,7 @@
 # Version 0.9.2
 
+- Support for saving at intervals and distributed saving across nodes 
+
 - Improved Python cell template import so can read section names from a Python list or dict of sections
 
 - Fixed replicability issue across different number of cores when using 'connList' connectivity rules

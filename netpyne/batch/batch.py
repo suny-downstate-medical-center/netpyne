@@ -61,8 +61,7 @@ def runJob(script, cfgSavePath, netParamsSavePath):
     command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath) 
     print(command+'\n')
     proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
-    print(proc.stdout.read())
-
+    print(proc.stdout.read().decode())
 
 # -------------------------------------------------------------------------------
 # function to create a folder if it does not exist
@@ -195,8 +194,8 @@ class Batch(object):
     def openFiles2SaveStats(self):
         stat_file_name = '%s/%s_stats.cvs' %(self.saveFolder, self.batchLabel)
         ind_file_name = '%s/%s_stats_indiv.cvs' %(self.saveFolder, self.batchLabel)
-        individual = open(ind_file_name, 'w')
-        stats = open(stat_file_name, 'w')
+        individual = open(ind_file_name, 'wb')
+        stats = open(stat_file_name, 'wb')
         stats.write('#gen  pop-size  worst  best  median  average  std-deviation\n')
         individual.write('#gen  #ind  fitness  [candidate]\n')
         return stats, individual
@@ -440,7 +439,7 @@ wait
                             print('Submitting job ',jobName)
                             # master/slave bulletin board schedulling of jobs
                             pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath)
-                        
+                            
                         else:
                             print("Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'")
                             import sys
@@ -449,7 +448,10 @@ wait
                     sleep(1) # avoid saturating scheduler
             print("-"*80)
             print("   Finished submitting jobs for grid parameter exploration   ")
-            print("-"*80)
+            print("-" * 80)
+            while pc.working():
+                sleep(1)
+
 
 
         # -------------------------------------------------------------------------------

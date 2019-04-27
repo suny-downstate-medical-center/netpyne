@@ -517,12 +517,16 @@ def fromListConn (self, preCellsTags, postCellsTags, connParam):
     ''' Generates connections between all pre and post-syn cells based list of relative cell ids'''
     if sim.cfg.verbose: print('Generating set of connections from list (rule: %s) ...' % (connParam['label']))
 
+    orderedPreGids = sorted(preCellsTags)
+    orderedPostGids = sorted(postCellsTags)
+
     # list of params that can have a lambda function
     paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
     for paramStrFunc in paramsStrFunc:
         # replace lambda function (with args as dict of lambda funcs) with list of values
-        connParam[paramStrFunc[:-4]+'List'] = {(preGid,postGid): connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()})  
-                for preGid,preCellTags in preCellsTags.items() for postGid,postCellTags in postCellsTags.items()}
+        connParam[paramStrFunc[:-4]+'List'] = {(orderedPreGids[preId],orderedPostGids[postId]): 
+            connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellsTags[orderedPreGids[preId]], postCellsTags[orderedPostGids[postId]]) 
+            for k,v in connParam[paramStrFunc+'Vars'].items()}) for preId,postId in connParam['connList']}
 
     if 'weight' in connParam and isinstance(connParam['weight'], list): 
         connParam['weightFromList'] = list(connParam['weight'])  # if weight is a list, copy to weightFromList
@@ -530,9 +534,7 @@ def fromListConn (self, preCellsTags, postCellsTags, connParam):
         connParam['delayFromList'] = list(connParam['delay'])  # if delay is a list, copy to delayFromList
     if 'loc' in connParam and isinstance(connParam['loc'], list): 
         connParam['locFromList'] = list(connParam['loc'])  # if delay is a list, copy to locFromList
-    
-    orderedPreGids = sorted(preCellsTags)
-    orderedPostGids = sorted(postCellsTags)
+
 
     for iconn, (relativePreId, relativePostId) in enumerate(connParam['connList']):  # for each postsyn cell
         preCellGid = orderedPreGids[relativePreId]     

@@ -383,6 +383,7 @@ def _addRates(self, params):
         else:
             print('  Error creating Rate %s: "species" parameter should be a string'%(param['species']))
             continue
+
         # rate
         if 'rate' not in param:
             print('  Error creating Rate %s: "rate" parameter was missing'%(label))
@@ -403,7 +404,6 @@ def _addRates(self, params):
             except:
                print('  Error creating Rate %s: could not find regions %s'%(label, param['regions']))
 
-
         # membrane_flux
         if 'membrane_flux' not in param:
             param['membrane_flux'] = False
@@ -413,6 +413,7 @@ def _addRates(self, params):
                                                     regions=nrnRegions, 
                                                     membrane_flux=param['membrane_flux'])
 
+        print('  Created Rate %s'%(label))
 
 # -----------------------------------------------------------------------------
 # Replace RxD param strings with expression

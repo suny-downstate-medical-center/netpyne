@@ -27,6 +27,7 @@ from . import utils
 def preRun ():
     from .. import sim
 
+
     # set initial v of cells
     for cell in sim.net.cells:
        sim.fih.append(h.FInitializeHandler(0, cell.initV))
@@ -103,6 +104,13 @@ def runSim ():
     from .. import sim
 
     sim.pc.barrier()
+    if hasattr(sim.cfg,'use_local_dt') and sim.cfg.use_local_dt:
+        try:
+            sim.cvode.use_local_dt(1)
+            if sim.cfg.verbose: print('Using local dt.')
+        except:
+            if sim.cfg.verbose: 'Error Failed to use local dt.'
+    sim.pc.barrier()
     sim.timing('start', 'runTime')
     preRun()
     
@@ -123,17 +131,17 @@ def runSim ():
 #------------------------------------------------------------------------------
 def runSimWithIntervalFunc (interval, func):
     from .. import sim
-
     sim.pc.barrier()
     sim.timing('start', 'runTime')
     preRun()
-    init()
-    if sim.rank == 0: print('\nRunning...')
+    h.finitialize(float(sim.cfg.hParams['v_init']))
+
+    if sim.rank == 0: print('\nRunning with interval func  ...')
 
     while round(h.t) < sim.cfg.duration:
         sim.pc.psolve(min(sim.cfg.duration, h.t+interval))
         func(h.t) # function to be called at intervals
-
+    
     sim.pc.barrier() # Wait for all hosts to get to this point
     sim.timing('stop', 'runTime')
     if sim.rank==0:

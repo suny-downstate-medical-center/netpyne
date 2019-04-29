@@ -66,6 +66,7 @@ simConfig.seeds = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (conn
 simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
 simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
 simConfig.verbose = False  # show detailed messages 
+simConfig.hParams = {'v_init': -75}
 
 # Recording 
 simConfig.recordCells = []  # which cells to record from

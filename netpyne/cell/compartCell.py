@@ -329,9 +329,12 @@ class CompartCell (Cell):
                 # set 3d geometry
                 if 'pt3d' in sectParams['geom']:  
                     h.pt3dclear(sec=sec['hObj'])
-                    x = self.tags['x']
-                    y = -self.tags['y'] # Neuron y-axis positive = upwards, so assume pia=0 and cortical depth = neg
-                    z = self.tags['z']
+                    if sim.cfg.pt3dRelativeToCellLocation:
+                        x = self.tags['x']
+                        y = -self.tags['y'] if sim.cfg.invertedYCoord else self.tags['y'] # Neuron y-axis positive = upwards, so assume pia=0 and cortical depth = neg
+                        z = self.tags['z']
+                    else:
+                        x = y = z = 0
                     for pt3d in sectParams['geom']['pt3d']:
                         h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hObj'])
 
@@ -642,10 +645,10 @@ class CompartCell (Cell):
         if params.get('loc') is None: params['loc'] = 0.5 # if no loc, set default
         if params.get('synsPerConn') is None: params['synsPerConn'] = 1 # if no synsPerConn, set default
 
-        # Avoid self connections
+        # Warning if self connections
         if params['preGid'] == self.gid:
-            if sim.cfg.verbose: print('  Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
-            return  # if self-connection return
+            if sim.cfg.verbose: print('  Warning: created self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
+            #return  # if self-connection return
 
         # Get list of section labels
         secLabels = self._setConnSections(params)

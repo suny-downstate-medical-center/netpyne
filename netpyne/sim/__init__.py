@@ -35,10 +35,10 @@ from .setup import initialize, setNet, setNetParams, setSimCfg, createParallelCo
 from .run import preRun, runSim, runSimWithIntervalFunc, loadBalance, calculateLFP
 
 # import gather functions
-from .gather import gatherData, _gatherAllCellTags, _gatherAllCellConnPreGids, _gatherCells
+from .gather import gatherData, _gatherAllCellTags, _gatherAllCellConnPreGids, _gatherCells, fileGather
 
 # import saving functions
-from .save import saveJSON, saveData, distributedSaveHDF5, compactConnFormat
+from .save import saveJSON, saveData, distributedSaveHDF5, compactConnFormat, intervalSave, saveInNode
 
 # import loading functions
 from .load import loadSimCfg, loadNetParams, loadNet, loadSimData, loadAll, loadHDF5, ijsonLoad
@@ -53,10 +53,10 @@ from .utils import copyReplaceItemObj, copyRemoveItemObj, replaceFuncObj, replac
 
 
 # import wrapper functions
-from .wrappers import create, simulate, analyze, createSimulate, \
-	createSimulateAnalyze, load, loadSimulate, loadSimulateAnalyze, \
-	createExportNeuroML2, importNeuroML2SimulateAnalyze 
-
+from .wrappers import create, simulate, intervalSimulate, analyze, createSimulate, \
+	createSimulateAnalyze, intervalCreateSimulateAnalyze, load, loadSimulate, loadSimulateAnalyze, \
+	createExportNeuroML2, importNeuroML2SimulateAnalyze
+     
 
 #------------------------------------------------------------------------------
 # Import classes and functions from other subpackages (so available via sim)

@@ -67,7 +67,7 @@ class CompartCell (Cell):
             rand.Random123(self.gid)
             self.randRotationAngle = rand.uniform(0, 6.2832)  # 0 to 2pi
 
-
+        
         for propLabel, prop in sim.net.params.cellParams.items():  # for each set of cell properties
             conditionsMet = 1
             for (condKey,condVal) in prop['conds'].items():  # check if all conditions are met
@@ -410,7 +410,10 @@ class CompartCell (Cell):
                             pointpParamValue = self.gid
                         if pointpParamName not in ['mod', 'loc', 'vref', 'synList'] and not pointpParamName.startswith('_'):
                             setattr(sec['pointps'][pointpName]['hObj'], pointpParamName, pointpParamValue)
-
+                    if 'params' in self.tags.keys(): # modify cell specific params
+                      for pointpParamName,pointpParamValue in self.tags['params'].items():
+                        setattr(sec['pointps'][pointpName]['hObj'], pointpParamName, pointpParamValue)
+                            
         # set topology 
         for sectName,sectParams in prop['secs'].items():  # iterate sects again for topology (ensures all exist)
             sec = self.secs[sectName]  # pointer to section # pointer to child sec

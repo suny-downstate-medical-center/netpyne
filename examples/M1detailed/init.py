@@ -18,4 +18,5 @@ from netpyne import sim
 from cfg import cfg
 from netParams import netParams
 
-sim.createSimulateAnalyze(netParams, cfg)
+print("Starting sim ...")
+sim.createSimulateAnalyze(netParams, cfg, interval=100)

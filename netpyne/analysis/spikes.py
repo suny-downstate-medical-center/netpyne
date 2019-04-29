@@ -334,10 +334,18 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
     if isinstance(orderBy, basestring) and orderBy not in cells[0]['tags']:  # if orderBy property doesn't exist or is not numeric, use gid
         orderBy = 'gid'
+    elif orderBy is 'pop':
+        df['popInd'] = df['pop'].astype('category')
+        df['popInd'].cat.set_categories(sim.net.pops.keys(), inplace=True)
+        orderBy='popInd'
     elif isinstance(orderBy, basestring) and not isinstance(cells[0]['tags'][orderBy], Number):
         orderBy = 'gid'
-
+        
     if isinstance(orderBy, list):
+        if 'pop' in orderBy:
+            df['popInd'] = df['pop'].astype('category')
+            df['popInd'].cat.set_categories(sim.net.pops.keys(), inplace=True)
+            orderBy[orderBy.index('pop')] = 'popInd'
         keep = keep + list(set(orderBy) - set(keep))
     elif orderBy not in keep:
         keep.append(orderBy)
@@ -749,7 +757,6 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
     '''
 
     from .. import sim
-
     print('Plotting spike stats...')
 
     # Set plot style
@@ -848,8 +855,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
                     else:
                         rates = [spkinds.count(gid)*toRate for gid in set(spkinds)] \
                             if len(spkinds)>0 else [0] #cellGids] #set(spkinds)] 
-
-                    statData.insert(0, rates)
+                    statData.append(rates)
 
 
                 # Inter-spike interval (ISI) coefficient of variation (CV) stats
@@ -859,7 +865,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
                         for gid in set(spkinds)]
                     isimat = [[t - s for s, t in zip(spks, spks[1:])] for spks in spkmat if len(spks)>10]
                     isicv = [np.std(x) / np.mean(x) if len(x)>0 else 0 for x in isimat] # if len(x)>0] 
-                    statData.insert(0, isicv) 
+                    statData.append(isicv) 
 
 
                 # synchrony
@@ -882,7 +888,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
                         syncMat = np.mean(pyspike.spike_sync_matrix(spkmat), 0)
                         
 
-                    statData.insert(0, syncMat)
+                    statData.append(syncMat)
 
             colors.insert(0, popColors[subset] if subset in popColors 
                 else colorList[iplot%len(colorList)])  # colors in inverse order

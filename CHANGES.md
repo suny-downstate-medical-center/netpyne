@@ -1,6 +1,9 @@
 # Version 0.9.3
 
-- Added saveCellConns cfg option
+- Improved conversion from SONATA format, including 300 biophys cell example
+
+- Added saveCellConns, pt3dRelativeToCellLocation and invertedYCoord cfg options
+   
 
 # Version 0.9.2
 

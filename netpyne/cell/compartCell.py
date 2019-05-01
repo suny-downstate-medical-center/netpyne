@@ -650,8 +650,11 @@ class CompartCell (Cell):
 
         # Warning if self connections
         if params['preGid'] == self.gid:
-            if sim.cfg.verbose: print('  Warning: created self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
-            #return  # if self-connection return
+            if sim.cfg.allowSelfConns:
+                if sim.cfg.verbose: print('  Warning: created self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
+            else:
+                if sim.cfg.verbose: print('  Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
+                return  # if self-connection return
 
         # Get list of section labels
         secLabels = self._setConnSections(params)

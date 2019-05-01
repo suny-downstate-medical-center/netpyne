@@ -1,3 +1,7 @@
+# Version 0.9.3
+
+- Added saveCellConns cfg option
+
 # Version 0.9.2
 
 - Support for saving simulation at intervals  

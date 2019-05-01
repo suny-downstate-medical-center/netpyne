@@ -280,6 +280,7 @@ class SONATAImporter():
         # set conditions required to replicate SONATA imported models
         sim.cfg.pt3dRelativeToCellLocation = False  # Make cell 3d points relative to the cell x,y,z location
         sim.cfg.invertedYCoord = False  # Make y-axis coordinate negative so they represent depth when visualized (0 at the top)
+        sim.cfg.allowSelfConns = True  # allow self connections
 
         # run
         sim.cfg.duration = self.simulation_config['run']['tstop']

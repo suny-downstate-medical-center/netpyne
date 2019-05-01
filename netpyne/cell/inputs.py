@@ -108,7 +108,7 @@ def createEvokedPattern(params, rand, inc = 0):
     - start: time of first spike. if -1, uniform distribution between startMin and startMax (ms)
     - inc: increase in time of first spike; from cfg.inc_evinput (ms)
     - startStd: standard deviation of start (ms)
-    - numspikes: totalk number of spikes to generate 
+    - numspikes: total number of spikes to generate 
     '''
 
     # assign the params
@@ -137,7 +137,6 @@ def createPoissonPattern(params, rand):
     - start: time of first spike. if -1, uniform distribution between startMin and startMax (ms)
     - interval: increase in time of first spike; from cfg.inc_evinput (ms)
     - frequency: standard deviation of start (ms)
-    - numspikes: totalk number of spikes to generate 
     '''
 
     # new external pois designation

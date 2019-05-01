@@ -53,6 +53,10 @@ def checkOutput(modelName, verbose=False):
 		expectedAll['numSyns']['M1'] = 4887
 		expectedAll['numSpikes']['M1'] = 76135
 
+		# M1 detailed expected output 
+		expectedAll['numSyns']['M1detailed'] = 49152
+		expectedAll['numSpikes']['M1detailed'] = 2975
+
 		# PTcell expected output 
 		expectedAll['numSyns']['PTcell'] = 1
 		expectedAll['numSpikes']['PTcell'] = 4

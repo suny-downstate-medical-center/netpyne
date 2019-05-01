@@ -47,6 +47,8 @@ class SimConfig (object):
         self.gatherOnlySimData = False  # omits gathering of net+cell data thus reducing gatherData time
         self.compactConnFormat = False  # replace dict format with compact list format for conns (need to provide list of keys to include)
         self.connRandomSecFromList = True  # select random section (and location) from list even when synsPerConn=1 
+        self.pt3dRelativeToCellLocation = True  # Make cell 3d points relative to the cell x,y,z location
+        self.invertedYCoord = True  # Make y-axis coordinate negative so they represent depth when visualized (0 at the top)
         self.allowSelfConns = False  # allow connections from a cell to itself
         self.saveCellSecs = True  # save all the sections info for each cell (False reduces time+space; available in netParams; prevents re-simulation)
         self.saveCellConns = True  # save all the conns info for each cell (False reduces time+space; prevents re-simulation)

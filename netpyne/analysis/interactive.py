@@ -26,7 +26,7 @@ import numpy as np
 ## Plot interactive raster 
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotRaster():
+def iplotRaster(showFig=False):
     from .. import sim
     from bokeh.plotting import figure
     from bokeh.resources import CDN
@@ -44,6 +44,9 @@ def iplotRaster():
     plot_layout = layout(fig, sizing_mode='scale_both')
     html = file_html(plot_layout, CDN, title="Raster Plot")
 
+    if showFig:
+        show(fig)
+
     return html
 
 
@@ -51,17 +54,17 @@ def iplotRaster():
 ## Plot interactive dipole 
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotDipole(expData):
+def iplotDipole(expData={'x':[], 'y':[]}, showFig=False):
     '''
     expData: experimental data; a dict with ['x'] and ['y'] 1-d vectors (either lists or np.arrays) of same length
+    showFig: show output figure in web browser (default: None)
     '''
     from .. import sim
-    from bokeh.plotting import figure
+    from bokeh.plotting import figure, show
     from bokeh.resources import CDN
     from bokeh.embed import file_html
     from bokeh.layouts import layout
-    #from bokeh.plotting import figure, show, output_file
-
+ 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
     fig = figure(title="Dipole Plot", tools=TOOLS)
@@ -71,6 +74,7 @@ def iplotDipole(expData):
     plot_layout = layout(fig, sizing_mode='scale_both')
     html = file_html(plot_layout, CDN, title="Dipole Plot")
 
-    #show(fig)
+    if showFig:
+        show(fig)
 
     return html

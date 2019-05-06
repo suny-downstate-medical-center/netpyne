@@ -145,43 +145,38 @@ def createPoissonPattern(params, rand):
     lamtha = params['frequency'] # self.p_ext[self.celltype][3] # index 3 is frequency (lamtha)
     # values MUST be sorted for VecStim()!
     # start the initial value
+    val_pois = np.array([])
     if lamtha > 0.:
         t_gen = t0 + (-1000. * np.log(1. - rand.uniform(0,1)) / lamtha)
-        val_pois = np.array([])
         if t_gen < T: np.append(val_pois, t_gen)
         # vals are guaranteed to be monotonically increasing, no need to sort
         while t_gen < T:
             # so as to not clobber confusingly base off of t_gen ...
             t_gen += (-1000. * np.log(1. - rand.uniform(0,1)) / lamtha)
             if t_gen < T: val_pois = np.append(val_pois, t_gen)
-        else:
-            val_pois = np.array([])
-
+       
     return val_pois
 
 
-
-def createGaussPattern(params):
-    pass
-    '''    # print("__create_extgauss")
-    # assign the params
-    if self.p_ext[self.celltype][0] <= 0.0 and \
-       self.p_ext[self.celltype][1] <= 0.0: return False # 0 ampa and 0 nmda weight
-    # print('gauss params:',self.p_ext[self.celltype])
-    mu = self.p_ext[self.celltype][3]
-    sigma = self.p_ext[self.celltype][4]
-    # mu and sigma values come from p
-    # one single value from Gaussian dist.
-    # values MUST be sorted for VecStim()!
-    val_gauss = self.prng.normal(mu, sigma, 50)
-    # val_gauss = np.random.normal(mu, sigma, 50)
-    # remove non-zero values brute force-ly
-    val_gauss = val_gauss[val_gauss > 0]
-    # sort values - critical for nrn
-    val_gauss.sort()
-    # if len(val_gauss)>0: print('val_gauss:',val_gauss)
-    # Convert array into nrn vector
-    self.eventvec.from_python(val_gauss)
-    return self.eventvec.size() > 0
+def createGaussPattern(params, rand):
+    ''' creates Gaussian inputs
+    input params:
+    - mu: Gaussian mean  
+    - sigma: Gaussian variance
     '''
+    # set params
+    mu = params['mu']
+    sigma = params['sigma']
+    numspikes = 50
 
+    # generate values from gauss distribution
+    vec_gauss = h.Vector(int(numspikes))
+    rand.normal(mu, sigma)
+    vec_gauss.setrand(rand)
+    val_gauss = np.array(vec_gauss)
+
+    # remove < 0 values and sort
+    val_gauss = val_gauss[val_gauss > 0]
+    val_gauss = np.sort(val_gauss)
+    
+    return val_gauss

@@ -1132,8 +1132,25 @@ class CompartCell (Cell):
                 else:
                     synMechLocs = [i*(1.0/synsPerConn)+1.0/synsPerConn/2 for i in range(synsPerConn)]
             else:  # if multiple sections, distribute syns
-                synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
-        else:
+                if sim.cfg.distributeSynsUniformly:
+                    synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
+                else:
+                    if synsPerConn == len(secLabels):  # have list of secs that matches num syns 
+                        synMechSecs = secLabels
+                        if isinstance(params['loc'], list):  
+                            if len(params['loc']) == synsPerConn:  # list of locs matches num syns
+                                synMechLocs = params['loc']
+                            else:  # list of locs does not match num syns
+                                print("Error: The length of the list of locations does not match synsPerConn (with cfg.distributeSynsUniformly = False")
+                                return
+                        else: # single loc
+                            synMechLocs = [params['loc']] * synsPerConn
+                    else:
+                            print("Error: The length of the list of sections does not match synsPerConn (with cfg.distributeSynsUniformly = False")
+                            return            
+                
+        else:  # if 1 synapse
+            # by default place on 1st section of list and location available 
             synMechSecs = secLabels
             synMechLocs = params['loc'] if isinstance(params['loc'], list) else [params['loc']] 
 

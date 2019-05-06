@@ -6,6 +6,8 @@
 
 - Improved speed performance of 'connList' connectivity rules
 
+- Added option cfg.distributeSynsUniformly to locate synapses at uniformly across section list; if false, place one syn per section in section list 
+
 
 # Version 0.9.1.1
 

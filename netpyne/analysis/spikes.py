@@ -472,7 +472,6 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     # Add legend
     if popRates:
         popLabelRates = [popLabel + ' (%.3g Hz)' % (avgRates[popLabel]) for popLabel in popLabels if popLabel in avgRates]
-        print(popLabelRates)
 
     if labels == 'legend':
         for ipop,popLabel in enumerate(popLabels):

@@ -291,7 +291,7 @@ def plotSyncs (include =['allCells', 'eachPop'], timeRanges = None, timeRangeLab
 # -------------------------------------------------------------------------------------------------------------------
 ## Raster plot
 # -------------------------------------------------------------------------------------------------------------------
-@exception
+#@exception
 def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
         spikeHist = None, spikeHistBin = 5, syncLines = False, lw = 2, marker = '|', markerSize=5, popColors = None, figSize = (10,8), dpi = 100, saveData = None, saveFig = None,
         showFig = True):
@@ -471,7 +471,8 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
     # Add legend
     if popRates:
-        popLabelRates = [popLabel + ' (%.3g Hz)'%(avgRates[popLabel]) for popLabel in popLabels if popLabel in avgRates]
+        popLabelRates = [popLabel + ' (%.3g Hz)' % (avgRates[popLabel]) for popLabel in popLabels if popLabel in avgRates]
+        print(popLabelRates)
 
     if labels == 'legend':
         for ipop,popLabel in enumerate(popLabels):

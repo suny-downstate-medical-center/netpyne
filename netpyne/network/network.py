@@ -71,7 +71,9 @@ class Network (object):
         sim.pc.barrier()
         sim.timing('start', 'createTime')
         if sim.rank==0: 
-            print(("\nCreating network of %i cell populations on %i hosts..." % (len(self.pops), sim.nhosts))) 
+            print(("\nCreating network of %i cell populations on %i hosts..." % (len(self.pops), sim.nhosts)))
+                
+        self._setDiversityRanges()  # update fractions for rules 
         
         for ipop in list(self.pops.values()): # For each pop instantiate the network cells (objects of class 'Cell')
             newCells = ipop.createCells() # create cells for this pop using Pop method
@@ -87,6 +89,32 @@ class Network (object):
         if sim.rank == 0 and sim.cfg.timing: print(('  Done; cell creation time = %0.2f s.' % sim.timingData['createTime']))
 
         return self.cells
+
+    # -----------------------------------------------------------------------------
+    # Set fraction of cells for populations with cell diversity
+    # -----------------------------------------------------------------------------
+    def _setDiversityRanges(self):
+        from .. import sim
+
+        condFracs = {}
+        for cellRule in sim.net.params.cellParams.values():
+            if 'diversityFraction' in cellRule:
+                divFrac = cellRule['diversityFraction']
+                cellType = cellRule['conds'].get('cellType', None)
+                cellModel = cellRule['conds'].get('CellModel', None)
+                pop = cellRule['conds'].get('pop', None)
+
+                if (cellType, cellModel, pop) in condFracs:
+                    startFrac = float(condFracs[(cellType, cellModel, pop)])
+                    endFrac = startFrac + divFrac
+                    cellRule['conds']['fraction'] = [startFrac, endFrac - 1e6] # 1e-6 to have open interval [a,b) 
+                    condFracs[(cellType, cellModel, pop)] = endFrac
+                else:
+                    startFrac = 0
+                    endFrac = startFrac + divFrac
+                    cellRule['conds']['fraction'] = [startFrac, endFrac - 1e6] # 1e-6 to have open interval [a,b)
+                    condFracs[(cellType, cellModel, pop)] = endFrac 
+
 
     # -----------------------------------------------------------------------------
     # Import stim methods

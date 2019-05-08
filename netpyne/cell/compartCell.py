@@ -67,10 +67,10 @@ class CompartCell (Cell):
             rand.Random123(self.gid)
             self.randRotationAngle = rand.uniform(0, 6.2832)  # 0 to 2pi
 
-        
-        for propLabel, prop in sim.net.params.cellParams.items():  # for each set of cell properties
+        # apply cell rules
+        for cellRuleLabel, cellRule in sim.net.params.cellParams.items():  # for each set of cell properties
             conditionsMet = 1
-            for (condKey,condVal) in prop['conds'].items():  # check if all conditions are met
+            for (condKey,condVal) in cellRule['conds'].items():  # check if all conditions are met
                 if isinstance(condVal, list): 
                     if isinstance(condVal[0], Number):
                         if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
@@ -86,20 +86,20 @@ class CompartCell (Cell):
             if conditionsMet:  # if all conditions are met, set values for this cell
                 if sim.cfg.includeParamsLabel:
                     if 'label' not in self.tags:
-                        self.tags['label'] = [propLabel] # create list of property sets
+                        self.tags['label'] = [cellRuleLabel] # create list of property sets
                     else:
-                        self.tags['label'].append(propLabel)  # add label of cell property set to list of property sets for this cell
+                        self.tags['label'].append(cellRuleLabel)  # add label of cell property set to list of property sets for this cell
                 if sim.cfg.createPyStruct:
-                    self.createPyStruct(prop)
+                    self.createPyStruct(cellRule)
                 if sim.cfg.createNEURONObj:
-                    self.createNEURONObj(prop)  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
+                    self.createNEURONObj(cellRule)  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
 
 
-    def modify (self, prop):
+    def modify (self, cellRule):
         from .. import sim
 
         conditionsMet = 1
-        for (condKey,condVal) in prop['conds'].items():  # check if all conditions are met
+        for (condKey,condVal) in cellRule['conds'].items():  # check if all conditions are met
             if condKey=='label':
                 if condVal not in self.tags['label']:
                     conditionsMet = 0
@@ -119,16 +119,16 @@ class CompartCell (Cell):
 
         if conditionsMet:  # if all conditions are met, set values for this cell
             if sim.cfg.createPyStruct:
-                self.createPyStruct(prop)
+                self.createPyStruct(cellRule)
             if sim.cfg.createNEURONObj:
-                self.createNEURONObj(prop)  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
+                self.createNEURONObj(cellRule)  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
 
 
-    def createPyStruct (self, prop):
+    def createPyStruct (self, cellRule):
         from .. import sim
 
         # set params for all sections
-        for sectName,sectParams in prop['secs'].items(): 
+        for sectName,sectParams in cellRule['secs'].items(): 
             # create section
             if sectName not in self.secs:
                 self.secs[sectName] = Dict()  # create section dict
@@ -220,16 +220,14 @@ class CompartCell (Cell):
                 sec['threshold'] = sectParams['threshold']
 
         # add sectionLists
-        if 'secLists' in prop:
-            self.secLists.update(prop['secLists'])  # diction of section lists
+        if 'secLists' in cellRule:
+            self.secLists.update(cellRule['secLists'])  # diction of section lists
 
 
     def initV (self): 
         for sec in list(self.secs.values()):
             if 'vinit' in sec:
                 sec['hObj'].v = sec['vinit']
-
-
 
 
     # Create dictionary of section names with entries to scale section lengths to length along z-axis
@@ -305,14 +303,14 @@ class CompartCell (Cell):
 
 
 
-    def createNEURONObj (self, prop):
+    def createNEURONObj (self, cellRule):
         from .. import sim
 
         excludeMechs = ['dipole']  # dipole is special case 
         mechInsertError = False  # flag to print error inserting mechanisms
 
         # set params for all sections
-        for sectName,sectParams in prop['secs'].items(): 
+        for sectName,sectParams in cellRule['secs'].items(): 
             # create section
             if sectName not in self.secs:
                 self.secs[sectName] = Dict()  # create sect dict if doesn't exist
@@ -415,14 +413,14 @@ class CompartCell (Cell):
                         setattr(sec['pointps'][pointpName]['hObj'], pointpParamName, pointpParamValue)
                             
         # set topology 
-        for sectName,sectParams in prop['secs'].items():  # iterate sects again for topology (ensures all exist)
+        for sectName,sectParams in cellRule['secs'].items():  # iterate sects again for topology (ensures all exist)
             sec = self.secs[sectName]  # pointer to section # pointer to child sec
             if 'topol' in sectParams:
                 if sectParams['topol']:
                     sec['hObj'].connect(self.secs[sectParams['topol']['parentSec']]['hObj'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
 
         # add dipoles
-        for sectName,sectParams in prop['secs'].items():
+        for sectName,sectParams in cellRule['secs'].items():
             sec = self.secs[sectName]
             if 'mechs' in sectParams and 'dipole' in sectParams['mechs']:
                self.__dipoleInsert(sectName, sec)  # add dipole mechanisms to each section

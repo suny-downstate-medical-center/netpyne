@@ -130,7 +130,8 @@ class Pop (object):
                 maxv = self.tags[coord+'normRange'][1] 
                 randLocs[:,icoord] = randLocs[:,icoord] * (maxv-minv) + minv
 
-        for i in self._distributeCells(int(sim.net.params.scale * self.tags['numCells']))[sim.rank]:
+        numCells = int(sim.net.params.scale * self.tags['numCells'])
+        for i in self._distributeCells(numCells)[sim.rank]:
             gid = sim.net.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.items() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
@@ -148,7 +149,9 @@ class Pop (object):
                     except:
                         pass
                 else:
-                    cellTags['params']['spkTimes'] = self.tags['spkTimes'] # 1D list (same for all)
+                    cellTags['params']['spkTimes'] = self.tags['spkTimes']  # 1D list (same for all)
+            if self.tags.get('diversity', False): # if pop has cell diversity
+                cellTags['normPopIndex'] = float(i)/float(numCells)
             cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
 
             if sim.cfg.verbose: print(('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, sim.net.params.scale * self.tags['numCells']-1, gid, self.tags['pop'], sim.rank)))

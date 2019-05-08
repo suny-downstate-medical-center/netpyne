@@ -151,7 +151,7 @@ class Pop (object):
                 else:
                     cellTags['params']['spkTimes'] = self.tags['spkTimes']  # 1D list (same for all)
             if self.tags.get('diversity', False): # if pop has cell diversity
-                cellTags['normPopIndex'] = float(i)/float(numCells)
+                cellTags['fraction'] = float(i)/float(numCells)
             cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
 
             if sim.cfg.verbose: print(('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, sim.net.params.scale * self.tags['numCells']-1, gid, self.tags['pop'], sim.rank)))

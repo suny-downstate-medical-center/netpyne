@@ -107,14 +107,13 @@ class Network (object):
                 if (cellType, cellModel, pop) in condFracs:
                     startFrac = float(condFracs[(cellType, cellModel, pop)])
                     endFrac = startFrac + divFrac
-                    cellRule['conds']['fraction'] = [startFrac, endFrac - 1e6] # 1e-6 to have open interval [a,b) 
+                    cellRule['conds']['fraction'] = [startFrac, endFrac - 1e-6] # 1e-6 to have open interval [a,b) 
                     condFracs[(cellType, cellModel, pop)] = endFrac
                 else:
                     startFrac = 0
                     endFrac = startFrac + divFrac
-                    cellRule['conds']['fraction'] = [startFrac, endFrac - 1e6] # 1e-6 to have open interval [a,b)
+                    cellRule['conds']['fraction'] = [startFrac, endFrac - 1e-6] # 1e-6 to have open interval [a,b)
                     condFracs[(cellType, cellModel, pop)] = endFrac 
-
 
     # -----------------------------------------------------------------------------
     # Import stim methods

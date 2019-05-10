@@ -3,7 +3,8 @@
 - Improved conversion from SONATA format, including 300 biophys cell example
 
 - Added saveCellConns, pt3dRelativeToCellLocation and invertedYCoord cfg options
-   
+
+- Fixed bug plotting traces with one fig per trace
 
 # Version 0.9.2
 

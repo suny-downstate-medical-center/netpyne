@@ -713,6 +713,7 @@ Related to the simulation and netpyne framework:
 * **gatherOnlySimData** - Omits gathering of net and cell data thus reducing gatherData time (default: False)
 * **compactConnFormat** - Replace dict format with compact list format for conns (need to provide list of keys to include) (default: False)
 * **connRandomSecFromList** - Select random section (and location) from list even when synsPerConn=1 (default: True) 
+* **distributeSynsUniformly** - Locate synapses at uniformly across section list; if false, place one syn per section in section list (default: True)
 * **timing** - Show and record timing of each process (default: True)
 * **saveTiming** - Save timing data to pickle file (default: False)
 * **printRunTime** - Print run time at interval (in sec) specified here (eg. 0.1) (default: False) 

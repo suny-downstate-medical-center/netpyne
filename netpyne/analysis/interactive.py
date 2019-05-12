@@ -329,12 +329,11 @@ def iplotDipole(expData={'x':[], 'y':[]}, showFig=False):
         dpl[key] *= 1e-6 * sim.cfg.dipole_scalefctr
         dpl[key] = hammfilt(dpl[key], sim.cfg.dipole_smooth_win/sim.cfg.dt)
 
-    fig.line(expData['x'], expData['y'], legend="Experiment")
+    fig.line(expData['x'], expData['y'], color='black', legend="Experiment")
 
-    fig.line(sim.simData['t'], dpl['L2'], legend="L2Pyr")
-    fig.line(sim.simData['t'], dpl['L5'], legend="L5Pyr")
-    fig.line(sim.simData['t'], dpl['L2']+dpl['L5'], legend="Aggreagate")
-
+    fig.line(sim.simData['t'], dpl['L2'], color='green',  legend="L2Pyr")
+    fig.line(sim.simData['t'], dpl['L5'], color='red', legend="L5Pyr")
+    fig.line(sim.simData['t'], dpl['L2']+dpl['L5'], color='blue', legend="Aggreagate")
 
     plot_layout = layout(fig, sizing_mode='scale_both')
     html = file_html(plot_layout, CDN, title="Dipole Plot")

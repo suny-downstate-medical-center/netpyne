@@ -189,9 +189,9 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         for spkt in sel['spkt'].tolist():
             fig.line((spkt, spkt), (0, len(cells)+numNetStims), color='red', line_width=0.1)
         print(syncMeasure())
-        t.text = 'cells=%i syns/cell=%0.1f rate=%0.1f Hz sync=%0.2f' % (numCells,connsPerCell,firingRate,syncMeasure())
+        t.text = 'cells=%i  syns/cell=%0.1f  rate=%0.1f Hz  sync=%0.2f' % (numCells,connsPerCell,firingRate,syncMeasure())
     else:
-        t.text = 'cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (numCells,connsPerCell,firingRate)
+        t.text = 'cells=%i  syns/cell=%0.1f  rate=%0.1f Hz' % (numCells,connsPerCell,firingRate)
     fig.title = t
     
     if spikeHist:
@@ -344,8 +344,6 @@ def iplotDipole(expData={'x':[], 'y':[]}, showFig=False):
     if showFig:
         show(fig)
     
-    import IPython; IPython.embed()
-
     return html
     
 # -------------------------------------------------------------------------------------------------------------------

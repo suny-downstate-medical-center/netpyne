@@ -74,3 +74,4 @@ The `NetPyNE-UI GitHub Wiki <https://github.com/Neurosim-lab/NetPyNE-UI/wiki>`_ 
 
 `3) Virtual machine <https://github.com/Neurosim-lab/NetPyNE-UI/wiki/Virtual-Machine-Installation>`_ - Download a virtual machine image with everything pre-installed. Requires the Virtual Box software.  
 
+An online version of the NetPyNE GUI is also available at: `www.netpyne.org/gui <www.netpyne.org/gui>`_. The GUI also includes an interactive Jupyter Notebook (click "Python" panel at bottom), that you can use to directly run NetPyNE code (without using the GUI). Note, there is a maximum number of simultaneous users for this online version, so if you can't log in, please try again later. 

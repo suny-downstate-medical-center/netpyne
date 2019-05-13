@@ -475,7 +475,7 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
     if labels == 'legend':
         for ipop,popLabel in enumerate(popLabels):
-            label = popLabelRates[ipop] if popLabel in avgRates else popLabel
+            label = popLabelRates[ipop] if popRates else popLabel
             plt.plot(0,0,color=popColors[popLabel],label=label)
         plt.legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
         maxLabelLen = max([len(l) for l in popLabels])

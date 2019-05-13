@@ -538,7 +538,7 @@ def iplotTraces(include = None, timeRange = None, oneFigPer = 'cell', showFig = 
         plot_layout = layout(figObj, sizing_mode='scale_both')
         html = file_html(plot_layout, CDN, title="figLabel")
         
-         if showFig: show(plot_layout)
+        if showFig: show(plot_layout)
         
         if saveFig: 
             if isinstance(saveFig, basestring):

@@ -30,7 +30,7 @@ import pandas as pd
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', labels = 'legend', popRates = False,
-        spikeHist = False, spikeHistBin = 5, syncLines = False, saveData = None, saveFig = None,showFig = True):
+        spikeHist = False, spikeHistBin = 5, syncLines = False, markerSize = 5, popColors = None, saveData = None, saveFig = None,showFig = True):
             
     '''
     Raster plot of network cells
@@ -189,9 +189,9 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         for spkt in sel['spkt'].tolist():
             fig.line((spkt, spkt), (0, len(cells)+numNetStims), color='red', line_width=0.1)
         print(syncMeasure())
-        t.text = 'cells=%i syns/cell=%0.1f rate=%0.1f Hz sync=%0.2f' % (numCells,connsPerCell,firingRate,syncMeasure())
+        t.text = 'cells=%i  syns/cell=%0.1f  rate=%0.1f Hz  sync=%0.2f' % (numCells,connsPerCell,firingRate,syncMeasure())
     else:
-        t.text = 'cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (numCells,connsPerCell,firingRate)
+        t.text = 'cells=%i  syns/cell=%0.1f  rate=%0.1f Hz' % (numCells,connsPerCell,firingRate)
     fig.title = t
     
     if spikeHist:
@@ -207,7 +207,7 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
             label = name + ' (%.3g Hz)'%(avgRates[name])
         else:
             label = name
-        s = fig.scatter(group['spkt'], group['spkid'], color=group['spkgidColor'], size=1)
+        s = fig.scatter(group['spkt'], group['spkid'], color=group['spkgidColor'], size=markerSize)
         legendItems.append((label, [s]))
         
     if spikeHist:
@@ -329,18 +329,21 @@ def iplotDipole(expData={'x':[], 'y':[]}, showFig=False):
         dpl[key] *= 1e-6 * sim.cfg.dipole_scalefctr
         dpl[key] = hammfilt(dpl[key], sim.cfg.dipole_smooth_win/sim.cfg.dt)
 
+
+    # plot exp data
     fig.line(expData['x'], expData['y'], color='black', legend="Experiment")
 
+    # plot recorded dipole data
     fig.line(sim.simData['t'], dpl['L2'], color='green',  legend="L2Pyr")
     fig.line(sim.simData['t'], dpl['L5'], color='red', legend="L5Pyr")
-    fig.line(sim.simData['t'], dpl['L2']+dpl['L5'], color='blue', legend="Aggreagate")
+    fig.line(sim.simData['t'], dpl['L2']+dpl['L5'], color='blue', legend="Aggregate")
 
     plot_layout = layout(fig, sizing_mode='scale_both')
     html = file_html(plot_layout, CDN, title="Dipole Plot")
 
     if showFig:
         show(fig)
-
+    
     return html
     
 # -------------------------------------------------------------------------------------------------------------------
@@ -434,7 +437,7 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], timeRange = None, binSize 
         file.write(html)
         file.close()
     
-    # return html
+    return html
     
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive Rate PSD 
@@ -548,7 +551,7 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         file.write(html)
         file.close()
 
-    # return html
+    return html
     
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive Traces 
@@ -556,7 +559,7 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 @exception
 def iplotTraces(include = None, timeRange = None, oneFigPer = 'cell', showFig = False, saveFig = False):
     from .. import sim
-    from bokeh.plotting import figure
+    from bokeh.plotting import figure, show
     from bokeh.resources import CDN
     from bokeh.embed import file_html
     from bokeh.layouts import layout
@@ -811,4 +814,4 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             file.write(html)
             file.close()
 
-    return figs
+    return html

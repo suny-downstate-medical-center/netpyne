@@ -29,7 +29,7 @@ import pandas as pd
 ## Plot interactive raster 
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', labels = 'legend', popRates = False,
+def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
         spikeHist = False, spikeHistBin = 5, syncLines = False, markerSize = 5, popColors = None, saveData = None, saveFig = None,showFig = True):
             
     '''
@@ -66,6 +66,10 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
     colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255    
+
+    if popColors:
+        for pop, color in popColors.items():
+            popColors[pop] = RGB(*[round(f * 255) for f in color])
 
     cells, cellGids, netStimLabels = getCellsInclude(include)
 
@@ -179,11 +183,15 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
             popNumCells[-1] = numNetStims
             avgRates['NetStims'] = len([spkid for spkid in sel['spkind'].iloc[numCellSpks:]])/numNetStims/tsecs
 
-    fig = figure(title="Raster Plot", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label=ylabelText,
-            x_range=(timeRange[0], timeRange[1]), y_range=(0, max(cellGids)), toolbar_location='above')
+    if orderInverse:
+        y_range=(sel['spkind'].max(), sel['spkind'].min())
+    else:
+        y_range=(sel['spkind'].min(), sel['spkind'].max())
 
-    # spkt = sim.allSimData['spkt']
-    # spkid = sim.allSimData['spkid']
+    
+    fig = figure(title="Raster Plot", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label=ylabelText,
+            x_range=(timeRange[0], timeRange[1]), y_range=y_range, toolbar_location='above')
+
     t = Title()
     if syncLines:
         for spkt in sel['spkt'].tolist():
@@ -199,7 +207,6 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         histoT = histo[1][:-1]+spikeHistBin/2
         histoCount = histo[0]
     
-    
     legendItems = []
     grouped = sel.groupby('pop')
     for name, group in grouped:
@@ -207,7 +214,8 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
             label = name + ' (%.3g Hz)'%(avgRates[name])
         else:
             label = name
-        s = fig.scatter(group['spkt'], group['spkid'], color=group['spkgidColor'], size=markerSize)
+        
+        s = fig.scatter(group['spkt'], group['spkind'], color=group['spkgidColor'], size=markerSize)
         legendItems.append((label, [s]))
         
     if spikeHist:
@@ -220,7 +228,7 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     legend = Legend(items=legendItems, location=(10,0))
     fig.add_layout(legend, 'right')
     
-    plot_layout = layout(fig, sizing_mode='scale_both')
+    plot_layout = layout([fig], sizing_mode='scale_both')
     html = file_html(plot_layout, CDN, title="Raster Plot")
         
     # save figure data

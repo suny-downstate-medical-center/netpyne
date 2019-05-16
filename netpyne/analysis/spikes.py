@@ -612,7 +612,10 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 
     # Plot separate line for each entry in include
     for iplot,subset in enumerate(include):
-        cells, cellGids, netStimLabels = getCellsInclude([subset])
+        if isinstance(subset, list):
+            cells, cellGids, netStimLabels = getCellsInclude(subset)
+        else:
+            cells, cellGids, netStimLabels = getCellsInclude([subset])
         numNetStims = 0
 
         # Select cells to include
@@ -666,7 +669,10 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 
         histData.append(histoCount)
 
-        color = popColors[subset] if subset in popColors else colorList[iplot%len(colorList)]
+        if isinstance(subset, list): 
+            color = colorList[iplot%len(colorList)]
+        else:   
+            color = popColors[subset] if subset in popColors else colorList[iplot%len(colorList)]
 
         if not overlay:
             plt.subplot(len(include),1,iplot+1)  # if subplot, create new subplot
@@ -693,7 +699,10 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
     # Add legend
     if overlay:
         for i,subset in enumerate(include):
-            color = popColors[subset] if subset in popColors else colorList[i%len(colorList)]
+            if isinstance(subset, list):
+                color = colorList[i%len(colorList)]
+            else:
+                color = popColors[subset] if subset in popColors else colorList[i%len(colorList)]
             plt.plot(0,0,color=color,label=str(subset))
         plt.legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
         maxLabelLen = min(10,max([len(str(l)) for l in include]))

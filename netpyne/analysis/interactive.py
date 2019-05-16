@@ -30,7 +30,7 @@ import pandas as pd
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
-        spikeHist = False, spikeHistBin = 5, syncLines = False, markerSize = 5, popColors = None, saveData = None, saveFig = None,showFig = True):
+        spikeHist = False, spikeHistBin = 5, syncLines = False, markerSize = 5, popColors = None, figSize = (10,8), saveData = None, saveFig = None, showFig = True):
             
     '''
     Raster plot of network cells
@@ -190,7 +190,7 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
     
     fig = figure(title="Raster Plot", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label=ylabelText,
-            x_range=(timeRange[0], timeRange[1]), y_range=y_range, toolbar_location='above')
+            x_range=(timeRange[0], timeRange[1]), y_range=y_range, toolbar_location='above', plot_width=figSize[0], plot_height=figSize[1])
 
     t = Title()
     if syncLines:
@@ -260,7 +260,7 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 ## Plot interactive dipole 
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotDipole(expData={'x':[], 'y':[]}, showFig=False):
+def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, figSize = (10,8), showFig=False):
     '''
     expData: experimental data; a dict with ['x'] and ['y'] 1-d vectors (either lists or np.arrays) of same length
     showFig: show output figure in web browser (default: None)
@@ -273,7 +273,7 @@ def iplotDipole(expData={'x':[], 'y':[]}, showFig=False):
  
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
-    fig = figure(title="Dipole Plot", tools=TOOLS)
+    fig = figure(title="Dipole Plot", tools=TOOLS, plot_width=figSize[0], plot_height=figSize[1])
 
 
     # renormalize the dipole and save
@@ -339,7 +339,7 @@ def iplotDipole(expData={'x':[], 'y':[]}, showFig=False):
 
 
     # plot exp data
-    fig.line(expData['x'], expData['y'], color='black', legend="Experiment")
+    fig.line(expData['x'], expData['y'], color='black', legend=expData['label'])
 
     # plot recorded dipole data
     fig.line(sim.simData['t'], dpl['L2'], color='green',  legend="L2Pyr")
@@ -360,8 +360,8 @@ def iplotDipole(expData={'x':[], 'y':[]}, showFig=False):
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotSpikeHist(include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, overlay=True, graphType='line', yaxis = 'rate',
-    popColors = [], norm = False, dpi = 100, figSize = (10,8), smooth=None, filtFreq = False, filtOrder=3, axis = 'on', saveData = None,
-    saveFig = None, showFig = True):
+    popColors=[], norm=False, dpi=100, smooth=None, filtFreq=False, filtOrder=3, axis='on', figSize=(10, 8),
+    saveData = None, saveFig = None, showFig = True):
     from .. import sim
     from bokeh.plotting import figure, show
     from bokeh.resources import CDN
@@ -374,7 +374,8 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], timeRange = None, binSize 
 
     colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
             
-    fig = figure(title="Spike Historgram", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label="Avg Cell Firing Rate (HZ)", toolbar_location='above')
+    fig = figure(title="Spike Historgram", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label="Avg Cell Firing Rate (HZ)", toolbar_location='above',
+                plot_width=figSize[0], plot_height=figSize[1])
     
     if timeRange is None:
         timeRange = [0, sim.cfg.duration]
@@ -465,7 +466,8 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 
     colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255    
     
-    fig = figure(title="PSD Rate Plot", tools=TOOLS, x_axis_label="Frequncy (Hz)", y_axis_label="Power Spectral Density (db/Hz)", toolbar_location="above")
+    fig = figure(title="PSD Rate Plot", tools=TOOLS, x_axis_label="Frequncy (Hz)", y_axis_label="Power Spectral Density (db/Hz)", toolbar_location="above",
+                plot_width=figSize[0], plot_height=figSize[1])
             
     # Replace 'eachPop' with list of pops
     if 'eachPop' in include: 
@@ -565,7 +567,7 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 ## Plot interactive Traces 
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotTraces(include = None, timeRange = None, oneFigPer = 'cell', showFig = False, saveFig = False):
+def iplotTraces(include = None, timeRange = None, oneFigPer = 'cell', figSize = (10,8), showFig = False, saveFig = False):
     from .. import sim
     from bokeh.plotting import figure, show
     from bokeh.resources import CDN
@@ -595,7 +597,8 @@ def iplotTraces(include = None, timeRange = None, oneFigPer = 'cell', showFig = 
     
     if oneFigPer == 'cell':
         for gid in cellGids:
-            figs['_gid_' + str(gid)] = figure(title="Cell {}, Pop {}".format(gid, gidPops[gid]), tools=TOOLS, x_axis_label="Time (ms)", y_axis_label="Cells (ordered by gid)")
+            figs['_gid_' + str(gid)] = figure(title="Cell {}, Pop {}".format(gid, gidPops[gid]), tools=TOOLS, x_axis_label="Time (ms)",
+            y_axis_label="Cells (ordered by gid)", plot_width=figSize[0], plot_height=figSize[1])
             for itrace, trace in enumerate(tracesList):
                 if 'cell_{}'.format(gid) in sim.allSimData[trace]:
                     fullTrace = sim.allSimData[trace]['cell_{}'.format(gid)]
@@ -634,8 +637,7 @@ def iplotTraces(include = None, timeRange = None, oneFigPer = 'cell', showFig = 
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange = None, NFFT = 256, noverlap = 128, 
-    nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, logx=False, logy=False, norm=False, dpi = 200, overlay=False, filtFreq = False, filtOrder=3, detrend=False,
-    colors = None, figSize = (8,8), saveData = None, saveFig = None, showFig = True):
+    nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, logx=False, logy=False, norm=False, dpi = 200, overlay=False, filtFreq = False, filtOrder=3, detrend=False, colors = None, figSize = (10,8), saveData = None, saveFig = None, showFig = True):
     from .. import sim
     from bokeh.plotting import figure, show
     from bokeh.resources import CDN
@@ -666,7 +668,8 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
     # time series plot
     # TODO add scalebar
     if 'timeSeries' in plots:
-        figs['timeSeries'] = figure(title="LFP Time Series Plot", tools = TOOLS, x_axis_label = "Time (ms)", y_axis_label = "LFP electrode")
+        figs['timeSeries'] = figure(title="LFP Time Series Plot", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label="LFP electrode",
+                        plot_width=figSize[0], plot_height=figSize[1])
         figs['timeSeries'].yaxis.major_tick_line_color = None
         figs['timeSeries'].yaxis.minor_tick_line_color = None
         figs['timeSeries'].yaxis.major_label_text_font_size = '0pt'
@@ -724,7 +727,8 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         data['allSignal'] = allSignal
     
         for i,elec in enumerate(electrodes):
-            p = figure(title="Electrode {}".format(str(elec)), tools = TOOLS, x_axis_label = "Frequency (Hz)", y_axis_label = "db/Hz")
+            p = figure(title="Electrode {}".format(str(elec)), tools=TOOLS, x_axis_label="Frequency (Hz)", y_axis_label="db/Hz",
+                    plot_width=figSize[0], plot_height=figSize[1])
             
             if elec == 'avg':
                 lfpPlot = np.mean(lfp, axis=1)
@@ -800,7 +804,8 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         vmax = np.array(logx_spec).max()
 
         for i,elec in enumerate(electrodes):
-            p = figure(title="Electrode {}".format(str(elec)), tools = TOOLS, x_range=(0, timeRange[1]), y_range=(0,maxFreq), x_axis_label = "Time (ms)", y_axis_label = "Frequency(Hz)")        
+            p = figure(title="Electrode {}".format(str(elec)), tools=TOOLS, x_range=(0, timeRange[1]), y_range=(0, maxFreq),
+                x_axis_label = "Time (ms)", y_axis_label = "Frequency(Hz)", plot_width=figSize[0], plot_height=figSize[1])        
             mapper = linear_cmap (field_name='dB/Hz', palette='Spectral11', low=vmin, high=vmax)
             color_bar = ColorBar(color_mapper=mapper['transform'], width=8, location=(0,0), label_standoff=7, major_tick_line_color=None)
             p.image(image=[x_mesh, y_mesh, logx_spec[i]], x=0, y=0, color_mapper=mapper['transform'], dw=timeRange[1], dh=100)

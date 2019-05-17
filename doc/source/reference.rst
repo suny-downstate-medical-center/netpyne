@@ -20,7 +20,7 @@ These components can be included in a single or multiple python files. This sect
 Network parameters
 -------------------------
 
-The ``netParams`` object of class ``NetParams`` includes all the information necessary to define your network. It is compoased of the following ordered dictionaries:
+The ``netParams`` object of class ``NetParams`` includes all the information necessary to define your network. It is composed of the following ordered dictionaries:
 
 * ``popParams`` - populations in the network and their parameters
 
@@ -709,11 +709,16 @@ Related to the simulation and netpyne framework:
 * **createNEURONObj** - Create runnable network in NEURON when instantiating netpyne network metadata (default: True)
 * **createPyStruct** - Create Python structure (simulator-independent) when instantiating network (default: True)
 * **includeParamsLabel** - Include label of param rule that created that cell, conn or stim (default: True)
-* **addSynMechs** - Whether to add synaptich mechanisms or not (default: True)
+* **addSynMechs** - Whether to add synaptic mechanisms or not (default: True)
 * **gatherOnlySimData** - Omits gathering of net and cell data thus reducing gatherData time (default: False)
 * **compactConnFormat** - Replace dict format with compact list format for conns (need to provide list of keys to include) (default: False)
 * **connRandomSecFromList** - Select random section (and location) from list even when synsPerConn=1 (default: True) 
 * **distributeSynsUniformly** - Locate synapses at uniformly across section list; if false, place one syn per section in section list (default: True)
+* **pt3dRelativeToCellLocation** - True  # Make cell 3d points relative to the cell x,y,z location (default: True)
+* **invertedYCoord** - Make y-axis coordinate negative so they represent depth when visualized (0 at the top) (default: True)
+* **allowSelfConns** = False  # allow connections from a cell to itself (default: False)
+* **saveCellSecs** - Save all the sections info for each cell; reduces time+space (default: False) 
+* **saveCellConns** - save all the conns info for each cell; reduces time+space (default: False)
 * **timing** - Show and record timing of each process (default: True)
 * **saveTiming** - Save timing data to pickle file (default: False)
 * **printRunTime** - Print run time at interval (in sec) specified here (eg. 0.1) (default: False) 
@@ -781,11 +786,12 @@ Wrappers:
 * **sim.load(filename)** - wrapper to initialize, load net from file, and setup recording.
 
 * **sim.createSimulate(simConfig, netParams)** - wrapper to create and simulate the network.
-* **sim.createSimulateAnalyze(simConfig, netParams)** - wrapper to create, simulate and analyse the network.
+* **sim.createSimulateAnalyze(simConfig, netParams)** - wrapper to create, simulate and analyze the network.
+* **sim.intervalCreateSimulateAnalyze(simConfig, cfg, interval=t)** - wrapper to create, simulate and analyze the network, saving simulation output every t ms.
 * **sim.createExportNeuroML2(simConfig, netParams)** - wrapper to create and export network to NeuroML2.
 
 * **sim.loadSimulate(simConfig, netParams)** - wrapper to load and simulate network.
-* **sim.loadSimulateAnalyze(simConfig, netParams)** - wrapper to load, simulate and analyse the network.
+* **sim.loadSimulateAnalyze(simConfig, netParams)** - wrapper to load, simulate and analyze the network.
 
 
 Initialize and set up:

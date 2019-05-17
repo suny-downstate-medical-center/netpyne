@@ -293,7 +293,7 @@ class Pop (object):
                     cellTags[coord] = cellTags[coord+'norm']*getattr(sim.net.params, 'size'+coord.upper())  # calculate norm coord
                 else:
                     cellTags[coord+'norm'] = cellTags[coord] = 0
-            if 'params' in cellTags:  # if VecStim, copy spike times to params
+            if 'cellModel' in self.tags.keys() and self.tags['cellModel'] == 'Vecstim':  # if VecStim, copy spike times to params
                 cellTags['params']['spkTimes'] = self.tags['cellsList'][i]['spkTimes']
             cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
             if sim.cfg.verbose: print(('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tags['numCells']-1, gid, i, sim.rank)))

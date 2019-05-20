@@ -457,7 +457,7 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], timeRange = None, binSize 
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive Rate PSD
 # -------------------------------------------------------------------------------------------------------------------
-@exception
+#@exception
 def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, maxFreq = 100, NFFT = 256, noverlap = 128, smooth = 0, overlay=True, ylim = None,
                  popColors = {}, saveData = None, saveFig = None, showFig = False):
     from .. import sim
@@ -546,7 +546,7 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         allPower.append(power)
         allSignal.append(signal)
         s = fig.line(freqs[freqs<maxFreq], signal[freqs<maxFreq], line_width = 2.0, color=color, legend=subset)
-        legendItems.append((subset, [s]))
+        #legendItems.append((subset, [s]))
 
     #legend = Legend(items=legendItems)
     #legend.click_policy='hide'

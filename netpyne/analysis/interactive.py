@@ -195,7 +195,7 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     t = Title()
     if syncLines:
         for spkt in sel['spkt'].tolist():
-            fig.line((spkt, spkt), (0, len(cells)+numNetStims), color='red', line_width=0.1)
+            fig.line((spkt, spkt), (0, len(cells)+numNetStims), color='red', line_width=2)
         print(syncMeasure())
         t.text = 'cells=%i  syns/cell=%0.1f  rate=%0.1f Hz  sync=%0.2f' % (numCells,connsPerCell,firingRate,syncMeasure())
     else:
@@ -222,7 +222,7 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         from bokeh.models import LinearAxis, Range1d
         fig.extra_y_ranges={'spikeHist': Range1d(start=min(histoCount), end=max(histoCount))}
         fig.add_layout(LinearAxis(y_range_name='spikeHist', axis_label='Spike count'), 'right')
-        fig.line (histoT, histoCount, line_width=0.5, y_range_name='spikeHist')
+        fig.line (histoT, histoCount, line_width=2, y_range_name='spikeHist')
 
 
     #legend = Legend(items=legendItems, location=(10,0))
@@ -253,8 +253,6 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
     if showFig: show(plot_layout)
 
-    if showFig:
-        show(fig)
 
     return html
 
@@ -345,9 +343,9 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False):
     fig.line(expData['x'], expData['y'], color='black', legend=expData['label'])
 
     # plot recorded dipole data
-    fig.line(sim.simData['t'], dpl['L2'], color='green', legend="L2Pyr")
-    fig.line(sim.simData['t'], dpl['L5'], color='red', legend="L5Pyr")
-    fig.line(sim.simData['t'], dpl['L2']+dpl['L5'], color='blue', legend="Aggregate")
+    fig.line(sim.simData['t'], dpl['L2'], color='green', legend="L2Pyr", line_width=2.0)
+    fig.line(sim.simData['t'], dpl['L5'], color='red', legend="L5Pyr", line_width=2.0)
+    fig.line(sim.simData['t'], dpl['L2']+dpl['L5'], color='blue', legend="Aggregate", line_width=2.0)
 
     fig.legend.location = "top_right"
     fig.legend.click_policy = "hide"
@@ -429,7 +427,7 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], timeRange = None, binSize 
         if yaxis=='rate':
             histoCount = histoCount * (1000.0 / binSize) / (len(cellGids)+numNetStims) # convert to firing rate
 
-        s = fig.line(histoT, histoCount, line_width=1.0, name=subset, color=color, legend=subset)
+        s = fig.line(histoT, histoCount, line_width=2.0, name=subset, color=color, legend=subset)
         #legendItems.append((subset, [s]))
 
     #legend = Legend(items=legendItems)
@@ -547,7 +545,7 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         allFreqs.append(freqs)
         allPower.append(power)
         allSignal.append(signal)
-        s = fig.line(freqs[freqs<maxFreq], signal[freqs<maxFreq], line_width = 1.0, color=color, legend=subset)
+        s = fig.line(freqs[freqs<maxFreq], signal[freqs<maxFreq], line_width = 2.0, color=color, legend=subset)
         legendItems.append((subset, [s]))
 
     #legend = Legend(items=legendItems)
@@ -621,7 +619,7 @@ def iplotTraces(include = None, timeRange = None, oneFigPer = 'cell', showFig = 
                         lenData = len(data)
                     t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
                     tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
-                    figs['_gid_' + str(gid)].line(t[:lenData], data, line_width=1.5, legend=trace)
+                    figs['_gid_' + str(gid)].line(t[:lenData], data, line_width=2, legend=trace)
 
     for figLabel, figObj in figs.items():
 

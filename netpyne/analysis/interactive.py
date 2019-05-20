@@ -276,7 +276,7 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False):
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
-    fig = figure(title="Dipole Plot", tools=TOOLS)
+    fig = figure(title="Dipole Plot", tools=TOOLS, toolbar_location='above', x_axis_label="Time (ms)", y_axis_label='Dipole (nAM x 3000)')
 
 
     # renormalize the dipole and save
@@ -342,10 +342,10 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False):
 
 
     # plot exp data
-    fig.line(expData['x'], expData['y'], color='black', legend=expData['label'], x_axis_label="Time (ms)", y_axis_label='Dipole (nAM x 3000)')
+    fig.line(expData['x'], expData['y'], color='black', legend=expData['label'])
 
     # plot recorded dipole data
-    fig.line(sim.simData['t'], dpl['L2'], color='green',  legend="L2Pyr")
+    fig.line(sim.simData['t'], dpl['L2'], color='green', legend="L2Pyr")
     fig.line(sim.simData['t'], dpl['L5'], color='red', legend="L5Pyr")
     fig.line(sim.simData['t'], dpl['L2']+dpl['L5'], color='blue', legend="Aggregate")
 
@@ -438,7 +438,7 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], timeRange = None, binSize 
     fig.legend.location = "top_right"
     fig.legend.click_policy = "hide"
 
-    fig.add_layout(legend, 'right')
+    #fig.add_layout(legend, 'right')
 
     plot_layout = layout(fig, sizing_mode='stretch_both')
     html = file_html(plot_layout, CDN, title="Spike Historgram")
@@ -625,11 +625,11 @@ def iplotTraces(include = None, timeRange = None, oneFigPer = 'cell', showFig = 
 
     for figLabel, figObj in figs.items():
 
+        figObj.legend.location = "top_right"
+        figObj.legend.click_policy = "hide"
+
         plot_layout = layout(figObj, sizing_mode='stretch_both')
         html = file_html(plot_layout, CDN, title="figLabel")
-
-        fig.legend.location = "top_right"
-        fig.legend.click_policy = "hide"
 
         if showFig: show(plot_layout)
 
@@ -716,8 +716,8 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         data['ydisp'] =  ydisp
         data['t'] = t
 
-        fig.legend.location = "top_right"
-        fig.legend.click_policy = "hide"
+        figs['timeSeries'].legend.location = "top_right"
+        figs['timeSeries'].legend.click_policy = "hide"
 
         plot_layout = layout(figs['timeSeries'], sizing_mode='stretch_both')
         html = file_html(plot_layout, CDN, title="Time Series LFP Plot")

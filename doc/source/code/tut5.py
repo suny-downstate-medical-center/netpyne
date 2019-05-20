@@ -71,10 +71,10 @@ simConfig.savePickle = False         # Save params, network and sim output to pi
 simConfig.saveMat = False         # Save params, network and sim output to pickle file
 
 
-#simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True}      # Plot a raster
+simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True}      # Plot a raster
 simConfig.analysis['plotTraces'] = {'include': [('E2',0), ('E4', 0), ('E5', 5)]}      # Plot recorded traces for this list of cells
-#simConfig.analysis['plot2Dnet'] = True            # plot 2D visualization of cell positions and connections
-#simConfig.analysis['plotConn'] = True             # plot connectivity matrix
+simConfig.analysis['plot2Dnet'] = True            # plot 2D visualization of cell positions and connections
+simConfig.analysis['plotConn'] = True             # plot connectivity matrix
 
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    

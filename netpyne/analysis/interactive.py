@@ -30,7 +30,7 @@ import pandas as pd
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
-        spikeHist = False, spikeHistBin = 5, syncLines = False, markerSize = 5, popColors = None, figSize = (10,8), saveData = None, saveFig = None, showFig = True):
+        spikeHist = False, spikeHistBin = 5, syncLines = False, marker='circle', markerSize = 3, popColors = None, figSize = (10,8), saveData = None, saveFig = None, showFig = True):
             
     '''
     Raster plot of network cells
@@ -43,6 +43,9 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         - spikeHist (True|False): overlay line over raster showing spike histogram (spikes/bin) (default: False)
         - spikeHistBin (int): Size of bin in ms to use for histogram (default: 5)
         - syncLines (True|False): calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (default: False)
+        - marker ('circle'|'cross'|'dash'|'triangel'| etc..): Mark type used for each spike
+        - popColors (odict): Dictionary with color (value) used for each population (key) (default: None)
+        - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;
             if set to True uses filename from simConfig (default: None)
         - saveFig (None|True|'fileName'): File name where to save the figure (default: None)
@@ -215,7 +218,7 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         else:
             label = name
         
-        s = fig.scatter(group['spkt'], group['spkind'], color=group['spkgidColor'], size=markerSize)
+        s = fig.scatter(group['spkt'], group['spkind'], color=group['spkgidColor'], marker=marker, size=markerSize,)
         legendItems.append((label, [s]))
         
     if spikeHist:
@@ -359,23 +362,46 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, figSize = (10,8
 ## ISSUES: Y scale, add colors to be effective
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotSpikeHist(include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, overlay=True, graphType='line', yaxis = 'rate',
-    popColors=[], norm=False, dpi=100, smooth=None, filtFreq=False, filtOrder=3, axis='on', figSize=(10, 8),
+def iplotSpikeHist(include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, overlay=True, yaxis = 'rate',
+    popColors=[], norm=False, smooth=None, filtFreq=False, filtOrder=3, figSize=(1000, 400),
     saveData = None, saveFig = None, showFig = True):
+    '''
+    Plot spike histogram
+        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include.
+            Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
+        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
+        - binSize (int): Size in ms of each bin (default: 5)
+        - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
+        - yaxis ('rate'|'count'): Units of y axis (firing rate in Hz, or spike count) (default: 'rate')
+        - popColors (dict): Dictionary with color (value) used for each population (key) (default: None)
+        - figSize ((width, height)): Size of figure (default: (10,8))
+        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;
+            if set to True uses filename from simConfig (default: None)
+        - saveFig (None|True|'fileName'): File name where to save the figure;
+            if set to True uses filename from simConfig (default: None)
+        - showFig (True|False): Whether to show the figure or not (default: True)
+        - Returns figure handle
+    '''
+        
     from .. import sim
     from bokeh.plotting import figure, show
     from bokeh.resources import CDN
     from bokeh.embed import file_html
-    from bokeh.layouts import layout
+    from bokeh.layouts import gridplot
     from bokeh.models import Legend
     from bokeh.colors import RGB
     
+    print('Plotting interactive spike histogram...')
+
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
     colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
             
-    fig = figure(title="Spike Historgram", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label="Avg Cell Firing Rate (HZ)", toolbar_location='above',
-                plot_width=figSize[0], plot_height=figSize[1])
+    if popColors:
+        for pop, color in popColors.items():
+            popColors[pop] = RGB(*[round(f * 255) for f in color])
+
+
     
     if timeRange is None:
         timeRange = [0, sim.cfg.duration]
@@ -384,11 +410,34 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], timeRange = None, binSize 
         include.remove('eachPop')
         for pop in sim.net.allPops: include.append(pop)
         
-    legendItems = []    
-    
+    if yaxis == 'rate':
+        if norm:
+            yaxisLabel = 'Normalized firing rate'
+        else:
+            yaxisLabel = 'Avg cell firing rate (Hz)'
+    elif yaxis == 'count':
+        if norm:
+            yaxisLabel = 'Normalized spike count'
+        else:
+            yaxisLabel = 'Spike count'
+            
+    figs=[]
+    if overlay:
+        figs.append(figure(title="Spike Historgram", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label=yaxisLabel, toolbar_location='above',
+                    ))
+        fig = figs[0]
+        legendItems = []  
+      
+
     for iplot, subset in enumerate(include):
-        cells, cellGids, netStimLabels = getCellsInclude([subset])
-        
+        if not overlay:
+            figs.append(figure(title=str(subset), tools=TOOLS, x_axis_label="Time (ms)", y_axis_label=yaxisLabel))
+            fig = figs[iplot]
+                    
+        if isinstance(subset, list):
+            cells, cellGids, netStimLabels = getCellsInclude(subset)
+        else:
+            cells, cellGids, netStimLabels = getCellsInclude([subset])        
         numNetStims = 0
                 
         # Select cells to include
@@ -413,9 +462,6 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], timeRange = None, binSize 
                     spkts.extend(spktsNew)
                     spkinds.extend(spkindsNew)
                     numNetStims += 1
-                            
-        color = popColors[subset] if subset in popColors else colorList[iplot%len(colorList)]
-        color = RGB(*[round(c * 255) for c in color])
         
         histo = np.histogram(spkts, bins = np.arange(timeRange[0], timeRange[1], binSize))
         histoT = histo[1][:-1]+binSize/2
@@ -424,15 +470,39 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], timeRange = None, binSize 
         if yaxis=='rate':
             histoCount = histoCount * (1000.0 / binSize) / (len(cellGids)+numNetStims) # convert to firing rate
                     
-        s = fig.line(histoT, histoCount, line_width=1.0, name=subset, color=color)
-        legendItems.append((subset, [s]))
-        
-    legend = Legend(items=legendItems)
-    legend.click_policy="hide"
+        if filtFreq:
+            from scipy import signal
+            fs = 1000.0/binSize
+            nyquist = fs/2.0
+            if isinstance(filtFreq, list): # bandpass
+                Wn = [filtFreq[0]/nyquist, filtFreq[1]/nyquist]
+                b, a = signal.butter(filtOrder, Wn, btype='bandpass')
+            elif isinstance(filtFreq, Number): # lowpass
+                Wn = filtFreq/nyquist
+                b, a = signal.butter(filtOrder, Wn)
+            histoCount = signal.filtfilt(b, a, histoCount)
 
-    fig.add_layout(legend, 'right')
+        if norm:
+            histoCount /= max(histoCount)
+            
+        if smooth:
+            histoCount = _smooth1d(histoCount, smooth)[:len(histoT)]
+        
+        if isinstance(subset, list): 
+            color = colors[iplot%len(colors)]
+        else:   
+            color = popColors[subset] if subset in popColors else colors[iplot%len(colors)]
+        
+        s = fig.line(histoT, histoCount, line_width=1.0, name=str(subset), color=color)
+        if overlay:
+            legendItems.append((str(subset), [s]))
+
+    if overlay:    
+        legend = Legend(items=legendItems)
+        legend.click_policy="hide"
+        fig.add_layout(legend, 'right')
     
-    plot_layout = layout(fig, sizing_mode='scale_both')
+    plot_layout = gridplot(figs, ncols=1, merge_tools=False, plot_width=figSize[0], plot_height=figSize[1])
     html = file_html(plot_layout, CDN, title="Spike Historgram")
     
     if showFig: show(plot_layout)

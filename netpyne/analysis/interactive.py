@@ -339,7 +339,7 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False):
 
 
     # plot exp data
-    fig.line(expData['x'], expData['y'], color='black', legend=expData['label'])
+    fig.line(expData['x'], expData['y'], color='black', legend=expData['label'], x_axis_label="Time (ms)", y_axis_label='Dipole (nAM x 3000)')
 
     # plot recorded dipole data
     fig.line(sim.simData['t'], dpl['L2'], color='green',  legend="L2Pyr")
@@ -596,7 +596,7 @@ def iplotTraces(include = None, timeRange = None, oneFigPer = 'cell', showFig = 
     if oneFigPer == 'cell':
         for gid in cellGids:
             figs['_gid_' + str(gid)] = figure(title="Cell {}, Pop {}".format(gid, gidPops[gid]), tools=TOOLS, x_axis_label="Time (ms)",
-                                              y_axis_label="Cells (ordered by gid)")
+                                              y_axis_label="Voltage (mV)")
             for itrace, trace in enumerate(tracesList):
                 if 'cell_{}'.format(gid) in sim.allSimData[trace]:
                     fullTrace = sim.allSimData[trace]['cell_{}'.format(gid)]

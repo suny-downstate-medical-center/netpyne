@@ -207,7 +207,7 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         histoT = histo[1][:-1]+spikeHistBin/2
         histoCount = histo[0]
 
-    legendItems = []
+    #legendItems = []
     grouped = sel.groupby('pop')
     for name, group in grouped:
         if popRates:
@@ -215,8 +215,8 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         else:
             label = name
 
-        s = fig.scatter(group['spkt'], group['spkind'], color=group['spkgidColor'], size=markerSize)
-        legendItems.append((label, [s]))
+        s = fig.scatter(group['spkt'], group['spkind'], color=group['spkgidColor'], size=markerSize, legend=label)
+        #legendItems.append((label, [s]))
 
     if spikeHist:
         from bokeh.models import LinearAxis, Range1d
@@ -225,8 +225,11 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         fig.line (histoT, histoCount, line_width=0.5, y_range_name='spikeHist')
 
 
-    legend = Legend(items=legendItems, location=(10,0))
-    fig.add_layout(legend, 'right')
+    #legend = Legend(items=legendItems, location=(10,0))
+    #fig.add_layout(legend, 'right')
+
+    fig.legend.location = "top_right"
+    fig.legend.click_policy = "hide"
 
     plot_layout = layout([fig], sizing_mode='stretch_both')
     html = file_html(plot_layout, CDN, title="Raster Plot")
@@ -346,6 +349,9 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False):
     fig.line(sim.simData['t'], dpl['L5'], color='red', legend="L5Pyr")
     fig.line(sim.simData['t'], dpl['L2']+dpl['L5'], color='blue', legend="Aggregate")
 
+    fig.legend.location = "top_right"
+    fig.legend.click_policy = "hide"
+
     plot_layout = layout(fig, sizing_mode='stretch_both')
     html = file_html(plot_layout, CDN, title="Dipole Plot")
 
@@ -423,11 +429,14 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], timeRange = None, binSize 
         if yaxis=='rate':
             histoCount = histoCount * (1000.0 / binSize) / (len(cellGids)+numNetStims) # convert to firing rate
 
-        s = fig.line(histoT, histoCount, line_width=1.0, name=subset, color=color)
-        legendItems.append((subset, [s]))
+        s = fig.line(histoT, histoCount, line_width=1.0, name=subset, color=color, legend=subset)
+        #legendItems.append((subset, [s]))
 
-    legend = Legend(items=legendItems)
-    legend.click_policy="hide"
+    #legend = Legend(items=legendItems)
+    #legend.click_policy="hide"
+
+    fig.legend.location = "top_right"
+    fig.legend.click_policy = "hide"
 
     fig.add_layout(legend, 'right')
 
@@ -482,7 +491,7 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
     histData = []
 
     allPower, allSignal, allFreqs = [], [], []
-    legendItems = []
+    #legendItems = []
 
     # Plot separate line for each entry in include
     for iplot, subset in enumerate(include):
@@ -538,12 +547,15 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         allFreqs.append(freqs)
         allPower.append(power)
         allSignal.append(signal)
-        s = fig.line(freqs[freqs<maxFreq], signal[freqs<maxFreq], line_width = 1.0, color=color)
+        s = fig.line(freqs[freqs<maxFreq], signal[freqs<maxFreq], line_width = 1.0, color=color, legend=subset)
         legendItems.append((subset, [s]))
 
-    legend = Legend(items=legendItems)
-    legend.click_policy='hide'
-    fig.add_layout(legend, 'right')
+    #legend = Legend(items=legendItems)
+    #legend.click_policy='hide'
+    #fig.add_layout(legend, 'right')
+
+    fig.legend.location = "top_right"
+    fig.legend.click_policy = "hide"
 
     plot_layout = layout(fig, sizing_mode='stretch_both')
     html = file_html(plot_layout, CDN, title="PSD Rate Plot")
@@ -615,6 +627,9 @@ def iplotTraces(include = None, timeRange = None, oneFigPer = 'cell', showFig = 
 
         plot_layout = layout(figObj, sizing_mode='stretch_both')
         html = file_html(plot_layout, CDN, title="figLabel")
+
+        fig.legend.location = "top_right"
+        fig.legend.click_policy = "hide"
 
         if showFig: show(plot_layout)
 
@@ -700,6 +715,9 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         data['lfpPlot'] = lfpPlot
         data['ydisp'] =  ydisp
         data['t'] = t
+
+        fig.legend.location = "top_right"
+        fig.legend.click_policy = "hide"
 
         plot_layout = layout(figs['timeSeries'], sizing_mode='stretch_both')
         html = file_html(plot_layout, CDN, title="Time Series LFP Plot")

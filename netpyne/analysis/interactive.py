@@ -218,8 +218,8 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         else:
             label = name
         
-        s = fig.scatter(group['spkt'], group['spkind'], color=group['spkgidColor'], marker=marker, size=markerSize,)
-        legendItems.append((label, [s]))
+        s = fig.scatter(group['spkt'], group['spkind'], color=group['spkgidColor'], marker=marker, size=markerSize, legend=label)
+        #legendItems.append((label, [s]))
         
     if spikeHist:
         from bokeh.models import LinearAxis, Range1d
@@ -366,9 +366,8 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False):
 ## ISSUES: Y scale, add colors to be effective
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotSpikeHist(include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, overlay=True, yaxis = 'rate',
-    popColors=[], norm=False, smooth=None, filtFreq=False, filtOrder=3, figSize=(1000, 400),
-    saveData = None, saveFig = None, showFig = True):
+def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRange = None, binSize = 5, overlay=True, yaxis = 'rate',
+    popColors=[], norm=False, smooth=None, filtFreq=False, filtOrder=3, saveData = None, saveFig = None, showFig = True):
     '''
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include.
@@ -403,9 +402,10 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], timeRange = None, binSize 
             
     if popColors:
         for pop, color in popColors.items():
-            popColors[pop] = RGB(*[round(f * 255) for f in color])
-
-
+            try:
+                popColors[pop] = RGB(*[round(f * 255) for f in color])
+            except:
+                pass
     
     if timeRange is None:
         timeRange = [0, sim.cfg.duration]
@@ -497,16 +497,22 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], timeRange = None, binSize 
         else:   
             color = popColors[subset] if subset in popColors else colors[iplot%len(colors)]
         
-        s = fig.line(histoT, histoCount, line_width=1.0, name=str(subset), color=color)
-        if overlay:
-            legendItems.append((str(subset), [s]))
+        label = legendLabels[iplot] if legendLabels else str(subset)
+        
+        if isinstance(subset, list): 
+            color = colors[iplot%len(colors)]
+        else:   
+            color = popColors[label] if subset in popColors else colors[iplot % len(colors)]
+            
+        s = fig.line(histoT, histoCount, line_width=2.0, name=str(subset), color=color, legend=label)
 
-    if overlay:    
-        legend = Legend(items=legendItems)
-        legend.click_policy="hide"
-        fig.add_layout(legend, 'right')
+        #if overlay:
+        #    legendItems.append((str(subset), [s]))
+
+        fig.legend.location = "top_right"
+        fig.legend.click_policy = "hide"
     
-    plot_layout = gridplot(figs, ncols=1, merge_tools=False, plot_width=figSize[0], plot_height=figSize[1])
+    plot_layout = gridplot(figs, ncols=1, merge_tools=False, sizing_mode='stretch_both')
     html = file_html(plot_layout, CDN, title="Spike Historgram")
 
     if showFig: show(plot_layout)
@@ -525,7 +531,7 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], timeRange = None, binSize 
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive Rate PSD
 # -------------------------------------------------------------------------------------------------------------------
-#@exception
+@exception
 def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, maxFreq = 100, NFFT = 256, noverlap = 128, smooth = 0, overlay=True, ylim = None,
                  popColors = {}, saveData = None, saveFig = None, showFig = False):
     from .. import sim
@@ -540,7 +546,7 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 
     colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
 
-    fig = figure(title="PSD Rate Plot", tools=TOOLS, x_axis_label="Frequncy (Hz)", y_axis_label="Power Spectral Density (db/Hz)", toolbar_location="above")
+    fig = figure(title="Rate PSD Plot", tools=TOOLS, x_axis_label="Frequncy (Hz)", y_axis_label="Power Spectral Density (db/Hz)", toolbar_location="above")
 
     # Replace 'eachPop' with list of pops
     if 'eachPop' in include:
@@ -550,9 +556,6 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
     # time range
     if timeRange is None:
         timeRange = [0,sim.cfg.duration]
-
-    plot_layout = layout(fig, sizing_mode='stretch_both')
-    html = file_html(plot_layout, CDN, title="PSD Rate Plot")
 
     histData = []
 

@@ -72,7 +72,8 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
     if popColors:
         for pop, color in popColors.items():
-            popColors[pop] = RGB(*[round(f * 255) for f in color])
+            if not isinstance(color, RGB):
+                popColors[pop] = RGB(*[round(f * 255) for f in color])
 
     cells, cellGids, netStimLabels = getCellsInclude(include)
 
@@ -402,10 +403,8 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
             
     if popColors:
         for pop, color in popColors.items():
-            try:
+            if not isinstance(color, RGB):
                 popColors[pop] = RGB(*[round(f * 255) for f in color])
-            except:
-                pass
     
     if timeRange is None:
         timeRange = [0, sim.cfg.duration]

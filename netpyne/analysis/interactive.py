@@ -30,7 +30,7 @@ import pandas as pd
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
-        spikeHist = False, spikeHistBin = 5, syncLines = False, marker='circle', markerSize = 3, popColors = None, figSize = (10,8), saveData = None, saveFig = None, showFig = True):
+        spikeHist = False, spikeHistBin = 5, syncLines = False, marker='circle', markerSize = 3, popColors = None, figSize = (10,8), saveData = None, saveFig = None, showFig = False):
             
     '''
     Raster plot of network cells
@@ -367,7 +367,7 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False):
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRange = None, binSize = 5, overlay=True, yaxis = 'rate',
-    popColors=[], norm=False, smooth=None, filtFreq=False, filtOrder=3, saveData = None, saveFig = None, showFig = True):
+    popColors=[], norm=False, smooth=None, filtFreq=False, filtOrder=3, saveData = None, saveFig = None, showFig = False):
     '''
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include.

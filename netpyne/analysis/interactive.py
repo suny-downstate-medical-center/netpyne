@@ -428,7 +428,6 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
         fig = figs[0]
         legendItems = []  
       
-
     for iplot, subset in enumerate(include):
         if not overlay:
             figs.append(figure(title=str(subset), tools=TOOLS, x_axis_label="Time (ms)", y_axis_label=yaxisLabel))
@@ -495,15 +494,18 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
         
         label = legendLabels[iplot] if legendLabels else str(subset)
             
-        s = fig.line(histoT, histoCount, line_width=2.0, name=str(subset), color=color, legend=label)
+        s = fig.line(histoT, histoCount, line_width=2.0, name=str(subset), color=color)
 
         if overlay:
            legendItems.append((str(subset), [s]))
-
-        fig.legend.location = "top_right"
-        fig.legend.click_policy = "hide"
     
-    plot_layout = gridplot(figs, ncols=1, merge_tools=False, sizing_mode='stretch_both')
+    if overlay:
+        legend = Legend(items=legendItems, location=(10,0))
+        legend.click_policy='hide'
+        fig.add_layout(legend, 'right')
+        
+    print(figs)
+    plot_layout = gridplot(figs, ncols=1, merge_tools=False)
     html = file_html(plot_layout, CDN, title="Spike Historgram")
 
     if showFig: show(plot_layout)

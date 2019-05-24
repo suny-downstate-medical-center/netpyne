@@ -30,7 +30,7 @@ import pandas as pd
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
-        spikeHist = False, spikeHistBin = 5, syncLines = False, marker='circle', markerSize = 3, popColors = None, figSize = (10,8), saveData = None, saveFig = None, showFig = True):
+        spikeHist = False, spikeHistBin = 5, syncLines = False, marker='circle', markerSize = 3, popColors = None, figSize = (10,8), saveData = None, saveFig = None, showFig = False):
             
     '''
     Raster plot of network cells
@@ -219,8 +219,8 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         else:
             label = name
         
-        s = fig.scatter(group['spkt'], group['spkind'], color=group['spkgidColor'], marker=marker, size=markerSize,)
-        legendItems.append((label, [s]))
+        s = fig.scatter(group['spkt'], group['spkind'], color=group['spkgidColor'], marker=marker, size=markerSize, legend=label)
+        #legendItems.append((label, [s]))
         
     if spikeHist:
         from bokeh.models import LinearAxis, Range1d
@@ -365,9 +365,8 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False):
 ## ISSUES: Y scale, add colors to be effective
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotSpikeHist(include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, overlay=True, yaxis = 'rate',
-    popColors=[], norm=False, smooth=None, filtFreq=False, filtOrder=3, figSize=(1000, 400),
-    saveData = None, saveFig = None, showFig = True):
+def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRange = None, binSize = 5, overlay=True, yaxis = 'rate',
+    popColors=[], norm=False, smooth=None, filtFreq=False, filtOrder=3, saveData = None, saveFig = None, showFig = False):
     '''
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include.
@@ -494,16 +493,17 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], timeRange = None, binSize 
         else:   
             color = popColorDict[subset] if subset in popColorDict else colors[iplot%len(colors)]
         
-        s = fig.line(histoT, histoCount, line_width=1.0, name=str(subset), color=color)
-        if overlay:
-            legendItems.append((str(subset), [s]))
+        label = legendLabels[iplot] if legendLabels else str(subset)
+            
+        s = fig.line(histoT, histoCount, line_width=2.0, name=str(subset), color=color, legend=label)
 
-    if overlay:    
-        legend = Legend(items=legendItems)
-        legend.click_policy="hide"
-        fig.add_layout(legend, 'right')
+        if overlay:
+           legendItems.append((str(subset), [s]))
+
+        fig.legend.location = "top_right"
+        fig.legend.click_policy = "hide"
     
-    plot_layout = gridplot(figs, ncols=1, merge_tools=False, plot_width=figSize[0], plot_height=figSize[1])
+    plot_layout = gridplot(figs, ncols=1, merge_tools=False, sizing_mode='stretch_both')
     html = file_html(plot_layout, CDN, title="Spike Historgram")
 
     if showFig: show(plot_layout)
@@ -951,7 +951,7 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         show(plot_layout)
 
         if saveFig:
-            if isinstance(saveFig, basestring):
+            if isinstance(saveFig, str):
                 filename = saveFig
             else:
                 filename = sim.cfg.filename+'_'+'lfp_spectrogram.png'

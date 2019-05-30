@@ -172,8 +172,6 @@ def calculateLFP():
         
         sim.simData['LFP'][saveStep-1, :] += ecp  # sum of all cells
 
-        print(gid)
-        print(ecp)
     
 #------------------------------------------------------------------------------
 # Calculate and print load balance

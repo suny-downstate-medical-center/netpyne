@@ -1188,7 +1188,7 @@ def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, maxF
 
         if not overlay: 
             plt.subplot(len(include),1,iplot+1)  # if subplot, create new subplot
-            title (str(subset), fontsize=fontsiz)
+            plt.title(str(subset), fontsize=fontsiz)
             color = 'blue'
         
         Fs = 1000.0/binSize # ACTUALLY DEPENDS ON BIN WINDOW!!! RATE NOT SPIKE!

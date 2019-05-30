@@ -30,7 +30,7 @@ import pandas as pd
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
-        spikeHist = False, spikeHistBin = 5, syncLines = False, marker='circle', markerSize = 3, popColors = None, figSize = (10,8), saveData = None, saveFig = None, showFig = True):
+        spikeHist = False, spikeHistBin = 5, syncLines = False, marker='circle', markerSize = 3, popColors = None, figSize = (10,8), saveData = None, saveFig = None, showFig = False):
             
     '''
     Raster plot of network cells
@@ -70,6 +70,7 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
     colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
 
+    popColorDict={}
     if popColors:
         for pop, color in popColors.items():
             if not isinstance(color, RGB):
@@ -97,10 +98,10 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     popLabels = [pop for pop in sim.net.allPops if pop in df['pop'].unique()] #preserves original ordering
     if netStimLabels: popLabels.append('NetStims')
     popColorsTmp = {popLabel: colors[ipop%len(colors)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
-    if popColors: popColorsTmp.update(popColors)
+    if popColors: popColorsTmp.update(popColorDict)
     popColors = popColorsTmp
     if len(cellGids) > 0:
-        gidColors = {cell['gid']: popColors[cell['tags']['pop']] for cell in cells}  # dict with color for each gid
+        gidColors = {cell['gid']: popColorDict[cell['tags']['pop']] for cell in cells}  # dict with color for each gid
         try:
             sel, spkts,spkgids = getSpktSpkid(cellGids=cellGids, timeRange=timeRange, allCells=(include == ['allCells']))
         except:
@@ -134,7 +135,7 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
             spktsNew = netStimSpks
             spkindsNew = [lastInd+1+i for i in range(len(netStimSpks))]
             ns = pd.DataFrame(list(zip(spktsNew, spkindsNew)), columns=['spkt', 'spkind'])
-            ns['spkgidColor'] = popColors['netStims']
+            ns['spkgidColor'] = popColorDict['netStims']
             sel = pd.concat([sel, ns])
             numNetStims += 1
         else:
@@ -211,7 +212,7 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         histoT = histo[1][:-1]+spikeHistBin/2
         histoCount = histo[0]
 
-    #legendItems = []
+    legendItems = []
     grouped = sel.groupby('pop')
     for name, group in grouped:
         if popRates:
@@ -229,12 +230,10 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         fig.line (histoT, histoCount, line_width=2, y_range_name='spikeHist')
 
 
-    #legend = Legend(items=legendItems, location=(10,0))
-    #fig.add_layout(legend, 'right')
-
-    fig.legend.location = "top_right"
-    fig.legend.click_policy = "hide"
-
+    legend = Legend(items=legendItems, location=(10,0))
+    legend.click_policy='hide'
+    fig.add_layout(legend, 'right')
+    
     plot_layout = layout([fig], sizing_mode='stretch_both')
     html = file_html(plot_layout, CDN, title="Raster Plot")
 
@@ -368,7 +367,7 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False):
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRange = None, binSize = 5, overlay=True, yaxis = 'rate',
-    popColors=[], norm=False, smooth=None, filtFreq=False, filtOrder=3, saveData = None, saveFig = None, showFig = True):
+    popColors=[], norm=False, smooth=None, filtFreq=False, filtOrder=3, saveData = None, saveFig = None, showFig = False):
     '''
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include.
@@ -401,6 +400,7 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
 
     colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
             
+    popColorDict={}
     if popColors:
         for pop, color in popColors.items():
             if not isinstance(color, RGB):
@@ -426,12 +426,10 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
             
     figs=[]
     if overlay:
-        figs.append(figure(title="Spike Historgram", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label=yaxisLabel, toolbar_location='above',
-                    ))
+        figs.append(figure(title="Spike Historgram", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label=yaxisLabel, toolbar_location='above'))
         fig = figs[0]
         legendItems = []  
       
-
     for iplot, subset in enumerate(include):
         if not overlay:
             figs.append(figure(title=str(subset), tools=TOOLS, x_axis_label="Time (ms)", y_axis_label=yaxisLabel))
@@ -494,24 +492,22 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
         if isinstance(subset, list): 
             color = colors[iplot%len(colors)]
         else:   
-            color = popColors[subset] if subset in popColors else colors[iplot%len(colors)]
+            color = popColorDict[subset] if subset in popColorDict else colors[iplot%len(colors)]
         
         label = legendLabels[iplot] if legendLabels else str(subset)
-        
-        if isinstance(subset, list): 
-            color = colors[iplot%len(colors)]
-        else:   
-            color = popColors[label] if subset in popColors else colors[iplot % len(colors)]
             
-        s = fig.line(histoT, histoCount, line_width=2.0, name=str(subset), color=color, legend=label)
+        s = fig.line(histoT, histoCount, line_width=2.0, name=str(subset), color=color)
 
-        #if overlay:
-        #    legendItems.append((str(subset), [s]))
-
-        fig.legend.location = "top_right"
-        fig.legend.click_policy = "hide"
+        if overlay:
+           legendItems.append((str(subset), [s]))
     
-    plot_layout = gridplot(figs, ncols=1, merge_tools=False, sizing_mode='stretch_both')
+    if overlay:
+        legend = Legend(items=legendItems, location=(10,0))
+        legend.click_policy='hide'
+        fig.add_layout(legend, 'right')
+        
+    print(figs)
+    plot_layout = gridplot(figs, ncols=1, merge_tools=False)
     html = file_html(plot_layout, CDN, title="Spike Historgram")
 
     if showFig: show(plot_layout)
@@ -532,7 +528,30 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, maxFreq = 100, NFFT = 256, noverlap = 128, smooth = 0, overlay=True, ylim = None,
-                 popColors = {}, saveData = None, saveFig = None, showFig = False):
+                 popColors = {}, figSize=(1000, 400), saveData = None, saveFig = None, showFig = False):
+    ''' 
+    Plot firing rate power spectral density (PSD)
+        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
+            Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
+        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
+        - binSize (int): Size in ms of spike bins (default: 5)
+        - maxFreq (float): Maximum frequency to show in plot (default: 100)
+        - NFFT (float): The number of data points used in each block for the FFT (power of 2) (default: 256)
+        - smooth (int): Window size for smoothing; no smoothing if 0 (default: 0)
+        - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
+        - graphType ('line'|'bar'): Type of graph to use (line graph or bar plot) (default: 'line')
+        - yaxis ('rate'|'count'): Units of y axis (firing rate in Hz, or spike count) (default: 'rate')
+        - popColors (dict): Dictionary with color (value) used for each population (key) (default: None)
+        - figSize ((width, height)): Size of figure (default: (10,8))
+        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;
+            if set to True uses filename from simConfig (default: None)
+        - saveFig (None|True|'fileName'): File name where to save the figure;
+            if set to True uses filename from simConfig (default: None)
+        - showFig (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figure handle
+    '''
+    
     from .. import sim
     from bokeh.plotting import figure, show
     from bokeh.resources import CDN
@@ -540,12 +559,17 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
     from bokeh.layouts import layout
     from bokeh.colors import RGB
     from bokeh.models import Legend
+    
+    print('Plotting interactive firing rate power spectral density (PSD) ...')
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
     colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
 
-    fig = figure(title="Rate PSD Plot", tools=TOOLS, x_axis_label="Frequncy (Hz)", y_axis_label="Power Spectral Density (db/Hz)", toolbar_location="above")
+    popColorDict={}
+    if popColors:
+        for pop, color in popColors.items():
+            popColorDict[pop] = RGB(*[round(f * 255) for f in color])
 
     # Replace 'eachPop' with list of pops
     if 'eachPop' in include:
@@ -559,10 +583,21 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
     histData = []
 
     allPower, allSignal, allFreqs = [], [], []
-    #legendItems = []
+    legendItems = []
+    
+    
+    figs=[]
+    if overlay:
+        figs.append(figure(title="PSD Rate Plot", tools=TOOLS, x_axis_label="Frequncy (Hz)", y_axis_label="Power Spectral Density (db/Hz)", toolbar_location='above'))
+        fig = figs[0]
+        legendItems = []  
 
     # Plot separate line for each entry in include
     for iplot, subset in enumerate(include):
+        if not overlay:
+            figs.append(figure(title=str(subset), tools=TOOLS, x_axis_label="Frequency (HZ)", y_axis_label="Power Spectral Density (db/Hz)"))
+            fig = figs[iplot]
+            
         cells, cellGids, netStimLabels = getCellsInclude([subset])
         numNetStims = 0
 
@@ -609,23 +644,20 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 
         freqs = power[1]
 
-        color = popColors[subset] if subset in popColors else colorList[iplot%len(colorList)]
-        color = RGB(*[round(c * 255) for c in color])
-
+        color = popColorDict[subset] if subset in popColorDict else colors[iplot%len(colors)]
+        
         allFreqs.append(freqs)
         allPower.append(power)
         allSignal.append(signal)
-        s = fig.line(freqs[freqs<maxFreq], signal[freqs<maxFreq], line_width = 2.0, color=color, legend=subset)
-        #legendItems.append((subset, [s]))
+        s = fig.line(freqs[freqs<maxFreq], signal[freqs<maxFreq], line_width = 2.0, color=color)
+        if overlay: legendItems.append((subset, [s]))
 
-    #legend = Legend(items=legendItems)
-    #legend.click_policy='hide'
-    #fig.add_layout(legend, 'right')
+    if overlay: 
+        legend = Legend(items=legendItems)
+        legend.click_policy='hide'
+        fig.add_layout(legend, 'right')
 
-    fig.legend.location = "top_right"
-    fig.legend.click_policy = "hide"
-
-    plot_layout = layout(fig, sizing_mode='stretch_both')
+    plot_layout = layout(figs, ncols=1, plot_width=figSize[0], figHeight=figSize[1])
     html = file_html(plot_layout, CDN, title="PSD Rate Plot")
 
     if showFig: show(plot_layout)
@@ -645,13 +677,39 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 ## Plot interactive Traces
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotTraces(include = None, timeRange = None, oneFigPer = 'cell', showFig = False, saveFig = False):
+def iplotTraces(include = None, timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False, colors = None, ylim = None, axis='on', fontSize=12,
+    figSize = (10,8), saveData = None, saveFig = None, showFig = True):
+    ''' 
+    Plot recorded traces
+        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of cells for which to plot 
+            the recorded traces (default: [])
+        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
+        - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: False)
+        - oneFigPer ('cell'|'trace'): Whether to plot one figure per cell (showing multiple traces) 
+            or per trace (showing multiple cells) (default: 'cell')
+        - rerun (True|False): rerun simulation so new set of cells gets recorded (default: False)
+        - colors (list): List of normalized RGB colors to use for traces
+        - ylim (list): Y-axis limits
+        - axis ('on'|'off'): Whether to show axis or not; if not, then a scalebar is included (default: 'on')
+        - figSize ((width, height)): Size of figure (default: (10,8))
+        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
+            if set to True uses filename from simConfig (default: None)
+        - saveFig (None|True|'fileName'): File name where to save the figure;
+            if set to True uses filename from simConfig (default: None)
+        - showFig (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figure handles
+    '''
+    
     from .. import sim
     from bokeh.plotting import figure, show
     from bokeh.resources import CDN
     from bokeh.embed import file_html
     from bokeh.layouts import layout
+    
+    print('Plotting interactive recorded cell traces ...',oneFigPer)
 
+    
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
     if include is None:  # if none, record from whatever was recorded
@@ -676,7 +734,7 @@ def iplotTraces(include = None, timeRange = None, oneFigPer = 'cell', showFig = 
     if oneFigPer == 'cell':
         for gid in cellGids:
             figs['_gid_' + str(gid)] = figure(title="Cell {}, Pop {}".format(gid, gidPops[gid]), tools=TOOLS, x_axis_label="Time (ms)",
-                                              y_axis_label="Voltage (mV)")
+                                              y_axis_label="V_soma")
             for itrace, trace in enumerate(tracesList):
                 if 'cell_{}'.format(gid) in sim.allSimData[trace]:
                     fullTrace = sim.allSimData[trace]['cell_{}'.format(gid)]
@@ -689,24 +747,20 @@ def iplotTraces(include = None, timeRange = None, oneFigPer = 'cell', showFig = 
                         lenData = len(data)
                     t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
                     tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
-                    figs['_gid_' + str(gid)].line(t[:lenData], data, line_width=2, legend=trace)
+                    figs['_gid_' + str(gid)].line(t[:lenData], data, line_width=2)
 
     for figLabel, figObj in figs.items():
-
-        figObj.legend.location = "top_right"
-        figObj.legend.click_policy = "hide"
-
         plot_layout = layout(figObj, sizing_mode='stretch_both')
         html = file_html(plot_layout, CDN, title="figLabel")
 
         if showFig: show(plot_layout)
 
         if saveFig:
-            if isinstance(saveFig, basestring):
+            if isinstance(saveFig, str):
                 filename = saveFig
             else:
-                filename = sim.cfg.filename+'_'+'traces.png'
-            file = open(filename[:-4]+figLabel+filename[-4:], 'w')
+                filename = sim.cfg.filename+ figLabel + '_traces.html'
+            file = open(filename, 'w')
             file.write(html)
             file.close()
 
@@ -901,7 +955,7 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         show(plot_layout)
 
         if saveFig:
-            if isinstance(saveFig, basestring):
+            if isinstance(saveFig, str):
                 filename = saveFig
             else:
                 filename = sim.cfg.filename+'_'+'lfp_spectrogram.png'

@@ -4,6 +4,8 @@
 
 - Added saveCellConns, pt3dRelativeToCellLocation and invertedYCoord cfg options
 
+- Added lineWidth as argument of plotRatePSD() and plotLFP()
+
 - Fixed bug plotting traces with one fig per trace
 
 # Version 0.9.2

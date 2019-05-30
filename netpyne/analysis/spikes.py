@@ -1099,7 +1099,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, maxFreq=100, NFFT=256, noverlap=128, smooth=0, overlay=True,
-    ylim = None, popColors = {}, fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True): 
+    ylim = None, popColors = {}, lineWidth = 1.5, fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True): 
     ''' 
     Plot firing rate power spectral density (PSD)
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -1205,7 +1205,7 @@ def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, maxF
         allPower.append(power)
         allSignal.append(signal)
 
-        plt.plot(freqs[freqs<maxFreq], signal[freqs<maxFreq], linewidth=1.5, color=color)
+        plt.plot(freqs[freqs<maxFreq], signal[freqs<maxFreq], linewidth=lineWidth, color=color)
 
         plt.xlabel('Frequency (Hz)', fontsize=fontsiz)
         plt.ylabel('Power Spectral Density (dB/Hz)', fontsize=fontsiz) # add yaxis in opposite side

@@ -35,7 +35,7 @@ from .utils import colorList, exception, _saveFigData, _showFigure, _smooth1d
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange=None, NFFT=256, noverlap=128, 
-    nperseg=256, minFreq=1, maxFreq=100, stepFreq=1, smooth=0, separation=1.0, includeAxon=True, logx=False, logy=False, norm=False, dpi=200, overlay=False, filtFreq = False, filtOrder=3, detrend=False, specType='morlet', fontSize=14, colors = None, maxPlots=8, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
+    nperseg=256, minFreq=1, maxFreq=100, stepFreq=1, smooth=0, separation=1.0, includeAxon=True, logx=False, logy=False, norm=False, dpi=200, overlay=False, filtFreq = False, filtOrder=3, detrend=False, specType='morlet', fontSize=14, colors = None, maxPlots=8, lineWidth=1.5, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot LFP
         - electrodes (list): List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (default: ['avg', 'all'])
@@ -59,6 +59,9 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         - specType ('morlet'|'fft')
         - overlay (boolean)
         - dpi (int) 
+        - colors
+        - maxPlots
+        - lineWidth
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
             if set to True uses filename from simConfig (default: None)
@@ -210,11 +213,11 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             if elec == 'avg':
                 lfpPlot = np.mean(lfp, axis=1)
                 color = 'k'
-                lw=1.5
+                lw=lineWidth
             elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
                 lfpPlot = lfp[:, elec]
                 color = colors[i%len(colors)]
-                lw=1.5
+                lw=lineWidth
             
             Fs = int(1000.0/sim.cfg.recordStep)
             power = mlab.psd(lfpPlot, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning, 

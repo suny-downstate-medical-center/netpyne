@@ -1222,7 +1222,7 @@ def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, maxF
     if overlay:
         for i,subset in enumerate(include):
             color = popColors[subset] if isinstance(subset, basestring) and subset in popColors else colorList[i%len(colorList)] 
-            plt.plot(0,0,color=color,label=str(subset))
+            plt.plot(0,0,color=color,label=str(subset), linewidth=lineWidth)
         plt.legend(fontsize=fontsiz, loc=1)#, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
         maxLabelLen = min(10,max([len(str(l)) for l in include]))
         #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))

@@ -213,11 +213,9 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             if elec == 'avg':
                 lfpPlot = np.mean(lfp, axis=1)
                 color = 'k'
-                lw=lineWidth
             elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
                 lfpPlot = lfp[:, elec]
                 color = colors[i%len(colors)]
-                lw=lineWidth
             
             Fs = int(1000.0/sim.cfg.recordStep)
             power = mlab.psd(lfpPlot, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning, 
@@ -232,7 +230,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             allFreqs.append(freqs)
             allSignal.append(signal)
 
-            plt.plot(freqs[freqs<maxFreq], signal[freqs<maxFreq], linewidth=lw, color=color, label='Electrode %s'%(str(elec)))
+            plt.plot(freqs[freqs<maxFreq], signal[freqs<maxFreq], linewidth=lineWidth, color=color, label='Electrode %s'%(str(elec)))
             plt.xlim([0, maxFreq])
             if len(electrodes) > 1 and not overlay:
                 plt.title('Electrode %s'%(str(elec)), fontsize=fontSize)

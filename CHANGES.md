@@ -6,6 +6,10 @@
 
 - Fixed bug plotting traces with one fig per trace
 
+- Added lineWidth argument to some raster and lfp plots
+
+- Fixed bug in granger functions - required conversion to int 
+
 # Version 0.9.2
 
 - Support for saving simulation at intervals  

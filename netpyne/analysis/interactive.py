@@ -62,199 +62,201 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     from bokeh.models import Legend
     from bokeh.colors import RGB
     from bokeh.models.annotations import Title
+    import sys
+    from contextlib import redirect_stdout
 
+    with redirect_stdout(sys.__stdout__):
+        print('Plotting interactive raster ...')
 
-    print('Plotting interactive raster ...')
+        TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
-    TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
+        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+        popColorDict={}
+        if popColors:
+            for pop, color in popColors.items():
+                if not isinstance(color, RGB):
+                    popColors[pop] = RGB(*[round(f * 255) for f in color])
 
-    colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+        cells, cellGids, netStimLabels = getCellsInclude(include)
 
-    popColorDict={}
-    if popColors:
-        for pop, color in popColors.items():
-            if not isinstance(color, RGB):
-                popColors[pop] = RGB(*[round(f * 255) for f in color])
+        df = pd.DataFrame.from_records(cells)
+        df = pd.concat([df.drop('tags', axis=1), pd.DataFrame.from_records(df['tags'].tolist())], axis=1)
 
-    cells, cellGids, netStimLabels = getCellsInclude(include)
+        keep = ['pop', 'gid', 'conns']
 
-    df = pd.DataFrame.from_records(cells)
-    df = pd.concat([df.drop('tags', axis=1), pd.DataFrame.from_records(df['tags'].tolist())], axis=1)
+        if isinstance(orderBy, str) and orderBy not in cells[0]['tags']:  # if orderBy property doesn't exist or is not numeric, use gid
+            orderBy = 'gid'
+        elif isinstance(orderBy, str) and not isinstance(cells[0]['tags'][orderBy], Number):
+            orderBy = 'gid'
 
-    keep = ['pop', 'gid', 'conns']
+        if isinstance(orderBy, list):
+            keep = keep + list(set(orderBy) - set(keep))
+        elif orderBy not in keep:
+            keep.append(orderBy)
 
-    if isinstance(orderBy, str) and orderBy not in cells[0]['tags']:  # if orderBy property doesn't exist or is not numeric, use gid
-        orderBy = 'gid'
-    elif isinstance(orderBy, str) and not isinstance(cells[0]['tags'][orderBy], Number):
-        orderBy = 'gid'
+        df = df[keep]
+        popLabels = [pop for pop in sim.net.allPops if pop in df['pop'].unique()] #preserves original ordering
+        if netStimLabels: popLabels.append('NetStims')
+        popColorsTmp = {popLabel: colors[ipop%len(colors)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
+        if popColors: popColorsTmp.update(popColorDict)
+        popColors = popColorsTmp
+        if len(cellGids) > 0:
+            gidColors = {cell['gid']: popColorDict[cell['tags']['pop']] for cell in cells}  # dict with color for each gid
+            try:
+                sel, spkts,spkgids = getSpktSpkid(cellGids=cellGids, timeRange=timeRange, allCells=(include == ['allCells']))
+            except:
+                import sys
+                print((sys.exc_info()))
+                spkgids, spkts = [], []
+                sel = pd.DataFrame(columns=['spkt', 'spkid'])
 
-    if isinstance(orderBy, list):
-        keep = keep + list(set(orderBy) - set(keep))
-    elif orderBy not in keep:
-        keep.append(orderBy)
+            sel['spkgidColor'] = sel['spkid'].map(gidColors)
+            sel['pop'] = sel['spkid'].map(df.set_index('gid')['pop'])
+            df['gidColor'] = df['pop'].map(popColors)
+            df.set_index('gid', inplace=True)
 
-    df = df[keep]
-
-    popLabels = [pop for pop in sim.net.allPops if pop in df['pop'].unique()] #preserves original ordering
-    if netStimLabels: popLabels.append('NetStims')
-    popColorsTmp = {popLabel: colors[ipop%len(colors)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
-    if popColors: popColorsTmp.update(popColorDict)
-    popColors = popColorsTmp
-    if len(cellGids) > 0:
-        gidColors = {cell['gid']: popColorDict[cell['tags']['pop']] for cell in cells}  # dict with color for each gid
-        try:
-            sel, spkts,spkgids = getSpktSpkid(cellGids=cellGids, timeRange=timeRange, allCells=(include == ['allCells']))
-        except:
-            import sys
-            print((sys.exc_info()))
-            spkgids, spkts = [], []
-            sel = pd.DataFrame(columns=['spkt', 'spkid'])
-        sel['spkgidColor'] = sel['spkid'].map(gidColors)
-        sel['pop'] = sel['spkid'].map(df.set_index('gid')['pop'])
-        df['gidColor'] = df['pop'].map(popColors)
-        df.set_index('gid', inplace=True)
-
-    # Order by
-    if len(df) > 0:
-        ylabelText = 'Cells (ordered by %s)'%(orderBy)
-        df = df.sort_values(by=orderBy)
-        sel['spkind'] = sel['spkid'].apply(df.index.get_loc)
-    else:
-        sel = pd.DataFrame(columns=['spkt', 'spkid', 'spkind'])
-        ylabelText = ''
-
-    # Add NetStim spikes
-    numCellSpks = len(sel)
-    numNetStims = 0
-    for netStimLabel in netStimLabels:
-        netStimSpks = [spk for cell,stims in sim.allSimData['stims'].items() \
-                       for stimLabel,stimSpks in stims.items() for spk in stimSpks if stimLabel == netStimLabel]
-        if len(netStimSpks) > 0:
-            # lastInd = max(spkinds) if len(spkinds)>0 else 0
-            lastInd = sel['spkind'].max() if len(sel['spkind']) > 0 else 0
-            spktsNew = netStimSpks
-            spkindsNew = [lastInd+1+i for i in range(len(netStimSpks))]
-            ns = pd.DataFrame(list(zip(spktsNew, spkindsNew)), columns=['spkt', 'spkind'])
-            ns['spkgidColor'] = popColorDict['netStims']
-            sel = pd.concat([sel, ns])
-            numNetStims += 1
+        # Order by
+        if len(df) > 0:
+            ylabelText = 'Cells (ordered by %s)'%(orderBy)
+            df = df.sort_values(by=orderBy)
+            sel['spkind'] = sel['spkid'].apply(df.index.get_loc)
         else:
+            sel = pd.DataFrame(columns=['spkt', 'spkid', 'spkind'])
+            ylabelText = ''
+
+        # Add NetStim spikes
+        numCellSpks = len(sel)
+        numNetStims = 0
+
+        for netStimLabel in netStimLabels:
+            netStimSpks = [spk for cell,stims in sim.allSimData['stims'].items() \
+                           for stimLabel,stimSpks in stims.items() for spk in stimSpks if stimLabel == netStimLabel]
+            if len(netStimSpks) > 0:
+                # lastInd = max(spkinds) if len(spkinds)>0 else 0
+                lastInd = sel['spkind'].max() if len(sel['spkind']) > 0 else 0
+                spktsNew = netStimSpks
+                spkindsNew = [lastInd+1+i for i in range(len(netStimSpks))]
+                ns = pd.DataFrame(list(zip(spktsNew, spkindsNew)), columns=['spkt', 'spkind'])
+                ns['spkgidColor'] = popColorDict['netStims']
+                sel = pd.concat([sel, ns])
+                numNetStims += 1
+            else:
+                pass
+                #print netStimLabel+' produced no spikes'
+        if len(cellGids)>0 and numNetStims:
+            ylabelText = ylabelText + ' and NetStims (at the end)'
+        elif numNetStims:
+            ylabelText = ylabelText + 'NetStims'
+
+        if numCellSpks+numNetStims == 0:
+            print('No spikes available to plot raster')
+            return None
+
+        # Time Range
+        if timeRange == [0,sim.cfg.duration]:
             pass
-            #print netStimLabel+' produced no spikes'
-    if len(cellGids)>0 and numNetStims:
-        ylabelText = ylabelText + ' and NetStims (at the end)'
-    elif numNetStims:
-        ylabelText = ylabelText + 'NetStims'
+        elif timeRange is None:
+            timeRange = [0,sim.cfg.duration]
+        else:
+            sel = sel.query('spkt >= @timeRange[0] and spkt <= @timeRange[1]')
 
-    if numCellSpks+numNetStims == 0:
-        print('No spikes available to plot raster')
-        return None
+        # Limit to max spikes
+        if (len(sel)>maxSpikes):
+            print(('  Showing only the first %i out of %i spikes' % (maxSpikes, len(sel)))) # Limit num of spikes
+            if numNetStims: # sort first if have netStims
+                sel = sel.sort_values(by='spkt')
+            sel = sel.iloc[:maxSpikes]
+            timeRange[1] =  sel['spkt'].max()
 
-    # Time Range
-    if timeRange == [0,sim.cfg.duration]:
-        pass
-    elif timeRange is None:
-        timeRange = [0,sim.cfg.duration]
-    else:
-        sel = sel.query('spkt >= @timeRange[0] and spkt <= @timeRange[1]')
+        # Plot stats
+        gidPops = df['pop'].tolist()
+        popNumCells = [float(gidPops.count(pop)) for pop in popLabels] if numCellSpks else [0] * len(popLabels)
+        totalSpikes = len(sel)
+        totalConnections = sum([len(conns) for conns in df['conns']])
+        numCells = len(cells)
+        firingRate = float(totalSpikes)/(numCells+numNetStims)/(timeRange[1]-timeRange[0])*1e3 if totalSpikes>0 else 0 # Calculate firing rate
+        connsPerCell = totalConnections/float(numCells) if numCells>0 else 0 # Calculate the number of connections per cell
 
-    # Limit to max spikes
-    if (len(sel)>maxSpikes):
-        print(('  Showing only the first %i out of %i spikes' % (maxSpikes, len(sel)))) # Limit num of spikes
-        if numNetStims: # sort first if have netStims
-            sel = sel.sort_values(by='spkt')
-        sel = sel.iloc[:maxSpikes]
-        timeRange[1] =  sel['spkt'].max()
-
-    # Plot stats
-    gidPops = df['pop'].tolist()
-    popNumCells = [float(gidPops.count(pop)) for pop in popLabels] if numCellSpks else [0] * len(popLabels)
-    totalSpikes = len(sel)
-    totalConnections = sum([len(conns) for conns in df['conns']])
-    numCells = len(cells)
-    firingRate = float(totalSpikes)/(numCells+numNetStims)/(timeRange[1]-timeRange[0])*1e3 if totalSpikes>0 else 0 # Calculate firing rate
-    connsPerCell = totalConnections/float(numCells) if numCells>0 else 0 # Calculate the number of connections per cell
-
-    if popRates:
-        avgRates = {}
-        tsecs = (timeRange[1]-timeRange[0])/1e3
-        for i,(pop, popNum) in enumerate(zip(popLabels, popNumCells)):
-            if numCells > 0 and pop != 'NetStims':
-                if numCellSpks == 0:
-                    avgRates[pop] = 0
-                else:
-                    avgRates[pop] = len([spkid for spkid in sel['spkind'].iloc[:numCellSpks-1] if df['pop'].iloc[int(spkid)]==pop])/popNum/tsecs
-        if numNetStims:
-            popNumCells[-1] = numNetStims
-            avgRates['NetStims'] = len([spkid for spkid in sel['spkind'].iloc[numCellSpks:]])/numNetStims/tsecs
-
-    if orderInverse:
-        y_range=(sel['spkind'].max(), sel['spkind'].min())
-    else:
-        y_range=(sel['spkind'].min(), sel['spkind'].max())
-
-
-    fig = figure(title="Raster Plot", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label=ylabelText,
-                 x_range=(timeRange[0], timeRange[1]), y_range=y_range, toolbar_location='above')
-
-    t = Title()
-    if syncLines:
-        for spkt in sel['spkt'].tolist():
-            fig.line((spkt, spkt), (0, len(cells)+numNetStims), color='red', line_width=2)
-        print(syncMeasure())
-        t.text = 'cells=%i  syns/cell=%0.1f  rate=%0.1f Hz  sync=%0.2f' % (numCells,connsPerCell,firingRate,syncMeasure())
-    else:
-        t.text = 'cells=%i  syns/cell=%0.1f  rate=%0.1f Hz' % (numCells,connsPerCell,firingRate)
-    fig.title = t
-
-    if spikeHist:
-        histo = np.histogram(sel['spkt'].tolist(), bins = np.arange(timeRange[0], timeRange[1], spikeHistBin))
-        histoT = histo[1][:-1]+spikeHistBin/2
-        histoCount = histo[0]
-
-    legendItems = []
-    grouped = sel.groupby('pop')
-    for name, group in grouped:
         if popRates:
-            label = name + ' (%.3g Hz)'%(avgRates[name])
+            avgRates = {}
+            tsecs = (timeRange[1]-timeRange[0])/1e3
+            for i,(pop, popNum) in enumerate(zip(popLabels, popNumCells)):
+                if numCells > 0 and pop != 'NetStims':
+                    if numCellSpks == 0:
+                        avgRates[pop] = 0
+                    else:
+                        avgRates[pop] = len([spkid for spkid in sel['spkind'].iloc[:numCellSpks-1] if df['pop'].iloc[int(spkid)]==pop])/popNum/tsecs
+            if numNetStims:
+                popNumCells[-1] = numNetStims
+                avgRates['NetStims'] = len([spkid for spkid in sel['spkind'].iloc[numCellSpks:]])/numNetStims/tsecs
+
+        if orderInverse:
+            y_range=(sel['spkind'].max(), sel['spkind'].min())
         else:
-            label = name
-        
-        s = fig.scatter(group['spkt'], group['spkind'], color=group['spkgidColor'], marker=marker, size=markerSize, legend=label)
-        #legendItems.append((label, [s]))
-        
-    if spikeHist:
-        from bokeh.models import LinearAxis, Range1d
-        fig.extra_y_ranges={'spikeHist': Range1d(start=min(histoCount), end=max(histoCount))}
-        fig.add_layout(LinearAxis(y_range_name='spikeHist', axis_label='Spike count'), 'right')
-        fig.line (histoT, histoCount, line_width=2, y_range_name='spikeHist')
+            y_range=(sel['spkind'].min(), sel['spkind'].max())
 
 
-    legend = Legend(items=legendItems, location=(10,0))
-    legend.click_policy='hide'
-    fig.add_layout(legend, 'right')
-    
-    plot_layout = layout([fig], sizing_mode='stretch_both')
-    html = file_html(plot_layout, CDN, title="Raster Plot")
+        fig = figure(title="Raster Plot", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label=ylabelText,
+                     x_range=(timeRange[0], timeRange[1]), y_range=y_range, toolbar_location='above')
 
-    # save figure data
-    if saveData:
-        figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'spkColors': sel['spkgidColor'].tolist(), 'cellGids': cellGids, 'sortedGids': df.index.tolist(), 'numNetStims': numNetStims,
-                   'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'orderInverse': orderInverse, 'spikeHist': spikeHist,
-                   'syncLines': syncLines}
-        _saveFigData(figData, saveData, 'raster')
-
-    # save figure
-    if saveFig:
-        if isinstance(saveFig, str):
-            filename = saveFig
+        t = Title()
+        if syncLines:
+            for spkt in sel['spkt'].tolist():
+                fig.line((spkt, spkt), (0, len(cells)+numNetStims), color='red', line_width=2)
+            print(syncMeasure())
+            t.text = 'cells=%i  syns/cell=%0.1f  rate=%0.1f Hz  sync=%0.2f' % (numCells,connsPerCell,firingRate,syncMeasure())
         else:
-            filename = sim.cfg.filename+'_'+'iraster.html'
-        file = open(filename, 'w')
-        file.write(html)
-        file.close()
+            t.text = 'cells=%i  syns/cell=%0.1f  rate=%0.1f Hz' % (numCells,connsPerCell,firingRate)
+        fig.title = t
 
-    if showFig: show(plot_layout)
+        if spikeHist:
+            histo = np.histogram(sel['spkt'].tolist(), bins = np.arange(timeRange[0], timeRange[1], spikeHistBin))
+            histoT = histo[1][:-1]+spikeHistBin/2
+            histoCount = histo[0]
+
+        legendItems = []
+        grouped = sel.groupby('pop')
+        for name, group in grouped:
+            if popRates:
+                label = name + ' (%.3g Hz)'%(avgRates[name])
+            else:
+                label = name
+
+            s = fig.scatter(group['spkt'], group['spkind'], color=group['spkgidColor'], marker=marker, size=markerSize, legend=label)
+            #legendItems.append((label, [s]))
+
+        if spikeHist:
+            from bokeh.models import LinearAxis, Range1d
+            fig.extra_y_ranges={'spikeHist': Range1d(start=min(histoCount), end=max(histoCount))}
+            fig.add_layout(LinearAxis(y_range_name='spikeHist', axis_label='Spike count'), 'right')
+            fig.line (histoT, histoCount, line_width=2, y_range_name='spikeHist')
+
+
+        legend = Legend(items=legendItems, location=(10,0))
+        legend.click_policy='hide'
+        fig.add_layout(legend, 'right')
+
+        plot_layout = layout([fig], sizing_mode='stretch_both')
+        html = file_html(plot_layout, CDN, title="Raster Plot")
+
+        # save figure data
+        if saveData:
+            figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'spkColors': sel['spkgidColor'].tolist(), 'cellGids': cellGids, 'sortedGids': df.index.tolist(), 'numNetStims': numNetStims,
+                       'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'orderInverse': orderInverse, 'spikeHist': spikeHist,
+                       'syncLines': syncLines}
+            _saveFigData(figData, saveData, 'raster')
+
+        # save figure
+        if saveFig:
+            if isinstance(saveFig, str):
+                filename = saveFig
+            else:
+                filename = sim.cfg.filename+'_'+'iraster.html'
+            file = open(filename, 'w')
+            file.write(html)
+            file.close()
+
+        if showFig: show(plot_layout)
 
 
     return html
@@ -503,9 +505,10 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
     
     if overlay:
         legend = Legend(items=legendItems, location=(10,0))
-        legend.click_policy='hide'
-        fig.add_layout(legend, 'right')
-        
+        fig.add_layout(legend)
+        fig.legend.click_policy='hide'
+        fig.legend.location='top_right'
+
     print(figs)
     plot_layout = gridplot(figs, ncols=1, merge_tools=False, sizing_mode='stretch_both')
     html = file_html(plot_layout, CDN, title="Spike Historgram")
@@ -654,8 +657,8 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 
     if overlay: 
         legend = Legend(items=legendItems)
-        legend.click_policy='hide'
-        fig.add_layout(legend, 'right')
+        legend.click_policy = 'hide'
+        fig.add_layout(legend)
 
     plot_layout = layout(figs, ncols=1, plot_width=figSize[0], figHeight=figSize[1], sizing_mode='stretch_both')
     html = file_html(plot_layout, CDN, title="PSD Rate Plot")

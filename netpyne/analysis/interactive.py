@@ -25,13 +25,14 @@ import numpy as np
 import pandas as pd
 
 
+
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive raster
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
-        spikeHist = False, spikeHistBin = 5, syncLines = False, marker='circle', markerSize = 3, popColors = None, figSize = (10,8), saveData = None, saveFig = None, showFig = False):
-            
+                spikeHist = False, spikeHistBin = 5, syncLines = False, marker='circle', markerSize = 3, popColors = None, figSize = (10,8), saveData = None, saveFig = None, showFig = False):
+
     '''
     Raster plot of network cells
         - include (['all',|'allCells',|'allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to include (default: 'allCells')
@@ -73,8 +74,7 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     popColorDict={}
     if popColors:
         for pop, color in popColors.items():
-            if not isinstance(color, RGB):
-                popColors[pop] = RGB(*[round(f * 255) for f in color])
+            popColorDict[pop] = RGB(*[round(f * 255) for f in color])
 
     cells, cellGids, netStimLabels = getCellsInclude(include)
 
@@ -219,10 +219,10 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
             label = name + ' (%.3g Hz)'%(avgRates[name])
         else:
             label = name
-        
+
         s = fig.scatter(group['spkt'], group['spkind'], color=group['spkgidColor'], marker=marker, size=markerSize, legend=label)
         #legendItems.append((label, [s]))
-        
+
     if spikeHist:
         from bokeh.models import LinearAxis, Range1d
         fig.extra_y_ranges={'spikeHist': Range1d(start=min(histoCount), end=max(histoCount))}
@@ -233,7 +233,7 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     legend = Legend(items=legendItems, location=(10,0))
     legend.click_policy='hide'
     fig.add_layout(legend, 'right')
-    
+
     plot_layout = layout([fig], sizing_mode='stretch_both')
     html = file_html(plot_layout, CDN, title="Raster Plot")
 
@@ -255,7 +255,6 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         file.close()
 
     if showFig: show(plot_layout)
-
 
     return html
 
@@ -503,11 +502,12 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
     
     if overlay:
         legend = Legend(items=legendItems, location=(10,0))
-        legend.click_policy='hide'
-        fig.add_layout(legend, 'right')
-        
+        fig.add_layout(legend)
+        fig.legend.click_policy='hide'
+        fig.legend.location='top_right'
+
     print(figs)
-    plot_layout = gridplot(figs, ncols=1, merge_tools=False)
+    plot_layout = gridplot(figs, ncols=1, merge_tools=False, sizing_mode='stretch_both')
     html = file_html(plot_layout, CDN, title="Spike Historgram")
 
     if showFig: show(plot_layout)
@@ -654,10 +654,10 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 
     if overlay: 
         legend = Legend(items=legendItems)
-        legend.click_policy='hide'
-        fig.add_layout(legend, 'right')
+        legend.click_policy = 'hide'
+        fig.add_layout(legend)
 
-    plot_layout = layout(figs, ncols=1, plot_width=figSize[0], figHeight=figSize[1])
+    plot_layout = layout(figs, ncols=1, plot_width=figSize[0], figHeight=figSize[1], sizing_mode='stretch_both')
     html = file_html(plot_layout, CDN, title="PSD Rate Plot")
 
     if showFig: show(plot_layout)

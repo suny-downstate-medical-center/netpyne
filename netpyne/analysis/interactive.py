@@ -507,7 +507,7 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
         fig.add_layout(legend, 'right')
         
     print(figs)
-    plot_layout = gridplot(figs, ncols=1, merge_tools=False)
+    plot_layout = gridplot(figs, ncols=1, merge_tools=False, sizing_mode='stretch_both')
     html = file_html(plot_layout, CDN, title="Spike Historgram")
 
     if showFig: show(plot_layout)
@@ -657,7 +657,7 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         legend.click_policy='hide'
         fig.add_layout(legend, 'right')
 
-    plot_layout = layout(figs, ncols=1, plot_width=figSize[0], figHeight=figSize[1])
+    plot_layout = layout(figs, ncols=1, plot_width=figSize[0], figHeight=figSize[1], sizing_mode='stretch_both')
     html = file_html(plot_layout, CDN, title="PSD Rate Plot")
 
     if showFig: show(plot_layout)

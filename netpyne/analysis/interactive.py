@@ -498,7 +498,7 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
         s = fig.line(histoT, histoCount, line_width=2.0, name=str(subset), color=color)
 
         if overlay:
-           legendItems.append((str(subset), [s]))
+           legendItems.append((str(label), [s]))
     
     if overlay:
         legend = Legend(items=legendItems, location=(10,0))

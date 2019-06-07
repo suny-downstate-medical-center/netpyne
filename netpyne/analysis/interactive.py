@@ -71,9 +71,9 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
     colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
 
-    popColorDict={}
-    if popColors:
-        for pop, color in popColors.items():
+    popColorDict=popColors.copy()
+    if popColorDict:
+        for pop, color in popColorDict.items():
             popColorDict[pop] = RGB(*[round(f * 255) for f in color])
 
     cells, cellGids, netStimLabels = getCellsInclude(include)
@@ -98,8 +98,8 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     popLabels = [pop for pop in sim.net.allPops if pop in df['pop'].unique()] #preserves original ordering
     if netStimLabels: popLabels.append('NetStims')
     popColorsTmp = {popLabel: colors[ipop%len(colors)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
-    if popColors: popColorsTmp.update(popColorDict)
-    popColors = popColorsTmp
+    if popColorDict: popColorsTmp.update(popColorDict)
+    popColorDict = popColorsTmp
     if len(cellGids) > 0:
         gidColors = {cell['gid']: popColorDict[cell['tags']['pop']] for cell in cells}  # dict with color for each gid
         try:
@@ -111,7 +111,7 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
             sel = pd.DataFrame(columns=['spkt', 'spkid'])
         sel['spkgidColor'] = sel['spkid'].map(gidColors)
         sel['pop'] = sel['spkid'].map(df.set_index('gid')['pop'])
-        df['gidColor'] = df['pop'].map(popColors)
+        df['gidColor'] = df['pop'].map(popColorDict)
         df.set_index('gid', inplace=True)
 
     # Order by
@@ -399,11 +399,11 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
 
     colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
             
-    popColorDict={}
-    if popColors:
-        for pop, color in popColors.items():
+    popColorDict=popColors.copy()
+    if popColorDict:
+        for pop, color in popColorDict.items():
             if not isinstance(color, RGB):
-                popColors[pop] = RGB(*[round(f * 255) for f in color])
+                popColorDict[pop] = RGB(*[round(f * 255) for f in color])
     
     if timeRange is None:
         timeRange = [0, sim.cfg.duration]
@@ -566,9 +566,9 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 
     colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
 
-    popColorDict={}
-    if popColors:
-        for pop, color in popColors.items():
+    popColorDict=popColors.copy()
+    if popColorDict:
+        for pop, color in popColorDict.items():
             popColorDict[pop] = RGB(*[round(f * 255) for f in color])
 
     # Replace 'eachPop' with list of pops

@@ -31,7 +31,7 @@ from .utils import colorList, _showFigure, _saveFigData, exception, getCellsIncl
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False, colors = None, ylim = None, axis='on', fontSize=12,
-    figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+                figSize = (10,8), saveData = None, saveFig = None, showFig = True, title = None): 
     ''' 
     Plot recorded traces
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of cells for which to plot 
@@ -50,7 +50,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
         - saveFig (None|True|'fileName'): File name where to save the figure;
             if set to True uses filename from simConfig (default: None)
         - showFig (True|False): Whether to show the figure or not (default: True)
-
+        - title (None|'figure title'): Set the whole figure title, work only in OneFigPerCell (default: None)
         - Returns figure handles
     '''
     from .. import sim
@@ -177,7 +177,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
 
     # Plot one fig per cell
     if oneFigPer == 'cell':
-        for gid in cellGids:
+        for cell, gid in zip(cells,cellGids):
             figs['_gid_'+str(gid)] = plt.figure(figsize=figSize) # Open a new figure
             fontsiz = 12
             for itrace, trace in enumerate(tracesList):
@@ -247,7 +247,10 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                 add_scalebar(ax, hidex=False, hidey=True, matchx=False, matchy=True,  sizex=sizex, sizey=None, 
                     unitsx='ms', unitsy='mV', scalex=1, scaley=1, loc=4, pad=10, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)   
                 plt.axis(axis)                 
-            
+
+            if title:
+                figs['_gid_'+str(gid)].suptitle(cell['tags'][title])
+                
     # Plot one fig per trace
     elif oneFigPer == 'trace':
         plotFigPerTrace(cellGids)

@@ -163,9 +163,19 @@ class PointCell (Cell):
                     return
                 spkTimes = np.array(spkTimes)
                 vec = h.Vector(len(spkTimes))
+
+            # if spkTimess
+            elif 'spkTimes' in self.tags:
+                spkTimes = self.tags['spkTimes']
+                if type(spkTimes) not in (list,tuple,np.array):
+                    print('\nError: VecStim "spkTimes" needs to be a list, tuple or numpy array')
+                    return
+                spkTimes = np.array(spkTimes)
+                vec = h.Vector(len(spkTimes))
             
             # missing params
             else:
+                import ipdb; ipdb.set_trace()
                 print('\nError: VecStim requires interval, rate or spkTimes')
                 return
 

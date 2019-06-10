@@ -205,7 +205,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                             lenData = len(data)
                             t = t[t_indexes]
                         else:
-                            data = fullTrace[int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)]
+                            data = np.array(fullTrace[int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)])
                             lenData = len(data)
                             t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
                     tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})

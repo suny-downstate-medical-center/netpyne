@@ -293,8 +293,8 @@ def plotSyncs (include =['allCells', 'eachPop'], timeRanges = None, timeRangeLab
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
-        spikeHist = None, spikeHistBin = 5, syncLines = False, lw = 2, marker = '|', markerSize=5, popColors = None, figSize = (10,8), dpi = 100, saveData = None, saveFig = None,
-        showFig = True):
+        spikeHist=None, spikeHistBin=5, syncLines=False, lw=2, marker='|', markerSize=5, popColors=None, figSize=(10, 8), fontSize=12,
+        dpi = 100, saveData = None, saveFig = None, showFig = True):
     '''
     Raster plot of network cells
         - include (['all',|'allCells',|'allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to include (default: 'allCells')
@@ -334,10 +334,18 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
     if isinstance(orderBy, basestring) and orderBy not in cells[0]['tags']:  # if orderBy property doesn't exist or is not numeric, use gid
         orderBy = 'gid'
+    elif orderBy is 'pop':
+        df['popInd'] = df['pop'].astype('category')
+        df['popInd'].cat.set_categories(sim.net.pops.keys(), inplace=True)
+        orderBy='popInd'
     elif isinstance(orderBy, basestring) and not isinstance(cells[0]['tags'][orderBy], Number):
         orderBy = 'gid'
-
+        
     if isinstance(orderBy, list):
+        if 'pop' in orderBy:
+            df['popInd'] = df['pop'].astype('category')
+            df['popInd'].cat.set_categories(sim.net.pops.keys(), inplace=True)
+            orderBy[orderBy.index('pop')] = 'popInd'
         keep = keep + list(set(orderBy) - set(keep))
     elif orderBy not in keep:
         keep.append(orderBy)
@@ -417,15 +425,18 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         timeRange[1] =  sel['spkt'].max()
 
     # Calculate spike histogram
-
     if spikeHist:
         histo = np.histogram(sel['spkt'].tolist(), bins = np.arange(timeRange[0], timeRange[1], spikeHistBin))
         histoT = histo[1][:-1]+spikeHistBin/2
         histoCount = histo[0]
-    # Plot spikes
-    fig,ax1 = plt.subplots(figsize=figSize)
-    fontsiz = 12
 
+    # Plot spikes
+    # set font size
+    plt.rcParams.update({'font.size': fontSize})
+
+    fig,ax1 = plt.subplots(figsize=figSize)
+    fontsiz = fontSize
+ 
     if spikeHist == 'subplot':
         gs = gridspec.GridSpec(2, 1,height_ratios=[2,1])
         ax1=plt.subplot(gs[0])
@@ -459,9 +470,9 @@ def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     if syncLines:
         for spkt in sel['spkt'].tolist():
             ax1.plot((spkt, spkt), (0, len(cells)+numNetStims), 'r-', linewidth=0.1)
-        plt.title('cells=%i syns/cell=%0.1f rate=%0.1f Hz sync=%0.2f' % (numCells,connsPerCell,firingRate,syncMeasure()), fontsize=fontsiz)
+        plt.title('cells=%i   syns/cell=%0.1f   rate=%0.1f Hz   sync=%0.2f' % (numCells,connsPerCell,firingRate,syncMeasure()), fontsize=fontsiz)
     else:
-        plt.title('cells=%i syns/cell=%0.1f rate=%0.1f Hz' % (numCells,connsPerCell,firingRate), fontsize=fontsiz)
+        plt.title('cells=%i   syns/cell=%0.1f   rate=%0.1f Hz' % (numCells,connsPerCell,firingRate), fontsize=fontsiz)
     # Axis
     ax1.set_xlabel('Time (ms)', fontsize=fontsiz)
     ax1.set_ylabel(ylabelText, fontsize=fontsiz)
@@ -725,7 +736,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 @exception
 def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], bins = 50,
                  popColors = [], histlogy = False, histlogx = False, histmin = 0.0, density = False, includeRate0=False, legendLabels = None, normfit = False,
-                 fontsize=14, histShading=True, xlim = None, dpi = 100, figSize = (6,8), saveData = None, saveFig = None, showFig = True, **kwargs): 
+                  histShading=True, xlim = None, dpi = 100, figSize = (6,8), fontSize=12, saveData = None, saveFig = None, showFig = True, **kwargs): 
     ''' 
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -751,11 +762,11 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
     # Set plot style
     colors = []
     params = {
-        'axes.labelsize': 14,
-        'font.size': 14,
-        'legend.fontsize': 14,
-        'xtick.labelsize': 14,
-        'ytick.labelsize': 14,
+        'axes.labelsize': fontSize,
+        'font.size': fontSize,
+        'legend.fontsize': fontSize,
+        'xtick.labelsize': fontSize,
+        'ytick.labelsize': fontSize,
         'text.usetex': False,
         }
     plt.rcParams.update(params)
@@ -774,7 +785,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
     for stat in stats:
         # create fig
         fig,ax1 = plt.subplots(figsize=figSize)
-        fontsiz = fontsize 
+        fontsiz = fontSize
         xlabel = xlabels[stat]
 
         statData = []
@@ -892,7 +903,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
         if graphType == 'boxplot':
             meanpointprops = dict(marker=(5,1,0), markeredgecolor='black', markerfacecolor='white')
             labels = legendLabels if legendLabels else include
-            bp=plt.boxplot(statData, labels=labels, notch=False, sym='k+', meanprops=meanpointprops, 
+            bp=plt.boxplot(statData, labels=labels[::-1], notch=False, sym='k+', meanprops=meanpointprops, 
                         whis=1.5, widths=0.6, vert=False, showmeans=True, patch_artist=True)
             plt.xlabel(xlabel, fontsize=fontsiz)
             plt.ylabel('Population', fontsize=fontsiz) 
@@ -1076,9 +1087,9 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot spike histogram
 # -------------------------------------------------------------------------------------------------------------------
-exception
-def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, maxFreq = 100, NFFT = 256, noverlap = 128, smooth = 0, overlay=True, ylim = None, 
-    popColors = {}, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
+@exception
+def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, maxFreq=100, NFFT=256, noverlap=128, smooth=0, overlay=True,
+    ylim = None, popColors = {}, fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True): 
     ''' 
     Plot firing rate power spectral density (PSD)
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -1119,9 +1130,13 @@ def plotRatePSD (include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 
     # create fig
     fig,ax1 = plt.subplots(figsize=figSize)
-    fontsiz = 12
-    
-    allPower, allSignal, allFreqs=[], [], []
+    fontsiz = fontSize
+
+    # set font size
+    plt.rcParams.update({'font.size': fontSize})
+        
+    allPower, allSignal, allFreqs = [], [], []
+
     # Plot separate line for each entry in include
     for iplot,subset in enumerate(include):
         cells, cellGids, netStimLabels = getCellsInclude([subset])   

@@ -20,7 +20,7 @@ These components can be included in a single or multiple python files. This sect
 Network parameters
 -------------------------
 
-The ``netParams`` object of class ``NetParams`` includes all the information necessary to define your network. It is compoased of the following ordered dictionaries:
+The ``netParams`` object of class ``NetParams`` includes all the information necessary to define your network. It is composed of the following ordered dictionaries:
 
 * ``popParams`` - populations in the network and their parameters
 

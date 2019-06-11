@@ -61,7 +61,8 @@ def createRhythmicPattern(params, rand):
         isi_array = np.arange(start, params['stop'], 1000. / freq)
         # array of single stimulus times -- no doublets
         if freqStd:
-            #t_array = [rand.normal(x, freqStd) for np.repeat(isi_array, params['repeats'])]  # not efficient!
+            #t_array = self.prng.normal(np.repeat(isi_array, self.p_ext['repeats']), stdev)
+            #t_array = np.array([rand.normal(x, freqStd) for x in np.repeat(isi_array, params['repeats'])])  # not efficient!
             isi_array_repeat = np.repeat(isi_array, params['repeats'])
             stdvec = h.Vector(int(len(isi_array_repeat)))
             rand.normal(0, freqStd)
@@ -100,6 +101,7 @@ def createRhythmicPattern(params, rand):
     else:
         print("Indicated distribution not recognized. Not making any alpha feeds.")
         t_input = []
+    
     return np.array(t_input)
 
 def createEvokedPattern(params, rand, inc = 0):

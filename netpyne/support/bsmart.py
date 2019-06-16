@@ -235,46 +235,49 @@ def spectrum_AR(A,Z,M,f,fs): # Get the spectrum in one specific frequency-f
 # Note: remove the ensemble mean before using this code 
 
 def pwcausalr(x,Nr,Nl,porder,fs,freq=0): # Note: freq determines whether the frequency points are calculated or chosen
-    from pylab import size, shape, real, log, conj, zeros, arange, disp, array
-    from numpy import linalg; det=linalg.det
     import numpy as np # Just for "sum"; can't remember what's wrong with pylab's sum
-    [L,N] = shape(x); #L is the number of channels, N is the total points in every channel 
+    [L,N] = np.shape(x); #L is the number of channels, N is the total points in every channel 
      
-    if freq==0: F=timefreq(x[0,:],fs) # Define the frequency points
-    else: F=array(list(range(0,int(freq+1)))) # Or just pick them
-    npts=size(F,0)
+    if freq==0: 
+        F = timefreq(x[0,:], fs) # Define the frequency points
+    else: 
+        F = np.array(list(range(0, int(freq+1)))) # Or just pick them
+    npts = np.size(F,0)
     # Initialize arrays
-    maxindex=np.sum(arange(1,L))
-    pp=zeros((L,npts))
+    maxindex = np.arange(L).sum()
+    pp = np.zeros((L,npts))
     # Had these all defined on one line, and stupidly they STAY linked!!
-    cohe=zeros((maxindex,npts))
-    Fy2x=zeros((maxindex,npts))
-    Fx2y=zeros((maxindex,npts))
-    Fxy=zeros((maxindex,npts))
-    index = 0
+    cohe = np.zeros((maxindex,npts))
+    Fy2x = np.zeros((maxindex,npts))
+    Fx2y = np.zeros((maxindex,npts))
+    Fxy  = np.zeros((maxindex,npts))
+    index = -1
 
-    for i in range(1,L):
-        for j in range(i+1,L+1):
-            y=zeros((2,N)) # Initialize y
-            index = index + 1; 
-            y[0,:] = x[i-1,:]; 
-            y[1,:] = x[j-1,:];   
+    for i in range(L-1):
+        for j in range(i+1,L):
+            y = np.zeros((2,N)) # Initialize y
+            index += 1; 
+            y[0,:] = x[i,:]; 
+            y[1,:] = x[j,:];   
             A2,Z2,tmp = armorf(y,Nr,Nl,porder); #fitting a model on every possible pair 
+            
             eyx = Z2[1,1] - Z2[0,1]**2/Z2[0,0]; #corrected covariance 
             exy = Z2[0,0] - Z2[1,0]**2/Z2[1,1]; 
-            f_ind = 0; 
-            for f in F:
-                f_ind = f_ind + 1; 
+            for f_ind,f in enumerate(F):
                 S2,H2 = spectrum_AR(A2,Z2,porder,f,fs); 
-                pp[i-1,f_ind-1] = abs(S2[0,0]*2);      # revised 
-                if (i==L-1) & (j==L):
-                    pp[j-1,f_ind-1] = abs(S2[1,1]*2);  # revised 
-                cohe[index-1,f_ind-1] = real(abs(S2[0,1])**2 / S2[0,0]/S2[1,1]);   
-                Fy2x[index-1,f_ind-1] = log(abs(S2[0,0])/abs(S2[0,0]-(H2[0,1]*eyx*conj(H2[0,1]))/fs)); #Geweke's original measure 
-                Fx2y[index-1,f_ind-1] = log(abs(S2[1,1])/abs(S2[1,1]-(H2[1,0]*exy*conj(H2[1,0]))/fs)); 
-                Fxy[index-1,f_ind-1] = log(abs(S2[0,0]-(H2[0,1]*eyx*conj(H2[0,1]))/fs)*abs(S2[1,1]-(H2[1,0]*exy*conj(H2[1,0]))/fs)/abs(det(S2))); 
-                
+                pp[i,f_ind] = abs(S2[0,0]*2);      # revised 
+                if (i==L-2) and (j==L-1):
+                    pp[j,f_ind] = abs(S2[1,1]*2);  # revised 
+                cohe[index, f_ind] = np.real(abs(S2[0,1])**2 / S2[0,0]/S2[1,1]);   
+                Fy2x[index, f_ind] = np.log(abs(S2[0,0])/abs(S2[0,0]-(H2[0,1]*eyx*np.conj(H2[0,1]))/fs)); #Geweke's original measure 
+                Fx2y[index, f_ind] = np.log(abs(S2[1,1])/abs(S2[1,1]-(H2[1,0]*exy*np.conj(H2[1,0]))/fs)); 
+                Fxy[index, f_ind]  = np.log(abs(S2[0,0]-(H2[0,1]*eyx*np.conj(H2[0,1]))/fs)*abs(S2[1,1]-(H2[1,0]*exy*np.conj(H2[1,0]))/fs)/abs(np.linalg.det(S2))); 
+                print('hiiiiiiiiiiiii')
+                print(index, i, j, f_ind)
+                print(Fx2y[index, f_ind])
     return F,pp,cohe,Fx2y,Fy2x,Fxy
+
+
 
 
 def granger(vec1,vec2,order=10,rate=200,maxfreq=0):

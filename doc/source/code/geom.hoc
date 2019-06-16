@@ -9,22 +9,22 @@ proc init () { local i,j
   creat1()
   creat2()
   creat3()
-  // creat4()
-  // creat5()
-  // creat6()
-  // creat7()
-  // creat8()
-  // creat9()
-  // creat10()
-  // creat11()
-  // creat12()
+  creat4()
+  creat5()
+  creat6()
+  creat7()
+  creat8()
+  creat9()
+  creat10()
+  creat11()
+  creat12()
 }
 
 proc creat1 () {
   access soma
   {pt3dclear()}
-  {pt3dadd(-285,51,34,15)}
-  {pt3dadd(-295,59,42,15)}
+  {pt3dadd(-285,51,34,12)}
+  {pt3dadd(-295,59,42,12)}
 
   {soma connect dendrite[0](0), 1}
   {access dendrite[0]}

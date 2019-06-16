@@ -16,6 +16,7 @@ x86_64
 i386
 *.dll
 umac
+.DS_Store
 
 /examples/HybridTut/*.nml
 /examples/HybridTut/*.mod
@@ -38,3 +39,12 @@ umac
 /examples/NeuroMLImport/LEMS_SimpleNet_nrn.py
 /examples/NeuroMLImport/LEMS_SimpleNet_pynn.py
 /examples/NeuroMLImport/LEMS_SimpleNet_pynn.py_main.json
+/nb-configuration.xml
+/examples/sandbox/Sim_sandbox.PYR1.v.dat
+/examples/sandbox/Sim_sandbox.PYR2.v.dat
+/examples/M1/*.mod
+/examples/M1/*_nrn.py
+/examples/M1/*.dat
+/examples/M1/*.png
+/examples/M1/*.pov
+/examples/HHTut/temp.json

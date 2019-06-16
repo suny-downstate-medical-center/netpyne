@@ -1,3 +1,9 @@
 # Include the data files
 recursive-include netpyne *
-recursive-include examples *
+recursive-exclude 
+recursive-exclude examples *
+global-exclude x86_64
+global-exclude x86_64/*
+global-exclude .libs*
+global-exclude .libs/*
+global-exclude *.pyc

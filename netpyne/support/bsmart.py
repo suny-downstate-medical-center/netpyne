@@ -241,7 +241,7 @@ def pwcausalr(x,Nr,Nl,porder,fs,freq=0): # Note: freq determines whether the fre
     [L,N] = shape(x); #L is the number of channels, N is the total points in every channel 
      
     if freq==0: F=timefreq(x[0,:],fs) # Define the frequency points
-    else: F=array(list(range(0,freq+1))) # Or just pick them
+    else: F=array(list(range(0,int(freq+1)))) # Or just pick them
     npts=size(F,0)
     # Initialize arrays
     maxindex=np.sum(arange(1,L))
@@ -251,7 +251,7 @@ def pwcausalr(x,Nr,Nl,porder,fs,freq=0): # Note: freq determines whether the fre
     Fy2x=zeros((maxindex,npts))
     Fx2y=zeros((maxindex,npts))
     Fxy=zeros((maxindex,npts))
-    index = 0;
+    index = 0
 
     for i in range(1,L):
         for j in range(i+1,L+1):
@@ -275,11 +275,6 @@ def pwcausalr(x,Nr,Nl,porder,fs,freq=0): # Note: freq determines whether the fre
                 Fxy[index-1,f_ind-1] = log(abs(S2[0,0]-(H2[0,1]*eyx*conj(H2[0,1]))/fs)*abs(S2[1,1]-(H2[1,0]*exy*conj(H2[1,0]))/fs)/abs(det(S2))); 
                 
     return F,pp,cohe,Fx2y,Fy2x,Fxy
-
-
-
-
-
 
 
 def granger(vec1,vec2,order=10,rate=200,maxfreq=0):

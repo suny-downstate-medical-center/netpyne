@@ -256,14 +256,14 @@ def granger(cells1=[], cells2=[], spks1=None, spks2=None, label1='spkTrain1', la
 
         # do N=25 shuffles of histoCount2
         Nshuffle = 50
-        x2yShuffleMaxValues = []
+        #x2yShuffleMaxValues = []
         y2xShuffleMaxValues = []
         histoCount2Shuffled = np.array(histoCount2)
         for ishuffle in range(Nshuffle):
             # for each calculate max Granger value (starting at freq index 1) 
             np.random.shuffle(histoCount2Shuffled)
             _, _, _, Fx2yShuff, Fy2xShuff, _ = pwcausalr(np.array([histoCount1, histoCount2Shuffled]), 1, len(histoCount1), 10, fs, int(fs / 2))
-            x2yShuffleMaxValues.append(max(Fx2yShuff[0][1:]))
+            #x2yShuffleMaxValues.append(max(Fx2yShuff[0][1:]))
             y2xShuffleMaxValues.append(max(Fy2xShuff[0][1:]))
 
         # calculate z-score 
@@ -273,16 +273,15 @@ def granger(cells1=[], cells2=[], spks1=None, spks2=None, label1='spkTrain1', la
         # https://pro.arcgis.com/en/pro-app/tool-reference/spatial-statistics/what-is-a-z-score-what-is-a-p-value.htm
 
         # calculate mean and std
-        x2yMean = np.mean(x2yShuffleMaxValues)
-        x2yStd = np.std(x2yShuffleMaxValues)
-        x2yZscore = abs(np.max(Fx2y[0][1:]) - x2yMean) / x2yStd
-        x2yPvalue = scipy.stats.norm.sf(x2yZscore)
+        #x2yMean = np.mean(x2yShuffleMaxValues)
+        #x2yStd = np.std(x2yShuffleMaxValues)
+        #x2yZscore = abs(np.max(Fx2y[0][1:]) - x2yMean) / x2yStd
+        #x2yPvalue = scipy.stats.norm.sf(x2yZscore)
 
         y2xMean = np.mean(y2xShuffleMaxValues)
         y2xStd = np.std(y2xShuffleMaxValues)
         y2xZscore = abs(np.max(Fy2x[0][1:]) - y2xMean) / y2xStd
-        y2xPvalue = scipy.stats.norm.sf(x2yZscore)
-
+        y2xPvalue = scipy.stats.norm.sf(y2xZscore)
 
 
     # plot granger
@@ -314,7 +313,7 @@ def granger(cells1=[], cells2=[], spks1=None, spks2=None, label1='spkTrain1', la
         if showFig: _showFigure()
 
     if testGranger:
-        return fig, {'F': F, 'Fx2y': Fx2y[0], 'Fy2x': Fy2x[0], 'Fxy': Fxy[0],'MaxFx2yZscore': x2yZscore,'MaxFy2xZscore': y2xZscore, 'MaxFx2yPvalue': x2yPvalue,'MaxFy2xPvalue': y2xPvalue}
+        return fig, {'F': F, 'Fx2y': Fx2y[0], 'Fy2x': Fy2x[0], 'Fxy': Fxy[0], 'MaxFy2xZscore': y2xZscore, 'MaxFy2xPvalue': y2xPvalue}
     else:
         return fig, {'F': F, 'Fx2y': Fx2y[0], 'Fy2x': Fy2x[0], 'Fxy': Fxy[0]}
 

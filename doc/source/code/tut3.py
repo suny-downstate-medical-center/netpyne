@@ -20,7 +20,7 @@ netParams.cellParams['PYRrule'] = cellRule  												# add dict to list of ce
 
 
 ## Synaptic mechanism parameters
-netParams.addSynMechParams('exc', {'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0})  # excitatory synaptic mechanism
+netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  # excitatory synaptic mechanism
  
 
 # Stimulation parameters
@@ -59,3 +59,6 @@ simConfig.analysis['plot2Dnet']  = True           # plot 2D visualization of cel
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
    
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty
+
+# check model output
+sim.checkOutput('tut3')

@@ -1,5 +1,5 @@
 """
-params.py 
+HHTut.py 
 
 netParams is a dict containing a set of network parameters using a standardized structure
 
@@ -66,6 +66,7 @@ simConfig.seeds = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (conn
 simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
 simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
 simConfig.verbose = False  # show detailed messages 
+simConfig.hParams = {'v_init': -75}
 
 # Recording 
 simConfig.recordCells = []  # which cells to record from
@@ -79,9 +80,7 @@ simConfig.saveFileStep = 1000 # step size in ms to save data to disk
 simConfig.savePickle = False # Whether or not to write spikes etc. to a .mat file
 
 # Analysis and plotting 
-simConfig.analysis['plotRaster'] = True  # Plot raster
+simConfig.analysis['plotRaster'] = {'saveData':'temp.json'}# True  # Plot raster
 simConfig.analysis['plotTraces'] = {'include': [2]}  # Plot raster
 simConfig.analysis['plot2Dnet'] = True  # Plot 2D net cells and connections
-
-
 

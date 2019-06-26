@@ -1,5 +1,5 @@
 
-import opencortex.build as oc
+import opencortex.core as oc
 
 
 min_pop_size = 3
@@ -17,14 +17,15 @@ def generate(reference = "SimpleNet",
 
     nml_doc, network = oc.generate_network(reference)
 
-    oc.add_cell_and_channels(nml_doc, 'izhikevich/RS.cell.nml','RS')
+    oc.include_opencortex_cell(nml_doc, 'izhikevich/RS.cell.nml')
 
     pop = oc.add_population_in_rectangular_region(network,
                                                   'RS_pop',
                                                   'RS',
                                                   population_size,
                                                   0,0,0,
-                                                  100,100,100)
+                                                  100,100,100,
+                                                  color='0 .8 0')
 
     syn = oc.add_exp_two_syn(nml_doc, 
                              id="syn0", 

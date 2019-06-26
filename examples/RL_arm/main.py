@@ -15,6 +15,7 @@ sim.initialize(
 sim.net.createPops()                  # instantiate network populations
 sim.net.createCells()                 # instantiate network cells based on defined populations
 sim.net.connectCells()                # create connections between cells based on params
+sim.net.addStims()
 sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
 
 
@@ -34,8 +35,8 @@ sim.targetDist = 0.15 # target distance from center (15 cm)
 
 # Propriocpetive encoding
 allCellTags = sim._gatherAllCellTags()
-sim.pop_sh = [gid for gid,tags in allCellTags.iteritems() if tags['pop'] == 'Psh']
-sim.pop_el = [gid for gid,tags in allCellTags.iteritems() if tags['pop'] == 'Pel']
+sim.pop_sh = [gid for gid,tags in allCellTags.items() if tags['pop'] == 'Psh']
+sim.pop_el = [gid for gid,tags in allCellTags.items() if tags['pop'] == 'Pel']
 sim.minPval = radians(-30) 
 sim.maxPval = radians(135)
 sim.minPrate = 0.01
@@ -43,9 +44,9 @@ sim.maxPrate = 100
 
 # Motor encoding
 sim.nMuscles = 4 # number of muscles
-motorGids = [gid for gid,tags in allCellTags.iteritems() if tags['pop'] == 'EM']
+motorGids = [gid for gid,tags in allCellTags.items() if tags['pop'] == 'EM']
 cellsPerMuscle = len(motorGids) / sim.nMuscles
-sim.motorCmdCellRange = [motorGids[i:i+cellsPerMuscle] for i in xrange(0, len(motorGids), cellsPerMuscle)]  # cell gids of motor output to each muscle
+sim.motorCmdCellRange = [motorGids[i:i+cellsPerMuscle] for i in range(0, len(motorGids), cellsPerMuscle)]  # cell gids of motor output to each muscle
 sim.cmdmaxrate = 120  # value to normalize motor command num spikes
 sim.cmdtimewin = 50  # window to sum spikes of motor commands
 sim.antagInh = 1  # inhibition from antagonic muscle
@@ -78,7 +79,8 @@ sim.cfg.duration = sim.trainTime + sim.testTime
 sim.numTrials = ceil(sim.cfg.duration/1e3)
 sim.numTargets = 1
 sim.targetid = 3 # target to train+test
-sim.trialTargets = [sim.targetid]*sim.numTrials #[i%sim.numTargets for i in range(int(sim.numTrials+1))] # set target for each trial
+#rint sim.targetid
+sim.trialTargets = [3,3,3]#*sim.numTrials #[i%sim.numTargets for i in range(int(sim.numTrials+1))] # set target for each trial
 
 # create Arm class and setup
 if sim.useArm:
@@ -106,7 +108,7 @@ def runArm(t):
             sim.pc.broadcast(vec, 0)
             critic = vec.to_python()[0]
         if critic != 0: # if critic signal indicates punishment (-1) or reward (+1)
-            print 't=',t,'- adjusting weights based on RL critic value:', critic
+            print('t=',t,'- adjusting weights based on RL critic value:', critic)
             for cell in sim.net.cells:
                 for conn in cell.conns:
                     STDPmech = conn.get('hSTDP')  # check if has STDP mechanism
@@ -118,7 +120,7 @@ def runArm(t):
         for cell in sim.net.cells:
             for conn in cell.conns:
                 if 'hSTDP' in conn:
-                    sim.allWeights[-1].append(float(conn['hNetcon'].weight[0])) # save weight only for STDP conns
+                    sim.allWeights[-1].append(float(conn['hObj'].weight[0])) # save weight only for STDP conns
 
     
     
@@ -129,7 +131,7 @@ def saveWeights(sim):
             fid.write('%0.0f' % weightdata[0]) # Time
             for i in range(1,len(weightdata)): fid.write('\t%0.8f' % weightdata[i])
             fid.write('\n')
-    print('Saved weights as %s' % sim.weightsfilename)    
+    print(('Saved weights as %s' % sim.weightsfilename))    
 
 
 def plotWeights():
@@ -137,7 +139,7 @@ def plotWeights():
 
     figure()
     weightdata = loadtxt(sim.weightsfilename)
-    weightdataT=map(list, zip(*weightdata))
+    weightdataT=list(map(list, list(zip(*weightdata))))
     vmax = max([max(row) for row in weightdata])
     vmin = min([min(row) for row in weightdata])
     pcolor(array(weightdataT), cmap='hot_r', vmin=vmin, vmax=vmax)

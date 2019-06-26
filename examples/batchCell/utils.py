@@ -18,7 +18,7 @@ from netpyne import specs
 def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None, maxCombs=None, listCombs=None):
     # load from previously saved file with all data
     if loadAll:
-        print '\nLoading single file with all data...'
+        print('\nLoading single file with all data...')
         filename = '%s/%s/%s_allData.json' % (dataFolder, batchLabel, batchLabel)
         with open(filename, 'r') as fileObj:
             dataLoad = json.load(fileObj, object_pairs_hook=specs.OrderedDict)
@@ -26,7 +26,7 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
         data = dataLoad['data']
         return params, data
 
-    if isinstance(listCombs, basestring):
+    if isinstance(listCombs, str):
         filename = str(listCombs)
         with open(filename, 'r') as fileObj:
             dataLoad = json.load(fileObj)
@@ -42,15 +42,15 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
 
     # read vars from all files - store in dict 
     if b['method'] == 'grid':
-        labelList, valuesList = zip(*[(p['label'], p['values']) for p in params])
+        labelList, valuesList = list(zip(*[(p['label'], p['values']) for p in params]))
         valueCombinations = product(*(valuesList))
-        indexCombinations = product(*[range(len(x)) for x in valuesList])
+        indexCombinations = product(*[list(range(len(x))) for x in valuesList])
         data = {}
-        print 'Reading data...'
+        print('Reading data...')
         missing = 0
         for i,(iComb, pComb) in enumerate(zip(indexCombinations, valueCombinations)):
             if (not maxCombs or i<= maxCombs) and (not listCombs or list(pComb) in listCombs):
-                print i, iComb
+                print(i, iComb)
                 # read output file
                 iCombStr = ''.join([''.join('_'+str(i)) for i in iComb])
                 simLabel = b['batchLabel']+iCombStr
@@ -62,7 +62,7 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
                     # save output file in data dict
                     data[iCombStr] = {}  
                     data[iCombStr]['paramValues'] = pComb  # store param values
-                    if not vars: vars = output.keys()
+                    if not vars: vars = list(output.keys())
                     for key in vars:
                         data[iCombStr][key] = output[key]
 
@@ -72,11 +72,11 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
             else:
                 missing = missing + 1
 
-        print '%d files missing' % (missing)
+        print('%d files missing' % (missing))
 
         # save
         if saveAll:
-            print 'Saving to single file with all data'
+            print('Saving to single file with all data')
             filename = '%s/%s/%s_allData.json' % (dataFolder, batchLabel, batchLabel)
             dataSave = {'params': params, 'data': data}
             with open(filename, 'w') as fileObj:

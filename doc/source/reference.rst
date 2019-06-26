@@ -20,7 +20,7 @@ These components can be included in a single or multiple python files. This sect
 Network parameters
 -------------------------
 
-The ``netParams`` object of class ``NetParams`` includes all the information necessary to define your network. It is compoased of the following ordered dictionaries:
+The ``netParams`` object of class ``NetParams`` includes all the information necessary to define your network. It is composed of the following ordered dictionaries:
 
 * ``popParams`` - populations in the network and their parameters
 
@@ -35,6 +35,8 @@ The ``netParams`` object of class ``NetParams`` includes all the information nec
 * ``stimSourceParams`` - stimulation sources parameters. 
 
 * ``stimTargetParams`` - mapping between stimulation sources and target cells. 
+
+* ``rxdParams`` - reaction-diffusion (RxD) components and their parameters. 
 
 
 .. image:: figs/netparams.png
@@ -83,6 +85,8 @@ Additionally, ``netParams`` contains the following customizable single-valued at
 
 * **sizeZ**: z-dimension (horizontal depth) network size in um (default: 100)
 
+* **rotateCellsRandomly**: Random rotation of cells around y-axis [min,max] radians, e.g. [0, 3.0] (default: False)
+
 * **defaultWeight**: Default connection weight, in ms (default: 1)
 
 * **defaultDelay**: Default connection delay, in ms (default: 1)
@@ -126,8 +130,8 @@ The value consists in turn of a dictionary with the parameters of the population
 	``xRange`` for absolute value in um (e.g. [100,200]), or ``xnormRange`` for normalized value between 0 and 1 as fraction of ``sizeX`` (e.g. [0.1,0.2]).
 
 * **yRange** or **ynormRange** - Range of neuron positions in y-axis (vertical height=cortical depth), specified 2-element list [min, max]. 
-	``yRange`` for absolute value in um (e.g. [100,200]), or ``ynormRange`` for normalized value between 0 and 1 as fraction of ``sizeY`` (e.g. [0.1,0.2]).
-
+	``yRange`` for absolute value in um (e.g. [100,200]), or ``ynormRange`` for normalized value between 0 and 1 as fraction of ``sizeY`` (e.g. [0.1,0.2]). Note: The NEURON objects 3d points (pt3d) ``y`` coordinates will have opposite sign to the NetPyNE/Python ``tags.y`` value, in order to correctly employ and represent the y-axis as a depth coordinate, e.g. if ``cell.tags.y = 500`` then ``cell.secs.soma.geom.pt3d[0][1] = -500`` ([0] refers to the 1st pt3d, and [1] refers to the y coordinate)
+ 
 * **zRange** or **znormRange** - Range of neuron positions in z-axis (horizontal depth), specified 2-elemnt list [min, max]. 
 	``zRange`` for absolute value in um (e.g. [100,200]), or ``znormRange`` for normalized value between 0 and 1 as fraction of ``sizeZ`` (e.g. [0.1,0.2]).
 
@@ -190,6 +194,8 @@ Finally, it is possible to define a population composed of individually-defined 
 	cellsList.append({'cellLabel':'gs21', 'x': 2, 'ynorm': 0.5 , 'z': 3})
 	netParams.popParams['IT_cells'] = {'cellModel':'Izhi2007b', 'cellType':'IT', 'cellsList': cellsList} #  IT individual cells
 
+
+.. note:: To use VecStim you need to download and compile (nrnivmodl) the `vecevent.mod file <https://raw.githubusercontent.com/Neurosim-lab/netpyne/development/doc/source/code/mod/vecevent.mod>`_ .
 
 .. _cell_property_rules:
 
@@ -320,7 +326,10 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 * **sec** (optional) - Name of target section on the postsynaptic neuron (e.g. ``'soma'``). 
 	If omitted, defaults to 'soma' if exists, otherwise to first section in the cell sections list.
 
-	If ``synsPerConn`` > 1, a list of sections or sectionList can be specified, and synapses will be distributed uniformly along the specified section(s), taking into account the length of each section.
+	If ``synsPerConn`` > 1, and a list of sections or sectionList is specified, synapses will be distributed uniformly along the specified section(s), taking into account the length of each section.
+
+	If ``synsPerConn`` == 1, and list of sections or sectionList is specified, synapses (one per presynaptic cell) will be placed in sections randomly selected from the list (note that the random section and location will go hand in hand, i.e. same random index used for both). To enforce using always the first section from the list set ``cfg.connRandomSecFromList = False``.
+
 
 * **loc** (optional) - Location of target synaptic mechanism (e.g. ``0.3``)
 	If omitted, defaults to 0.5.
@@ -331,7 +340,9 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 
 	If have both a list of ``synMechs`` and ``synsPerConn`` > 1, can have a 2D list for each synapse of each synMech (e.g. for 2 synMechs and ``synsPerConn`` = 3: ``[[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]]``)
 
-	The above only applies for a single target section, ``sec``. If a list of target sections is specified, the ``loc`` value has no effect, and synapses will be distributed uniformly along the specified section(s), taking into account the length of each section.
+	If ``synsPerConn`` == 1, and list of locs is specified, synapses (one per presynaptic cell) will be placed in locations randomly selected from the list (note that the random section and location will go hand in hand, i.e. same random index used for both). 
+
+	.. The above only applies for a single target section, ``sec``. If a list of target sections is specified, the ``loc`` value has no effect, and synapses will be distributed uniformly along the specified section(s), taking into account the length of each section. To enforce using always the first location from the list set ``cfg.connRandomSecFromList = False``.
 
 
 * **synMech** (optional) - Label (or list of labels) of target synaptic mechanism on the postsynaptic neuron (e.g. ``'AMPA'`` or ``['AMPA', 'NMDA']``). 
@@ -575,8 +586,8 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 
 .. _stimulation:
 
-Stimulation
-^^^^^^^^^^^^^^^^^^^
+Stimulation parameters
+^^^^^^^^^^^^^^^^^^^^^^^
 
 Two data structures are used to specify cell stimulation parameters: ``stimSourceParams`` to define the parameters of the sources of stimulation; and ``stimTargetParams`` to specify what cells will be applied what source of stimulation (mapping of sources to cells).
 
@@ -656,6 +667,29 @@ The code below shows an example of how to create different types of stimulation 
 
 .. _sim_config: 
 
+
+Reaction-Diffusion (RxD) parameters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``rxdParams`` ordered dictionary can be used to define the different RxD components:
+
+	* **regions** - dictionary with RxD Regions (also used to define 'extracellular' regions).
+
+	* **species** - dictionary with RxD Species.
+
+	* **states** - dictionary with RxD States.
+
+	* **reactions** - dictionary with RxD Reactions.
+
+	* **multicompartmentReactions** - dictionary with RxD MultiCompartmentReactions.
+
+	* **rates** - dictionary with RxD Rates.
+
+The parameters of each dictionary follow the same structure as described in the RxD package: https://www.neuron.yale.edu/neuron/static/docs/rxd/index.html 
+
+See usage examples: `RxD buffering example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/rxd_buffering>`_ and `RxD network example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/rxd_buffering>`_. 
+
+
 Simulation configuration
 --------------------------
 
@@ -675,20 +709,30 @@ Related to the simulation and netpyne framework:
 * **createNEURONObj** - Create runnable network in NEURON when instantiating netpyne network metadata (default: True)
 * **createPyStruct** - Create Python structure (simulator-independent) when instantiating network (default: True)
 * **includeParamsLabel** - Include label of param rule that created that cell, conn or stim (default: True)
-* **addSynMechs** - Whether to add synaptich mechanisms or not (default: True)
+* **addSynMechs** - Whether to add synaptic mechanisms or not (default: True)
 * **gatherOnlySimData** - Omits gathering of net and cell data thus reducing gatherData time (default: False)
 * **compactConnFormat** - Replace dict format with compact list format for conns (need to provide list of keys to include) (default: False)
+* **connRandomSecFromList** - Select random section (and location) from list even when synsPerConn=1 (default: True) 
+* **pt3dRelativeToCellLocation** - True  # Make cell 3d points relative to the cell x,y,z location (default: True)
+* **invertedYCoord** - Make y-axis coordinate negative so they represent depth when visualized (0 at the top) (default: True)
+* **allowSelfConns** = False  # allow connections from a cell to itself (default: False)
+* **saveCellSecs** - Save all the sections info for each cell; reduces time+space (default: False) 
+* **saveCellConns** - save all the conns info for each cell; reduces time+space (default: False)
 * **timing** - Show and record timing of each process (default: True)
 * **saveTiming** - Save timing data to pickle file (default: False)
 * **printRunTime** - Print run time at interval (in sec) specified here (eg. 0.1) (default: False) 
 * **printPopAvgRates** - Print population avg firing rates after run (default: False)
+* **printSynsAfterRule** - Print total connections after each conn rule is applied 
 * **verbose** - Show detailed messages (default: False)
 
 Related to recording:
 
 * **recordCells** - List of cells from which to record traces. Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All cells selected in the ``include`` argument of ``simConfig.analysis['plotTraces']`` will be automatically included in ``recordCells``. (default: [])
 * **recordTraces** - Dict of traces to record (default: {} ; example: {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}})
+* **recordSpikesGids** - List of cells to record spike times from  (-1 to record from all). Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. (default: -1)
 * **recordStim** - Record spikes of cell stims (default: False)
+* **recordLFP** - 3D locations of local field potential (LFP) electrodes, e.g. [[50, 100, 50], [50, 200, 50]] (note the y coordinate represents depth, so will be represented as a negative value when plotted). The LFP signal in each electrode is obtained by summing the extracellular potential contributed by each neuronal segment, calculated using the "line source approximation" and assuming an Ohmic medium with conductivity |sigma| = 0.3 mS/mm. Stored in ``sim.allSimData['LFP']``. (default: False).
+* **saveLFPCells** - Store LFP generated individually by each cell in ``sim.allSimData['LFPCells']`` 
 * **recordStep** - Step size in ms for data recording (default: 0.1)
 
 Related to file saving:
@@ -741,11 +785,12 @@ Wrappers:
 * **sim.load(filename)** - wrapper to initialize, load net from file, and setup recording.
 
 * **sim.createSimulate(simConfig, netParams)** - wrapper to create and simulate the network.
-* **sim.createSimulateAnalyze(simConfig, netParams)** - wrapper to create, simulate and analyse the network.
+* **sim.createSimulateAnalyze(simConfig, netParams)** - wrapper to create, simulate and analyze the network.
+* **sim.intervalCreateSimulateAnalyze(simConfig, cfg, interval=t)** - wrapper to create, simulate and analyze the network, saving simulation output every t ms.
 * **sim.createExportNeuroML2(simConfig, netParams)** - wrapper to create and export network to NeuroML2.
 
 * **sim.loadSimulate(simConfig, netParams)** - wrapper to load and simulate network.
-* **sim.loadSimulateAnalyze(simConfig, netParams)** - wrapper to load, simulate and analyse the network.
+* **sim.loadSimulateAnalyze(simConfig, netParams)** - wrapper to load, simulate and analyze the network.
 
 
 Initialize and set up:
@@ -848,14 +893,17 @@ Analysis-related functions
 
     - Returns figure handle    
 
-* **analysis.plotSpikePSD** (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, Fs = 200, overlay=True, yaxis = 'rate', figSize = (10,8), saveData = None, saveFig = None, showFig = True)
+* **analysis.plotRatePSD** (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, maxFreq = 100, NFFT = 256, noverlap = 128, smooth = 0, overlay=True, yaxis = 'rate', figSize = (10,8), saveData = None, saveFig = None, showFig = True)
      
     Plot spikes power spectral density (PSD). Optional arguments:
 
     - *include*: List of data series to include. Note: one line per item, not grouped (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
     - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
     - *binSize*: Size in ms of each bin (int)
-    - *Fs*: PSD sampling frequency used to calculate the Fourier frequencies (float)
+    - maxFreq: Maximum frequency to show in plot (float)
+    - NFFT: The number of data points used in each block for the FFT (power of 2) (float)
+    - *noverlap*: Number of points of overlap between segments (int, < nperseg)
+    - *smooth*: Window size for smoothing; no smoothing if 0 (int)
     - *overlay*: Whether to overlay the data lines or plot in separate subplots  (True|False)
     - *figSize*: Size of figure ((width, height))
     - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
@@ -882,29 +930,55 @@ Analysis-related functions
     - Returns figure handles
 
 
+* **analysis.plotLFP** (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFreq', 'locations'], timeRange = None, NFFT = 256, noverlap = 128, nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
+    
+    Plot LFP / extracellular electrode recordings (time-resolved, power spectral density, time-frequency and 3D locations)
+    
+    - *electrodes*:: List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (['avg', 'all', 0, 1, ...])
+    - *plots*: list of plot types to show (['timeSeries', 'PSD', 'spectrogram', 'locations']) 
+    - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
+    - *NFFT*: Number of data points used in each block for the PSD and time-freq FFT (int, power of 2)
+    - *noverlap*: Number of points of overlap between segments for PSD and time-freq (int, < nperseg)
+    - *maxFreq*: Maximum frequency shown in plot for PSD and time-freq (float)
+    - *nperseg*: Length of each segment for time-freq (int)
+    - *smooth*:  Window size for smoothing LFP; no smoothing if 0 (int)
+    - *separation*: Separation factor between time-resolved LFP plots; multiplied by max LFP value (float)
+    - *includeAxon*:  Whether to show the axon in the location plot (boolean)
+    - *figSize*: Size of figure ((width, heiight))
+    - *saveData*: File name where to save the final data used to generate the figure; if set to True uses filename from simConfig (None|True|'fileName')
+    - *saveFig*: File name where to save the figure; if set to True uses filename from simConfig (None|True|'fileName')
+    - *showFig*: Whether to show the figure or not (True|False)
+
+    - Returns figure handles
+    
+
+
 * **plotShape** (includePost = ['all'], includePre = ['all'], showSyns = False, synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, iv=False, ivprops=None, includeAxon=True, figSize = (10,8), saveData = None, saveFig = None, showFig = True): 
     
     Plot 3D cell shape using Matplotlib or NEURON Interviews PlotShape.
     
-       - *includePre*: List of presynaptic cells to consider when plotting connections (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
-        - *includePost*: List of cells to show shape of (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
-        - *synStyle*: Style of marker to show synapses (Matplotlib markers) 
-        - *dist*: 3D distance (like zoom)  
-        - *synSize*: Size of marker to show synapses 
-        - *cvar*: Variable to represent in shape plot ('numSyns'|'weightNorm')
-        - *cvals*: List of values to represent in shape plot; must be same as num segments (list of size num segments; )
-        - *iv*: Use NEURON Interviews (instead of matplotlib) to show shape plot (True|False)
-        - *ivprops*: Dict of properties to plot using Interviews (dict)
-        - *includeAxon*: Include axon in shape plot (True|False)
-        - *showSyns*: Show synaptic connections in 3D (True|False) 
-        - *figSize*: Size of figure ((width, height))
-        - *saveData*: File name where to save the final data used to generate the figure; 
-            if set to True uses filename from simConfig (None|True|'fileName')
-        - *saveFig*: File name where to save the figure;
-            if set to True uses filename from simConfig (None|True|'fileName')
-        - *showFig*: Whether to show the figure or not (True|False)
+    - *includePre*: List of presynaptic cells to consider when plotting connections (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+    - *includePost*: List of cells to show shape of (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
+    - *showSyns*: Show synaptic connections in 3D (True|False) 
+    - *synStyle*: Style of marker to show synapses (Matplotlib markers) 
+    - *dist*: 3D distance (like zoom)  
+    - *synSize*: Size of marker to show synapses 
+    - *cvar*: Variable to represent in shape plot ('numSyns'|'weightNorm')
+    - *cvals*: List of values to represent in shape plot; must be same as num segments (list of size num segments; )
+    - *iv*: Use NEURON Interviews (instead of matplotlib) to show shape plot (True|False)
+    - *ivprops*: Dict of properties to plot using Interviews (dict)
+    - *includeAxon*: Include axon in shape plot (True|False)
+    - *showSyns*: Show synaptic connections in 3D view (True|False) 
+    - *showElectrodes*: Show LFP electrodes in 3D view (True|False)
+    - *bkgColor*:: RGBA list/tuple with bakcground color eg. (0.5, 0.2, 0.1, 1.0) (list/tuple with 4 floats)
+    - *figSize*: Size of figure ((width, height))
+    - *saveData*: File name where to save the final data used to generate the figure; 
+        if set to True uses filename from simConfig (None|True|'fileName')
+    - *saveFig*: File name where to save the figure;
+        if set to True uses filename from simConfig (None|True|'fileName')
+    - *showFig*: Whether to show the figure or not (True|False)
 
-        - Returns figure handles
+    - Returns figure handles
 
     Examples of plotShape():
 
@@ -914,7 +988,7 @@ Analysis-related functions
 		sim.analysis.plotShape(includePre=['I2'], includePost= [('E5',0)], cvar='numSyns', saveFig=True, showFig=True, iv=0, includeAxon=False)
 
 		# voltage; 1st create list of values (e.g. vsegs) and pass as cvals argument (using matplotlib)
-		vsegs = [seg.v for sec in sim.net.cells[0].secs.values() for seg in sec['hSec']]
+		vsegs = [seg.v for sec in sim.net.cells[0].secs.values() for seg in sec['hObj']]
 		sim.analysis.plotShape(includePost= [0], cvals=vsegs, saveFig=True, iv=0, includeAxon=True)
 
 		# syn locations (using matplotlib) of cell with gid=0
@@ -946,7 +1020,7 @@ Analysis-related functions
     - Returns figure handles
 
 
-* **analysis.plot2DNet** (include = ['allCells'], figSize = (12,12), view = 'xy', showConns = True, saveData = None, saveFig = None, showFig = True)
+* **analysis.plot2Dnet** (include = ['allCells'], figSize = (12,12), view = 'xy', showConns = True, saveData = None, saveFig = None, showFig = True)
 
     Plot 2D representation of network cell positions and connections. Optional arguments:
 
@@ -1262,7 +1336,7 @@ Cell class
 				- ...
 		- 'synMechs' (list)
 			- [0] (Dict)
-				- 'hSyn': NEURON object
+				- 'hObj': NEURON object
 				- 'label'
 				- 'loc'
 

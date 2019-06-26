@@ -21,8 +21,8 @@ netParams.popParams['PYR2'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells':
 netParams.popParams['background'] = {'cellModel': 'NetStim', 'numCells': 2, 'rate': 20, 'noise': 0.5, 'start': 1, 'seed': 2}  # background inputs
 
 # Synaptic mechanism parameters
-netParams.addSynMechParams('AMPA', {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0})
-netParams.addSynMechParams('esyn', {'mod': 'ElectSyn', 'g': 0.000049999999999999996})
+netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}
+netParams.synMechParams['esyn'] = {'mod': 'ElectSyn', 'g': 0.000049999999999999996}
 
 # Cell parameters
 ## PYR cell properties
@@ -74,6 +74,7 @@ simConfig.analysis['plotRaster'] = True
 ###############################################################################
 
 sim.createSimulateAnalyze()
+
 
 
 

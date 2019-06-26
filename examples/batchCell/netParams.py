@@ -33,7 +33,7 @@ cellRule = netParams.importCellParams(label='PT_6comp', conds={'cellType': 'PT',
 cellRule['secLists']['alldend'] = ['Bdend', 'Adend1', 'Adend2', 'Adend3']  # define section lists
 cellRule['secLists']['apicdend'] = ['Adend1', 'Adend2', 'Adend3']
 
-for secName,sec in cellRule['secs'].iteritems(): 
+for secName,sec in cellRule['secs'].items(): 
 	sec['vinit'] = -75.0413649414  # set vinit for all secs
 	if secName in cellRule['secLists']['alldend']:  
 		sec['mechs']['nax']['gbar'] = cfg.dendNa  # set dend Na gmax for all dends

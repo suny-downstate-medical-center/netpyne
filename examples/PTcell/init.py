@@ -12,10 +12,13 @@ MPI usage:
 Contributors: salvadordura@gmail.com
 """
 
-import matplotlib; matplotlib.use('Agg')  # to avoid graphics error in servers
+#import matplotlib; matplotlib.use('Agg')  # to avoid graphics error in servers
 
 from netpyne import sim
 from cfg import cfg
 from netParams import netParams
 
-sim.createSimulateAnalyze(netParams, cfg)
+sim.createSimulateAnalyze(netParams, cfg) #SimulateAnalyze(netParams, cfg)
+
+# check model output
+sim.checkOutput('PTcell')

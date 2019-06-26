@@ -23,8 +23,8 @@ proc init () { local i,j
 proc creat1 () {
   access soma
   {pt3dclear()}
-  {pt3dadd(-285,51,34,15)}
-  {pt3dadd(-295,59,42,15)}
+  {pt3dadd(-285,51,34,12)}
+  {pt3dadd(-295,59,42,12)}
 
   {soma connect dendrite[0](0), 1}
   {access dendrite[0]}

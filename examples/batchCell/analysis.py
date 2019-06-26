@@ -21,13 +21,13 @@ def plotfINa(dataFolder, batchLabel, params, data):
     Ivalsdic = {val: i for i,val in enumerate(Ivals)}
 
     rates = [[0 for x in range(len(Pvals))] for y in range(len(Ivals))] 
-    for key, d in data.iteritems():
+    for key, d in data.items():
         rate = len(d['simData']['spkt'])
         Pindex = Pvalsdic[d['paramValues'][0]]
         Iindex = Ivalsdic[d['paramValues'][1]]
         rates[Iindex][Pindex] = rate
-        print d['paramValues']
-        print rate
+        print(d['paramValues'])
+        print(rate)
 
     filename = '%s/%s/%s_fIcurve.json' % (dataFolder, batchLabel, batchLabel)
     with open(filename, 'w') as fileObj:
@@ -37,7 +37,7 @@ def plotfINa(dataFolder, batchLabel, params, data):
 
     handles = plt.plot(rates, marker='o', markersize=10)
     plt.xlabel('Somatic current injection (nA)')
-    plt.xticks(range(len(Ivals))[::2], Ivals[::2])
+    plt.xticks(list(range(len(Ivals)))[::2], Ivals[::2])
     plt.ylabel('Frequency (Hz)')
     plt.legend(handles, params[0]['values'], title = 'dend Na', loc=2)
     plt.savefig('%s/%s/%s_fIcurve.png' % (dataFolder, batchLabel, batchLabel))
@@ -53,16 +53,16 @@ def plotNMDA(dataFolder, batchLabel, params, data, somaLabel='soma', stimRange=[
     Wvalsdic = {val: i for i,val in enumerate(Wvals)}
 
     epsps = [[0 for x in range(len(Pvals))] for y in range(len(Wvals))] 
-    for key, d in data.iteritems():
-        cellLabel = d['simData']['V_soma'].keys()[0]
+    for key, d in data.items():
+        cellLabel = list(d['simData']['V_soma'].keys())[0]
         vsoma = d['simData']['V_'+somaLabel][cellLabel]
         epsp = max(vsoma[stimRange[0]:stimRange[1]]) - vsoma[stimRange[0]-1]
 
         Pindex = Pvalsdic[d['paramValues'][0]]
         Windex = Wvalsdic[d['paramValues'][1]]
         epsps[Windex][Pindex] = epsp
-        print d['paramValues']
-        print epsp
+        print(d['paramValues'])
+        print(epsp)
 
     filename = '%s/%s/%s_epsp.json' % (dataFolder, batchLabel, batchLabel)
     with open(filename, 'w') as fileObj:
@@ -73,7 +73,7 @@ def plotNMDA(dataFolder, batchLabel, params, data, somaLabel='soma', stimRange=[
     handles = plt.plot(epsps, marker='o', markersize=10)
     plt.xlabel('Weight (of NetStim connection)')
     plt.ylabel('Somatic EPSP amplitude (mV) in response to 1 NetStim spike')
-    plt.xticks(range(len(Wvals))[::2], Wvals[::2])
+    plt.xticks(list(range(len(Wvals)))[::2], Wvals[::2])
     plt.legend(handles, params[0]['values'], title = 'NMDA tau1 (ms)', loc=2)
     plt.savefig('%s/%s/%s_epsp.png' % (dataFolder, batchLabel, batchLabel))
     plt.show()

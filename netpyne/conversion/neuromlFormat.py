@@ -33,7 +33,7 @@ try:
 except ImportError:
     from neuron import h
     pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
-    if sim.cfg.verbose and int(pc.id()) == 0:  # only print for master node
+    if False and int(pc.id()) == 0:  # only print for master node
         print('Note: NeuroML import failed; import/export functions for NeuroML will not be available. \n  To install the pyNeuroML & libNeuroML Python packages visit: https://www.neuroml.org/getneuroml')
     neuromlExists = False
 

@@ -149,7 +149,7 @@ It is also possible to create populations of artificial cells, i.e. point proces
 
 * **pop** - An arbitrary label for this population assigned to all cells; can be used to as condition to apply specific connectivtiy rules. (e.g. 'background')
 
-* **cellModel** - Name of the point process artificical cell (e.g ``IntFire2``, ``NetStim`` o ``VecStim``).
+* **cellModel** - Name of the point process artificical cell (e.g ``IntFire2``, ``NetStim`` or ``VecStim``).
 
 * **numCells** - Number of cells
 

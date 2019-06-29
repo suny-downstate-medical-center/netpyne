@@ -96,36 +96,6 @@ def preRun ():
         sim.recordLFPHandler = recordLFPHandler
         sim.fih.append(h.FInitializeHandler(0, sim.recordLFPHandler))  # initialize imemb
 
-
-def runFromSavedState (file="state.sav"):
-    from .. import sim
-
-    try: 
-        fp=open(file,"rb")
-    except: 
-        print("Unable to open %s"%file)
-    
-    try: 
-        ss = h.SaveState()
-        ss.fread(fp)
-        ss.restore()
-        print('time after restoring state: {time}'.format(time = h.t))
-    except:
-        print("Restore state from %s failed; ensure that is from same sim"%file)
-
-    sim.pc.barrier()
-    sim.timing('start', 'runTime')
-
-    contTime = float(sim.cfg.duration) - time
-    if sim.rank == 0: print('\nRunning simulation for %g ms... up to %s'%(contTime,sim.cfg.duration))
-    sim.pc.psolve(sim.cfg.duration)
-
-    sim.pc.barrier() # Wait for all hosts to get to this point
-    sim.timing('stop', 'runTime')
-    if sim.rank==0:
-        print('  Done; run time = %0.2f s; real-time ratio: %0.2f.' %
-            (sim.timingData['runTime'], sim.cfg.duration/1000/sim.timingData['runTime']))
-
 #------------------------------------------------------------------------------
 # Run Simulation
 #------------------------------------------------------------------------------

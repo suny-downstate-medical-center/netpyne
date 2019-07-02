@@ -813,7 +813,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot cell shape
 # -------------------------------------------------------------------------------------------------------------------
-@exception
+#@exception
 def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, showElectrodes = False, synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, 
     iv=False, ivprops=None, includeAxon=True, bkgColor = None, fontSize = 12, figSize = (10,8), saveData = None, dpi = 300, saveFig = None, showFig = True): 
     ''' 
@@ -851,7 +851,10 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
     cellsPost = sim.getCellsList(includePost)
 
     if not hasattr(sim.net, 'compartCells'): sim.net.compartCells = [c for c in cellsPost if type(c) is sim.CompartCell]
-    sim.net.defineCellShapes()  # in case some cells had stylized morphologies without 3d pts
+    try:
+        sim.net.defineCellShapes()  # in case some cells had stylized morphologies without 3d pts
+    except:
+        pass
 
     if not iv: # plot using Python instead of interviews
         from mpl_toolkits.mplot3d import Axes3D
@@ -890,6 +893,10 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
                         cvals.extend(nsyns)
 
                 cvals = np.array(cvals)
+
+        if not isinstance(cellsPost[0].secs, dict):
+            print('Error: Cell sections not available')
+            return -1
 
         if not secs: secs = [s['hObj'] for cellPost in cellsPost for s in list(cellPost.secs.values())]
         if not includeAxon:         

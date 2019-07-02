@@ -12,6 +12,8 @@
 
 - Fixed bug in granger functions - required conversion to int 
 
+- Fixed bug in plotShape when cells sections not available
+
 # Version 0.9.2
 
 - Support for saving simulation at intervals  

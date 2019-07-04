@@ -1145,7 +1145,7 @@ def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, minF
     # set font size
     plt.rcParams.update({'font.size': fontSize})
         
-    allSignal, allFreqs = [], [], []
+    allSignal, allFreqs = [], []
 
     # Plot separate line for each entry in include
     for iplot,subset in enumerate(include):

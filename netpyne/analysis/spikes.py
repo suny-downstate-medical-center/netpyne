@@ -1098,8 +1098,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
 ## Plot spike histogram
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, maxFreq=100, NFFT=256, noverlap=128, smooth=0, overlay=True,
-    ylim = None, popColors = {}, lineWidth = 1.5, fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True): 
+def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, minFreq=1, maxFreq=100, stepFreq=1, NFFT=256, noverlap=128, smooth=0, overlay=True, ylim = None, transformMethod = 'morlet', popColors = {}, lineWidth = 1.5, fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True): 
     ''' 
     Plot firing rate power spectral density (PSD)
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -1107,6 +1106,7 @@ def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, maxF
         - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
         - binSize (int): Size in ms of spike bins (default: 5)
         - maxFreq (float): Maximum frequency to show in plot (default: 100)
+        - transformMethod ('morlet'|'fft')
         - NFFT (float): The number of data points used in each block for the FFT (power of 2) (default: 256)
         - smooth (int): Window size for smoothing; no smoothing if 0 (default: 0)
         - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
@@ -1145,7 +1145,7 @@ def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, maxF
     # set font size
     plt.rcParams.update({'font.size': fontSize})
         
-    allPower, allSignal, allFreqs = [], [], []
+    allSignal, allFreqs = [], [], []
 
     # Plot separate line for each entry in include
     for iplot,subset in enumerate(include):
@@ -1190,25 +1190,41 @@ def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, maxF
             plt.subplot(len(include),1,iplot+1)  # if subplot, create new subplot
             plt.title(str(subset), fontsize=fontsiz)
             color = 'blue'
-        
-        Fs = 1000.0/binSize # ACTUALLY DEPENDS ON BIN WINDOW!!! RATE NOT SPIKE!
-        power = mlab.psd(histoCount, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning, 
-            noverlap=noverlap, pad_to=None, sides='default', scale_by_freq=None)
 
-        if smooth:
-            signal = _smooth1d(10*np.log10(power[0]), smooth)
-        else:
-            signal = 10*np.log10(power[0])
-        freqs = power[1]
+
+        # Morlet wavelet transform method
+        if transformMethod == 'morlet':
+            from ..support.morlet import MorletSpec, index2ms
+
+            Fs = 1000.0 / binSize
+
+            morletSpec = MorletSpec(histoCount, Fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq)
+            freqs = morletSpec.f
+            spec = morletSpec.TFR
+            signal = np.mean(spec, 1)
+            ylabel = 'Power'
+
+        # FFT transform method
+        elif transformMethod == 'fft':
+
+            Fs = 1000.0/binSize # ACTUALLY DEPENDS ON BIN WINDOW!!! RATE NOT SPIKE!
+            power = mlab.psd(histoCount, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning, 
+                noverlap=noverlap, pad_to=None, sides='default', scale_by_freq=None)
+
+            if smooth:
+                signal = _smooth1d(10*np.log10(power[0]), smooth)
+            else:
+                signal = 10*np.log10(power[0])
+            freqs = power[1]
+            ylabel = 'Power (dB/Hz)'
 
         allFreqs.append(freqs)
-        allPower.append(power)
         allSignal.append(signal)
 
         plt.plot(freqs[freqs<maxFreq], signal[freqs<maxFreq], linewidth=lineWidth, color=color)
 
         plt.xlabel('Frequency (Hz)', fontsize=fontsiz)
-        plt.ylabel('Power Spectral Density (dB/Hz)', fontsize=fontsiz) # add yaxis in opposite side
+        plt.ylabel(ylabel, fontsize=fontsiz) # add yaxis in opposite side
         plt.xlim([0, maxFreq])
         if ylim: plt.ylim(ylim)
 
@@ -1246,7 +1262,7 @@ def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, maxF
     # show fig 
     if showFig: _showFigure()
 
-    return fig, {'allSignal':allSignal, 'allPower':allPower, 'allFreqs':allFreqs}
+    return fig, {'allSignal':allSignal, 'allFreqs':allFreqs}
 
 
 #------------------------------------------------------------------------------

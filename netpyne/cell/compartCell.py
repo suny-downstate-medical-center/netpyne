@@ -54,6 +54,16 @@ class CompartCell (Cell):
         if create: self.create()  # create cell 
         if associateGid: self.associateGid() # register cell for this node
 
+    def __str__ (self):
+        try:
+            gid = self.gid # only use if gid exists
+            return 'gid=%d'%(self.gid)
+        except:
+            return 'no gid'
+
+    def __repr__ (self):
+        return self.__str__()
+
     def create (self):
         from .. import sim
 

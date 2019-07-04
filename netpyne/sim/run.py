@@ -96,7 +96,6 @@ def preRun ():
         sim.recordLFPHandler = recordLFPHandler
         sim.fih.append(h.FInitializeHandler(0, sim.recordLFPHandler))  # initialize imemb
 
-
 #------------------------------------------------------------------------------
 # Run Simulation
 #------------------------------------------------------------------------------
@@ -116,14 +115,14 @@ def runSim ():
     
     h.finitialize(float(sim.cfg.hParams['v_init']))
 
-    if sim.rank == 0: print(('\nRunning simulation for %s ms...'%sim.cfg.duration))
+    if sim.rank == 0: print('\nRunning simulation for %s ms...'%sim.cfg.duration)
     sim.pc.psolve(sim.cfg.duration)
 
     sim.pc.barrier() # Wait for all hosts to get to this point
     sim.timing('stop', 'runTime')
     if sim.rank==0:
-        print(('  Done; run time = %0.2f s; real-time ratio: %0.2f.' %
-            (sim.timingData['runTime'], sim.cfg.duration/1000/sim.timingData['runTime'])))
+        print('  Done; run time = %0.2f s; real-time ratio: %0.2f.' %
+            (sim.timingData['runTime'], sim.cfg.duration/1000/sim.timingData['runTime']))
 
 
 #------------------------------------------------------------------------------

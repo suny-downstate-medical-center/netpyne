@@ -157,8 +157,6 @@ class PointCell (Cell):
                         negexpInterval = np.array(vec.c(0,len(fixedInterval)-1))                  
                         spkTimes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
 
-
-
                     else:
                         print('\nError: exceeded the maximum number of VecStim spikes per cell (%d > %d)' % (numSpks, maxReproducibleSpks))
                         return

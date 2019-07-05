@@ -56,10 +56,9 @@ class CompartCell (Cell):
 
     def __str__ (self):
         try:
-            gid = self.gid # only use if gid exists
-            return 'gid=%d'%(self.gid)
-        except:
-            return 'no gid'
+            gid, cpo, cmo = self.gid, self.tags['pop'], self.tags['cellModel'] # only use if these exist
+            return 'compartCell_%s_%s_%d'%(cty, cpo, gid)
+        except: return 'compartCell%d'%gid
 
     def __repr__ (self):
         return self.__str__()

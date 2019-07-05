@@ -48,8 +48,8 @@ class PointCell (Cell):
 
     def __str__ (self):
         try:
-            gid, cpo, cmo = self.gid, self.tags['pop'], self.tags['cellModel'] # only use if these exist
-            return 'pointCell_%s_%s_%d'%(cty, cpo, gid)
+            gid, cmo = self.gid, self.tags['cellModel'] # only use if these exist
+            return 'pointCell_%s_%d'%(cmo, gid)
         except: return 'pointCell%d'%self.gid
 
     def __repr__ (self):

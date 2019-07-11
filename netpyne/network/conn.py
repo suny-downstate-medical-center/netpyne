@@ -387,6 +387,8 @@ def probConn (self, preCellsTags, postCellsTags, connParam):
 
     # standard probabilistic conenctions   
     else:
+        # print('rank %d'%(sim.rank))
+        # print(connParam)
         # calculate the conn preGids of the each pre and post cell
         # for postCellGid,postCellTags in sorted(postCellsTags.items()):  # for each postsyn cell
         for postCellGid,postCellTags in postCellsTags.items():  # for each postsyn cell  # for each postsyn cell

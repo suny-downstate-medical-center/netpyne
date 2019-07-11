@@ -140,8 +140,8 @@ def nTE(cells1 = [], cells2 = [], spks1 = None, spks2 = None, timeRange = None, 
 ## Calculate granger causality
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkTrain1', label2 = 'spkTrain2', timeRange = None, binSize=5, plotFig = True, 
-    saveData = None, saveFig = None, showFig = True):
+def granger(cells1=[], cells2=[], spks1=None, spks2=None, label1='spkTrain1', label2='spkTrain2', timeRange=None, binSize=5, testGranger=False,
+    plotFig = True, saveData = None, saveFig = None, showFig = True):
     ''' 
     Calculate and optionally plot Granger Causality 
         - cells1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells from which to obtain spike train 1 (default: [])
@@ -241,6 +241,49 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
     F,pp,cohe,Fx2y,Fy2x,Fxy = pwcausalr(np.array([histoCount1, histoCount2]), 1, len(histoCount1), 10, fs, int(fs/2))
 
 
+    # check reliability
+    if testGranger:
+        import scipy
+        ''' Option 1: granger causality tests -- not sure how to interpret results
+        try:
+            from statsmodels.tsa.stattools import grangercausalitytests as gt
+        except:
+            print('To test Granger results please install the statsmodel package: "pip install statsmodel"')
+            exit()
+
+        tests = gt(np.array([histoCount1, histoCount2]).T, maxlag=10)
+        '''
+
+        # do N=25 shuffles of histoCount2
+        Nshuffle = 50
+        #x2yShuffleMaxValues = []
+        y2xShuffleMaxValues = []
+        histoCount2Shuffled = np.array(histoCount2)
+        for ishuffle in range(Nshuffle):
+            # for each calculate max Granger value (starting at freq index 1) 
+            np.random.shuffle(histoCount2Shuffled)
+            _, _, _, Fx2yShuff, Fy2xShuff, _ = pwcausalr(np.array([histoCount1, histoCount2Shuffled]), 1, len(histoCount1), 10, fs, int(fs / 2))
+            #x2yShuffleMaxValues.append(max(Fx2yShuff[0][1:]))
+            y2xShuffleMaxValues.append(max(Fy2xShuff[0][1:]))
+
+        # calculate z-score 
+        # |z| > 1.65 = p-value < 0.1 = confidence interval 90% 
+        # |z| > 1.96 = p-value < 0.05 = confidence interval 95% 
+        # |z| > 2.58 = p-value < 0.01 = confidence interval 99% 
+        # https://pro.arcgis.com/en/pro-app/tool-reference/spatial-statistics/what-is-a-z-score-what-is-a-p-value.htm
+
+        # calculate mean and std
+        #x2yMean = np.mean(x2yShuffleMaxValues)
+        #x2yStd = np.std(x2yShuffleMaxValues)
+        #x2yZscore = abs(np.max(Fx2y[0][1:]) - x2yMean) / x2yStd
+        #x2yPvalue = scipy.stats.norm.sf(x2yZscore)
+
+        y2xMean = np.mean(y2xShuffleMaxValues)
+        y2xStd = np.std(y2xShuffleMaxValues)
+        y2xZscore = abs(np.max(Fy2x[0][1:]) - y2xMean) / y2xStd
+        y2xPvalue = scipy.stats.norm.sf(y2xZscore)
+
+
     # plot granger
     fig = -1
     if plotFig:
@@ -269,6 +312,8 @@ def granger(cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkT
         # show fig 
         if showFig: _showFigure()
 
-    return fig, {'F': F, 'Fx2y': Fx2y[0], 'Fy2x': Fy2x[0], 'Fxy': Fxy[0]}
-
+    if testGranger:
+        return fig, {'F': F, 'Fx2y': Fx2y[0], 'Fy2x': Fy2x[0], 'Fxy': Fxy[0], 'MaxFy2xZscore': y2xZscore, 'MaxFy2xPvalue': y2xPvalue}
+    else:
+        return fig, {'F': F, 'Fx2y': Fx2y[0], 'Fy2x': Fy2x[0], 'Fxy': Fxy[0]}
 

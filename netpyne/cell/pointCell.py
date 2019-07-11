@@ -46,6 +46,14 @@ class PointCell (Cell):
             self.createNEURONObj()  # create cell 
         if associateGid: self.associateGid() # register cell for this node
 
+    def __str__ (self):
+        try:
+            gid, cmo = self.gid, self.tags['cellModel'] # only use if these exist
+            return 'pointCell_%s_%d'%(cmo, gid)
+        except: return 'pointCell%d'%self.gid
+
+    def __repr__ (self):
+        return self.__str__()
 
     def createNEURONObj (self):
         from .. import sim

@@ -277,11 +277,6 @@ def pwcausalr(x,Nr,Nl,porder,fs,freq=0): # Note: freq determines whether the fre
     return F,pp,cohe,Fx2y,Fy2x,Fxy
 
 
-
-
-
-
-
 def granger(vec1,vec2,order=10,rate=200,maxfreq=0):
     """
     GRANGER

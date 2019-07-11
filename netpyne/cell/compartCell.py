@@ -664,8 +664,9 @@ class CompartCell (Cell):
         # Warning or error if self connections
         if params['preGid'] == self.gid:
             # Only allow self connections if option selected by user  
-            # !!!! AD HOC RULE FOR HNN!!! - remove
-            if sim.cfg.allowSelfConns or 'soma' in secLabels and not self.tags['cellType'] == 'L5Basket': # or if target section is soma (ad hoc rule for hnn)
+            # !!!! AD HOC RULE FOR HNN!!! - removed for now
+            # or 'soma' in secLabels and not self.tags['cellType'] == 'L5Basket': # or if target section is soma (ad hoc rule for hnn)
+            if sim.cfg.allowSelfConns: 
                 if sim.cfg.verbose: print('  Warning: creating self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
             else:
                 if sim.cfg.verbose: print('  Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))

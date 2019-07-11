@@ -164,12 +164,14 @@ def calculateLFP():
         gid = cell.gid
         im = cell.getImemb() # in nA
         tr = sim.net.recXElectrode.getTransferResistance(gid)  # in MOhm
-        ecp = np.dot(tr,im) # in mV (= R * I = MOhm * nA)
+        ecp = np.dot(tr, im)  # in mV (= R * I = MOhm * nA)
+
         if sim.cfg.saveLFPCells: 
-            sim.simData['LFPCells'][gid][saveStep-1, :] = ecp  # contribution of individual cells (stored optionally)
+            sim.simData['LFPCells'][gid][saveStep - 1,:] = ecp  # contribution of individual cells (stored optionally)
+        
         sim.simData['LFP'][saveStep-1, :] += ecp  # sum of all cells
 
-
+    
 #------------------------------------------------------------------------------
 # Calculate and print load balance
 #------------------------------------------------------------------------------

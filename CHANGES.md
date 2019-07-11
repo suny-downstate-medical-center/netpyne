@@ -4,6 +4,8 @@
 
 - Added saveCellConns, pt3dRelativeToCellLocation and invertedYCoord cfg options
 
+- Added lineWidth as argument of plotRatePSD() and plotLFP()
+
 - Modified plotLFP and plotRatePSD to use Morlet wavelet for PSD calculation
 
 - Added lineWidth argument to some raster and lfp plots
@@ -29,6 +31,8 @@
 - Fixed replicability issue across different number of cores when using 'connList' connectivity rules
 
 - Improved speed performance of 'connList' connectivity rules
+
+- Added option cfg.distributeSynsUniformly to locate synapses at uniformly across section list; if false, place one syn per section in section list 
 
 - Updated RxD calcium buffering example
 

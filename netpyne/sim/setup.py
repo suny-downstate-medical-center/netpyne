@@ -293,11 +293,20 @@ def setupRecording ():
                 total+=1
         print(("Recording %s traces of %s types on node %i"%(total, cat, sim.rank)))
 
-
     # set LFP recording
     if sim.cfg.recordLFP:
         setupRecordLFP()
 
+    # try to record dipoles
+    #try:
+    dp_rec_L2 = h.Vector()
+    dp_rec_L5 = h.Vector()
+    dp_rec_L2.record(h._ref_dp_total_L2) # L2 dipole recording
+    dp_rec_L5.record(h._ref_dp_total_L5)  # L5 dipole recording
+    sim.simData['dipole'] = {'L2': dp_rec_L2, 'L5': dp_rec_L5}  
+    #except:
+    #    pass
+    
     sim.timing('stop', 'setrecordTime')
 
     return sim.simData

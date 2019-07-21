@@ -7,7 +7,7 @@ This tutorial provides an overview of how to use the NetPyNE python package to c
 
 Downloading and installation instructions here: :ref:`install`
 
-A good understading of python nested dictionaries and lists is recommended, since they are are used to specify the parameters. There are many good online Python courses available, e.g. http://www.codecademy.com/en/tracks/python or https://developers.google.com/edu/python/.
+A good understanding of python nested dictionaries and lists is recommended, since they are are used to specify the parameters. There are many good online Python courses available, e.g. http://www.codecademy.com/en/tracks/python or https://developers.google.com/edu/python/.
 
 .. seealso:: For a comprehensive description of all the features available in NetPyNE see :ref:`package_reference`.
 
@@ -42,7 +42,7 @@ To run the model just execute the `tut1.py` script. One way to do this is to run
 
 	nrniv -python tut1.py
 
-If you successfully installed MPI (e.g. OpenMPI) and NEURON with MPI support, you can simulate the model in parallel using multiple cores/processsors by typing:: 
+If you successfully installed MPI (e.g. OpenMPI) and NEURON with MPI support, you can simulate the model in parallel using multiple cores/processors by typing:: 
 
 	mpiexec -n 4 nrniv -python -mpi tut1.py
 
@@ -77,7 +77,7 @@ We begin with an overview of the Python objects where you will define all your n
 Network parameters (Tutorial 2)
 -------------------------------
 
-The ``netParams`` object includes all the information necessary to define your network. It is compoased of the following 8 ordered dictionaries:
+The ``netParams`` object includes all the information necessary to define your network. It is composed of the following 8 ordered dictionaries:
 
 * ``popParams`` - populations in the network and their parameters
 
@@ -246,7 +246,7 @@ We will add a rule to randomly connect the sensory to the motor population with 
 Simulation configuration options
 ---------------------------------
 
-Above we defined all the parameters related to the network model. Here we will specifiy the parameters or configuration of the simulation itself (e.g. duration), which is independent of the network.
+Above we defined all the parameters related to the network model. Here we will specify the parameters or configuration of the simulation itself (e.g. duration), which is independent of the network.
 
 The ``simConfig`` object can be used to customize options related to the simulation duration, timestep, recording of cell variables, saving data to disk, graph plotting, and others. All options have defaults values so it is not mandatory to specify any of them.
 
@@ -346,7 +346,7 @@ Using a simplified cell model (Izhikevich) (Tutorial 4)
 
 When dealing with large simulations it is sometimes useful to use simpler cell models for some populations, in order to gain speed. Here we will replace the HH model with the simpler Izhikevich cell model only for cells in the sensory (``S``) population. 
 
-The first step is to download the Izhikevich cell NEURON NMODL file which containes the Izhi2007b point process mechanism: :download:`izhi2007b.mod <code/mod/izhi2007b.mod>`
+The first step is to download the Izhikevich cell NEURON NMODL file which contains the Izhi2007b point process mechanism: :download:`izhi2007b.mod <code/mod/izhi2007b.mod>`
 
 Next we need to compile this .mod file so its ready to use by NEURON::
 
@@ -381,7 +381,7 @@ The full tutorial code for this example is available here: :download:`tut4.py <c
 Position and distance based connectivity (Tutorial 5)
 ---------------------------------------------------------
 
-The following example demonstrates how to spatially separate populations, add inhbitory populations, and implement weights, probabilities of connection and delays that depend on cell positions or distances.
+The following example demonstrates how to spatially separate populations, add inhibitory populations, and implement weights, probabilities of connection and delays that depend on cell positions or distances.
 
 We will build a cortical-like network with 6 populations (3 excitatory and 3 inhibitory) distributed in 3 layers: 2/3, 4 and 5. Create a new empty file called ``tut5.py`` and let's add the required code.   
 
@@ -504,7 +504,7 @@ Running the model now shows excitatory connections in red, and how cells in the 
 
 Finally, we add inhibitory connections which will project only onto excitatory cells, specified here using the ``pop`` attribute, for illustrative purposes (an equivalent rule would be: ``'postConds': {'cellType': 'E'}``). 
 
-To make the probability of connection decay exponentiall as a function of distance with a given length constant (``probLengthConst``), we can use the following distance-based expression: ``'probability': '0.4*exp(-dist_3D/probLengthConst)'``. The code for the inhibitory connectivity rule is therefore::
+To make the probability of connection decay exponential as a function of distance with a given length constant (``probLengthConst``), we can use the following distance-based expression: ``'probability': '0.4*exp(-dist_3D/probLengthConst)'``. The code for the inhibitory connectivity rule is therefore::
 
 	netParams.connParams['I->E'] = {
 	 'preConds': {'cellType': 'I'}, 'postConds': {'pop': ['E2','E4','E5']},       #  I -> E
@@ -829,7 +829,7 @@ The ``tut8_batch.py`` should look like this::
 		params['synMechTau2'] = [3.0, 5.0, 7.0]   
 		params['connWeight'] = [0.005, 0.01, 0.15]
 
-		# create Batch object with paramaters to modify, and specifying files to use
+		# create Batch object with parameters to modify, and specifying files to use
 		b = Batch(params=params, cfgFile='tut8_cfg.py', netParamsFile='tut8_netParams.py',)
 		
 		# Set output folder, grid method (all param combinations), and run configuration
@@ -897,11 +897,11 @@ Recording and plotting LFPs (Tutorial 9)
 
 Examples of how to record and analyze local field potentials (LFP) in single cells and networks are included in the \examples folder: `LFPrecording example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/LFPrecording>`_ . LFP recording also works with parallel simulations.
 
-To record LFP just set the list of 3D locations of the LFP electrodes in the `simConfig` attribute `recordLFP` e.g. ``simConfig.recordLFP = e.g. [[50, 100, 50], [50, 200, 50]]`` (note the y coordinate represents depth, so will be represented as a negative value whehn plotted). The LFP signal in each electrode is obtained by summing the extracellular potential contributed by each segment of each neuron. Extracellular potentials are calculated using the "line source approximation" and assuming an Ohmic medium with conductivity sigma = 0.3 mS/mm. For more information on modeling LFPs see http://www.scholarpedia.org/article/Local_field_potential or https://doi.org/10.3389/fncom.2016.00065 .
+To record LFP just set the list of 3D locations of the LFP electrodes in the `simConfig` attribute `recordLFP` e.g. ``simConfig.recordLFP = e.g. [[50, 100, 50], [50, 200, 50]]`` (note the y coordinate represents depth, so will be represented as a negative value when plotted). The LFP signal in each electrode is obtained by summing the extracellular potential contributed by each segment of each neuron. Extracellular potentials are calculated using the "line source approximation" and assuming an Ohmic medium with conductivity sigma = 0.3 mS/mm. For more information on modeling LFPs see http://www.scholarpedia.org/article/Local_field_potential or https://doi.org/10.3389/fncom.2016.00065 .
 
 The recorded LFP signal will be stored in ``sim.allSimData['LFP']`` as a 2D list of size timeSteps * numElectrodes e.g. `sim.allSimData['LFP'][10][2]`` corresponds to the LFP value of electrode 2 at time step 10. It is possible to record the LFP signal generated by each individual cell by setting ``simConfig.saveLFPCells = True`` -- this will be stored in ``sim.allSimData['LFPCells']`` as a 3D list with size cells * timeSteps * numElectrodes. 
 
-To plot the LFP use the ``sim.analysis.plotLFP()`` method. This allows to plot for each electrode: 1) the time-resolved LFP signal ('timeSeries'), 2) the power spectral density ('PSD'), 3) the spectrogram / time-frequency profile ('spectrogram'), 4) and the 3D locations of the electrodes overlayed over the model neurons ('locations'). See :ref:`analysis_functions` for the full list of ``plotLFP()`` arguments.
+To plot the LFP use the ``sim.analysis.plotLFP()`` method. This allows to plot for each electrode: 1) the time-resolved LFP signal ('timeSeries'), 2) the power spectral density ('PSD'), 3) the spectrogram / time-frequency profile ('spectrogram'), 4) and the 3D locations of the electrodes overlaid over the model neurons ('locations'). See :ref:`analysis_functions` for the full list of ``plotLFP()`` arguments.
 
 The first example ( :download:`cell_lfp.py <../../examples/LFPrecording/cell_lfp.py>`) shows LFP recording for a single cell -- M1 corticospinal neuron --  with 700+ compartments (segments) and multiple somatic and dendritic ionic channels. The cell parameters are loaded from a .json file. The cell receives NetStim input to its soma via an excitatory synapse. Ten LFP electrodes are placed at both sides of the neuron at 5 different cortical depths. The soma voltage, LFP time-resolved signal and the 3D locations of the electrodes are plotted:
 

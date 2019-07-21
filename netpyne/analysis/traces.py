@@ -94,6 +94,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
 
     # set font size
     plt.rcParams.update({'font.size': fontSize})
+    fontsiz = fontSize
 
     # Plot one fig per trace for given cell list
     def plotFigPerTrace(subGids):
@@ -179,7 +180,6 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
     if oneFigPer == 'cell':
         for gid in cellGids:
             figs['_gid_'+str(gid)] = plt.figure(figsize=figSize) # Open a new figure
-            fontsiz = 12
             for itrace, trace in enumerate(tracesList):
                 if 'cell_'+str(gid) in sim.allSimData[trace]:
                     fullTrace = sim.allSimData[trace]['cell_'+str(gid)]

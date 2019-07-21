@@ -318,10 +318,16 @@ class Pop (object):
               
         gridSpacing = self.tags['gridSpacing']
         gridLocs = []
-        for x in np.arange(rangeLocs[0][0], rangeLocs[0][1]+1, gridSpacing):
-            for y in np.arange(rangeLocs[1][0], rangeLocs[1][1]+1, gridSpacing):
-                for z in np.arange(rangeLocs[2][0], rangeLocs[2][1]+1, gridSpacing):
-                    gridLocs.append((x, y, z))
+        if isinstance(gridSpacing, list):
+            for x in np.arange(rangeLocs[0][0], rangeLocs[0][1]+1, gridSpacing[0]):
+                for y in np.arange(rangeLocs[1][0], rangeLocs[1][1]+1, gridSpacing[1]):
+                    for z in np.arange(rangeLocs[2][0], rangeLocs[2][1]+1, gridSpacing[2]):
+                        gridLocs.append((x, y, z))
+        else: 
+            for x in np.arange(rangeLocs[0][0], rangeLocs[0][1]+1, gridSpacing):
+                for y in np.arange(rangeLocs[1][0], rangeLocs[1][1]+1, gridSpacing):
+                    for z in np.arange(rangeLocs[2][0], rangeLocs[2][1]+1, gridSpacing):
+                        gridLocs.append((x, y, z))
 
         numCells = len(gridLocs)
 

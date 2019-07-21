@@ -46,6 +46,14 @@ class PointCell (Cell):
             self.createNEURONObj()  # create cell 
         if associateGid: self.associateGid() # register cell for this node
 
+    def __str__ (self):
+        try:
+            gid, cmo = self.gid, self.tags['cellModel'] # only use if these exist
+            return 'pointCell_%s_%d'%(cmo, gid)
+        except: return 'pointCell%d'%self.gid
+
+    def __repr__ (self):
+        return self.__str__()
 
     def createNEURONObj (self):
         from .. import sim
@@ -149,11 +157,38 @@ class PointCell (Cell):
                         negexpInterval = np.array(vec.c(0,len(fixedInterval)-1))                  
                         spkTimes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
 
-
-
                     else:
                         print('\nError: exceeded the maximum number of VecStim spikes per cell (%d > %d)' % (numSpks, maxReproducibleSpks))
                         return
+
+            # spikePattern
+            elif 'spikePattern' in self.params:
+                patternType = self.params['spikePattern'].get('type', None)
+                rand = h.Random()
+
+                # if sync, don't initialize randomizer based on gid
+                if self.params.get('sync', False):
+                    rand.Random123(sim.hashStr('vecstim_spikePattern'), self.params['seed'])
+                else:
+                    rand.Random123(sim.hashStr('vecstim_spikePattern'), self.gid, self.params['seed'])
+
+                if patternType == 'rhythmic':
+                    from .inputs import createRhythmicPattern
+                    spkTimes = createRhythmicPattern(self.params['spikePattern'], rand)
+                elif patternType == 'evoked':
+                    from .inputs import createEvokedPattern
+                    spkTimes = createEvokedPattern(self.params['spikePattern'], rand) 
+                elif patternType == 'poisson':
+                    from .inputs import createPoissonPattern
+                    spkTimes = createPoissonPattern(self.params['spikePattern'], rand)                    
+                elif patternType == 'gauss':
+                    from .inputs import createGaussPattern
+                    spkTimes = createGaussPattern(self.params['spikePattern'], rand)                    
+                else:
+                    print('\nError: invalid spikePattern type %s' % (patternType))
+                    return
+                
+                vec = h.Vector(len(spkTimes))
 
             # if spkTimess
             elif 'spkTimes' in self.params:

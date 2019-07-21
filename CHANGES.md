@@ -8,7 +8,7 @@
 
 - Modified plotLFP and plotRatePSD to use Morlet wavelet for PSD calculation
 
-- Added lineWidth argument to some raster and lfp plots
+- Added lineWidth argument to some raster and LFP plots
 
 - Added shuffling test to granger causality functions
 

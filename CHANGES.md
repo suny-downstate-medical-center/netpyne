@@ -1,5 +1,9 @@
 # Version 0.9.3
 
+- Replaced deprecated imp module with importlib
+
+# Version 0.9.3
+
 - Improved conversion from SONATA format, including 300 biophys cell example
 
 - Added saveCellConns, pt3dRelativeToCellLocation and invertedYCoord cfg options

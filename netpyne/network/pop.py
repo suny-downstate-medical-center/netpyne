@@ -311,7 +311,7 @@ class Pop (object):
         for icoord, coord in enumerate(['x', 'y', 'z']):
             # constrain to range set by user
             if coord+'normRange' in self.tags:  # if normalized range, convert to normalized
-                self.tags[coord+'Range'] = [float(point) * getattr(sim.net.params, 'size'+coord.upper()) for point in self.tags[coord+'Range']]                
+                self.tags[coord+'Range'] = [float(point) * getattr(sim.net.params, 'size'+coord.upper()) for point in self.tags[coord+'normRange']]                
             if coord+'Range' in self.tags:  # if user provided absolute range, calculate range
                 self.tags[coord+'normRange'] = [float(point) / getattr(sim.net.params, 'size'+coord.upper()) for point in self.tags[coord+'Range']]
                 rangeLocs[icoord] = [self.tags[coord+'Range'][0], self.tags[coord+'Range'][1]] 

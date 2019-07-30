@@ -2,6 +2,8 @@
 
 - Replaced deprecated imp module with importlib
 
+- Fix to cellsGrid cell locations with normRange
+
 # Version 0.9.3
 
 - Improved conversion from SONATA format, including 300 biophys cell example

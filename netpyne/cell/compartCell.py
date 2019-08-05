@@ -54,6 +54,15 @@ class CompartCell (Cell):
         if create: self.create()  # create cell 
         if associateGid: self.associateGid() # register cell for this node
 
+    def __str__ (self):
+        try:
+            gid, cty, cmo = self.gid, self.tags['cellType'], self.tags['cellModel'] # only use if these exist
+            return 'compartCell_%s_%s_%d'%(cty, cmo, gid)
+        except: return 'compartCell%d'%self.gid
+
+    def __repr__ (self):
+        return self.__str__()
+
     def create (self):
         from .. import sim
 
@@ -648,17 +657,20 @@ class CompartCell (Cell):
         if params.get('loc') is None: params['loc'] = 0.5 # if no loc, set default
         if params.get('synsPerConn') is None: params['synsPerConn'] = 1 # if no synsPerConn, set default
 
-        # Warning if self connections
-        if params['preGid'] == self.gid:
-            if sim.cfg.allowSelfConns:
-                if sim.cfg.verbose: print('  Warning: created self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
-            else:
-                if sim.cfg.verbose: print('  Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
-                return  # if self-connection return
-
         # Get list of section labels
         secLabels = self._setConnSections(params)
         if secLabels == -1: return  # if no section available exit func 
+
+        # Warning or error if self connections
+        if params['preGid'] == self.gid:
+            # Only allow self connections if option selected by user  
+            # !!!! AD HOC RULE FOR HNN!!! - removed for now
+            # or 'soma' in secLabels and not self.tags['cellType'] == 'L5Basket': # or if target section is soma (ad hoc rule for hnn)
+            if sim.cfg.allowSelfConns: 
+                if sim.cfg.verbose: print('  Warning: creating self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
+            else:
+                if sim.cfg.verbose: print('  Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
+                return  # if self-connection return
 
         # Weight
         weights = self._setConnWeights(params, netStimParams, secLabels)
@@ -1141,8 +1153,25 @@ class CompartCell (Cell):
                 else:
                     synMechLocs = [i*(1.0/synsPerConn)+1.0/synsPerConn/2 for i in range(synsPerConn)]
             else:  # if multiple sections, distribute syns
-                synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
-        else:
+                if sim.cfg.distributeSynsUniformly:
+                    synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
+                else:
+                    if synsPerConn == len(secLabels):  # have list of secs that matches num syns 
+                        synMechSecs = secLabels
+                        if isinstance(params['loc'], list):  
+                            if len(params['loc']) == synsPerConn:  # list of locs matches num syns
+                                synMechLocs = params['loc']
+                            else:  # list of locs does not match num syns
+                                print("Error: The length of the list of locations does not match synsPerConn (with cfg.distributeSynsUniformly = False")
+                                return
+                        else: # single loc
+                            synMechLocs = [params['loc']] * synsPerConn
+                    else:
+                            print("Error: The length of the list of sections does not match synsPerConn (with cfg.distributeSynsUniformly = False")
+                            return            
+                
+        else:  # if 1 synapse
+            # by default place on 1st section of list and location available 
             synMechSecs = secLabels
             synMechLocs = params['loc'] if isinstance(params['loc'], list) else [params['loc']] 
 

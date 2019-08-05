@@ -35,7 +35,7 @@ from .utils import colorList, exception, _saveFigData, _showFigure, _smooth1d
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange=None, NFFT=256, noverlap=128, 
-    nperseg=256, minFreq=1, maxFreq=100, stepFreq=1, smooth=0, separation=1.0, includeAxon=True, logx=False, logy=False, norm=False, dpi=200, overlay=False, filtFreq = False, filtOrder=3, detrend=False, specType='morlet', fontSize=14, colors = None, maxPlots=8, lineWidth=1.5, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
+    nperseg=256, minFreq=1, maxFreq=100, stepFreq=1, smooth=0, separation=1.0, includeAxon=True, logx=False, logy=False, normSignal=False, normPSD=False, dpi=200, overlay=False, filtFreq = False, filtOrder=3, detrend=False, transformMethod='morlet', fontSize=14, colors = None, maxPlots=8, lineWidth=1.5, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot LFP
         - electrodes (list): List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (default: ['avg', 'all'])
@@ -52,11 +52,12 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         - includeAxon (boolean): Whether to show the axon in the location plot (default: True)
         - logx (boolean)
         - logy (boolean)
-        - norm (boolean)
+        - normSignal (boolean)
+        - normPSD (boolean)
         - filtFreq (float)
         - filtOrder (int)
         - detrend (false)
-        - specType ('morlet'|'fft')
+        - transformMethod ('morlet'|'fft')
         - overlay (boolean)
         - dpi (int) 
         - colors
@@ -71,6 +72,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 
         - Returns figure handles
     
+    Note: should probably split funcs for signal, psd, spectrogram and locs
     '''
 
     from .. import sim
@@ -107,7 +109,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         for i in range(lfp.shape[1]):
             lfp[:,i] = signal.detrend(lfp[:,i])
 
-    if norm:
+    if normSignal:
         for i in range(lfp.shape[1]):
             offset = min(lfp[:,i])
             if offset <= 0:
@@ -208,46 +210,73 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         data['allSignal'] = allSignal
 
         for i,elec in enumerate(electrodes):
-            if not overlay:
-                plt.subplot(np.ceil(len(electrodes)/numCols), numCols,i+1)
             if elec == 'avg':
                 lfpPlot = np.mean(lfp, axis=1)
-                color = 'k'
             elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
                 lfpPlot = lfp[:, elec]
-                color = colors[i%len(colors)]
             
-            Fs = int(1000.0/sim.cfg.recordStep)
-            power = mlab.psd(lfpPlot, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning, 
-                noverlap=noverlap, pad_to=None, sides='default', scale_by_freq=None)
+            # Morlet wavelet transform method
+            if transformMethod == 'morlet':
+                from ..support.morlet import MorletSpec, index2ms
 
-            if smooth:
-                signal = _smooth1d(10*np.log10(power[0]), smooth)
-            else:
-                signal = 10*np.log10(power[0])
-            freqs = power[1]
+                Fs = int(1000.0/sim.cfg.recordStep)
+
+                #t_spec = np.linspace(0, index2ms(len(lfpPlot), Fs), len(lfpPlot))
+                morletSpec = MorletSpec(lfpPlot, Fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq)
+                freqs = F = morletSpec.f
+                spec = morletSpec.TFR
+                signal = np.mean(spec, 1)
+                ylabel = 'Power'
+
+            # FFT transform method
+            elif transformMethod == 'fft':
+                Fs = int(1000.0/sim.cfg.recordStep)
+                power = mlab.psd(lfpPlot, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning, 
+                    noverlap=noverlap, pad_to=None, sides='default', scale_by_freq=None)
+
+                if smooth:
+                    signal = _smooth1d(10*np.log10(power[0]), smooth)
+                else:
+                    signal = 10*np.log10(power[0])
+                freqs = power[1]
+                ylabel = 'Power (dB/Hz)'
 
             allFreqs.append(freqs)
             allSignal.append(signal)
 
+        # ALTERNATIVE PSD CALCULATION USING WELCH
+        # from http://joelyancey.com/lfp-python-practice/
+        # from scipy import signal as spsig
+        # Fs = int(1000.0/sim.cfg.recordStep)
+        # maxFreq=100
+        # f, psd = spsig.welch(lfpPlot, Fs, nperseg=100)
+        # plt.semilogy(f,psd,'k')
+        # sb.despine()
+        # plt.xlim((0,maxFreq))
+        # plt.yticks(size=fontsiz)
+        # plt.xticks(size=fontsiz)
+        # plt.ylabel('$uV^{2}/Hz$',size=fontsiz)
+
+        if normPSD:
+            vmax = np.max(allSignal)
+            for i, s in enumerate(allSignal):
+                allSignal[i] = allSignal[i]/vmax
+
+        for i,elec in enumerate(electrodes):
+            if not overlay:
+                plt.subplot(np.ceil(len(electrodes)/numCols), numCols,i+1)
+            if elec == 'avg':
+                color = 'k'
+            elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
+                color = colors[i % len(colors)]
+            freqs = allFreqs[i]
+            signal = allSignal[i]
             plt.plot(freqs[freqs<maxFreq], signal[freqs<maxFreq], linewidth=lineWidth, color=color, label='Electrode %s'%(str(elec)))
             plt.xlim([0, maxFreq])
             if len(electrodes) > 1 and not overlay:
                 plt.title('Electrode %s'%(str(elec)), fontsize=fontSize)
-            plt.ylabel('dB/Hz', fontsize=fontSize)
+            plt.ylabel(ylabel, fontsize=fontSize)
             
-            # ALTERNATIVE PSD CALCULATION USING WELCH
-            # from http://joelyancey.com/lfp-python-practice/
-            # from scipy import signal as spsig
-            # Fs = int(1000.0/sim.cfg.recordStep)
-            # maxFreq=100
-            # f, psd = spsig.welch(lfpPlot, Fs, nperseg=100)
-            # plt.semilogy(f,psd,'k')
-            # sb.despine()
-            # plt.xlim((0,maxFreq))
-            # plt.yticks(size=fontsiz)
-            # plt.xticks(size=fontsiz)
-            # plt.ylabel('$uV^{2}/Hz$',size=fontsiz)
 
         # format plot
         plt.xlabel('Frequency (Hz)', fontsize=fontSize)
@@ -276,8 +305,8 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         figs.append(plt.figure(figsize=(figSize[0]*numCols, figSize[1])))
         #t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
         
-
-        if specType == 'morlet':
+        # Morlet wavelet transform method
+        if transformMethod == 'morlet':
             from ..support.morlet import MorletSpec, index2ms
 
             spec = []
@@ -307,16 +336,15 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
                     S = spec[i].TFR
                     vc = [vmin, vmax]
 
-                
                 plt.imshow(S, extent=(np.amin(T), np.amax(T), np.amin(F), np.amax(F)), origin='lower', interpolation='None', aspect='auto', vmin=vc[0], vmax=vc[1], cmap=plt.get_cmap('viridis'))
                 plt.colorbar(label='Power')
                 plt.ylabel('Hz')
                 plt.tight_layout()                
                 if len(electrodes) > 1:
                     plt.title('Electrode %s' % (str(elec)), fontsize=fontSize - 2)
-
-
-        elif specType == 'fft':
+        
+        # FFT transform method
+        elif transformMethod == 'fft':
 
             from scipy import signal as spsig
             spec = []

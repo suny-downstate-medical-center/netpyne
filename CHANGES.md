@@ -1,18 +1,32 @@
 # Version 0.9.3
 
+- Replaced deprecated imp module with importlib
+
+- Fix to cellsGrid cell locations with normRange
+
+# Version 0.9.3
+
 - Improved conversion from SONATA format, including 300 biophys cell example
 
 - Added saveCellConns, pt3dRelativeToCellLocation and invertedYCoord cfg options
 
-- Fixed bug plotting traces with one fig per trace
+- Added lineWidth as argument of plotRatePSD() and plotLFP()
 
-- Added lineWidth argument to some raster and lfp plots
+- Modified plotLFP and plotRatePSD to use Morlet wavelet for PSD calculation
+
+- Added lineWidth argument to some raster and LFP plots
 
 - Added shuffling test to granger causality functions
+
+- Fixed bug plotting traces with one fig per trace
 
 - Fixed bug in granger functions - required conversion to int 
 
 - Fixed bug in plotShape when cells sections not available
+
+- Return meaningful cell info via 'repr' and 'str' for pointCell, compartCell
+
+- Fixed spelling typos in documentation
 
 # Version 0.9.2
 
@@ -23,6 +37,8 @@
 - Fixed replicability issue across different number of cores when using 'connList' connectivity rules
 
 - Improved speed performance of 'connList' connectivity rules
+
+- Added option cfg.distributeSynsUniformly to locate synapses at uniformly across section list; if false, place one syn per section in section list 
 
 - Updated RxD calcium buffering example
 

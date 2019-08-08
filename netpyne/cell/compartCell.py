@@ -699,7 +699,9 @@ class CompartCell (Cell):
 
         # Create connections
         for i in range(params['synsPerConn']):
-            
+            if not sim.cfg.allowConnsWithWeight0 and weights[i] == 0.0:
+                continue
+
             if netStimParams:
                     netstim = self.addNetStim(netStimParams)
 

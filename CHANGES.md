@@ -1,8 +1,14 @@
 # Version 0.9.4
 
+- Added option to avoid creating connections with weight=0
+
 - Replaced deprecated imp module with importlib
 
 - Fix to cellsGrid cell locations with normRange
+
+- Fixed bug calculating normally distributed rhythmic inputs - was using variance instead of std
+
+- Fixed bug in iplotDipole when smoothing window size = 0
 
 # Version 0.9.3
 

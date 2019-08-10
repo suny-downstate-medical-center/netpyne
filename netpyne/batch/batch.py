@@ -36,6 +36,7 @@ from random import Random
 from time import sleep, time
 from itertools import product
 from subprocess import Popen, PIPE
+import importlib, types
 
 pc = h.ParallelContext() # use bulletin board master/slave
 if pc.id()==0: pc.master_works_on_jobs(0) 
@@ -181,7 +182,13 @@ class Batch(object):
             
         # import cfg
         cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
-        cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
+
+        try:  # py3
+            loader = importlib.machinery.SourceFileLoader(cfgModuleName, self.cfgFile)
+            cfgModule = types.ModuleType(loader.name)
+            loader.exec_module(cfgModule)
+        except:  # py2
+            cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
         
         if hasattr(cfgModule, 'cfg'):
             self.cfg = cfgModule.cfg
@@ -228,7 +235,14 @@ class Batch(object):
             
             # import cfg
             cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
-            cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
+
+            try:
+                loader = importlib.machinery.SourceFileLoader(cfgModuleName, self.cfgFile)
+                cfgModule = types.ModuleType(loader.name)
+                loader.exec_module(cfgModule)
+            except:
+                cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
+
             self.cfg = cfgModule.cfg
             self.cfg.checkErrors = False  # avoid error checking during batch
 

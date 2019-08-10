@@ -8,9 +8,11 @@ netParams.popParams['E2'] = {'cellType': 'E', 'numCells': 5, 'yRange': [100,300]
 
 ## Cell property rules
 cellRule = {'conds': {'cellType': 'E'},  'secs': {}}  # cell rule dict
-cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                              # soma params dict
+cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}, 'ions':{}}                              # soma params dict
 cellRule['secs']['soma']['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0}                   # soma geometry
 cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.13, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanism
+cellRule['secs']['soma']['ions']['na'] = {'e': 60}      # soma hh mechanism
+
 netParams.cellParams['Erule'] = cellRule                          # add dict to list of cell params
 
 
@@ -29,11 +31,11 @@ netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'cellType':
 simConfig = specs.SimConfig()        # object of class SimConfig to store simulation configuration
 simConfig.duration = 1*1e3           # Duration of the simulation, in ms
 simConfig.dt = 0.025                # Internal integration timestep to use
-simConfig.verbose = False            # Show detailed messages 
+simConfig.verbose = 1          # Show detailed messages 
 simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 simConfig.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'tmp'  # Set file output name
 simConfig.saveJson = True
 
 # Create network and run simulation
-sim.intervalCreateSimulateAnalyze(netParams = netParams, simConfig = simConfig, interval = 100)    
+sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)#, interval = 100)    

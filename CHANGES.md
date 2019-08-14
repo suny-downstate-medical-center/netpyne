@@ -1,4 +1,4 @@
-# Version 0.9.4
+# Version 0.9.3.1
 
 - Added option to avoid creating connections with weight=0
 

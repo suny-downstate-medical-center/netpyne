@@ -338,8 +338,12 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False):
     # convert units from fAm to nAm, rescale and smooth
     for key in dpl.keys():
         dpl[key] *= 1e-6 * sim.cfg.dipole_scalefctr
-        dpl[key] = hammfilt(dpl[key], sim.cfg.dipole_smooth_win/sim.cfg.dt)
+        
+        if sim.cfg.dipole_smooth_win > 0:
+            dpl[key] = hammfilt(dpl[key], sim.cfg.dipole_smooth_win/sim.cfg.dt)
 
+        # Set index 0 to 0
+        dpl[key][0] = 0.0
 
     # plot exp data
     fig.line(expData['x'], expData['y'], color='black', legend=expData['label'])
@@ -359,6 +363,282 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False):
         show(fig)
 
     return html
+
+
+# -------------------------------------------------------------------------------------------------------------------
+## Plot interactive dipole Spectrogram
+# -------------------------------------------------------------------------------------------------------------------
+@exception
+def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1, maxFreq = 80, stepFreq = 1, norm = True, showFig=False):
+    '''
+    expData: experimental data; a dict with ['x'] and ['y'] 1-d vectors (either lists or np.arrays) of same length
+    showFig: show output figure in web browser (default: None)
+    '''
+    from .. import sim
+    from bokeh.plotting import figure, show
+    from bokeh.models import BasicTicker, ColorBar, ColumnDataSource, LinearColorMapper, PrintfTickFormatter
+    from bokeh.resources import CDN
+    from bokeh.embed import file_html
+    from bokeh.layouts import layout
+
+
+    # renormalize the dipole and save
+    def baseline_renormalize():
+        # N_pyr cells in grid. This is PER LAYER
+        N_pyr = sim.cfg.N_pyr_x * sim.cfg.N_pyr_y
+        # dipole offset calculation: increasing number of pyr cells (L2 and L5, simultaneously)
+        # with no inputs resulted in an aggregate dipole over the interval [50., 1000.] ms that
+        # eventually plateaus at -48 fAm. The range over this interval is something like 3 fAm
+        # so the resultant correction is here, per dipole
+        # dpl_offset = N_pyr * 50.207
+        dpl_offset = {
+            # these values will be subtracted
+            'L2': N_pyr * 0.0443,
+            'L5': N_pyr * -49.0502
+            # 'L5': N_pyr * -48.3642,
+            # will be calculated next, this is a placeholder
+            # 'agg': None,
+        }
+
+        # L2 dipole offset can be roughly baseline shifted over the entire range of t
+        dpl = {'L2': np.array(sim.simData['dipole']['L2']),
+               'L5': np.array(sim.simData['dipole']['L5'])}
+        dpl['L2'] -= dpl_offset['L2']
+
+        # L5 dipole offset should be different for interval [50., 500.] and then it can be offset
+        # slope (m) and intercept (b) params for L5 dipole offset
+        # uncorrected for N_cells
+        # these values were fit over the range [37., 750.)
+        m = 3.4770508e-3
+        b = -51.231085
+        # these values were fit over the range [750., 5000]
+        t1 = 750.
+        m1 = 1.01e-4
+        b1 = -48.412078
+
+        t = sim.simData['t']
+
+        # piecewise normalization
+        dpl['L5'][t <= 37.] -= dpl_offset['L5']
+        dpl['L5'][(t > 37.) & (t < t1)] -= N_pyr * (m * t[(t > 37.) & (t < t1)] + b)
+        dpl['L5'][t >= t1] -= N_pyr * (m1 * t[t >= t1] + b1)
+        # recalculate the aggregate dipole based on the baseline normalized ones
+        dpl['agg'] = dpl['L2'] + dpl['L5']
+
+        return dpl
+
+    # convolve with a hamming window
+    def hammfilt(x, winsz):
+        from pylab import convolve
+        from numpy import hamming
+        win = hamming(winsz)
+        win /= sum(win)
+        return convolve(x,win,'same')
+
+    # baseline renormalize
+    dpl = baseline_renormalize()
+
+    # convert units from fAm to nAm, rescale and smooth
+    for key in dpl.keys():
+        dpl[key] *= 1e-6 * sim.cfg.dipole_scalefctr
+        
+        if sim.cfg.dipole_smooth_win > 0:
+            dpl[key] = hammfilt(dpl[key], sim.cfg.dipole_smooth_win/sim.cfg.dt)
+
+        # Set index 0 to 0
+        dpl[key][0] = 0.0
+
+
+    # plot recorded dipole data
+    #fig.line(sim.simData['t'], dpl['L2']+dpl['L5'], color='blue', legend="Aggregate", line_width=2.0)
+
+    # plot Morlet spectrogram
+    from ..support.morlet import MorletSpec, index2ms
+
+    spec = []
+    dplsum = dpl['L2'] + dpl['L5']
+
+    fs = int(1000.0 / sim.cfg.recordStep)
+    t_spec = np.linspace(0, index2ms(len(dplsum), fs), len(dplsum))
+    spec = MorletSpec(dplsum, fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq)
+        
+    f = np.array(range(minFreq, maxFreq+1, stepFreq))  # only used as output for user
+
+    vmin = np.array(spec.TFR).min()
+    vmax = np.array(spec.TFR).max()
+
+    
+    T = [0, sim.cfg.duration]
+    F = spec.f
+    if norm:
+        spec.TFR = spec.TFR / vmax
+        S = spec.TFR
+        vc = [0, 1]
+    else:
+        S = spec.TFR
+        vc = [vmin, vmax]
+
+
+    # old code
+    # plt.imshow(S, extent=(np.amin(T), np.amax(T), np.amin(F), np.amax(F)), origin='lower', interpolation='None', aspect='auto', vmin=vc[0], vmax=vc[1],
+    # cmap=plt.get_cmap('jet'))  # viridis
+    # plt.colorbar(label='Power')
+    # plt.ylabel('Hz')
+    # plt.tight_layout()                
+
+    import IPython; IPython.embed()
+
+    TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
+
+    fig = figure(title="Dipole Spectrogram Plot", tools=TOOLS, toolbar_location='above',
+    plot_width=S.shape[1], plot_height=S.shape[0], x_axis_label="Time (ms)", y_axis_label='Frequency (Hz)')
+
+    fig.image(image=[S], x=[0], y=[0], dw=[S.shape[1]], dh=[S.shape[0]], palette='Spectral11')
+    
+    p.xaxis.ticker = [1, 2, 3]
+    p.xaxis.major_label_overrides = {1: 'A', 2: 'B', 3: 'C'}
+
+    fig.legend.location = "top_right"
+    fig.legend.click_policy = "hide"
+
+    plot_layout = layout(fig, sizing_mode='stretch_both')
+    html = file_html(plot_layout, CDN, title="Dipole Spectrogram Plot")
+
+
+    if showFig:
+        show(fig)
+
+    return html
+
+
+# -------------------------------------------------------------------------------------------------------------------
+## Plot interactive dipole Spectrogram
+# -------------------------------------------------------------------------------------------------------------------
+@exception
+def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1, maxFreq = 80, stepFreq = 1, norm = True, showFig=False):
+    '''
+    expData: experimental data; a dict with ['x'] and ['y'] 1-d vectors (either lists or np.arrays) of same length
+    showFig: show output figure in web browser (default: None)
+    '''
+    from .. import sim
+    from bokeh.plotting import figure, show
+    from bokeh.resources import CDN
+    from bokeh.embed import file_html
+    from bokeh.layouts import layout
+
+
+    # renormalize the dipole and save
+    def baseline_renormalize():
+        # N_pyr cells in grid. This is PER LAYER
+        N_pyr = sim.cfg.N_pyr_x * sim.cfg.N_pyr_y
+        # dipole offset calculation: increasing number of pyr cells (L2 and L5, simultaneously)
+        # with no inputs resulted in an aggregate dipole over the interval [50., 1000.] ms that
+        # eventually plateaus at -48 fAm. The range over this interval is something like 3 fAm
+        # so the resultant correction is here, per dipole
+        # dpl_offset = N_pyr * 50.207
+        dpl_offset = {
+            # these values will be subtracted
+            'L2': N_pyr * 0.0443,
+            'L5': N_pyr * -49.0502
+            # 'L5': N_pyr * -48.3642,
+            # will be calculated next, this is a placeholder
+            # 'agg': None,
+        }
+
+        # L2 dipole offset can be roughly baseline shifted over the entire range of t
+        dpl = {'L2': np.array(sim.simData['dipole']['L2']),
+               'L5': np.array(sim.simData['dipole']['L5'])}
+        dpl['L2'] -= dpl_offset['L2']
+
+        # L5 dipole offset should be different for interval [50., 500.] and then it can be offset
+        # slope (m) and intercept (b) params for L5 dipole offset
+        # uncorrected for N_cells
+        # these values were fit over the range [37., 750.)
+        m = 3.4770508e-3
+        b = -51.231085
+        # these values were fit over the range [750., 5000]
+        t1 = 750.
+        m1 = 1.01e-4
+        b1 = -48.412078
+
+        t = sim.simData['t']
+
+        # piecewise normalization
+        dpl['L5'][t <= 37.] -= dpl_offset['L5']
+        dpl['L5'][(t > 37.) & (t < t1)] -= N_pyr * (m * t[(t > 37.) & (t < t1)] + b)
+        dpl['L5'][t >= t1] -= N_pyr * (m1 * t[t >= t1] + b1)
+        # recalculate the aggregate dipole based on the baseline normalized ones
+        dpl['agg'] = dpl['L2'] + dpl['L5']
+
+        return dpl
+
+    # convolve with a hamming window
+    def hammfilt(x, winsz):
+        from pylab import convolve
+        from numpy import hamming
+        win = hamming(winsz)
+        win /= sum(win)
+        return convolve(x,win,'same')
+
+    # baseline renormalize
+    dpl = baseline_renormalize()
+
+    # convert units from fAm to nAm, rescale and smooth
+    for key in dpl.keys():
+        dpl[key] *= 1e-6 * sim.cfg.dipole_scalefctr
+        
+        if sim.cfg.dipole_smooth_win > 0:
+            dpl[key] = hammfilt(dpl[key], sim.cfg.dipole_smooth_win/sim.cfg.dt)
+
+        # Set index 0 to 0
+        dpl[key][0] = 0.0
+
+
+    # plot recorded dipole data
+    #fig.line(sim.simData['t'], dpl['L2']+dpl['L5'], color='blue', legend="Aggregate", line_width=2.0)
+
+    # plot Morlet spectrogram
+    from ..support.morlet import MorletSpec, index2ms
+
+    spec = []
+    dplsum = dpl['L2'] + dpl['L5']
+
+    fs = int(1000.0 / sim.cfg.recordStep)
+    t_spec = np.linspace(0, index2ms(len(dplsum), fs), len(dplsum))
+    spec = MorletSpec(dplsum, fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq)
+        
+    f = np.array(range(minFreq, maxFreq+1, stepFreq))  # only used as output for user
+
+    vmin = np.array(spec.TFR).min()
+    vmax = np.array(spec.TFR).max()
+    
+    T = [0, sim.cfg.duration]
+    F = spec.f
+    S = spec.TFR
+    vc = [vmin, vmax]
+
+    Fs = int(1000.0/sim.cfg.recordStep)
+
+    signal = np.mean(S, 1)
+
+    # plot
+    TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
+
+    fig = figure(title="Dipole PSD Plot", tools=TOOLS, toolbar_location='above', x_axis_label="Frequency (Hz)", y_axis_label='Power')
+
+    fig.line(F, signal, color='black', line_width=2.0)
+    
+    fig.legend.location = "top_right"
+    fig.legend.click_policy = "hide"
+
+    plot_layout = layout(fig, sizing_mode='stretch_both')
+    html = file_html(plot_layout, CDN, title="Dipole PSD Plot")
+
+    if showFig:
+        show(fig)
+
+    return html
+
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive Spike Histogram
@@ -816,7 +1096,7 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 
         for i,elec in enumerate(electrodes[::-1]):
             if elec == 'avg':
-                lfpPlot = np.mean(lfp, axis=1)
+                dplSum = np.mean(lfp, axis=1)
                 color = 'black'
                 lw=1.0
                 # figs['timeSeries'].line(t, -lfpPlot+(i*ydisp), line_color=color)

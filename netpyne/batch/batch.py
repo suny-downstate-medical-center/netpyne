@@ -327,13 +327,13 @@ class Batch(object):
                         cfgSavePath = self.saveFolder+'/'+simLabel+'_cfg.json'
                         self.cfg.save(cfgSavePath)
                         
+                        sleepInterval = 1
+
                         # hpc torque job submission
                         if self.runCfg.get('type',None) == 'hpc_torque':
 
                             # read params or set defaults
                             sleepInterval = self.runCfg.get('sleepInterval', 1)
-                            sleep(sleepInterval)
-                            
                             nodes = self.runCfg.get('nodes', 1)
                             ppn = self.runCfg.get('ppn', 1)
                             script = self.runCfg.get('script', 'init.py')
@@ -377,8 +377,6 @@ echo $PBS_O_WORKDIR
 
                             # read params or set defaults
                             sleepInterval = self.runCfg.get('sleepInterval', 1)
-                            sleep(sleepInterval)
-                            
                             allocation = self.runCfg.get('allocation', 'csd403') # NSG account
                             nodes = self.runCfg.get('nodes', 1)
                             coresPerNode = self.runCfg.get('coresPerNode', 1)
@@ -459,12 +457,12 @@ wait
                             import sys
                             sys.exit(0)
                 
-                    sleep(1) # avoid saturating scheduler
+                    sleep(sleepInterval) # avoid saturating scheduler
             print("-"*80)
             print("   Finished submitting jobs for grid parameter exploration   ")
             print("-" * 80)
             while pc.working():
-                sleep(1)
+                sleep(sleepInterval)
 
 
 

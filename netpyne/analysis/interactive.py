@@ -480,35 +480,38 @@ def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minF
 
 
     # old code
-    # plt.imshow(S, extent=(np.amin(T), np.amax(T), np.amin(F), np.amax(F)), origin='lower', interpolation='None', aspect='auto', vmin=vc[0], vmax=vc[1],
-    # cmap=plt.get_cmap('jet'))  # viridis
-    # plt.colorbar(label='Power')
-    # plt.ylabel('Hz')
-    # plt.tight_layout()                
-
-    import IPython; IPython.embed()
-
-    TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
-
-    fig = figure(title="Dipole Spectrogram Plot", tools=TOOLS, toolbar_location='above',
-    plot_width=S.shape[1], plot_height=S.shape[0], x_axis_label="Time (ms)", y_axis_label='Frequency (Hz)')
-
-    fig.image(image=[S], x=[0], y=[0], dw=[S.shape[1]], dh=[S.shape[0]], palette='Spectral11')
-    
-    p.xaxis.ticker = [1, 2, 3]
-    p.xaxis.major_label_overrides = {1: 'A', 2: 'B', 3: 'C'}
-
-    fig.legend.location = "top_right"
-    fig.legend.click_policy = "hide"
-
-    plot_layout = layout(fig, sizing_mode='stretch_both')
-    html = file_html(plot_layout, CDN, title="Dipole Spectrogram Plot")
-
-
+    fig = plt.imshow(S, extent=(np.amin(T), np.amax(T), np.amin(F), np.amax(F)), origin='lower', interpolation='None', aspect='auto', vmin=vc[0], vmax=vc[1],
+    cmap=plt.get_cmap('jet'))  # viridis
+    plt.colorbar(label='Power')
+    plt.gca().invert_yaxis()
+    plt.ylabel('Hz')
+    plt.tight_layout()
     if showFig:
-        show(fig)
+        plt.show()            
 
-    return html
+
+    # TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
+
+    # fig = figure(title="Dipole Spectrogram Plot", tools=TOOLS, toolbar_location='above',
+    # plot_width=S.shape[1], plot_height=S.shape[0], x_axis_label="Time (ms)", y_axis_label='Frequency (Hz)')
+
+    # fig.image(image=[S], x=[0], y=[0], dw=[S.shape[1]], dh=[S.shape[0]], palette='Spectral11')
+    
+    # steps = list(range(0, S.shape[1], int(1./fs*1e6)))
+    # fig.xaxis.ticker = steps
+    # fig.xaxis.major_label_overrides = {t*40000/1e6: str(t) for t in T}
+
+    # fig.legend.location = "top_right"
+    # fig.legend.click_policy = "hide"
+
+    # plot_layout = layout(fig, sizing_mode='stretch_both')
+    # html = file_html(plot_layout, CDN, title="Dipole Spectrogram Plot")
+
+
+    # if showFig:
+    #     show(fig)
+
+    return fig #html
 
 
 # -------------------------------------------------------------------------------------------------------------------

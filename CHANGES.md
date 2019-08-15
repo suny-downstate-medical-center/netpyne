@@ -1,6 +1,8 @@
-# Version 0.9.3.1
+# Version 0.9.4
 
 - Added option to avoid creating connections with weight=0
+
+- Made recording of dipoles optional with attribute cfg.recordDipoles
 
 - Fixed bug calculating normally distributed rhythmic inputs - was using variance instead of std
 

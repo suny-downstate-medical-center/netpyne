@@ -317,6 +317,7 @@ def setupRecording ():
         setupRecordLFP()
 
     # try to record dipoles
+    
     if sim.cfg.recordDipoles:
         dp_rec_L2 = h.Vector()
         dp_rec_L5 = h.Vector()

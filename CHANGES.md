@@ -8,6 +8,8 @@
 
 - Fixed bug in iplotDipole when smoothing window size = 0
 
+- Fixed bug in plotSpikeStats pop order
+
 
 # Version 0.9.3.1
 

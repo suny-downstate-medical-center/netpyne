@@ -41,7 +41,6 @@ from ..specs import Dict
 
 # --- Temporarily copied from HNN code; improve so doesn't use h globals ---  
 # global variables for dipole calculation, should be node-independent 
-h("dp_total_L2 = 0."); h("dp_total_L5 = 0.") # put here since these variables used in cells
 
 class CompartCell (Cell):
     ''' Class for section-based neuron models '''
@@ -52,7 +51,7 @@ class CompartCell (Cell):
         self.secLists = Dict()  # dict of sectionLists
 
         if create: self.create()  # create cell 
-        if associateGid: self.associateGid() # register cell for this node
+        if associateGid: self.associateGid()  # register cell for this node
 
     def __str__ (self):
         try:
@@ -65,6 +64,9 @@ class CompartCell (Cell):
 
     def create (self):
         from .. import sim
+                
+        if sim.cfg.recordDipoles:
+            h("dp_total_L2 = 0."); h("dp_total_L5 = 0.") # put here since these variables used in cells
 
         # generate random rotation angle for each cell
         if sim.net.params.rotateCellsRandomly:
@@ -239,8 +241,6 @@ class CompartCell (Cell):
                 sec['hObj'].v = sec['vinit']
 
 
-
-
     # Create dictionary of section names with entries to scale section lengths to length along z-axis
     def __dipoleGetSecLength (self, secName):
         L = 1
@@ -259,6 +259,7 @@ class CompartCell (Cell):
 
     # insert dipole in section
     def __dipoleInsert(self, secName, sec):
+
         # insert dipole mech (dipole.mod)
         try:
             sec['hObj'].insert('dipole')
@@ -431,10 +432,11 @@ class CompartCell (Cell):
                     sec['hObj'].connect(self.secs[sectParams['topol']['parentSec']]['hObj'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
 
         # add dipoles
-        for sectName,sectParams in prop['secs'].items():
-            sec = self.secs[sectName]
-            if 'mechs' in sectParams and 'dipole' in sectParams['mechs']:
-               self.__dipoleInsert(sectName, sec)  # add dipole mechanisms to each section
+        if sim.cfg.recordDipoles:
+            for sectName,sectParams in prop['secs'].items():
+                sec = self.secs[sectName]
+                if 'mechs' in sectParams and 'dipole' in sectParams['mechs']:
+                    self.__dipoleInsert(sectName, sec)  # add dipole mechanisms to each section
 
         # Print message about error inserting mechanisms
         if mechInsertError:
@@ -664,8 +666,7 @@ class CompartCell (Cell):
         # Warning or error if self connections
         if params['preGid'] == self.gid:
             # Only allow self connections if option selected by user  
-            # !!!! AD HOC RULE FOR HNN!!! - removed for now
-            # or 'soma' in secLabels and not self.tags['cellType'] == 'L5Basket': # or if target section is soma (ad hoc rule for hnn)
+            # !!!! AD HOC RULE FOR HNN!!! -  or 'soma' in secLabels and not self.tags['cellType'] == 'L5Basket' (removed)
             if sim.cfg.allowSelfConns: 
                 if sim.cfg.verbose: print('  Warning: creating self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
             else:
@@ -699,7 +700,9 @@ class CompartCell (Cell):
 
         # Create connections
         for i in range(params['synsPerConn']):
-            
+            if not sim.cfg.allowConnsWithWeight0 and weights[i] == 0.0:
+                continue
+
             if netStimParams:
                     netstim = self.addNetStim(netStimParams)
 

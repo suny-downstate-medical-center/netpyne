@@ -913,8 +913,8 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
         if graphType == 'boxplot':
             meanpointprops = dict(marker=(5,1,0), markeredgecolor='black', markerfacecolor='white')
             labels = legendLabels if legendLabels else include
-            bp=plt.boxplot(statData, labels=labels[::-1], notch=False, sym='k+', meanprops=meanpointprops, 
-                        whis=1.5, widths=0.6, vert=False, showmeans=True, patch_artist=True)
+            bp=plt.boxplot(statData, labels=labels, notch=False, sym='k+', meanprops=meanpointprops,  
+                        whis=1.5, widths=0.6, vert=False, showmeans=True, patch_artist=True) #labels[::-1]
             plt.xlabel(xlabel, fontsize=fontsiz)
             plt.ylabel('Population', fontsize=fontsiz) 
 

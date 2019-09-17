@@ -900,20 +900,23 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
 
                     statData.append(syncMat)
 
-            colors.insert(0, popColors[subset] if subset in popColors 
+            #colors.insert(0, popColors[subset] if subset in popColors 
+            colors.append(popColors[subset] if subset in popColors 
                 else colorList[iplot%len(colorList)])  # colors in inverse order
 
         # if 'allCells' included make it black
         if include[0] == 'allCells':
             #if graphType == 'boxplot':
-            colors.insert(len(include), (0.5,0.5,0.5))  # 
             del colors[0]
+            colors.insert(0, (0.5,0.5,0.5))  # 
+            #colors.insert(len(include), (0.5,0.5,0.5))  # 
+            
 
         # boxplot
         if graphType == 'boxplot':
             meanpointprops = dict(marker=(5,1,0), markeredgecolor='black', markerfacecolor='white')
             labels = legendLabels if legendLabels else include
-            bp=plt.boxplot(statData, labels=labels, notch=False, sym='k+', meanprops=meanpointprops,  
+            bp=plt.boxplot(statData[::-1], labels=labels[::-1], notch=False, sym='k+', meanprops=meanpointprops,  
                         whis=1.5, widths=0.6, vert=False, showmeans=True, patch_artist=True) #labels[::-1]
             plt.xlabel(xlabel, fontsize=fontsiz)
             plt.ylabel('Population', fontsize=fontsiz) 
@@ -922,7 +925,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
             borderColor = 'k'
             for i in range(0, len(bp['boxes'])):
                 icolor = i
-                bp['boxes'][i].set_facecolor(colors[icolor])
+                bp['boxes'][i].set_facecolor(colors[::-1][icolor])
                 bp['boxes'][i].set_linewidth(2)
                 # we have two whiskers!
                 bp['whiskers'][i*2].set_color(borderColor)

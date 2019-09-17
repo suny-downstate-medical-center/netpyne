@@ -177,7 +177,7 @@ def readCmdLineArgs (simConfigDefault='cfg.py', netParamsDefault='netParams.py')
 
             cfg = cfgModule.cfg
             __main__.cfg = cfg
-        except:
+        except FileNotFoundError:
             print('\nWarning: Could not load cfg from command line path or from default cfg.py')
             cfg = None
 
@@ -191,7 +191,7 @@ def readCmdLineArgs (simConfigDefault='cfg.py', netParamsDefault='netParams.py')
                 cfgModule = imp.load_source('netParams', netParamsDefault)
 
             netParams = netParamsModule.netParams
-        except:
+        except FileNotFoundError:
             print('\nWarning: Could not load netParams from command line path or from default netParams.py')
             netParams = None
 

@@ -10,6 +10,8 @@
 
 - Fixed bug in plotSpikeStats pop order
 
+- Fixed bug is plots with scalebars
+
 
 # Version 0.9.3.1
 

@@ -577,6 +577,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
     '''
 
     from .. import sim
+    from ..support.scalebar import add_scalebar
 
     print('Plotting spike histogram...')
 

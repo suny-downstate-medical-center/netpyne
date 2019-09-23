@@ -560,19 +560,21 @@ class CompartCell (Cell):
 
         if synMechParams and sec:  # if both the synMech and the section exist
             if sim.cfg.createPyStruct and sim.cfg.addSynMechs:
-                synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==synLabel and synMech['loc']==loc), None)
-                if not synMech:  # if synMech not in section, then create
-                    synMech = Dict({'label': synLabel, 'loc': loc})
-                    for paramName, paramValue in synMechParams.items():
-                        synMech[paramName] = paramValue
-                    sec['synMechs'].append(synMech)
+                #synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==synLabel and synMech['loc']==loc), None)
+                #if not synMech:  # if synMech not in section, then create
+                synMech = None
+                synMech = Dict({'label': synLabel, 'loc': loc})
+                for paramName, paramValue in synMechParams.items():
+                    synMech[paramName] = paramValue
+                sec['synMechs'].append(synMech)
             else:
                 synMech = None
 
             if sim.cfg.createNEURONObj and sim.cfg.addSynMechs: 
                 # add synaptic mechanism NEURON objectes 
-                if not synMech:  # if pointer not created in createPyStruct, then check 
-                    synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==synLabel and synMech['loc']==loc), None)
+                #if not synMech:  # if pointer not created in createPyStruct, then check 
+                #    synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==synLabel and synMech['loc']==loc), None)
+                synMech = None
                 if not synMech:  # if still doesnt exist, then create
                     synMech = Dict()
                     sec['synMechs'].append(synMech)

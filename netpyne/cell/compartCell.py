@@ -549,7 +549,7 @@ class CompartCell (Cell):
                 del nc # discard netcon
         sim.net.gid2lid[self.gid] = len(sim.net.gid2lid)
 
-    def addSynMech (self, synLabel, secLabel, loc):
+    def addSynMech (self, synLabel, secLabel, loc, nonLinear = False):
         from .. import sim
 
         synMechParams = sim.net.params.synMechParams.get(synLabel)  # get params for this synMech
@@ -560,6 +560,13 @@ class CompartCell (Cell):
 
         if synMechParams and sec:  # if both the synMech and the section exist
             if sim.cfg.createPyStruct and sim.cfg.addSynMechs:
+                synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==synLabel and synMech['loc']==loc), None)
+                if not synMech or nonLinear:  # if synMech not in section, then create
+                    synMech = Dict({'label': synLabel, 'loc': loc})
+                    for paramName, paramValue in synMechParams.items():
+                        synMech[paramName] = paramValue
+                    sec['synMechs'].append(synMech)
+                """
                 #synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==synLabel and synMech['loc']==loc), None)
                 #if not synMech:  # if synMech not in section, then create
                 synMech = None
@@ -567,14 +574,15 @@ class CompartCell (Cell):
                 for paramName, paramValue in synMechParams.items():
                     synMech[paramName] = paramValue
                 sec['synMechs'].append(synMech)
+                """
             else:
                 synMech = None
 
             if sim.cfg.createNEURONObj and sim.cfg.addSynMechs: 
                 # add synaptic mechanism NEURON objectes 
-                #if not synMech:  # if pointer not created in createPyStruct, then check 
-                #    synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==synLabel and synMech['loc']==loc), None)
-                synMech = None
+                if not synMech:  # if pointer not created in createPyStruct, then check 
+                    synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==synLabel and synMech['loc']==loc), None)
+                if nonLinear: synMech = None
                 if not synMech:  # if still doesnt exist, then create
                     synMech = Dict()
                     sec['synMechs'].append(synMech)
@@ -1190,9 +1198,10 @@ class CompartCell (Cell):
                 if len(synMechLocs)>1: 
                     synMechLocs[pos], synMechLocs[0] = synMechLocs[0], synMechLocs[pos]
 
+        # check flag for nonlinearity -- which requires separate point processes
+        nonLinear = sim.net.params.connParams[params['label']]['nonLinear'] if 'nonLinear' in sim.net.params.connParams[params['label']] else False   
         # add synaptic mechanism to section based on synMechSecs and synMechLocs (if already exists won't be added)
-        synMechs = [self.addSynMech(synLabel=params['synMech'], secLabel=synMechSecs[i], loc=synMechLocs[i]) for i in range(synsPerConn)] 
-
+        synMechs = [self.addSynMech(synLabel=params['synMech'], secLabel=synMechSecs[i], loc=synMechLocs[i], nonLinear=nonLinear) for i in range(synsPerConn)] 
         return synMechs, synMechSecs, synMechLocs
 
 

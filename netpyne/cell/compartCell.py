@@ -1190,8 +1190,8 @@ class CompartCell (Cell):
                     synMechLocs[pos], synMechLocs[0] = synMechLocs[0], synMechLocs[pos]
 
         # check flag for nonlinearity -- which requires separate point processes
-        nonLinear = sim.net.params.connParams[params['label']]['nonLinear'] if 'nonLinear' in sim.net.params.connParams[params['label']] else False   
-        # add synaptic mechanism to section based on synMechSecs and synMechLocs (if already exists won't be added)
+        nonLinear = sim.net.params.connParams[params['label']]['nonLinear'] if ('label' in params and 'nonLinear' in sim.net.params.connParams[params['label']]) else False   
+        # add synaptic mechanism to section based on synMechSecs and synMechLocs (if already exists won't be added unless nonLinear set to True)
         synMechs = [self.addSynMech(synLabel=params['synMech'], secLabel=synMechSecs[i], loc=synMechLocs[i], nonLinear=nonLinear) for i in range(synsPerConn)] 
         return synMechs, synMechSecs, synMechLocs
 

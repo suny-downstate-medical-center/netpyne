@@ -606,7 +606,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
     if timeRange is None:
         timeRange = [0,sim.cfg.duration]
 
-    histData = []
+    histoData = []
 
     # create fig
     fig,ax1 = plt.subplots(figsize=figSize)
@@ -669,7 +669,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         if smooth:
             histoCount = _smooth1d(histoCount, smooth)[:len(histoT)]
 
-        histData.append(histoCount)
+        histoData.append(histoCount)
 
         if isinstance(subset, list): 
             color = colorList[iplot%len(colorList)]
@@ -722,7 +722,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
 
     # save figure data
     if saveData:
-        figData = {'histData': histData, 'histT': histoT, 'include': include, 'timeRange': timeRange, 'binSize': binSize,
+        figData = {'histoData': histoData, 'histoT': histoT, 'include': include, 'timeRange': timeRange, 'binSize': binSize,
          'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
 
         _saveFigData(figData, saveData, 'spikeHist')
@@ -738,7 +738,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
     # show fig
     if showFig: _showFigure()
 
-    return fig, {'include': include, 'histData': histData, 'histoT': histoT, 'timeRange': timeRange}
+    return fig, {'include': include, 'histoData': histoData, 'histoT': histoT, 'timeRange': timeRange}
 
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -1102,7 +1102,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
 ## Plot spike histogram
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, minFreq=1, maxFreq=100, stepFreq=1, NFFT=256, noverlap=128, smooth=0, overlay=True, ylim = None, transformMethod = 'morlet', popColors = {}, lineWidth = 1.5, fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True): 
+def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, minFreq=1, maxFreq=100, stepFreq=1, NFFT=256, noverlap=128, smooth=0, overlay=True, ylim = None, transformMethod = 'morlet', norm=False, popColors = {}, lineWidth = 1.5, fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True): 
     ''' 
     Plot firing rate power spectral density (PSD)
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -1111,6 +1111,7 @@ def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, minF
         - binSize (int): Size in ms of spike bins (default: 5)
         - maxFreq (float): Maximum frequency to show in plot (default: 100)
         - transformMethod ('morlet'|'fft')
+        - norm (True|False): Normalize power (default: False)
         - NFFT (float): The number of data points used in each block for the FFT (power of 2) (default: 256)
         - smooth (int): Window size for smoothing; no smoothing if 0 (default: 0)
         - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
@@ -1188,14 +1189,6 @@ def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, minF
 
         histData.append(histoCount)
 
-        color = popColors[subset] if isinstance(subset, (str, tuple)) and subset in popColors else colorList[iplot%len(colorList)] 
-
-        if not overlay: 
-            plt.subplot(len(include),1,iplot+1)  # if subplot, create new subplot
-            plt.title(str(subset), fontsize=fontsiz)
-            color = 'blue'
-
-
         # Morlet wavelet transform method
         if transformMethod == 'morlet':
             from ..support.morlet import MorletSpec, index2ms
@@ -1215,15 +1208,31 @@ def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, minF
             power = mlab.psd(histoCount, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning, 
                 noverlap=noverlap, pad_to=None, sides='default', scale_by_freq=None)
 
-            if smooth:
-                signal = _smooth1d(10*np.log10(power[0]), smooth)
-            else:
-                signal = 10*np.log10(power[0])
+            allSignal = poerwe[0]
             freqs = power[1]
+
+            if smooth:
+                signal = _smooth1d(10*np.log10(allSignal), smooth)
+            else:
+                signal = 10*np.log10(allSignal)
+
             ylabel = 'Power (dB/Hz)'
 
         allFreqs.append(freqs)
         allSignal.append(signal)
+
+    if norm:
+        vmax = np.max(allSignal)
+        for i, s in enumerate(allSignal):
+            allSignal[i] = allSignal[i]/vmax
+
+    for iplot,(subset,freqs, signal) in enumerate(zip(include,allFreqs, allSignal)):
+        color = popColors[subset] if isinstance(subset, (str, tuple)) and subset in popColors else colorList[iplot % len(colorList)]
+
+        if not overlay: 
+            plt.subplot(len(include),1,iplot+1)  # if subplot, create new subplot
+            plt.title(str(subset), fontsize=fontsiz)
+            color = 'blue'
 
         plt.plot(freqs[freqs<maxFreq], signal[freqs<maxFreq], linewidth=lineWidth, color=color)
 

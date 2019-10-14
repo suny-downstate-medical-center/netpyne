@@ -585,6 +585,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
             h.set_xticklabels(np.arange(0,len(cellsPost),stepx))
             h.set_yticklabels(np.arange(0,len(cellsPost),stepy))
             h.xaxis.set_ticks_position('top')
+            plt.xticks(rotation=90)
             plt.xlim(-0.5,len(cellsPost)-0.5)
             plt.ylim(len(cellsPre)-0.5,-0.5)
 
@@ -602,6 +603,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
             h.set_xticklabels(popsPost)
             h.set_yticklabels(popsPre)
             h.xaxis.set_ticks_position('top')
+            plt.xticks(rotation=90)
             plt.xlim(-0.5,len(popsPost)-0.5)
             plt.ylim(len(popsPre)-0.5,-0.5)
 
@@ -619,6 +621,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
             h.set_xticklabels([int(x) if x>1 else x for x in groupsPost])
             h.set_yticklabels([int(x) if x>1 else x for x in groupsPre])
             h.xaxis.set_ticks_position('top')
+            plt.xticks(rotation=90)
             plt.xlim(-0.5,len(groupsPost)-0.5)
             plt.ylim(len(groupsPre)-0.5,-0.5)
 
@@ -626,9 +629,9 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
         plt.clim(clim[0], clim[1])
         plt.colorbar(label=feature, shrink=0.8) #.set_label(label='Fitness',size=20,weight='bold')
         plt.xlabel('post')
-        h.xaxis.set_label_coords(0.5, 1.06)
+        h.xaxis.set_label_coords(0.5, 1.09)
         plt.ylabel('pre')
-        plt.title ('Connection '+feature+' matrix', y=1.08)
+        plt.title ('Connection '+feature+' matrix', y=1.12)
 
     # stacked bar graph
     elif graphType == 'bar':

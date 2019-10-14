@@ -132,12 +132,14 @@ class Batch(object):
         odict = deepcopy(self.__dict__)
         if 'evolCfg' in odict:
             odict['evolCfg']['fitnessFunc'] = 'removed'
+        odict['initCfg'] = tupleToStr(odict['initCfg'])
         dataSave = {'batch': tupleToStr(odict)} 
         if ext == 'json':
             from .. import sim
             #from json import encoder
             #encoder.FLOAT_REPR = lambda o: format(o, '.12g')
             print(('Saving batch to %s ... ' % (filename)))
+
             sim.saveJSON(filename, dataSave)
 
     def setCfgNestedParam(self, paramLabel, paramVal):

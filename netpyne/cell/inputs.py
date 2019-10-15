@@ -65,7 +65,7 @@ def createRhythmicPattern(params, rand):
             #t_array = np.array([rand.normal(x, freqStd) for x in np.repeat(isi_array, params['repeats'])])  # not efficient!
             isi_array_repeat = np.repeat(isi_array, params['repeats'])
             stdvec = h.Vector(int(len(isi_array_repeat)))
-            rand.normal(0, freqStd)
+            rand.normal(0, freqStd*freqStd)
             stdvec.setrand(rand)
             t_array = np.array([mean+std for (mean,std) in zip(list(stdvec), isi_array_repeat)])
         else:

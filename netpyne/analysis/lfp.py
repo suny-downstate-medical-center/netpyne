@@ -35,7 +35,7 @@ from .utils import colorList, exception, _saveFigData, _showFigure, _smooth1d
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange=None, NFFT=256, noverlap=128, 
-    nperseg=256, minFreq=1, maxFreq=100, stepFreq=1, smooth=0, separation=1.0, includeAxon=True, logx=False, logy=False, normSignal=False, normPSD=False, dpi=200, overlay=False, filtFreq = False, filtOrder=3, detrend=False, transformMethod='morlet', fontSize=14, colors = None, maxPlots=8, lineWidth=1.5, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
+    nperseg=256, minFreq=1, maxFreq=100, stepFreq=1, smooth=0, separation=1.0, includeAxon=True, logx=False, logy=False, normSignal=False, normPSD=False, normSpec=False, dpi=200, overlay=False, filtFreq = False, filtOrder=3, detrend=False, transformMethod='morlet', fontSize=14, colors = None, maxPlots=8, lineWidth=1.5, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot LFP
         - electrodes (list): List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (default: ['avg', 'all'])
@@ -328,7 +328,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
                 plt.subplot(np.ceil(len(electrodes) / numCols), numCols, i + 1)
                 T = timeRange
                 F = spec[i].f
-                if norm:
+                if normSpec:
                     spec[i].TFR = spec[i].TFR / vmax
                     S = spec[i].TFR
                     vc = [0, 1]

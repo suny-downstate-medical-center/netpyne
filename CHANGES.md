@@ -1,8 +1,29 @@
-# Version 0.9.3
+# Version 0.9.4
+
+- Added option to avoid creating connections with weight=0
+
+- Made recording of dipoles optional with attribute cfg.recordDipoles
+
+- Rotated conn matrix x-axis labels so can fit large matrices 
+
+- Added 'removeWeightNorm' argument to plotConn() function
+
+- Fixed bug calculating normally distributed rhythmic inputs - was using variance instead of std
+
+- Fixed bug in iplotDipole when smoothing window size = 0
+
+- Fixed bug in plotSpikeStats pop order
+
+- Fixed bug is plots with scalebars
+
+
+
+# Version 0.9.3.1
 
 - Replaced deprecated imp module with importlib
 
 - Fix to cellsGrid cell locations with normRange
+
 
 # Version 0.9.3
 
@@ -27,6 +48,7 @@
 - Return meaningful cell info via 'repr' and 'str' for pointCell, compartCell
 
 - Fixed spelling typos in documentation
+
 
 # Version 0.9.2
 
@@ -69,9 +91,11 @@
 
 - Removed deprecated hold function from plotConn
 
+
 # Version 0.9.1.2
 
 - Set 'pandas==0.23.4' to avoid error 
+
 
 # Version 0.9.1.1
 

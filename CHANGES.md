@@ -6,6 +6,8 @@
 
 - Rotated conn matrix x-axis labels so can fit large matrices 
 
+- Added 'removeWeightNorm' argument to plotConn() function
+
 - Fixed bug calculating normally distributed rhythmic inputs - was using variance instead of std
 
 - Fixed bug in iplotDipole when smoothing window size = 0

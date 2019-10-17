@@ -36,7 +36,7 @@ from .utils import _saveFigData, _showFigure
 ## Support function for plotConn() - calculate conn using data from sim object
 # -------------------------------------------------------------------------------------------------------------------
 
-def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech):
+def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech,                         removeWeightNorm):
 
     from .. import sim
 
@@ -129,7 +129,20 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
                     if feature in ['weight', 'delay']:
                         featureIndex = weightIndex if feature == 'weight' else delayIndex
                         if conn[preGidIndex] in cellIndsPre:
-                            connMatrix[cellIndsPre[conn[preGidIndex]], cellIndsPost[cell['gid']]] += conn[featureIndex]
+                            if removeWeightNorm and feature=='weight':
+                                try:
+                                    sec = conn['sec']
+                                    loc = conn['loc']
+                                    nseg = cell['secs'][sec]['geom']['nseg']
+                                    segIndex = int(round(loc*nseg))-1
+                                    weightNorm = cell['secs'][sec]['weightNorm'][segIndex]
+                                    connMatrix[cellIndsPre[conn[preGidIndex]], cellIndsPost[cell['gid']]] += conn[featureIndex] / weightNorm
+                                except:
+                                    pass
+                            else:
+                                connMatrix[cellIndsPre[conn[preGidIndex]], cellIndsPost[cell['gid']]] += conn[featureIndex]
+
+                            
                     countMatrix[cellIndsPre[conn[preGidIndex]], cellIndsPost[cell['gid']]] += 1
 
         if feature in ['weight', 'delay']: connMatrix = connMatrix / countMatrix 
@@ -208,7 +221,19 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
                 
                 if prePopLabel in popIndsPre:
                     if feature in ['weight', 'strength']: 
-                        weightMatrix[popIndsPre[prePopLabel], popIndsPost[cell['tags']['pop']]] += conn[weightIndex]
+                        if removeWeightNorm:
+                            try:
+                                sec = conn['sec']
+                                loc = conn['loc']
+                                nseg = cell['secs'][sec]['geom']['nseg']
+                                segIndex = int(round(loc*nseg))-1
+                                weightNorm = cell['secs'][sec]['weightNorm'][segIndex]
+                                weightMatrix[popIndsPre[prePopLabel], popIndsPost[cell['tags']['pop']]] += conn[weightIndex] / weightNorm
+                            except:
+                                pass
+                        else:
+                            weightMatrix[popIndsPre[prePopLabel], popIndsPost[cell['tags']['pop']]] += conn[weightIndex]
+
                     elif feature == 'delay': 
                         delayMatrix[popIndsPre[prePopLabel], popIndsPost[cell['tags']['pop']]] += conn[delayIndex] 
                     countMatrix[popIndsPre[prePopLabel], popIndsPost[cell['tags']['pop']]] += 1    
@@ -301,6 +326,7 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
                 if preGroup in groupIndsPre:
                     if feature in ['weight', 'strength']: 
                         weightMatrix[groupIndsPre[preGroup], groupIndsPost[postGroup]] += conn[weightIndex]
+                        
                     elif feature == 'delay': 
                         delayMatrix[groupIndsPre[preGroup], groupIndsPost[postGroup]] += conn[delayIndex] 
                     countMatrix[groupIndsPre[preGroup], groupIndsPost[postGroup]] += 1  
@@ -339,7 +365,7 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
 ## Support function for plotConn() - calculate conn using data from files with short format (no keys)
 # -------------------------------------------------------------------------------------------------------------------
 
-def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile):
+def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile,removeWeightNorm):
     
     from .. import sim
     import json
@@ -516,7 +542,7 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
 ## Plot connectivity
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', groupByIntervalPre = None, groupByIntervalPost = None, graphType = 'matrix', synOrConn = 'syn', synMech = None, connsFile = None, tagsFile = None, clim = None, fontSize = 12, saveData = None, saveFig = None, showFig = True): 
+def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', groupByIntervalPre = None, groupByIntervalPost = None, removeWeightNorm = False, graphType = 'matrix', synOrConn = 'syn', synMech = None, connsFile = None, tagsFile = None, clim = None, fontSize = 12, saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot network connectivity
         - includePre (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
@@ -544,9 +570,9 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
     print('Plotting connectivity matrix...')
 
     if connsFile and tagsFile:
-        connMatrix, pre, post = _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile)
+        connMatrix, pre, post = _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile, removeWeightNorm)
     else:
-        connMatrix, pre, post = _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech)
+        connMatrix, pre, post = _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, removeWeightNorm)
 
 
     if connMatrix is None:

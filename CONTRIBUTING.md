@@ -80,9 +80,8 @@ Finally, set up a link between your local clone and the official repository (ups
 ~$ cd netpyne
 ~$ git remote add upstream https://github.com/Neurosim-lab/netpyne.git
 ~$ git fetch --all
+~$ git remove -v   #Shows your tracked repositories.
 ```
-To verify 
-
 
 ### Basic git commands
 
@@ -94,14 +93,15 @@ Learning to work with git can take a long time, because it is a complex and powe
 
 Other commands that you will undoubtedly need relate to [branches](https://help.github.com/en/articles/about-branches). Branches represent multiple copies of the codebase within a local clone or remote repo. Branches are typically used to experiment with new features while still keeping a clean, working copy of the original codebase that you can switch back to at any time. The default branch of any repo is always called `master`, and it is recommended that you reserve the `master` branch to be that clean copy of the working `upstream` codebase. 
 
-In Neurosim-lab/netpyne repo, you must not work in the `master` branch, there is a branch called `development` for contribuiting. Therefore, if you want to add a new feature, you should first synchronize your local `development` branch with the `upstream` repository, then create a new branch based off of `development` and [check it out](https://git-scm.com/docs/git-checkout) so that any changes you make will exist on that new branch:
+In Neurosim-lab/netpyne repo, you must not work in the `master` branch, there is a branch called `development` for contribuiting. Therefore, if you want to add a new change, you should first synchronize your local `development` branch with the `upstream` repository, then create a new branch based on `development` and [check it out](https://git-scm.com/docs/git-checkout) so that any changes you make will exist on that new branch:
 
-```python
- ~$ git checkout development            # switch to local decelopment branch
+```bash
+ ~$ git checkout development            # switch to local development branch
  ~$ git fetch upstream                  # get the current state of the remote upstream repo
  ~$ git merge upstream/development      # synchronize local development branch with remote upstream development branch
- ~$ git checkout -b new-feature-x       # create local branch "new-feature-x" and check it out
+ ~$ git checkout -b new-branch          # create local branch "new-branch" and check it out
 ```
+
 > **Alternative**
 > You can save some typing by using `~$ git pull upstream/development` to replace the `fetch` and `merge` lines above.
 
@@ -111,45 +111,42 @@ Now that you’re on a new branch, you can fix a bug or add a new feature, add a
 
 Git knows that people often work on multiple changes in multiple files all at once, but that ultimately they should separate those changes into sets of related changes that are grouped together based on common goals (so that it’s easier for their colleagues to understand and review the changes). For example, you might want to group all the code changes together in one commit, put new unit tests in another commit, and changes to the documentation in a third commit. Git makes this easy(ish) with something called the [stage](https://git-scm.com/book/en/v2/Git-Tools-Interactive-Staging) (or _staging area_). After you’ve made some changes to the codebase, you’ll have what git calls “unstaged changes”, which will show up with the [status](https://git-scm.com/docs/git-status) command:
 
-```python
+```bash
  ~$ git status    # see what state the local copy of the codebase is in
 ```
 
 Those unstaged changes can be [added](https://git-scm.com/docs/git-add) to the stage one by one, by either adding a whole file’s worth of changes, or by adding only certain lines interactively:
 
-```python
- ~$ git add netpyne/some_file.py      # add all the changes you made to this file
- ~$ git add netpyne/some_new_file.py  # add a completely new file in its entirety
- ~$ git add -p netpyne/docs/some_other_file.py # enter interactive staging mode, to add only portions of a file.
+```bash
+ ~$ git add some_file.py               # add all the changes you made to this file
+ ~$ git add some_new_file.py           # add a completely new file in its entirety
+ ~$ git add -p docs/some_other_file.py # enter interactive staging mode, to add only portions of a file.
 ```
 
 Once you’ve collected all the related changes together on the stage, the `git status` command will now refer to them as _“changes staged for commit”_. You can commit them to the current branch with the [commit](https://git-scm.com/docs/git-commit) command. If you just type `git commit` by itself, git will open the text editor you configured it to use so that you can write a _commit message_ — a short description of the changes you’ve grouped together in this commit. You can bypass the text editor by passing a commit message on the command line with the `-m` flag. For example, if your first commit adds a new feature, your commit message might be:
 
-```python
+```bash
  ~$ git commit -m 'Author: adds feature X'
 ```
 
 Once you’ve made the commit, the stage is now empty, and you can repeat the cycle. When you’re done and everything looks good, it’s time to push your changes to your fork:
 
-```python
- # push local changes to remote branch origin/new-feature-x
+```bash
+ # push local changes to remote branch origin/new-branch
  # (this will create the remote branch if it doesn't already exist)
  ~$ git push origin your-branch
 ```
 
-Finally, go to the [Neurosin-lab/netpyne GitHub page][GH-netpyne], click on the pull requests tab, click the “new pull request” button, and choose “compare across forks” to select `your branch` as the “head repository”. See the GitHub help page on [creating a PR from a fork](https://help.github.com/en/articles/creating-a-pull-request-from-a-fork) for more information about opening pull requests.
+Finally, go to the [Neurosin-lab/netpyne GitHub page][GH-netpyne], click on the pull requests tab, click the “new pull request” button, and choose “compare across forks” to select `your-branch` as the “head repository” and select `development` branch as "base repository".
 
-To learn more about git, check out the [GitHub help website][GH-help], the [GitHub Learning Lab][GH-llab] tutorial series, and the [pro git book](https://git-scm.com/book/en/v2).
+> **Note:** See the GitHub help page on [creating a PR from a fork](https://help.github.com/en/articles/creating-a-pull-request-from-a-fork) for more information about opening pull requests. To learn more about git, check out the [GitHub help website][GH-help], the [GitHub Learning Lab][GH-llab] tutorial series, and the [pro git book](https://git-scm.com/book/en/v2).
 
 ### Connecting to GitHub with SSH (optional)
 
 One easy way to speed up development is to reduce the number of times you have to type your password. SSH (secure shell) allows authentication with pre-shared key pairs. The private half of your key pair is kept secret on your computer, while the public half of your key pair is added to your GitHub account; when you connect to GitHub from your computer, the local git client checks the remote (public) key against your local (private) key, and grants access your account only if the keys fit. GitHub has several help pages that guide you through the process.
 
-Once you have set up GitHub to use SSH authentication, you should change the addresses of your MNE-Python GitHub remotes, from https:// addresses to git@ addresses, so that git knows to connect via SSH instead of HTTPS. For example:
-
- git remote -v  # show existing remote addresses
- git remote set-url origin git@github.com:$GITHUB_USERNAME/mne-python.git
- git remote set-url upstream git@github.com:mne-tools/mne-python.git
+Once you have set up GitHub to use SSH authentication, you should change the addresses of your Netpyne-lab GitHub remotes, from `https://` addresses to `git@` addresses, so that git knows to connect via SSH instead of HTTPS.
+>**Note:** You only could have a _SSH key_ from a repository you are a contributor.
 
 ## Opening an issue
 
@@ -176,12 +173,14 @@ You should usually open a pull request in the following situations:
 
 A pull request doesn’t have to represent finished work. It’s usually better to open a pull request early on, so others can watch or give feedback on your progress. Just mark it as a “WIP” (Work in Progress) in the subject line. You can always add more commits later.
 
+Always reference the issue related to the PR with `#number-of-issue` and use the markdown to make your comments more readable.
+
 > **Note:** If this is your first pull request, check out [Make a Pull Request](http://makeapullrequest.com/), which [**@kentcdodds**](https://github.com/kentcdodds) created as a walkthrough video tutorial. You can also practice making a pull request in the [First Contributions](https://github.com/Roshanjossey/first-contributions) repository, created by [**@Roshanjossey**](https://github.com/Roshanjossey).
 
 ## Coding conventions
 
 **Adhere to standard Python style guidelines**
-All contributions to MNE-Python are checked against style guidelines described in PEP 8. We also check for common coding errors (such as variables that are defined but never used).
+All contributions to Netpyne are checked against style guidelines described in PEP 8. We also check for common coding errors (such as variables that are defined but never used).
 
 Several text editors or IDEs also have Python style checking, which can highlight style errors while you code (and train you to make those errors less frequently). This functionality is built-in to the Spyder IDE, but most editors have plug-ins that provide similar functionality. Search for `python linter <name of your favorite editor>` to learn more.
 
@@ -193,9 +192,15 @@ In most cases imitating existing docstrings will be sufficient, but consult the 
 
 **Other style guidance**
 
-* Add description and I/O params to all functions and methos.
+* Add description, arguments and returns (I/O params) to all functions and methos.
 * Both the docstrings and dedicated documentation pages (readme file, tutorials, how-to examples, discussions, and glossary) should include cross-references to any mentioned module, class, function, method, attribute, or documentation page.
-* Document API using [Sphink-apidoc](https://www.sphinx-doc.org/en/master/man/sphinx-apidoc.html).**Maybe this point should be described more**
+* We use [Travis](https://travis-ci.org/) to test code.
+* Use a code checker:
+  * [pylint](https://pypi.org/project/pylint/): a  Python static code analysis tool.
+  * [pyflakes](https://pypi.python.org/pypi/pyflakes/):a tool to check Python code for errors by parsing the source file instead of importing it.
+  * [pycodestyle](https://pypi.org/project/pycodestyle/): (formerly `pep8`) a tool to check Python code against some of the style conventions in PEP 8.
+  * [flake8](https://pypi.org/project/flake8/): a tool that glues together `pycodestyle`, `pyflakes`, `mccabe` to check the style and quality of Python code.
+  * [vim-flake8](https://github.com/nvie/vim-flake8): a `flake8` plugin for Vim.
 
 <!-- Links References -->
 

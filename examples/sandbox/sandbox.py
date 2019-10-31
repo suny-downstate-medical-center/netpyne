@@ -9,9 +9,10 @@ netParams.popParams['E2'] = {'cellType': 'E', 'numCells': 5, 'yRange': [100,300]
 ## Cell property rules
 cellRule = {'conds': {'cellType': 'E'},  'secs': {}}  # cell rule dict
 cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}, 'ions':{}}                              # soma params dict
-cellRule['secs']['soma']['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0}                   # soma geometry
+cellRule['secs']['soma']['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0, 'nseg': 1}                   # soma geometry
 cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.13, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanism
-cellRule['secs']['soma']['ions']['na'] = {'e': 60}      # soma hh mechanism
+cellRule['secs']['soma']['ions']['na'] = {'e': 60}  # soma hh mechanism
+cellRule['secs']['soma']['weightNorm'] = [0.0005]
 
 netParams.cellParams['Erule'] = cellRule                          # add dict to list of cell params
 
@@ -38,4 +39,6 @@ simConfig.filename = 'tmp'  # Set file output name
 simConfig.saveJson = True
 
 # Create network and run simulation
-sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)#, interval = 100)    
+sim.create(netParams=netParams, simConfig=simConfig)  #, interval = 100)    
+sim.gatherData()
+sim.analysis.plotConn(removeWeightNorm=1, feature='weight')

@@ -4,6 +4,10 @@
 
 - Made recording of dipoles optional with attribute cfg.recordDipoles
 
+- Rotated conn matrix x-axis labels so can fit large matrices 
+
+- Added 'removeWeightNorm' argument to plotConn() function
+
 - Fixed bug calculating normally distributed rhythmic inputs - was using variance instead of std
 
 - Fixed bug in iplotDipole when smoothing window size = 0
@@ -11,6 +15,7 @@
 - Fixed bug in plotSpikeStats pop order
 
 - Fixed bug is plots with scalebars
+
 
 
 # Version 0.9.3.1

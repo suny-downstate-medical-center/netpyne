@@ -133,7 +133,6 @@ def connectCells (self):
 
 
 
-
 # -----------------------------------------------------------------------------
 # Find pre and post cells matching conditions
 # -----------------------------------------------------------------------------
@@ -318,9 +317,8 @@ def fullConn (self, preCellsTags, postCellsTags, connParam):
 
     for paramStrFunc in paramsStrFunc:
         # replace lambda function (with args as dict of lambda funcs) with list of values
-        connParam[paramStrFunc[:-4]+'List'] = {(preGid,postGid): connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()})  
-            for preGid,preCellTags in preCellsTags.items() for postGid,postCellTags in postCellsTags.items()}
-    
+        connParam[paramStrFunc[:-4]+'List'] = {(preGid,postGid): connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()}) for preGid, preCellTags in preCellsTags.items() for postGid, postCellTags in postCellsTags.items()}
+        
     for postCellGid in postCellsTags:  # for each postsyn cell
         if postCellGid in self.gid2lid:  # check if postsyn is in this node's list of gids
             for preCellGid, preCellTags in preCellsTags.items():  # for each presyn cell
@@ -389,6 +387,8 @@ def probConn (self, preCellsTags, postCellsTags, connParam):
 
     # standard probabilistic conenctions   
     else:
+        # print('rank %d'%(sim.rank))
+        # print(connParam)
         # calculate the conn preGids of the each pre and post cell
         # for postCellGid,postCellTags in sorted(postCellsTags.items()):  # for each postsyn cell
         for postCellGid,postCellTags in postCellsTags.items():  # for each postsyn cell  # for each postsyn cell
@@ -564,6 +564,7 @@ def _addCellConn (self, connParam, preCellGid, postCellGid):
     # and then selecting a value from list based of pre- and post- gid -- that way only seed once at beginning in connectCells()
     # Howeve, not clear if faster in all cases since need to generate values for len(pre)*len(post), whereas here only a subset
     randSeeded = False
+        
     for param in paramStrFunc:
         if param+'List' in connParam:
             finalParam[param] = connParam[param+'List'][preCellGid,postCellGid]

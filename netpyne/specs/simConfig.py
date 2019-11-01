@@ -47,6 +47,11 @@ class SimConfig (object):
         self.gatherOnlySimData = False  # omits gathering of net+cell data thus reducing gatherData time
         self.compactConnFormat = False  # replace dict format with compact list format for conns (need to provide list of keys to include)
         self.connRandomSecFromList = True  # select random section (and location) from list even when synsPerConn=1 
+        self.distributeSynsUniformly = True  # locate synapses at uniformly across section list; if false, place one syn per section in section list   
+        self.pt3dRelativeToCellLocation = True  # Make cell 3d points relative to the cell x,y,z location
+        self.invertedYCoord = True  # Make y-axis coordinate negative so they represent depth when visualized (0 at the top)
+        self.allowSelfConns = False  # allow connections from a cell to itself
+        self.allowConnsWithWeight0 = True  # allow connections with weight 0
         self.saveCellSecs = True  # save all the sections info for each cell (False reduces time+space; available in netParams; prevents re-simulation)
         self.saveCellConns = True  # save all the conns info for each cell (False reduces time+space; prevents re-simulation)
         self.timing = True  # show timing of each process
@@ -61,7 +66,8 @@ class SimConfig (object):
         self.recordTraces = {}  # Dict of traces to record
         self.recordCellsSpikes = -1  # cells to record spike times from (-1 to record from all)
         self.recordStim = False  # record spikes of cell stims
-        self.recordLFP = [] # list of 3D locations to record LFP from
+        self.recordLFP = []  # list of 3D locations to record LFP from
+        self.recordDipoles = False # record dipoles
         self.saveLFPCells = False  # Store LFP generate individually by each cell 
         self.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
         self.recordTime = True  # record time step of recording

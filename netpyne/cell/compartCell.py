@@ -41,7 +41,6 @@ from ..specs import Dict
 
 # --- Temporarily copied from HNN code; improve so doesn't use h globals ---  
 # global variables for dipole calculation, should be node-independent 
-h("dp_total_L2 = 0."); h("dp_total_L5 = 0.") # put here since these variables used in cells
 
 class CompartCell (Cell):
     ''' Class for section-based neuron models '''
@@ -52,10 +51,22 @@ class CompartCell (Cell):
         self.secLists = Dict()  # dict of sectionLists
 
         if create: self.create()  # create cell 
-        if associateGid: self.associateGid() # register cell for this node
+        if associateGid: self.associateGid()  # register cell for this node
+
+    def __str__ (self):
+        try:
+            gid, cty, cmo = self.gid, self.tags['cellType'], self.tags['cellModel'] # only use if these exist
+            return 'compartCell_%s_%s_%d'%(cty, cmo, gid)
+        except: return 'compartCell%d'%self.gid
+
+    def __repr__ (self):
+        return self.__str__()
 
     def create (self):
         from .. import sim
+                
+        if sim.cfg.recordDipoles:
+            h("dp_total_L2 = 0."); h("dp_total_L5 = 0.") # put here since these variables used in cells
 
         # generate random rotation angle for each cell
         if sim.net.params.rotateCellsRandomly:
@@ -230,8 +241,6 @@ class CompartCell (Cell):
                 sec['hObj'].v = sec['vinit']
 
 
-
-
     # Create dictionary of section names with entries to scale section lengths to length along z-axis
     def __dipoleGetSecLength (self, secName):
         L = 1
@@ -250,6 +259,7 @@ class CompartCell (Cell):
 
     # insert dipole in section
     def __dipoleInsert(self, secName, sec):
+
         # insert dipole mech (dipole.mod)
         try:
             sec['hObj'].insert('dipole')
@@ -329,9 +339,12 @@ class CompartCell (Cell):
                 # set 3d geometry
                 if 'pt3d' in sectParams['geom']:  
                     h.pt3dclear(sec=sec['hObj'])
-                    x = self.tags['x']
-                    y = -self.tags['y'] # Neuron y-axis positive = upwards, so assume pia=0 and cortical depth = neg
-                    z = self.tags['z']
+                    if sim.cfg.pt3dRelativeToCellLocation:
+                        x = self.tags['x']
+                        y = -self.tags['y'] if sim.cfg.invertedYCoord else self.tags['y'] # Neuron y-axis positive = upwards, so assume pia=0 and cortical depth = neg
+                        z = self.tags['z']
+                    else:
+                        x = y = z = 0
                     for pt3d in sectParams['geom']['pt3d']:
                         h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hObj'])
 
@@ -419,10 +432,11 @@ class CompartCell (Cell):
                     sec['hObj'].connect(self.secs[sectParams['topol']['parentSec']]['hObj'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
 
         # add dipoles
-        for sectName,sectParams in prop['secs'].items():
-            sec = self.secs[sectName]
-            if 'mechs' in sectParams and 'dipole' in sectParams['mechs']:
-               self.__dipoleInsert(sectName, sec)  # add dipole mechanisms to each section
+        if sim.cfg.recordDipoles:
+            for sectName,sectParams in prop['secs'].items():
+                sec = self.secs[sectName]
+                if 'mechs' in sectParams and 'dipole' in sectParams['mechs']:
+                    self.__dipoleInsert(sectName, sec)  # add dipole mechanisms to each section
 
         # Print message about error inserting mechanisms
         if mechInsertError:
@@ -645,14 +659,19 @@ class CompartCell (Cell):
         if params.get('loc') is None: params['loc'] = 0.5 # if no loc, set default
         if params.get('synsPerConn') is None: params['synsPerConn'] = 1 # if no synsPerConn, set default
 
-        # Avoid self connections
-        if params['preGid'] == self.gid:
-            if sim.cfg.verbose: print('  Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
-            return  # if self-connection return
-
         # Get list of section labels
         secLabels = self._setConnSections(params)
         if secLabels == -1: return  # if no section available exit func 
+
+        # Warning or error if self connections
+        if params['preGid'] == self.gid:
+            # Only allow self connections if option selected by user  
+            # !!!! AD HOC RULE FOR HNN!!! -  or 'soma' in secLabels and not self.tags['cellType'] == 'L5Basket' (removed)
+            if sim.cfg.allowSelfConns: 
+                if sim.cfg.verbose: print('  Warning: creating self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
+            else:
+                if sim.cfg.verbose: print('  Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
+                return  # if self-connection return
 
         # Weight
         weights = self._setConnWeights(params, netStimParams, secLabels)
@@ -681,7 +700,9 @@ class CompartCell (Cell):
 
         # Create connections
         for i in range(params['synsPerConn']):
-            
+            if not sim.cfg.allowConnsWithWeight0 and weights[i] == 0.0:
+                continue
+
             if netStimParams:
                     netstim = self.addNetStim(netStimParams)
 
@@ -1135,8 +1156,25 @@ class CompartCell (Cell):
                 else:
                     synMechLocs = [i*(1.0/synsPerConn)+1.0/synsPerConn/2 for i in range(synsPerConn)]
             else:  # if multiple sections, distribute syns
-                synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
-        else:
+                if sim.cfg.distributeSynsUniformly:
+                    synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
+                else:
+                    if synsPerConn == len(secLabels):  # have list of secs that matches num syns 
+                        synMechSecs = secLabels
+                        if isinstance(params['loc'], list):  
+                            if len(params['loc']) == synsPerConn:  # list of locs matches num syns
+                                synMechLocs = params['loc']
+                            else:  # list of locs does not match num syns
+                                print("Error: The length of the list of locations does not match synsPerConn (with cfg.distributeSynsUniformly = False")
+                                return
+                        else: # single loc
+                            synMechLocs = [params['loc']] * synsPerConn
+                    else:
+                            print("Error: The length of the list of sections does not match synsPerConn (with cfg.distributeSynsUniformly = False")
+                            return            
+                
+        else:  # if 1 synapse
+            # by default place on 1st section of list and location available 
             synMechSecs = secLabels
             synMechLocs = params['loc'] if isinstance(params['loc'], list) else [params['loc']] 
 

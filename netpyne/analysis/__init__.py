@@ -61,3 +61,9 @@ from .info import nTE, granger
 # Import RxD-related functions
 # -------------------------------------------------------------------------------------------------------------------
 from .rxd import plotRxDConcentration
+
+
+# -------------------------------------------------------------------------------------------------------------------
+# Import HNN-related functions
+# -------------------------------------------------------------------------------------------------------------------
+from .interactive import iplotDipole, iplotDipoleSpectrogram,  iplotDipolePSD, iplotRaster, iplotSpikeHist, iplotRatePSD, iplotTraces, iplotLFP

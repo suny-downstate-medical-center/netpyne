@@ -54,6 +54,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
         - Returns figure handles
     '''
     from .. import sim
+    from ..support.scalebar import add_scalebar
 
     print('Plotting recorded cell traces ...',oneFigPer)
 
@@ -94,6 +95,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
 
     # set font size
     plt.rcParams.update({'font.size': fontSize})
+    fontsiz = fontSize
 
     # Plot one fig per trace for given cell list
     def plotFigPerTrace(subGids):
@@ -180,7 +182,6 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
     if oneFigPer == 'cell':
         for cell, gid in zip(cells,cellGids):
             figs['_gid_'+str(gid)] = plt.figure(figsize=figSize) # Open a new figure
-            fontsiz = 12
             for itrace, trace in enumerate(tracesList):
                 if 'cell_'+str(gid) in sim.allSimData[trace]:
                     fullTrace = sim.allSimData[trace]['cell_'+str(gid)]
@@ -218,17 +219,13 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                         plt.subplot(len(tracesList),1,itrace+1)
                         color = 'blue'
                     if recordStep == 'adaptive':
-                        if isinstance(data, list):
+                        if isinstance(data, list) and isinstance(data[0], (list, np.array)):
                             for tl,dl in zip(t,data):
                                 plt.plot(tl, dl, linewidth=1.5, color=color, label=trace)
                         else:
                             plt.plot(t, data, linewidth=1.5, color=color, label=trace)
                     else:
-                        if isinstance(data, list):
-                            for tl,dl in zip(t,data):
-                                plt.plot(tl[:lenData], dl, linewidth=1.5, color=color, label=trace)
-                        else:
-                            plt.plot(t[:lenData], data, linewidth=1.5, color=color, label=trace)
+                        plt.plot(t[:lenData], data, linewidth=1.5, color=color, label=trace)
                     plt.xlabel('Time (ms)', fontsize=fontsiz)
                     plt.ylabel(trace, fontsize=fontsiz)
                     plt.xlim(timeRange)

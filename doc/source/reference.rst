@@ -147,9 +147,9 @@ The ``addPopParams(label, params)`` method of the class ``netParams`` can be use
 
 It is also possible to create populations of artificial cells, i.e. point processes that generate spike events but don't have sections (e.g. NetStim, VecStim or IntFire2). In this case the ``cellModel`` field will specify the name of the point process mechanism, and the properties of the mechanism will be specified as additional fields. Note, since artificial cells are simpler they don't require to define separate cell parameters in the ``netParams.cellParams`` structure. For example, below are the fields required to create a population of NetStims (NEURON's artificial spike generator):
 
-* **pop** - An arbitrary label for this population assigned to all cells; can be used to as condition to apply specific connectivtiy rules. (e.g. 'background')
+* **pop** - An arbitrary label for this population assigned to all cells; can be used to as condition to apply specific connectivity rules. (e.g. 'background')
 
-* **cellModel** - Name of the point process artificical cell (e.g ``IntFire2``, ``NetStim`` o ``VecStim``).
+* **cellModel** - Name of the point process artificical cell (e.g ``IntFire2``, ``NetStim`` or ``VecStim``).
 
 * **numCells** - Number of cells
 
@@ -290,7 +290,7 @@ Example of two cell property rules added using different valid approaches::
 Synaptic mechanisms parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To define the parameteres of a synaptic mechanism, add items to the ``synMechParams`` ordered dict. You can use the addSynMechParams(label,params) method. Each ``synMechParams`` item consists of a key and value. The key is a an arbitrary label for this mechanism, which will be used to reference in the connectivity rules. The value is a dictionary of the synaptic mechanism parameters with the following fields:
+To define the parameters of a synaptic mechanism, add items to the ``synMechParams`` ordered dict. You can use the addSynMechParams(label,params) method. Each ``synMechParams`` item consists of a key and value. The key is a an arbitrary label for this mechanism, which will be used to reference in the connectivity rules. The value is a dictionary of the synaptic mechanism parameters with the following fields:
 
 * ``mod`` - the NMODL mechanism name (e.g. 'ExpSyn'); note this does not always coincide with the name of the mod file.
 
@@ -445,7 +445,7 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 	e.g. ``'shape': {'switchOnOff': [200, 800], 'pulseType': 'square', 'pulsePeriod': 100, 'pulseWidth': 50}``
 
 * **plasticity** (optional) - Plasticity mechanism to use for this connections.
-	Requires 2 fields: ``mech`` to specifiy the name of the plasticity mechanism, and ``params`` containing a dictionary with the parameters of the mechanism 
+	Requires 2 fields: ``mech`` to specify the name of the plasticity mechanism, and ``params`` containing a dictionary with the parameters of the mechanism 
 
 	e.g. ``{'mech': 'STDP', 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 'tauhebb': 10}}``
 
@@ -465,7 +465,7 @@ Example of connectivity rules:
 
 	netParams.connParams['bg->all'] = {
 		'preConds': {'pop': 'background'}, 
-		'postConds': {'cellType': ['S','M'], 'ynorm': [0.1,0.6]}, # background -> S,M with ynrom in range 0.1 to 0.6
+		'postConds': {'cellType': ['S','M'], 'ynorm': [0.1,0.6]}, # background -> S,M with ynorm in range 0.1 to 0.6
 		'synReceptor': 'AMPA',					# target synaptic mechanism 
 		'weight': 0.01, 					# synaptic weight 
 		'delay': 5}						# transmission delay (ms) 
@@ -599,7 +599,7 @@ Each item of the ``stimSourceParams`` ordered dictionary consists of a key and a
 
 	* **stim params** (optional) - These will depend on the type of stimulator (e.g. for 'IClamp' will have 'del', 'dur' and 'amp')
 
-		Can be defined as a function (see :ref:`function_string`). Note for stims it only makes sense to use parameters of the postsynatic cell (e.g. 'post_ynorm').
+		Can be defined as a function (see :ref:`function_string`). Note for stims it only makes sense to use parameters of the postsynaptic cell (e.g. 'post_ynorm').
 
 
 Each item of the ``stimTargetParams`` specifies how to map a source of stimulation to a subset of cells in the network. The key is an arbitrary label for this mapping, and the value is a dictionary with the following parameters:
@@ -709,10 +709,16 @@ Related to the simulation and netpyne framework:
 * **createNEURONObj** - Create runnable network in NEURON when instantiating netpyne network metadata (default: True)
 * **createPyStruct** - Create Python structure (simulator-independent) when instantiating network (default: True)
 * **includeParamsLabel** - Include label of param rule that created that cell, conn or stim (default: True)
-* **addSynMechs** - Whether to add synaptich mechanisms or not (default: True)
+* **addSynMechs** - Whether to add synaptic mechanisms or not (default: True)
 * **gatherOnlySimData** - Omits gathering of net and cell data thus reducing gatherData time (default: False)
 * **compactConnFormat** - Replace dict format with compact list format for conns (need to provide list of keys to include) (default: False)
 * **connRandomSecFromList** - Select random section (and location) from list even when synsPerConn=1 (default: True) 
+* **distributeSynsUniformly** - Locate synapses at uniformly across section list; if false, place one syn per section in section list (default: True)
+* **pt3dRelativeToCellLocation** - True  # Make cell 3d points relative to the cell x,y,z location (default: True)
+* **invertedYCoord** - Make y-axis coordinate negative so they represent depth when visualized (0 at the top) (default: True)
+* **allowSelfConns** = False  # allow connections from a cell to itself (default: False)
+* **saveCellSecs** - Save all the sections info for each cell; reduces time+space (default: False) 
+* **saveCellConns** - save all the conns info for each cell; reduces time+space (default: False)
 * **timing** - Show and record timing of each process (default: True)
 * **saveTiming** - Save timing data to pickle file (default: False)
 * **printRunTime** - Print run time at interval (in sec) specified here (eg. 0.1) (default: False) 
@@ -780,11 +786,12 @@ Wrappers:
 * **sim.load(filename)** - wrapper to initialize, load net from file, and setup recording.
 
 * **sim.createSimulate(simConfig, netParams)** - wrapper to create and simulate the network.
-* **sim.createSimulateAnalyze(simConfig, netParams)** - wrapper to create, simulate and analyse the network.
+* **sim.createSimulateAnalyze(simConfig, netParams)** - wrapper to create, simulate and analyze the network.
+* **sim.intervalCreateSimulateAnalyze(simConfig, cfg, interval=t)** - wrapper to create, simulate and analyze the network, saving simulation output every t ms.
 * **sim.createExportNeuroML2(simConfig, netParams)** - wrapper to create and export network to NeuroML2.
 
 * **sim.loadSimulate(simConfig, netParams)** - wrapper to load and simulate network.
-* **sim.loadSimulateAnalyze(simConfig, netParams)** - wrapper to load, simulate and analyse the network.
+* **sim.loadSimulateAnalyze(simConfig, netParams)** - wrapper to load, simulate and analyze the network.
 
 
 Initialize and set up:
@@ -840,11 +847,11 @@ Analysis-related functions
     - *maxSpikes*: maximum number of spikes that will be plotted (int)
     - *orderBy*: Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' ('gid'|'y'|'ynorm'|...)
     - *orderInverse*: Invert the y-axis order (True|False)
-	- *labels*: Show population labels in a legend or overlayed on one side of raster ('legend'|'overlay'))
+	- *labels*: Show population labels in a legend or overlaid on one side of raster ('legend'|'overlay'))
     - *popRates*: Include population rates ('legend'|'overlay')
     - *spikeHist*: overlay line over raster showing spike histogram (spikes/bin) (None|'overlay'|'subplot')
     - *spikeHistBin*: Size of bin in ms to use for histogram  (int)
-    - *syncLines*: calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (True|False)
+    - *syncLines*: calculate synchrony measure and plot vertical lines for each spike to evidence synchrony (True|False)
     - *figSize*: Size of figure ((width, height))
     - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
     - *saveFig*: File name where to save the figure (None|'fileName')
@@ -938,7 +945,7 @@ Analysis-related functions
     - *smooth*:  Window size for smoothing LFP; no smoothing if 0 (int)
     - *separation*: Separation factor between time-resolved LFP plots; multiplied by max LFP value (float)
     - *includeAxon*:  Whether to show the axon in the location plot (boolean)
-    - *figSize*: Size of figure ((width, heiight))
+    - *figSize*: Size of figure ((width, height))
     - *saveData*: File name where to save the final data used to generate the figure; if set to True uses filename from simConfig (None|True|'fileName')
     - *saveFig*: File name where to save the figure; if set to True uses filename from simConfig (None|True|'fileName')
     - *showFig*: Whether to show the figure or not (True|False)
@@ -1278,7 +1285,7 @@ Network class
 - cells (list of Cell objects)
 - params (NetParams object)
 
-After gatherting from nodes:
+After gathering from nodes:
 - allCells (list of Dicts)
 - allPops (list of Dicts)
 

@@ -137,7 +137,9 @@ def createParallelContext ():
 #------------------------------------------------------------------------------
 def readCmdLineArgs (simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
     from .. import sim
-    import imp, __main__
+    import imp, importlib, types
+    import __main__
+    
 
     if len(sys.argv) > 1:
         print('\nReading command line arguments using syntax: python file.py [simConfig=filepath] [netParams=filepath]')
@@ -155,13 +157,24 @@ def readCmdLineArgs (simConfigDefault='cfg.py', netParamsDefault='netParams.py')
             if netParamsPath.endswith('.json'):
                 netParams = sim.loadNetParams(netParamsPath,  setLoaded=False)
             elif netParamsPath.endswith('py'):
-                netParamsModule = imp.load_source(os.path.basename(netParamsPath).split('.')[0], netParamsPath)
+                try: # py3
+                    loader = importlib.machinery.SourceFileLoader(os.path.basename(netParamsPath).split('.')[0], netParamsPath)
+                    netParamsModule = types.ModuleType(loader.name)
+                    loader.exec_module(netParamsModule)
+                except: # py2
+                    netParamsModule = imp.load_source(os.path.basename(netParamsPath).split('.')[0], netParamsPath)
                 netParams = netParamsModule.netParams
                 print('Importing netParams from %s' %(netParamsPath))
 
     if not cfgPath:
         try:
-            cfgModule = imp.load_source('cfg', simConfigDefault)
+            try:  # py3
+                loader = importlib.machinery.SourceFileLoader('cfg', simConfigDefault)
+                cfgModule = types.ModuleType(loader.name)
+                loader.exec_module(cfgModule)
+            except: # py2
+                cfgModule = imp.load_source('cfg', simConfigDefault)
+
             cfg = cfgModule.cfg
             __main__.cfg = cfg
         except:
@@ -170,7 +183,13 @@ def readCmdLineArgs (simConfigDefault='cfg.py', netParamsDefault='netParams.py')
 
     if not netParamsPath:
         try:
-            netParamsModule = imp.load_source('netParams', netParamsDefault)
+            try: # py3
+                loader = importlib.machinery.SourceFileLoader('netParams', netParamsDefault)
+                netParamsModule = types.ModuleType(loader.name)
+                loader.exec_module(netParamsModule)
+            except:  # py2
+                cfgModule = imp.load_source('netParams', netParamsDefault)
+
             netParams = netParamsModule.netParams
         except:
             print('\nWarning: Could not load netParams from command line path or from default netParams.py')
@@ -293,11 +312,19 @@ def setupRecording ():
                 total+=1
         print(("Recording %s traces of %s types on node %i"%(total, cat, sim.rank)))
 
-
     # set LFP recording
     if sim.cfg.recordLFP:
         setupRecordLFP()
 
+    # try to record dipoles
+    
+    if sim.cfg.recordDipoles:
+        dp_rec_L2 = h.Vector()
+        dp_rec_L5 = h.Vector()
+        dp_rec_L2.record(h._ref_dp_total_L2) # L2 dipole recording
+        dp_rec_L5.record(h._ref_dp_total_L5)  # L5 dipole recording
+        sim.simData['dipole'] = {'L2': dp_rec_L2, 'L5': dp_rec_L5}  
+    
     sim.timing('stop', 'setrecordTime')
 
     return sim.simData

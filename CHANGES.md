@@ -1,4 +1,58 @@
+# Version 0.9.4
+
+- Added option to avoid creating connections with weight=0
+
+- Made recording of dipoles optional with attribute cfg.recordDipoles
+
+- Rotated conn matrix x-axis labels so can fit large matrices 
+
+- Added 'removeWeightNorm' argument to plotConn() function
+
+- Fixed bug calculating normally distributed rhythmic inputs - was using variance instead of std
+
+- Fixed bug in iplotDipole when smoothing window size = 0
+
+- Fixed bug in plotSpikeStats pop order
+
+- Fixed bug is plots with scalebars
+
+
+
+# Version 0.9.3.1
+
+- Replaced deprecated imp module with importlib
+
+- Fix to cellsGrid cell locations with normRange
+
+
+# Version 0.9.3
+
+- Improved conversion from SONATA format, including 300 biophys cell example
+
+- Added saveCellConns, pt3dRelativeToCellLocation and invertedYCoord cfg options
+
+- Added lineWidth as argument of plotRatePSD() and plotLFP()
+
+- Modified plotLFP and plotRatePSD to use Morlet wavelet for PSD calculation
+
+- Added lineWidth argument to some raster and LFP plots
+
+- Added shuffling test to granger causality functions
+
+- Fixed bug plotting traces with one fig per trace
+
+- Fixed bug in granger functions - required conversion to int 
+
+- Fixed bug in plotShape when cells sections not available
+
+- Return meaningful cell info via 'repr' and 'str' for pointCell, compartCell
+
+- Fixed spelling typos in documentation
+
+
 # Version 0.9.2
+
+- Support for saving simulation at intervals  
 
 - Improved Python cell template import so can read section names from a Python list or dict of sections
 
@@ -6,11 +60,23 @@
 
 - Improved speed performance of 'connList' connectivity rules
 
+- Added option cfg.distributeSynsUniformly to locate synapses at uniformly across section list; if false, place one syn per section in section list 
+
 - Updated RxD calcium buffering example
+
+- Added netClamp example to re-simulate activity of single cell from network data
+
+- Added support for recording and plotting variable time step
+
+- Replaced spectrogram FFT method with Morlet wavelet method
+
+- Updated installation instructions
 
 - Added 'fontSize' argument to several plots
 
-- Fixed bug saving evol output file
+- Fixed issue completing batches in Python 3
+
+- Fixed bug saving evolutionary optimization batch output file
 
 - Fixed bug in plotShape()
 
@@ -25,9 +91,11 @@
 
 - Removed deprecated hold function from plotConn
 
+
 # Version 0.9.1.2
 
 - Set 'pandas==0.23.4' to avoid error 
+
 
 # Version 0.9.1.1
 

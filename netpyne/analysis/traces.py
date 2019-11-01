@@ -97,6 +97,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
 
     # Plot one fig per trace for given cell list
     def plotFigPerTrace(subGids):
+        fontsiz = 12
         for itrace, trace in enumerate(tracesList):
             figs['_trace_'+str(trace)] = plt.figure(figsize=figSize) # Open a new figure
             for igid, gid in enumerate(subGids):

@@ -1,9 +1,9 @@
 
 # How to contribute
 
-Thank you for your interest in contributing to a NetPyNE project!. NetPyNE is open source and available at [GitHub repository][NlN-repo].
+Thank you for your interest in contributing to NetPyNE project!. NetPyNE is open source and available at [GitHub repository](https://github.com/Neurosim-lab/netpyne).
 
-[NetPyNE](http://netpyne.org/overview.html) is currently being developed and supported by [Neurosin lab](http://neurosimlab.org/) and accepts contributions in the form of bug reports, fixes, feature additions, and documentation improvements (even just typo corrections). The best way to start contributing is by [opening an issue](https://github.com/Neurosim-lab/netpyne/issues) or [fork][GH-fork] the repository on our GitHub page and make a [Pull Request][GH-pr] with your changes.
+[NetPyNE](http://netpyne.org/overview.html) is currently being developed and supported by [Neurosin lab](http://neurosimlab.org/) and accepts contributions in the form of bug reports, fixes, feature additions, and documentation improvements (even just typo corrections). The best way to start contributing is by [opening an issue](https://github.com/Neurosim-lab/netpyne/issues) or [fork](https://help.github.com/en/articles/fork-a-repo) the repository on our GitHub page and make a [Pull Request](https://help.github.com/en/articles/creating-a-pull-request) with your changes.
 
 Users and contributors to NetPyNE are expected to follow our [coding conventions](#coding-conventions).
 
@@ -22,24 +22,24 @@ Users and contributors to NetPyNE are expected to follow our [coding conventions
 ## Overview of contribution process
 > _Hint:_ **Working on your first pull request?** Learn how from this guide in GitHub. [How to Contribute to Open Source Project](https://opensource.guide/how-to-contribute/)
 
-In general you’ll be working with three different copies of the Neurosim-lab/netpyne repository codebase: the official remote copy at https://github.com/Neurosim-lab/netpyne (usually called upstream), your remote [fork][GH-fork] of the upstream repository (similar URL, but with your username in place of Nuerosim-lab, and usually called origin), and the local copy of the codebase on your computer. The typical contribution process is to:
+In general you’ll be working with three different copies of the Neurosim-lab/netpyne repository codebase: the official remote copy at https://github.com/Neurosim-lab/netpyne (usually called upstream), your remote [fork](https://help.github.com/en/articles/fork-a-repo) of the upstream repository (similar URL, but with your username in place of Nuerosim-lab, and usually called origin), and the local copy of the codebase on your computer. The typical contribution process is to:
 
 1. synchronize your local copy with `upstream`
 2. make changes to your local copy
-3. [push][GH-push] your changes to `origin` (your remote fork of the `upstream`)
-4. submit a [pull request][GH-prfork] from your fork into `upstream`
+3. [push](https://help.github.com/en/articles/pushing-commits-to-a-remote-repository) your changes to `origin` (your remote fork of the `upstream`)
+4. submit a [pull request](https://help.github.com/en/articles/creating-a-pull-request-from-a-fork) from your fork into `upstream`
 
 The next sections describe this process in more detail.
 
 ## Getting started
-> **Note:** If you are new in GitHubs see this [link][GH-start].
+> **Note:** If you are new in GitHubs see this [link](https://guides.github.com/activities/hello-world/).
 
 ### Configuring git
 To get set up for contributing, make sure you have git installed on your local computer:
 
 * On Linux, the command `sudo apt install git` is usually sufficient; see the [official Linux instructions](https://git-scm.com/download/linux) for more options.
 
-* On MacOS, download [the .dmg installer](https://git-scm.com/download/mac); Atlassian also provides [more detailed instructions and alternatives](https://www.atlassian.com/git/tutorials/install-git) such as using MacPorts or Homebrew.
+* On MacOS, download the [.dmg installer](https://git-scm.com/download/mac); Atlassian also provides [more detailed instructions and alternatives](https://www.atlassian.com/git/tutorials/install-git) such as using MacPorts or Homebrew.
 
 * On Windows, we recommend [git Bash](https://gitforwindows.org/) rather than the [official Windows version of git](https://git-scm.com/download/win), because git Bash provides its own shell that includes many Linux-equivalent command line programs that are useful for development. Windows 10 also offers the [Windows subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/about) that offers similar functionality to git Bash.
 
@@ -55,16 +55,16 @@ Once git is installed, the only absolutely necessary configuration step is ident
 
 Make sure that the same email address is associated with your GitHub account and with your local git configuration. It is possible to associate multiple emails with a GitHub account, so if you initially set them up with different emails, just add the local email to the GitHub account.
 
-To customize git’s behavior see [configuring git](https://www.git-scm.com/book/en/v2/Customizing-Git-Git-Configuration) for more information. Once you have git installed and configured, go to [the Neurosym-lab/netpyne GitHub page][GH-netpyne] and create a [fork][GH-fork] into your GitHub user account.
+To customize git’s behavior see [configuring git](https://www.git-scm.com/book/en/v2/Customizing-Git-Git-Configuration) for more information. Once you have git installed and configured, go to [the Neurosym-lab/netpyne GitHub page](https://github.com/Neurosim-lab/netpyne) and create a [fork](https://help.github.com/en/articles/fork-a-repo) into your GitHub user account.
 
 ### Make a local copy of GitHub repository
 
 > **Supported Python environments**
 >We strongly recommend the [Anaconda](https://www.anaconda.com/distribution/) or [Miniconda](https://conda.io/en/latest/miniconda.html) environment managers for Python.
 
-You must clone the Nerosim-lab/netpyne repository from your remote fork, and also connect the local copy to the `upstream` version of the codebase, so you can stay up-to-date with changes from other contributors. First, edit these two variables for your situation:
+You must clone the Nerosim-lab/netpyne repository from your remote fork, and also connect the local copy to the `upstream` version of the codebase, so you can stay up-to-date with changes from other contributors.
 
-Then make a local clone of your remote fork (origin):
+Make a local clone of your remote fork (`origin`):
 
 ```bash
  ~$ cd $INSTALL_LOCATION
@@ -74,24 +74,24 @@ Then make a local clone of your remote fork (origin):
 > **Remote URLs in git**
 >Here we use `git://` instead of `https://` in the URL for the `upstream` remote repository. `git://` URLs are read-only, so you can `pull` changes from `upstream` into your local copy (to stay up-to-date with changes from other contributors) but you cannot `push` changes from your computer into the `upstream` remote. Instead, you must `push` your changes to your own remote fork (`origin`) first, and then create a pull request from your remote into the `upstream` remote. In [a later section](#connecting-to-github-with-ssh-optional) you’ll see a third kind of remote URL for connecting to GitHub using SSH.
 
-Finally, set up a link between your local clone and the official repository (upstream):
+Finally, set up a link between your local clone and the official repository (`upstream`):
 
 ```bash
 ~$ cd netpyne
 ~$ git remote add upstream https://github.com/Neurosim-lab/netpyne.git
 ~$ git fetch --all
-~$ git remove -v   #Shows your tracked repositories.
+~$ git remote -v   #Shows your tracked repositories.
 ```
 
 ### Basic git commands
 
-Learning to work with git can take a long time, because it is a complex and powerful tool for managing versions of files across multiple users, each of whom have multiple copies of the codebase. We’ve already seen in the setup commands above a few of the basic git commands useful:
+Learning to work with git can take a long time, because it is a complex and powerful tool for managing versions of files across multiple users, each of whom have multiple copies of the codebase. We’ve already seen in the setup commands above a few useful git commands:
 
 * `git clone <URL_OF_REMOTE_REPO>` (make a local copy of a repository).
 * `git remote add <NICKNAME_OF_REMOTE> <URL_OF_REMOTE_REPO>` (connect a local copy to an additional remote).
 * `git fetch --all` (get the current state of connected remote repos).
 
-Other commands that you will undoubtedly need relate to [branches](https://help.github.com/en/articles/about-branches). Branches represent multiple copies of the codebase within a local clone or remote repo. Branches are typically used to experiment with new features while still keeping a clean, working copy of the original codebase that you can switch back to at any time. The default branch of any repo is always called `master`, and it is recommended that you reserve the `master` branch to be that clean copy of the working `upstream` codebase. 
+Other commands that you will undoubtedly need related to branches can be found [here](https://help.github.com/en/articles/about-branches). Branches represent multiple copies of the codebase within a local clone or remote repo. Branches are typically used to experiment with new features while still keeping a clean, working copy of the original codebase that you can switch back to at any time. The default branch of any repo is always called `master`, and it is recommended that you reserve the `master` branch to be that clean copy of the working `upstream` codebase. 
 
 In Neurosim-lab/netpyne repo, you must not work in the `master` branch, there is a branch called `development` for contribuiting. Therefore, if you want to add a new change, you should first synchronize your local `development` branch with the `upstream` repository, then create a new branch based on `development` and [check it out](https://git-scm.com/docs/git-checkout) so that any changes you make will exist on that new branch:
 
@@ -137,9 +137,9 @@ Once you’ve made the commit, the stage is now empty, and you can repeat the cy
  ~$ git push origin your-branch
 ```
 
-Finally, go to the [Neurosin-lab/netpyne GitHub page][GH-netpyne], click on the pull requests tab, click the “new pull request” button, and choose “compare across forks” to select `your-branch` as the “head repository” and select `development` branch as "base repository".
+Finally, go to the [Neurosin-lab/netpyne GitHub page](https://github.com/Neurosim-lab/netpyne), click on the pull requests tab, click the “new pull request” button, and choose “compare across forks” to select `your-branch` as the “head repository” and select `development` branch as "base repository".
 
-> **Note:** See the GitHub help page on [creating a PR from a fork](https://help.github.com/en/articles/creating-a-pull-request-from-a-fork) for more information about opening pull requests. To learn more about git, check out the [GitHub help website][GH-help], the [GitHub Learning Lab][GH-llab] tutorial series, and the [pro git book](https://git-scm.com/book/en/v2).
+> **Note:** See the GitHub help page on [creating a PR from a fork](https://help.github.com/en/articles/creating-a-pull-request-from-a-fork) for more information about opening pull requests. To learn more about git, check out the [GitHub help website](https://help.github.com/en), the [GitHub Learning Lab](https://lab.github.com/) tutorial series, and the [pro git book](https://git-scm.com/book/en/v2).
 
 ### Connecting to GitHub with SSH (optional)
 
@@ -162,7 +162,7 @@ Tips for communicating on issues:
 * **If an issue was opened a while ago**, it’s possible that it’s being addressed somewhere else, or has already been resolved, so comment to ask for confirmation before starting work.
 * **If you opened an issue, but figured out the answer later on your own**, comment on the issue to let people know, then close the issue. Even documenting that outcome is a contribution to the project.
 
-> **Note:** See in [GitHub Help][GH-help] how to [creating an issue][GH-issue].
+> **Note:** See in [GitHub Help](https://help.github.com/en) how to [creating an issue](https://help.github.com/en/articles/creating-an-issue).
 
 ## Opening a pull request
 
@@ -204,13 +204,13 @@ In most cases imitating existing docstrings will be sufficient, but consult the 
 
 <!-- Links References -->
 
-[NlN-repo]: (https://github.com/Neurosim-lab/netpyne)
+<!--[NlN-repo]: (https://github.com/Neurosim-lab/netpyne)
 [GH-fork]: (https://help.github.com/en/articles/fork-a-repo)
 [GH-pr]: (https://help.github.com/en/articles/creating-a-pull-request)
 [GH-push]: (https://help.github.com/en/articles/pushing-commits-to-a-remote-repository)
 [GH-prfork]: (https://help.github.com/en/articles/creating-a-pull-request-from-a-fork)
 [GH-start]: (https://guides.github.com/activities/hello-world/)
-[GH-netpyne]: https://github.com/Neurosim-lab/netpyne
-[GH-help]: https://help.github.com/en
-[GH-llab]: https://lab.github.com/
-[GH-issue]: https://help.github.com/en/articles/creating-an-issue
+[GH-netpyne]: (https://github.com/Neurosim-lab/netpyne)
+[GH-help]: (https://help.github.com/en)
+[GH-llab]: (https://lab.github.com/)
+[GH-issue]: (https://help.github.com/en/articles/creating-an-issue) -->

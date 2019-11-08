@@ -24,7 +24,7 @@ Before installing NetPyNE, please ensure you have the following installed:
 
 1) Python 2 or 3 (2.7, 3.6 and 3.7 are supported). Download from the `official Python web <www.python.org>`_. Alternatively, you can download the `Anaconda Distribution <www.anaconda.com/distribution/>`_ which also includes several data science and visualization packages.
 
-2) The NEURON simulator. See NEURON's `installation instructions <http://www.neuron.yale.edu/neuron/download/>`_. If you would like to run parallelized simulations, please ensure you install NEURON with MPI support (`OpenMPI <https://www.open-mpi.org/>`_). 
+2) The NEURON simulator. See NEURON's `installation instructions <http://www.neuron.yale.edu/neuron/download/>`_. If you would like to run parallelized simulations, please ensure you install NEURON with MPI support (see also `Quick start guide <https://neuron.yale.edu/ftp/neuron/2019umn/neuron-quickstart.pdf>`_). 
 
 3) The ``pip`` tool for installing Python packages. See `pip installation here <https://pip.pypa.io/en/stable/installing/>`_.
 

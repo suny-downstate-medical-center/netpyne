@@ -203,8 +203,8 @@ class Batch(object):
     def openFiles2SaveStats(self):
         stat_file_name = '%s/%s_stats.cvs' %(self.saveFolder, self.batchLabel)
         ind_file_name = '%s/%s_stats_indiv.cvs' %(self.saveFolder, self.batchLabel)
-        individual = open(ind_file_name, 'wb')
-        stats = open(stat_file_name, 'wb')
+        individual = open(ind_file_name, 'w')
+        stats = open(stat_file_name, 'w')
         stats.write('#gen  pop-size  worst  best  median  average  std-deviation\n')
         individual.write('#gen  #ind  fitness  [candidate]\n')
         return stats, individual

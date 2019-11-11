@@ -8,6 +8,8 @@
 
 - Added 'removeWeightNorm' argument to plotConn() function
 
+- Fixed file write permissions for evol optim batches
+
 - Fixed bug calculating normally distributed rhythmic inputs - was using variance instead of std
 
 - Fixed bug in iplotDipole when smoothing window size = 0

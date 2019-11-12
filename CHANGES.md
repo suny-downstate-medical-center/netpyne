@@ -18,6 +18,8 @@
 
 - Fixed bug is plots with scalebars
 
+- Fixed bug in grid lines of plotConn
+
 
 
 # Version 0.9.3.1

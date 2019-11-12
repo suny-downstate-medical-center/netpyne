@@ -619,9 +619,9 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
             popsPre, popsPost = pre, post
 
             for ipop, pop in enumerate(popsPre):
-                plt.plot(np.array([0,len(popsPre)])-0.5,np.array([ipop,ipop])-0.5,'-',c=(0.7,0.7,0.7))
+                plt.plot(np.array([0,len(popsPost)])-0.5,np.array([ipop,ipop])-0.5,'-',c=(0.7,0.7,0.7))
             for ipop, pop in enumerate(popsPost):
-                plt.plot(np.array([ipop,ipop])-0.5,np.array([0,len(popsPost)])-0.5,'-',c=(0.7,0.7,0.7))
+                plt.plot(np.array([ipop,ipop])-0.5,np.array([0,len(popsPre)])-0.5,'-',c=(0.7,0.7,0.7))
 
             # Make pretty
             h.set_xticks(list(range(len(popsPost))))

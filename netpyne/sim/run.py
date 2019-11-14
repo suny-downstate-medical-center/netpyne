@@ -115,8 +115,12 @@ def runSim ():
     
     h.finitialize(float(sim.cfg.hParams['v_init']))
 
-    if sim.rank == 0: print('\nRunning simulation for %s ms...'%sim.cfg.duration)
-    sim.pc.psolve(sim.cfg.duration)
+    if sim.cfg.coreneuron == True:
+        if sim.rank == 0: print('\nRunning simulation using CoreNEURON for %s ms...'%sim.cfg.duration)
+        sim.pc.nrncore_run("-e %g"%sim.cfg.duration, 0)
+    else:
+        if sim.rank == 0: print('\nRunning simulation for %s ms...'%sim.cfg.duration)
+        sim.pc.psolve(sim.cfg.duration)
 
     sim.pc.barrier() # Wait for all hosts to get to this point
     sim.timing('stop', 'runTime')

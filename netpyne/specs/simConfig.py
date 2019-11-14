@@ -35,6 +35,7 @@ class SimConfig (object):
         self.duration = self.tstop = 1*1e3 # Duration of the simulation, in ms
         self.dt = 0.025 # Internal integration timestep to use
         self.hParams = Dict({'celsius': 6.3, 'v_init': -65.0, 'clamp_resist': 0.001})  # parameters of h module
+        self.coreneuron = False  # use CoreNEURON to run the simulation (beta version)
         self.cache_efficient = False  # use CVode cache_efficient option to optimize load when running on many cores
         self.cvode_active = False  # Use CVode variable time step
         self.cvode_atol = 0.001  # absolute error tolerance

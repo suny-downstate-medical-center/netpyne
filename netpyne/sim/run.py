@@ -116,7 +116,14 @@ def runSim ():
     h.finitialize(float(sim.cfg.hParams['v_init']))
 
     if sim.cfg.coreneuron == True:
-        if sim.rank == 0: print('\nRunning simulation using CoreNEURON for %s ms...'%sim.cfg.duration)
+        if sim.rank == 0: print('\nRunning simulation using CoreNEURON for %s ms...' % sim.cfg.duration)
+        
+        sim.cfg.cache_efficient = True
+        sim.cvode.cache_efficient(1)
+        
+        sim.cfg.use_fast_imem = True        
+        sim.cvode.use_fast_imem(1)
+        
         sim.pc.nrncore_run("-e %g"%sim.cfg.duration, 0)
     else:
         if sim.rank == 0: print('\nRunning simulation for %s ms...'%sim.cfg.duration)

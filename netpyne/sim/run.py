@@ -120,7 +120,6 @@ def runSim ():
         
         sim.cfg.cache_efficient = True
         sim.cvode.cache_efficient(1)
-
         sim.pc.nrncore_run("-e %g"%sim.cfg.duration, 0)
     else:
         if sim.rank == 0: print('\nRunning simulation for %s ms...'%sim.cfg.duration)

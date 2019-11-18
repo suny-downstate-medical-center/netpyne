@@ -54,6 +54,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
         - Returns figure handles
     '''
     from .. import sim
+    from ..support.scalebar import add_scalebar
 
     print('Plotting recorded cell traces ...',oneFigPer)
 

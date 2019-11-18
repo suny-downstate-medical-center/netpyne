@@ -88,7 +88,7 @@ class PointCell (Cell):
 
         # add random num generator, and set number and seed for NetStims
         if self.tags['cellModel'] == 'NetStim':
-            print("Creating a NetStim pointcell")
+            if sim.cfg.verbose: print("Creating a NetStim pointcell")
             rand = h.Random()
             self.hRandom = rand 
             if 'number' not in self.params:
@@ -160,6 +160,35 @@ class PointCell (Cell):
                     else:
                         print('\nError: exceeded the maximum number of VecStim spikes per cell (%d > %d)' % (numSpks, maxReproducibleSpks))
                         return
+
+            # spikePattern
+            elif 'spikePattern' in self.params:
+                patternType = self.params['spikePattern'].get('type', None)
+                rand = h.Random()
+
+                # if sync, don't initialize randomizer based on gid
+                if self.params.get('sync', False):
+                    rand.Random123(sim.hashStr('vecstim_spikePattern'), self.params['seed'])
+                else:
+                    rand.Random123(sim.hashStr('vecstim_spikePattern'), self.gid, self.params['seed'])
+
+                if patternType == 'rhythmic':
+                    from .inputs import createRhythmicPattern
+                    spkTimes = createRhythmicPattern(self.params['spikePattern'], rand)
+                elif patternType == 'evoked':
+                    from .inputs import createEvokedPattern
+                    spkTimes = createEvokedPattern(self.params['spikePattern'], rand) 
+                elif patternType == 'poisson':
+                    from .inputs import createPoissonPattern
+                    spkTimes = createPoissonPattern(self.params['spikePattern'], rand)                    
+                elif patternType == 'gauss':
+                    from .inputs import createGaussPattern
+                    spkTimes = createGaussPattern(self.params['spikePattern'], rand)                    
+                else:
+                    print('\nError: invalid spikePattern type %s' % (patternType))
+                    return
+                
+                vec = h.Vector(len(spkTimes))
 
             # if spkTimess
             elif 'spkTimes' in self.params:

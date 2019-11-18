@@ -57,8 +57,8 @@ def gatherData (gatherLFP = True):
                 del pop._morphSegCoords
             except:
                 pass
-
-    simDataVecs = ['spkt','spkid','stims']+list(sim.cfg.recordTraces.keys())
+    simDataVecs = ['spkt', 'spkid', 'stims'] + list(sim.cfg.recordTraces.keys())
+    if sim.cfg.recordDipoles: simDataVecs.append('dipole')
     singleNodeVecs = ['t']
     if sim.nhosts > 1:  # only gather if >1 nodes
         netPopsCellGids = {popLabel: list(pop.cellGids) for popLabel,pop in sim.net.pops.items()}

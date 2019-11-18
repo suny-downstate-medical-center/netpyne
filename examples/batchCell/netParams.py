@@ -10,9 +10,9 @@ Contributors: salvadordura@gmail.com
 from netpyne import specs
 
 try:
-	from __main__ import cfg  # import SimConfig object with params from parent module
+    from __main__ import cfg  # import SimConfig object with params from parent module
 except:
-	from tut8_cfg import cfg  # if no simConfig in parent module, import directly from tut8_cfg module
+    from tut8_cfg import cfg  # if no simConfig in parent module, import directly from tut8_cfg module
 
 ###############################################################################
 #
@@ -34,9 +34,9 @@ cellRule['secLists']['alldend'] = ['Bdend', 'Adend1', 'Adend2', 'Adend3']  # def
 cellRule['secLists']['apicdend'] = ['Adend1', 'Adend2', 'Adend3']
 
 for secName,sec in cellRule['secs'].items(): 
-	sec['vinit'] = -75.0413649414  # set vinit for all secs
-	if secName in cellRule['secLists']['alldend']:  
-		sec['mechs']['nax']['gbar'] = cfg.dendNa  # set dend Na gmax for all dends
+    sec['vinit'] = -75.0413649414  # set vinit for all secs
+    if secName in cellRule['secLists']['alldend']:  
+        sec['mechs']['nax']['gbar'] = cfg.dendNa  # set dend Na gmax for all dends
 
 
 ###############################################################################
@@ -55,29 +55,29 @@ netParams.synMechParams['NMDA'] = {'mod': 'MyExp2SynNMDABB', 'tau1NMDA': cfg.tau
 # Current inputs (IClamp)
 ###############################################################################
 if cfg.addIClamp:	
- 	for iclabel in [k for k in dir(cfg) if k.startswith('IClamp')]:
- 		ic = getattr(cfg, iclabel, None)  # get dict with params
+     for iclabel in [k for k in dir(cfg) if k.startswith('IClamp')]:
+        ic = getattr(cfg, iclabel, None)  # get dict with params
 
-		# add stim source
-		netParams.stimSourceParams[iclabel] = {'type': 'IClamp', 'delay': ic['start'], 'dur': ic['dur'], 'amp': ic['amp']}
-		
-		# connect stim source to target
-		netParams.stimTargetParams[iclabel+'_'+ic['pop']] = \
-			{'source': iclabel, 'conds': {'pop': ic['pop']}, 'sec': ic['sec'], 'loc': ic['loc']}
+        # add stim source
+        netParams.stimSourceParams[iclabel] = {'type': 'IClamp', 'delay': ic['start'], 'dur': ic['dur'], 'amp': ic['amp']}
+        
+        # connect stim source to target
+        netParams.stimTargetParams[iclabel+'_'+ic['pop']] = \
+            {'source': iclabel, 'conds': {'pop': ic['pop']}, 'sec': ic['sec'], 'loc': ic['loc']}
 
 
 ###############################################################################
 # NetStim inputs
 ###############################################################################
 if cfg.addNetStim:
-	for nslabel in [k for k in dir(cfg) if k.startswith('NetStim')]:
-		ns = getattr(cfg, nslabel, None)
+    for nslabel in [k for k in dir(cfg) if k.startswith('NetStim')]:
+        ns = getattr(cfg, nslabel, None)
 
-		# add stim source
-		netParams.stimSourceParams[nslabel] = {'type': 'NetStim', 'start': ns['start'], 'interval': ns['interval'], 
-											   'noise': ns['noise'], 'number': ns['number']}
+        # add stim source
+        netParams.stimSourceParams[nslabel] = {'type': 'NetStim', 'start': ns['start'], 'interval': ns['interval'], 
+                                               'noise': ns['noise'], 'number': ns['number']}
 
-		# connect stim source to target
-		netParams.stimTargetParams[nslabel+'_'+ns['pop']] = \
-			{'source': nslabel, 'conds': {'pop': ns['pop']}, 'sec': ns['sec'], 'loc': ns['loc'],
-			 'synMech': ns['synMech'], 'weight': ns['weight'], 'delay': ns['delay']}
+        # connect stim source to target
+        netParams.stimTargetParams[nslabel+'_'+ns['pop']] = \
+            {'source': nslabel, 'conds': {'pop': ns['pop']}, 'sec': ns['sec'], 'loc': ns['loc'],
+             'synMech': ns['synMech'], 'weight': ns['weight'], 'delay': ns['delay']}

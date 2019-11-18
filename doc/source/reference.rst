@@ -713,6 +713,7 @@ Related to the simulation and netpyne framework:
 * **gatherOnlySimData** - Omits gathering of net and cell data thus reducing gatherData time (default: False)
 * **compactConnFormat** - Replace dict format with compact list format for conns (need to provide list of keys to include) (default: False)
 * **connRandomSecFromList** - Select random section (and location) from list even when synsPerConn=1 (default: True) 
+* **distributeSynsUniformly** - Locate synapses at uniformly across section list; if false, place one syn per section in section list (default: True)
 * **pt3dRelativeToCellLocation** - True  # Make cell 3d points relative to the cell x,y,z location (default: True)
 * **invertedYCoord** - Make y-axis coordinate negative so they represent depth when visualized (0 at the top) (default: True)
 * **allowSelfConns** = False  # allow connections from a cell to itself (default: False)

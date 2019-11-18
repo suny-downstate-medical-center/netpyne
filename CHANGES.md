@@ -1,12 +1,45 @@
+# Version 0.9.4
+
+- Added option to avoid creating connections with weight=0
+
+- Made recording of dipoles optional with attribute cfg.recordDipoles
+
+- Rotated conn matrix x-axis labels so can fit large matrices 
+
+- Added 'removeWeightNorm' argument to plotConn() function
+
+- Fixed file write permissions for evol optim batches
+
+- Fixed bug calculating normally distributed rhythmic inputs - was using variance instead of std
+
+- Fixed bug in iplotDipole when smoothing window size = 0
+
+- Fixed bug in plotSpikeStats pop order
+
+- Fixed bug is plots with scalebars
+
+- Fixed bug in grid lines of plotConn
+
+
+
+# Version 0.9.3.1
+
+- Replaced deprecated imp module with importlib
+
+- Fix to cellsGrid cell locations with normRange
+
+
 # Version 0.9.3
 
 - Improved conversion from SONATA format, including 300 biophys cell example
 
 - Added saveCellConns, pt3dRelativeToCellLocation and invertedYCoord cfg options
 
+- Added lineWidth as argument of plotRatePSD() and plotLFP()
+
 - Modified plotLFP and plotRatePSD to use Morlet wavelet for PSD calculation
 
-- Added lineWidth argument to some raster and lfp plots
+- Added lineWidth argument to some raster and LFP plots
 
 - Added shuffling test to granger causality functions
 
@@ -20,6 +53,7 @@
 
 - Fixed spelling typos in documentation
 
+
 # Version 0.9.2
 
 - Support for saving simulation at intervals  
@@ -29,6 +63,8 @@
 - Fixed replicability issue across different number of cores when using 'connList' connectivity rules
 
 - Improved speed performance of 'connList' connectivity rules
+
+- Added option cfg.distributeSynsUniformly to locate synapses at uniformly across section list; if false, place one syn per section in section list 
 
 - Updated RxD calcium buffering example
 
@@ -59,9 +95,11 @@
 
 - Removed deprecated hold function from plotConn
 
+
 # Version 0.9.1.2
 
 - Set 'pandas==0.23.4' to avoid error 
+
 
 # Version 0.9.1.1
 

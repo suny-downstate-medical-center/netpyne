@@ -36,6 +36,7 @@ from random import Random
 from time import sleep, time
 from itertools import product
 from subprocess import Popen, PIPE
+import importlib, types
 
 pc = h.ParallelContext() # use bulletin board master/slave
 if pc.id()==0: pc.master_works_on_jobs(0) 
@@ -131,12 +132,14 @@ class Batch(object):
         odict = deepcopy(self.__dict__)
         if 'evolCfg' in odict:
             odict['evolCfg']['fitnessFunc'] = 'removed'
+        odict['initCfg'] = tupleToStr(odict['initCfg'])
         dataSave = {'batch': tupleToStr(odict)} 
         if ext == 'json':
             from .. import sim
             #from json import encoder
             #encoder.FLOAT_REPR = lambda o: format(o, '.12g')
             print(('Saving batch to %s ... ' % (filename)))
+
             sim.saveJSON(filename, dataSave)
 
     def setCfgNestedParam(self, paramLabel, paramVal):
@@ -181,7 +184,13 @@ class Batch(object):
             
         # import cfg
         cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
-        cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
+
+        try:  # py3
+            loader = importlib.machinery.SourceFileLoader(cfgModuleName, self.cfgFile)
+            cfgModule = types.ModuleType(loader.name)
+            loader.exec_module(cfgModule)
+        except:  # py2
+            cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
         
         if hasattr(cfgModule, 'cfg'):
             self.cfg = cfgModule.cfg
@@ -194,8 +203,8 @@ class Batch(object):
     def openFiles2SaveStats(self):
         stat_file_name = '%s/%s_stats.cvs' %(self.saveFolder, self.batchLabel)
         ind_file_name = '%s/%s_stats_indiv.cvs' %(self.saveFolder, self.batchLabel)
-        individual = open(ind_file_name, 'wb')
-        stats = open(stat_file_name, 'wb')
+        individual = open(ind_file_name, 'w')
+        stats = open(stat_file_name, 'w')
         stats.write('#gen  pop-size  worst  best  median  average  std-deviation\n')
         individual.write('#gen  #ind  fitness  [candidate]\n')
         return stats, individual
@@ -228,7 +237,14 @@ class Batch(object):
             
             # import cfg
             cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
-            cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
+
+            try:
+                loader = importlib.machinery.SourceFileLoader(cfgModuleName, self.cfgFile)
+                cfgModule = types.ModuleType(loader.name)
+                loader.exec_module(cfgModule)
+            except:
+                cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
+
             self.cfg = cfgModule.cfg
             self.cfg.checkErrors = False  # avoid error checking during batch
 
@@ -313,13 +329,13 @@ class Batch(object):
                         cfgSavePath = self.saveFolder+'/'+simLabel+'_cfg.json'
                         self.cfg.save(cfgSavePath)
                         
+                        sleepInterval = 1
+
                         # hpc torque job submission
                         if self.runCfg.get('type',None) == 'hpc_torque':
 
                             # read params or set defaults
                             sleepInterval = self.runCfg.get('sleepInterval', 1)
-                            sleep(sleepInterval)
-                            
                             nodes = self.runCfg.get('nodes', 1)
                             ppn = self.runCfg.get('ppn', 1)
                             script = self.runCfg.get('script', 'init.py')
@@ -363,8 +379,6 @@ echo $PBS_O_WORKDIR
 
                             # read params or set defaults
                             sleepInterval = self.runCfg.get('sleepInterval', 1)
-                            sleep(sleepInterval)
-                            
                             allocation = self.runCfg.get('allocation', 'csd403') # NSG account
                             nodes = self.runCfg.get('nodes', 1)
                             coresPerNode = self.runCfg.get('coresPerNode', 1)
@@ -445,12 +459,12 @@ wait
                             import sys
                             sys.exit(0)
                 
-                    sleep(1) # avoid saturating scheduler
+                    sleep(sleepInterval) # avoid saturating scheduler
             print("-"*80)
             print("   Finished submitting jobs for grid parameter exploration   ")
             print("-" * 80)
             while pc.working():
-                sleep(1)
+                sleep(sleepInterval)
 
 
 

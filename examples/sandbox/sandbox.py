@@ -41,4 +41,4 @@ simConfig.saveJson = True
 # Create network and run simulation
 sim.create(netParams=netParams, simConfig=simConfig)  #, interval = 100)    
 sim.gatherData()
-sim.analysis.plotConn()
+sim.analysis.plotConn(removeWeightNorm=1, feature='weight')

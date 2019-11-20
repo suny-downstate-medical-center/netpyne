@@ -20,6 +20,8 @@
 
 - Fixed bug in grid lines of plotConn
 
+- Fixed bug in gap junctions 
+
 
 
 # Version 0.9.3.1

@@ -210,7 +210,6 @@ class PointCell (Cell):
             
             # missing params
             else:
-                import ipdb; ipdb.set_trace()
                 print('\nError: VecStim requires interval, rate or spkTimes')
                 return
 

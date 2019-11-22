@@ -1,9 +1,9 @@
 
 # How to contribute
 
-Thank you for your interest in contributing to NetPyNE project!. NetPyNE is open source and available at [GitHub repository](https://github.com/Neurosim-lab/netpyne).
+Thank you for your interest in contributing to the NetPyNE tool!. NetPyNE is open source and available at [GitHub repository](https://github.com/Neurosim-lab/netpyne).
 
-[NetPyNE](http://netpyne.org/overview.html) is currently being developed and supported by [Neurosin lab](http://neurosimlab.org/) and accepts contributions in the form of bug reports, fixes, feature additions, and documentation improvements (even just typo corrections). The best way to start contributing is by [opening an issue](https://github.com/Neurosim-lab/netpyne/issues) or [fork](https://help.github.com/en/articles/fork-a-repo) the repository on our GitHub page and make a [Pull Request](https://help.github.com/en/articles/creating-a-pull-request) with your changes.
+[NetPyNE](http://netpyne.org/overview.html) is currently being developed and supported by [Neurosim lab](http://neurosimlab.org/) and accepts contributions in the form of bug reports, fixes, feature additions, and documentation improvements (even just typo corrections). The best way to start contributing is by [opening an issue](https://github.com/Neurosim-lab/netpyne/issues) or by [forking](https://help.github.com/en/articles/fork-a-repo) the repository on our GitHub page and making a [Pull Request](https://help.github.com/en/articles/creating-a-pull-request) with your changes.
 
 Users and contributors to NetPyNE are expected to follow our [coding conventions](#coding-conventions).
 
@@ -72,7 +72,7 @@ Make a local clone of your remote fork (`origin`):
 ```
 
 > **Remote URLs in git**
->Here we use `git://` instead of `https://` in the URL for the `upstream` remote repository. `git://` URLs are read-only, so you can `pull` changes from `upstream` into your local copy (to stay up-to-date with changes from other contributors) but you cannot `push` changes from your computer into the `upstream` remote. Instead, you must `push` your changes to your own remote fork (`origin`) first, and then create a pull request from your remote into the `upstream` remote. In [a later section](#connecting-to-github-with-ssh-optional) you’ll see a third kind of remote URL for connecting to GitHub using SSH.
+>Here we use `https://`, instead of `git@` addresses, in the URL for the `upstream` remote repository. `https://` URLs are read-only, so you can `pull` changes from `upstream` into your local copy (to stay up-to-date with changes from other contributors) but you cannot `push` changes from your computer into the `upstream` remote. Instead, you must `push` your changes to your own remote fork (`origin`) first, and then create a pull request from your remote into the `upstream` remote. In [a later section](#connecting-to-github-with-ssh-optional) you’ll see a second kind of remote URL for connecting to GitHub using SSH.
 
 Finally, set up a link between your local clone and the official repository (`upstream`):
 
@@ -93,7 +93,9 @@ Learning to work with git can take a long time, because it is a complex and powe
 
 Other commands that you will undoubtedly need related to branches can be found [here](https://help.github.com/en/articles/about-branches). Branches represent multiple copies of the codebase within a local clone or remote repo. Branches are typically used to experiment with new features while still keeping a clean, working copy of the original codebase that you can switch back to at any time. The default branch of any repo is always called `master`, and it is recommended that you reserve the `master` branch to be that clean copy of the working `upstream` codebase. 
 
-In Neurosim-lab/netpyne repo, you must not work in the `master` branch, there is a branch called `development` for contribuiting. Therefore, if you want to add a new change, you should first synchronize your local `development` branch with the `upstream` repository, then create a new branch based on `development` and [check it out](https://git-scm.com/docs/git-checkout) so that any changes you make will exist on that new branch:
+In Neurosim-lab/netpyne repo, you must not work in the `master` branch, there is a branch called `development` for contribuiting. Therefore, if you want to add a new change, you should first synchronize your local `development` branch with the `upstream` repository, then make your changes and `push` to your fork, and then do a [pull request](#opening-a-pull-request) to `Neurosim-lab:development`.
+
+Also you can create a new branch based on `development` and [check it out](https://git-scm.com/docs/git-checkout) so that any changes you make will exist on that new branch:
 
 ```bash
  ~$ git checkout development            # switch to local development branch
@@ -105,7 +107,7 @@ In Neurosim-lab/netpyne repo, you must not work in the `master` branch, there is
 > **Alternative**
 > You can save some typing by using `~$ git pull upstream/development` to replace the `fetch` and `merge` lines above.
 
-> **Note:** You could synchronize your local `master` branch with the `upstream` repository to have the update version, but you **_must not_** work in any change on the `master` branch.
+> **Note:** You could synchronize your local `master` branch with that of the `upstream` repository to have the updated version, but you **_must never_** make any changes on the `master` branch.
 
 Now that you’re on a new branch, you can fix a bug or add a new feature, add a test, update the documentation, etc. When you’re done, it’s time to organize your changes into a series of [commits](https://git-scm.com/docs/git-commit). Commits are like snapshots of the repository — actually, more like a description of what has to change to get from the most recent snapshot to the current snapshot.
 
@@ -145,8 +147,8 @@ Finally, go to the [Neurosin-lab/netpyne GitHub page](https://github.com/Neurosi
 
 One easy way to speed up development is to reduce the number of times you have to type your password. SSH (secure shell) allows authentication with pre-shared key pairs. The private half of your key pair is kept secret on your computer, while the public half of your key pair is added to your GitHub account; when you connect to GitHub from your computer, the local git client checks the remote (public) key against your local (private) key, and grants access your account only if the keys fit. GitHub has several help pages that guide you through the process.
 
-Once you have set up GitHub to use SSH authentication, you should change the addresses of your Netpyne-lab GitHub remotes, from `https://` addresses to `git@` addresses, so that git knows to connect via SSH instead of HTTPS.
->**Note:** You only could have a _SSH key_ from a repository you are a contributor.
+Once you have set up GitHub to use SSH authentication, you should change the addresses of your Neurosim-lab GitHub remotes, from `https://` addresses to `git@` addresses, so that git knows to connect via SSH instead of HTTPS.
+>**Note:** You can only have a _SSH key_ for repositories where you are a contributor.
 
 ## Opening an issue
 
@@ -180,21 +182,21 @@ Always reference the issue related to the PR with `#number-of-issue` and use the
 ## Coding conventions
 
 **Adhere to standard Python style guidelines**
-All contributions to Netpyne are checked against style guidelines described in PEP 8. We also check for common coding errors (such as variables that are defined but never used).
+All contributions to NetPyNE are checked against style guidelines described in PEP 8 (we are gradually updating the existing code). We also check for common coding errors (such as variables that are defined but never used).
 
 Several text editors or IDEs also have Python style checking, which can highlight style errors while you code (and train you to make those errors less frequently). This functionality is built-in to the Spyder IDE, but most editors have plug-ins that provide similar functionality. Search for `python linter <name of your favorite editor>` to learn more.
 
 **Use consistent variable naming**
-Classes should be named using `CamelCase`. Functions and instances/variables should use `snake_case` (`n_samples` rather than `nsamples`). Avoid single-character variable names, unless inside a [comprehension](https://docs.python.org/3/glossary.html#term-list-comprehension) or [generator](https://docs.python.org/3/tutorial/classes.html#tut-generators).
+Functions and instances/variables should use `CamelCase` (`nSamples` rather than `n_samples`). Avoid single-character variable names, unless inside a [comprehension](https://docs.python.org/3/glossary.html#term-list-comprehension) or [generator](https://docs.python.org/3/tutorial/classes.html#tut-generators).
 
 **Follow NumPy style for docstrings**
-In most cases imitating existing docstrings will be sufficient, but consult the [Numpy docstring style guidelines](https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt) for more complicated formatting such as embedding example code, citing references, or including rendered mathematics. Private function/method docstrings may be brief for simple functions/methods, but complete docstrings are appropriate when private functions/methods are relatively complex.
+In most cases imitating existing docstrings will be sufficient, but consult the [Numpy docstring style guidelines](https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt) for more complicated formatting such as embedding example code, citing references, or including rendered mathematics. Private function/method docstrings may be brief for simple functions/methods, but complete docstrings are appropriate when private functions/methods are relatively complex (we are gradually updating the code to include docstrings for all functions).
 
 **Other style guidance**
 
 * Add description, arguments and returns (I/O params) to all functions and methos.
 * Both the docstrings and dedicated documentation pages (readme file, tutorials, how-to examples, discussions, and glossary) should include cross-references to any mentioned module, class, function, method, attribute, or documentation page.
-* We use [Travis](https://travis-ci.org/) to test code.
+* We use [Travis](https://travis-ci.org/) as a continuous integration tool, to run tests after every commit to check the model examples still work and produce the expected result.
 * Use a code checker:
   * [pylint](https://pypi.org/project/pylint/): a  Python static code analysis tool.
   * [pyflakes](https://pypi.python.org/pypi/pyflakes/):a tool to check Python code for errors by parsing the source file instead of importing it.

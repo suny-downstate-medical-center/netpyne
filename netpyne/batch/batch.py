@@ -69,6 +69,14 @@ def runJob(script, cfgSavePath, netParamsSavePath):
 # -------------------------------------------------------------------------------
 def createFolder(folder):
     import os
+    if os.path.exists(folder):
+        try:
+            import shutil
+            shutil.rmtree(folder)
+            shutil.rmtree(folder)
+        except OSError:
+            print(' Could not delete %s' %(folder))
+        
     if not os.path.exists(folder):
         try:
             os.mkdir(folder)
@@ -637,8 +645,10 @@ wait
                             jobNamePath = genFolderPath + "/gen_" + str(ngen) + "_cand_" + str(candidate_index)
                             if os.path.isfile(jobNamePath+'.json'):
                                 with open('%s.json'% (jobNamePath)) as file:
-                                    simData = json.load(file)['simData']
-                                fitness[candidate_index] = fitnessFunc(simData, **fitnessFuncArgs)
+                                    data = json.load(file)
+                                    simData = data['simData']
+                                    netData = data['net']
+                                fitness[candidate_index] = fitnessFunc(simData, netData, jobNamePath, **fitnessFuncArgs)
                                 jobs_completed += 1
                                 print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
                         except Exception as e:

@@ -158,7 +158,7 @@ def subcellularConn(self, allCellTags, allPopTags):
                     if subConnParam.get('density', None) == 'uniform':
                         # calculate new syn positions
                         newSecs, newLocs = postCell._distributeSynsUniformly(secList=secList, numSyns=len(conns))
-                        
+
                     # 2D map and 1D map (radial)
                     elif isinstance(subConnParam.get('density', None), dict) and subConnParam['density']['type'] in ['2Dmap', '1Dmap']:
 
@@ -230,6 +230,11 @@ def subcellularConn(self, allCellTags, allPopTags):
                         #      print seg.x, h.distance(seg.x)
 
 
+                    # sort conns so reproducible across different number of cores 
+                    # use sec+preGid to avoid artificial distribution based on preGid (low gids = close to soma)
+                    conns = sorted(conns, key = lambda v: v['sec']+str(v['preGid']))
+
+                    # assign conns to new syn locations
                     for i,(conn, newSec, newLoc) in enumerate(zip(conns, newSecs, newLocs)):
 
                         # update weight if weightNorm present

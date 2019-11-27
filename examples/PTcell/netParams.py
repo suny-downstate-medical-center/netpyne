@@ -140,8 +140,8 @@ if cfg.addIClamp:
 if cfg.addNetStim:
     for key in [k for k in dir(cfg) if k.startswith('NetStim')]:
         params = getattr(cfg, key, None)
-        [pop, ynorm, sec, loc, synMech, synMechWeightFactor, start, interval, noise, number, weight, delay] = \
-        [params[s] for s in ['pop', 'ynorm', 'sec', 'loc', 'synMech', 'synMechWeightFactor', 'start', 'interval', 'noise', 'number', 'weight', 'delay']] 
+        [pop, numCells, ynorm, sec, loc, synMech, synMechWeightFactor, start, rate, noise, number, weight, delay] = \
+        [params[s] for s in ['pop', 'numCells', 'ynorm', 'sec', 'loc', 'synMech', 'synMechWeightFactor', 'start', 'rate', 'noise', 'number', 'weight', 'delay']] 
 
         if synMech == ESynMech:
             wfrac = cfg.synWeightFractionEE
@@ -150,14 +150,20 @@ if cfg.addNetStim:
         else:
             wfrac = [1.0]
 
+        #import IPython; IPython.embed()
+
         # add stim source
-        netParams.stimSourceParams[key] = {'type': 'NetStim', 'start': start, 'interval': interval, 'noise': noise, 'number': number}
+        #netParams.stimSourceParams[key] = {'type': 'NetStim', 'start': start, 'interval': interval, 'noise': noise, 'number': number}
+        netParams.popParams[key] = {'cellModel': 'NetStim', 'numCells': numCells, 'rate': rate, 
+                                        'noise': noise, 'start': start, 'ynormRange': ynorm}
+
 
         # connect stim source to target
         # for i, syn in enumerate(synMech):
-        netParams.stimTargetParams[key+'_'+pop] =  {
-            'source': key, 
-            'conds': {'pop': pop, 'ynorm': ynorm},
+        #netParams.stimTargetParams[key+'_'+pop] =  {
+        netParams.connParams[key+'_'+pop] =  {
+            'preConds': {'pop': key}, 
+            'postConds': {'pop': pop, 'ynorm': ynorm},
             'sec': sec, 
             'loc': loc,
             'synMech': synMech,
@@ -180,9 +186,9 @@ if cfg.addSubConn:
     synDens, _, fixedSomaY = connDendPTData['synDens'], connDendPTData['gridY'], connDendPTData['fixedSomaY']
 
     netParams.subConnParams['L2->PT'] = {
-    'preConds': {'cellType': 'NetStim'}, # all presyn inputs 
-    'postConds': {'cellType': 'PT5B'},  
+    'preConds': {'pop': 'NetStim1'}, # all presyn inputs 
+    'postConds': {'pop': 'PT5B'},  
     'sec': 'spiny',
-    'groupSynMechs': ESynMech, 
-    'density': {'type': '1Dmap', 'gridX': None, 'gridY': gridY, 'gridValues': synDens['L2_PT'], 'fixedSomaY': fixedSomaY}} 
+    #'groupSynMechs': ESynMech, 
+    'density': 'uniform' } #{'type': '1Dmap', 'gridX': None, 'gridY': gridY, 'gridValues': synDens['L2_PT'], 'fixedSomaY': fixedSomaY}} 
 

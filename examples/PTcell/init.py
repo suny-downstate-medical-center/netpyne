@@ -21,4 +21,4 @@ from netParams import netParams
 sim.createSimulateAnalyze(netParams, cfg) #SimulateAnalyze(netParams, cfg)
 
 # check model output
-sim.checkOutput('PTcell')
+#sim.checkOutput('PTcell')

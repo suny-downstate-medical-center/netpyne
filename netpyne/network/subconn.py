@@ -229,9 +229,8 @@ def subcellularConn(self, allCellTags, allPopTags):
                         #    for seg in sec:
                         #      print seg.x, h.distance(seg.x)
 
-
                     # sort conns so reproducible across different number of cores 
-                    # use sec+preGid to avoid artificial distribution based on preGid (low gids = close to soma)
+                    # use sec+preGid to avoid artificial distribution based on preGid (e.g. low gids = close to soma)
                     conns = sorted(conns, key = lambda v: v['sec']+str(v['preGid']))
 
                     # assign conns to new syn locations

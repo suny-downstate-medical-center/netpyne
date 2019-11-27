@@ -16,6 +16,8 @@ from pylab import *
 from itertools import product
 from pprint import pprint
 from netpyne import specs
+from collections import OrderedDict
+
 
 
 #--------------------------------------------------------------------
@@ -27,7 +29,7 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
         print('\nLoading single file with all data...')
         filename = '%s/%s/%s_allData.json' % (dataFolder, batchLabel, batchLabel)
         with open(filename, 'r') as fileObj:
-            dataLoad = json.load(fileObj, object_pairs_hook=specs.OrderedDict)
+            dataLoad = json.load(fileObj, object_pairs_hook=OrderedDict)
         params = dataLoad['params']
         data = dataLoad['data']
         return params, data
@@ -69,7 +71,7 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
                 outFile = b['saveFolder']+'/'+simLabel+'.json'
                 try:
                     with open(outFile, 'r') as fileObj:
-                        output = json.load(fileObj, object_pairs_hook=specs.OrderedDict)
+                        output = json.load(fileObj, object_pairs_hook=OrderedDict)
                     # save output file in data dict
                     data[iCombStr] = {}  
                     data[iCombStr]['paramValues'] = pComb  # store param values

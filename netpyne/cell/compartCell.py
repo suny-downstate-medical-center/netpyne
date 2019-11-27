@@ -692,6 +692,11 @@ class CompartCell (Cell):
             synMechs, synMechSecs, synMechLocs = self._setConnSynMechs(params, secLabels)
             if synMechs == -1: return
 
+        # Adapt weight based on section weightNorm (normalization based on section location)
+        for i,(sec,loc) in enumerate(zip(synMechSecs, synMechLocs)):
+            if 'weightNorm' in self.secs[sec] and isinstance(self.secs[sec]['weightNorm'], list): 
+                nseg = self.secs[sec]['geom']['nseg']
+                weights[i] = weights[i] * self.secs[sec]['weightNorm'][int(round(loc*nseg))-1]
 
         # Create connections
         for i in range(params['synsPerConn']):

@@ -20,6 +20,8 @@
 
 - Fixed bug in grid lines of plotConn
 
+- Fixed bug in subConnParams by sorting conns to ensure reproducibility on different number of cores
+
 
 
 # Version 0.9.3.1

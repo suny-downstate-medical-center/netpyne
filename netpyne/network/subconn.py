@@ -229,6 +229,9 @@ def subcellularConn(self, allCellTags, allPopTags):
                         #    for seg in sec:
                         #      print seg.x, h.distance(seg.x)
 
+                    # sort conns so reproducible across different number of cores 
+                    # use sec+preGid to avoid artificial distribution based on preGid (e.g. low gids = close to soma)
+                    conns = sorted(conns, key = lambda v: v['sec']+str(v['preGid']))
 
                     for i,(conn, newSec, newLoc) in enumerate(zip(conns, newSecs, newLocs)):
 

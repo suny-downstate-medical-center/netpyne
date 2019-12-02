@@ -1281,7 +1281,7 @@ def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, minF
 #------------------------------------------------------------------------------
 # Calculate and print avg pop rates
 #------------------------------------------------------------------------------
-@exception
+#@exception
 def popAvgRates (trange = None, show = True):
     from .. import sim
 

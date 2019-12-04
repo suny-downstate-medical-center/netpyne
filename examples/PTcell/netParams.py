@@ -99,7 +99,7 @@ if 'PT5B_full' not in loadCellParams:
 #------------------------------------------------------------------------------
 # Population parameters
 #------------------------------------------------------------------------------
-netParams.popParams['PT5B'] = {'cellModel': 'HH_full', 'cellType': 'PT', 'ynormRange': layer['5B'], 'numCells':1}
+netParams.popParams['PT5B'] = {'cellModel': 'HH_full', 'cellType': 'PT', 'ynormRange': layer['5B'], 'numCells': 1}
 
 #------------------------------------------------------------------------------
 # Synaptic mechanism parameters
@@ -189,6 +189,13 @@ if cfg.addSubConn:
     'preConds': {'pop': 'NetStim1'}, # all presyn inputs 
     'postConds': {'pop': 'PT5B'},  
     'sec': 'spiny',
-    #'groupSynMechs': ESynMech, 
-    'density': 'uniform' } #{'type': '1Dmap', 'gridX': None, 'gridY': gridY, 'gridValues': synDens['L2_PT'], 'fixedSomaY': fixedSomaY}} 
+    'groupSynMechs': ESynMech, 
+    'density': {'type': '1Dmap', 'gridX': None, 'gridY': gridY, 'gridValues': synDens['L2_PT'], 'fixedSomaY': fixedSomaY}} 
+
+    # netParams.subConnParams['L2->PT2'] = {
+    # 'preConds': {'pop': 'NetStim1'}, # all presyn inputs 
+    # 'postConds': {'pop': 'PT5B'},  
+    # 'sec': 'spiny',
+    # 'groupSynMechs': ESynMech, 
+    # 'density':  'uniform' }#{'type': '1Dmap', 'gridX': None, 'gridY': gridY, 'gridValues': synDens['L2_PT'], 'fixedSomaY': fixedSomaY}} 
 

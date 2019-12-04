@@ -125,4 +125,4 @@ cfg.addNetStim = 1
 
 # cfg.NetStim1 = {'pop': 'PT5B', 'numCells': 1000, 'ynorm':[0,1], 'sec': 'spiny', 'loc': 0.5, 'synMech': ['AMPA', 'NMDA'], 'synMechWeightFactor': [0.5, 0.5], 'start': 0, 'interval': 1000.0/40.0, 'noise': 0.5, 'number': 100.0, 'weight': 1.0*0.01, 'delay': 2.}
 
-cfg.NetStim1 = {'pop': 'PT5B', 'numCells': 10, 'ynorm':[0,1], 'sec': 'spiny', 'loc': 0.5, 'synMech': ['AMPA'], 'synMechWeightFactor': [0.5], 'start': 0, 'rate': 20., 'noise': 0.5, 'number': 100.0, 'weight': 0.5*100*0.001, 'delay': 2.}
+cfg.NetStim1 = {'pop': 'PT5B', 'numCells': 10, 'ynorm':[0,1], 'sec': 'spiny', 'loc': 0.5, 'synMech': ['AMPA','NMDA'], 'synMechWeightFactor': [0.7, 0.3], 'start': 0, 'rate': 20., 'noise': 0.5, 'number': 100.0, 'weight': 0.5*1e5*0.001, 'delay': 2.}

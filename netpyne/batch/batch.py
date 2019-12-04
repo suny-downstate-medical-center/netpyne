@@ -455,6 +455,7 @@ wait
                             pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath)
                             
                         else:
+                            print(self.runCfg)
                             print("Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'")
                             import sys
                             sys.exit(0)

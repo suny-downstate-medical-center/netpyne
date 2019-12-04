@@ -135,17 +135,18 @@ def subcellularConn(self, allCellTags, allPopTags):
                     if 'groupSynMechs' in subConnParam:  
                         conns = []
                         connsGroup = {}
-                        iConn = -1
+                        #iConn = -1
                         for conn in allConns:
                             if not conn['synMech'].startswith('__grouped__'):
                                 conns.append(conn)
-                                iConn = iConn + 1
+                                #iConn = iConn + 1
+                                connGroupLabel = '%d_%s_%.3f' % (conn['preGid'], conn['sec'], conn['loc'])
                                 if conn['synMech'] in subConnParam['groupSynMechs']:
                                     for synMech in [s for s in subConnParam['groupSynMechs'] if s != conn['synMech']]:
                                         connGroup = next((c for c in allConns if c['synMech'] == synMech and c['sec']==conn['sec'] and c['loc']==conn['loc']), None)
                                         try:
                                             connGroup['synMech'] = '__grouped__'+connGroup['synMech']
-                                            connsGroup[iConn] = connGroup
+                                            connsGroup[connGroupLabel] = connGroup
                                         except:
                                             print('  Warning: Grouped synMechs %s not found' % (str(connGroup)))
                     else:
@@ -232,9 +233,14 @@ def subcellularConn(self, allCellTags, allPopTags):
                     # sort conns so reproducible across different number of cores 
                     # use sec+preGid to avoid artificial distribution based on preGid (e.g. low gids = close to soma)
                     conns = sorted(conns, key = lambda v: v['sec']+str(v['preGid']))
+                    print('\nConns:\n', conns)
+                    print('\nConnsGroup:\n', connsGroup)
 
                     # assign conns to new syn locations
                     for i,(conn, newSec, newLoc) in enumerate(zip(conns, newSecs, newLocs)):
+
+                        # get conn group label before updating params
+                        connGroupLabel = '%d_%s_%.3f' % (conn['preGid'], conn['sec'], conn['loc'])
 
                         # update weight if weightNorm present
                         if 'weightNorm' in postCell.secs[conn['sec']] and isinstance(postCell.secs[conn['sec']]['weightNorm'], list): 
@@ -254,13 +260,15 @@ def subcellularConn(self, allCellTags, allPopTags):
 
                         # find grouped conns 
                         if subConnParam.get('groupSynMechs', None) and conn['synMech'] in subConnParam['groupSynMechs']:
-                            connGroup = connsGroup[i]  # get grouped conn from previously stored dict 
+                            
+                            connGroup = connsGroup[connGroupLabel]  # get grouped conn from previously stored dict 
                             connGroup['synMech'] = connGroup['synMech'].split('__grouped__')[1]  # remove '__grouped__' label
 
                             connGroup['sec'] = newSec
                             connGroup['loc'] = newLoc
                             if newWeightNorm: connGroup['weight'] = connGroup['weight'] / oldWeightNorm * newWeightNorm
-
+                    
+                    print('\nConns after:\n', conns)
                                 
         sim.pc.barrier()
 

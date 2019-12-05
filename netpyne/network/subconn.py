@@ -152,6 +152,10 @@ def subcellularConn(self, allCellTags, allPopTags):
                     else:
                         conns = allConns
 
+                    # sort conns so reproducible across different number of cores 
+                    # use sec+preGid to avoid artificial distribution based on preGid (e.g. low gids = close to soma)
+                    conns = sorted(conns, key = lambda v: v['sec']+str(v['loc'])+str(v['preGid']))
+
                     # set sections to be used
                     secList = postCell._setConnSections(subConnParam)
                     
@@ -230,14 +234,10 @@ def subcellularConn(self, allCellTags, allPopTags):
                         #    for seg in sec:
                         #      print seg.x, h.distance(seg.x)
 
-                    # sort conns so reproducible across different number of cores 
-                    # use sec+preGid to avoid artificial distribution based on preGid (e.g. low gids = close to soma)
-                    conns = sorted(conns, key = lambda v: v['sec']+str(v['preGid']))
-
                     for i,(conn, newSec, newLoc) in enumerate(zip(conns, newSecs, newLocs)):
 
                         # get conn group label before updating params
-                        connGroupLabel = '%d_%s_%.3f' % (conn['preGid'], conn['sec'], conn['loc'])
+                        connGroupLabel = '%d_%s_%.4f' % (conn['preGid'], conn['sec'], conn['loc'])
 
                         # update weight if weightNorm present
                         if 'weightNorm' in postCell.secs[conn['sec']] and isinstance(postCell.secs[conn['sec']]['weightNorm'], list): 

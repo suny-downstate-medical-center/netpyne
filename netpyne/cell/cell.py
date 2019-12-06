@@ -256,8 +256,9 @@ class Cell (object):
                                                          sim.simData['t'], 1)
                                     h.pop_section()
                                 else:
+                                    
                                     sim.simData[key]['cell_'+str(self.gid)][secLoc] = h.Vector(sim.cfg.duration/recordStep+1).resize(0)
-                                    sim.simData[key]['cell_'+str(self.gid)][secLoc].record(ptrItem, sim.cfg.recordStep)
+                                    sim.simData[key]['cell_'+str(self.gid)][secLoc].record(ptrItem, recordStep)
                         else:
                             if hasattr(sim.cfg,'use_local_dt') and sim.cfg.use_local_dt:
                                 self.secs[params['sec']]['hObj'].push()

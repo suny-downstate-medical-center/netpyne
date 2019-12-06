@@ -18,6 +18,11 @@
 
 - Fixed bug is plots with scalebars
 
+- Fixed bug in grid lines of plotConn
+
+- Fixed bug in subConnParams by sorting conns to ensure reproducibility on different number of cores
+
+- Fixed bug so uses 'Agg' backend if no display env variable e.g. in clusters
 
 
 # Version 0.9.3.1

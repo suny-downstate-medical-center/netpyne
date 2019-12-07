@@ -30,9 +30,7 @@ def create (netParams=None, simConfig=None, output=False):
     stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
     rxd = sim.net.addRxD()                    # add reaction-diffusion (RxD)
     simData = sim.setupRecording()             # setup variables to record for each cell (spikes, V traces, etc)
-
     if output: return (pops, cells, conns, rxd, stims, simData)
-    
 
 #------------------------------------------------------------------------------
 # Wrappers
@@ -42,22 +40,22 @@ def simulate ():
     from .. import sim
     sim.runSim()         
     sim.gatherData()                  # gather spiking data and cell info from each node
-    
+
 #------------------------------------------------------------------------------
 # Wrapper to simulate network for interval
 #------------------------------------------------------------------------------
 def intervalSimulate (interval):
-    ''' Sequence of commands to simulate network for interval ''
+    ''' Sequence of commands to simulate network for interval '''
     from .. import sim
-    sim.runSimWithIntervalFunc(interval, sim.intervalSave)                      # run parallel Neuron simulation  
+    sim.runSimWithIntervalFunc(interval, sim.intervalSave)  # run parallel Neuron simulation  
     # this gather is just a merging of files
     sim.fileGather()               # gather spiking data and cell info from saved file
-    
+
 #------------------------------------------------------------------------------
 # Wrapper to analyze network
 #------------------------------------------------------------------------------
 def analyze ():
-    ''' Sequence of commands to simulate network '''
+    ''' Sequence of commands to plot '''
     from .. import sim
     sim.saveData()
     sim.analysis.plotData()

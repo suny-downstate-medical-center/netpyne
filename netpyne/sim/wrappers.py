@@ -35,7 +35,7 @@ def create (netParams=None, simConfig=None, output=False):
     
 
 #------------------------------------------------------------------------------
-# Wrapper to simulate network
+# Wrappers
 #------------------------------------------------------------------------------
 def simulate ():
     ''' Sequence of commands to simulate network '''
@@ -44,36 +44,33 @@ def simulate ():
     sim.gatherData()                  # gather spiking data and cell info from each node
     
 #------------------------------------------------------------------------------
-# Wrapper to simulate network
+# Wrapper to simulate network for interval
 #------------------------------------------------------------------------------
 def intervalSimulate (interval):
-    ''' Sequence of commands to simulate network '''
+    ''' Sequence of commands to simulate network for interval ''
     from .. import sim
     sim.runSimWithIntervalFunc(interval, sim.intervalSave)                      # run parallel Neuron simulation  
-    #this gather is justa merging of files
-    sim.fileGather()                  # gather spiking data and cell info from saved file
+    # this gather is just a merging of files
+    sim.fileGather()               # gather spiking data and cell info from saved file
     
 #------------------------------------------------------------------------------
-# Wrapper to simulate network
+# Wrapper to analyze network
 #------------------------------------------------------------------------------
 def analyze ():
     ''' Sequence of commands to simulate network '''
     from .. import sim
-    sim.saveData()                      # run parallel Neuron simulation  
-    sim.analysis.plotData()                  # gather spiking data and cell info from each node
-
+    sim.saveData()
+    sim.analysis.plotData()
 
 #------------------------------------------------------------------------------
-# Wrapper to create, simulate, and analyse network
+# Wrapper to create and simulate
 #------------------------------------------------------------------------------
 def createSimulate (netParams=None, simConfig=None, output=False):
-    ''' Sequence of commands create, simulate and analyse network '''
+    ''' Sequence of commands create and simulate network '''
     from .. import sim
     (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
     sim.simulate() 
-
     if output: return (pops, cells, conns, stims, simData)    
-
 
 #------------------------------------------------------------------------------
 # Wrapper to create, simulate, and analyse network

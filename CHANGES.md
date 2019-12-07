@@ -6,6 +6,10 @@
 
 - Rotated conn matrix x-axis labels so can fit large matrices 
 
+- Added 'removeWeightNorm' argument to plotConn() function
+
+- Fixed file write permissions for evol optim batches
+
 - Fixed bug calculating normally distributed rhythmic inputs - was using variance instead of std
 
 - Fixed bug in iplotDipole when smoothing window size = 0
@@ -14,6 +18,11 @@
 
 - Fixed bug is plots with scalebars
 
+- Fixed bug in grid lines of plotConn
+
+- Fixed bug in subConnParams by sorting conns to ensure reproducibility on different number of cores
+
+- Fixed bug so uses 'Agg' backend if no display env variable e.g. in clusters
 
 
 # Version 0.9.3.1

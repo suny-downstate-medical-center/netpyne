@@ -33,10 +33,13 @@ from . import utils
 #------------------------------------------------------------------------------
 def saveJSON(fileName, data):
     import json, io
+    from .utils import NpSerializer
+
     with io.open(fileName, 'w', encoding='utf8') as fileObj:
         str_ = json.dumps(data,
                           indent=4, sort_keys=True,
-                          separators=(',', ': '), ensure_ascii=False)
+                          separators=(',', ': '), ensure_ascii=False,
+                          cls=NpSerializer)
         fileObj.write(to_unicode(str_))
 
 

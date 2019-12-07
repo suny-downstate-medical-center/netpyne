@@ -132,12 +132,14 @@ class Batch(object):
         odict = deepcopy(self.__dict__)
         if 'evolCfg' in odict:
             odict['evolCfg']['fitnessFunc'] = 'removed'
+        odict['initCfg'] = tupleToStr(odict['initCfg'])
         dataSave = {'batch': tupleToStr(odict)} 
         if ext == 'json':
             from .. import sim
             #from json import encoder
             #encoder.FLOAT_REPR = lambda o: format(o, '.12g')
             print(('Saving batch to %s ... ' % (filename)))
+
             sim.saveJSON(filename, dataSave)
 
     def setCfgNestedParam(self, paramLabel, paramVal):
@@ -201,8 +203,8 @@ class Batch(object):
     def openFiles2SaveStats(self):
         stat_file_name = '%s/%s_stats.cvs' %(self.saveFolder, self.batchLabel)
         ind_file_name = '%s/%s_stats_indiv.cvs' %(self.saveFolder, self.batchLabel)
-        individual = open(ind_file_name, 'wb')
-        stats = open(stat_file_name, 'wb')
+        individual = open(ind_file_name, 'w')
+        stats = open(stat_file_name, 'w')
         stats.write('#gen  pop-size  worst  best  median  average  std-deviation\n')
         individual.write('#gen  #ind  fitness  [candidate]\n')
         return stats, individual
@@ -453,6 +455,7 @@ wait
                             pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath)
                             
                         else:
+                            print(self.runCfg)
                             print("Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'")
                             import sys
                             sys.exit(0)

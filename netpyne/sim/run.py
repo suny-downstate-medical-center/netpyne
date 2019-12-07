@@ -110,7 +110,7 @@ def runSim ():
         except:
             if sim.cfg.verbose: 'Error Failed to use local dt.'
     sim.pc.barrier()
-    sim.timing('start', 'runTime')
+    sim.timing('start', 'runTime') 
     preRun()
     
     h.finitialize(float(sim.cfg.hParams['v_init']))

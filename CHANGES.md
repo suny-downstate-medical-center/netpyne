@@ -8,6 +8,8 @@
 
 - Added 'removeWeightNorm' argument to plotConn() function
 
+- Added option 'oneSynPerNetcon' to conn rules to create one synapse object per Netcon
+
 - Fixed file write permissions for evol optim batches
 
 - Fixed bug calculating normally distributed rhythmic inputs - was using variance instead of std

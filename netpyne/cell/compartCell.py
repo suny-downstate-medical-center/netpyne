@@ -549,7 +549,7 @@ class CompartCell (Cell):
                 del nc # discard netcon
         sim.net.gid2lid[self.gid] = len(sim.net.gid2lid)
 
-    def addSynMech (self, synLabel, secLabel, loc):
+    def addSynMech (self, synLabel, secLabel, loc, oneSynPerNetcon = False):
         from .. import sim
 
         synMechParams = sim.net.params.synMechParams.get(synLabel)  # get params for this synMech
@@ -561,7 +561,7 @@ class CompartCell (Cell):
         if synMechParams and sec:  # if both the synMech and the section exist
             if sim.cfg.createPyStruct and sim.cfg.addSynMechs:
                 synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==synLabel and synMech['loc']==loc), None)
-                if not synMech:  # if synMech not in section, then create
+                if not synMech or oneSynPerNetcon:  # if synMech not in section, or need multiple synMech per section, then create
                     synMech = Dict({'label': synLabel, 'loc': loc})
                     for paramName, paramValue in synMechParams.items():
                         synMech[paramName] = paramValue
@@ -573,6 +573,7 @@ class CompartCell (Cell):
                 # add synaptic mechanism NEURON objectes 
                 if not synMech:  # if pointer not created in createPyStruct, then check 
                     synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==synLabel and synMech['loc']==loc), None)
+                if oneSynPerNetcon: synMech = None
                 if not synMech:  # if still doesnt exist, then create
                     synMech = Dict()
                     sec['synMechs'].append(synMech)
@@ -1188,9 +1189,10 @@ class CompartCell (Cell):
                 if len(synMechLocs)>1: 
                     synMechLocs[pos], synMechLocs[0] = synMechLocs[0], synMechLocs[pos]
 
-        # add synaptic mechanism to section based on synMechSecs and synMechLocs (if already exists won't be added)
-        synMechs = [self.addSynMech(synLabel=params['synMech'], secLabel=synMechSecs[i], loc=synMechLocs[i]) for i in range(synsPerConn)] 
-
+        # check flag for nonlinearity -- which requires separate point processes
+        oneSynPerNetcon = sim.net.params.connParams[params['label']]['oneSynPerNetcon'] if ('label' in params and 'oneSynPerNetcon' in sim.net.params.connParams[params['label']]) else False   
+        # add synaptic mechanism to section based on synMechSecs and synMechLocs (if already exists won't be added unless nonLinear set to True)
+        synMechs = [self.addSynMech(synLabel=params['synMech'], secLabel=synMechSecs[i], loc=synMechLocs[i], oneSynPerNetcon=oneSynPerNetcon) for i in range(synsPerConn)] 
         return synMechs, synMechSecs, synMechLocs
 
 

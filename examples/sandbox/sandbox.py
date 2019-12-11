@@ -53,7 +53,7 @@ simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict w
 simConfig.recordStep = 0.1 			# Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'model3'  # Set file output name
 simConfig.saveJson = True 	
-simConfig.seeds = {'conn': 4321}
+simConfig.seeds['conn'] = 4321
  
 
 simConfig.hParams = {'celsius': 34, 'v_init': -80}

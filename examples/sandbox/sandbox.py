@@ -40,7 +40,7 @@ netParams.connParams['TVL->IT5B'] = { 	#  S -> M label
 	'delay': 5,						# transmission delay (ms)
 	'synMech': ['AMPA'],
     'synsPerConn': 1,
-    'sec': ['Adend3']}   			# synaptic mechanism
+    'sec': ['Adend1']}   			# synaptic mechanism
 
 
 # Simulation options
@@ -53,10 +53,10 @@ simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict w
 simConfig.recordStep = 0.1 			# Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'model3'  # Set file output name
 simConfig.saveJson = True 	
-simConfig.seeds['conn'] = 4321
+simConfig.seeds = {'conn': 4321, 'stim': 1234, 'loc': 4321}
  
 
-simConfig.hParams = {'celsius': 34, 'v_init': -80}
+simConfig.hParams = {'celsius': 34, 'v_init': -0}
 
 simConfig.printPopAvgRates = [0, simConfig.duration]
 

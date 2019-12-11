@@ -486,8 +486,8 @@ class CompartCell (Cell):
         # assumes python structure exists
         for conn in self.conns:
             # set postsyn target
-            synMech = next((synMech for synMech in self.secs[conn['sec']]['synMechs'] if synMech['label']==conn['synMech'] and synMech['loc']==conn['loc']), None)
-
+            #synMech = next((synMech for synMech in self.secs[conn['sec']]['synMechs'] if synMech['label']==conn['synMech'] and synMech['loc']==conn['loc']), None)
+            synMech = None
             if not synMech: 
                 synMech = self.addSynMech(conn['synMech'], conn['sec'], conn['loc'])
                 #continue  # go to next conn
@@ -560,7 +560,8 @@ class CompartCell (Cell):
 
         if synMechParams and sec:  # if both the synMech and the section exist
             if sim.cfg.createPyStruct and sim.cfg.addSynMechs:
-                synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==synLabel and synMech['loc']==loc), None)
+                # synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==synLabel and synMech['loc']==loc), None)
+                synMech = None
                 if not synMech:  # if synMech not in section, then create
                     synMech = Dict({'label': synLabel, 'loc': loc})
                     for paramName, paramValue in synMechParams.items():

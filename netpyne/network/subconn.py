@@ -152,6 +152,10 @@ def subcellularConn(self, allCellTags, allPopTags):
                     else:
                         conns = allConns
 
+                    # sort conns so reproducible across different number of cores 
+                    # use sec+preGid to avoid artificial distribution based on preGid (e.g. low gids = close to soma)
+                    conns = sorted(conns, key = lambda v: v['sec']+str(v['loc'])+str(v['preGid']))
+
                     # set sections to be used
                     secList = postCell._setConnSections(subConnParam)
                     
@@ -159,7 +163,7 @@ def subcellularConn(self, allCellTags, allPopTags):
                     if subConnParam.get('density', None) == 'uniform':
                         # calculate new syn positions
                         newSecs, newLocs = postCell._distributeSynsUniformly(secList=secList, numSyns=len(conns))
-
+                        
                     # 2D map and 1D map (radial)
                     elif isinstance(subConnParam.get('density', None), dict) and subConnParam['density']['type'] in ['2Dmap', '1Dmap']:
 
@@ -230,45 +234,47 @@ def subcellularConn(self, allCellTags, allPopTags):
                         #    for seg in sec:
                         #      print seg.x, h.distance(seg.x)
 
-                    # sort conns so reproducible across different number of cores 
-                    # use sec+preGid to avoid artificial distribution based on preGid (e.g. low gids = close to soma)
-                    conns = sorted(conns, key = lambda v: v['sec']+str(v['preGid']))
-                    print('\nConns:\n', conns)
-                    print('\nConnsGroup:\n', connsGroup)
 
-                    # assign conns to new syn locations
+
+                    #if postCellGid == 31:
+                    #    import json
+                    #    with open('../data/v54_manualTune/4core_before.json', 'w') as f:
+                    #        json.dump(conns, f)
+                        
                     for i,(conn, newSec, newLoc) in enumerate(zip(conns, newSecs, newLocs)):
 
                         # get conn group label before updating params
                         connGroupLabel = '%d_%s_%.3f' % (conn['preGid'], conn['sec'], conn['loc'])
 
-                        # update weight if weightNorm present
-                        if 'weightNorm' in postCell.secs[conn['sec']] and isinstance(postCell.secs[conn['sec']]['weightNorm'], list): 
-                            oldNseg = postCell.secs[conn['sec']]['geom']['nseg']
-                            oldWeightNorm = postCell.secs[conn['sec']]['weightNorm'][int(round(conn['loc']*oldNseg))-1]
-                            newNseg = postCell.secs[newSec]['geom']['nseg']
-                            newWeightNorm = postCell.secs[newSec]['weightNorm'][int(round(newLoc*newNseg))-1] if 'weightNorm' in postCell.secs[newSec] else 1.0
-                            conn['weight'] = conn['weight'] / oldWeightNorm * newWeightNorm
+                        # # update weight if weightNorm present
+                        # if 'weightNorm' in postCell.secs[conn['sec']] and isinstance(postCell.secs[conn['sec']]['weightNorm'], list): 
+                        #     oldNseg = postCell.secs[conn['sec']]['geom']['nseg']
+                        #     oldWeightNorm = postCell.secs[conn['sec']]['weightNorm'][int(round(conn['loc']*oldNseg))-1]
+                        #     newNseg = postCell.secs[newSec]['geom']['nseg']
+                        #     newWeightNorm = postCell.secs[newSec]['weightNorm'][int(round(newLoc*newNseg))-1] if 'weightNorm' in postCell.secs[newSec] else 1.0
+                        #     conn['weight'] = conn['weight'] / oldWeightNorm * newWeightNorm
 
                         # avoid locs at 0.0 or 1.0 - triggers hoc error if syn needs an ion (eg. ca_ion)
                         if newLoc == 0.0: newLoc = 0.00001 
                         elif newLoc == 1.0: newLoc = 0.99999  
                         
                         # updade sec and loc
-                        conn['sec'] = newSec
-                        conn['loc'] = newLoc
+                        #conn['sec'] = newSec
+                        #conn['loc'] = newLoc
 
                         # find grouped conns 
-                        if subConnParam.get('groupSynMechs', None) and conn['synMech'] in subConnParam['groupSynMechs']:
+                        # if subConnParam.get('groupSynMechs', None) and conn['synMech'] in subConnParam['groupSynMechs']:
                             
-                            connGroup = connsGroup[connGroupLabel]  # get grouped conn from previously stored dict 
-                            connGroup['synMech'] = connGroup['synMech'].split('__grouped__')[1]  # remove '__grouped__' label
+                        #     connGroup = connsGroup[connGroupLabel]  # get grouped conn from previously stored dict 
+                        #     connGroup['synMech'] = connGroup['synMech'].split('__grouped__')[1]  # remove '__grouped__' label
 
-                            connGroup['sec'] = newSec
-                            connGroup['loc'] = newLoc
-                            if newWeightNorm: connGroup['weight'] = connGroup['weight'] / oldWeightNorm * newWeightNorm
-                    
-                    print('\nConns after:\n', conns)
+                        #     connGroup['sec'] = newSec
+                        #     connGroup['loc'] = newLoc
+                        #     if newWeightNorm: connGroup['weight'] = connGroup['weight'] / oldWeightNorm * newWeightNorm
+
+                    #if postCellGid == 31:
+                    #    with open('../data/v54_manualTune/4core_after.json', 'w') as f:
+                    #        json.dump(conns, f)
                                 
         sim.pc.barrier()
 

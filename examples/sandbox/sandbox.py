@@ -20,26 +20,27 @@ netParams.defineCellShapes = True  # convert stylized geoms to 3d points
 
 
 ## Population parameters
-netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 1, 'cellModel': 'HH'}
-netParams.popParams['input'] = { 'numCells': 100, 'rate': 15, 'noise': 1.0, 'start':0, 'cellModel': 'NetStim'}
+netParams.popParams['IT5B'] = {'cellType': 'IT', 'numCells': 1, 'cellModel': 'HH'}
+netParams.popParams['TVL'] = { 'numCells': 100, 'rate': 15, 'noise': 1.0, 'start':0, 'cellModel': 'NetStim'}
 
 ## Cell property rules
-netParams.loadCellParamsRule(label='PYR', fileName='IT5B_reduced_cellParams.pkl')
-netParams.cellParams['PYR']['conds'] = {'cellType': 'PYR'}
+netParams.loadCellParamsRule(label='IT5B_reduced', fileName='IT5B_reduced_cellParams.pkl')
+netParams.cellParams['IT5B_reduced']['conds'] = {'cellType': 'IT'}
 
 
 ## Synaptic mechanism parameters
-netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # excitatory synaptic mechanism
+netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # excitatory synaptic mechanism
 
 ## Cell connectivity rules
-netParams.connParams['input->S'] = { 	#  S -> M label
-	'preConds': {'pop': 'input'}, 	# conditions of presyn cells
-	'postConds': {'pop': 'S'}, # conditions of postsyn cells
+netParams.connParams['TVL->IT5B'] = { 	#  S -> M label
+	'preConds': {'pop': 'TVL'}, 	# conditions of presyn cells
+	'postConds': {'pop': 'IT5B'}, # conditions of postsyn cells
 	'probability': 1.0, 			# probability of connection
 	'weight': 0.5, 				# synaptic weight
 	'delay': 5,						# transmission delay (ms)
-	'synMech': 'exc',
-    'secs': ['Adend1']}   			# synaptic mechanism
+	'synMech': ['AMPA'],
+    'synsPerConn': 1,
+    'sec': ['Adend3']}   			# synaptic mechanism
 
 
 # Simulation options
@@ -51,19 +52,12 @@ simConfig.verbose = False  			# Show detailed messages
 simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 simConfig.recordStep = 0.1 			# Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'model3'  # Set file output name
-simConfig.savePickle = False 		# Save params, network and sim output to pickle file
 simConfig.saveJson = True 	
-simConfig.seeds = {'conn': 4321, 'stim': 1234, 'loc': 4321}
+simConfig.seeds = {'conn': 4321}
  
 
 simConfig.hParams = {'celsius': 34, 'v_init': -80}
-simConfig.connRandomSecFromList = False  # set to false for reproducibility 
-simConfig.cvode_active = False
-simConfig.cvode_atol = 1e-6
-simConfig.cache_efficient = True
-simConfig.printRunTime = 0.1
 
-simConfig.includeParamsLabel = False
 simConfig.printPopAvgRates = [0, simConfig.duration]
 
 simConfig.analysis['plotRaster'] = True 			# Plot a raster

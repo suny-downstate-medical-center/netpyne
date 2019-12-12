@@ -140,7 +140,7 @@ def subcellularConn(self, allCellTags, allPopTags):
                             if not conn['synMech'].startswith('__grouped__'):
                                 conns.append(conn)
                                 #iConn = iConn + 1
-                                connGroupLabel = '%d_%s_%.3f' % (conn['preGid'], conn['sec'], conn['loc'])
+                                connGroupLabel = '%d_%s_%.4f' % (conn['preGid'], conn['sec'], conn['loc'])
                                 if conn['synMech'] in subConnParam['groupSynMechs']:
                                     for synMech in [s for s in subConnParam['groupSynMechs'] if s != conn['synMech']]:
                                         connGroup = next((c for c in allConns if c['synMech'] == synMech and c['sec']==conn['sec'] and c['loc']==conn['loc']), None)

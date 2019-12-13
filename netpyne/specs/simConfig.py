@@ -52,6 +52,7 @@ class SimConfig (object):
         self.invertedYCoord = True  # Make y-axis coordinate negative so they represent depth when visualized (0 at the top)
         self.allowSelfConns = False  # allow connections from a cell to itself
         self.allowConnsWithWeight0 = True  # allow connections with weight 0
+        self.oneSynPerNetcon = True  # create one individual synapse object for each Netcon (if False, same synpase can be shared)
         self.saveCellSecs = True  # save all the sections info for each cell (False reduces time+space; available in netParams; prevents re-simulation)
         self.saveCellConns = True  # save all the conns info for each cell (False reduces time+space; prevents re-simulation)
         self.timing = True  # show timing of each process

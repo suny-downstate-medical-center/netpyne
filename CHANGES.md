@@ -8,7 +8,7 @@
 
 - Added 'removeWeightNorm' argument to plotConn() function
 
-- Added option 'oneSynPerNetcon' to conn rules to create one synapse object per Netcon
+- Added cfg option 'oneSynPerNetcon' to conn rules to create one synapse object per Netcon
 
 - Fixed file write permissions for evol optim batches
 

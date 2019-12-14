@@ -1,4 +1,4 @@
-__version__ = '0.9.3.1' 
+__version__ = '0.9.4' 
 import os, sys
 display = os.getenv('DISPLAY')
 nogui = (sys.argv.count('-nogui')>0)

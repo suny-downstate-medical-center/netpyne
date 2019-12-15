@@ -88,7 +88,7 @@ class PointCell (Cell):
 
         # add random num generator, and set number and seed for NetStims
         if self.tags['cellModel'] == 'NetStim':
-            print("Creating a NetStim pointcell")
+            if sim.cfg.verbose: print("Creating a NetStim pointcell")
             rand = h.Random()
             self.hRandom = rand 
             if 'number' not in self.params:
@@ -193,6 +193,15 @@ class PointCell (Cell):
             # if spkTimess
             elif 'spkTimes' in self.params:
                 spkTimes = self.params['spkTimes']
+                if type(spkTimes) not in (list,tuple,np.array):
+                    print('\nError: VecStim "spkTimes" needs to be a list, tuple or numpy array')
+                    return
+                spkTimes = np.array(spkTimes)
+                vec = h.Vector(len(spkTimes))
+
+            # if spkTimess
+            elif 'spkTimes' in self.tags:
+                spkTimes = self.tags['spkTimes']
                 if type(spkTimes) not in (list,tuple,np.array):
                     print('\nError: VecStim "spkTimes" needs to be a list, tuple or numpy array')
                     return

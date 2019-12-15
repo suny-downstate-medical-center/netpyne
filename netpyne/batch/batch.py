@@ -69,6 +69,16 @@ def runJob(script, cfgSavePath, netParamsSavePath):
 # -------------------------------------------------------------------------------
 def createFolder(folder):
     import os
+
+    if os.path.exists(folder):
+        if pc.id()==0:
+            try:
+                import shutil
+                shutil.rmtree(folder)
+                # shutil.rmtree(folder)
+            except OSError:
+                print(' Could not delete %s' % (folder))
+                
     if not os.path.exists(folder):
         try:
             os.mkdir(folder)
@@ -132,12 +142,14 @@ class Batch(object):
         odict = deepcopy(self.__dict__)
         if 'evolCfg' in odict:
             odict['evolCfg']['fitnessFunc'] = 'removed'
+        odict['initCfg'] = tupleToStr(odict['initCfg'])
         dataSave = {'batch': tupleToStr(odict)} 
         if ext == 'json':
             from .. import sim
             #from json import encoder
             #encoder.FLOAT_REPR = lambda o: format(o, '.12g')
             print(('Saving batch to %s ... ' % (filename)))
+
             sim.saveJSON(filename, dataSave)
 
     def setCfgNestedParam(self, paramLabel, paramVal):
@@ -201,8 +213,8 @@ class Batch(object):
     def openFiles2SaveStats(self):
         stat_file_name = '%s/%s_stats.cvs' %(self.saveFolder, self.batchLabel)
         ind_file_name = '%s/%s_stats_indiv.cvs' %(self.saveFolder, self.batchLabel)
-        individual = open(ind_file_name, 'wb')
-        stats = open(stat_file_name, 'wb')
+        individual = open(ind_file_name, 'w')
+        stats = open(stat_file_name, 'w')
         stats.write('#gen  pop-size  worst  best  median  average  std-deviation\n')
         individual.write('#gen  #ind  fitness  [candidate]\n')
         return stats, individual
@@ -327,13 +339,13 @@ class Batch(object):
                         cfgSavePath = self.saveFolder+'/'+simLabel+'_cfg.json'
                         self.cfg.save(cfgSavePath)
                         
+                        sleepInterval = 1
+
                         # hpc torque job submission
                         if self.runCfg.get('type',None) == 'hpc_torque':
 
                             # read params or set defaults
                             sleepInterval = self.runCfg.get('sleepInterval', 1)
-                            sleep(sleepInterval)
-                            
                             nodes = self.runCfg.get('nodes', 1)
                             ppn = self.runCfg.get('ppn', 1)
                             script = self.runCfg.get('script', 'init.py')
@@ -377,8 +389,6 @@ echo $PBS_O_WORKDIR
 
                             # read params or set defaults
                             sleepInterval = self.runCfg.get('sleepInterval', 1)
-                            sleep(sleepInterval)
-                            
                             allocation = self.runCfg.get('allocation', 'csd403') # NSG account
                             nodes = self.runCfg.get('nodes', 1)
                             coresPerNode = self.runCfg.get('coresPerNode', 1)
@@ -455,16 +465,17 @@ wait
                             pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath)
                             
                         else:
+                            print(self.runCfg)
                             print("Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'")
                             import sys
                             sys.exit(0)
                 
-                    sleep(1) # avoid saturating scheduler
+                    sleep(sleepInterval) # avoid saturating scheduler
             print("-"*80)
             print("   Finished submitting jobs for grid parameter exploration   ")
             print("-" * 80)
             while pc.working():
-                sleep(1)
+                sleep(sleepInterval)
 
 
 

@@ -606,7 +606,9 @@ def _addCellConn (self, connParam, preCellGid, postCellGid):
         # if 'threshold' in connParam: params['threshold'] = connParam.get('threshold')  # deprecated, use threshold in preSyn cell sec
         if 'shape' in connParam: params['shape'] = connParam.get('shape')    
         if 'plast' in connParam: params['plast'] = connParam.get('plast')    
-        if 'gapJunction' in connParam: params['gapJunction'] = connParam.get('gapJunction')
+        if 'gapJunction' in connParam:
+            params['gapJunction'] = connParam.get('gapJunction')
+            params['preLoc'] = connParam.get('preLoc')
 
         if sim.cfg.includeParamsLabel: params['label'] = connParam.get('label')
         

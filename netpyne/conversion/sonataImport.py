@@ -529,7 +529,7 @@ class SONATAImporter():
                 print(('Cell %d/%d (gid=%d) of pop %s, on node %d, ' % (icell, numCells, gid, pop_id, sim.rank)))
 
             sim.net.lastGid = sim.net.lastGid + numCells 
-
+            
 
     # ------------------------------------------------------------------------------------------------------------
     # Create connections
@@ -652,7 +652,8 @@ class SONATAImporter():
                 
                 # get stpikes
                 from pyneuroml.plot.PlotSpikes import read_sonata_spikes_hdf5_file
-                ids_times = read_sonata_spikes_hdf5_file(self.subs(info['input_file']))
+                from pyneuroml.plot.PlotSpikes import POP_NAME_SPIKEFILE_WITH_GIDS
+                ids_times = read_sonata_spikes_hdf5_file(self.subs(info['input_file']))[POP_NAME_SPIKEFILE_WITH_GIDS]
                 spkTimes = [[spk for spk in spks] for k,spks in ids_times.items()] 
                 
                 # add spikes to vecstim pop

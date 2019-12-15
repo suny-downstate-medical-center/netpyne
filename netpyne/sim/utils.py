@@ -71,6 +71,8 @@ def getCellsList (include, returnGids=False):
 
         elif isinstance(condition, tuple) or isinstance(condition, list):  # subset of a pop with relative indices
             cellsPop = [gid for gid,tags in allCellTags.items() if tags['pop']==condition[0]]
+            cellsPop = list(set(cellsPop))
+            cellsPop.sort()
 
             if isinstance(condition[1], list):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
@@ -541,4 +543,19 @@ def clearAll ():
 
     import gc; gc.collect()
     
+#------------------------------------------------------------------------------
+# Create a subclass of json.JSONEncoder to convert numpy types in Python types
+#------------------------------------------------------------------------------
+import json
+import numpy as np
 
+class NpSerializer(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(NpSerializer, self).default(obj)

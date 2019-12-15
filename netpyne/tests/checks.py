@@ -51,7 +51,7 @@ def checkOutput(modelName, verbose=False):
 
 		# M1 expected output 
 		expectedAll['numSyns']['M1'] = 4887
-		expectedAll['numSpikes']['M1'] = 74667
+		expectedAll['numSpikes']['M1'] = 76135
 
 		# M1 detailed expected output 
 		expectedAll['numSyns']['M1detailed'] = 49152

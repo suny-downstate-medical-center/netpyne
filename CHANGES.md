@@ -10,6 +10,8 @@
 
 - Added cfg option 'oneSynPerNetcon' to conn rules to create one synapse object per Netcon
 
+- Added first version of Contributors Guide
+
 - Fixed file write permissions for evol optim batches
 
 - Fixed bug calculating normally distributed rhythmic inputs - was using variance instead of std

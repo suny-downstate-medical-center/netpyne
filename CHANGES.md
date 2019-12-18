@@ -1,3 +1,9 @@
+# Version 0.9.5
+
+- Print start and end date/time
+
+- Avoid removing batch folder so can rerun and complete batch simulations
+
 # Version 0.9.4
 
 - Added option to avoid creating connections with weight=0

@@ -14,6 +14,8 @@ from future import standard_library
 standard_library.install_aliases()
 from netpyne import __gui__
 
+from datetime import datetime 
+
 # -------------------------------------------------------------------------------------------------------------------
 ## Wrapper to run analysis functions in simConfig
 # -------------------------------------------------------------------------------------------------------------------
@@ -41,3 +43,5 @@ def plotData ():
             sumTime = sum([t for k,t in sim.timingData.items() if k not in ['totalTime']])
             if sim.timingData['totalTime'] <= 1.2*sumTime:  # Print total time (only if makes sense)
                 print(('\nTotal time = %0.2f s' % sim.timingData['totalTime']))
+            
+        print('\nEnd time: ', datetime.now())

@@ -4,6 +4,8 @@
 
 - Avoid removing batch folder so can rerun and complete batch simulations
 
+- Added loadBalance option to print individual node computer times
+
 # Version 0.9.4
 
 - Added option to avoid creating connections with weight=0

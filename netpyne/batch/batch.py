@@ -69,6 +69,7 @@ def runJob(script, cfgSavePath, netParamsSavePath):
 # -------------------------------------------------------------------------------
 def createFolder(folder):
     import os
+                
     if not os.path.exists(folder):
         try:
             os.mkdir(folder)
@@ -315,6 +316,8 @@ class Batch(object):
                     simLabel = self.batchLabel+''.join([''.join('_'+str(i)) for i in iComb])
                     jobName = self.saveFolder+'/'+simLabel  
 
+                    sleepInterval = 1
+
                     # skip if output file already exists
                     if self.runCfg.get('skip', False) and glob.glob(jobName+'.json'):
                         print('Skipping job %s since output file already exists...' % (jobName))
@@ -328,8 +331,6 @@ class Batch(object):
                         self.cfg.saveFolder = self.saveFolder
                         cfgSavePath = self.saveFolder+'/'+simLabel+'_cfg.json'
                         self.cfg.save(cfgSavePath)
-                        
-                        sleepInterval = 1
 
                         # hpc torque job submission
                         if self.runCfg.get('type',None) == 'hpc_torque':
@@ -374,7 +375,7 @@ echo $PBS_O_WORKDIR
                             (output, input) = (proc.stdin, proc.stdout)
 
 
-                        # hpc torque job submission
+                        # hpc slurm job submission
                         elif self.runCfg.get('type',None) == 'hpc_slurm':
 
                             # read params or set defaults

@@ -175,7 +175,7 @@ def calculateLFP():
 #------------------------------------------------------------------------------
 # Calculate and print load balance
 #------------------------------------------------------------------------------
-def loadBalance ():
+def loadBalance (printNodeTimes = False):
     from .. import sim
 
     computation_time = sim.pc.step_time()
@@ -184,7 +184,9 @@ def loadBalance ():
     avg_comp_time = sim.pc.allreduce(computation_time, 1)/sim.nhosts
     load_balance = avg_comp_time/max_comp_time
 
-    print('node:',sim.rank,' comp_time:',computation_time)
+    if printNodeTimes:
+        print('node:',sim.rank,' comp_time:',computation_time)
+    
     if sim.rank==0:
         print('max_comp_time:', max_comp_time)
         print('min_comp_time:', min_comp_time)

@@ -717,6 +717,7 @@ Related to the simulation and netpyne framework:
 * **pt3dRelativeToCellLocation** - True  # Make cell 3d points relative to the cell x,y,z location (default: True)
 * **invertedYCoord** - Make y-axis coordinate negative so they represent depth when visualized (0 at the top) (default: True)
 * **allowSelfConns** = False  # allow connections from a cell to itself (default: False)
+* **oneSynPerNetcon** - Create one individual synapse object for each Netcon (if False, same synpase can be shared) (default: True)
 * **saveCellSecs** - Save all the sections info for each cell; reduces time+space (default: False) 
 * **saveCellConns** - save all the conns info for each cell; reduces time+space (default: False)
 * **timing** - Show and record timing of each process (default: True)

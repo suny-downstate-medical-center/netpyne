@@ -1,3 +1,13 @@
+# Version 0.9.5
+
+- Print start and end date/time
+
+- Avoid removing batch folder so can rerun and complete batch simulations
+
+- Added loadBalance option to print individual node computer times
+
+- Fixed bug: wrong indentation for initializing fixedInterval in batch.py
+
 # Version 0.9.4
 
 - Added option to avoid creating connections with weight=0
@@ -7,6 +17,10 @@
 - Rotated conn matrix x-axis labels so can fit large matrices 
 
 - Added 'removeWeightNorm' argument to plotConn() function
+
+- Added cfg option 'oneSynPerNetcon' to conn rules to create one synapse object per Netcon
+
+- Added first version of Contributors Guide
 
 - Fixed file write permissions for evol optim batches
 

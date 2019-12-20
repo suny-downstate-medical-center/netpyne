@@ -254,6 +254,7 @@ def intervalSave (t):
     
     sim.pc.barrier()    
     
+    
     gatherLFP=True
     simDataVecs = ['spkt','spkid','stims']+list(sim.cfg.recordTraces.keys())
     singleNodeVecs = ['t']
@@ -262,6 +263,10 @@ def intervalSave (t):
 
     # gather only sim data
     nodeData = {'simData': sim.simData}
+    if hasattr(sim.cfg, 'saveWeights'):
+        nodeData['simData']['allWeights']= sim.allWeights
+        simDataVecs = simDataVecs + ['allWeights']
+        print('node {} has {} weights'.format(sim.rank, len(sim.allWeights)))
     data = [None]*sim.nhosts
     data[0] = {}
     for k,v in nodeData.items():
@@ -297,7 +302,6 @@ def intervalSave (t):
                 elif key not in singleNodeVecs:
                     sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
         
-        
         if len(sim.allSimData['spkt']) > 0:
             sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
             sim.allSimData['spkt'], sim.allSimData['spkid'] = list(sim.allSimData['spkt']), list(sim.allSimData['spkid'])
@@ -320,6 +324,8 @@ def intervalSave (t):
     for k, v in sim.simData.items():
         if k in ['spkt', 'spkid', 'stims']:
             v.resize(0)
+            
+    sim.allWeights = []
     
 #------------------------------------------------------------------------------
 # Save data in each node

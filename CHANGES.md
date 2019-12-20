@@ -6,6 +6,8 @@
 
 - Added loadBalance option to print individual node computer times
 
+- Fixed bug: wrong indentation for initializing fixedInterval in batch.py
+
 # Version 0.9.4
 
 - Added option to avoid creating connections with weight=0

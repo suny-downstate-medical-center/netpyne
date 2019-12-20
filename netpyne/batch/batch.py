@@ -330,7 +330,7 @@ class Batch(object):
                         cfgSavePath = self.saveFolder+'/'+simLabel+'_cfg.json'
                         self.cfg.save(cfgSavePath)
                         
-                        sleepInterval = 1
+                    sleepInterval = 1
 
                         # hpc torque job submission
                         if self.runCfg.get('type',None) == 'hpc_torque':

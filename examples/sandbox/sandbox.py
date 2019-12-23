@@ -50,8 +50,20 @@ simConfig.analysis['plotRaster'] = True 			# Plot a raster
 simConfig.analysis['plotTraces'] = {'include': [1]} 			# Plot recorded traces for this list of cells
 simConfig.analysis['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
 
+def modifyGnabar(t):
+    params = {'conds': {'label': 'PYRrule'}, 'secs': {'soma': {'mechs': {'hh': {'gnabar': 0.0}}}}}
+    sim.net.modifyCells(params)
+    print(sim.net.cells[0].secs['soma']['mechs']['hh'])
+
+
 # Create network and run simulation
-sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)
+sim.create(netParams=netParams, simConfig=simConfig)
+sim.runSimWithIntervalFunc(500, modifyGnabar)
+sim.gatherData()                  			# gather spiking data and cell info from each node
+sim.saveData()                    			# save params, cell info and sim output to file (pickle,mat,txt,etc)#
+sim.analysis.plotData()         			# plot spike raster etc
+
+
 
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty
 

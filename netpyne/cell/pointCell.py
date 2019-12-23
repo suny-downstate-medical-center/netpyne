@@ -421,7 +421,8 @@ class PointCell (Cell):
             try: 
                 name(*args,**kwargs)
             except:
-                print("Error: Function '%s' not yet implemented for Point Neurons" % name)
+                if sim.cfg.verbose:
+                    print("Error: Function '%s' not yet implemented for Point Neurons" % name)
         return wrapper
 
     # def modify (self):

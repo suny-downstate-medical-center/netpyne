@@ -3,12 +3,12 @@ from netpyne import specs, sim
 # Network parameters
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
-netParams.propVelocityS = 100
-netParams.propVelocityM = 200
 
 ## Population parameters
 netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}
 netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}
+netParams.popParams['input'] = {'cellType': 'Ext', 'numCells': 20, 'cellModel': 'VecStim', 'rate': 10}
+
 
 ## Cell property rules
 cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}} 	# cell rule dict
@@ -30,7 +30,7 @@ netParams.connParams['S->M'] = { 	#  S -> M label
 	'postConds': {'pop': 'M'}, # conditions of postsyn cells
 	'divergence': 12, 			# probability of connection
 	'weight': 0.01, 				# synaptic weight
-	'delay': 'np.floor(dist_2D/propVelocityM)',						# transmission delay (ms)
+	'delay': 5,						# transmission delay (ms)
 	'synMech': 'exc'}   			# synaptic mechanism
 
 
@@ -45,13 +45,22 @@ simConfig.recordStep = 0.1 			# Step size in ms to save data (eg. V traces, LFP,
 simConfig.filename = 'model_output'  # Set file output name
 simConfig.savePickle = False 		# Save params, network and sim output to pickle file
 simConfig.saveJson = True 	
+simConfig.includeParamsLabel = False
+
+simConfig.saveDataInclude = ['simData', 'simConfig', 'netParams']#, 'net']
+simConfig.saveCellSecs = 0 #False
+simConfig.saveCellConns = 0
+simConfig.recordLFP = [[150, y, 150] for y in [600, 800, 1000]] # only L5 (Zagha) [[150, y, 150] for y in range(200,1300,100)]
 
 simConfig.analysis['plotRaster'] = True 			# Plot a raster
 simConfig.analysis['plotTraces'] = {'include': [1]} 			# Plot recorded traces for this list of cells
-simConfig.analysis['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
+#simConfig.analysis['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
+simConfig.analysis['plotLFP'] = True
+
+
 
 def modifyGnabar(t):
-    params = {'conds': {'label': 'PYRrule'}, 'secs': {'soma': {'mechs': {'hh': {'gnabar': 0.0}}}}}
+    params = {'conds': {'cellType': 'PYR'}, 'secs': {'soma': {'mechs': {'hh': {'gnabar': 0.0}}}}}
     sim.net.modifyCells(params)
     print(sim.net.cells[0].secs['soma']['mechs']['hh'])
 

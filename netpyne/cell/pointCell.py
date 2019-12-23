@@ -418,6 +418,7 @@ class PointCell (Cell):
 
     def __getattr__(self, name):
         def wrapper(*args, **kwargs):
+            import sim
             try: 
                 name(*args,**kwargs)
             except:

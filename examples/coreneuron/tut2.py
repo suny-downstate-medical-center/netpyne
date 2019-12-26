@@ -50,4 +50,9 @@ simConfig.analysis['plot2Dnet'] = True           # plot 2D visualization of cell
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)
 
+with open('out_neuron.dat', 'w') as f:
+    for spkid, spkt in zip(sim.allSimData['spkid'], sim.allSimData['spkt']):
+        f.write('%.8g\t%d\n' % (spkt, spkid))
+
+
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty

@@ -70,9 +70,10 @@ def preRun ():
     for cell in sim.net.cells:
         if cell.tags.get('cellModel') == 'NetStim':
             #cell.hRandom.Random123(sim.hashStr('NetStim'), cell.gid, cell.params['seed'])
-            utils._init_stim_randomizer(cell.hRandom, 'NetStim', cell.gid, cell.params['seed'])
-            cell.hRandom.negexp(1)
-            cell.hPointp.noiseFromRandom(cell.hRandom)
+            #utils._init_stim_randomizer(cell.hRandom, 'NetStim', cell.gid, cell.params['seed'])
+            #cell.hRandom.negexp(1)
+            #cell.hPointp.noiseFromRandom(cell.hRandom)
+            cell.hPointp.noiseFromRandom123(utils.hashStr('NetStim'), cell.gid, cell.params['seed'])
         pop = sim.net.pops[cell.tags['pop']]
         if 'originalFormat' in pop.tags and pop.tags['originalFormat'] == 'NeuroML2_SpikeSource':
             if sim.cfg.verbose: print("== Setting random generator in NeuroML spike generator")
@@ -81,11 +82,12 @@ def preRun ():
             for stim in cell.stims:
                 if 'hRandom' in stim:
                     #stim['hRandom'].Random123(sim.hashStr(stim['source']), cell.gid, stim['seed'])
-                    utils._init_stim_randomizer(stim['hRandom'], stim['type'], cell.gid, stim['seed'])
-                    stim['hRandom'].negexp(1)
+                    #utils._init_stim_randomizer(stim['hRandom'], stim['type'], cell.gid, stim['seed'])
+                    #stim['hRandom'].negexp(1)
                     # Check if noiseFromRandom is in stim['hObj']; see https://github.com/Neurosim-lab/netpyne/issues/219
                     if not isinstance(stim['hObj'].noiseFromRandom, dict):
-                        stim['hObj'].noiseFromRandom(stim['hRandom'])
+                        #stim['hObj'].noiseFromRandom(stim['hRandom'])
+                        stim['hObj'].noiseFromRandom123(sim.hashStr(stim['type']), cell.gid, stim['seed'])
 
     # handler for recording LFP
     if sim.cfg.recordLFP:

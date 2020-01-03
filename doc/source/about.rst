@@ -87,6 +87,8 @@ For contributions (which are more than welcome!) please fork the repository and 
 For further information please contact salvadordura@gmail.com.
 
 
+.. _code_of_conduct:
+
 Code of conduct
 ---------------------
 
@@ -121,8 +123,6 @@ About NetPyNE
 Make use and/or cite NetPyNE
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-https://scholar.google.com/scholar?oi=bibs&hl=en&cites=17032431079400790910&as_sdt=5
-
 - Tejada J, Roque AC, **Conductance-based models and the fragmentation problem: A case study based on hippocampal CA1 pyramidal cell models and epilepsy**
 `Epilepsy & Behavior, 106841 <http://www.sciencedirect.com/science/article/pii/S1525505019310819>`_ 2019.
 
@@ -145,6 +145,9 @@ https://scholar.google.com/scholar?oi=bibs&hl=en&cites=17032431079400790910&as_s
 - Lytton WW, Seidenstein AH, Dura-Bernal S, McDougal RA, Schurmann F, Hines ML. **Simulation neurotechnologies for advancing brain research: Parallelizing large networks in NEURON.** *Neural Computation, 2016.*
 
 - Dura-Bernal S, Menzies RS, McLauchlan C, van Albada SJ, Kedziora DJ, Neymotin SA, Lytton WW, Kerr CC. **Effect of network size on computational capacity.** *Computational Neuroscience (CNS), 2016.*
+
+See here an `updated list from Google Scholar <https://scholar.google.com/scholar?oi=bibs&hl=en&cites=17032431079400790910&as_sdt=5>`_.
+
 
 
 Courses
@@ -184,20 +187,36 @@ Current funding
 Governance structure
 ---------------------
 
-Major decisions about NetPyNE are made by the steering committee, guided by the code of conduct.
+Major decisions about NetPyNE are made by the steering committee, guided by the :ref:`project_roadmap` and the :ref:`code_of_conduct`. 
+
+The current steering committee consists of the following members:
 
 - Salvadord Dura-Bernal (Assistant Professor, State University of New York Downstate; Research Scientist, Nathan Kline Institute for Psychiatric Research)
-- William W Lytton (Distinguisehd Professor, State University of New York Downstate)
+
+- William W Lytton (Distinguished Professor, State University of New York Downstate; Kings County Hospital)
+
 - Samuel A Neymotin (Research Scientist, Nathan Kline Institute for Psychiatric Research)
+
 - Michael Hines (Senior Research Scientist, Yale University)
+
 - Robert A McDougal (Assistant Professor, Yale University)
+
 - Padraig Gleeson (Principal Research Fellow, University College London)
+
 - Benjamin A Suter (Postdoctoral Fellow, Institute of Science and Technology Austria)
+
 - Cliff C Kerr (Senior Research Scientist, Institute for Disease Modeling)
 
 
+Membership in the steering committee is a personal membership. Affiliations are listed for identification purposes only; steering committee members do not represent their employers or academic institutions. 
+
+
+.. _project_roadmap:
+
 Project roadmap
 ---------------------
+
+https://gcc.gnu.org/gccmission.html
 
 - Robustness, reliability and reproducibility of existing features
 

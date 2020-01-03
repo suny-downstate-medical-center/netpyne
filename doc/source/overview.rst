@@ -84,7 +84,7 @@ NetPyNE is open source and available at https://github.com/Neurosim-lab/netpyne 
 
 For questions or suggestions please use the `Google NetPyNE QA forum <https://groups.google.com/forum/#!forum/netpyne-forum>`_ , the `NEURON NetPyNE forum <https://www.neuron.yale.edu/phpBB/viewforum.php?f=45>`_  or add an `Issue to github <https://github.com/Neurosim-lab/netpyne/issues>`_. 
 
-For contributions (which are more than welcome!) please fork the repository and make a Pull Request with your changes. See our contributors guide for more details: [IMPORTANT ADD LINK HERE!!!!!!!!!!!!!!!!!!!]
+For contributions (which are more than welcome!) please fork the repository and make a Pull Request with your changes. See our contributors guide for more details: `Contributors Guide <https://github.com/Neurosim-lab/netpyne/blob/development/CONTRIBUTING.md>`_.
 
 For further information please contact salvadordura@gmail.com.
 
@@ -92,7 +92,13 @@ For further information please contact salvadordura@gmail.com.
 Code of conduct
 ---------------------
 
-This project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms. The code of conduct can be found here: [IMPORTANT - ADD THIS FILE TO ROOT OF REPO: e.g.: https://github.com/atom/atom/blob/master/CODE_OF_CONDUCT.md A https://www.contributor-covenant.org/version/2/0/code_of_conduct.md]
+This project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms. 
+
+We as members, contributors, and leaders pledge to make participation in our community a harassment-free experience for everyone, regardless of age, body size, visible or invisible disability, ethnicity, sex characteristics, gender identity and expression, level of experience, education, socio-economic status, nationality, personal appearance, race, religion, or sexual identity and orientation.
+
+We pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community.
+
+Please read the `full Code of Conduct <https://github.com/Neurosim-lab/netpyne/blob/development/CODE_OF_CONDUCT.md>`_.
 
 
 Publications

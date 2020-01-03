@@ -121,17 +121,20 @@ About NetPyNE
 Make use and/or cite NetPyNE
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-15.	Gleeson P, Cantarelli M, Quintana A, Earnsah M, Piasini E, Birgiolas J, Cannon RC, Cayco- Gajic A, Crook S, Davison AP, Dura-Bernal S, et al. (2019) Open Source Brain: a collaborative resource for visualizing, analyzing, simulating and developing standardized models of neurons and circuits. Neuron, 10.1016/j.neuron.2019.05.019.
+https://scholar.google.com/scholar?oi=bibs&hl=en&cites=17032431079400790910&as_sdt=5
 
-20.	Kuhl E, Alber M, Tepole BA; Cannon WR; De S; Dura-Bernal S, Garikipati K, Karniadakis GE, Lytton WW, Perdikaris P, Petzold L. (2019) Multiscale modeling meets machine learning: What can we learn? arXiv:1911.11958 [Preprint]. Under review in Computer Methods in Applied Mechanics and Engineering.
+- Tejada J, Roque AC, **Conductance-based models and the fragmentation problem: A case study based on hippocampal CA1 pyramidal cell models and epilepsy**
+`Epilepsy & Behavior, 106841 <http://www.sciencedirect.com/science/article/pii/S1525505019310819>`_ 2019.
 
-19.	Dai K, Hernando J, Billeh JN, Gratiy SL, Planas J, Davison AP, Dura-Bernal S, Gleeson P, Devresse A, Gevaert M, King JG, Van Geit WAH, Povolotsky AV, Muller E, Courcol J-D, Arkhipov A (2019). The SONATA Data Format for Efficient Description of Large-Scale Network Models. bioRxiv, 625491 [Preprint]. Under review in PLoS Computational Biology.
+- Gleeson P, Cantarelli M, Quintana A, Earnsah M, Piasini E, Birgiolas J, Cannon RC, Cayco- Gajic A, Crook S, Davison AP, Dura-Bernal S, et al. **Open Source Brain: a collaborative resource for visualizing, analyzing, simulating and developing standardized models of neurons and circuits.** `Neuron, 10.1016/j.neuron.2019.05.019 <https://www.cell.com/neuron/fulltext/S0896-6273(19)30444-1>`_. *2019*
 
-18.	Gao P, Graham J, Angulo S, Dura-Bernal S, Zhou W, Hines ML, Lytton WW, and Antic S (2019) Experimental measurements and computational model of glutamate mediated dendritic and somatic plateau potentials. bioRxiv, 828582 [Preprint]. Under review in Nature Communications..
+- Kuhl E, Alber M, Tepole BA, Cannon WR, De S, Dura-Bernal S, Garikipati K, Karniadakis GE, Lytton WW, Perdikaris P, Petzold L. (2019) **Multiscale modeling meets machine learning: What can we learn?** `arXiv:1911.11958 <https://arxiv.org/abs/1911.11958>`_. [Preprint]. *Under review in Computer Methods in Applied Mechanics and Engineering. 2019*
 
-17.	Peng G, Alber M, Buganza A, Cannon W, De S, Dura-Bernal S, Garikipati K, Karmiadakis G, Lytton W, Perdikaris P, Petzold L, Kuhl E. (2019) Integrating Machine Learning and Multiscale Modeling: Perspectives, Challenges, and Opportunities in the Biological, Biomedical, and Behavioral Sciences. Nature Partner Journals (npj) Digital Medicine, 2, 115.
+- Dai K, Hernando J, Billeh JN, Gratiy SL, Planas J, Davison AP, Dura-Bernal S, Gleeson P, Devresse A, Gevaert M, King JG, Van Geit WAH, Povolotsky AV, Muller E, Courcol J-D, Arkhipov A . **The SONATA Data Format for Efficient Description of Large-Scale Network Models.** `bioRxiv, 625491 [Preprint] <https://www.biorxiv.org/content/10.1101/625491v2>`_. *Under review in PLoS Computational Biology. 2019*
 
-15.	Gleeson P, Cantarelli M, Quintana A, Earnsah M, Piasini E, Birgiolas J, Cannon RC, Cayco- Gajic A, Crook S, Davison AP, Dura-Bernal S, et al. (2019) Open Source Brain: a collaborative resource for visualizing, analyzing, simulating and developing standardized models of neurons and circuits. Neuron, 10.1016/j.neuron.2019.05.019.
+- Gao P, Graham J, Angulo S, Dura-Bernal S, Zhou W, Hines ML, Lytton WW, and Antic S  **Experimental measurements and computational model of glutamate mediated dendritic and somatic plateau potentials.** *bioRxiv, 828582 [Preprint]. Under review in Nature Communications. 2019*
+
+- Alber M, Buganza A, Cannon W, De S, Dura-Bernal S, Garikipati K, Karmiadakis G, Lytton W, Perdikaris P, Petzold L, Kuhl E. (2019) **Integrating Machine Learning and Multiscale Modeling: Perspectives, Challenges, and Opportunities in the Biological, Biomedical, and Behavioral Sciences.** `Nature Partner Journals (npj) Digital Medicine, 2, 115 <https://www.nature.com/articles/s41746-019-0193-y>`_. *2019*
 
 - Romaro C, Araujo Najman F, Dura-Bernal S, Roque AC. **Implementation of the Potjans-Diesmann cortical microcircuit model in NetPyNE/NEURON with rescaling option.** *Computational Neuroscience (CNS), 2018.*
 

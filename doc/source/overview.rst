@@ -163,7 +163,7 @@ Major decisions about NetPyNE are made by the steering committee, guided by the 
 - Robert A McDougal (Assistant Professor, Yale University)
 - Padraig Gleeson (Principal Research Fellow, University College London)
 - Benjamin A Suter (Postdoctoral Fellow, Institute of Science and Technology Austria)
-- Cliff C Kerr (Assistant Professor, University of Sydney)
+- Cliff C Kerr (Senior Research Scientist, Institute for Disease Modeling)
 
 
 Project roadmap

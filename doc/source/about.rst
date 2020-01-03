@@ -1,4 +1,4 @@
-NetPyNE Overview
+About NetPyNE
 =======================================
 
 What is NetPyNE?
@@ -9,11 +9,9 @@ Although NEURON already enables multiscale simulation ranging from the molecular
 
 For a more detailed overview of NetPyNE see:
 
-- `BioRxiv paper <https://www.biorxiv.org/content/early/2018/11/03/461137>`_
+- `eLife paper <https://elifesciences.org/articles/44494>`_
 
 - `SLIDES for Computational Neuroscience conference CNS17 <http://it.neurosim.downstate.edu/salvadord/netpyne.pdf>`_
-
-- `POSTER for Computational Neuroscience conference CNS16 <http://it.neurosim.downstate.edu/salvadord/CNS16_poster.pdf>`_ 
 
 |
 
@@ -104,14 +102,10 @@ Please read the `full Code of Conduct <https://github.com/Neurosim-lab/netpyne/b
 Publications
 -------------
 
-[IMPORTANT - UPDATE PUBS!!!!!!!!!!]
-
 About NetPyNE 
 ^^^^^^^^^^^^^^^^
 
-- Dura-Bernal S, Suter B, Gleeson P, Cantarelli M, Quintana A, Rodriguez F, Kedziora DJ, Chadderdon GL, Kerr CC, Neymotin SA, McDougal R, Hines M, Shepherd GMG, Lytton WW. **NetPyNE: a tool for data-driven multiscale modeling of brain circuits.** `bioRxiv 461137 <https://www.biorxiv.org/content/early/2018/11/03/461137>`_ , *2018.*
-16.	Dura-Bernal S, Suter B, Gleeson P, Cantarelli M, Quintana A, Rodriguez F, Kedziora DJ, Chadderdon GL, Kerr CC, Neymotin SA, McDougal R, Hines M, Shepherd GMG, Lytton WW. (2019) NetPyNE: a tool for data-driven multiscale modeling of brain circuits. eLife 2019;8:e44494 
-
+- Dura-Bernal S, Suter B, Gleeson P, Cantarelli M, Quintana A, Rodriguez F, Kedziora DJ, Chadderdon GL, Kerr CC, Neymotin SA, McDougal R, Hines M, Shepherd GMG, Lytton WW. **NetPyNE: a tool for data-driven multiscale modeling of brain circuits.** `eLife 2019;8:e44494 <https://elifesciences.org/articles/44494>`_ , *2019.*
 
 - Dura-Bernal S, Suter BA, Quintana A, Cantarelli M, Gleeson P, Rodriguez F, Neymotin SA, Hines M, Shepherd GMG, Lytton WW. **NetPyNE: a GUI-based tool to build, simulate and analyze large-scale, data-driven network models in parallel NEURON.** *Society for Neuroscience (SfN), 2018*.
 
@@ -138,7 +132,6 @@ Make use and/or cite NetPyNE
 17.	Peng G, Alber M, Buganza A, Cannon W, De S, Dura-Bernal S, Garikipati K, Karmiadakis G, Lytton W, Perdikaris P, Petzold L, Kuhl E. (2019) Integrating Machine Learning and Multiscale Modeling: Perspectives, Challenges, and Opportunities in the Biological, Biomedical, and Behavioral Sciences. Nature Partner Journals (npj) Digital Medicine, 2, 115.
 
 15.	Gleeson P, Cantarelli M, Quintana A, Earnsah M, Piasini E, Birgiolas J, Cannon RC, Cayco- Gajic A, Crook S, Davison AP, Dura-Bernal S, et al. (2019) Open Source Brain: a collaborative resource for visualizing, analyzing, simulating and developing standardized models of neurons and circuits. Neuron, 10.1016/j.neuron.2019.05.019.
-
 
 - Romaro C, Araujo Najman F, Dura-Bernal S, Roque AC. **Implementation of the Potjans-Diesmann cortical microcircuit model in NetPyNE/NEURON with rescaling option.** *Computational Neuroscience (CNS), 2018.*
 

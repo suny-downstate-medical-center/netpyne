@@ -80,24 +80,32 @@ Major Features
 Questions, suggestions and contributions
 -----------------------------------------
 
-NetPyNE is currently being developed and supported by the Neurosim lab (http://neurosimlab.org) .
-
 NetPyNE is open source and available at https://github.com/Neurosim-lab/netpyne .
 
 For questions or suggestions please use the `Google NetPyNE QA forum <https://groups.google.com/forum/#!forum/netpyne-forum>`_ , the `NEURON NetPyNE forum <https://www.neuron.yale.edu/phpBB/viewforum.php?f=45>`_  or add an `Issue to github <https://github.com/Neurosim-lab/netpyne/issues>`_. 
 
-For contributions (which are more than welcome!) please fork the repository and make a Pull Request with your changes.
+For contributions (which are more than welcome!) please fork the repository and make a Pull Request with your changes. See our contributors guide for more details: [IMPORTANT ADD LINK HERE!!!!!!!!!!!!!!!!!!!]
 
 For further information please contact salvadordura@gmail.com.
+
+
+Code of conduct
+---------------------
+
+Please note that this project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms. See more details here: [IMPORTANT - ADD THIS FILE TO ROOT OF REPO: e.g.: https://github.com/atom/atom/blob/master/CODE_OF_CONDUCT.md A https://www.contributor-covenant.org/version/2/0/code_of_conduct.md]
 
 
 Publications
 -------------
 
+[IMPORTANT - UPDATE PUBS!!!!!!!!!!]
+
 About NetPyNE 
 ^^^^^^^^^^^^^^^^
 
 - Dura-Bernal S, Suter B, Gleeson P, Cantarelli M, Quintana A, Rodriguez F, Kedziora DJ, Chadderdon GL, Kerr CC, Neymotin SA, McDougal R, Hines M, Shepherd GMG, Lytton WW. **NetPyNE: a tool for data-driven multiscale modeling of brain circuits.** `bioRxiv 461137 <https://www.biorxiv.org/content/early/2018/11/03/461137>`_ , *2018.*
+16.	Dura-Bernal S, Suter B, Gleeson P, Cantarelli M, Quintana A, Rodriguez F, Kedziora DJ, Chadderdon GL, Kerr CC, Neymotin SA, McDougal R, Hines M, Shepherd GMG, Lytton WW. (2019) NetPyNE: a tool for data-driven multiscale modeling of brain circuits. eLife 2019;8:e44494 
+
 
 - Dura-Bernal S, Suter BA, Quintana A, Cantarelli M, Gleeson P, Rodriguez F, Neymotin SA, Hines M, Shepherd GMG, Lytton WW. **NetPyNE: a GUI-based tool to build, simulate and analyze large-scale, data-driven network models in parallel NEURON.** *Society for Neuroscience (SfN), 2018*.
 
@@ -110,8 +118,21 @@ About NetPyNE
 - Dura-Bernal S, Suter BA, Neymotin SA, Quintana AJ, Gleeson P, Shepherd GMG, Lytton WW. **Normalized cortical depth (NCD) as a primary coordinate system for cell connectivity in cortex: experiment and model.** *Society for Neuroscience (SFN), 2015.*
 
 
-Using NetPyNE
-^^^^^^^^^^^^^^^^^^
+Make use and/or cite NetPyNE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+15.	Gleeson P, Cantarelli M, Quintana A, Earnsah M, Piasini E, Birgiolas J, Cannon RC, Cayco- Gajic A, Crook S, Davison AP, Dura-Bernal S, et al. (2019) Open Source Brain: a collaborative resource for visualizing, analyzing, simulating and developing standardized models of neurons and circuits. Neuron, 10.1016/j.neuron.2019.05.019.
+
+20.	Kuhl E, Alber M, Tepole BA; Cannon WR; De S; Dura-Bernal S, Garikipati K, Karniadakis GE, Lytton WW, Perdikaris P, Petzold L. (2019) Multiscale modeling meets machine learning: What can we learn? arXiv:1911.11958 [Preprint]. Under review in Computer Methods in Applied Mechanics and Engineering.
+
+19.	Dai K, Hernando J, Billeh JN, Gratiy SL, Planas J, Davison AP, Dura-Bernal S, Gleeson P, Devresse A, Gevaert M, King JG, Van Geit WAH, Povolotsky AV, Muller E, Courcol J-D, Arkhipov A (2019). The SONATA Data Format for Efficient Description of Large-Scale Network Models. bioRxiv, 625491 [Preprint]. Under review in PLoS Computational Biology.
+
+18.	Gao P, Graham J, Angulo S, Dura-Bernal S, Zhou W, Hines ML, Lytton WW, and Antic S (2019) Experimental measurements and computational model of glutamate mediated dendritic and somatic plateau potentials. bioRxiv, 828582 [Preprint]. Under review in Nature Communications..
+
+17.	Peng G, Alber M, Buganza A, Cannon W, De S, Dura-Bernal S, Garikipati K, Karmiadakis G, Lytton W, Perdikaris P, Petzold L, Kuhl E. (2019) Integrating Machine Learning and Multiscale Modeling: Perspectives, Challenges, and Opportunities in the Biological, Biomedical, and Behavioral Sciences. Nature Partner Journals (npj) Digital Medicine, 2, 115.
+
+15.	Gleeson P, Cantarelli M, Quintana A, Earnsah M, Piasini E, Birgiolas J, Cannon RC, Cayco- Gajic A, Crook S, Davison AP, Dura-Bernal S, et al. (2019) Open Source Brain: a collaborative resource for visualizing, analyzing, simulating and developing standardized models of neurons and circuits. Neuron, 10.1016/j.neuron.2019.05.019.
+
 
 - Romaro C, Araujo Najman F, Dura-Bernal S, Roque AC. **Implementation of the Potjans-Diesmann cortical microcircuit model in NetPyNE/NEURON with rescaling option.** *Computational Neuroscience (CNS), 2018.*
 
@@ -122,3 +143,55 @@ Using NetPyNE
 - Lytton WW, Seidenstein AH, Dura-Bernal S, McDougal RA, Schurmann F, Hines ML. **Simulation neurotechnologies for advancing brain research: Parallelizing large networks in NEURON.** *Neural Computation, 2016.*
 
 - Dura-Bernal S, Menzies RS, McLauchlan C, van Albada SJ, Kedziora DJ, Neymotin SA, Lytton WW, Kerr CC. **Effect of network size on computational capacity.** *Computational Neuroscience (CNS), 2016.*
+
+
+Current funding
+---------------------
+
+- National Institutes of Health (NIH), National Insititute of Biomedical Imaging and Bioengineering (NIBIB) U24 EB028998: "Dissemination of a tool for data-driven multiscale modeling of brain circuits", Period: 2019-2024; Amount: $1,171,482; PI: Salvador Dura-Bernal
+
+
+Governance structure
+---------------------
+
+Major decisions about NetPyNE are made by the steering committee, guided by the code of conduct.
+
+- Salvadord Dura-Bernal (Assistant Professor, State University of New York Downstate; Research Scientist, Nathan Kline Institute for Psychiatric Research)
+- William W Lytton (Distinguisehd Professor, State University of New York Downstate)
+- Samuel A Neymotin (Research Scientist, Nathan Kline Institute for Psychiatric Research)
+- Michael Hines (Senior Research Scientist, Yale University)
+- Robert A McDougal (Assistant Professor, Yale University)
+- Padraig Gleeson (Principal Research Fellow, University College London)
+- Benjamin A Suter (Postdoctoral Fellow, Institute of Science and Technology Austria)
+- Cliff C Kerr (Assistant Professor, University of Sydney)
+
+
+Project roadmap
+---------------------
+
+- Robustness, reliability and reproducibility of existing features
+
+- Ongoing development of new features
+
+- Dissemination and community engagement
+
+
+
+From grant:
+SA1: Quality control: reliability, robustness and reproducibility:
+SA1.1 Ensuring reliability of new features, such that they perform their intended function under all valid conditions and inputs. These features include: molecular reaction-diffusion (RxD) components, generation of complex complex subcellular connectivity patterns, distributed saving, and parameter optimization via evolutionary algorithms. 
+SA1.2 Ensuring tool robustness and error handling, such that it is able to cope with erroneous inputs and errors during execution. Improved tool robustness will include input validation, exception handling and informational messages, which will prevent user frustration and largely increase the tool's accessibility. 
+SA1.3 Ensuring simulation reproducibility across the most common platforms, including different versions of operating systems, Python, NEURON, MPI library; and HPC platform setup (eg XSEDE/NSG, Google Cloud Platform).
+
+SA2: Extension of the graphical user interface (GUI). The NetPyNE GUI will be essential to engage new users and disseminate the tool to experimentalists, clinicians and students. We will extend it as follows: 
+SA2.1 Incorporating missing components, that are currently only accessible programmatically: RxD, subcellular connectivity, complex stimulation and parameter optimization (only grid search).
+SA2.2 Enabling a web-based multi-user deployment that allows users to build models and run simulations through a web browser over the internet, making the tool publicly available to the global research community.   
+SA2.3 Improving plots by replacing the current static images with modern interactive and dynamic plots that facilitate understanding complex and large datasets, for the most common plots (connectivity matrix, raster plot and voltage traces).
+SA2.4 Improving performance to enable 3D visualization and manipulation of medium-scale networks of ~1k-10k detailed neurons (currently limited to a few hundred).  
+
+SA3. User training. We will implement complementary dissemination strategies to attract users and ensure these can effectively and reliably use NetPyNE beyond the duration of the project:
+SA3.1 Updated and comprehensive online documentation covering all the tool components, options and modes of usage, with examples, so both beginner and advanced users can independently explore and fully exploit the tool.  
+SA3.2 Online interactive tutorials so new users can receive training at their own pace through multimedia-rich step-by-step instructions that can be executed interactively (eg via GUI or Jupyter Notebook).
+SA3.3 Workshops/tutorials at neuroscience conferences to engage potential users by providing an overview of the tool functionalities and benefits. 
+SA3.4 Annual 1-day in-person course to provide in-depth training to researchers who could then teach tool usage at their labs or institutions.  
+

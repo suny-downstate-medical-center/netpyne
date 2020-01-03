@@ -92,7 +92,7 @@ For further information please contact salvadordura@gmail.com.
 Code of conduct
 ---------------------
 
-Please note that this project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms. See more details here: [IMPORTANT - ADD THIS FILE TO ROOT OF REPO: e.g.: https://github.com/atom/atom/blob/master/CODE_OF_CONDUCT.md A https://www.contributor-covenant.org/version/2/0/code_of_conduct.md]
+This project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms. The code of conduct can be found here: [IMPORTANT - ADD THIS FILE TO ROOT OF REPO: e.g.: https://github.com/atom/atom/blob/master/CODE_OF_CONDUCT.md A https://www.contributor-covenant.org/version/2/0/code_of_conduct.md]
 
 
 Publications

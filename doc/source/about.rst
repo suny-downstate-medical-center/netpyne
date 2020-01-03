@@ -144,6 +144,34 @@ Make use and/or cite NetPyNE
 - Dura-Bernal S, Menzies RS, McLauchlan C, van Albada SJ, Kedziora DJ, Neymotin SA, Lytton WW, Kerr CC. **Effect of network size on computational capacity.** *Computational Neuroscience (CNS), 2016.*
 
 
+Courses
+------------------
+
+Future
+^^^^^^^^^^^^
+
+- June'2020, Building and simulating brain circuit models on Google Cloud, Google Office, NYC (To be confirmed)
+
+- July'2020, CNS'2020 Tutorial on Multiscale Modeling using NEURON and NetPyNE, Melbourne, Australia (To be confirmed)
+
+Past
+^^^^^^^^^
+
+- July'2019, CNS’19 Tutorial organizer and lecturer, Building biophysically detailed neuronal models: from molecules to networks, Barcelona.
+
+- May'2019,	Workshop on Multiscale Network Modeling, Brown University. 
+
+- May'2019,	Principles of Computational Neuroscience, Sassari University, Sardinia.
+
+- June'2018, NEURON Summer Course, Emory University, Atlanta.
+
+- July'2018, CNS'18 Multiscale Modeling from Molecular to Large Network Level, CNS’18, Seattle.
+
+- January'2018, VII Latin American School on Computational Neuroscience (LASCON), Institute of Mathematics and Statistics, University of Sao Paulo, Brazil
+
+- July'2017, Bernstein Computational Neuroscience Conference, Multiscale Modeling and Simulation, Gottingen.	
+
+
 Current funding
 ---------------------
 

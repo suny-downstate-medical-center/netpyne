@@ -187,25 +187,33 @@ Current funding
 Governance structure
 ---------------------
 
-Major decisions about NetPyNE are made by the steering committee, guided by the :ref:`project_roadmap` and the :ref:`code_of_conduct`. 
+Major decisions about NetPyNE are made by the steering committee, guided by the :ref:`project_roadmap` and the :ref:`code_of_conduct`. The committee incliudes members from a diverse range of institutions, positions and backgrounds.
 
-The current steering committee consists of the following members:
+The current steering committee consists of the following members (in alphabetical order):
 
-- Salvadord Dura-Bernal (Assistant Professor, State University of New York Downstate; Research Scientist, Nathan Kline Institute for Psychiatric Research)
-
-- William W Lytton (Distinguished Professor, State University of New York Downstate; Kings County Hospital)
-
-- Samuel A Neymotin (Research Scientist, Nathan Kline Institute for Psychiatric Research)
-
-- Michael Hines (Senior Research Scientist, Yale University)
-
-- Robert A McDougal (Assistant Professor, Yale University)
+- Salvador Dura-Bernal (Assistant Professor, State University of New York Downstate; Research Scientist, Nathan Kline Institute for Psychiatric Research)
 
 - Padraig Gleeson (Principal Research Fellow, University College London)
 
-- Benjamin A Suter (Postdoctoral Fellow, Institute of Science and Technology Austria)
+- Joe W Graham (Software Engineer, State University of New York Downstate)
+
+- Erica Y Griffith (Graduate Student, State University of New York Downstate)
+
+- Michael Hines (Senior Research Scientist, Yale University)
 
 - Cliff C Kerr (Senior Research Scientist, Institute for Disease Modeling)
+
+- Pramod Kumbhar ()
+
+- William W Lytton (Distinguished Professor, State University of New York Downstate; Kings County Hospital)
+
+- Robert A McDougal (Assistant Professor, Yale University)
+
+- Samuel A Neymotin (Research Scientist, Nathan Kline Institute for Psychiatric Research)
+
+- Benjamin A Suter (Postdoctoral Fellow, Institute of Science and Technology Austria)
+
+- Subhashini Sivagnanam (Principal computational and Data Science Research Specialist, San Diego Supercomputing Center)
 
 
 Membership in the steering committee is a personal membership. Affiliations are listed for identification purposes only; steering committee members do not represent their employers or academic institutions. 

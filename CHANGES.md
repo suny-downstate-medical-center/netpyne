@@ -10,6 +10,8 @@
 
 - Fixed bug: wrong indentation for initializing fixedInterval in batch.py
 
+- Fixed bug in _distributeSynsUniformly function
+
 # Version 0.9.4
 
 - Added option to avoid creating connections with weight=0

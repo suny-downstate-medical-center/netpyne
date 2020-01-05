@@ -55,8 +55,8 @@ def preRun ():
     # handler for printing out time during simulation run
     if sim.rank == 0 and sim.cfg.printRunTime:
         def printRunTime():
-            for i in range(int(sim.cfg.printRunTime*1000.0), int(sim.cfg.duration), int(sim.cfg.printRunTime*1000.0)):
-                sim.cvode.event(i, 'print ' + str(i/1000.0) + ',"s"')
+            print(str(int(h.t/1000.0)) + 's')
+            sim.cvode.event(h.t + int(sim.cfg.printRunTime*1000.0), sim.printRunTime)
 
         sim.printRunTime = printRunTime
         sim.fih.append(h.FInitializeHandler(1, sim.printRunTime))
@@ -90,11 +90,13 @@ def preRun ():
     # handler for recording LFP
     if sim.cfg.recordLFP:
         def recordLFPHandler():
-            for i in np.arange(sim.cfg.recordStep, sim.cfg.duration+sim.cfg.recordStep, sim.cfg.recordStep):
-                sim.cvode.event(i, sim.calculateLFP)
+            print(h.t)
+            sim.cvode.event(h.t + int(sim.cfg.recordStep), sim.calculateLFP)
+            sim.cvode.event(h.t + int(sim.cfg.recordStep), recordLFPHandler)
 
         sim.recordLFPHandler = recordLFPHandler
         sim.fih.append(h.FInitializeHandler(0, sim.recordLFPHandler))  # initialize imemb
+
 
 #------------------------------------------------------------------------------
 # Run Simulation

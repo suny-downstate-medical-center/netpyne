@@ -197,7 +197,7 @@ class Cell (object):
                             ptr = getattr(getattr(self.secs[params['sec']]['hObj'](params['loc']), params['mech']), '_ref_'+params['var'])
                         elif 'synMech' in params:  # eg. soma(0.5).AMPA._ref_g
                             sec = self.secs[params['sec']]
-                            synMechList = [synMech for in sec['synMechs'] if synMech['label']==params['synMech'] and synMech['loc']==params['loc']] # make list with proper labels
+                            synMechList = [synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech'] and synMech['loc']==params['loc']] # make list with this label/loc
                             if 'index' in params:
                                 synMech = synMechList[params['index']]
                             else:

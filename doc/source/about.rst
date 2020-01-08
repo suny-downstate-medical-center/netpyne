@@ -236,12 +236,11 @@ The project roadmap for the following five years (2019-2023) includes four large
 
 - **Development of new features**: 
 
-    - *2020-2021: Macroscopic scale*
+    - *2020-2021: Macroscopic scale modeling* - Extend the framework to support macroscale data (e.g. MRI, EEG, MEG) and models (e.g. mean field models), thus linking this scale to the underlying circuit, cellular and molecular mechanisms. 
 
-    - *2021-2022: Machine learning methods*
+    - *2021-2022: Machine learning analysis methods* - Incorporate ML methods (e.g. clustering, dimensionality reduction and deep learning) to explore and optimize large parameter spaces and analyze neural data.
 
-    - *2022-2023: Reverse engineering of networks*:
-
+    - *2022-2023: Reverse engineering of networks* - Infer high-level compact network connectivity rules (generative model) from the full connection information of biological network models, using statistical (e.g. Bayesian inference) and graph theoretical analysis.    
 
 - **GUI extension**: Extension of the graphical user interface (GUI), essential to engage new users and make the tool accessible to experimentalists, clinicians and students. 
     
@@ -261,6 +260,6 @@ The project roadmap for the following five years (2019-2023) includes four large
 
     - *2020-2022*: Online interactive tutorials so new users can receive training at their own pace through multimedia-rich step-by-step instructions that can be executed interactively (eg via GUI or Jupyter Notebook).    
     
-    - *2020-2023*: Annual 3-day in-person course to provide in-depth training to researchers who could then teach tool usage at their labs or institutions.  
+    - *2020-2023*: Annual 3-day in-person course to provide in-depth training to researchers/clinicians who could then teach tool usage at their labs or institutions.  
 
-    - *2020-2023*: Annual hackathon
+    - *2020-2023*: Annual Hackathon to train and engage developers, overall promoting long-term sustainable collaborative development.

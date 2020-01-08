@@ -224,31 +224,43 @@ Membership in the steering committee is a personal membership. Affiliations are 
 Project roadmap
 ---------------------
 
-https://gcc.gnu.org/gccmission.html
+The project roadmap for the following five years (2019-2023) includes four large categories: quality control, development of new features, GUI extension, and dissemination and community engagement. The main targets for each category, and the estimated period
 
-- Robustness, reliability and reproducibility of existing features
+- **Quality control**: robustness, reliability and reproducibility
 
-- Ongoing development of new features
+    - *2019-2021: Reliability* - Test existing features, particularly recently added ones (RxD, subcellular connectivity, distributed saving, parameter optimization) such that they perform their intended function under all valid conditions and inputs. 
 
-- Dissemination and community engagement
+    - *2020-2022: Robustness and error handling* - Ensure the tool it is able to cope with erroneous inputs and errors during execution. Improved tool robustness will include input validation, exception handling and informational messages.
+
+    - *2022-2023: Reproducibility* - Ensure simulation results are reproducible across the most common platforms, including different versions of operating systems, Python, NEURON, MPI library; and HPC platform setup (eg XSEDE/NSG, Google Cloud Platform).
+
+- **Development of new features**: 
+
+    - *2020-2021: Macroscopic scale*
+
+    - *2021-2022: Machine learning methods*
+
+    - *2022-2023: Reverse engineering of networks*:
 
 
+- **GUI extension**: Extension of the graphical user interface (GUI), essential to engage new users and make the tool accessible to experimentalists, clinicians and students. 
+    
+    - *2019-2020: Web-based multi-user deployment* - Will allows users to build models and run simulations through a web browser over the internet, making the tool publicly available to the global research community.   
 
-From grant:
-SA1: Quality control: reliability, robustness and reproducibility:
-SA1.1 Ensuring reliability of new features, such that they perform their intended function under all valid conditions and inputs. These features include: molecular reaction-diffusion (RxD) components, generation of complex complex subcellular connectivity patterns, distributed saving, and parameter optimization via evolutionary algorithms. 
-SA1.2 Ensuring tool robustness and error handling, such that it is able to cope with erroneous inputs and errors during execution. Improved tool robustness will include input validation, exception handling and informational messages, which will prevent user frustration and largely increase the tool's accessibility. 
-SA1.3 Ensuring simulation reproducibility across the most common platforms, including different versions of operating systems, Python, NEURON, MPI library; and HPC platform setup (eg XSEDE/NSG, Google Cloud Platform).
+    - *2019-2022: Incorporating missing component* -  Currently only accessible programmatically: RxD, subcellular connectivity, complex stimulation and parameter optimization (only grid search).
+    
+    - *2021-2022*: Improving plots by replacing the current static images with modern interactive and dynamic plots that facilitate understanding complex and large datasets.
+    
+    - *2022-2023*: Improving performance to enable 3D visualization and manipulation of large-scale networks of detailed neurons (currently limited to a few hundred neurons).  
 
-SA2: Extension of the graphical user interface (GUI). The NetPyNE GUI will be essential to engage new users and disseminate the tool to experimentalists, clinicians and students. We will extend it as follows: 
-SA2.1 Incorporating missing components, that are currently only accessible programmatically: RxD, subcellular connectivity, complex stimulation and parameter optimization (only grid search).
-SA2.2 Enabling a web-based multi-user deployment that allows users to build models and run simulations through a web browser over the internet, making the tool publicly available to the global research community.   
-SA2.3 Improving plots by replacing the current static images with modern interactive and dynamic plots that facilitate understanding complex and large datasets, for the most common plots (connectivity matrix, raster plot and voltage traces).
-SA2.4 Improving performance to enable 3D visualization and manipulation of medium-scale networks of ~1k-10k detailed neurons (currently limited to a few hundred).  
+- **Dissemination and community engagement**: We will implement complementary dissemination and engagement strategies to train and attract users and developers:
+    
+    - *2019-2020*: Updated and comprehensive online documentation covering all the tool components, options and modes of usage, with examples, so both beginner and advanced users can fully exploit the tool.  
 
-SA3. User training. We will implement complementary dissemination strategies to attract users and ensure these can effectively and reliably use NetPyNE beyond the duration of the project:
-SA3.1 Updated and comprehensive online documentation covering all the tool components, options and modes of usage, with examples, so both beginner and advanced users can independently explore and fully exploit the tool.  
-SA3.2 Online interactive tutorials so new users can receive training at their own pace through multimedia-rich step-by-step instructions that can be executed interactively (eg via GUI or Jupyter Notebook).
-SA3.3 Workshops/tutorials at neuroscience conferences to engage potential users by providing an overview of the tool functionalities and benefits. 
-SA3.4 Annual 1-day in-person course to provide in-depth training to researchers who could then teach tool usage at their labs or institutions.  
+    - *2019-2023*: Workshops/tutorials at neuroscience conferences to engage potential users by providing an overview of the tool functionalities and benefits. 
 
+    - *2020-2022*: Online interactive tutorials so new users can receive training at their own pace through multimedia-rich step-by-step instructions that can be executed interactively (eg via GUI or Jupyter Notebook).    
+    
+    - *2020-2023*: Annual 3-day in-person course to provide in-depth training to researchers who could then teach tool usage at their labs or institutions.  
+
+    - *2020-2023*: Annual hackathon

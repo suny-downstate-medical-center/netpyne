@@ -12,6 +12,9 @@
 
 - Fixed bug in _distributeSynsUniformly function
 
+- Fixed bug in subConnParams grouped synapses
+
+
 # Version 0.9.4
 
 - Added option to avoid creating connections with weight=0

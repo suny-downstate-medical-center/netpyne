@@ -146,6 +146,7 @@ Make use and/or cite NetPyNE
 
 - Dura-Bernal S, Menzies RS, McLauchlan C, van Albada SJ, Kedziora DJ, Neymotin SA, Lytton WW, Kerr CC. **Effect of network size on computational capacity.** *Computational Neuroscience (CNS), 2016.*
 
+
 See here an `updated list from Google Scholar <https://scholar.google.com/scholar?oi=bibs&hl=en&cites=17032431079400790910&as_sdt=5>`_.
 
 
@@ -203,7 +204,7 @@ The current steering committee consists of the following members (in alphabetica
 
 - Cliff C Kerr (Senior Research Scientist, Institute for Disease Modeling)
 
-- Pramod Kumbhar ()
+- Pramod Kumbhar (HPC Architect, EPFL)
 
 - William W Lytton (Distinguished Professor, State University of New York Downstate; Kings County Hospital)
 

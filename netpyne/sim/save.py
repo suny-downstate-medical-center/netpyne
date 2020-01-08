@@ -266,7 +266,6 @@ def intervalSave (t):
     if hasattr(sim.cfg, 'saveWeights'):
         nodeData['simData']['allWeights']= sim.allWeights
         simDataVecs = simDataVecs + ['allWeights']
-        print('node {} has {} weights'.format(sim.rank, len(sim.allWeights)))
     data = [None]*sim.nhosts
     data[0] = {}
     for k,v in nodeData.items():
@@ -324,8 +323,10 @@ def intervalSave (t):
     for k, v in sim.simData.items():
         if k in ['spkt', 'spkid', 'stims']:
             v.resize(0)
-            
-    sim.allWeights = []
+    
+    if hasattr(sim.cfg, 'saveWeights'):
+        sim.allWeights = []
+    
     
 #------------------------------------------------------------------------------
 # Save data in each node

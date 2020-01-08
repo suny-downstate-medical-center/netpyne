@@ -1,0 +1,23 @@
+# M1NetworkModel
+## Description
+This example is based on the multiscale model of mouse primary motor cortex (M1) example.
+In the init.py function it shows code on how to use the interval saving function and save the synWeights periodically.
+The key differences are the use of intervalRun and effectively defining two intervals, one for saving weights and one
+saving the data. Note also, the use of fileGather instead of gather.
+
+Developed using NetPyNE (www.neurosimlab.org/netpyne)
+
+## Setup and execution
+
+Requires NEURON with Python and MPI support. 
+
+1. Type or `./compile or the equivalent `nrnivmodl mod`. This should create a directory called either i686 or x86_64, depending on your computer's architecture. 
+2. To run type: `./runsim [num_proc]' or the equivalent `mpiexec -np [num_proc] nrniv -python -mpi init.py`
+
+## Overview of file structure:
+
+* /init.py: Main executable; calls functions from other modules. Sets what parameter file to use.
+
+* /netParams.py: Network parameters
+
+* /cfg.py: Simulation configuration

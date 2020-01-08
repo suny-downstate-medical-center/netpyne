@@ -6,7 +6,14 @@
 
 - Added loadBalance option to print individual node computer times
 
+- Initialize hoc events recursivley to reduce event queue overhead
+
 - Fixed bug: wrong indentation for initializing fixedInterval in batch.py
+
+- Fixed bug in _distributeSynsUniformly function
+
+- Fixed bug in subConnParams grouped synapses
+
 
 # Version 0.9.4
 

@@ -23,7 +23,7 @@ Table of Contents
 .. toctree::
    :maxdepth: 3
    
-   overview
+   about
    install
    tutorial
    reference

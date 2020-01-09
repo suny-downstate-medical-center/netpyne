@@ -132,7 +132,7 @@ def subcellularConn(self, allCellTags, allPopTags):
                         allConns.extend([conn for conn in postCell.conns if conn['preGid'] == 'NetStim'])
 
                     # group synMechs so they are not distributed separately
-                    if 'groupSynMechs' in subConnParam:  
+                    if 'groupSynMechs' in subConnParam and len(subConnParam['groupSynMechs']) > 1:  
                         conns = []
                         connsGroup = {}
                         #iConn = -1
@@ -256,8 +256,10 @@ def subcellularConn(self, allCellTags, allPopTags):
                         conn['loc'] = newLoc
 
                         # find grouped conns 
-                        if subConnParam.get('groupSynMechs', None) and conn['synMech'] in subConnParam['groupSynMechs']:
-                            
+                        if subConnParam.get('groupSynMechs', None) \
+                            and len(subConnParam['groupSynMechs']) > 1 \
+                            and conn['synMech'] in subConnParam['groupSynMechs']:
+
                             connGroup = connsGroup[connGroupLabel]  # get grouped conn from previously stored dict 
                             connGroup['synMech'] = connGroup['synMech'].split('__grouped__')[1]  # remove '__grouped__' label
 

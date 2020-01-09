@@ -204,8 +204,6 @@ The current steering committee consists of the following members (in alphabetica
 
 - Cliff C Kerr (Senior Research Scientist, Institute for Disease Modeling)
 
-- Pramod Kumbhar (HPC Architect, EPFL)
-
 - William W Lytton (Distinguished Professor, State University of New York Downstate; Kings County Hospital)
 
 - Robert A McDougal (Assistant Professor, Yale University)

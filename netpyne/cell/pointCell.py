@@ -210,7 +210,6 @@ class PointCell (Cell):
             
             # missing params
             else:
-                import ipdb; ipdb.set_trace()
                 print('\nError: VecStim requires interval, rate or spkTimes')
                 return
 
@@ -419,10 +418,12 @@ class PointCell (Cell):
 
     def __getattr__(self, name):
         def wrapper(*args, **kwargs):
+            from .. import sim
             try: 
                 name(*args,**kwargs)
             except:
-                print("Error: Function '%s' not yet implemented for Point Neurons" % name)
+                if sim.cfg.verbose:
+                    print("Error: Function '%s' not yet implemented for Point Neurons" % name)
         return wrapper
 
     # def modify (self):

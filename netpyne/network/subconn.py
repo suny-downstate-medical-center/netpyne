@@ -132,7 +132,7 @@ def subcellularConn(self, allCellTags, allPopTags):
                         allConns.extend([conn for conn in postCell.conns if conn['preGid'] == 'NetStim'])
 
                     # group synMechs so they are not distributed separately
-                    if 'groupSynMechs' in subConnParam:  
+                    if 'groupSynMechs' in subConnParam and len(subConnParam['groupSynMechs']) > 1:  
                         conns = []
                         connsGroup = {}
                         #iConn = -1
@@ -140,7 +140,7 @@ def subcellularConn(self, allCellTags, allPopTags):
                             if not conn['synMech'].startswith('__grouped__'):
                                 conns.append(conn)
                                 #iConn = iConn + 1
-                                connGroupLabel = '%d_%s_%.3f' % (conn['preGid'], conn['sec'], conn['loc'])
+                                connGroupLabel = '%d_%s_%.4f' % (conn['preGid'], conn['sec'], conn['loc'])
                                 if conn['synMech'] in subConnParam['groupSynMechs']:
                                     for synMech in [s for s in subConnParam['groupSynMechs'] if s != conn['synMech']]:
                                         connGroup = next((c for c in allConns if c['synMech'] == synMech and c['sec']==conn['sec'] and c['loc']==conn['loc']), None)
@@ -151,6 +151,10 @@ def subcellularConn(self, allCellTags, allPopTags):
                                             print('  Warning: Grouped synMechs %s not found' % (str(connGroup)))
                     else:
                         conns = allConns
+
+                    # sort conns so reproducible across different number of cores 
+                    # use sec+preGid to avoid artificial distribution based on preGid (e.g. low gids = close to soma)
+                    conns = sorted(conns, key = lambda v: v['sec']+str(v['loc'])+str(v['preGid']))
 
                     # set sections to be used
                     secList = postCell._setConnSections(subConnParam)
@@ -230,14 +234,10 @@ def subcellularConn(self, allCellTags, allPopTags):
                         #    for seg in sec:
                         #      print seg.x, h.distance(seg.x)
 
-                    # sort conns so reproducible across different number of cores 
-                    # use sec+preGid to avoid artificial distribution based on preGid (e.g. low gids = close to soma)
-                    conns = sorted(conns, key = lambda v: v['sec']+str(v['preGid']))
-
                     for i,(conn, newSec, newLoc) in enumerate(zip(conns, newSecs, newLocs)):
 
                         # get conn group label before updating params
-                        connGroupLabel = '%d_%s_%.3f' % (conn['preGid'], conn['sec'], conn['loc'])
+                        connGroupLabel = '%d_%s_%.4f' % (conn['preGid'], conn['sec'], conn['loc'])
 
                         # update weight if weightNorm present
                         if 'weightNorm' in postCell.secs[conn['sec']] and isinstance(postCell.secs[conn['sec']]['weightNorm'], list): 
@@ -256,8 +256,10 @@ def subcellularConn(self, allCellTags, allPopTags):
                         conn['loc'] = newLoc
 
                         # find grouped conns 
-                        if subConnParam.get('groupSynMechs', None) and conn['synMech'] in subConnParam['groupSynMechs']:
-                            
+                        if subConnParam.get('groupSynMechs', None) \
+                            and len(subConnParam['groupSynMechs']) > 1 \
+                            and conn['synMech'] in subConnParam['groupSynMechs']:
+
                             connGroup = connsGroup[connGroupLabel]  # get grouped conn from previously stored dict 
                             connGroup['synMech'] = connGroup['synMech'].split('__grouped__')[1]  # remove '__grouped__' label
 

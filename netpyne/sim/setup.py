@@ -21,6 +21,10 @@ from neuron import h # Import NEURON
 from .. import specs
 from ..specs import Dict, ODict
 from . import utils
+try:
+    from datetime import datetime
+except:
+    pass
 
 #------------------------------------------------------------------------------
 # initialize variables and MPI
@@ -49,7 +53,11 @@ def initialize (netParams = None, simConfig = None, net = None):
 
     sim.setSimCfg(simConfig)  # set simulation configuration
 
-    if sim.rank==0:
+    if sim.rank == 0:
+        try:
+            print('\nStart time: ', datetime.now())
+        except:
+            pass
         sim.timing('start', 'initialTime')
         sim.timing('start', 'totalTime')
 

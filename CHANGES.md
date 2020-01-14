@@ -14,6 +14,8 @@
 
 - Fixed bug in subConnParams grouped synapses
 
+- Fixed bug in analysis.granger figure save name
+
 
 # Version 0.9.4
 

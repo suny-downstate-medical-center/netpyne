@@ -642,9 +642,10 @@ wait
                 while jobs_completed < total_jobs:
                     unfinished = [i for i, x in enumerate(fitness) if x is None ]
                     for candidate_index in unfinished:
-                        try: # load simData and evaluate fitness
-                            jobNamePath = genFolderPath + "/gen_" + str(ngen) + "_cand_" + str(candidate_index)
-                            if os.path.isfile(jobNamePath+'.json'):
+                        jobNamePath = genFolderPath + "/gen_" + str(ngen) + "_cand_" + str(candidate_index)
+                        if os.path.isfile(jobNamePath+'.json'):
+                            print('JSON loading %s.json'% (jobNamePath))
+                            try: # load simData and evaluate fitness
                                 with open('%s.json'% (jobNamePath)) as file:
                                     data = json.load(file)
                                     simData = data['simData']
@@ -652,12 +653,12 @@ wait
                                 fitness[candidate_index] = fitnessFunc(simData, netData, jobNamePath, **fitnessFuncArgs)
                                 jobs_completed += 1
                                 print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
-                        except Exception as e:
-                            # print 
-                            err = "There was an exception evaluating candidate %d:"%(candidate_index)
-                            print(("%s \n %s"%(err,e)))
-                            #pass
-                            #print 'Error evaluating fitness of candidate %d'%(candidate_index)
+                            except Exception as e:
+                                # print 
+                                err = "There was an exception evaluating candidate %d:"%(candidate_index)
+                                print(("%s \n %s"%(err,e)))
+                                #pass
+                                #print 'Error evaluating fitness of candidate %d'%(candidate_index)
                     num_iters += 1
                     print('completed: %d' %(jobs_completed))
                     if num_iters >= args.get('maxiter_wait', 5000): 

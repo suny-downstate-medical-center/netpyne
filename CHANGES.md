@@ -8,6 +8,8 @@
 
 - Initialize hoc events recursivley to reduce event queue overhead
 
+- Added plotRateSpectrogram analysis function 
+
 - Fixed bug: wrong indentation for initializing fixedInterval in batch.py
 
 - Fixed bug in _distributeSynsUniformly function

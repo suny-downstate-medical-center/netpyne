@@ -147,7 +147,7 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                         else:
                             plt.plot(t, data, linewidth=1.5,
                                      color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
-                            plt.plot(t, data, linewidth=1.5, color=color, label=trace)
+                            # plt.plot(t, data, linewidth=1.5, color=color, label=trace)
                     else:
                         if isinstance(data, list):
                             for tl,dl in zip(t,data):

@@ -1389,6 +1389,7 @@ def plotRateSpectrogram(include=['allCells', 'eachPop'], timeRange=None, binSize
 
         plt.imshow(signal, extent=(np.amin(T), np.amax(T), np.amin(freqs), np.amax(freqs)), origin='lower', interpolation='None', aspect='auto',cmap=plt.get_cmap('viridis'))
         plt.colorbar(label='Power')
+        plt.ylabel('Time (ms)')
         plt.ylabel('Hz')
         plt.tight_layout()                
 

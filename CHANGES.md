@@ -18,6 +18,7 @@
 
 - Fixed bug in analysis.granger figure save name
 
+- Fixed bug in printRunTime function
 
 # Version 0.9.4
 

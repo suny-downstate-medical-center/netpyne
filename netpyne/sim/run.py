@@ -55,7 +55,7 @@ def preRun ():
     # handler for printing out time during simulation run
     if sim.rank == 0 and sim.cfg.printRunTime:
         def printRunTime():
-            print(str(int(h.t/1000.0)) + 's')
+            print('%.1gs' % (h.t/1000.0))   
             sim.cvode.event(h.t + int(sim.cfg.printRunTime*1000.0), sim.printRunTime)
 
         sim.printRunTime = printRunTime
@@ -90,7 +90,6 @@ def preRun ():
     # handler for recording LFP
     if sim.cfg.recordLFP:
         def recordLFPHandler():
-            print(h.t)
             sim.cvode.event(h.t + int(sim.cfg.recordStep), sim.calculateLFP)
             sim.cvode.event(h.t + int(sim.cfg.recordStep), recordLFPHandler)
 

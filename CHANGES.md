@@ -20,6 +20,7 @@
 
 - Fixed bug in printRunTime function
 
+
 # Version 0.9.4
 
 - Added option to avoid creating connections with weight=0

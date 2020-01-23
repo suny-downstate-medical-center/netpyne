@@ -123,8 +123,7 @@ About NetPyNE
 Make use and/or cite NetPyNE
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- Tejada J, Roque AC, **Conductance-based models and the fragmentation problem: A case study based on hippocampal CA1 pyramidal cell models and epilepsy**
-`Epilepsy & Behavior, 106841 <http://www.sciencedirect.com/science/article/pii/S1525505019310819>`_ 2019.
+- Tejada J, Roque AC, **Conductance-based models and the fragmentation problem: A case study based on hippocampal CA1 pyramidal cell models and epilepsy** `Epilepsy & Behavior, 106841 <http://www.sciencedirect.com/science/article/pii/S1525505019310819>`_ 2019.
 
 - Gleeson P, Cantarelli M, Quintana A, Earnsah M, Piasini E, Birgiolas J, Cannon RC, Cayco- Gajic A, Crook S, Davison AP, Dura-Bernal S, et al. **Open Source Brain: a collaborative resource for visualizing, analyzing, simulating and developing standardized models of neurons and circuits.** `Neuron, 10.1016/j.neuron.2019.05.019 <https://www.cell.com/neuron/fulltext/S0896-6273(19)30444-1>`_. *2019*
 

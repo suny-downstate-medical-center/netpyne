@@ -123,6 +123,18 @@ About NetPyNE
 Make use and/or cite NetPyNE
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+- Billeh, Y.N., Cai, B., Gratiy, S.L., Dai, K., Iyer, R., Gouwens, N.W., Abbasi-Asl, R., Jia, X., Siegle, J.H., Olsen, S.R. and Koch, C.,. **Systematic integration of structural and functional data into multi-scale models of mouse primary visual cortex.** `Neuron (In Press) NEURON-D-19-01027 <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3416643>`_. 2020
+
+-
+[HNN]
+
+[NEURON]
+
+[NeuronUNit]
+
+[PyRates]
+
+
 - Tejada J, Roque AC, **Conductance-based models and the fragmentation problem: A case study based on hippocampal CA1 pyramidal cell models and epilepsy** `Epilepsy & Behavior, 106841 <http://www.sciencedirect.com/science/article/pii/S1525505019310819>`_ 2019.
 
 - Gleeson P, Cantarelli M, Quintana A, Earnsah M, Piasini E, Birgiolas J, Cannon RC, Cayco- Gajic A, Crook S, Davison AP, Dura-Bernal S, et al. **Open Source Brain: a collaborative resource for visualizing, analyzing, simulating and developing standardized models of neurons and circuits.** `Neuron, 10.1016/j.neuron.2019.05.019 <https://www.cell.com/neuron/fulltext/S0896-6273(19)30444-1>`_. *2019*
@@ -162,6 +174,8 @@ Future
 
 Past
 ^^^^^^^^^
+
+- January'2020, VIII Latin American School on Computational Neuroscience (LASCON), Institute of Mathematics and Statistics, University of Sao Paulo, Brazil
 
 - July'2019, CNS’19 Tutorial organizer and lecturer, Building biophysically detailed neuronal models: from molecules to networks, Barcelona.
 

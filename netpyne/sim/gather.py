@@ -269,17 +269,24 @@ def fileGather (gatherLFP = True):
     # iterate through the saved files and concat their data
     fileData = Dict()
     if sim.rank == 0:
-        for f in os.listdir('temp'):
-            with open('temp/' + f, 'rb') as data:
-                temp = pickle.load(data)
-                for k in temp.keys():
-                    if k in fileData:
-                        if isinstance(temp[k], list):
-                            fileData[k] = fileData[k] + temp[k]
-                        elif isinstance(temp[k], dict):
-                            fileData[k].update(temp[k])
-                    else:
-                        fileData[k] = temp[k] 
+        import re
+        if hasattr(sim.cfg, 'intervalFolder'):
+            targetFolder = sim.cfg.intervalFolder
+        else: 
+            targetFolder = os.path.dirname(sim.cfg.filename)
+                
+        for f in os.listdir(targetFolder):
+            if re.search(r'data_\d+.pkl$', f) is not None:
+                with open(targetFolder + '/' + f, 'rb') as data:
+                    temp = pickle.load(data)
+                    for k in temp.keys():
+                        if k in fileData:
+                            if isinstance(temp[k], list):
+                                fileData[k] = fileData[k] + temp[k]
+                            elif isinstance(temp[k], dict):
+                                fileData[k].update(temp[k])
+                        else:
+                            fileData[k] = temp[k] 
 
     
     simDataVecs = ['spkt','spkid','stims']+list(sim.cfg.recordTraces.keys())

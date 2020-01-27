@@ -19,11 +19,6 @@ from cfg import cfg
 from netParams import netParams
 import os
 
-cfg.saveWeights = True
-cfg.intervalRun = 50 # define how often the interval function is run
-cfg.saveInterval = 100 # define how often the data is saved, this can be used with interval run if you want to update the weights more often than you save
-cfg.intervalFolder = 'temporary' #specify the location to save the interval data 
-
 ### This is an example function run at an interval during the simulation
 ### This function save weights everytime it runs and will save simulation data 
 ### at a different interval defined by cfg.intervalRun and cfg.saveInterval.
@@ -49,6 +44,7 @@ print("Starting sim ...")
 (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, cfg, output=True)
 
 # we run with an interval function defined above
+# if you just want to save the data and not the wieghts you can use the sim.intervalSave function instead of saveWeights
 sim.runSimWithIntervalFunc(cfg.intervalRun, saveWeights)  
 
 # we run fileGather() instead of gather       

@@ -1,9 +1,7 @@
 # M1NetworkModel
 ## Description
 This example is based on the multiscale model of mouse primary motor cortex (M1) example.
-In the init.py function it shows code on how to use the interval saving function and save the synWeights periodically.
-The key differences are the use of intervalRun and effectively defining two intervals, one for saving weights and one
-saving the data. Note also, the use of fileGather instead of gather.
+In the init.py function it shows code on how to use the interval saving function this includes adding some flags to cfg.py.
 
 Developed using NetPyNE (www.neurosimlab.org/netpyne)
 

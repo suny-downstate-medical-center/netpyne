@@ -18,10 +18,8 @@ cfg = specs.SimConfig()
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
-# These cfg options relate specifically to the intervalSaveWeights example
+# These cfg options relate specifically to the intervalSaving example
 #------------------------------------------------------------------------------
-cfg.saveWeights = True # if this flag is not set intervalSave will only save simData
-cfg.intervalRun = 50 # define how often the interval function is run
 cfg.saveInterval = 100 # define how often the data is saved, this can be used with interval run if you want to update the weights more often than you save
 cfg.intervalFolder = 'temporary' #specify the location to save the interval data 
 

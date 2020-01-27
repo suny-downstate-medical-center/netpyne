@@ -10,6 +10,8 @@
 
 - Added plotRateSpectrogram analysis function 
 
+- Added option to save at intervals 
+
 - Fixed bug: wrong indentation for initializing fixedInterval in batch.py
 
 - Fixed bug in _distributeSynsUniformly function

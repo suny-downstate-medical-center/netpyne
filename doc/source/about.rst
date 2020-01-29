@@ -260,18 +260,18 @@ The project roadmap for the following five years (2019-2023) includes four large
 
     - *2019-2022: Incorporating missing component* -  Currently only accessible programmatically: RxD, subcellular connectivity, complex stimulation and parameter optimization (only grid search).
     
-    - *2021-2022*: Improving plots by replacing the current static images with modern interactive and dynamic plots that facilitate understanding complex and large datasets.
+    - *2021-2022: Dynamic interactive plots* - Improving plots by replacing the current static images with modern interactive and dynamic plots that facilitate understanding complex and large datasets.
     
-    - *2022-2023*: Improving performance to enable 3D visualization and manipulation of large-scale networks of detailed neurons (currently limited to a few hundred neurons).  
+    - *2022-2023: Visualization of large networks* - Improving performance to enable 3D visualization and manipulation of large-scale networks of detailed neurons (currently limited to a few hundred neurons).  
 
 - **Dissemination and community engagement**: We will implement complementary dissemination and engagement strategies to train and attract users and developers:
     
-    - *2019-2020*: Updated and comprehensive online documentation covering all the tool components, options and modes of usage, with examples, so both beginner and advanced users can fully exploit the tool.  
+    - *2019-2020: Online documentation* - Updated and comprehensive online documentation covering all the tool components, options and modes of usage, with examples, so both beginner and advanced users can fully exploit the tool.  
 
-    - *2019-2023*: Workshops/tutorials at neuroscience conferences to engage potential users by providing an overview of the tool functionalities and benefits. 
+    - *2019-2023: Workshops/tutorials* - Organized at neuroscience conferences to engage potential users by providing an overview of the tool functionalities and benefits. 
 
-    - *2020-2022*: Online interactive tutorials so new users can receive training at their own pace through multimedia-rich step-by-step instructions that can be executed interactively (eg via GUI or Jupyter Notebook).    
+    - *2020-2022: Online interactive tutorials* - Will enable new users to receive training at their own pace through multimedia-rich step-by-step instructions that can be executed interactively (eg via GUI or Jupyter Notebook).    
     
-    - *2020-2023*: Annual 3-day in-person course to provide in-depth training to researchers/clinicians who could then teach tool usage at their labs or institutions.  
+    - *2020-2023: Annual 3-day in-person course* - Will provide in-depth training to researchers/clinicians who could then teach tool usage at their labs or institutions.  
 
-    - *2020-2023*: Annual Hackathon to train and engage developers, overall promoting long-term sustainable collaborative development.
+    - *2020-2023: Annual Hackathon* - Will train and engage developers, overall promoting long-term sustainable collaborative development.

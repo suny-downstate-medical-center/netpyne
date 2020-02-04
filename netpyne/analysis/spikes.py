@@ -1099,7 +1099,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
 
 
 # -------------------------------------------------------------------------------------------------------------------
-## Plot spike histogram
+## Plot spiking power spectral density
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, minFreq=1, maxFreq=100, stepFreq=1, NFFT=256, noverlap=128, smooth=0, overlay=True, ylim = None, transformMethod = 'morlet', norm=False, popColors = {}, lineWidth = 1.5, fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True): 
@@ -1115,7 +1115,6 @@ def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, minF
         - NFFT (float): The number of data points used in each block for the FFT (power of 2) (default: 256)
         - smooth (int): Window size for smoothing; no smoothing if 0 (default: 0)
         - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
-        - graphType ('line'|'bar'): Type of graph to use (line graph or bar plot) (default: 'line')
         - yaxis ('rate'|'count'): Units of y axis (firing rate in Hz, or spike count) (default: 'rate')
         - popColors (dict): Dictionary with color (value) used for each population (key) (default: None)
         - figSize ((width, height)): Size of figure (default: (10,8))
@@ -1275,7 +1274,144 @@ def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, minF
     # show fig 
     if showFig: _showFigure()
 
-    return fig, {'allSignal':allSignal, 'allFreqs':allFreqs}
+    return fig, {'allSignal': allSignal, 'allFreqs':allFreqs}
+
+
+# -------------------------------------------------------------------------------------------------------------------
+## Plot spiking spectrogram
+# -------------------------------------------------------------------------------------------------------------------
+@exception
+def plotRateSpectrogram(include=['allCells', 'eachPop'], timeRange=None, binSize=5, minFreq=1, maxFreq=100, stepFreq=1, NFFT=256, noverlap=128, smooth=0, overlay=True, ylim = None, transformMethod = 'morlet', norm=False, popColors = {}, lineWidth = 1.5, fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True): 
+    ''' 
+    Plot firing rate spectrogram
+        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
+            Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
+        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
+        - binSize (int): Size in ms of spike bins (default: 5)
+        - maxFreq (float): Maximum frequency to show in plot (default: 100)
+        - transformMethod ('morlet'|'fft')
+        - norm (True|False): Normalize power (default: False)
+        - NFFT (float): The number of data points used in each block for the FFT (power of 2) (default: 256)
+        - smooth (int): Window size for smoothing; no smoothing if 0 (default: 0)
+        - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
+        - yaxis ('rate'|'count'): Units of y axis (firing rate in Hz, or spike count) (default: 'rate')
+        - popColors (dict): Dictionary with color (value) used for each population (key) (default: None)
+        - figSize ((width, height)): Size of figure (default: (10,8))
+        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;
+            if set to True uses filename from simConfig (default: None)
+        - saveFig (None|True|'fileName'): File name where to save the figure;
+            if set to True uses filename from simConfig (default: None)
+        - showFig (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figure handle
+    '''
+
+    from .. import sim
+
+    print('Plotting firing rate spectrogram ...')
+    
+    # Replace 'eachPop' with list of pops
+    if 'eachPop' in include: 
+        include.remove('eachPop')
+        for pop in sim.net.allPops: include.append(pop)
+
+    # time range
+    if timeRange is None:
+        timeRange = [0,sim.cfg.duration]
+
+    histData = []
+
+    # create fig
+    fig,ax1 = plt.subplots(figsize=figSize)
+    fontsiz = fontSize
+
+    # set font size
+    plt.rcParams.update({'font.size': fontSize})
+        
+    allSignal, allFreqs = [], []
+
+    # Plot separate line for each entry in include
+    for iplot,subset in enumerate(include):
+        cells, cellGids, netStimLabels = getCellsInclude([subset])   
+        numNetStims = 0
+
+        # Select cells to include
+        if len(cellGids) > 0:
+            try:
+                spkinds,spkts = list(zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]))
+            except:
+                spkinds,spkts = [],[]
+        else: 
+            spkinds,spkts = [],[]
+
+
+        # Add NetStim spikes
+        spkts, spkinds = list(spkts), list(spkinds)
+        numNetStims = 0
+        if 'stims' in sim.allSimData:
+            for netStimLabel in netStimLabels:
+                netStimSpks = [spk for cell,stims in sim.allSimData['stims'].items() \
+                    for stimLabel,stimSpks in stims.items() for spk in stimSpks if stimLabel == netStimLabel]
+                if len(netStimSpks) > 0:
+                    lastInd = max(spkinds) if len(spkinds)>0 else 0
+                    spktsNew = netStimSpks 
+                    spkindsNew = [lastInd+1+i for i in range(len(netStimSpks))]
+                    spkts.extend(spktsNew)
+                    spkinds.extend(spkindsNew)
+                    numNetStims += 1
+
+        histo = np.histogram(spkts, bins = np.arange(timeRange[0], timeRange[1], binSize))
+        histoT = histo[1][:-1]+binSize/2
+        histoCount = histo[0] 
+        histoCount = histoCount * (1000.0 / binSize) / (len(cellGids)+numNetStims) # convert to rates
+
+        histData.append(histoCount)
+
+        # Morlet wavelet transform method
+        if transformMethod == 'morlet':
+            from ..support.morlet import MorletSpec, index2ms
+
+            Fs = 1000.0 / binSize
+
+            morletSpec = MorletSpec(histoCount, Fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq)
+            freqs = morletSpec.f
+            spec = morletSpec.TFR
+            ylabel = 'Power'
+            allSignal.append(spec)
+            allFreqs.append(freqs)
+
+    # plotting
+    T = timeRange
+    for iplot,(subset, freqs, signal) in enumerate(zip(include, allFreqs, allSignal)):
+
+        plt.subplot(len(include),1,iplot+1)  # if subplot, create new subplot
+        plt.title(str(subset), fontsize=fontsiz)
+
+        plt.imshow(signal, extent=(np.amin(T), np.amax(T), np.amin(freqs), np.amax(freqs)), origin='lower', interpolation='None', aspect='auto',cmap=plt.get_cmap('viridis'))
+        plt.colorbar(label='Power')
+        plt.ylabel('Time (ms)')
+        plt.ylabel('Hz')
+        plt.tight_layout()                
+
+    # save figure data
+    if saveData:
+        figData = {'histData': histData, 'histT': histoT, 'include': include, 'timeRange': timeRange, 'binSize': binSize,
+         'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+    
+        _saveFigData(figData, saveData, 'spikeHist')
+ 
+    # save figure
+    if saveFig: 
+        if isinstance(saveFig, basestring):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename+'_'+'spikeSpectrogram.png'
+        plt.savefig(filename)
+
+    # show fig 
+    if showFig: _showFigure()
+
+    return fig, {'allSignal': allSignal, 'allFreqs':allFreqs}
 
 
 #------------------------------------------------------------------------------

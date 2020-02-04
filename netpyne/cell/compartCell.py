@@ -1194,7 +1194,6 @@ class CompartCell (Cell):
                 if len(synMechLocs)>1: 
                     synMechLocs[pos], synMechLocs[0] = synMechLocs[0], synMechLocs[pos]
 
-
         # add synaptic mechanism to section based on synMechSecs and synMechLocs (if already exists won't be added unless nonLinear set to True)
         synMechs = [self.addSynMech(synLabel=params['synMech'], secLabel=synMechSecs[i], loc=synMechLocs[i]) for i in range(synsPerConn)] 
         return synMechs, synMechSecs, synMechLocs
@@ -1215,6 +1214,7 @@ class CompartCell (Cell):
                 print(('  Section lengths not available to distribute synapses in cell %d'%self.gid))
             
         try:
+            secLengths = [x for x in secLengths if isinstance(x, Number)]
             totLength = sum(secLengths)
             cumLengths = list(cumsum(secLengths))
             absLocs = [i*(totLength/numSyns)+totLength/numSyns/2 for i in range(numSyns)]

@@ -43,7 +43,12 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
     def list_of_dict_unique_by_key(seq, key):
         seen = set()
         seen_add = seen.add
-        return [x for x in seq if x[key] not in seen and not seen_add(x[key])]
+        
+        try:
+            return [x for x in seq if x[key] not in seen and not seen_add(x[key])]
+        except:
+            print('  Error calculating list of dict unique by key...')
+            return []
 
     # adapt indices/keys based on compact vs long conn format
     if sim.cfg.compactConnFormat: 

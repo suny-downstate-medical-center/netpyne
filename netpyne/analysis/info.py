@@ -306,7 +306,7 @@ def granger(cells1=[], cells2=[], spks1=None, spks2=None, label1='spkTrain1', la
             if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
-                filename = sim.cfg.filename+'_'+'2Dnet.png'
+                filename = sim.cfg.filename+'_granger.png'
             plt.savefig(filename)
 
         # show fig 

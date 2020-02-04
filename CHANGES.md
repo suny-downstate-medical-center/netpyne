@@ -1,3 +1,28 @@
+# Version 0.9.5
+
+- Print start and end date/time
+
+- Avoid removing batch folder so can rerun and complete batch simulations
+
+- Added loadBalance option to print individual node computer times
+
+- Initialize hoc events recursivley to reduce event queue overhead
+
+- Added plotRateSpectrogram analysis function 
+
+- Added option to save at intervals 
+
+- Fixed bug: wrong indentation for initializing fixedInterval in batch.py
+
+- Fixed bug in _distributeSynsUniformly function
+
+- Fixed bug in subConnParams grouped synapses
+
+- Fixed bug in analysis.granger figure save name
+
+- Fixed bug in printRunTime function
+
+
 # Version 0.9.4
 
 - Added option to avoid creating connections with weight=0

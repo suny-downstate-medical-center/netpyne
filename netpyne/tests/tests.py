@@ -5,7 +5,18 @@ Testing code for Validation class
 
 Contributors: mitra.siddhartha@gmail.com
 """
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
 
+from builtins import str
+try:
+    basestring
+except NameError:
+    basestring = str
+from future import standard_library
+standard_library.install_aliases()
 import unittest
 import numbers
 import sys
@@ -13,7 +24,7 @@ import os
 import traceback
 import numpy
 from neuron import h
-from netpyne import utils
+from ..conversion import mechVarList
 
 VALID_SHAPES = ['cuboid', 'ellipsoid', 'cylinder']
 POP_NUMCELLS_PARAMS = ['density', 'numCells', 'gridSpacing', 'cellsList']
@@ -116,7 +127,7 @@ class TestTypeObj(object):
             if val == '':
                 return
             existsInDict = False
-            for key, valueDict in paramDict.items():
+            for key, valueDict in list(paramDict.items()):
                 if val == valueDict[dictKey]:
                     existsInDict = True
                     break
@@ -128,7 +139,7 @@ class TestTypeObj(object):
     def testExistsInAllDicts(self, paramValues,paramKey, dictKey):
         try:
             existsInDict = True
-            for key, valueDict in paramValues[paramKey].items():
+            for key, valueDict in list(paramValues[paramKey].items()):
                 if dictKey not in valueDict:
                     existsInDict = False
                     break
@@ -146,8 +157,8 @@ class TestTypeObj(object):
             if isinstance (paramValues[val], dict ) and 'pop' in paramValues[val]:
                 popsSpecified = True
                 #print( " LLL **** ")
-                if isinstance (pops, dict) and paramValues[val]['pop'] not in pop.keys():
-                    errorMessage = "ConnParams->'pop': Pop specified in conn params is: " + str(paramValues[val]['pop']) + ". This does not exist in list of pop keys = " + str(pop.keys()) + "."
+                if isinstance (pops, dict) and paramValues[val]['pop'] not in list(pop.keys()):
+                    errorMessage = "ConnParams->'pop': Pop specified in conn params is: " + str(paramValues[val]['pop']) + ". This does not exist in list of pop keys = " + str(list(pop.keys())) + "."
                     return errorMessage
         except Exception as e:
             # e.args += (e,)
@@ -316,9 +327,9 @@ class TestTypeObj(object):
             #print ( "2")
             #print ( " in val list test" + str(paramDict) + " :: " + str(valList))
             if isinstance(paramDict, dict) and isinstance(valList, list):
-                if isinstance(valList, str):
+                if isinstance(valList, basestring):
                     valList = eval(valList)
-                assert (all([x in valList for x in paramDict.keys()])), " contains invalid key '" + str(paramDict.keys()[[x in valList for x in paramDict.keys()].index(False)]) + "': Valid values are: " + str(valList) + "."
+                assert (all([x in valList for x in list(paramDict.keys())])), " contains invalid key '" + str(list(paramDict.keys())[[x in valList for x in list(paramDict.keys())].index(False)]) + "': Valid values are: " + str(valList) + "."
                 #assert (all([x in valList for x in paramDict.keys()])), str(paramDict) + " must have keys in list " + str("") + ". Keys provided are " + str(paramDict.keys()) + "."
 
         except AssertionError as e:
@@ -341,8 +352,8 @@ class TestTypeObj(object):
                 #     if isinstance (value, dict):
                 #         print ( 'cellModel' + str(value['cellModel']) )
                 pointpsValues = []
-                if 'pointps' in utils.mechVarList() and isinstance(utils.mechVarList()['pointps'], dict):
-                    pointpsValues = utils.mechVarList()['pointps'].keys()
+                if 'pointps' in mechVarList() and isinstance(mechVarList()['pointps'], dict):
+                    pointpsValues = list(mechVarList()['pointps'].keys())
                 if 'cellModel' in paramValues:
                     if paramValues['cellModel'] in pointpsValues:
                         stimParamsAllowed = True
@@ -391,7 +402,7 @@ class TestTypeObj(object):
                         stimValid = False
                         errorMessages.append("popParams->'pulses': Must be a list of dicts if specified. Value provided is:" + str(paramValues['pulses']))
                     for pulseValue in paramValues['pulses']:
-                        if not all([x in PULSE_KEYS for x in pulseValue.keys()]):
+                        if not all([x in PULSE_KEYS for x in list(pulseValue.keys())]):
                             stimValid = False
                             errorMessages.append("popParams->'pulses': Must be a list of dicts if specified. Value provided is:'" + str(paramValues['pulses']) + "'. Keys of each dict must be in '" + str(PULSE_KEYS) + "'.")
 
@@ -406,7 +417,7 @@ class TestTypeObj(object):
         errorMessage = ''
         try:
             if 'secs' in paramValues:
-                for key, values in paramValues['secs'].items():
+                for key, values in list(paramValues['secs'].items()):
                     if 'geom' in values:
                         if len(values['geom']) == 0:
                             errorMessage = "cellParams -> secs ('" + str(key) + "'): Geom parameters must be specified."
@@ -422,7 +433,7 @@ class TestTypeObj(object):
                             break
                         #assert geomValid is True
 
-                        for key1, values1 in values['geom'].items():
+                        for key1, values1 in list(values['geom'].items()):
 
                             if key1 not in VALID_GEOMETRIES:
                                 errorMessage = "cellParams -> secs ('" + str(key) + "') -> 'geom': Invalid geom parameter '"+ str(key1) + "' specified. Valid values are '" + str(VALID_GEOMETRIES) + "'."
@@ -477,11 +488,11 @@ class TestTypeObj(object):
             if 'secs' in paramValues:
                 if len(paramValues['secs']) > 0:
                     if len(paramValues['secs']) > 1: topolNeeded = True
-                    for key, value in paramValues['secs'].items():
+                    for key, value in list(paramValues['secs'].items()):
                         if 'topol' not in value:
                             if topolNeeded:
                                 topolValid = False
-                                errorMessage = "cellParams -> secs ('" + str(paramValues['secs'].keys()) + "'): Topology needs to be specified if more than one section."
+                                errorMessage = "cellParams -> secs ('" + str(list(paramValues['secs'].keys())) + "'): Topology needs to be specified if more than one section."
                         else:
                             topolValid = True
 
@@ -489,15 +500,15 @@ class TestTypeObj(object):
                                 topolValid = False
                                 errorMessage = "cellParams -> secs ('" + str(key) + "') -> topol: Topology, if specified, must be a dict. Value specified is '" + str(value['topol']) + "'."
 
-                            elif len(value['topol'].keys()) < 3:
+                            elif len(list(value['topol'].keys())) < 3:
                                 topolValid = False
-                                errorMessage = "cellParams -> secs ('" + str(key) + "') -> topol: At least 3 parameters (parentSec, parentX and childX) must be specified for topology. Values specified are: '" + str(value['topol'].keys()) + "'."
-                            elif not any([x in value['topol'].keys() for x in VALID_TOPOLOGY_PARAMS ]):
+                                errorMessage = "cellParams -> secs ('" + str(key) + "') -> topol: At least 3 parameters (parentSec, parentX and childX) must be specified for topology. Values specified are: '" + str(list(value['topol'].keys())) + "'."
+                            elif not any([x in list(value['topol'].keys()) for x in VALID_TOPOLOGY_PARAMS ]):
                                 topolValid = False
                                 errorMessage = "cellParams -> secs ('" + str(key) + "') -> topol: Invalid value specified:''" + str(value['topol']) + "'. Valid values are: '" + str(VALID_TOPOLOGY_PARAMS) + "'."
                             elif value['topol']['parentSec'] not in paramValues['secs']:
                                 topolValid = False
-                                errorMessage = "cellParams -> secs ('" + str(key) + "') -> topol -> parentSec: parentSec '" + str(value['topol']['parentSec']) +"' does not point to a valid section. Valid sections are ('" + str(paramValues['secs'].keys()) + "')."
+                                errorMessage = "cellParams -> secs ('" + str(key) + "') -> topol -> parentSec: parentSec '" + str(value['topol']['parentSec']) +"' does not point to a valid section. Valid sections are ('" + str(list(paramValues['secs'].keys())) + "')."
                             elif not isinstance ( value['topol']['parentX'] , numbers.Real ):
                                 topolValid = False
                                 errorMessage = "cellParams -> secs ('" + str(key) + "') -> topol -> parentX: Value should be a float."
@@ -526,14 +537,14 @@ class TestTypeObj(object):
         mechsWarningFlagList = []
 
         try:
-            mechs = utils.mechVarList()["mechs"]
+            mechs = mechVarList()["mechs"]
             if 'secs' in paramValues:
-                for key, value in paramValues['secs'].items():
+                for key, value in list(paramValues['secs'].items()):
                     if 'mechs' in value:
-                        for key1, values1 in paramValues['secs'][key].items():
+                        for key1, values1 in list(paramValues['secs'][key].items()):
                             if key1 == "mechs":
                                 #errorMessage = str(paramValues['secs'][key][key1])
-                                for key2, values2 in paramValues['secs'][key][key1].items():
+                                for key2, values2 in list(paramValues['secs'][key][key1].items()):
                                     keys_suffixed = []
                                     mechsValidFlag = True
                                     mechsWarningFlag = False
@@ -541,22 +552,22 @@ class TestTypeObj(object):
                                     if key2.find("_ion") != -1:
                                         ionName = key2.split('_ion')[0]
                                         mechs[key2] = [x.replace(ionName, "") for x in mechs[key2] ]
-                                        keys_suffixed = [x for x in values2.keys()]
-                                        if not any([x in mechs[key2] for x in values2.keys() ]):
+                                        keys_suffixed = [x for x in list(values2.keys())]
+                                        if not any([x in mechs[key2] for x in list(values2.keys()) ]):
                                             mechsValidFlag = False
-                                            errorMessage = "cellParams -> secs ('" + str(key) + "') -> mechs ('" + str(key2) + "') -> ions ('" + str(ionName) + "'): Invalid ions (" + str(values2.keys()) + ") specified. Valid value are: " + str(mechs[key2]) + ". Values specified are " + str(values2.keys()) + "."
-                                        elif not all([x in values2.keys() for x in mechs[key2] ]):
+                                            errorMessage = "cellParams -> secs ('" + str(key) + "') -> mechs ('" + str(key2) + "') -> ions ('" + str(ionName) + "'): Invalid ions (" + str(list(values2.keys())) + ") specified. Valid value are: " + str(mechs[key2]) + ". Values specified are " + str(list(values2.keys())) + "."
+                                        elif not all([x in list(values2.keys()) for x in mechs[key2] ]):
                                             mechsWarningFlag = True
-                                            errorMessage = "cellParams -> secs ('" + str(key) + "') -> mechs ('" + str(key2) + "') -> ions ('" + str(ionName) + "'): Ion specifications incomplete (" + str(values2.keys()) + "). Complete list is: " + str(mechs[key2]) + ". Values specified are " + str(values2.keys()) + "."
+                                            errorMessage = "cellParams -> secs ('" + str(key) + "') -> mechs ('" + str(key2) + "') -> ions ('" + str(ionName) + "'): Ion specifications incomplete (" + str(list(values2.keys())) + "). Complete list is: " + str(mechs[key2]) + ". Values specified are " + str(list(values2.keys())) + "."
                                     else:
-                                        keys_suffixed = [x + "_" + key2 for x in values2.keys()]
+                                        keys_suffixed = [x + "_" + key2 for x in list(values2.keys())]
                                         mechs_unsuffixed = [x.replace("_" + key2, "") for x in mechs[key2]]
                                         if not all([x in mechs[key2] for x in keys_suffixed]):
                                             mechsValidFlag = False
-                                            errorMessage = "cellParams -> secs ('" + str(key) + "') -> mechs ('" + str(key2) + "'): Invalid mechs (" + str(values2.keys()) + ") specified . Valid value are: " + str(mechs_unsuffixed) + ". Values specified are " + str(values2.keys()) + "."
+                                            errorMessage = "cellParams -> secs ('" + str(key) + "') -> mechs ('" + str(key2) + "'): Invalid mechs (" + str(list(values2.keys())) + ") specified . Valid value are: " + str(mechs_unsuffixed) + ". Values specified are " + str(list(values2.keys())) + "."
                                         elif not all([x in keys_suffixed for x in mechs[key2] ]):
                                             mechsWarningFlag = True
-                                            errorMessage = "cellParams -> secs ('" + str(key) + "') -> mechs ('" + str(key2) + "'): Incomplete list provided. Complete list is: " + str(mechs_unsuffixed) + ". Values specified are " + str(values2.keys()) + "."
+                                            errorMessage = "cellParams -> secs ('" + str(key) + "') -> mechs ('" + str(key2) + "'): Incomplete list provided. Complete list is: " + str(mechs_unsuffixed) + ". Values specified are " + str(list(values2.keys())) + "."
 
                                     mechsValidFlagList.append(mechsValidFlag)
                                     mechsWarningFlagList.append(mechsWarningFlagList)
@@ -573,25 +584,25 @@ class TestTypeObj(object):
 
         try:
             pointpsValid = True
-            mechs = utils.mechVarList()["mechs"]
+            mechs = mechVarList()["mechs"]
 
             if 'secs' in paramValues:
-                for key, value in paramValues['secs'].items():
+                for key, value in list(paramValues['secs'].items()):
                     if 'pointps' in value:
-                        for key1, values1 in paramValues['secs'][key].items():
+                        for key1, values1 in list(paramValues['secs'][key].items()):
                             if key1 == "pointps":
-                                for key2, values2 in paramValues['secs'][key][key1].items():
+                                for key2, values2 in list(paramValues['secs'][key][key1].items()):
                                     #print (" ** keys2, values2 = " + str(key2) + ":: " + str(values2))
-                                    if 'mod' not in values2.keys():
+                                    if 'mod' not in list(values2.keys()):
                                         errorMessages.append("cellParams -> secs ('" + str(key) + "') -> pointps ('" + str(key2) + "'): mod must be specified")
                                         pointpsValid = False
-                                    elif 'loc' in values2.keys():
+                                    elif 'loc' in list(values2.keys()):
                                         loc = values2['loc']
                                         if not isinstance(loc, numbers.Real ):
                                             errorMessages.append("cellParams -> secs ('" + str(key) + "') -> pointps ('" + str(key2) + "'): Loc must be a float. Value provided is " + str(loc))
                                         elif loc < 0 or loc >1:
                                             errorMessages.append("cellParams -> secs ('" + str(key) + "') -> pointps ('" + str(key2) + "'): Loc must be a between 0 and 1. Value provided is " + str(loc))
-                                    elif 'synList' in values2.keys():
+                                    elif 'synList' in list(values2.keys()):
                                         if not isinstance ('synList', list):
                                             errorMessages.append("cellParams -> secs ('" + str(key) + "') -> pointps ('" + str(key2) + "'): SynList must be a list. Value provided is " + str(values2['synList']))
 
@@ -816,10 +827,10 @@ class TestTypeObj(object):
             secList = ''
 
             if isinstance ( cellParams , dict):
-                for key, value in cellParams.items():
+                for key, value in list(cellParams.items()):
                     if key == "secs" and isinstance(value, dict):
                         #print (" value### = " + str(value.keys()))
-                        validSections.extend ( value.keys())
+                        validSections.extend ( list(value.keys()))
 
             #print ( " @@@@ valid sections = " + str(validSections))
             if 'secList' in cellParams:
@@ -828,7 +839,7 @@ class TestTypeObj(object):
                 if not isinstance (secList, dict):
                     errorMessage = "cellParams -> seclist must be a dict."
                 else:
-                    for key, value in secList.items():
+                    for key, value in list(secList.items()):
                         #print ( " ^^^^^^^^ value = " + str(value))
                         if not isinstance (value, list):
                             errorMessage = "cellParams -> secList ('" + str(key) + "'):Each element of seclist must be a list. Value specified is: " + str(value) + "."
@@ -1005,11 +1016,11 @@ class TestTypeObj(object):
             # print (cellParams)
             if isinstance ( cellParams , dict):
                 # print (cellParams)
-                for key, value in cellParams.items():
+                for key, value in list(cellParams.items()):
                     # for key, value in value0.items():
                         if key == "secs" and isinstance(value, dict):
                             #print (" value### = " + str(value.keys()))
-                            for key1, value1 in value.items():
+                            for key1, value1 in list(value.items()):
                                 if isinstance ( value1, dict) and 'spikeGenLoc' in value1:
                                     spikeGenLoc = value1['spikeGenLoc']
                                     if not isinstance (spikeGenLoc, numbers.Real ):
@@ -1032,24 +1043,26 @@ class TestTypeObj(object):
         try:
 
             simType =  ''
-            mechVarList = utils.mechVarList()
+            mechVarList = mechVarList()
             allKeys = []
             validTypes = []
             if simType in paramValues['type']:
 
                 simType = paramValues['type']
 
-                allKeys = paramValues.keys()
+                allKeys = list(paramValues.keys())
                 allKeys.remove('type')
 
             if 'pointps' in mechVarList:
-                validTypes = mechVarList['pointps'].keys() + ['rate']
+                validTypes = list(mechVarList['pointps'].keys()) + ['rate']
 
             if simType not in validTypes:
                 errorMessage = " StimSourceParams -> type: Invalid simtype " + str(simType) + ". Valied values are: " + str(validTypes) + "."
                 errorMessages.append(errorMessage)
             else:
                 allowedValues = mechVarList['pointps'][simType] + ['rate']
+                allowedValues += ['label'] # Required for NeuroML handling
+                allowedValues += ['originalFormat'] # Required for NeuroML handling
                 if any([x not in allowedValues for x in allKeys]):
                     errorMessage = "StimSourceParams: Invalid parameter specified. Values specified are " + str(allKeys) + ", while allowed values are: " + str(allowedValues)
                     errorMessages.append(errorMessage)
@@ -1068,7 +1081,7 @@ class TestTypeObj(object):
         source = []
 
         if isinstance(stimSourceParams, dict):
-            sources = stimSourceParams.keys()
+            sources = list(stimSourceParams.keys())
 
         try:
             if 'source' not in paramValues:
@@ -1102,8 +1115,8 @@ class TestTypeObj(object):
                 #print (" before ")
                 validList = ['plotRaster','plotSpikeHist', 'plotSpikePSD', 'plotTraces', 'plotConn', 'plotConn', 'plot2Dnet', 'nTE', 'granger', 'plotSpikeStats']
                 # print ( [x in validList for x in analysis.keys()] )
-                if not all ([x in validList for x in analysis.keys()]):
-                    errorMessages.append("SimConfig->'analysis': Valid analysis functions are 'plotRaster','plotSpikeHist', 'plotTraces', 'plotShape', 'plotConn', 'plot2DNet', 'nTE', 'granger', 'plotSpikeStats'. Keys specified are " + str(analysis.keys()) + ".")
+                if not all ([x in validList for x in list(analysis.keys())]):
+                    errorMessages.append("SimConfig->'analysis': Valid analysis functions are 'plotRaster','plotSpikeHist', 'plotTraces', 'plotShape', 'plotConn', 'plot2DNet', 'nTE', 'granger', 'plotSpikeStats'. Keys specified are " + str(list(analysis.keys())) + ".")
                 #print (" after ")
 
                 if 'plotRaster' in analysis:
@@ -1119,8 +1132,8 @@ class TestTypeObj(object):
                         #print ( " in plot raster 2 " + str(plotRaster.keys()))
                         validList = ['include', 'timeRange', 'maxSpikes', 'orderBy', 'orderInverse', 'labels', 'popRates', 'spikeHist', 'spikeHistBin', 'syncLines', 'figSize', 'saveData', 'saveFig', 'showFig']
 
-                        if not all(x in validList for x in plotRaster.keys()):
-                            errorMessages.append("SimConfig->'analysis'->'plotRaster': plotRaster must be a bool or dict with keys in list " + str(validList) + ". Keys supplied are " + str(plotRaster.keys()) + ".")
+                        if not all(x in validList for x in list(plotRaster.keys())):
+                            errorMessages.append("SimConfig->'analysis'->'plotRaster': plotRaster must be a bool or dict with keys in list " + str(validList) + ". Keys supplied are " + str(list(plotRaster.keys())) + ".")
 
                         if 'include' in plotRaster and not isinstance( plotRaster['include'], dict):
                             errorMessages.append("SimConfig->'analysis'->'plotRaster'->'include': Must be a list. Value provided is " + str(plotRaster['include']) + ".")
@@ -1158,19 +1171,19 @@ class TestTypeObj(object):
 
                         if 'popRates' in plotRaster:
 
-                            if not isinstance( plotRaster['popRates'], str) and not isinstance( plotRaster['popRates'], bool):
+                            if not isinstance( plotRaster['popRates'], basestring) and not isinstance( plotRaster['popRates'], bool):
                                 errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Must be a string or boolean. Value provided is " + str(plotRaster['popRates']) + ".")
                             else:
-                                if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['popRates'] ] ):
+                                if (isinstance( plotRaster['popRates'], basestring) ) and (x not in ['legend', 'overlay'] ):
                                     errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
 
-                        if 'popRates' in plotRaster:
-
-                            if not isinstance( plotRaster['popRates'], list):
-                                errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Must be a list. Value provided is " + str(plotRaster['popRates']) + ".")
-                            else:
-                                if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['popRates'] ] ):
-                                    errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
+                        # if 'popRates' in plotRaster:
+                        #
+                        #     if not isinstance( plotRaster['popRates'], list):
+                        #         errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Must be a list. Value provided is " + str(plotRaster['popRates']) + ".")
+                        #     else:
+                        #         if any ( [x not in ['legend', 'overlay', 'y'] for x in plotRaster['popRates'] ] ):
+                        #             errorMessages.append("SimConfig->'analysis'->'plotRaster'->'popRates': Valid values are " + str(['legend', 'overlay'])+ ". Value provided is " + str(plotRaster['labels']) + ".")
 
                         if 'spikeHist' in plotRaster:
 
@@ -1232,8 +1245,8 @@ class TestTypeObj(object):
 
                         validList = ['include', 'timeRange', 'binSize', 'Fs', 'spikeHist', 'overlay', 'yaxis', 'figSize', 'saveData', 'saveFig' , 'showFig']
 
-                        if not all(x in validList for x in plotSpikePSD.keys()):
-                            errorMessages.append("SimConfig->'analysis'->'plotSpikePSD': plotSpikePSD must be a bool or dict with keys in list " + str(validList) + ". Keys supplied are " + str(plotSpikePSD.keys()) + ".")
+                        if not all(x in validList for x in list(plotSpikePSD.keys())):
+                            errorMessages.append("SimConfig->'analysis'->'plotSpikePSD': plotSpikePSD must be a bool or dict with keys in list " + str(validList) + ". Keys supplied are " + str(list(plotSpikePSD.keys())) + ".")
 
                         if 'include' in plotSpikePSD and not isinstance( plotSpikePSD['include'], list):
                             errorMessages.append("SimConfig->'analysis'->'plotSpikePSD'->'include': Must be a list. Value provided is " + str(plotSpikePSD['include']) + ".")
@@ -1270,8 +1283,8 @@ class TestTypeObj(object):
 
                         validList = ['include', 'timeRange','overlay', 'oneFigPer', 'rerun', 'figSize', 'saveData' , 'showFig']
 
-                        if not all(x in validList for x in plotTraces.keys()):
-                            errorMessages.append("SimConfig->'analysis'->'plotTraces': plotTraces must be a bool or dict with keys in list " + str(validList) + ". Keys supplied are " + str(plotTraces.keys()) + ".")
+                        if not all(x in validList for x in list(plotTraces.keys())):
+                            errorMessages.append("SimConfig->'analysis'->'plotTraces': plotTraces must be a bool or dict with keys in list " + str(validList) + ". Keys supplied are " + str(list(plotTraces.keys())) + ".")
 
                         if 'include' in plotTraces and not isinstance( plotTraces['include'], list):
                             errorMessages.append("SimConfig->'analysis'->'plotTraces'->'include': Must be a list. Value provided is " + str(plotTraces['include']) + ".")
@@ -1306,8 +1319,8 @@ class TestTypeObj(object):
 
                         validList = ['showSyns', 'include', 'style', 'siz', 'figSize', 'saveData', 'saveFig', 'showFig']
 
-                        if not all(x in validList for x in plotShape.keys()):
-                            errorMessages.append("SimConfig->'analysis'->'plotShape': plotShape must be a bool or dict with keys in list " + str(validList) + ". Keys supplied are " + str(plotShape.keys()) + ".")
+                        if not all(x in validList for x in list(plotShape.keys())):
+                            errorMessages.append("SimConfig->'analysis'->'plotShape': plotShape must be a bool or dict with keys in list " + str(validList) + ". Keys supplied are " + str(list(plotShape.keys())) + ".")
 
                         if 'showSyns' in plotShapes and not isinstance( plotShape['showSyns'], bool):
                                 errorMessages.append("SimConfig->'analysis'->'plotShape'->'showSyns': Must be boolean. Value provided is " + str(plotShape['showSyns']) + ".")
@@ -1326,8 +1339,8 @@ class TestTypeObj(object):
 
                         validList = ['include', 'feature', 'orderBy', 'figSize', 'groupBy', 'saveData', 'saveFig', 'showFig']
 
-                        if not all(x in validList for x in plotConn.keys()):
-                            errorMessages.append("SimConfig->'analysis'->'plotConn': plotConn must be a bool or dict with keys in list " + str(validList) + ". Keys supplied are " + str(plotConn.keys()) + ".")
+                        if not all(x in validList for x in list(plotConn.keys())):
+                            errorMessages.append("SimConfig->'analysis'->'plotConn': plotConn must be a bool or dict with keys in list " + str(validList) + ". Keys supplied are " + str(list(plotConn.keys())) + ".")
 
                         if 'include' in plotConn and not isinstance( plotConn['include'], list):
                             errorMessages.append("SimConfig->'analysis'->'plotConn'->'include': Must be a list. Value provided is " + str(plotConn['include']) + ".")
@@ -1357,8 +1370,8 @@ class TestTypeObj(object):
 
                         validList = ['include', 'feature', 'orderBy', 'figSize', 'groupBy', 'saveData', 'saveFig', 'showFig']
 
-                        if not all(x in validList for x in plot2DNet.keys()):
-                            errorMessages.append("SimConfig->'analysis'->'plot2DNet': plot2DNet must be a bool or dict with keys in list " + str(validList) + ". Keys supplied are " + str(plot2DNet.keys()) + ".")
+                        if not all(x in validList for x in list(plot2DNet.keys())):
+                            errorMessages.append("SimConfig->'analysis'->'plot2DNet': plot2DNet must be a bool or dict with keys in list " + str(validList) + ". Keys supplied are " + str(list(plot2DNet.keys())) + ".")
 
                         if 'include' in plot2DNet and not isinstance( plot2DNet['include'], list):
                             errorMessages.append("SimConfig->'analysis'->'plot2DNet'->'include': Must be a list. Value provided is " + str(plot2DNet['include']) + ".")
@@ -1386,8 +1399,8 @@ class TestTypeObj(object):
                     elif isinstance ( nTE, dict):
                         validList = ['cells1', 'cells2', 'spks1', 'spks2', 'timeRange', 'binSize', 'numShuffle']
 
-                        if not all(x in validList for x in nTE.keys()):
-                            errorMessages.append("SimConfig->'analysis'->'nTE': nTE must be a bool or dict with keys in list " + str(validList) + ". Keys supplied are " + str(nTE.keys()) + ".")
+                        if not all(x in validList for x in list(nTE.keys())):
+                            errorMessages.append("SimConfig->'analysis'->'nTE': nTE must be a bool or dict with keys in list " + str(validList) + ". Keys supplied are " + str(list(nTE.keys())) + ".")
 
                         if 'cells1' in nTE and not isinstance( nTE['cells1'], list):
                             errorMessages.append("SimConfig->'analysis'->'nTE'->'cells1': Must be a list. Value provided is " + str(nTE['cells1']) + ".")
@@ -1417,8 +1430,8 @@ class TestTypeObj(object):
 
                         validList = ['cells1', 'cells2', 'spks1', 'spks2','label1', 'label2', 'timeRange', 'binSize', 'plotFig', 'saveData', 'saveFig', 'showFig']
 
-                        if not all(x in validList for x in granger.keys()):
-                            errorMessages.append("SimConfig->'analysis'->'granger': granger must be a bool or dict with keys in list " + str(validList) + ". Keys supplied are " + str(granger.keys()) + ".")
+                        if not all(x in validList for x in list(granger.keys())):
+                            errorMessages.append("SimConfig->'analysis'->'granger': granger must be a bool or dict with keys in list " + str(validList) + ". Keys supplied are " + str(list(granger.keys())) + ".")
 
                         if 'cells1' in granger and not isinstance( granger['cells1'], list):
                             errorMessages.append("SimConfig->'analysis'->'granger'->'cells1': Must be a list. Value provided is " + str(granger['cells1']) + ".")
@@ -2399,7 +2412,7 @@ class SimTestObj(object):
             # print (" *** Running pop tests *** ")
 
         popParams = self.netParams.popParams
-        for testName, popTestObj in self.testParamsMap["pop"].items():
+        for testName, popTestObj in list(self.testParamsMap["pop"].items()):
             self.execRunTests(popTestObj, popParams)
 
         # if self.verboseFlag:
@@ -2411,7 +2424,7 @@ class SimTestObj(object):
         #     print (" *** Running net tests *** ")
 
         netParams = self.netParams
-        for testName, netTestObj in self.testParamsMap["net"].items():
+        for testName, netTestObj in list(self.testParamsMap["net"].items()):
             self.execRunTests(netTestObj, netParams)
 
         # if self.verboseFlag:
@@ -2424,7 +2437,7 @@ class SimTestObj(object):
 
         cellParams = self.netParams.cellParams
         #print ( " *** in run cell tests " + str(cellParams))
-        for testName, cellTestObj in self.testParamsMap["cell"].items():
+        for testName, cellTestObj in list(self.testParamsMap["cell"].items()):
             #print ( " ^^^ running test " + cellParams)
             self.execRunTests(cellTestObj, cellParams)
 
@@ -2438,7 +2451,7 @@ class SimTestObj(object):
 
         connParams = self.netParams.connParams
         #print (" ** " + str(self.testParamsMap["conn"]))
-        for testName, connTestObj in self.testParamsMap["conn"].items():
+        for testName, connTestObj in list(self.testParamsMap["conn"].items()):
             self.execRunTests(connTestObj, connParams)
 
         # if self.verboseFlag:
@@ -2450,7 +2463,7 @@ class SimTestObj(object):
         #     print (" *** Running stim source tests *** ")
 
         stimSourceParams = self.netParams.stimSourceParams
-        for testName, stimSourceTestObj in self.testParamsMap["stimSource"].items():
+        for testName, stimSourceTestObj in list(self.testParamsMap["stimSource"].items()):
             self.execRunTests(stimSourceTestObj, stimSourceParams)
 
     def runStimTargetTests(self):
@@ -2459,7 +2472,7 @@ class SimTestObj(object):
         #     print (" *** Running stim target tests *** ")
 
         stimTargetParams = self.netParams.stimTargetParams
-        for testName, stimTargetTestObj in self.testParamsMap["stimTarget"].items():
+        for testName, stimTargetTestObj in list(self.testParamsMap["stimTarget"].items()):
             self.execRunTests(stimTargetTestObj, stimTargetParams)
 
     def runSimConfigTests(self):
@@ -2468,7 +2481,7 @@ class SimTestObj(object):
         #     print (" *** Running stim target tests *** ")
 
         simConfigParams = self.simConfig
-        for testName, simConfigTestObj in self.testParamsMap["simConfig"].items():
+        for testName, simConfigTestObj in list(self.testParamsMap["simConfig"].items()):
             self.execRunTests(simConfigTestObj, simConfigParams)
 
     def execRunTests(self, testObj, params):
@@ -2483,177 +2496,177 @@ class SimTestObj(object):
 
                 if isinstance(params, dict):
 
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
 
                         try:
                             self.testTypeObj.testExists (testObj.testParameterValue,  paramValues)
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues) )
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
+                            print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues) ))
                 else:
 
                         try:
                             self.testTypeObj.testExists (testObj.testParameterValue,  paramValues)
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue)))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue)))
+                            print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues)))
 
             elif testType == TEST_TYPE_EXISTS_IN_LIST:
 
                 if isinstance(params, dict):
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
 
                         try:
                             self.testTypeObj.testExistsInList (testObj.testParameterValueList,  paramValues)
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
+                            print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues)))
 
                 else:
 
                         try:
                             self.testTypeObj.testExistsInList (testObj.testParameterValueList,  paramValues)
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue)))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue)))
+                            print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues)))
 
             elif testType == TEST_TYPE_EXISTS_IN_DICT:
 
                 if isinstance(params, dict):
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
 
                         try:
 
                             if testObj.testParameterValue in paramValues and testObj.testParameterValue1 in paramValues[testObj.testParameterValue] and paramValues[testObj.testParameterValue][testObj.testParameterValue1]:
                                 self.testTypeObj.testExistsInDict (  paramValues[testObj.testParameterValue][testObj.testParameterValue1],  eval(testObj.compareDict), testObj.testParameterValue1)
                                 if self.verboseFlag:
-                                    print ( "Test: " + str(paramValues[testObj.testParameterValue][testObj.testParameterValue1]) + " for: " + str(testType)+ " value: " + str(eval(testObj.compareDict)) )
+                                    print(( "Test: " + str(paramValues[testObj.testParameterValue][testObj.testParameterValue1]) + " for: " + str(testType)+ " value: " + str(eval(testObj.compareDict)) ))
                                     print ( "PASSED" )
 
                         except Exception as e:
                             #traceback.print_exc(file=sys.stdout)
                             if self.verboseFlag:
-                                print ( "Test " + testObj.testParameterValue + " for: " + str(testType)+ " value: " + str(eval(testObj.compareDict)))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + " Value provided is '" + paramValues[testObj.testParameterValue][testObj.testParameterValue1] + "'.")
+                                print(( "Test " + testObj.testParameterValue + " for: " + str(testType)+ " value: " + str(eval(testObj.compareDict))))
+                            print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + " Value provided is '" + paramValues[testObj.testParameterValue][testObj.testParameterValue1] + "'."))
 
             elif testType == TEST_TYPE_IN_RANGE:
 
                 if isinstance(params, dict):
 
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
 
                         try:
                             self.testTypeObj.testInRange(testObj.testParameterValue, eval(testObj.testValueRange), paramValues)
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType) + " value: " + str(paramValues))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType) + " value: " + str(paramValues)))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType) + " value: " + str(paramValues))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType) + " value: " + str(paramValues)))
+                            print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues)))
                 else:
 
                         try:
                             self.testTypeObj.testInRange(testObj.testParameterValue, eval(testObj.testValueRange), paramValues)
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue)))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + " Values provided are: " + str(paramValues))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue)))
+                            print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + " Values provided are: " + str(paramValues)))
 
             elif testType == TEST_TYPE_ARRAY_IN_RANGE:
 
                     if isinstance(params, dict):
 
-                        for paramLabel, paramValues in params.items():
+                        for paramLabel, paramValues in list(params.items()):
 
                             try:
                                 testParamValue = self.testTypeObj.testArrayInRange(testObj.testParameterValue, eval(testObj.testValueRange), paramValues)
                                 if self.verboseFlag:
-                                    print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue))
+                                    print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue)))
                                     print ( "PASSED" )
 
                             except Exception as e:
 
                                 #traceback.print_exc(file=sys.stdout)
                                 if self.verboseFlag:
-                                    print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue))
+                                    print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue)))
                                 paramValue = ''
                                 if testObj.testParameterValue in paramValues:
                                     paramValue = paramValues[testObj.testParameterValue]
-                                print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + " Value = " + str(paramValue))
+                                print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + " Value = " + str(paramValue)))
 
             elif testType == TEST_TYPE_IS_VALID_RANGE:
 
                 if isinstance(params, dict):
 
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
 
                         try:
                             self.testTypeObj.testIsValidRange(testObj.testParameterValue, paramValues)
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
+                            print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues)))
 
                 else:
 
                         try:
                             self.testTypeObj.testIsValidRange(testObj.testParameterValue, paramValues)
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
                             print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
+                            print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues)))
 
             elif testType == TEST_TYPE_IS_INT:
 
                 if isinstance(params, dict):
 
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
 
                         try:
                             #print (" in int = " + str(paramValues))
                             self.testTypeObj.testIsInt(testObj.testParameterValue)
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
-                                print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
+                                print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues)))
 
                 else:
 
@@ -2663,14 +2676,14 @@ class SimTestObj(object):
 
                             self.testTypeObj.testIsInt(paramName)
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName)))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName)))
                             try:
-                                print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + " Value specified is " + str(paramName) + "." + ".Values provided are: " + str(paramValues)
+                                print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + " Value specified is " + str(paramName) + "." + ".Values provided are: " + str(paramValues))
                             except:
                                 pass
 
@@ -2678,19 +2691,19 @@ class SimTestObj(object):
 
                 if isinstance(params, dict):
 
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
 
                         try:
                             #print (" in float = " + str(paramValues))
                             self.testTypeObj.testIsFloat(testObj.testParameterValue)
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
-                                print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
+                                print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex] + ".Values provided are: " + str(paramValues)))
 
                 else:
 
@@ -2705,14 +2718,14 @@ class SimTestObj(object):
 
                                 self.testTypeObj.testIsFloat(paramName)
                                 if self.verboseFlag:
-                                    print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
+                                    print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName)))
                                     print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue) + ".")
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue) + "."))
                             try:
-                                print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + " Value specified is " + str(paramName) + "." + ".Values provided are: " + str(paramValues)
+                                print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + " Value specified is " + str(paramName) + "." + ".Values provided are: " + str(paramValues))
                             except:
                                 pass
 
@@ -2720,19 +2733,19 @@ class SimTestObj(object):
 
                 if isinstance(params, dict):
 
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
 
                         try:
                             self.testTypeObj.testGteZero(testObj.testParameterValue, paramValues)
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
                             try:
-                                print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+                                print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]))
                             except:
                                 pass
 
@@ -2746,32 +2759,32 @@ class SimTestObj(object):
                             if paramName != '':
                                 self.testTypeObj.testGteZero(paramName)
                                 if self.verboseFlag:
-                                    print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
+                                    print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName)))
                                     print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + ". Value specified is " + str(paramName) + " ."
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName)))
+                            print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + ". Value specified is " + str(paramName) + " .")
 
             elif testType == TEST_TYPE_IS_DICT:
                 #print (" in dict test type ")
 
                 if isinstance(params, dict):
                     #print (" in dict test type 2 ")
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
 
                         try:
                             if testObj.testParameterValue in paramValues:
                                 self.testTypeObj.testIsDict(paramValues[testObj.testParameterValue])
                                 if self.verboseFlag:
-                                    print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
+                                    print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
                                     print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
+                            print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]))
                 else:
                         try:
                             paramName = ''
@@ -2781,31 +2794,31 @@ class SimTestObj(object):
                                 pass
                             self.testTypeObj.testIsDict(paramName)
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName)))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + str(e[0])
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue)))
+                            print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + str(e[0]))
 
             elif testType == TEST_TYPE_IS_LIST:
 
                 if isinstance(params, dict):
 
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
 
                         try:
                             if testObj.testParameterValue in paramValues:
                                 self.testTypeObj.testIsList(paramValues[testObj.testParameterValue])
                                 if self.verboseFlag:
-                                    print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
+                                    print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
                                     print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
+                            print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]))
 
                 else:
                         try:
@@ -2819,31 +2832,31 @@ class SimTestObj(object):
                                 # print (" ee ")
                                 self.testTypeObj.testIsList(paramName)
                                 if self.verboseFlag:
-                                    print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
+                                    print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName)))
                                     print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + str(" -- " + e[0])
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue)))
+                            print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + str(" -- " + e[0]))
 
             elif testType == TEST_TYPE_IS_BOOL:
 
                 if isinstance(params, dict):
 
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
 
                         try:
                             if testObj.testParameterValue in paramValues:
                                 self.testTypeObj.testIsBoolean(paramValues[testObj.testParameterValue])
                                 if self.verboseFlag:
-                                    print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
+                                    print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
                                     print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
+                            print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]))
                 else:
                         try:
                             # print (" --- " + str(testObj.testParameterValue))
@@ -2855,13 +2868,13 @@ class SimTestObj(object):
                             if paramName != '':
                                 self.testTypeObj.testIsBoolean(paramName)
                                 if self.verboseFlag:
-                                    print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
+                                    print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName)))
                                     print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + str(e[0])
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue)))
+                            print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + str(e[0]))
 
             # elif testType == TEST_TYPE_IS_BOOL:
             #
@@ -2898,48 +2911,48 @@ class SimTestObj(object):
 
                 if isinstance(params, dict):
 
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
 
                         try:
                             if testObj.testParameterValue in paramValues:
                                 self.testTypeObj.testIsValueList(paramValues[testObj.testParameterValue], testObj.testValueList)
                                 if self.verboseFlag:
-                                    print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
+                                    print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
                                     print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
+                            print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]))
                 else:
                         try:
                             paramName = eval(testObj.testParameterValue)
                             self.testTypeObj.testIsValueList(paramName, testObj.testValueList)
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName)))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + str(e)
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue)))
+                            print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + str(e))
             elif testType == TEST_TYPE_ALL_VALUE_LIST:
 
                 if isinstance(params, dict):
 
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
 
                         try:
                             if testObj.testParameterValue in paramValues:
                                 self.testTypeObj.testIsAllValueList(paramValues[testObj.testParameterValue], testObj.testValueList)
                                 if self.verboseFlag:
-                                    print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
+                                    print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
                                     print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
+                            print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]))
                 else:
                         try:
                             paramName = ''
@@ -2950,19 +2963,19 @@ class SimTestObj(object):
                             if paramName != '':
                                 self.testTypeObj.testIsAllValueList(paramName, testObj.testValueList)
                                 if self.verboseFlag:
-                                    print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName))
+                                    print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramName)))
                                     print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + str(e)
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValue)))
+                            print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + str(e))
 
             elif testType == TEST_TYPE_EXISTS_IN_ALL_DICTS:
 
                 if isinstance(params, dict):
 
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
 
                         try:
                             self.testTypeObj.testExistsInAllDicts(
@@ -2972,13 +2985,13 @@ class SimTestObj(object):
                                             )
 
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
                                 print ( "PASSED" )
 
                         except Exception as e:
                             if self.verboseFlag:
-                                print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues))
-                            print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex])
+                                print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramValues)))
+                            print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]))
 
             elif testType == TEST_TYPE_DICT_KEY_VALID_VALUE:
 
@@ -2991,18 +3004,18 @@ class SimTestObj(object):
                     if paramDict != '':
                         self.testTypeObj.testDictKeyValidValue(paramDict, testObj.testValueList)
                         if self.verboseFlag:
-                            print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramDict))
+                            print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(paramDict)))
                             print ( "PASSED" )
 
                 except Exception as e:
                     if self.verboseFlag:
-                        print ( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValueList))
-                    print str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + str(e)
+                        print(( "Test: " + str(testObj.testParameterValue) + " for: " + str(testType)+ " value: " + str(testObj.testParameterValueList)))
+                    print(str(testObj.errorMessageLevel[testIndex]) + ": " + str(testObj.messageText[testIndex]) + str(e))
 
             elif testType == TEST_TYPE_VALID_GEOMETRIES:
 
                 if isinstance(params, dict):
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
                         try:
                             self.testTypeObj.testValidGeometries(paramValues)
                             if self.verboseFlag:
@@ -3014,12 +3027,12 @@ class SimTestObj(object):
                             if self.verboseFlag:
                                 print ( "Test: for valid geometry in cell")
                             #print (str(MESSAGE_TYPE_ERROR) + ": Geometry is invalid. ")
-                            print (str(MESSAGE_TYPE_ERROR) + ":" + str(e))
+                            print((str(MESSAGE_TYPE_ERROR) + ":" + str(e)))
 
             elif testType == TEST_TYPE_VALID_TOPOLOGIES:
 
                 if isinstance(params, dict):
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
                         try:
                             self.testTypeObj.testValidTopologies(paramValues)
                             if self.verboseFlag:
@@ -3031,7 +3044,7 @@ class SimTestObj(object):
                             if self.verboseFlag:
                                 print ( "Test: for valid topology in cell")
                             #print ( "paramvalues = " + str(paramValues))
-                            print (str(MESSAGE_TYPE_ERROR) + ": " + str(e))
+                            print((str(MESSAGE_TYPE_ERROR) + ": " + str(e)))
 
             elif testType == TEST_TYPE_VALID_MECHS:
 
@@ -3041,12 +3054,12 @@ class SimTestObj(object):
 
                 mechVarListString = ''
 
-                if 'mechs' in utils.mechVarList():
-                    mechVarListString = str(utils.mechVarList()['mechs'])
+                if 'mechs' in mechVarList():
+                    mechVarListString = str(mechVarList()['mechs'])
 
                 if isinstance(params, dict):
 
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
                         try:
                             errorMessages, mechsValidFlagList, mechsWarningFlagList = self.testTypeObj.testValidMechs(paramValues)
                             #print ( " *******###### errorMessage = " + errorMessage + " mechsValid = " + str(mechsValid) + " mechsWarning " + str(mechsWarning))
@@ -3061,26 +3074,26 @@ class SimTestObj(object):
                                 if mechsValidFlagList[errorIndex]:
                                     if self.verboseFlag:
                                         print ( "Test: for valid mechanisms in cell")
-                                    print ( MESSAGE_TYPE_WARNING + ": " + errorMessage)
+                                    print(( MESSAGE_TYPE_WARNING + ": " + errorMessage))
 
                                 elif mechVarListString[errorIndex]:
 
                                     if self.verboseFlag:
                                         print ( "Test: for valid mechanisms in cell")
 
-                                    print (str(MESSAGE_TYPE_ERROR) + ": " + errorMessage)
+                                    print((str(MESSAGE_TYPE_ERROR) + ": " + errorMessage))
 
                         except Exception as e:
                             traceback.print_exc(file=sys.stdout)
                             if self.verboseFlag:
                                 print ( "Test: for valid mechanisms in cell")
 
-                            print (str(MESSAGE_TYPE_ERROR) + ": Mechanism specified is invalid.")
+                            print((str(MESSAGE_TYPE_ERROR) + ": Mechanism specified is invalid."))
 
             elif testType == TEST_TYPE_VALID_POINTPS:
 
                 if isinstance(params, dict):
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
                         try:
                             errorMessages = self.testTypeObj.testValidPointps(paramValues)
 
@@ -3092,19 +3105,19 @@ class SimTestObj(object):
                                 if self.verboseFlag:
                                     print ( "Test: for pointps in cell params.")
                                 for errorMessage in errorMessages:
-                                    print ( MESSAGE_TYPE_ERROR + ": " + errorMessage)
+                                    print(( MESSAGE_TYPE_ERROR + ": " + errorMessage))
 
                         except Exception as e:
                             #traceback.print_exc(file=sys.stdout)
                             if self.verboseFlag:
                                 print ( "Test: for valid pointps in cell params.")
                             #print ( "paramvalues = " + str(paramValues))
-                            print (str(MESSAGE_TYPE_ERROR) + ": Pointps in cell params specified is invalid. Please check against utils.mechVarlist.")
+                            print((str(MESSAGE_TYPE_ERROR) + ": Pointps in cell params specified is invalid. Please check against utils.mechVarlist."))
 
             elif testType == TEST_TYPE_VALID_SYN_MECHS:
 
                 if isinstance(params, dict):
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
                         try:
                             self.testTypeObj.testValidSynMechs(testObj.testParameterValue, paramValues, self.netParams)
                             if self.verboseFlag:
@@ -3116,12 +3129,12 @@ class SimTestObj(object):
                             if self.verboseFlag:
                                 print ( "Test: for valid parameters in conn params.")
                             #print ( "paramvalues = " + str(paramValues))
-                            print (str(MESSAGE_TYPE_ERROR) + ": " + str(e))
+                            print((str(MESSAGE_TYPE_ERROR) + ": " + str(e)))
 
             elif testType == TEST_TYPE_EXISTS_IN_POP:
 
                 if isinstance(params, dict):
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
                         try:
                             errorMessage = self.testTypeObj.testExistsInPop(testObj.testParameterValue, paramValues, self.netParams.popParams)
 
@@ -3129,7 +3142,7 @@ class SimTestObj(object):
 
                                     if self.verboseFlag:
                                         print ( "Test: for valid pop label in conn params.")
-                                    print ( MESSAGE_TYPE_WARNING + ": " + errorMessage)
+                                    print(( MESSAGE_TYPE_WARNING + ": " + errorMessage))
 
                             elif self.verboseFlag:
                                 print ( "Test: for valid pop label in conn params.")
@@ -3141,12 +3154,12 @@ class SimTestObj(object):
                             if self.verboseFlag:
                                 print ( "Test: for valid pop label in conn params.")
                             #print ( "paramvalues = " + str(paramValues))
-                            print (str(MESSAGE_TYPE_WARNING) + ": " + str(e) + ".")
+                            print((str(MESSAGE_TYPE_WARNING) + ": " + str(e) + "."))
 
             elif testType == TEST_TYPE_VALID_SEC_LIST:
 
                 if isinstance(params, dict):
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
                         try:
 
                             errorMessage = self.testTypeObj.testValidSecLists(paramValues)
@@ -3155,7 +3168,7 @@ class SimTestObj(object):
 
                                     if self.verboseFlag:
                                         print ( "Test: for valid sec list in conn params.")
-                                    print ( MESSAGE_TYPE_ERROR + ": " + errorMessage)
+                                    print(( MESSAGE_TYPE_ERROR + ": " + errorMessage))
 
                             elif self.verboseFlag:
                                 print ( "Test: for valid sec list in conn params.")
@@ -3166,12 +3179,12 @@ class SimTestObj(object):
                             if self.verboseFlag:
                                 print ( "Test: for valid sec list in conn params.")
                             #print ( "paramvalues = " + str(paramValues))
-                            print (str(MESSAGE_TYPE_ERROR) + ": " + str(e) + ".")
+                            print((str(MESSAGE_TYPE_ERROR) + ": " + str(e) + "."))
 
             elif testType == TEST_TYPE_CONN_PARM_HIERARCHY:
 
                 if isinstance(params, dict):
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
                         try:
 
                             errorMessage = self.testTypeObj.testTypeHierarchy(paramValues)
@@ -3180,7 +3193,7 @@ class SimTestObj(object):
 
                                     if self.verboseFlag:
                                         print ( "Test: for valid hierarchy in conn params.")
-                                    print ( MESSAGE_TYPE_WARNING + ": " + errorMessage)
+                                    print(( MESSAGE_TYPE_WARNING + ": " + errorMessage))
 
                             elif self.verboseFlag:
                                 print ( "Test: for valid hierarchy in conn params.")
@@ -3191,12 +3204,12 @@ class SimTestObj(object):
                             if self.verboseFlag:
                                 print ( "Test: for valid hierarchy in conn params.")
                             #print ( "paramvalues = " + str(paramValues))
-                            print (str(MESSAGE_TYPE_WARNING) + ": " + str(e) + ".")
+                            print((str(MESSAGE_TYPE_WARNING) + ": " + str(e) + "."))
 
             elif testType == TEST_TYPE_CONN_SHAPE:
 
                 if isinstance(params, dict):
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
                         try:
 
                             errorMessages = self.testTypeObj.testValidConnShape(paramValues)
@@ -3209,19 +3222,19 @@ class SimTestObj(object):
                                 if self.verboseFlag:
                                     print ( "Test: for valid shape in conn params.")
                                 for errorMessage in errorMessages:
-                                    print ( MESSAGE_TYPE_ERROR + ": " + errorMessage)
+                                    print(( MESSAGE_TYPE_ERROR + ": " + errorMessage))
 
                         except Exception as e:
                             traceback.print_exc(file=sys.stdout)
                             if self.verboseFlag:
                                 print ( "Test: for valid conn shape in conn params.")
                             #print ( "paramvalues = " + str(paramValues))
-                            print (str(MESSAGE_TYPE_ERROR) + ": " + str(e) + ".")
+                            print((str(MESSAGE_TYPE_ERROR) + ": " + str(e) + "."))
 
             elif testType == TEST_TYPE_CONN_PLASTICITY:
 
                 if isinstance(params, dict):
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
                         try:
 
                             errorMessages = self.testTypeObj.testValidConnPlasticity(paramValues)
@@ -3234,19 +3247,19 @@ class SimTestObj(object):
                                 if self.verboseFlag:
                                     print ( "Test: for valid plasticity in conn params.")
                                 for errorMessage in errorMessages:
-                                    print ( MESSAGE_TYPE_ERROR + ": " + errorMessage)
+                                    print(( MESSAGE_TYPE_ERROR + ": " + errorMessage))
 
                         except Exception as e:
                             traceback.print_exc(file=sys.stdout)
                             if self.verboseFlag:
                                 print ( "Test: for valid plasticity in conn params.")
                             #print ( "paramvalues = " + str(paramValues))
-                            print (str(MESSAGE_TYPE_ERROR) + ": " + str(e) + ".")
+                            print((str(MESSAGE_TYPE_ERROR) + ": " + str(e) + "."))
 
             elif testType == TEST_TYPE_STIM_SOURCE_TEST:
 
                 if isinstance(params, dict):
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
                         try:
 
                             errorMessages = self.testTypeObj.testValidStimSource(paramValues)
@@ -3259,19 +3272,19 @@ class SimTestObj(object):
                                 if self.verboseFlag:
                                     print ( "Test: for valid stim source.")
                                 for errorMessage in errorMessages:
-                                    print ( MESSAGE_TYPE_ERROR + ": " + errorMessage)
+                                    print(( MESSAGE_TYPE_ERROR + ": " + errorMessage))
 
                         except Exception as e:
                             traceback.print_exc(file=sys.stdout)
                             if self.verboseFlag:
                                 print ( "Test: for valid stim source.")
                             #print ( "paramvalues = " + str(paramValues))
-                            print (str(MESSAGE_TYPE_ERROR) + ": " + str(e) + ".")
+                            print((str(MESSAGE_TYPE_ERROR) + ": " + str(e) + "."))
 
             elif testType == TEST_TYPE_STIM_TARGET_TEST:
 
                 if isinstance(params, dict):
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
                         try:
 
                             errorMessages = self.testTypeObj.testValidStimTarget(paramValues, self.netParams)
@@ -3284,19 +3297,19 @@ class SimTestObj(object):
                                 if self.verboseFlag:
                                     print ( "Test: for valid stim target.")
                                 for errorMessage in errorMessages:
-                                    print ( MESSAGE_TYPE_ERROR + ": " + errorMessage)
+                                    print(( MESSAGE_TYPE_ERROR + ": " + errorMessage))
 
                         except Exception as e:
                             traceback.print_exc(file=sys.stdout)
                             if self.verboseFlag:
                                 print ( "Test: for valid stim target.")
                             #print ( "paramvalues = " + str(paramValues))
-                            print (str(MESSAGE_TYPE_ERROR) + ": " + str(e) + ".")
+                            print((str(MESSAGE_TYPE_ERROR) + ": " + str(e) + "."))
 
             elif testType == TEST_TYPE_IS_VALID_SPIKE_GENLOC:
 
                 if isinstance(params, dict):
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
                         try:
 
                             errorMessages = self.testTypeObj.testValidSpikeGenLoc(paramValues)
@@ -3309,19 +3322,19 @@ class SimTestObj(object):
                                 if self.verboseFlag:
                                     print ( "Test: for valid spike gen loc target.")
                                 for errorMessage in errorMessages:
-                                    print ( MESSAGE_TYPE_ERROR + ": " + errorMessage)
+                                    print(( MESSAGE_TYPE_ERROR + ": " + errorMessage))
 
                         except Exception as e:
                             traceback.print_exc(file=sys.stdout)
                             if self.verboseFlag:
                                 print ( "Test: for valid spike gen loc target.")
                             #print ( "paramvalues = " + str(paramValues))
-                            print (str(MESSAGE_TYPE_ERROR) + ": " + str(e) + ".")
+                            print((str(MESSAGE_TYPE_ERROR) + ": " + str(e) + "."))
 
             elif testType == TEST_TYPE_VALID_STIM:
 
                 if isinstance(params, dict):
-                    for paramLabel, paramValues in params.items():
+                    for paramLabel, paramValues in list(params.items()):
                         try:
 
                             stimValid, errorMessages = self.testTypeObj.testValidStim(paramValues)
@@ -3334,14 +3347,14 @@ class SimTestObj(object):
                                 if self.verboseFlag:
                                     print ( "Test: for valid stim target.")
                                 for errorMessage in errorMessages:
-                                    print ( MESSAGE_TYPE_ERROR + ": " + errorMessage)
+                                    print(( MESSAGE_TYPE_ERROR + ": " + errorMessage))
 
                         except Exception as e:
                             traceback.print_exc(file=sys.stdout)
                             if self.verboseFlag:
                                 print ( "Test: for valid stim target.")
                             #print ( "paramvalues = " + str(paramValues))
-                            print (str(MESSAGE_TYPE_ERROR) + ": " + str(e) + ".")
+                            print((str(MESSAGE_TYPE_ERROR) + ": " + str(e) + "."))
 
             elif testType == TEST_TYPE_VALID_ANALYSIS:
 
@@ -3357,11 +3370,11 @@ class SimTestObj(object):
                             if self.verboseFlag:
                                 print ( "Test: for valid stim target.")
                             for errorMessage in errorMessages:
-                                print ( MESSAGE_TYPE_ERROR + ": " + errorMessage)
+                                print(( MESSAGE_TYPE_ERROR + ": " + errorMessage))
 
                     except Exception as e:
                         traceback.print_exc(file=sys.stdout)
                         if self.verboseFlag:
                             print ( "Test: for valid stim target.")
                         #print ( "paramvalues = " + str(paramValues))
-                        print (str(MESSAGE_TYPE_ERROR) + ": " + str(e) + ".")
+                        print((str(MESSAGE_TYPE_ERROR) + ": " + str(e) + "."))

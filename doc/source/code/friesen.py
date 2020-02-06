@@ -64,9 +64,9 @@ class FCELL:
     self.axon.Ra=1; self.axon.Ra=1e3/self.axon(0.5).ri()/ga
 
   def printV (self):
-    print 'dend.v=',self.dend(0.5).v
-    print 'soma.v=',self.soma(0.5).v
-    print 'axon.v=',self.axon(0.5).v
+    print('dend.v=',self.dend(0.5).v)
+    print('soma.v=',self.soma(0.5).v)
+    print('axon.v=',self.axon(0.5).v)
 
   def connect2target (self,targ):
     return h.NetCon(self.ofths,targ)

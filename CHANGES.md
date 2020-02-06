@@ -1,4 +1,294 @@
+# Version 0.9.5
+
+- Print start and end date/time
+
+- Avoid removing batch folder so can rerun and complete batch simulations
+
+- Added loadBalance option to print individual node computer times
+
+- Initialize hoc events recursivley to reduce event queue overhead
+
+- Added plotRateSpectrogram analysis function 
+
+- Added option to save at intervals 
+
+- Fixed bug: wrong indentation for initializing fixedInterval in batch.py
+
+- Fixed bug in _distributeSynsUniformly function
+
+- Fixed bug in subConnParams grouped synapses
+
+- Fixed bug in analysis.granger figure save name
+
+- Fixed bug in printRunTime function
+
+
+# Version 0.9.4
+
+- Added option to avoid creating connections with weight=0
+
+- Made recording of dipoles optional with attribute cfg.recordDipoles
+
+- Rotated conn matrix x-axis labels so can fit large matrices 
+
+- Added 'removeWeightNorm' argument to plotConn() function
+
+- Added cfg option 'oneSynPerNetcon' to conn rules to create one synapse object per Netcon
+
+- Added first version of Contributors Guide
+
+- Fixed file write permissions for evol optim batches
+
+- Fixed bug calculating normally distributed rhythmic inputs - was using variance instead of std
+
+- Fixed bug in iplotDipole when smoothing window size = 0
+
+- Fixed bug in plotSpikeStats pop order
+
+- Fixed bug is plots with scalebars
+
+- Fixed bug in grid lines of plotConn
+
+- Fixed bug in subConnParams by sorting conns to ensure reproducibility on different number of cores
+
+- Fixed bug so uses 'Agg' backend if no display env variable e.g. in clusters
+
+
+# Version 0.9.3.1
+
+- Replaced deprecated imp module with importlib
+
+- Fix to cellsGrid cell locations with normRange
+
+
+# Version 0.9.3
+
+- Improved conversion from SONATA format, including 300 biophys cell example
+
+- Added saveCellConns, pt3dRelativeToCellLocation and invertedYCoord cfg options
+
+- Added lineWidth as argument of plotRatePSD() and plotLFP()
+
+- Modified plotLFP and plotRatePSD to use Morlet wavelet for PSD calculation
+
+- Added lineWidth argument to some raster and LFP plots
+
+- Added shuffling test to granger causality functions
+
+- Fixed bug plotting traces with one fig per trace
+
+- Fixed bug in granger functions - required conversion to int 
+
+- Fixed bug in plotShape when cells sections not available
+
+- Return meaningful cell info via 'repr' and 'str' for pointCell, compartCell
+
+- Fixed spelling typos in documentation
+
+
+# Version 0.9.2
+
+- Support for saving simulation at intervals  
+
+- Improved Python cell template import so can read section names from a Python list or dict of sections
+
+- Fixed replicability issue across different number of cores when using 'connList' connectivity rules
+
+- Improved speed performance of 'connList' connectivity rules
+
+- Added option cfg.distributeSynsUniformly to locate synapses at uniformly across section list; if false, place one syn per section in section list 
+
+- Updated RxD calcium buffering example
+
+- Added netClamp example to re-simulate activity of single cell from network data
+
+- Added support for recording and plotting variable time step
+
+- Replaced spectrogram FFT method with Morlet wavelet method
+
+- Updated installation instructions
+
+- Added 'fontSize' argument to several plots
+
+- Fixed issue completing batches in Python 3
+
+- Fixed bug saving evolutionary optimization batch output file
+
+- Fixed bug in plotShape()
+
+- Fixed bug in plotSpikeStats()
+
+- Fixed bug loading files with colons
+
+- Fixed issue sorting raster by population and y coord
+
+
+# Version 0.9.1.3
+
+- Removed deprecated hold function from plotConn
+
+
+# Version 0.9.1.2
+
+- Set 'pandas==0.23.4' to avoid error 
+
+
+# Version 0.9.1.1
+
+- Fixed minor bug - axis font size changed from 12 to 2 by accident (change required for NetPyNE-UI)
+
+
+# Version 0.9.1
+
+- Updates to NeuroML converter 
+
+- Add scalebar to rxd concentration plot
+
+- Fixed bug so comparisons to basestring work in Python 2 and 3
+
+- Fixed bug in string-based functions representation in GUI
+
+
+# Version 0.9.0
+
+- Added support for reaction-diffusion (RxD) and usage examples
+
+- Improved performanced (speed) of connectivity algorithms 
+
+- Major code refactor to split functions across modules and subpackages
+
+- Switched to Python 3 as the default development environment
+
+- Optimized implementation of raster and spikeHist plotting using Pandas
+
+- Added support for recording spikes from only a subset of cells using e.g. cfg.recordCellsSpikes = ['E2']
+
+- Support for exporting to SONATA standardized network format (Beta) 
+
+- Support for Human Neocortical Neurosolver (HNN) dipole mechanisms
+
+- Added option for filename to saveData()
+
+- Removed pop cellModelClass when saving
+
+- Removed cell h object keys when saving
+
+- Added support for evolutionary algorithm optimization (via Inspyred) and usage example
+
+- cfg.popAvgRates now accepts a time range to calculate rates (e.g. to discard initial period)
+
+- All NEURON objects now accessible via ['hObj'] key within Python network structure
+
+- Fixed bug in batch to allow having only grouped params
+
+- Fixed bug initalizing batch 'mpi_bulletin' and batch tutorial example
+
+- Fixed bug: removed '\_labelid' from netParams when saving
+
+- Fixed bug: made self.scaleConnWeightModels False when not used (avoids saving weird dict in json)
+
+- Fixed bug in Pickle file encoding so works in Python3 
+
+- Fixed bug in convergence and divergence conn when repicking a value if postGid=preGid is randomly selected
+
+- Fixed bug in rand initialization for string-based func with div conn
+
+- Fixed issue in probabilistic connectivity random number generation to ensure replicability in Python 2 and 3.
+
+NOTE on backward replicability: Due to several performance improvements and bug fixes to ensure future replicability in both Python 2 and 3, it won't be possible to replicate results of previous versions. 
+
+
+# Version 0.7.9
+
+- Extended metadata structure to interact with NetPyNE-UI
+
+- Added preliminary data structures to support NEURON RxD
+
+- Added plot RxD concentration to analysis
+
+- Added netParams.correctBorder to compensate distance-dependent connectivity border effect
+
+- Added option to run jobs directly on multiple mpi cores via Batch class 
+
+- Added option for custom text in PBS or SLURM scripts to submit batch jobs
+
+- Added option to filter LFP signal before ploting PSD
+
+- Convert 'gid' to actual cell gid when used in point process params (useful for random seeds)
+
+- Relaxed pyneuroml requirement so just shows a warning message 
+
+- Preliminary function to save conns distributedly using HDF5
+
+- Added function to validate string-based expressions
+
+- Fixed bug: removed cell.\_segCoords and pop.\_morphSegCoords before saving to file
+
+- Fixed rasterPlot pop label automated spacing
+
+- Fixed bug: removed pandas requirement from LFP electrode module
+
+- Fixed bug: updated rcParams text.fontsize to font.size
+
+- Fixed bug: missing update of list-based loc in connList connections
+
+- Fixed bug: delete sections after import cell only if section exists
+
+
+# Version 0.7.8
+
+- Added netParams.rotateCellsRandomly option to rotate cells randomly around y-axis
+
+- Added netParams.defineCellShapes option to convert stylized cell geometries to 3d points 
+
+- Added 'histogram' option to plotSpikeStats
+
+- Improved shapePlot so generates 3d pts for stylized morphs and plots all cells by default
+
+- Added showElectrodes and bkgColor options to shapePlot
+
+- Adapted so can set cfg.createPyStruct=0 before creating conns to save memory on large nets
+
+- Added option cfg.connRandomSecFromList=True to set if sec and loc are randomly chosen from list when synsPerConn=1 
+
+- Added cfg.printSynsAfterRule to print total connections after each conn rule is applied 
+
+- Fixed bug to ensure VecStim random streams are independent of simulation duration
+
+- Fixed bug calculating avg pop rate in plotRaster when using subsets of pops
+
+- Fixed bug LFP recording only applied to compartmental cells
+
+- Fixed bug when using conn 'threshold' in verbose -- removed all since has no effect 
+
+- Fixed bug when deleting sections -- needed sec.push() before
+
+- Fixed bug in shapePlot figSize option
+
+- Fixed format of git changeset stored -- removed 'g' prefix
+
+- Fixed bug in Windows trying to get git changeset
+
+- Fixed bug gathering LFP data
+
+- Fixed bug importing global v_init from multiple cell files
+
+- Fixed bug so gitChangeset() returns to orig folder even when git not installed
+
+- Fixed bugs in plotConn -- missing rounding func and grouping by y interval
+
+
 # Version 0.7.7
+
+- Added LFP recording at arbitrary 3D locations
+
+- Added plotting of LFP time series, PSD, freq vs time and electrode locations
+
+- Updates to NeuroML conversion code.
+
+- ShapePlot now shows segment diameters as linewidths (Python version)
+
+- Added function to add 3D points (in NEURON+Python) from stylized geometry
 
 - Connection sec and loc randomly chosen from list when synsPerConn=1 
 
@@ -17,6 +307,14 @@
 - Fixed bug when creating conns afger loading json -- needed basestring instead of str
 
 - Fixed bug when loading json with include format ('pop', 1) -- converted to list so added exception
+
+- Fixed bug saving to .mat during batch sims
+
+- Fixed bug in order of unique cell gids in analysis funcs 'include' param
+
+- Fixed bug gathering data using the cfg.gatherSimOnlyData option
+
+- Fixed bug where empty sections where created when recording from non-existing sections
 
 
 # Version 0.7.6

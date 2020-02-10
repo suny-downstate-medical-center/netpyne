@@ -1,3 +1,7 @@
+# Version 0.9.6
+
+- Added 'dynamicRates' option for NetStim populations
+
 # Version 0.9.5
 
 - Print start and end date/time

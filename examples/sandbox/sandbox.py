@@ -1,8 +1,6 @@
 from netpyne import specs, sim
 
 import numpy
-rng = numpy.random.RandomState()
-
 
 # Network parameters
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters

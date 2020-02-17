@@ -2,6 +2,8 @@
 
 - Added 'dynamicRates' option for NetStim populations
 
+- Fixed loadSave V1 example model
+
 # Version 0.9.5
 
 - Print start and end date/time

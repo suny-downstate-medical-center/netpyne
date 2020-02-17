@@ -250,9 +250,22 @@ def compactConnFormat():
 def intervalSave (t):
     from .. import sim
     from ..specs import Dict
-    import pickle
+    import pickle, os
     
     sim.pc.barrier()    
+
+    # create folder if missing
+    if sim.rank == 0:
+        if hasattr(sim.cfg, 'intervalFolder'):
+            targetFolder = sim.cfg.intervalFolder
+        else: 
+            targetFolder = os.path.dirname(sim.cfg.filename)
+        
+        if targetFolder and not os.path.exists(targetFolder):
+            try:
+                os.mkdir(targetFolder)
+            except OSError:
+                print(' Could not create target folder: %s' % (targetFolder))
     
     gatherLFP=True
     simDataVecs = ['spkt','spkid','stims']+list(sim.cfg.recordTraces.keys())
@@ -262,6 +275,10 @@ def intervalSave (t):
 
     # gather only sim data
     nodeData = {'simData': sim.simData}
+    if hasattr(sim.cfg, 'saveWeights'):
+        if sim.cfg.saveWeights:
+            nodeData['simData']['allWeights']= sim.allWeights
+            simDataVecs = simDataVecs + ['allWeights']
     data = [None]*sim.nhosts
     data[0] = {}
     for k,v in nodeData.items():
@@ -297,12 +314,11 @@ def intervalSave (t):
                 elif key not in singleNodeVecs:
                     sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
         
-        
         if len(sim.allSimData['spkt']) > 0:
             sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
             sim.allSimData['spkt'], sim.allSimData['spkid'] = list(sim.allSimData['spkt']), list(sim.allSimData['spkid'])
 
-        name = 'temp/data_{:0.0f}.pkl'.format(t)
+        name = targetFolder + '/data_{:0.0f}.pkl'.format(t)
         with open(name, 'wb') as f:
             pickle.dump(dict(sim.allSimData), f, protocol=2)
 
@@ -320,6 +336,11 @@ def intervalSave (t):
     for k, v in sim.simData.items():
         if k in ['spkt', 'spkid', 'stims']:
             v.resize(0)
+    
+    if hasattr(sim.cfg, 'saveWeights'):
+        if sim.cfg.saveWeights:
+            sim.allWeights = []
+    
     
 #------------------------------------------------------------------------------
 # Save data in each node

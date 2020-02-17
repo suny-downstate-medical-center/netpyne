@@ -1,3 +1,7 @@
+# Version 0.9.6
+
+- Added 'dynamicRates' option for NetStim populations
+
 # Version 0.9.5
 
 - Print start and end date/time
@@ -9,6 +13,8 @@
 - Initialize hoc events recursivley to reduce event queue overhead
 
 - Added plotRateSpectrogram analysis function 
+
+- Added option to save at intervals 
 
 - Fixed bug: wrong indentation for initializing fixedInterval in batch.py
 

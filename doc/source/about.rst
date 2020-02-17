@@ -109,6 +109,8 @@ About NetPyNE
 
 - Dura-Bernal S, Suter B, Gleeson P, Cantarelli M, Quintana A, Rodriguez F, Kedziora DJ, Chadderdon GL, Kerr CC, Neymotin SA, McDougal R, Hines M, Shepherd GMG, Lytton WW. **NetPyNE: a tool for data-driven multiscale modeling of brain circuits.** `eLife 2019;8:e44494 <https://elifesciences.org/articles/44494>`_ , *2019.*
 
+- Lytton WW, Seidenstein AH, Dura-Bernal S, McDougal RA, Schurmann F, Hines ML. **Simulation neurotechnologies for advancing brain research: Parallelizing large networks in NEURON.** *Neural Computation, 2016.*
+
 - Dura-Bernal S, Suter BA, Quintana A, Cantarelli M, Gleeson P, Rodriguez F, Neymotin SA, Hines M, Shepherd GMG, Lytton WW. **NetPyNE: a GUI-based tool to build, simulate and analyze large-scale, data-driven network models in parallel NEURON.** *Society for Neuroscience (SfN), 2018*.
 
 - Dura-Bernal S, Suter BA, Neymotin SA, Shepherd GMG, Lytton WW. **Modeling the subcellular distribution of synaptic connections in cortical microcircuits.** *Society for Neuroscience (SFN), 2016*.
@@ -122,6 +124,18 @@ About NetPyNE
 
 Make use and/or cite NetPyNE
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- *Amsalem, O., Eyal, G., Rogozinski, N., Gevaert, M., Kumbhar, P., Schürmann, F. and Segev, I., **An efficient analytical reduction of detailed nonlinear neuron models.** `Nature Communications, 11(1), pp.1-13 <https://www.nature.com/articles/s41467-019-13932-6>`_. *2020*
+
+- Billeh, Y.N., Cai, B., Gratiy, S.L., Dai, K., Iyer, R., Gouwens, N.W., Abbasi-Asl, R., Jia, X., Siegle, J.H., Olsen, S.R. and Koch, C.,. **Systematic integration of structural and functional data into multi-scale models of mouse primary visual cortex.** `Neuron (In Press) NEURON-D-19-01027 <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3416643>`_. *2020*
+
+- Neymotin, S.A., Daniels, D.S., Caldwell, B., McDougal, R.A., Carnevale, N.T., Jas, M., Moore, C.I., Hines, M.L., Hamalainen, M. and Jones, S.R., **Human Neocortical Neurosolver (HNN), a new software tool for interpreting the cellular and network origin of human MEG/EEG data.** `eLife, 9, p.e51214. <https://elifesciences.org/articles/51214>`_ *2020*
+
+- Tran, H., Ranta, R., Le Cam, S. and Louis-Dorr, V., **Fast simulation of extracellular action potential signatures based on a morphological filtering approximation. Journal of Computational Neuroscience**, pp.1-20. *2020*
+
+- Gerkin, R.C., Birgiolas, J., Jarvis, R.J., Omar, C. and Crook, S.M.. **NeuronUnit: A package for data-driven validation of neuron models using SciUnit.** *bioRxiv, p.665331. 2019*
+
+- Gast, R., Rose, D., Salomon, C., Möller, H.E., Weiskopf, N. and Knösche, T.R.. **PyRates—A Python framework for rate-based neural simulations.** *PLoS ONE, 14(12). 2019*
 
 - Tejada J, Roque AC, **Conductance-based models and the fragmentation problem: A case study based on hippocampal CA1 pyramidal cell models and epilepsy** `Epilepsy & Behavior, 106841 <http://www.sciencedirect.com/science/article/pii/S1525505019310819>`_ 2019.
 
@@ -140,8 +154,6 @@ Make use and/or cite NetPyNE
 - Rodriguez F. **Dentate gyrus network model.** *Computational Neuroscience (CNS), 2018.*
 
 - Dura-Bernal S, Neymotin SA, Suter BA, Shepherd GMG, Lytton WW (2018) **Long-range inputs and H-current regulate different modes of operation in a multiscale model of mouse M1 microcircuits.** `bioRxiv 201707 <https://www.biorxiv.org/content/10.1101/201707v3>`_ , *2018.*
-
-- Lytton WW, Seidenstein AH, Dura-Bernal S, McDougal RA, Schurmann F, Hines ML. **Simulation neurotechnologies for advancing brain research: Parallelizing large networks in NEURON.** *Neural Computation, 2016.*
 
 - Dura-Bernal S, Menzies RS, McLauchlan C, van Albada SJ, Kedziora DJ, Neymotin SA, Lytton WW, Kerr CC. **Effect of network size on computational capacity.** *Computational Neuroscience (CNS), 2016.*
 
@@ -162,6 +174,8 @@ Future
 
 Past
 ^^^^^^^^^
+
+- January'2020, VIII Latin American School on Computational Neuroscience (LASCON), Institute of Mathematics and Statistics, University of Sao Paulo, Brazil
 
 - July'2019, CNS’19 Tutorial organizer and lecturer, Building biophysically detailed neuronal models: from molecules to networks, Barcelona.
 
@@ -246,18 +260,18 @@ The project roadmap for the following five years (2019-2023) includes four large
 
     - *2019-2022: Incorporating missing component* -  Currently only accessible programmatically: RxD, subcellular connectivity, complex stimulation and parameter optimization (only grid search).
     
-    - *2021-2022*: Improving plots by replacing the current static images with modern interactive and dynamic plots that facilitate understanding complex and large datasets.
+    - *2021-2022: Dynamic interactive plots* - Improving plots by replacing the current static images with modern interactive and dynamic plots that facilitate understanding complex and large datasets.
     
-    - *2022-2023*: Improving performance to enable 3D visualization and manipulation of large-scale networks of detailed neurons (currently limited to a few hundred neurons).  
+    - *2022-2023: Visualization of large networks* - Improving performance to enable 3D visualization and manipulation of large-scale networks of detailed neurons (currently limited to a few hundred neurons).  
 
 - **Dissemination and community engagement**: We will implement complementary dissemination and engagement strategies to train and attract users and developers:
     
-    - *2019-2020*: Updated and comprehensive online documentation covering all the tool components, options and modes of usage, with examples, so both beginner and advanced users can fully exploit the tool.  
+    - *2019-2020: Online documentation* - Updated and comprehensive online documentation covering all the tool components, options and modes of usage, with examples, so both beginner and advanced users can fully exploit the tool.  
 
-    - *2019-2023*: Workshops/tutorials at neuroscience conferences to engage potential users by providing an overview of the tool functionalities and benefits. 
+    - *2019-2023: Workshops/tutorials* - Organized at neuroscience conferences to engage potential users by providing an overview of the tool functionalities and benefits. 
 
-    - *2020-2022*: Online interactive tutorials so new users can receive training at their own pace through multimedia-rich step-by-step instructions that can be executed interactively (eg via GUI or Jupyter Notebook).    
+    - *2020-2022: Online interactive tutorials* - Will enable new users to receive training at their own pace through multimedia-rich step-by-step instructions that can be executed interactively (eg via GUI or Jupyter Notebook).    
     
-    - *2020-2023*: Annual 3-day in-person course to provide in-depth training to researchers/clinicians who could then teach tool usage at their labs or institutions.  
+    - *2020-2023: Annual 3-day in-person course* - Will provide in-depth training to researchers/clinicians who could then teach tool usage at their labs or institutions.  
 
-    - *2020-2023*: Annual Hackathon to train and engage developers, overall promoting long-term sustainable collaborative development.
+    - *2020-2023: Annual Hackathon* - Will train and engage developers, overall promoting long-term sustainable collaborative development.

@@ -148,7 +148,17 @@ class Pop (object):
                     except:
                         pass
                 else:
-                    cellTags['params']['spkTimes'] = self.tags['spkTimes'] # 1D list (same for all)
+                    cellTags['params']['spkTimes'] = self.tags['spkTimes']  # 1D list (same for all)
+            
+            if 'dynamicRates' in self.tags:  # if NetStim, copy rates array to params
+                if 'rates' in self.tags['dynamicRates'] and 'times' in self.tags['dynamicRates']:
+                    if isinstance(self.tags['dynamicRates']['rates'][0], list):
+                        try:
+                            cellTags['params']['rates'] = [self.tags['dynamicRates']['rates'][i], self.tags['dynamicRates']['times']]  # 2D list
+                        except:
+                            pass
+                    else:
+                        cellTags['params']['rates'] = [self.tags['dynamicRates']['rates'], self.tags['dynamicRates']['times']] # 1D list (same for all)
             cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
 
             if sim.cfg.verbose: print(('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, sim.net.params.scale * self.tags['numCells']-1, gid, self.tags['pop'], sim.rank)))
@@ -366,13 +376,13 @@ class Pop (object):
                     tmp = getattr(h, self.tags['cellModel'])
                     self.cellModelClass = sim.PointCell
                     excludeTags = ['pop', 'cellModel', 'cellType', 'numCells', 'density', 'cellsList',
-                                'xRange', 'yRange', 'zRange', 'xnormRange', 'ynormRange', 'znormRange', 'vref', 'spkTimes']
+                                'xRange', 'yRange', 'zRange', 'xnormRange', 'ynormRange', 'znormRange', 'vref', 'spkTimes', 'dynamicRates']
                     params = {k: v for k,v in self.tags.items() if k not in excludeTags}
                     self.tags['params'] = params
                     for k in self.tags['params']: self.tags.pop(k)
                     sim.net.params.popTagsCopiedToCells.append('params')
             except:
-                if getattr(self.tags, 'cellModel', None) in ['NetStim', 'VecStim', 'IntFire1', 'IntFire2', 'IntFire4']:
+                if getattr(self.tags, 'cellModel', None) in ['NetStim', 'DynamicNetStim', 'VecStim', 'IntFire1', 'IntFire2', 'IntFire4']:
                     print('Warning: could not find %s point process mechanism required for population %s' % (self.tags['cellModel'], self.tags['pop']))
                 self.cellModelClass = sim.CompartCell  # otherwise assume has sections and some cellParam rules apply to it; use CompartCell
 

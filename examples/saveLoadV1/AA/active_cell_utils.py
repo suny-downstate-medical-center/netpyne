@@ -47,13 +47,13 @@ class Utils(HocUtils):
 		genome = self.description.data['genome']
 
 		# Set passive properties
-		cm_dict = dict([(c['section'], c['cm']) for c in passive['cm']])
+		# cm_dict = dict([(c['section'], c['cm']) for c in passive['cm']])
 		for sec in cell.all:
-			sec.Ra = passive['ra']
-			sec.cm = cm_dict[sec.name().split(".")[1][:4]]
+		# 	sec.Ra = passive['ra']
+		# 	sec.cm = cm_dict[sec.name().split(".")[1][:4]]
 			sec.insert('pas')
-			for seg in sec:
-				seg.pas.e = passive["e_pas"]
+		# 	for seg in sec:
+		# 		seg.pas.e = passive["e_pas"]
 
 		# Insert channels and set parameters
 		for p in genome:
@@ -61,7 +61,18 @@ class Utils(HocUtils):
 			for sec in sections:
 				if p["mechanism"] != "":
 					sec.insert(p["mechanism"])
-				setattr(sec, p["name"], p["value"])
+				else:
+					if p["name"] == 'Ra':
+						sec.Ra = float(p["value"])
+					elif p["name"] == "cm":
+						sec.cm = float(p["value"])
+					elif p["name"] == "g_pas":
+						for seg in sec:
+							seg.pas.e = float(p["value"])
+					else:
+						for seg in sec:
+							seg.pas.g =float(p["value"])
+				setattr(sec, p["name"], float(p["value"]))
 		
 		# Set reversal potentials
 		for erev in conditions['erev']:

@@ -6,6 +6,9 @@
 
 - Fixed bug calculating popRates when no spikes
 
+- Fixed bug in _distributeSynsUniformly()
+
+- Fixed bug in saveCellParamsRule()
 
 # Version 0.9.5
 

@@ -4,6 +4,9 @@
 
 - Fixed loadSave V1 example model
 
+- Fixed bug calculating popRates when no spikes
+
+
 # Version 0.9.5
 
 - Print start and end date/time

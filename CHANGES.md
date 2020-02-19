@@ -1,3 +1,15 @@
+# Version 0.9.6
+
+- Added 'dynamicRates' option for NetStim populations
+
+- Fixed loadSave V1 example model
+
+- Fixed bug calculating popRates when no spikes
+
+- Fixed bug in _distributeSynsUniformly()
+
+- Fixed bug in saveCellParamsRule()
+
 # Version 0.9.5
 
 - Print start and end date/time

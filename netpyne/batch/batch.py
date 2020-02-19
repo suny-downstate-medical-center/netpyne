@@ -696,6 +696,8 @@ wait
             def generator(random, args):
                 # generate initial values for candidates
                 return [random.uniform(l, u) for l, u in zip(args.get('lower_bound'), args.get('upper_bound'))]
+
+
             # -------------------------------------------------------------------------------
             # Mutator
             # -------------------------------------------------------------------------------
@@ -771,9 +773,9 @@ wait
                 for iworker in range(int(pc.nhost())):
                     pc.runworker()
 
-            ####################################################################
-            #                       Evolution strategy
-            ####################################################################
+            #------------------------------------------------------------------
+            # Evolutionary algorithm method
+            #-------------------------------------------------------------------
             # Custom algorithm based on Krichmar's params
             if self.evolCfg['evolAlgorithm'] == 'custom':
                 ea = EC.EvolutionaryComputation(rand)
@@ -817,10 +819,12 @@ wait
                 ea.topology = swarm.topologies.ring_topology
             
             else:
-                raise ValueError("%s is not a valid strategy" %(self.evolCfg['evolAlgorithm']))
-            ####################################################################
+                raise ValueError("%s is not a valid strategy" % (self.evolCfg['evolAlgorithm']))
+                
             ea.terminator = EC.terminators.generation_termination
             ea.observer = [EC.observers.stats_observer, EC.observers.file_observer]
+
+
             # -------------------------------------------------------------------------------
             # Run algorithm
             # ------------------------------------------------------------------------------- 

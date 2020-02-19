@@ -10,6 +10,7 @@
 
 - Fixed bug in saveCellParamsRule()
 
+
 # Version 0.9.5
 
 - Print start and end date/time

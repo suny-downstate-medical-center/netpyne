@@ -117,9 +117,9 @@ All changes to the NetPyNE repo (repository) must be submitted from your own for
 
 Log into your GitHub account and navigate to the [NetPyNE repo](https://github.com/Neurosim-lab/netpyne).  In the upper right corner of the page, click on "Fork".  
 
-The official NetPyNE repository is located at `https://github.com/Neurosim-lab/netpyne` while your fork will be located at `https://github.com/[your-GitHub-username]/netpyne`.
+The official NetPyNE repository is located at `https://github.com/Neurosim-lab/netpyne` while your fork will be located at `https://github.com/your-GitHub-username/netpyne`.
 
-Changes are constantly being added to the NetPyNE repository, so it is essential that you ensure your fork is synchronized with the official repo before making any changes of your own.  If you have an existing fork of NetPyNE and haven't made any changes you want to keep, the easiest way to synchronize with the official repo is to delete your fork and create a new one.  To delete your fork, navigate to its webpage (https://github.com/[your-GitHub-username]/netpyne), click on "Settings", then under "Danger Zone" click on "Delete this repository" and follow the directions.  Be sure to delete any local clones of your NetPyNE fork as well.
+Changes are constantly being added to the NetPyNE repository, so it is essential that you ensure your fork is synchronized with the official repo before making any changes of your own.  If you have an existing fork of NetPyNE and haven't made any changes you want to keep, the easiest way to synchronize with the official repo is to delete your fork and create a new one.  To delete your fork, navigate to its webpage (https://github.com/your-GitHub-username/netpyne), click on "Settings", then under "Danger Zone" click on "Delete this repository" and follow the directions.  Be sure to delete any local clones of your NetPyNE fork as well.
 
 > **Note:** See [deleting a repository](https://help.github.com/en/github/administering-a-repository/deleting-a-repository) in [GitHub Help](https://help.github.com/en) for detailed instructions.
 
@@ -129,7 +129,7 @@ In order to work with the NetPyNE codebase, you must get a clone (copy) of your 
 
 > **Note:** See [cloning a repository](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository) in [GitHub Help](https://help.github.com/en) for detailed instructions.
 
-Navigate in your browser to your fork of NetPyNE (`https://github.com/[your-GitHub-username]/netpyne`).  Under the repository name, click "Clone or download".  Copy the URL under "Clone with HTTPS".  Open a Terminal on your machine and change directories to where you want the clone (e.g. `mkdir ~/github_repos; cd ~/github_repos`).  Type `git clone ` (note the space after "clone"), paste the copied URL, and press Enter.  Your local clone will be created (e.g. `~/github_repos/netpyne`).
+Navigate in your browser to your fork of NetPyNE (`https://github.com/your-GitHub-username/netpyne`).  Under the repository name, click "Clone or download".  Copy the URL under "Clone with HTTPS".  Open a Terminal on your machine and change directories to where you want the clone (e.g. `mkdir ~/github_repos; cd ~/github_repos`).  Type `git clone ` (note the space after "clone"), paste the copied URL, and press Enter.  Your local clone will be created (e.g. `~/github_repos/netpyne`).
 
 At this point, your clone is only linked to your fork of NetPyNE.  Open a Terminal, change to the directory of your fork (e.g. `cd ~/github_repos/netpyne`), and enter `git remote -v` to see this.  Remember that your fork is called `origin` while the official NetPyNE repository is called `upstream`.
 
@@ -149,15 +149,15 @@ Open a Terminal and change to the directory of your NetPyNE clone.  Fetch any ch
 
 At this point, you have forked the NetPyNE repo, cloned it to your local machine, switched to the development branch, linked your clone to the official NetPyNE repo, and ensured your fork and clone are synchronized with the official repo.  Now it's time to actually make improvements to the code or documentation.
 
-It's good practice to create a new branch for each improvement you'd like to make.  This keeps your local `development` branch the same as in your fork (i.e. clean and safe).  To create a new branch, open a Terminal and change to the directory of your clone.  Then enter `git checkout -b [name-of-your-new-branch]`.  
+It's good practice to create a new branch for each improvement you'd like to make.  This keeps your local `development` branch the same as in your fork (i.e. clean and safe).  To create a new branch, open a Terminal and change to the directory of your clone.  Then enter `git checkout -b name-of-your-new-branch`.  
 
-> **Note:** You can also [create a new branch directly on GitHub](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-and-deleting-branches-within-your-repository).  You will then need to enter `git fetch origin` to get the new branch into your local clone and `git checkout [name-of-your-new-branch]` to switch to your new branch. 
+> **Note:** You can also [create a new branch directly on GitHub](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-and-deleting-branches-within-your-repository).  You will then need to enter `git fetch origin` to get the new branch into your local clone and `git checkout name-of-your-new-branch` to switch to your new branch. 
 
 At this point, you can use the code editor of your choice to make changes to any of the files in your clone.  [Visual Studio Code](https://code.visualstudio.com/) and [Sublime Text](https://www.sublimetext.com/) are popular choices.  After making changes, be sure the code still runs and behaves as you expect.
 
 ### Committing the changes
 
-Once you've made changes and tested them, it's time to commit them to your local clone.  Open a Terminal and change to the directory of your clone.  Enter `git status` to see what files have been changed.  Enter `git add [filename]` to stage (prepare) a particular file for committing or `git add .` to stage all changed files.  Enter `git status` again to ensure the file(s) you want to commit are ready.  Finally, to commit the changes to your local clone, enter `git commit -m "[A concise description of your changes]"` (include the quotes but not the brackets).  
+Once you've made changes and tested them, it's time to commit them to your local clone.  Open a Terminal and change to the directory of your clone.  Enter `git status` to see what files have been changed.  Enter `git add filename` to stage (prepare) a particular file for committing or `git add .` to stage all changed files.  Enter `git status` again to ensure the file(s) you want to commit are ready.  Finally, to commit the changes to your local clone, enter `git commit -m "A concise description of your changes"` (include the quotes).  
 
 > **Note:** You can also just enter `git commit`.  Git will then open your Terminal's default text editor and ask you to enter a commit message (e.g. [A concise description of your changes]).
 
@@ -174,7 +174,7 @@ Now that you've got your improvements into your remote fork of NetPyNE on GitHub
 > **Note:** See [creating a pull request from a fork](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request-from-a-forkk) in [GitHub Help](https://help.github.com/en) for detailed instructions.
 
 In your browser, go to https://github.com/Neurosim-lab/netpyne and click on the "New pull request" button
-.  This will bring you to the "Compare changes" page where you should click on "compare across forks".  Ensure the "base repository" is `Neurosim-lab/netpyne` and the "base" is `development`.  Set the head repository as `[your-GitHub-username]/netpyne` and the "compare" is `[name-of-your-new-branch]`.  Type a title and description for your pull request (if your modifications were in response to an issue, include the issue number).  Finally, click on "Create Pull Request".
+.  This will bring you to the "Compare changes" page where you should click on "compare across forks".  Ensure the "base repository" is `Neurosim-lab/netpyne` and the "base" is `development`.  Set the head repository as `your-GitHub-username/netpyne` and the "compare" is `name-of-your-new-branch`.  Type a title and description for your pull request (if your modifications were in response to an issue, include the issue number).  Finally, click on "Create Pull Request".
 
 > **Note:** A pull request doesn’t have to represent finished work.  It’s actually better to open a pull request early on, so others can give feedback on your progress.  Just mention in the description that it is a "Work in Progress". You can always add more commits later after discussions with the NetPyNE community.  Please see [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/) for an excellent overview of the process.
 

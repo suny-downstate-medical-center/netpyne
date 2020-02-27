@@ -159,7 +159,7 @@ At this point, you can use the code editor of your choice to make changes to any
 
 Once you've made changes and tested them, it's time to commit them to your local clone.  Open a Terminal and change to the directory of your clone.  Enter `git status` to see what files have been changed.  Enter `git add filename` to stage (prepare) a particular file for committing or `git add .` to stage all changed files.  Enter `git status` again to ensure the file(s) you want to commit are ready.  Finally, to commit the changes to your local clone, enter `git commit -m "A concise description of your changes"` (include the quotes).  
 
-> **Note:** You can also just enter `git commit`.  Git will then open your Terminal's default text editor and ask you to enter a commit message (e.g. [A concise description of your changes]).
+> **Note:** You can also just enter `git commit`.  Git will then open your Terminal's default text editor and ask you to enter a commit message (e.g. "A concise description of your changes").
 
 ### Pushing to your fork
 

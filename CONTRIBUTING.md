@@ -26,6 +26,8 @@
 
 Thank you for your interest in contributing to the NetPyNE Python package!  We encourage contributions to NetPyNE from individuals at all levels -- students, postdocs, academics, industry coders, hobbyists, etc.  For more information about NetPyNE, please see this [detailed overview](http://netpyne.org/overview.html) or our [eLife article](https://elifesciences.org/articles/44494).
 
+> **Note:** Please read [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/) for an excellent guide to making open source contributions, for first-timers and for veterans.
+
 NetPyNE is open-source and available in a GitHub repository at https://github.com/Neurosim-lab/netpyne, with detailed documentation at http://netpyne.org.  There is also a [Google Groups Q&A forum](https://groups.google.com/forum/#!forum/netpyne-forum) and a [NEURON/NetPyNE forum](https://www.neuron.yale.edu/phpBB/viewforum.php?f=45).
 
 There is a separate [GitHub repository](https://github.com/Neurosim-lab/NetPyNE-UI) for the NetPyNE graphical user interface with its own [documentation](https://github.com/Neurosim-lab/NetPyNE-UI/wiki).  

@@ -10,9 +10,9 @@ Although NEURON already enables multiscale simulations ranging from the molecula
 
 For a more detailed overview of NetPyNE see:
 
-- Our [NetPyNE article](https://elifesciences.org/articles/44494) in the journal [eLife](https://elifesciences.org/)
+- Our `NetPyNE article <https://elifesciences.org/articles/44494>`_ in the journal `eLife <https://elifesciences.org/>`_
 
-- Our [NetPyNE presentation slides](http://it.neurosim.downstate.edu/salvadord/netpyne.pdf) from the Computational Neuroscience conference [CNS*2017](https://www.cnsorg.org/cns-2017)
+- Our `NetPyNE presentation slides <http://it.neurosim.downstate.edu/salvadord/netpyne.pdf>`_ from the Computational Neuroscience conference `CNS*2017 <https://www.cnsorg.org/cns-2017>`_
 
 |
 
@@ -74,9 +74,9 @@ Major Features
 
 * **Current usage:**
     * Used to develop models of many different brain regions and phenomena. See [full list of models](www.netpyne.org/models)
-    * Integrated with the [Human Neocortical Neurosolver](https://hnn.brown.edu/) to add flexibility to its cortical model 
-    * Used by [Open Source Brain](www.opensourcebrain.org) to run parallel simulation of NeuroML-based NEURON models
-    * Available to run simulations on XSEDE supercomputers via the [Neuroscience Gateway](www.nsgportal.org)
+    * Integrated with the `Human Neocortical Neurosolver <https://hnn.brown.edu/>`_ to add flexibility to its cortical model 
+    * Used by `Open Source Brain <www.opensourcebrain.org>`_ to run parallel simulation of NeuroML-based NEURON models
+    * Available to run simulations on XSEDE supercomputers via the `Neuroscience Gateway <www.nsgportal.org>`_
 
 Questions, suggestions and contributions
 -----------------------------------------
@@ -204,7 +204,7 @@ Current funding
 Governance structure
 ---------------------
 
-Major decisions about NetPyNE are made by the steering committee, guided by the :ref:`project_roadmap` and the :ref:`code_of_conduct`. The committee incliudes members from a diverse range of institutions, positions and backgrounds.
+Major decisions about NetPyNE are made by the steering committee, guided by the :ref:`project_roadmap` and the :ref:`code_of_conduct`. The committee includes members from a diverse range of institutions, positions and backgrounds.
 
 The current steering committee consists of the following members (in alphabetical order):
 

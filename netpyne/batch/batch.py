@@ -533,6 +533,11 @@ wait
                     # name and path
                     jobName = "gen_" + str(ngen) + "_cand_" + str(candidate_index)
                     jobPath = genFolderPath + '/' + jobName
+
+                    # set initial cfg initCfg
+                    if len(self.initCfg) > 0:
+                        for paramLabel, paramVal in self.initCfg.items():
+                            self.setCfgNestedParam(paramLabel, paramVal)
                     
                     # modify cfg instance with candidate values
                     for label, value in zip(paramLabels, candidate):

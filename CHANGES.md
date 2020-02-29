@@ -10,6 +10,8 @@
 
 - Fixed bug in saveCellParamsRule()
 
+- Fixed bug in batch.py: initCfg params were not being updated for evol optim
+
 
 # Version 0.9.5
 

@@ -22,7 +22,7 @@ Requirements
 
 Before installing NetPyNE, please ensure you have the following installed:
 
-1) Python 2 or 3 (2.7, 3.6 and 3.7 are supported). Download from the `official Python web <www.python.org>`_. Alternatively, you can download the `Anaconda Distribution <www.anaconda.com/distribution/>`_ which also includes several data science and visualization packages.
+1) Python 2 or 3 (2.7, 3.6 and 3.7 are supported). Download from the `official Python website <https://www.python.org/>`_. Alternatively, you can download the `Anaconda Distribution <https://www.anaconda.com/distribution/>`_ which also includes several data science and visualization packages.
 
 2) The NEURON simulator. See NEURON's `installation instructions <http://www.neuron.yale.edu/neuron/download/>`_. If you would like to run parallelized simulations, please ensure you install NEURON with MPI support (see also `Quick start guide <https://neuron.yale.edu/ftp/neuron/2019umn/neuron-quickstart.pdf>`_). 
 
@@ -57,7 +57,7 @@ The NetPyNE package source files, as well as example models, are available via G
 3) ``git checkout development``
 4) ``pip install -e .``
 
-pip will add a symlink in the default python packages folder to the cloned netpyne folder (so you don't need to modify PYTHONPATH). If new changes are available just need to ``git pull`` from cloned netpyne repo.
+pip will add a symlink in the default Python packages directory to the cloned NetPyNE directory (so you don't need to modify PYTHONPATH). If new changes are available just need to ``git pull`` from the cloned NetPyNE directory.
 
 This version can also be used by developers interested in extending the package. 
 

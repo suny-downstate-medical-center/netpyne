@@ -12,6 +12,8 @@
 
 - Fixed bug in batch.py: initCfg params were not being updated for evol optim
 
+- Fixed bug in subconn.py: missing initialization of newWeightNorm 
+
 
 # Version 0.9.5
 

@@ -240,6 +240,7 @@ def subcellularConn(self, allCellTags, allPopTags):
                         connGroupLabel = '%d_%s_%.4f' % (conn['preGid'], conn['sec'], conn['loc'])
 
                         # update weight if weightNorm present
+                        newWeightNorm = None
                         if 'weightNorm' in postCell.secs[conn['sec']] and isinstance(postCell.secs[conn['sec']]['weightNorm'], list): 
                             oldNseg = postCell.secs[conn['sec']]['geom']['nseg']
                             oldWeightNorm = postCell.secs[conn['sec']]['weightNorm'][int(round(conn['loc']*oldNseg))-1]

@@ -55,7 +55,7 @@ def preRun ():
     # handler for printing out time during simulation run
     if sim.rank == 0 and sim.cfg.printRunTime:
         def printRunTime():
-            print('%.1gs' % (h.t/1000.0))   
+            print('%.2gs' % (h.t/1000.0))   
             sim.cvode.event(h.t + int(sim.cfg.printRunTime*1000.0), sim.printRunTime)
 
         sim.printRunTime = printRunTime

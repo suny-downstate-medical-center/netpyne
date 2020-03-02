@@ -14,6 +14,7 @@
 
 - Fixed bug in subconn.py: missing initialization of newWeightNorm 
 
+- Fixed bug in run.py: print run time with 2 significant figures
 
 # Version 0.9.5
 

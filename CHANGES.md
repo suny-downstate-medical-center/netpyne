@@ -16,6 +16,12 @@
 
 - Fixed bug in run.py: print run time with 2 significant figures
 
+- Added issue templates for GitHub
+
+- Overhaul of contribution guide (CONTRIBUTING.md)
+
+- Improvements of documentation
+
 # Version 0.9.5
 
 - Print start and end date/time

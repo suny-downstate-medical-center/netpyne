@@ -16,6 +16,9 @@
 
 - Fixed bug in run.py: print run time with 2 significant figures
 
+- Fixed utput stat filenames of evolutionary optim: .cvs to .csv 
+
+
 # Version 0.9.5
 
 - Print start and end date/time

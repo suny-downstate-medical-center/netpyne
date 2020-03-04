@@ -202,8 +202,8 @@ class Batch(object):
 
 
     def openFiles2SaveStats(self):
-        stat_file_name = '%s/%s_stats.cvs' %(self.saveFolder, self.batchLabel)
-        ind_file_name = '%s/%s_stats_indiv.cvs' %(self.saveFolder, self.batchLabel)
+        stat_file_name = '%s/%s_stats.csv' %(self.saveFolder, self.batchLabel)
+        ind_file_name = '%s/%s_stats_indiv.csv' %(self.saveFolder, self.batchLabel)
         individual = open(ind_file_name, 'w')
         stats = open(stat_file_name, 'w')
         stats.write('#gen  pop-size  worst  best  median  average  std-deviation\n')
@@ -541,8 +541,8 @@ wait
                     
                     # modify cfg instance with candidate values
                     for label, value in zip(paramLabels, candidate):
-                        self.setCfgNestedParam(label, value)
                         print('set %s=%s' % (label, value))
+                        self.setCfgNestedParam(label, value)
                     
                     #self.setCfgNestedParam("filename", jobPath)
                     self.cfg.simLabel = jobName

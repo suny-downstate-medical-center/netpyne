@@ -14,7 +14,7 @@ Creating a network model requires:
 
 * A call to the method(s) to create and run the network model, passing as arguments the above dictionaries, e.g. ``createSimulateAnalyze(netParams, simConfig)``.
 
-These components can be included in a single or multiple python files. This section comprehensively describes how to define the network parameters and simulation configuration options, as well as the methods available to create and run the network model.
+These components can be included in a single or multiple Python files. This section comprehensively describes how to define the network parameters and simulation configuration options, as well as the methods available to create and run the network model.
 
 
 Network parameters
@@ -43,27 +43,27 @@ The ``netParams`` object of class ``NetParams`` includes all the information nec
 	:width: 60%
 	:align: center
 
-Each of this ordered dicts can be filled in directly or using the NetParams object methods. Both ways are equivalent, but the object methods provide checks on the syntax of the parameters being added. Below are 2 equivalent ways of adding an item to the popParams ordered dictionary::
+Each of this ordered dicts can be filled in directly or using the NetParams object methods. Both ways are equivalent, but the object methods provide checks on the syntax of the parameters being added. Below are two equivalent ways of adding an item to the popParams ordered dictionary::
 
 	from netpyne import specs
 	netParams = specs.NetParams()
 
 	# Method 1: direct
-	netParams.popParams['Pop1'] = {'cellType': 'PYR', 'cellModel': 'HH''numCells': 20}
+	netParams.popParams['Pop1'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 20}
 
 	# Method 2: using object method
-	netParams.addPopParams(label='Pop1', params={'cellType': 'PYR', 'cellModel': 'HH''numCells': 20})
+	netParams.addPopParams(label='Pop1', params={'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 20})
 
 
-The ``netParams`` organization is consistent with the standard sequence of events that the framework executes internally:
+The organization of ``netParams`` is consistent with the standard sequence of events that the framework executes internally:
 
-* creates a ``Network`` object and adds inside a set of ``Population`` and ``Cell`` objects based on ``popParams``
+* creates a ``Network`` object and adds inside it a set of ``Population`` and ``Cell`` objects based on ``popParams``
 
 * sets the cell properties based on ``cellParams`` (checking which cells match the conditions of each rule) 
 
-* creates a set of connections based on ``connParams`` and ``subConnParams`` (checking which presynpatic and postsynaptic cells match the conn rule conditions), and using the synaptic parameters in ``synMechParams``.
+* creates a set of connections based on ``connParams`` and ``subConnParams`` (checking which presynpatic and postsynaptic cells match the connection rule conditions), and using the synaptic parameters in ``synMechParams``
 
-* add stimulation to the cells based on ``stimSourceParams`` and ``stimTargetParams``.
+* adds stimulation to the cells based on ``stimSourceParams`` and ``stimTargetParams``
 
 
 The image below illustrates this process:
@@ -87,7 +87,7 @@ Additionally, ``netParams`` contains the following customizable single-valued at
 
 * **rotateCellsRandomly**: Random rotation of cells around y-axis [min,max] radians, e.g. [0, 3.0] (default: False)
 
-* **defaultWeight**: Default connection weight, in ms (default: 1)
+* **defaultWeight**: Default connection weight (default: 1)
 
 * **defaultDelay**: Default connection delay, in ms (default: 1)
 
@@ -101,7 +101,7 @@ Additionally, ``netParams`` contains the following customizable single-valued at
 
 * **popTagsCopiedToCells**: List of tags that will be copied from the population to the cells (default: ['pop', 'cellModel', 'cellType'])
 
-Other arbitrary entries to the ``netParams`` dict can be added and used in the custom defined functions for connectivity parameters (see :ref:`function_string`). 
+Other arbitrary entries to the ``netParams`` dict can be added and used in custom-defined functions for connectivity parameters (see :ref:`function_string`). 
 
 
 .. _pop_params:
@@ -111,7 +111,7 @@ Population parameters
 
 Each item of the ``popParams`` ordered dictionary consists of a key and value. The key is an arbitrary label for the population, which will be assigned to all cells as the tag ``pop``, and can be used as condition to apply specific connectivtiy rules.
 
-The value consists in turn of a dictionary with the parameters of the population, an includes the following fields:
+The value consists of a dictionary with the parameters of the population, and includes the following fields:
 
 * **cellType** - Arbitrary cell type attribute/tag assigned to all cells in this population; can be used as condition to apply specific cell properties. 
 	e.g. 'Pyr' (for pyramidal neurons) or 'FS' (for fast-spiking interneurons)
@@ -126,17 +126,17 @@ The value consists in turn of a dictionary with the parameters of the population
 * **cellModel** - Arbitrary cell model attribute/tag assigned to all cells in this population; can be used as condition to apply specific cell properties. 
 	e.g. 'HH' (standard Hodkgin-Huxley type cell model) or 'Izhi2007' (Izhikevich 2007 point neuron model). 
 
-* **xRange** or **xnormRange** - Range of neuron positions in x-axis (horizontal length), specified 2-element list [min, max]. 
+* **xRange** or **xnormRange** - Range of neuron positions in x-axis (horizontal length), specified two-element list [min, max]. 
 	``xRange`` for absolute value in um (e.g. [100,200]), or ``xnormRange`` for normalized value between 0 and 1 as fraction of ``sizeX`` (e.g. [0.1,0.2]).
 
-* **yRange** or **ynormRange** - Range of neuron positions in y-axis (vertical height=cortical depth), specified 2-element list [min, max]. 
-	``yRange`` for absolute value in um (e.g. [100,200]), or ``ynormRange`` for normalized value between 0 and 1 as fraction of ``sizeY`` (e.g. [0.1,0.2]). Note: The NEURON objects 3d points (pt3d) ``y`` coordinates will have opposite sign to the NetPyNE/Python ``tags.y`` value, in order to correctly employ and represent the y-axis as a depth coordinate, e.g. if ``cell.tags.y = 500`` then ``cell.secs.soma.geom.pt3d[0][1] = -500`` ([0] refers to the 1st pt3d, and [1] refers to the y coordinate)
+* **yRange** or **ynormRange** - Range of neuron positions in y-axis (vertical height=cortical depth), specified two-element list [min, max]. 
+	``yRange`` for absolute value in um (e.g. [100,200]), or ``ynormRange`` for normalized value between 0 and 1 as fraction of ``sizeY`` (e.g. [0.1,0.2]). Note: The NEURON object's 3d points (pt3d) ``y`` coordinates will have opposite sign to the NetPyNE/Python ``tags.y`` value, in order to correctly employ and represent the y-axis as a depth coordinate, e.g. if ``cell.tags.y = 500`` then ``cell.secs.soma.geom.pt3d[0][1] = -500`` ([0] refers to the 1st pt3d, and [1] refers to the y coordinate)
  
-* **zRange** or **znormRange** - Range of neuron positions in z-axis (horizontal depth), specified 2-elemnt list [min, max]. 
+* **zRange** or **znormRange** - Range of neuron positions in z-axis (horizontal depth), specified two-element list [min, max]. 
 	``zRange`` for absolute value in um (e.g. [100,200]), or ``znormRange`` for normalized value between 0 and 1 as fraction of ``sizeZ`` (e.g. [0.1,0.2]).
 
 
-Examples of standard population::
+Examples of creating a population::
 
 	netParams.popParams['Sensory'] = {'cellType': 'PYR', 'cellModel': 'HH', 'ynormRange':[0.2, 0.5], 'density': 50000}
 
@@ -145,9 +145,9 @@ The ``addPopParams(label, params)`` method of the class ``netParams`` can be use
 	netParams.addPopParams('Sensory', {'cellType': 'PYR', 'cellModel': 'HH', 'ynormRange':[0.2, 0.5], 'density': 50000})
 
 
-It is also possible to create populations of artificial cells, i.e. point processes that generate spike events but don't have sections (e.g. NetStim, VecStim or IntFire2). In this case the ``cellModel`` field will specify the name of the point process mechanism, and the properties of the mechanism will be specified as additional fields. Note, since artificial cells are simpler they don't require to define separate cell parameters in the ``netParams.cellParams`` structure. For example, below are the fields required to create a population of NetStims (NEURON's artificial spike generator):
+It is also possible to create populations of artificial cells, i.e. point processes, that generate spike events but don't have sections (e.g. NEURON objects: ``NetStim``, ``VecStim``, or ``IntFire2``). In this case, the ``cellModel`` field will specify the name of the point process mechanism, and the properties of the mechanism will be specified as additional fields. Note, since artificial cells are simpler they don't require defining separate cell parameters in the ``netParams.cellParams`` structure. For example, below are the fields required to create a population of NetStims (NEURON's artificial spike generator):
 
-* **pop** - An arbitrary label for this population assigned to all cells; can be used to as condition to apply specific connectivity rules. (e.g. 'background')
+* **pop** - An arbitrary label for this population assigned to all cells (e.g. 'background'); can be used as a condition to apply specific connectivity rules. 
 
 * **cellModel** - Name of the point process artificical cell (e.g ``IntFire2``, ``NetStim`` or ``VecStim``).
 
@@ -157,13 +157,13 @@ It is also possible to create populations of artificial cells, i.e. point proces
 
 When ``cellModel`` is 'NetStim' or 'VecStim' the following parameters are allowed:
 
-* **interval** - Spike interval in ms.
+* **interval** - Spike interval in ms
 
-* **rate** - Firing rate in Hz (note this is the inverse of the NetStim interval property).
+* **rate** - Firing rate in Hz (note this is the inverse of the NetStim interval property)
 
-* **noise** - Fraction of noise in NetStim (0 = deterministic; 1 = completely random).
+* **noise** - Fraction of noise in NetStim (0 = deterministic; 1 = completely random)
 
-* **start** - Time of first spike in ms (default = 0).
+* **start** - Time of first spike in ms (default = 0)
 
 * **number** - Max number of spikes generated (default = 1e12)
 
@@ -204,7 +204,7 @@ Cell property rules
 
 The rationale for using cell property rules is that you can apply cell properties to subsets of neurons that match certain criteria, e.g. only those neurons of a given cell type, and/or of a given population, and/or within a certain range of locations. 
 
-Each item of the ``cellParams`` ordered dict consists of a key and a value. The key is an arbitrary label to identify this cell rule. The value consists of a dictionary that defines a cell property rule, containing the following fields:
+Each item of the ``cellParams`` ordered dictionary consists of a key and a value. The key is an arbitrary label to identify this cell rule. The value consists of a dictionary that defines a cell property rule, containing the following fields:
 
 * **conds** - Set of conditions required to apply the properties to a cell. 
 	Defined as a dictionary with the attributes/tags of the cell and the required values, e.g. {'cellType': 'PYR', 'cellModel': 'HH'}. 
@@ -218,11 +218,11 @@ Each item of the ``cellParams`` ordered dict consists of a key and a value. The 
 		Includes ``parentSec`` (label of parent section), ``parentX`` (parent location where to make connection) and ``childX`` (current section --child-- location where to make connection).
 	
 	* **mechs**: Dictionary of density/distributed mechanisms.
-		The key contains the name of the mechanism (e.g. ``hh`` or ``pas``)
+		The key contains the name of the mechanism (e.g. 'hh' or 'pas')
 		The value contains a dictionary with the properties of the mechanism (e.g. ``{'g': 0.003, 'e': -70}``).
 
 	* **ions**: Dictionary of ions.
-		The key contains the name of the ion (e.g. ``na`` or ``k``)
+		The key contains the name of the ion (e.g. 'na' or 'k')
 		The value contains a dictionary with the properties of the ion (e.g. ``{'e': -70}``).
 	
 	* **pointps**: Dictionary of point processes (excluding synaptic mechanisms). 
@@ -232,8 +232,8 @@ Each item of the ``cellParams`` ordered dict consists of a key and a value. The 
 		Apart from internal point process variables, the following properties can be specified for each point process:
 
 		* ``mod``,the name of the NEURON mechanism, e.g. ``'Izhi2007a'``
-		* ``loc``, section location where to place synaptic mechanism, e.g. ``1.0``, default=0.5.
-		* ``vref`` (optional), internal mechanism variable containing the cell membrane voltage, e.g. ``'V'``.
+		* ``loc``, section location where to place synaptic mechanism, e.g. ``1.0``, default=0.5
+		* ``vref`` (optional), internal mechanism variable containing the cell membrane voltage, e.g. ``'V'``
 		* ``synList`` (optional), list of internal mechanism synaptic mechanism labels, e.g. ['AMPA', 'NMDA', 'GABAB']
 
 	* **vinit** - (optional) Initial membrane voltage (in mV) of the section (default: -65)
@@ -290,22 +290,22 @@ Example of two cell property rules added using different valid approaches::
 Synaptic mechanisms parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To define the parameters of a synaptic mechanism, add items to the ``synMechParams`` ordered dict. You can use the addSynMechParams(label,params) method. Each ``synMechParams`` item consists of a key and value. The key is a an arbitrary label for this mechanism, which will be used to reference in the connectivity rules. The value is a dictionary of the synaptic mechanism parameters with the following fields:
+To define the parameters of a synaptic mechanism, add items to the ``synMechParams`` ordered dictionary. You can use the addSynMechParams(label,params) method. Each ``synMechParams`` item consists of a key and value. The key is a an arbitrary label for this mechanism, which will be used to reference it in the connectivity rules. The value is a dictionary of the synaptic mechanism parameters with the following fields:
 
 * ``mod`` - the NMODL mechanism name (e.g. 'ExpSyn'); note this does not always coincide with the name of the mod file.
 
 * mechanism parameters (e.g. ``tau`` or ``e``) - these will depend on the specific NMODL mechanism.
 
-* ``selfNetCon`` (optional) - Dict with parameters of NetCon between the cell voltage and the synapse, required by some synaptic mechanisms such as the homeostatic synapse (hsyn). e.g. ``'selfNetCon': {'sec': 'soma' , threshold': -15, 'weight': -1, 'delay': 0}`` (by default the source section, 'sec' = 'soma')
+* ``selfNetCon`` (optional) - dictionary with the parameters of a NetCon between the cell voltage and the synapse, required by some synaptic mechanisms such as the homeostatic synapse (hsyn). e.g. ``'selfNetCon': {'sec': 'soma' , 'threshold': -15, 'weight': -1, 'delay': 0}`` (by default, the source section is set to the soma, e.g. ``'sec': 'soma'``)
 
 Synaptic mechanisms will be added to cells as required during the connection phase. Each connectivity rule will specify which synaptic mechanism parameters to use by referencing the appropiate label. 
 
-Example of synaptic mechanism parameters for a simple excitatory synaptic mechanism labeled ``NMDA``, implemented using the ``Exp2Syn`` model, with rise time (``tau1``) of 0.1 ms, decay time (``tau2``) of 5 ms, and equilibrium potential (``e``) of 0 mV:
+Here is an example of synaptic mechanism parameters for a simple excitatory synaptic mechanism labeled ``NMDA``, implemented using the ``Exp2Syn`` model, with rise time (``tau1``) of 0.1 ms, decay time (``tau2``) of 5 ms, and equilibrium potential (``e``) of 0 mV:
 
 .. code-block:: python
 
 	## Synaptic mechanism parameters
-	netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0}  # NMDA synaptic mechanism
+	netParams.synMechParams['NMDA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0}  # NMDA synaptic mechanism
 
 
 Connectivity rules
@@ -315,43 +315,43 @@ The rationale for using connectivity rules is that you can create connections be
 
 Each item of the ``connParams`` ordered dictionary consists of a key and value. The key is an arbitrary label used as reference for this connectivity rule. The value contains a dictionary that defines the connectivity rule parameters and includes the following fields:
 
-* **preConds** - Set of conditions for the presynaptic cells. 
-	Defined as a dictionary with the attributes/tags of the presynaptic cell and the required values e.g. ``{'cellType': 'PYR'}``. 
+* **preConds** - Set of conditions for the presynaptic cells
+	Defined as a dictionary with the attributes/tags of the presynaptic cell and the required values, e.g. ``{'cellType': 'PYR'}``. 
 
-	Values can be lists, e.g. ``{'pop': ['Exc1', 'Exc2']}``. For location properties, the list values correspond to the min and max values, e.g. ``{'ynorm': [0.1, 0.6]}``
+	Values can be lists, e.g. ``{'pop': ['Exc1', 'Exc2']}``. For location properties, the list values correspond to the min and max values, e.g. ``{'ynorm': [0.1, 0.6]}``.
 
-* **postConds** - Set of conditions for the postynaptic cells. 
+* **postConds** - Set of conditions for the postynaptic cells
 	Same format as ``preConds`` (above).
 
-* **sec** (optional) - Name of target section on the postsynaptic neuron (e.g. ``'soma'``). 
-	If omitted, defaults to 'soma' if exists, otherwise to first section in the cell sections list.
+* **sec** (optional) - Name of target section on the postsynaptic neuron (e.g. ``'soma'``) 
+	If omitted, defaults to 'soma' if it exists, otherwise to the first section in the cell sections list.
 
 	If ``synsPerConn`` > 1, and a list of sections or sectionList is specified, synapses will be distributed uniformly along the specified section(s), taking into account the length of each section.
 
-	If ``synsPerConn`` == 1, and list of sections or sectionList is specified, synapses (one per presynaptic cell) will be placed in sections randomly selected from the list (note that the random section and location will go hand in hand, i.e. same random index used for both). To enforce using always the first section from the list set ``cfg.connRandomSecFromList = False``.
+	If ``synsPerConn`` == 1, and list of sections or sectionList is specified, synapses (one per presynaptic cell) will be placed in sections randomly selected from the list. To enforce using always the first section from the list set ``cfg.connRandomSecFromList = False``.
 
 
 * **loc** (optional) - Location of target synaptic mechanism (e.g. ``0.3``)
 	If omitted, defaults to 0.5.
 
-	If have list of ``synMechs``, can have single loc for all, or list of locs (one per synMech, e.g. for 2 synMechs: ``[0.4, 0.7]``).
+	If you have a list of ``synMechs``, you can have a single loc for all, or a list of locs (one per synMech, e.g. for two synMechs: ``[0.4, 0.7]``).
 
-	If have ``synsPerConn`` > 1, can have single loc for all, or list of locs (one per synapse, e.g. if ``synsPerConn`` = 3: ``[0.4, 0.5, 0.7]``)
+	If you have ``synsPerConn`` > 1, you can have single loc for all, or a list of locs (one per synapse, e.g. if ``synsPerConn`` = 3: ``[0.4, 0.5, 0.7]``)
 
-	If have both a list of ``synMechs`` and ``synsPerConn`` > 1, can have a 2D list for each synapse of each synMech (e.g. for 2 synMechs and ``synsPerConn`` = 3: ``[[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]]``)
+	If you have both a list of ``synMechs`` and ``synsPerConn`` > 1, you can have a 2D list for each synapse of each synMech (e.g. for two synMechs and ``synsPerConn`` = 3: ``[[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]]``)
 
-	If ``synsPerConn`` == 1, and list of locs is specified, synapses (one per presynaptic cell) will be placed in locations randomly selected from the list (note that the random section and location will go hand in hand, i.e. same random index used for both). 
+	If ``synsPerConn`` == 1, and a list of ``loc``s is specified, synapses (one per presynaptic cell) will be placed in locations randomly selected from the list (note that the random section and location will go hand in hand, i.e. the same random index is used for both). 
 
 	.. The above only applies for a single target section, ``sec``. If a list of target sections is specified, the ``loc`` value has no effect, and synapses will be distributed uniformly along the specified section(s), taking into account the length of each section. To enforce using always the first location from the list set ``cfg.connRandomSecFromList = False``.
 
 
-* **synMech** (optional) - Label (or list of labels) of target synaptic mechanism on the postsynaptic neuron (e.g. ``'AMPA'`` or ``['AMPA', 'NMDA']``). 
+* **synMech** (optional) - Label (or list of labels) of target synaptic mechanism(s) on the postsynaptic neuron (e.g. ``'AMPA'`` or ``['AMPA', 'NMDA']``)
 
-	If omitted employs first synaptic mechanism in the cell synaptic mechanisms list.
+	If omitted, employs first synaptic mechanism in the cell's synaptic mechanisms list.
 
-	If have list, a separate connection is created to each synMech; and a list of weights, delays and/or locs can be provided.  
+	If you have a list, a separate connection is created to each synMech; and a list of weights, delays and/or locs can be provided.  
 
-* **synsPerConn** (optional) - Number of individual synaptic connections (*synapses*) per cell-to-cell connection (*connection*).
+* **synsPerConn** (optional) - Number of individual synaptic connections (*synapses*) per cell-to-cell connection (*connection*)
 
 	Can be defined as a function (see :ref:`function_string`).
 
@@ -359,38 +359,40 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 
 	The weights, delays and/or locs for each synapse can be specified as a list, or a single value can be used for all.
 
-	When > 1 and a single section is specified, the locations of synapses can be specified as a list in ``loc``.
+	When ``synsPerConn`` > 1 and a single section is specified, the locations of synapses can be specified as a list in ``loc``.
 
-	When > 1, if ``loc`` is a single value or omitted, or if a list of target sections is specified, synapses will be distributed uniformly along the specified section(s), taking into account the length of each section.
+	When ``synsPerConn`` > 1, if ``loc`` is a single value or omitted, or if a list of target sections is specified, synapses will be distributed uniformly along the specified section(s), taking into account the length of each section.
 
 	
-* **weight** (optional) - Strength of synaptic connection (e.g. ``0.01``). 
-	Associated to a change in conductance, but has different meaning and scale depending on the synaptic mechanism and cell model. 
+* **weight** (optional) - Strength of synaptic connection (e.g. ``0.01``)
+	Associated with a change in conductance, but has different meaning and scale depending on the synaptic mechanism and cell model.
 
 	Can be defined as a function (see :ref:`function_string`).
 
 	If omitted, defaults to ``netParams.defaultWeight = 1``.
 
-	If have list of ``synMechs``, can have single weight for all, or list of weights (one per synMech, e.g. for 2 synMechs: ``[0.1, 0.01]``).
+	If you have list of ``synMechs``, you can have single weight for all, or a list of weights (one per synMech, e.g. for two synMechs: ``[0.1, 0.01]``).
 
-	If have ``synsPerConn`` > 1, can have single weight for all, or list of weights (one per synapse, e.g. if ``synsPerConn`` = 3: ``[0.2, 0.3, 0.4]``)
+	If you have ``synsPerConn`` > 1, you can have single weight for all, or list of weights (one per synapse, e.g. if ``synsPerConn`` = 3: ``[0.2, 0.3, 0.4]``)
 
-	If have both a list of ``synMechs`` and ``synsPerConn`` > 1, can have a 2D list for each synapse of each synMech (e.g. for 2 synMechs and ``synsPerConn`` = 3: ``[[0.2, 0.3, 0.4], [0.02, 0.04, 0.03]]``)
+	If you have both a list of ``synMechs`` and ``synsPerConn`` > 1, you can have a 2D list for each synapse of each synMech (e.g. for two synMechs and ``synsPerConn`` = 3: ``[[0.2, 0.3, 0.4], [0.02, 0.04, 0.03]]``)
 
-* **delay** (optional) - Time (in ms) for the presynaptic spike to reach the postsynaptic neuron.
-	Can be defined as a function (see :ref:`function_string`).
+* **delay** (optional) - Time (in ms) for the presynaptic spike to reach the postsynaptic neuron
+	Can be defined as a function (see :ref:`function_string`)
 
-	If omitted, defaults to ``netParams.defaultDelay = 1``
+	If omitted, defaults to ``netParams.defaultDelay = 1``.
 
-	If have list of ``synMechs``, can have single delay for all, or list of delays (one per synMech, e.g. for 2 synMechs: ``[5, 7]``).
+	If you have list of ``synMechs``, you can have a single delay for all, or a list of delays (one per synMech, e.g. for two synMechs: ``[5, 7]``).
 
-	If have ``synsPerConn`` > 1, can have single weight for all, or list of weights (one per synapse, e.g. if ``synsPerConn`` = 3: ``[4, 5, 6]``)
+	If you have ``synsPerConn`` > 1, you can have a single weight for all, or a list of weights (one per synapse, e.g. if ``synsPerConn`` = 3: ``[4, 5, 6]``).
 
-	If have both a list of ``synMechs`` and ``synsPerConn`` > 1, can have a 2D list for each synapse of each synMech (e.g. for 2 synMechs and ``synsPerConn`` = 3: ``[[4, 6, 5], [9, 10, 11]]``)
+	If you have both a list of ``synMechs`` and ``synsPerConn`` > 1, you can have a 2D list for each synapse of each synMech (e.g. for two synMechs and ``synsPerConn`` = 3: ``[[4, 6, 5], [9, 10, 11]]``).
 
-* **threshold** (deprecated, do not use) - To set the source cell threshold (in mV) use the ``threshold`` param within a section of a cell rule in `cellParams`; or set default value (e.g. ``netParams.defaultThreshold = 10.0``)
+* **threshold** (deprecated, do not use)
 
-* **probability** (optional) - Probability of connection between each pre- and postsynaptic cell (0 to 1).
+	To set the source cell threshold (in mV) use the ``threshold`` parameter within a section of a cell rule in ``cellParams`` or set the default value (e.g. ``netParams.defaultThreshold = 10.0``).
+
+* **probability** (optional) - Probability of connection between each pre- and post-synaptic cell (0 to 1)
 
 	Can be defined as a function (see :ref:`function_string`).
 
@@ -398,15 +400,15 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 
 	Overrides the ``convergence``, ``divergence`` and ``fromList`` parameters.
 
-* **convergence** (optional) - Number of pre-synaptic cells connected to each post-synaptic cell.
+* **convergence** (optional) - Number of pre-synaptic cells connected to each post-synaptic cell
 
 	Can be defined as a function (see :ref:`function_string`).
 
 	Sets ``connFunc`` to ``convConn`` (internal convergence connectivity function).
 
-	Overrides the ``divergence`` and ``fromList`` parameters; has no effect if the ``probability`` parameters is included.
+	Overrides the ``divergence`` and ``fromList`` parameters; has no effect if the ``probability`` parameter is included.
 
-* **divergence** (optional) - Number of post-synaptic cells connected to each pre-synaptic cell.
+* **divergence** (optional) - Number of post-synaptic cells connected to each pre-synaptic cell
 
 	Can be defined as a function (see :ref:`function_string`).
 	
@@ -414,25 +416,27 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 
 	Overrides the ``fromList`` parameter; has no effect if the ``probability`` or ``convergence`` parameters are included.
 
-* **connList** (optional) - Explicit list of connections between individual pre- and post-synaptic cells.
+* **connList** (optional) - Explicit list of connections between individual pre- and post-synaptic cells
 
-	Each connection is indicated with relative ids of cell in pre and post populations, e.g. ``[[0,1],[3,1]]`` creates a connection between pre cell 0 and post cell 1; and pre cell 3 and post cell 1.
+	Each connection is indicated with relative ids of cells in pre and post populations, e.g. ``[[0,1],[3,1]]`` creates a connection between: pre cell 0 and post cell 1, pre cell 3 and post cell 1.
 
-	Weights, delays and locs can also be specified as a list for each of the individual cell connection. These lists can be 2D or 3D if combined with multiple synMechs and synsPerConn > 1 (the outer dimension will correspond to the connList).
+	Weights, delays and locs can also be specified as a list for each of the individual cell connections. These lists can be 2D or 3D if combined with multiple synMechs and synsPerConn > 1 (the outer dimension will correspond to the connList).
 
 	Sets ``connFunc`` to ``fromList`` (explicit list connectivity function).
 
 	Has no effect if the ``probability``, ``convergence`` or ``divergence`` parameters are included.
 
-* **connFunc** (optional) - Internal connectivity function to use. 
-	Its automatically set to ``probConn``, ``convConn``, ``divConn`` or ``fromList``, when the ``probability``, ``convergence``, ``divergence`` or ``connList`` parameters are included, respectively. Otherwise defaults to ``fullConn``, ie. all-to-all connectivity.
+* **connFunc** (optional) - Internal connectivity function to use
+	
+	Is automatically set to ``probConn``, ``convConn``, ``divConn`` or ``fromList``, when the ``probability``, ``convergence``, ``divergence`` or ``connList`` parameters are included, respectively. Otherwise defaults to ``fullConn``, i.e. all-to-all connectivity.
 
 	User-defined connectivity functions can be added.
 
-* **shape** (optional) - Modifies the conn weight dynamically during the simulation based on the specified pattern.
+* **shape** (optional) - Modifies the connection weight dynamically during the simulation based on the specified pattern
+	
 	Contains a dictionary with the following fields:
 
-		``'switchOnOff`` - times at which to switch on and off the weight 
+		``'switchOnOff'`` - times at which to switch on and off the weight 
 	
 		``'pulseType'`` - type of pulse to generate; either 'square' or 'gaussian'
 	
@@ -444,12 +448,13 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 
 	e.g. ``'shape': {'switchOnOff': [200, 800], 'pulseType': 'square', 'pulsePeriod': 100, 'pulseWidth': 50}``
 
-* **plasticity** (optional) - Plasticity mechanism to use for this connections.
-	Requires 2 fields: ``mech`` to specify the name of the plasticity mechanism, and ``params`` containing a dictionary with the parameters of the mechanism 
+* **plasticity** (optional) - Plasticity mechanism to use for this connection
+	
+	Requires two fields: ``mech`` to specify the name of the plasticity mechanism, and ``params`` containing a dictionary with the parameters of the mechanism. 
 
 	e.g. ``{'mech': 'STDP', 'params': {'hebbwt': 0.01, 'antiwt':-0.01, 'wmax': 50, 'RLon': 1 'tauhebb': 10}}``
 
-Example of connectivity rules:
+Here is an example of connectivity rules:
 
 .. code-block:: python
 
@@ -458,26 +463,26 @@ Example of connectivity rules:
 		'preConds': {'pop': 'S'}, 
 		'postConds': {'pop': 'M'},  #  S -> M
 		'sec': 'dend',					# target postsyn section
-		'synMech': 'AMPA',					# target synaptic mechanism
+		'synMech': 'AMPA',				# target synaptic mechanism
 		'weight': 0.01, 				# synaptic weight 
-		'delay': 5,					# transmission delay (ms) 
+		'delay': 5,						# transmission delay (ms) 
 		'probability': 0.5}				# probability of connection		
 
 	netParams.connParams['bg->all'] = {
 		'preConds': {'pop': 'background'}, 
-		'postConds': {'cellType': ['S','M'], 'ynorm': [0.1,0.6]}, # background -> S,M with ynorm in range 0.1 to 0.6
-		'synReceptor': 'AMPA',					# target synaptic mechanism 
-		'weight': 0.01, 					# synaptic weight 
+		'postConds': {'cellType': ['S','M'], 'ynorm': [0.1, 0.6]}, # background -> S,M with ynorm in range 0.1 to 0.6
+		'synReceptor': 'AMPA',			# target synaptic mechanism 
+		'weight': 0.01, 				# synaptic weight 
 		'delay': 5}						# transmission delay (ms) 
 
 	netParams.connParams['yrange->HH'] = {
 	    {'preConds': {'y': [100, 600]}, 
 	    'postConds': {'cellModel': 'HH'}, # cells with y in range 100 to 600 -> cells implemented using HH models
-	    'synMech': ['AMPA', 'NMDA'],  # target synaptic mechanisms
-	    'synsPerConn': 3, 		# number of synapses per cell connection (per synMech, ie. total syns = 2 x 3)
-	    'weight': 0.02,			# single weight for all synapses
-	    'delay': [5, 10],		# different delays for each of 3 synapses per synMech 
-	    'loc': [[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]}           # different locations for each of the 6 synapses
+	    'synMech': ['AMPA', 'NMDA'],  					# target synaptic mechanisms
+	    'synsPerConn': 3, 								# number of synapses per cell connection (per synMech, ie. total syns = 2 x 3)
+	    'weight': 0.02,									# single weight for all synapses
+	    'delay': [5, 10],								# different delays for each of 3 synapses per synMech 
+	    'loc': [[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]} 		# different locations for each of the 6 synapses
 
 
 .. _function_string:
@@ -485,52 +490,54 @@ Example of connectivity rules:
 Functions as strings
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Some of the parameters (``weight``, ``delay``, ``probability``, ``convergence`` and ``divergence``) can be provided using a string that contains a function. The string will be interpreted internally by NetPyNE and converted to the appropriate lambda function. This string may contain the following elements:
+Some of the parameters (``weight``, ``delay``, ``probability``, ``convergence`` and ``divergence``) can be provided using a string that contains a function. The string will be interpreted internally by NetPyNE and converted to the appropriate `lambda function <https://docs.python.org/3/tutorial/controlflow.html#lambda-expressions>`_. This string may contain the following elements:
 
 * Numerical values, e.g. '3.56'
 
-* All Python mathematical operators: '+', '-', '*', '/', '%', '**' (exponent), etc.
+* All Python mathematical operators: ``+``, ``-``, ``*``, ``/``, ``%``, ``**`` (exponent), etc.
 
-* Python mathematical functions: 'sin', 'cos', 'tan', 'exp', 'sqrt', 'mean', 'inf' (see https://docs.python.org/2/library/math.html for details)
+* Python mathematical functions: ``sin``, ``cos``, ``tan``, ``exp``, ``sqrt``, ``mean``, ``inf`` (see https://docs.python.org/2/library/math.html for details)
 
-* NEURON h.Random() methods: 'binomial', 'discunif', 'erlang', 'geometric', 'hypergeo', 'lognormal', 'negexp', 'normal', 'poisson', 'uniform', 'weibull' (see https://www.neuron.yale.edu/neuron/static/py_doc/programming/math/random.html)
+* NEURON h.Random() methods: ``binomial``, ``discunif``, ``erlang``, ``geometric``, ``hypergeo``, ``lognormal``, ``negexp``, ``normal``, ``poisson``, ``uniform``, ``weibull`` (see https://www.neuron.yale.edu/neuron/static/py_doc/programming/math/random.html)
 
 * Cell location variables:
-	* 'pre_x', 'pre_y', 'pre_z': pre-synaptic cell x, y or z location.
+	
+	* ``pre_x``, ``pre_y``, ``pre_z``: pre-synaptic cell x, y or z location.
 
-	* 'pre_ynorm', 'pre_ynorm', 'pre_znorm': normalized pre-synaptic cell x, y or z location.
+	* ``pre_ynorm``, ``pre_ynorm``, ``pre_znorm``: normalized pre-synaptic cell x, y or z location.
 	
-	* 'post_x', 'post_y', 'post_z': post-synaptic cell x, y or z location.
+	* ``post_x``, ``post_y``, ``post_z``: post-synaptic cell x, y or z location.
 	
-	* 'post_xnorm', 'post_ynorm', 'post_znorm': normalized post-synaptic cell x, y or z location.
+	* ``post_xnorm``, ``post_ynorm``, ``post_znorm``: normalized post-synaptic cell x, y or z location.
 	
-	* 'dist_x', 'dist_y', 'dist_z': absolute Euclidean distance between pre- and postsynaptic cell x, y or z locations.
+	* ``dist_x``, ``dist_y``, ``dist_z``: absolute Euclidean distance between pre- and postsynaptic cell x, y or z locations.
 	
-	* 'dist_xnorm', 'dist_ynorm', 'dist_znorm': absolute Euclidean distance between normalized pre- and postsynaptic cell x, y or z locations.
+	* ``dist_xnorm``, ``dist_ynorm``, ``dist_znorm``: absolute Euclidean distance between normalized pre- and postsynaptic cell x, y or z locations.
 	
-	* 'dist_2D', 'dist_3D': absolute Euclidean 2D (x and z) or 3D (x, y and z) distance between pre- and postsynaptic cells.
+	* ``dist_2D``, ``dist_3D``: absolute Euclidean 2D (x and z) or 3D (x, y and z) distance between pre- and postsynaptic cells.
 
-	* 'dist_norm2D', 'dist_norm3D': absolute Euclidean 2D (x and z) or 3D (x, y and z) distance between normalized pre- and postsynaptic cells.
+	* ``dist_norm2D``, ``dist_norm3D``: absolute Euclidean 2D (x and z) or 3D (x, y and z) distance between normalized pre- and postsynaptic cells.
 
 	
 * Single-valued numerical network parameters defined in the ``netParams`` dictionary. Existing ones can be customized, and new arbitrary ones can be added. The following parameters are available by default:
-	* 'sizeX', 'sizeY', 'sizeZ': network size in um (default: 100)
 
-	* 'defaultWeight': Default connection weight, in ms (default: 1)
+	* ``sizeX``, ``sizeY``, ``sizeZ``: network size in um (default: 100)
 
-	* 'defaultDelay': Default connection delay, in ms (default: 1)
+	* ``defaultWeight``: Default connection weight (default: 1)
 
-	* 'propVelocity': Conduction velocity in um/ms (default: 500)
+	* ``defaultDelay``: Default connection delay, in ms (default: 1)
+
+	* ``propVelocity``: Conduction velocity in um/ms (default: 500)
 
 
 String-based functions add great flexibility and power to NetPyNE connectivity rules. They enable the user to define a wide variety of connectivity features, such as cortical-depth dependent probability of connection, or distance-dependent connection weights. Below are some illustrative examples:
 
-* Convergence (num presyn cells targeting postsyn) uniformly distributed between 1 and 15:
+* Convergence (number of presynaptic cells targeting postsynaptic cells) uniformly distributed between 1 and 15:
 
 	.. code-block:: python
 
 		netParams.connParams[...] = {
-			'convergence': 'uniform(1,15)',
+			'convergence': 'uniform(1, 15)',
 		# ... 
 
 * Connection delay set to minimum value of 0.2 plus a gaussian distributed value with mean 13.0 and variance 1.4:
@@ -538,10 +545,10 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 	.. code-block:: python
 
 		netParams.connParams[...] = {
-			'delay': '0.2 + normal(13.0,1.4)',
+			'delay': '0.2 + normal(13.0, 1.4)',
 		# ...
 
-* Same as above but using variables defined in the ``netParams`` dict:
+* Same as above but using variables defined in the ``netParams`` dictionary:
 
 	.. code-block:: python
 
@@ -568,7 +575,7 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 	.. code-block:: python
 
 		netParams.connParams[...] = {
-			'probability': '0.1+0.2*post_y', 
+			'probability': '0.1 + 0.2*post_y', 
 		# ...
 
 * Probability of connection decaying exponentially as a function of 2D distance, with length constant (``lengthConst``) defined as an attribute in netParams:
@@ -589,27 +596,27 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 Stimulation parameters
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Two data structures are used to specify cell stimulation parameters: ``stimSourceParams`` to define the parameters of the sources of stimulation; and ``stimTargetParams`` to specify what cells will be applied what source of stimulation (mapping of sources to cells).
+Two data structures are used to specify cell stimulation parameters: ``stimSourceParams`` to define the parameters of the sources of stimulation; and ``stimTargetParams`` to specify to which cells will be applied which source of stimulation (mapping of sources to cells).
 
 Each item of the ``stimSourceParams`` ordered dictionary consists of a key and a value, where the key is an arbitrary label to reference this stimulation source (e.g. 'electrode_current'), and the value is a dictionary of the source parameters:
 
-	* **type** - Point process used as stimulator; allowed values: 'IClamp', 'VClamp', 'SEClamp', 'NetStim' and 'AlphaSynapse'.
+	* **type** - Point process used as stimulator; allowed values: ``'IClamp'``, ``'VClamp'``, ``'SEClamp'``, ``'NetStim'`` and ``'AlphaSynapse'``.
 
-		Note that NetStims can be added both using this method, or by creating a population of 'cellModel': 'NetStim' and adding the appropriate connections.
+		Note that NetStims can be added both using this method or by creating a population of 'cellModel': 'NetStim' and adding the appropriate connections.
 
-	* **stim params** (optional) - These will depend on the type of stimulator (e.g. for 'IClamp' will have 'del', 'dur' and 'amp')
+	* **stim params** (optional) - These will depend on the type of stimulator (e.g. for ``'IClamp'`` will have ``'del'``, ``'dur'``, and ``'amp'``)
 
-		Can be defined as a function (see :ref:`function_string`). Note for stims it only makes sense to use parameters of the postsynaptic cell (e.g. 'post_ynorm').
+		Can be defined as a function (see :ref:`function_string`). Note for stims it only makes sense to use parameters of the postsynaptic cell (e.g. ``'post_ynorm'``).
 
 
 Each item of the ``stimTargetParams`` specifies how to map a source of stimulation to a subset of cells in the network. The key is an arbitrary label for this mapping, and the value is a dictionary with the following parameters:
 
-	* **source** - Label of the stimulation source (e.g. 'electrode_current').
+	* **source** - Label of the stimulation source (e.g. ``'electrode_current'``).
 
 	* **conditions** - Dictionary with conditions of cells where the stim will be applied. 
-		Can include a field 'cellList' with the relative cell indices within the subset of cells selected (e.g. 'conds': {'cellType':'PYR', 'y':[100,200], 'cellList': [1,2,3]})
+		Can include a field ``'cellList'`` with the relative cell indices within the subset of cells selected (e.g. ``'conds': {'cellType':'PYR', 'y':[100, 200], 'cellList': [1, 2, 3]}``)
 
-	* **sec** (optional) - Target section (default: 'soma')
+	* **sec** (optional) - Target section (default: ``'soma'``)
 
 	* **loc** (optional) - Target location (default: 0.5)
 		Can be defined as a function (see :ref:`function_string`)
@@ -634,38 +641,34 @@ The code below shows an example of how to create different types of stimulation 
 	# Stimulation parameters
 
 	## Stimulation sources parameters
-	netParams.stimSourceParams['Input_1'] =  {'type': 'IClamp', 'del': 10, 'dur': 800, 'amp': 'uniform(0.05,0.5)'}
+	netParams.stimSourceParams['Input_1'] =  {'type': 'IClamp', 'del': 10, 'dur': 800, 'amp': 'uniform(0.05, 0.5)'}
 
-	netParams.stimSourceParams['Input_2'] = {'type': 'VClamp', 'dur':[0,1,1], 'amp':[1,1,1],'gain':1, 'rstim':0, 'tau1':1, 'tau2':1, 'i':1}
+	netParams.stimSourceParams['Input_2'] = {'type': 'VClamp', 'dur': [0, 1, 1], 'amp':[1, 1, 1],'gain': 1, 'rstim': 0, 'tau1': 1, 'tau2': 1, 'i': 1}
 
-	netParams.stimSourceParams(['Input_3'] = {'type': 'AlphaSynapse', 'onset': 'uniform(1,500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0}
+	netParams.stimSourceParams(['Input_3'] = {'type': 'AlphaSynapse', 'onset': 'uniform(1, 500)', 'tau': 5, 'gmax': 'post_ynorm', 'e': 0}
 
-	netParams.stimSourceParams['Input_4'] = {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 5, 'noise': 0.1}
+	netParams.stimSourceParams['Input_4'] = {'type': 'NetStim', 'interval': 'uniform(20, 100)', 'number': 1000, 'start': 5, 'noise': 0.1}
 
 	## Stimulation mapping parameters
 	netParams.stimTargetParams['Input1->PYR'] = {
-	    'source': 'Input_1', 
-	    'sec':'soma', 
-	    'loc': 0.5, 
-	    'conds': {'pop':'PYR', 'cellList': range(8)}}
+		'source': 'Input_1', 
+		'sec': 'soma', 
+		'loc': 0.5, 
+		'conds': {'pop':'PYR', 'cellList': range(8)}}
 
 	netParams.stimTargetParams['Input3->Basket'] = {
-	    'source': 'Input_3', 
-	    'sec':'soma', 
-	    'loc': 0.5, 
-	    'conds': {'cellType':'Basket'}}
+		'source': 'Input_3', 
+		'sec': 'soma', 
+		'loc': 0.5, 
+		'conds': {'cellType': 'Basket'}}
 
 	netParams.stimTargetParams['Input4->PYR3'] = {
 		'source': 'Input_4', 
-		'sec':'soma', 
+		'sec': 'soma', 
 		'loc': 0.5, 
-	    'weight': '0.1+normal(0.2,0.05)',
-	    'delay': 1,
-		'conds': {'pop':'PYR3', 'cellList': [0,1,2,5,10,14,15]}}
-
-
-
-.. _sim_config: 
+		'weight': '0.1 + normal(0.2, 0.05)',
+		'delay': 1,
+		'conds': {'pop': 'PYR3', 'cellList': [0, 1, 2, 5, 10, 14, 15]}}
 
 
 Reaction-Diffusion (RxD) parameters
@@ -673,22 +676,23 @@ Reaction-Diffusion (RxD) parameters
 
 The ``rxdParams`` ordered dictionary can be used to define the different RxD components:
 
-	* **regions** - dictionary with RxD Regions (also used to define 'extracellular' regions).
+	* **regions** - dictionary with RxD Regions (also used to define 'extracellular' regions)
 
-	* **species** - dictionary with RxD Species.
+	* **species** - dictionary with RxD Species
 
-	* **states** - dictionary with RxD States.
+	* **states** - dictionary with RxD States
 
-	* **reactions** - dictionary with RxD Reactions.
+	* **reactions** - dictionary with RxD Reactions
 
-	* **multicompartmentReactions** - dictionary with RxD MultiCompartmentReactions.
+	* **multicompartmentReactions** - dictionary with RxD MultiCompartmentReactions
 
-	* **rates** - dictionary with RxD Rates.
+	* **rates** - dictionary with RxD Rates
 
 The parameters of each dictionary follow the same structure as described in the RxD package: https://www.neuron.yale.edu/neuron/static/docs/rxd/index.html 
 
 See usage examples: `RxD buffering example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/rxd_buffering>`_ and `RxD network example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/rxd_buffering>`_. 
 
+.. _sim_config: 
 
 Simulation configuration
 --------------------------
@@ -696,40 +700,40 @@ Simulation configuration
 .. - Want to have more control, customize sequence -- sim module related to sim; net module related to net
 .. - Other structures are possible (flexibiliyty) - e.g. can read simCfg or netparams from disk file; can load existing net etc
 
-Below is a list of all simulation configuration options (i.e. attributes of a SimConfig object) arranged by categories:
+Below is a list of all simulation configuration options (i.e. attributes of a ``SimConfig`` object) arranged by categories:
 
-Related to the simulation and netpyne framework:
+Related to the simulation and NetPyNE framework:
 
 * **duration** - Duration of the simulation, in ms (default: 1000)
 * **dt** - Internal integration timestep to use (default: 0.025)
-* **hParams** - Dictionary with parameters of h module (default: {'celsius': 6.3, 'v_init': -65.0, 'clamp_resist': 0.001})
+* **hParams** - Dictionary with parameters of h module (default: ``{'celsius': 6.3, 'v_init': -65.0, 'clamp_resist': 0.001}``)
 * **cache_efficient** - Use CVode cache_efficient option to optimize load when running on many cores (default: False) 
 * **cvode_active** - Use CVode variable time step (default: False)
-* **seeds** - Dictionary with random seeds for connectivity, input stimulation, and cell locations (default: {'conn': 1, 'stim': 1, 'loc': 1})
-* **createNEURONObj** - Create runnable network in NEURON when instantiating netpyne network metadata (default: True)
+* **seeds** - Dictionary with random seeds for connectivity, input stimulation, and cell locations (default: ``{'conn': 1, 'stim': 1, 'loc': 1}``)
+* **createNEURONObj** - Create runnable network in NEURON when instantiating NetPyNE network metadata (default: True)
 * **createPyStruct** - Create Python structure (simulator-independent) when instantiating network (default: True)
 * **includeParamsLabel** - Include label of param rule that created that cell, conn or stim (default: True)
 * **addSynMechs** - Whether to add synaptic mechanisms or not (default: True)
 * **gatherOnlySimData** - Omits gathering of net and cell data thus reducing gatherData time (default: False)
 * **compactConnFormat** - Replace dict format with compact list format for conns (need to provide list of keys to include) (default: False)
 * **connRandomSecFromList** - Select random section (and location) from list even when synsPerConn=1 (default: True) 
-* **distributeSynsUniformly** - Locate synapses at uniformly across section list; if false, place one syn per section in section list (default: True)
+* **distributeSynsUniformly** - Locate synapses uniformly across section list; if false, place one syn per section in section list (default: True)
 * **pt3dRelativeToCellLocation** - True  # Make cell 3d points relative to the cell x,y,z location (default: True)
 * **invertedYCoord** - Make y-axis coordinate negative so they represent depth when visualized (0 at the top) (default: True)
-* **allowSelfConns** = False  # allow connections from a cell to itself (default: False)
-* **oneSynPerNetcon** - Create one individual synapse object for each Netcon (if False, same synpase can be shared) (default: True)
+* **allowSelfConns** - Allow connections from a cell to itself (default: False)
+* **oneSynPerNetcon** - Create one individual synapse object for each NetCon (if False, same synpase can be shared) (default: True)
 * **saveCellSecs** - Save all the sections info for each cell; reduces time+space (default: False) 
 * **saveCellConns** - save all the conns info for each cell; reduces time+space (default: False)
 * **timing** - Show and record timing of each process (default: True)
 * **saveTiming** - Save timing data to pickle file (default: False)
 * **printRunTime** - Print run time at interval (in sec) specified here (eg. 0.1) (default: False) 
-* **printPopAvgRates** - Print population avg firing rates after run (default: False)
+* **printPopAvgRates** - Print population average firing rates after run (default: False)
 * **printSynsAfterRule** - Print total connections after each conn rule is applied 
 * **verbose** - Show detailed messages (default: False)
 
 Related to recording:
 
-* **recordCells** - List of cells from which to record traces. Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All cells selected in the ``include`` argument of ``simConfig.analysis['plotTraces']`` will be automatically included in ``recordCells``. (default: [])
+* **recordCells** - List of cells from which to record traces. Can include cell gids (e.g. ``5`` or ``[2, 3]``), population labels (e.g. ``'S'`` to record from one cell of the 'S' population), or ``'all'``, to record from all cells. NOTE: All cells selected in the ``include`` argument of ``simConfig.analysis['plotTraces']`` will be automatically included in ``recordCells``. (default: ``[]``)
 * **recordTraces** - Dict of traces to record (default: {} ; example: {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}})
 * **recordSpikesGids** - List of cells to record spike times from  (-1 to record from all). Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. (default: -1)
 * **recordStim** - Record spikes of cell stims (default: False)
@@ -739,9 +743,9 @@ Related to recording:
 
 Related to file saving:
 
-* **saveDataInclude** = Data structures to save to file (default: ['netParams', 'netCells', 'netPops', 'simConfig', 'simData'])
-* **simLabel** = Name of simulation (used as filename if none provided) (default: '')
-* **saveFolder** = Path where to save output data (default: '')
+* **saveDataInclude** - Data structures to save to file (default: ['netParams', 'netCells', 'netPops', 'simConfig', 'simData'])
+* **simLabel** - Name of simulation (used as filename if none provided) (default: '')
+* **saveFolder** - Path where to save output data (default: '')
 * **filename** - Name of file to save model output (default: 'model_output')
 * **timestampFilename**  - Add timestamp to filename to avoid overwriting (default: False)
 * **savePickle** - Save data to pickle file (default: False)
@@ -759,22 +763,22 @@ Related to plotting and analysis:
 
 * **analysis** - Dictionary where each item represents a call to a function from the ``analysis`` module. The list of functions will be executed after calling the``sim.analysis.plotData()`` function, which is already included at the end of several wrappers (e.g. ``sim.createSimulateAnalyze()``).
 
-	The dict key represents the function name, and the value can be set to ``True`` or to a dict containing the function ``kwargs``. i.e. ``simConfig.analysis[funcName] = kwargs``
+	The dictionary key represents the function name, and the value can be set to ``True`` or to a dict containing the function ``kwargs``. i.e. ``simConfig.analysis[funcName] = kwargs``
 
 	E.g. ``simConfig.analysis['plotRaster'] = True`` is equivalent to calling ``sim.analysis.plotRaster()``
 
 	E.g. ``simConfig.analysis['plotRaster'] = {'include': ['PYR'], 'timeRange': [200,600], 'saveFig': 'PYR_raster.png'}`` is equivalent to calling ``sim.analysis.plotRaster(include=['PYR'], timeRange=[200,600], saveFig='PYR_raster.png')``
 
-	The SimConfig objects also includes the method ``addAnalysis(func, params)``, which has the advantage of checking the syntax of the parameters (e.g. ``simConfig.addAnalysis('plotRaster', {'include': ['PYR'], 'timeRage': [200,600]})``)
+	The simConfig object also includes the method ``addAnalysis(func, params)``, which has the advantage of checking the syntax of the parameters (e.g. ``simConfig.addAnalysis('plotRaster', {'include': ['PYR'], 'timeRage': [200,600]})``)
 
-	Availble analysis functions include ``plotRaster``, ``plotSpikeHist``, ``plotTraces``, ``plotConn`` and ``plot2Dnet``. A full description of each function and its arguments is available here: :ref:`analysis_functions`.
+	Available analysis functions include ``plotRaster``, ``plotSpikeHist``, ``plotTraces``, ``plotConn`` and ``plot2Dnet``. A full description of each function and its arguments is available here: :ref:`analysis_functions`.
 
 .. _package_functions:
 
 Package functions
 ------------------
 
-Once you have created your ``simConfig`` and ``netParams`` objects, you can use the package functions to instantiate, simulate and analyse the network. A list of available functions is shown below.
+Once you have created your ``simConfig`` and ``netParams`` objects, you can use the package functions to instantiate, simulate and analyze the network. A list of available functions is shown below.
 
 Simulation-related functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -790,7 +794,6 @@ Wrappers:
 * **sim.createSimulateAnalyze(simConfig, netParams)** - wrapper to create, simulate and analyze the network.
 * **sim.intervalCreateSimulateAnalyze(simConfig, cfg, interval=t)** - wrapper to create, simulate and analyze the network, saving simulation output every t ms.
 * **sim.createExportNeuroML2(simConfig, netParams)** - wrapper to create and export network to NeuroML2.
-
 * **sim.loadSimulate(simConfig, netParams)** - wrapper to load and simulate network.
 * **sim.loadSimulateAnalyze(simConfig, netParams)** - wrapper to load, simulate and analyze the network.
 
@@ -843,115 +846,115 @@ Analysis-related functions
     
     Plot raster (spikes over time) of network cells. Optional arguments:
 
-    - *include*: List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
-    - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
-    - *maxSpikes*: maximum number of spikes that will be plotted (int)
-    - *orderBy*: Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' ('gid'|'y'|'ynorm'|...)
-    - *orderInverse*: Invert the y-axis order (True|False)
-	- *labels*: Show population labels in a legend or overlaid on one side of raster ('legend'|'overlay'))
-    - *popRates*: Include population rates ('legend'|'overlay')
-    - *spikeHist*: overlay line over raster showing spike histogram (spikes/bin) (None|'overlay'|'subplot')
-    - *spikeHistBin*: Size of bin in ms to use for histogram  (int)
-    - *syncLines*: calculate synchrony measure and plot vertical lines for each spike to evidence synchrony (True|False)
-    - *figSize*: Size of figure ((width, height))
-    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
-    - *saveFig*: File name where to save the figure (None|'fileName')
-    - *showFig*: Whether to show the figure or not (True|False)
+    - *include*: List of cells to include ([``'all'``, ``'allCells'`` , ``'allNetStims'``, ``120`` , ``'L4'`` , ``('L2', 56)``, ``('L5', [4, 5, 6])``])
+    - *timeRange*: Time range of spikes shown; if ``None`` shows all (``[start:stop]``)
+    - *maxSpikes*: maximum number of spikes that will be plotted (``int``)
+    - *orderBy*: Unique numeric cell property to order y-axis by (``'gid'``, ``'y'``, ``'ynorm'``, ...)
+    - *orderInverse*: Invert the y-axis order (``True``, ``False``)
+    - *labels*: Show population labels in a legend or overlaid on one side of raster (``'legend'``, ``'overlay'``)
+    - *popRates*: Include population rates (``'legend'``, ``'overlay'``)
+    - *spikeHist*: overlay line over raster showing spike histogram (spikes/bin) (``None``, ``'overlay'``, ``'subplot'``)
+    - *spikeHistBin*: Size of bin in ms to use for histogram  (``int``)
+    - *syncLines*: calculate synchrony measure and plot vertical lines for each spike to demonstrate synchrony (``True``, ``False``)
+    - *figSize*: Size of figure (``(width, height)``)
+    - *saveData*: File name where to save the final data used to generate the figure (``None``, ``'fileName'``)
+    - *saveFig*: File name where to save the figure (``None``, ``'fileName'``)
+    - *showFig*: Whether to show the figure or not (``True``, ``False``)
 
-    - Returns figure handle
+    **analysis.plotRaster** returns the figure handle
     
 
 * **analysis.plotSpikeHist** (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, overlay=True, graphType='line', yaxis = 'rate', figSize = (10,8), saveData = None, saveFig = None, showFig = True)
      
     Plot spike histogram. Optional arguments:
 
-    - *include*: List of data series to include. Note: one line per item, not grouped (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
-    - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
-    - *binSize*: Size in ms of each bin (int)
-    - *overlay*: Whether to overlay the data lines or plot in separate subplots  (True|False)
-    - *graphType*: Type of graph to use (line graph or bar plot)  ('line'|'bar')
-    - *yaxis*: Units of y axis (firing rate in Hz, or spike count) ('rate'|'count')
-    - *figSize*: Size of figure ((width, height))
-    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
-    - *saveFig*: File name where to save the figure (None|'fileName')
-    - *showFig*: Whether to show the figure or not (True|False)
+    - *include*: List of data series to include. Note: one line per item, not grouped ([``'all'``, ``'allCells'`` , ``'allNetStims'``, ``120`` , ``'L4'`` , ``('L2', 56)``, ``('L5', [4, 5, 6])``])
+    - *timeRange*: Time range of spikes shown; if ``None`` shows all (``[start:stop]``)
+    - *binSize*: Size in ms of each bin (``int``)
+    - *overlay*: Whether to overlay the data lines or plot in separate subplots  (``True``, ``False``)
+    - *graphType*: Type of graph to use (line graph or bar plot)  (``'line'``, ``'bar'``)
+    - *yaxis*: Units of y axis (firing rate in Hz, or spike count) (``'rate'``, ``'count'``)
+    - *figSize*: Size of figure (``(width, height)``)
+    - *saveData*: File name where to save the final data used to generate the figure (``None``, ``'fileName'``)
+    - *saveFig*: File name where to save the figure (``None``, ``'fileName'``)
+    - *showFig*: Whether to show the figure or not (``True``, ``False``)
 
-    - Returns figure handle
+    **analysis.plotSpikeHist** returns the figure handle
 
 
 * **analysis.plotSpikeStats** (include = ['allCells', 'eachPop'], timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], popColors = [], figSize = (6,8), saveData = None, saveFig = None, showFig = True)
      
     Plot spike histogram. Optional arguments:
 
-    - *include*: List of data series to include. Note: one line per item, not grouped (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
-    - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
-    - *graphType*: Type of graph to use  ('boxplot')
-    - *stats*: List of types measure to calculate stats over: cell firing rates, interspike interval coefficient of variation (ISI CV), pairwise synchrony, and/or overall synchrony (sync measures calculated using PySpike SPIKE-Synchrony measure) (['rate', |'isicv'| 'pairsync' |'sync'|])
+    - *include*: List of data series to include. Note: one line per item, not grouped ([``'all'``, ``'allCells'`` , ``'allNetStims'``, ``120`` , ``'L4'`` , ``('L2', 56)``, ``('L5', [4, 5, 6])``])
+    - *timeRange*: Time range of spikes shown; if ``None`` shows all (``[start:stop]``)
+    - *graphType*: Type of graph to use  (``'boxplot'``, ``'histogram'``, ``'scatter'``)
+    - *stats*: List of measures to calculate stats over: cell firing rates, interspike interval coefficient of variation (ISI CV), pairwise synchrony, and/or overall synchrony (sync measures calculated using PySpike SPIKE-Synchrony measure) (``['rate', 'isicv', 'pairsync', 'sync'|]``)
     - *popColors*: Dictionary with color (value) used for each population/key 
-    - *figSize*: Size of figure ((width, height))
-    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
-    - *saveFig*: File name where to save the figure (None|'fileName')
-    - *showFig*: Whether to show the figure or not (True|False)
+    - *figSize*: Size of figure (``(width, height)``)
+    - *saveData*: File name where to save the final data used to generate the figure (``None``, ``'fileName'``)
+    - *saveFig*: File name where to save the figure (``None``, ``'fileName'``)
+    - *showFig*: Whether to show the figure or not (``True``, ``False``)
 
-    - Returns figure handle    
+    **analysis.plotSpikeStats** returns the figure handle    
 
 * **analysis.plotRatePSD** (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, maxFreq = 100, NFFT = 256, noverlap = 128, smooth = 0, overlay=True, yaxis = 'rate', figSize = (10,8), saveData = None, saveFig = None, showFig = True)
      
     Plot spikes power spectral density (PSD). Optional arguments:
 
-    - *include*: List of data series to include. Note: one line per item, not grouped (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
-    - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
-    - *binSize*: Size in ms of each bin (int)
-    - maxFreq: Maximum frequency to show in plot (float)
-    - NFFT: The number of data points used in each block for the FFT (power of 2) (float)
-    - *noverlap*: Number of points of overlap between segments (int, < nperseg)
-    - *smooth*: Window size for smoothing; no smoothing if 0 (int)
-    - *overlay*: Whether to overlay the data lines or plot in separate subplots  (True|False)
-    - *figSize*: Size of figure ((width, height))
-    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
-    - *saveFig*: File name where to save the figure (None|'fileName')
-    - *showFig*: Whether to show the figure or not (True|False)
+    - *include*: List of data series to include. Note: one line per item, not grouped ([``'all'``, ``'allCells'`` , ``'allNetStims'``, ``120`` , ``'L4'`` , ``('L2', 56)``, ``('L5', [4, 5, 6])``])
+    - *timeRange*: Time range of spikes shown; if ``None`` shows all (``[start:stop]``)
+    - *binSize*: Size in ms of each bin (``int``)
+    - maxFreq: Maximum frequency to show in plot (``float``)
+    - NFFT: The number of data points used in each block for the FFT (power of 2) (``float``)
+    - *noverlap*: Number of points of overlap between segments (``int``, < nperseg)
+    - *smooth*: Window size for smoothing; no smoothing if ``0`` (``int``)
+    - *overlay*: Whether to overlay the data lines or plot in separate subplots  (``True``, ``False``)
+    - *figSize*: Size of figure (``(width, height)``)
+    - *saveData*: File name where to save the final data used to generate the figure (``None``, ``'fileName'``)
+    - *saveFig*: File name where to save the figure (``None``, ``'fileName'``)
+    - *showFig*: Whether to show the figure or not (``True``, ``False``)
 
-    - Returns figure handle and power array
+    **analysis.plotRatePSD** returns the figure handle and power array
 
 
 * **analysis.plotTraces** (include = [], timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True)
     
-    Plot recorded traces (specified in ``simConfig.recordTraces)`. Optional arguments: 
+    Plot recorded traces (specified in ``simConfig.recordTraces``). Optional arguments: 
 
-    - *include*: List of cells for which to plot the recorded traces (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
-    - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
-    - *overlay*: Whether to overlay the data lines or plot in separate subplots (True|False)
-    - *oneFigPer*: Whether to plot one figure per cell or per trace (showing multiple cells) ('cell'|'trace')
-    - *rerun*: rerun simulation so new set of cells gets recorded (True|False)
-    - *figSize*: Size of figure ((width, height))
-    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
-    - *saveFig*: File name where to save the figure (None|'fileName')
-    - *showFig*: Whether to show the figure or not (True|False)
+    - *include*: List of cells for which to plot the recorded traces ([``'all'``, ``'allCells'`` , ``'allNetStims'``, ``120`` , ``'L4'`` , ``('L2', 56)``, ``('L5', [4, 5, 6])``])
+    - *timeRange*: Time range of spikes shown; if None shows all (``[start:stop]``)
+    - *overlay*: Whether to overlay the data lines or plot in separate subplots (``True``, ``False``)
+    - *oneFigPer*: Whether to plot one figure per cell or per trace (showing multiple cells) (``'cell'``, ``'trace'``)
+    - *rerun*: rerun simulation so new set of cells gets recorded (``True``, ``False``)
+    - *figSize*: Size of figure (``(width, height)``)
+    - *saveData*: File name where to save the final data used to generate the figure (``None``, ``'fileName'``)
+    - *saveFig*: File name where to save the figure (``None``, ``'fileName'``)
+    - *showFig*: Whether to show the figure or not (``True``, ``False``)
 
-    - Returns figure handles
+    **analysis.plotTraces** returns the figure handles
 
 
 * **analysis.plotLFP** (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'timeFreq', 'locations'], timeRange = None, NFFT = 256, noverlap = 128, nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
     
-    Plot LFP / extracellular electrode recordings (time-resolved, power spectral density, time-frequency and 3D locations)
+    Plot LFP / extracellular electrode recordings (time-resolved, power spectral density, time-frequency, and 3D locations)
     
-    - *electrodes*:: List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (['avg', 'all', 0, 1, ...])
-    - *plots*: list of plot types to show (['timeSeries', 'PSD', 'spectrogram', 'locations']) 
-    - *timeRange*: Time range of spikes shown; if None shows all ([start:stop])
-    - *NFFT*: Number of data points used in each block for the PSD and time-freq FFT (int, power of 2)
-    - *noverlap*: Number of points of overlap between segments for PSD and time-freq (int, < nperseg)
-    - *maxFreq*: Maximum frequency shown in plot for PSD and time-freq (float)
-    - *nperseg*: Length of each segment for time-freq (int)
-    - *smooth*:  Window size for smoothing LFP; no smoothing if 0 (int)
-    - *separation*: Separation factor between time-resolved LFP plots; multiplied by max LFP value (float)
-    - *includeAxon*:  Whether to show the axon in the location plot (boolean)
-    - *figSize*: Size of figure ((width, height))
-    - *saveData*: File name where to save the final data used to generate the figure; if set to True uses filename from simConfig (None|True|'fileName')
-    - *saveFig*: File name where to save the figure; if set to True uses filename from simConfig (None|True|'fileName')
-    - *showFig*: Whether to show the figure or not (True|False)
+    - *electrodes*:: List of electrodes to include; average of all electrodes or each electrode separately (``'avg'``, ``'all'``, ``[0, 1, ...]``)
+    - *plots*: list of plot types to show (``['timeSeries', 'PSD', 'spectrogram', 'locations']``) 
+    - *timeRange*: Time range of spikes shown; if ``None`` shows all (``[start:stop]``)
+    - *NFFT*: Number of data points used in each block for the PSD and time-freq FFT (``int``, power of 2)
+    - *noverlap*: Number of points of overlap between segments for PSD and time-freq (``int``, < nperseg)
+    - *maxFreq*: Maximum frequency shown in plot for PSD and time-freq (``float``)
+    - *nperseg*: Length of each segment for time-freq (``int``)
+    - *smooth*:  Window size for smoothing LFP; no smoothing if ``0`` (``int``)
+    - *separation*: Separation factor between time-resolved LFP plots; multiplied by max LFP value (``float``)
+    - *includeAxon*:  Whether to show the axon in the location plot (``True``, ``False``)
+    - *figSize*: Size of figure (``(width, height)``)
+    - *saveData*: File name where to save the final data used to generate the figure; if set to ``True`` uses filename from simConfig (``None``, ``True``, ``'fileName'``)
+    - *saveFig*: File name where to save the figure; if set to ``True`` uses filename from simConfig (``None``, ``True``, ``'fileName'``)
+    - *showFig*: Whether to show the figure or not (``True``, ``False``)
 
-    - Returns figure handles
+    - **analysis.plotLFP** returns the figure handles
     
 
 
@@ -959,49 +962,50 @@ Analysis-related functions
     
     Plot 3D cell shape using Matplotlib or NEURON Interviews PlotShape.
     
-    - *includePre*: List of presynaptic cells to consider when plotting connections (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
-    - *includePost*: List of cells to show shape of (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
-    - *showSyns*: Show synaptic connections in 3D (True|False) 
-    - *synStyle*: Style of marker to show synapses (Matplotlib markers) 
+    - *includePre*: List of presynaptic cells to consider when plotting connections ([``'all'``, ``'allCells'`` , ``'allNetStims'``, ``120`` , ``'L4'`` , ``('L2', 56)``, ``('L5', [4, 5, 6])``])
+    - *includePost*: List of cells to show shape of ([``'all'``, ``'allCells'`` , ``'allNetStims'``, ``120`` , ``'L4'`` , ``('L2', 56)``, ``('L5', [4, 5, 6])``])
+    - *showSyns*: Show synaptic connections in 3D (``True``, ``False``) 
+    - *synStyle*: Style of marker to show synapses (``Matplotlib marker``) 
     - *dist*: 3D distance (like zoom)  
     - *synSize*: Size of marker to show synapses 
-    - *cvar*: Variable to represent in shape plot ('numSyns'|'weightNorm')
-    - *cvals*: List of values to represent in shape plot; must be same as num segments (list of size num segments; )
-    - *iv*: Use NEURON Interviews (instead of matplotlib) to show shape plot (True|False)
-    - *ivprops*: Dict of properties to plot using Interviews (dict)
-    - *includeAxon*: Include axon in shape plot (True|False)
-    - *showSyns*: Show synaptic connections in 3D view (True|False) 
-    - *showElectrodes*: Show LFP electrodes in 3D view (True|False)
-    - *bkgColor*:: RGBA list/tuple with bakcground color eg. (0.5, 0.2, 0.1, 1.0) (list/tuple with 4 floats)
-    - *figSize*: Size of figure ((width, height))
+    - *cvar*: Variable to represent in shape plot (``'numSyns'``, ``'weightNorm'``)
+    - *cvals*: List of values to represent in shape plot; must be same as num segments (list of size num segments)
+    - *iv*: Use NEURON Interviews (instead of Matplotlib) to show shape plot (``True``, ``False``)
+    - *ivprops*: Dict of properties to plot using Interviews (``dict``)
+    - *includeAxon*: Include axon in shape plot (``True``, ``False``)
+    - *showSyns*: Show synaptic connections in 3D view (``True``, ``False``) 
+    - *showElectrodes*: Show LFP electrodes in 3D view (``True``, ``False``)
+    - *bkgColor*:: RGBA list/tuple with bakcground color e.g. ``(0.5, 0.2, 0.1, 1.0)`` (``list``/``tuple`` with 4 floats)
+    - *figSize*: Size of figure (``(width, height)``)
     - *saveData*: File name where to save the final data used to generate the figure; 
-        if set to True uses filename from simConfig (None|True|'fileName')
+        if set to ``True`` uses filename from simConfig (``None``, ``True``, ``'fileName'``)
     - *saveFig*: File name where to save the figure;
-        if set to True uses filename from simConfig (None|True|'fileName')
-    - *showFig*: Whether to show the figure or not (True|False)
+        if set to ``True`` uses filename from simConfig (``None``, ``True``, ``'fileName'``)
+    - *showFig*: Whether to show the figure or not (``True``, ``False``)
 
-    - Returns figure handles
+    - **plotShape** returns the figure handles
+
 
     Examples of plotShape():
-
+ 
     .. code-block:: python
 		
-		# num syns from I2 pop -> E5 cell 0  (using matplotlib)
-		sim.analysis.plotShape(includePre=['I2'], includePost= [('E5',0)], cvar='numSyns', saveFig=True, showFig=True, iv=0, includeAxon=False)
+		# num syns from I2 pop -> E5 cell 0  (using Matplotlib)
+		sim.analysis.plotShape(includePre=['I2'], includePost= [('E5', 0)], cvar='numSyns', saveFig=True, showFig=True, iv=0, includeAxon=False)
 
-		# voltage; 1st create list of values (e.g. vsegs) and pass as cvals argument (using matplotlib)
+		# voltage; 1st create list of values (e.g. vsegs) and pass as cvals argument (using Matplotlib)
 		vsegs = [seg.v for sec in sim.net.cells[0].secs.values() for seg in sec['hObj']]
-		sim.analysis.plotShape(includePost= [0], cvals=vsegs, saveFig=True, iv=0, includeAxon=True)
+		sim.analysis.plotShape(includePost=[0], cvals=vsegs, saveFig=True, iv=0, includeAxon=True)
 
-		# syn locations (using matplotlib) of cell with gid=0
-		sim.analysis.plotShape(includePost=[0], showSyns=1, synStyle='.', synSiz=3)
+		# syn locations (using Matplotlib) of cell with gid=0
+		sim.analysis.plotShape(includePost=[0], showSyns=True, synStyle='.', synSize=3)
 
-		# syn location (using interviews)
-		sim.analysis.plotShape(includePre=['I2'], showSyns=1, includePost= [('E5',0)], saveFig=True, showFig=True, iv=1, ivprops={'colorSecs': 1, 'colorSyns':2 ,'style': 'o', 'siz':2})
+		# syn location (using Interviews)
+		sim.analysis.plotShape(includePre=['I2'], showSyns=True, includePost= [('E5', 0)], saveFig=True, showFig=True, iv=1, ivprops={'colorSecs': 1, 'colorSyns': 2 ,'style': 'o', 'size':2})
 
 
-		# Of course, as with any analysis function, can also include it as a dict in simConfg, instead of calling function directly
-		cfg.analysis['plotShape'] = {'includePre': ['all'], 'includePost': [('E5',3)], 'cvar':'numSyns','saveFig': True, 'showFig': True, 'includeAxon': False}
+		# Of course, as with any analysis function, can also include it as a dictionary in simConfig, instead of calling function directly
+		cfg.analysis['plotShape'] = {'includePre': ['all'], 'includePost': [('E5', 3)], 'cvar':'numSyns', 'saveFig': True, 'showFig': True, 'includeAxon': False}
 
 
 
@@ -1010,46 +1014,46 @@ Analysis-related functions
 
     Plot network connectivity. Optional arguments:
 
-    - *include*: List of cells to show (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
-    - *feature*: Feature to show in connectivity matrix; the only features applicable to groupBy='cell' are 'weight', 'delay' and 'numConns'; 'strength' = weight * probability ('weight'|'delay'|'numConns'|'probability'|'strength'|'convergence'|'divergence')
-    - *groupBy*: Show matrix for individual cells or populations ('pop'|'cell')
-    - *orderBy*: Unique numeric cell property to order x and y axes by, e.g. 'gid', 'ynorm', 'y' (requires groupBy='cells') ('gid'|'y'|'ynorm'|...)
-    - *figSize*: Size of figure ((width, height))
-    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
-    - *saveFig*: File name where to save the figure (None|'fileName')
-    - *showFig*: Whether to show the figure or not (True|False)
+    - *include*: List of cells to show ([``'all'``, ``'allCells'`` , ``'allNetStims'``, ``120`` , ``'L4'`` , ``('L2', 56)``, ``('L5', [4, 5, 6])``])
+    - *feature*: Feature to show in connectivity matrix; the only features applicable to groupBy='cell' are 'weight', 'delay' and 'numConns'; 'strength' = weight * probability (``'weight'``, ``'delay'``, ``'numConns'``, ``'probability'``, ``'strength'``, ``'convergence'``, ``'divergence'``)
+    - *groupBy*: Show matrix for individual cells or populations (``'pop'``, ``'cell'``)
+    - *orderBy*: Unique numeric cell property to order x and y axes by, e.g. 'gid', 'ynorm', 'y' (requires groupBy='cells') (``'gid'``, ``'y'``, ``'ynorm'``, ...)
+    - *figSize*: Size of figure (``(width, height)``)
+    - *saveData*: File name where to save the final data used to generate the figure (``None``, ``'fileName'``)
+    - *saveFig*: File name where to save the figure (``None``, ``'fileName'``)
+    - *showFig*: Whether to show the figure or not (``True``, ``False``)
 
-    - Returns figure handles
+    **analysis.plotConn** returns the figure handles
 
 
 * **analysis.plot2Dnet** (include = ['allCells'], figSize = (12,12), view = 'xy', showConns = True, saveData = None, saveFig = None, showFig = True)
 
     Plot 2D representation of network cell positions and connections. Optional arguments:
 
-    - *include*: List of cells to show (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])
-    - *showConns*: Whether to show connections or not (True|False)
-    - view: Perspective view, either front ('xy') or top-down ('xz')
-    - *figSize*: Size of figure ((width, height))
-    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
-    - *saveFig*: File name where to save the figure (None|'fileName')
-    - *showFig*: Whether to show the figure or not (True|False)
+    - *include*: List of cells to show ([``'all'``, ``'allCells'`` , ``'allNetStims'``, ``120`` , ``'L4'`` , ``('L2', 56)``, ``('L5', [4, 5, 6])``])
+    - *showConns*: Whether to show connections or not (``True``, ``False``)
+    - view: Perspective view, either front (``'xy'``) or top-down (``'xz'``)
+    - *figSize*: Size of figure (``(width, height)``)
+    - *saveData*: File name where to save the final data used to generate the figure (``None``, ``'fileName'``)
+    - *saveFig*: File name where to save the figure (``None``, ``'fileName'``)
+    - *showFig*: Whether to show the figure or not (``True``, ``False``)
 
-    - Returns figure handles
+    **analysis.plot2Dnet** returns the figure handles
 
 
 * **analysis.nTE** (cells1 = [], cells2 = [], spks1 = None, spks2 = None, timeRange = None, binSize = 20, numShuffle = 30)
 
     Calculate normalized transfer entropy
 
-    - *cells1*: Subset of cells from which to obtain spike train 1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
-    - *cells2*: Subset of cells from which to obtain spike train 2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
-    - *spks1*: Spike train 1; list of spike times; if omitted then obtains spikes from cells1 (list)
-    - *spks2*: Spike train 2; list of spike times; if omitted then obtains spikes from cells2 (list)
-    - *timeRange*: Range of time to calculate nTE in ms ([min, max])
-    - *binSize*: Bin size used to convert spike times into histogram (int)
-    - *numShuffle*: Number of times to shuffle spike train 1 to calculate TEshuffled; note: nTE = (TE - TEShuffled)/H(X2F|X2P) (int)
+    - *cells1*: Subset of cells from which to obtain spike train 1 ([``'all'``, ``'allCells'`` , ``'allNetStims'``, ``120`` , ``'L4'`` , ``('L2', 56)``, ``('L5', [4, 5, 6])``])
+    - *cells2*: Subset of cells from which to obtain spike train 2 ([``'all'``, ``'allCells'`` , ``'allNetStims'``, ``120`` , ``'L4'`` , ``('L2', 56)``, ``('L5', [4, 5, 6])``])
+    - *spks1*: Spike train 1; list of spike times; if omitted then obtains spikes from cells1 (``list``)
+    - *spks2*: Spike train 2; list of spike times; if omitted then obtains spikes from cells2 (``list``)
+    - *timeRange*: Range of time to calculate nTE in ms (``[min, max]``)
+    - *binSize*: Bin size used to convert spike times into histogram (``int``)
+    - *numShuffle*: Number of times to shuffle spike train 1 to calculate TEshuffled; note: nTE = (TE - TEShuffled)/H(X2F|X2P) (``int``)
 
-    - Returns nTE: normalized transfer entropy (float)
+    **analysis.nTE** returns nTE: normalized transfer entropy (float)
 
 
 * **analysis.granger** (cells1 = [], cells2 = [], spks1 = None, spks2 = None, label1 = 'spkTrain1', label2 = 'spkTrain2',
@@ -1057,20 +1061,21 @@ Analysis-related functions
   
     Calculate and optionally plot Granger Causality 
 
-    - *cells1*: Subset of cells from which to obtain spike train 1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
-    - cells2: Subset of cells from which to obtain spike train 2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])])
-    - *spks1*: Spike train 1; list of spike times; if omitted then obtains spikes from cells1 (list)
-    - *spks2*: Spike train 2; list of spike times; if omitted then obtains spikes from cells2 (list)
-    - *label1*: Label for spike train 1 to use in plot (string)
-    - *label2*: Label for spike train 2 to use in plot (string)
-    - *timeRange*: Range of time to calculate nTE in ms  ([min, max])
+    - *cells1*: Subset of cells from which to obtain spike train 1 ([``'all'``, ``'allCells'`` , ``'allNetStims'``, ``120`` , ``'L4'`` , ``('L2', 56)``, ``('L5', [4, 5, 6])``])
+    - cells2: Subset of cells from which to obtain spike train 2 ([``'all'``, ``'allCells'`` , ``'allNetStims'``, ``120`` , ``'L4'`` , ``('L2', 56)``, ``('L5', [4, 5, 6])``])
+    - *spks1*: Spike train 1; list of spike times; if omitted then obtains spikes from cells1 (``list``)
+    - *spks2*: Spike train 2; list of spike times; if omitted then obtains spikes from cells2 (``list``)
+    - *label1*: Label for spike train 1 to use in plot (``string``)
+    - *label2*: Label for spike train 2 to use in plot (``string``)
+    - *timeRange*: Range of time to calculate nTE in ms  (``[min, max]``)
     - *binSize*: Bin size used to convert spike times into histogram 
-    - *plotFig*: Whether to plot a figure showing Granger Causality Fx2y and Fy2x (True|False)
-    - *saveData*: File name where to save the final data used to generate the figure (None|'fileName')
-    - *saveFig*: File name where to save the figure (None|'fileName')
-    - *showFig*: Whether to show the figure or not (True|False)
+    - *plotFig*: Whether to plot a figure showing Granger Causality Fx2y and Fy2x (``True``, ``False``)
+    - *saveData*: File name where to save the final data used to generate the figure (``None``, ``'fileName'``)
+    - *saveFig*: File name where to save the figure (``None``, ``'fileName'``)
+    - *showFig*: Whether to show the figure or not (``True``, ``False``)
 
-    Returns: 
+    **analysis.granger** returns: 
+
     - *F*: list of freqs
     - *Fx2y*: causality measure from x to y 
     - *Fy2x*: causality from y to x 
@@ -1080,16 +1085,16 @@ Analysis-related functions
 
 
 NOTE: The *include* argument can have the following values:
-	- 'all': all cells and netstims
-	- 'allCells': only all cells
-	- 'allNetStims': only all NetStims
-	- 120: cell with gid 120
-	- 'L4': all cells or NetStims in population 'L4'
-	- ('L2', 56): cell with relative index 56 from population 'L2'
-	- ('L5', [4,5,6]): cells with relative indices 4,5 and 6 from population 'L5'
+	- ``'all'``: all cells and netstims
+	- ``'allCells'``: only all cells
+	- ``'allNetStims'``: only all NetStims
+	- ``120``: cell with gid 120
+	- ``'L4'``: all cells or NetStims in population 'L4'
+	- ``('L2', 56)``: cell with relative index 56 from population 'L2'
+	- ``('L5', [4,5,6])``: cells with relative indices 4, 5, and 6 from population 'L5'
 
 
-The figure show usage examples for the different analysis functions:
+The figure below shows usage examples for the different analysis functions:
 
 .. image:: figs/analysis_figs.png
 	:width: 90%

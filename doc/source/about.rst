@@ -4,14 +4,15 @@ About NetPyNE
 What is NetPyNE?
 ----------------
 
-NetPyNE (**Net**\ works using **Py**\ thon and **NE**\ URON) is a python package to facilitate the development, parallel simulation and analysis of biological neuronal networks using the NEURON simulator.
-Although NEURON already enables multiscale simulation ranging from the molecular to the network level, NEURON for networks, often requiring parallel simulations, requires substantial programming. NetPyNE greatly facilitates the development and parallel simulation of biological neuronal networks in NEURON for students and experimentalists. NetPyNE is also intended for experienced modelers, providing powerful features to incorporate complex anatomical and physiological data into models.
+NetPyNE (**Net**\ works using **Py**\ thon and **NE**\ URON) is a Python package to facilitate the development, simulation, parallelization, and analysis of biological neuronal networks using the NEURON simulator.
+
+Although NEURON already enables multiscale simulations ranging from the molecular to the network level, using NEURON for network simulations requires substantial programming, and often requires parallel simulations. NetPyNE greatly facilitates the development and parallel simulation of biological neuronal networks in NEURON for students and experimentalists. NetPyNE is also intended for experienced modelers, providing powerful features to incorporate complex anatomical and physiological data into models.
 
 For a more detailed overview of NetPyNE see:
 
-- `eLife paper <https://elifesciences.org/articles/44494>`_
+- Our `NetPyNE article <https://elifesciences.org/articles/44494>`_ in the journal `eLife <https://elifesciences.org/>`_
 
-- `SLIDES for Computational Neuroscience conference CNS17 <http://it.neurosim.downstate.edu/salvadord/netpyne.pdf>`_
+- Our `NetPyNE presentation slides <http://it.neurosim.downstate.edu/salvadord/netpyne.pdf>`_ from the Computational Neuroscience conference `CNS*2017 <https://www.cnsorg.org/cns-2017>`_
 
 |
 
@@ -22,69 +23,71 @@ For a more detailed overview of NetPyNE see:
 Major Features
 --------------
 
-* **Converts a set of high-level specifications into a NEURON network model.**
+* **Converts a set of high-level specifications into a NEURON network model**
 
-* **Specifications are provided in a simple, standardized, declarative Python-based format.**
+* **Specifications are provided in a simple, standardized, declarative Python-based format**
 
-* Can easily define:
+* **Can easily define:**
 	* *Populations*: cell type and model, number of neurons or density, spatial extent, ...
-	* *Cell properties*: Morphology, biophysics, implementation, ...
-    * *Reaction-diffusion (RxD)*: Species, regions, reactions, ... 
-	* *Synaptic mechanisms*: Time constants, reversal potential, implementation, ...
-	* *Stimulation*: Spike generators, current clamps, spatiotemporal properties, ...
-	* *Connectivity rules*: conditions of pre- an post-synaptic cells, different functions, ...
+	* *Cell properties*: morphology, biophysics, implementation, ...
+	* *Synaptic mechanisms*: time constants, reversal potential, implementation, ...
+	* *Stimulation*: spike generators, current clamps, spatiotemporal properties, ...
+	* *Connectivity rules*: conditions of pre- and post-synaptic cells, different functions, ...
 	* *Simulation configuration*: duration, saving and analysis, graphical output, ... 
+	* *Reaction-diffusion (RxD)*: species, regions, reactions, ... 
 
-* Cell properties highlights:
-	* Import existing HOC and Python defined cell models into NetPyNE format.
+* **Cell properties highlights:**
+	* Import existing HOC and Python defined cell models into NetPyNE format
 	* Readily change model implementation *e.g.,* from Hodgkin-Huxley multicompartment to Izhikevich point neuron
-	* Combine multiple cell models into hybrid networks for efficient large-scale networks.
+	* Combine multiple cell models into hybrid networks for efficient large-scale networks
 
-* Connectivity rules highlights:
-	* Flexible connectivity rules based on pre- and post-synaptic cell properties (*e.g.,* cell type or location). 
-	* Connectivity functions available: all-to-all, probabilistic, convergent, divergent, and explicit list.  
-	* Can specify parameters (*e.g.,* weight, probability or delay) as a function of pre/post-synaptic spatial properties, *e.g.,* delays or probability that depend on distance between cells or cortical depth.
+* **Connectivity rules highlights:**
+	* Flexible connectivity rules based on pre- and post-synaptic cell properties (*e.g.,* cell type or location) 
+	* Connectivity functions available: all-to-all, probabilistic, convergent, divergent, and explicit list  
+	* Can specify parameters (*e.g.,* weight, probability or delay) as a function of pre/post-synaptic spatial properties, *e.g.,* delays or probability that depend on distance between cells or cortical depth
 	* Can specify subcellular distribution of synapses along the dendrites, and will be automatically adapted to the morphology of each model neuron. 
-	* Can easily add learning mechanisms to synapses, including STDP and reinforcement learning.
+	* Can easily add learning mechanisms to synapses, including STDP and reinforcement learning
 
-* **Generates NEURON network instance ready for MPI parallel simulation -- takes care of cell distribution and gathering of data.**
+* **Generates NEURON network instance ready for MPI parallel simulation**
+	* Takes care of cell distribution 
+	* Handles gathering of data
 
-* Analysis and plotting of network and simulation output:
-	* Raster plot
-	* Spike histogram of all cells, populations or single cells
-	* Intrinsic cell variables (voltages, currents, conductances) plots
+* **Analysis and plotting of network and simulation output:**
+	* Raster plot of all cells or populations
+	* Spike histogram of all cells, populations, or single cells
+	* Intrinsic cell variable plots (voltages, currents, conductances) 
 	* Local field potential (LFP) calculation and plots (time-resolved and power spectra)
-	* Connectivity matrix at cell or population level (weights, num connections, efficiency, probability, ...)
+	* Connectivity matrix at cell or population level (weights, number of connections, efficiency, probability, ...)
 	* 2D representation of network cell locations and connections
- 	* 3D shape plot with option to include color-coded variables (eg, num of synapses) 
+ 	* 3D shape plot with option to include color-coded variables (e.g., number of synapses) 
  	* Normalized transfer entropy and spectral Granger Causality
 
-* Facilitates data sharing: 
-	* Can save/load high-level specs, network instance, simulation configuration and simulation results.
+* **Facilitates data sharing:** 
+	* Can save/load high-level specs, network instance, simulation configuration, and simulation results.
 	* Multiple formats supported: pickle, Matlab, JSON, CSV, HDF5
-	* Can export/import to/from NeuroML and SONATA, standardized formats for neural models.
+	* Can export/import to/from NeuroML and SONATA, standardized formats for neural models
 
-* Batch simulations:
-	* Easy specification of parameters and range of values to explore in batch simulations.
-	* Pre-defined, configurable setups to automatically submit jobs in multicore machines (Bulletin board) or supercomputers (SLURM or PBS Torque)
-	* Analysis and visualization of multidimensional batch simulation results.
+* **Batch simulations:**
+	* Easy specification of parameters and range of values to explore in batch simulations
+	* Pre-defined, configurable setups to automatically submit jobs in multicore machines (bulletin board) or supercomputers (SLURM or PBS Torque)
+	* Analysis and visualization of multidimensional batch simulation results
 
-* Current usage:
-    * Used to develop models of many different brain regions and phenomena. See `full list of models <www.netpyne.org/models>`_.
-    * Integrated with the Human Neocortical Neurosolver (https://hnn.brown.edu/) to add flexibility to its cortical model 
-    * Used by Open Source Brain (www.opensourcebrain.org) to run parallel simulation of NeuroML-based NEURON models
-    * Available to run simulations on XSEDE supercomputers via the `Neuroscience Gateway <www.nsgportal.org>`_. 
+* **Current usage:**
+    * Used to develop models of many different brain regions and phenomena. See [full list of models](www.netpyne.org/models)
+    * Integrated with the `Human Neocortical Neurosolver <https://hnn.brown.edu/>`_ to add flexibility to its cortical model 
+    * Used by `Open Source Brain <www.opensourcebrain.org>`_ to run parallel simulation of NeuroML-based NEURON models
+    * Available to run simulations on XSEDE supercomputers via the `Neuroscience Gateway <www.nsgportal.org>`_
 
 Questions, suggestions and contributions
 -----------------------------------------
 
 NetPyNE is open source and available at https://github.com/Neurosim-lab/netpyne .
 
-For questions or suggestions please use the `Google NetPyNE QA forum <https://groups.google.com/forum/#!forum/netpyne-forum>`_ , the `NEURON NetPyNE forum <https://www.neuron.yale.edu/phpBB/viewforum.php?f=45>`_  or add an `Issue to github <https://github.com/Neurosim-lab/netpyne/issues>`_. 
+For questions or suggestions please use the `Google NetPyNE Q&A forum <https://groups.google.com/forum/#!forum/netpyne-forum>`_ , the `NEURON NetPyNE forum <https://www.neuron.yale.edu/phpBB/viewforum.php?f=45>`_  or add an `Issue to GitHub <https://github.com/Neurosim-lab/netpyne/issues>`_. 
 
 For contributions (which are more than welcome!) please fork the repository and make a Pull Request with your changes. See our contributors guide for more details: `Contributors Guide <https://github.com/Neurosim-lab/netpyne/blob/development/CONTRIBUTING.md>`_.
 
-For further information please contact salvadordura@gmail.com.
+For further information please contact: salvadordura@gmail.com.
 
 
 .. _code_of_conduct:
@@ -122,8 +125,8 @@ About NetPyNE
 - Dura-Bernal S, Suter BA, Neymotin SA, Quintana AJ, Gleeson P, Shepherd GMG, Lytton WW. **Normalized cortical depth (NCD) as a primary coordinate system for cell connectivity in cortex: experiment and model.** *Society for Neuroscience (SFN), 2015.*
 
 
-Make use and/or cite NetPyNE
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Make use of and/or cite NetPyNE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - *Amsalem, O., Eyal, G., Rogozinski, N., Gevaert, M., Kumbhar, P., Schürmann, F. and Segev, I., **An efficient analytical reduction of detailed nonlinear neuron models.** `Nature Communications, 11(1), pp.1-13 <https://www.nature.com/articles/s41467-019-13932-6>`_. *2020*
 
@@ -158,7 +161,7 @@ Make use and/or cite NetPyNE
 - Dura-Bernal S, Menzies RS, McLauchlan C, van Albada SJ, Kedziora DJ, Neymotin SA, Lytton WW, Kerr CC. **Effect of network size on computational capacity.** *Computational Neuroscience (CNS), 2016.*
 
 
-See here an `updated list from Google Scholar <https://scholar.google.com/scholar?oi=bibs&hl=en&cites=17032431079400790910&as_sdt=5>`_.
+Here is an `updated list from Google Scholar <https://scholar.google.com/scholar?oi=bibs&hl=en&cites=17032431079400790910&as_sdt=5>`_.
 
 
 
@@ -168,28 +171,28 @@ Courses
 Future
 ^^^^^^^^^^^^
 
-- June'2020, Building and simulating brain circuit models on Google Cloud, Google Office, NYC (To be confirmed)
+- June 2020: Building and simulating brain circuit models on Google Cloud, Google Office, NYC (To be confirmed)
 
-- July'2020, CNS'2020 Tutorial on Multiscale Modeling using NEURON and NetPyNE, Melbourne, Australia (To be confirmed)
+- July 2020: [CNS*2020](https://www.cnsorg.org/cns-2020) Tutorial on Multiscale Modeling using NEURON and NetPyNE, Melbourne, Australia
 
 Past
 ^^^^^^^^^
 
-- January'2020, VIII Latin American School on Computational Neuroscience (LASCON), Institute of Mathematics and Statistics, University of Sao Paulo, Brazil
+- January 2020: VIII Latin American School on Computational Neuroscience (LASCON), Institute of Mathematics and Statistics, University of Sao Paulo, Brazil
 
-- July'2019, CNS’19 Tutorial organizer and lecturer, Building biophysically detailed neuronal models: from molecules to networks, Barcelona.
+- July 2019: CNS*2019 Tutorial organizer and lecturer, Building biophysically detailed neuronal models: from molecules to networks, Barcelona.
 
-- May'2019,	Workshop on Multiscale Network Modeling, Brown University. 
+- May 2019: Workshop on Multiscale Network Modeling, Brown University. 
 
-- May'2019,	Principles of Computational Neuroscience, Sassari University, Sardinia.
+- May 2019: Principles of Computational Neuroscience, Sassari University, Sardinia.
 
-- June'2018, NEURON Summer Course, Emory University, Atlanta.
+- June 2018: NEURON Summer Course, Emory University, Atlanta.
 
-- July'2018, CNS'18 Multiscale Modeling from Molecular to Large Network Level, CNS’18, Seattle.
+- July 2018: CNS/*2018 Multiscale Modeling from Molecular to Large Network Level, CNS/*2018, Seattle.
 
-- January'2018, VII Latin American School on Computational Neuroscience (LASCON), Institute of Mathematics and Statistics, University of Sao Paulo, Brazil
+- January 2018: VII Latin American School on Computational Neuroscience (LASCON), Institute of Mathematics and Statistics, University of Sao Paulo, Brazil
 
-- July'2017, Bernstein Computational Neuroscience Conference, Multiscale Modeling and Simulation, Gottingen.	
+- July 2017: Bernstein Computational Neuroscience Conference, Multiscale Modeling and Simulation, Gottingen.	
 
 
 Current funding
@@ -201,7 +204,7 @@ Current funding
 Governance structure
 ---------------------
 
-Major decisions about NetPyNE are made by the steering committee, guided by the :ref:`project_roadmap` and the :ref:`code_of_conduct`. The committee incliudes members from a diverse range of institutions, positions and backgrounds.
+Major decisions about NetPyNE are made by the steering committee, guided by the :ref:`project_roadmap` and the :ref:`code_of_conduct`. The committee includes members from a diverse range of institutions, positions and backgrounds.
 
 The current steering committee consists of the following members (in alphabetical order):
 
@@ -209,23 +212,23 @@ The current steering committee consists of the following members (in alphabetica
 
 - Padraig Gleeson (Principal Research Fellow, University College London)
 
-- Joe W Graham (Software Engineer, State University of New York Downstate)
+- Joe W. Graham (Research Scientist, State University of New York Downstate)
 
-- Erica Y Griffith (Graduate Student, State University of New York Downstate)
+- Erica Y. Griffith (Graduate Student, State University of New York Downstate)
 
 - Michael Hines (Senior Research Scientist, Yale University)
 
-- Cliff C Kerr (Senior Research Scientist, Institute for Disease Modeling)
+- Cliff C. Kerr (Senior Research Scientist, Institute for Disease Modeling)
 
-- William W Lytton (Distinguished Professor, State University of New York Downstate; Kings County Hospital)
+- William W. Lytton (Distinguished Professor, State University of New York Downstate; Kings County Hospital)
 
-- Robert A McDougal (Assistant Professor, Yale University)
+- Robert A. McDougal (Assistant Professor, Yale University)
 
-- Samuel A Neymotin (Research Scientist, Nathan Kline Institute for Psychiatric Research)
+- Samuel A. Neymotin (Research Scientist, Nathan Kline Institute for Psychiatric Research)
 
-- Benjamin A Suter (Postdoctoral Fellow, Institute of Science and Technology Austria)
+- Benjamin A. Suter (Postdoctoral Fellow, Institute of Science and Technology Austria)
 
-- Subhashini Sivagnanam (Principal computational and Data Science Research Specialist, San Diego Supercomputing Center)
+- Subhashini Sivagnanam (Principal Computational and Data Science Research Specialist, San Diego Supercomputing Center)
 
 
 Membership in the steering committee is a personal membership. Affiliations are listed for identification purposes only; steering committee members do not represent their employers or academic institutions. 
@@ -242,7 +245,7 @@ The project roadmap for the following five years (2019-2023) includes four large
 
     - *2019-2021: Reliability* - Test existing features, particularly recently added ones (RxD, subcellular connectivity, distributed saving, parameter optimization) such that they perform their intended function under all valid conditions and inputs. 
 
-    - *2020-2022: Robustness and error handling* - Ensure the tool it is able to cope with erroneous inputs and errors during execution. Improved tool robustness will include input validation, exception handling and informational messages.
+    - *2020-2022: Robustness and error handling* - Ensure the tool is able to cope with erroneous inputs and errors during execution. Improved tool robustness will include input validation, exception handling and informational messages.
 
     - *2022-2023: Reproducibility* - Ensure simulation results are reproducible across the most common platforms, including different versions of operating systems, Python, NEURON, MPI library; and HPC platform setup (eg XSEDE/NSG, Google Cloud Platform).
 
@@ -250,7 +253,7 @@ The project roadmap for the following five years (2019-2023) includes four large
 
     - *2020-2021: Macroscopic scale modeling* - Extend the framework to support macroscale data (e.g. MRI, EEG, MEG) and models (e.g. mean field models), thus linking this scale to the underlying circuit, cellular and molecular mechanisms. 
 
-    - *2021-2022: Machine learning analysis methods* - Incorporate ML methods (e.g. clustering, dimensionality reduction and deep learning) to explore and optimize large parameter spaces and analyze neural data.
+    - *2021-2022: Machine learning analysis methods* - Incorporate ML methods (e.g. clustering, dimensionality reduction, and deep learning) to explore and optimize large parameter spaces and analyze neural data.
 
     - *2022-2023: Reverse engineering of networks* - Infer high-level compact network connectivity rules (generative model) from the full connection information of biological network models, using statistical (e.g. Bayesian inference) and graph theoretical analysis.    
 
@@ -258,9 +261,9 @@ The project roadmap for the following five years (2019-2023) includes four large
     
     - *2019-2020: Web-based multi-user deployment* - Will allows users to build models and run simulations through a web browser over the internet, making the tool publicly available to the global research community.   
 
-    - *2019-2022: Incorporating missing component* -  Currently only accessible programmatically: RxD, subcellular connectivity, complex stimulation and parameter optimization (only grid search).
+    - *2019-2022: Incorporating missing components* -  Currently only accessible programmatically: RxD, subcellular connectivity, complex stimulation and parameter optimization (only grid search).
     
-    - *2021-2022: Dynamic interactive plots* - Improving plots by replacing the current static images with modern interactive and dynamic plots that facilitate understanding complex and large datasets.
+    - *2021-2022: Dynamic interactive plots* - Improving plots by replacing the current static images with modern interactive and dynamic plots that facilitate understanding of complex and large datasets.
     
     - *2022-2023: Visualization of large networks* - Improving performance to enable 3D visualization and manipulation of large-scale networks of detailed neurons (currently limited to a few hundred neurons).  
 
@@ -270,8 +273,8 @@ The project roadmap for the following five years (2019-2023) includes four large
 
     - *2019-2023: Workshops/tutorials* - Organized at neuroscience conferences to engage potential users by providing an overview of the tool functionalities and benefits. 
 
-    - *2020-2022: Online interactive tutorials* - Will enable new users to receive training at their own pace through multimedia-rich step-by-step instructions that can be executed interactively (eg via GUI or Jupyter Notebook).    
+    - *2020-2022: Online interactive tutorials* - Will enable new users to receive training at their own pace through multimedia-rich step-by-step instructions that can be executed interactively (e.g. via GUI or Jupyter Notebook).    
     
     - *2020-2023: Annual 3-day in-person course* - Will provide in-depth training to researchers/clinicians who could then teach tool usage at their labs or institutions.  
 
-    - *2020-2023: Annual Hackathon* - Will train and engage developers, overall promoting long-term sustainable collaborative development.
+    - *2020-2023: Annual Hackathon* - Will train and engage developers, promoting long-term, sustainable, collaborative development.

@@ -18,6 +18,11 @@
 
 - Fixed utput stat filenames of evolutionary optim: .cvs to .csv 
 
+- Added issue templates for GitHub
+
+- Overhaul of contribution guide (CONTRIBUTING.md)
+
+- Improvements of documentation
 
 # Version 0.9.5
 

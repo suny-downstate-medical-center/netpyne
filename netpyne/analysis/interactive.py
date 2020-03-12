@@ -1,10 +1,11 @@
 """
-analysis/rxd.py
+analysis/interactive.py
 
 Functions to plot and analyze RxD-related results
 
-Contributors: salvadordura@gmail.com
+Contributors: salvadordura@gmail.com, joe.w.graham@gmail.com
 """
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
@@ -45,7 +46,7 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         - spikeHistBin (int): Size of bin in ms to use for histogram (default: 5)
         - syncLines (True|False): calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (default: False)
         - marker ('circle'|'cross'|'dash'|'triangel'| etc..): Mark type used for each spike
-        - popColors (odict): Dictionary with color (value) used for each population (key) (default: None)
+        - popColors (odict): Dictionary with color (value: three item list with float between 0 and 1 for RGB) used for each population (key) (default: None)
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;
             if set to True uses filename from simConfig (default: None)
@@ -71,8 +72,9 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
 
     colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
 
-    popColorDict=popColors.copy()
-    if popColorDict:
+    popColorDict = None
+    if popColors is not None:
+        popColorDict = popColors.copy()
         for pop, color in popColorDict.items():
             popColorDict[pop] = RGB(*[round(f * 255) for f in color])
 
@@ -100,6 +102,7 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     popColorsTmp = {popLabel: colors[ipop%len(colors)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
     if popColorDict: popColorsTmp.update(popColorDict)
     popColorDict = popColorsTmp
+    print(popColorDict)
     if len(cellGids) > 0:
         gidColors = {cell['gid']: popColorDict[cell['tags']['pop']] for cell in cells}  # dict with color for each gid
         try:

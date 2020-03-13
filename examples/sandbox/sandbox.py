@@ -7,8 +7,8 @@ netParams = specs.NetParams()  # object of class NetParams to store the network 
 
 
 ## Population parameters
-netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}
-netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}
+# netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}
+# netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}
 
 times = [0, 200, 400, 600, 800]
 rates = [[10, 20, 30, 40, 0],
@@ -16,9 +16,12 @@ rates = [[10, 20, 30, 40, 0],
         [40, 30, 20, 10, 0],
         [20, 0, 20, 0, 10]]
 
-netParams.popParams['input'] = {'cellType': 'Ext', 'numCells': 4, 'cellModel': 'VecStim',
-    'dynamicRates': {'rates': [rates[i] for i in range(len(rates))],
-                    'times': times}} 
+netParams.popParams['input'] = {'cellType': 'Ext', 'numCells': 50, 'cellModel': 'VecStim', 'rate': [0,100], 'noise':1} 
+netParams.popParams['input2'] = {'cellType': 'Ext', 'numCells': 50, 'cellModel': 'VecStim', 'rate': [0,50], 'noise':1} 
+netParams.popParams['input3'] = {'cellType': 'Ext', 'numCells': 50, 'cellModel': 'VecStim', 'rate': [0,10], 'noise':1} 
+netParams.popParams['input4'] = {'cellType': 'Ext', 'numCells': 50, 'cellModel': 'VecStim', 'rate': 100, 'noise':1} 
+netParams.popParams['input5'] = {'cellType': 'Ext', 'numCells': 50, 'cellModel': 'VecStim', 'rate': 50, 'noise':1} 
+netParams.popParams['input6'] = {'cellType': 'Ext', 'numCells': 50, 'cellModel': 'VecStim', 'rate': 10, 'noise':1} 
 
 
 ## Cell property rules
@@ -35,14 +38,14 @@ netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e
 netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5}
 netParams.stimTargetParams['bkg->PYR'] = {'source': 'bkg', 'conds': {'cellType': 'PYR'}, 'weight': 0.01, 'delay': 5, 'synMech': 'exc'}
 
-## Cell connectivity rules
-netParams.connParams['S->M'] = { 	#  S -> M label
-	'preConds': {'pop': 'S'}, 	# conditions of presyn cells
-	'postConds': {'pop': 'M'}, # conditions of postsyn cells
-	'divergence': 12, 			# probability of connection
-	'weight': 0.01, 				# synaptic weight
-	'delay': 5,						# transmission delay (ms)
-	'synMech': 'exc'}   			# synaptic mechanism
+# ## Cell connectivity rules
+# netParams.connParams['S->M'] = { 	#  S -> M label
+# 	'preConds': {'pop': 'S'}, 	# conditions of presyn cells
+# 	'postConds': {'pop': 'M'}, # conditions of postsyn cells
+# 	'divergence': 12, 			# probability of connection
+# 	'weight': 0.01, 				# synaptic weight
+# 	'delay': 5,						# transmission delay (ms)
+# 	'synMech': 'exc'}   			# synaptic mechanism
 
 
 # Simulation options
@@ -67,7 +70,7 @@ simConfig.analysis['plotRaster'] = True 			# Plot a raster
 simConfig.analysis['plotTraces'] = {'include': [1]} 			# Plot recorded traces for this list of cells
 #simConfig.analysis['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
 #simConfig.analysis['plotLFP'] = True
-
+simConfig.printPopAvgRates = True
 
 
 # def modifyGnabar(t):

@@ -2,6 +2,8 @@
 
 - Added 'dynamicRates' option for NetStim populations
 
+- Added option to have a uniform distribution of rates for Vecstim pulses
+
 - Fixed loadSave V1 example model
 
 - Fixed bug calculating popRates when no spikes

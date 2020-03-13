@@ -222,6 +222,12 @@ class PointCell (Cell):
             if 'pulses' in self.params:
                 for ipulse, pulse in enumerate(self.params['pulses']):
                     
+                    # if rate is list with 2 items generate random value from uniform 
+                    if 'rate' in pulse and isinstance(pulse['rate'], list) and len(pulse['rate']) == 2:
+                        rand = h.Random()
+                        rand.Random123(sim.hashStr('point_rate_pulse'+str(ipulse)), self.gid, sim.cfg.seeds['stim']) # initialize randomizer 
+                        pulse['rate'] = rand.uniform(pulse['rate'][0], pulse['rate'][1])
+
                     # check interval or rate params
                     if 'interval' in pulse:
                         interval = pulse['interval'] 

@@ -1291,7 +1291,10 @@ class CompartCell (Cell):
         for sec in list(self.secs.values()):
             hSec = sec['hObj']
             for iseg, seg in enumerate(hSec):
-                self.imembPtr.pset(jseg, seg._ref_i_membrane_)  # notice the underscore at the end (in nA)
+                try:
+                    self.imembPtr.pset(jseg, seg._ref_i_membrane_)  # notice the underscore at the end (in nA)
+                except:
+                    '  Error setting Vector to point to i_membrane_'
                 jseg += 1
                 
 

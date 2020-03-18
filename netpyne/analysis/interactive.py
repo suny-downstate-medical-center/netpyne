@@ -1303,6 +1303,11 @@ def iplotConn (includePre = ['all'], includePost = ['all'], feature = 'strength'
 
     # TODO: set plot font size in Bokeh
 
+    # for groupBy = 'cell', needed to format data for Bokeh
+    if groupBy == 'cell':
+        pre = [str(cell['gid']) for cell in pre]
+        post = [str(cell['gid']) for cell in post]
+
     # matrix plot
     if graphType == 'matrix':
         

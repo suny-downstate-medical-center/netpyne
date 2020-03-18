@@ -1283,6 +1283,7 @@ def iplotConn (includePre = ['all'], includePost = ['all'], feature = 'strength'
     from bokeh.plotting import figure, show
     from bokeh.transform import linear_cmap
     from bokeh.palettes import Viridis256
+    from bokeh.palettes import viridis 
     from bokeh.models import ColorBar
     from bokeh.embed import file_html
     from bokeh.resources import CDN
@@ -1352,22 +1353,46 @@ def iplotConn (includePre = ['all'], includePost = ['all'], feature = 'strength'
         
         # TODO: add grid lines?
             
-        
-    # TODO: add stacked bar graph to Bokeh
     # stacked bar graph
     elif graphType == 'bar':
         if groupBy == 'pop':
+            
             popsPre, popsPost = pre, post
 
-            from netpyne.support import stackedBarGraph 
-            SBG = stackedBarGraph.StackedBarGrapher()
-    
-            fig = plt.figure(figsize=figSize)
-            ax = fig.add_subplot(111)
-            SBG.stackedBarPlot(ax, connMatrix.transpose(), colorList, xLabels=popsPost, gap = 0.1, scale=False, xlabel='postsynaptic', ylabel = feature)
-            plt.title ('Connection '+feature+' stacked bar graph')
-            plt.legend(popsPre)
-            plt.tight_layout()
+            fruits = ['Apples', 'Pears', 'Nectarines', 'Plums', 'Grapes', 'Strawberries']
+            years = ["2015", "2016", "2017"]
+            colors = viridis(len(popsPre))
+
+            data = {'post' : popsPost}
+
+            for popIndex, pop in enumerate(popsPre):
+                data[pop] = connMatrix[popIndex, :]
+
+            fig = figure(
+                x_range=popsPost, 
+                title='Connection ' + feature + ' stacked bar graph',
+                toolbar_location=None, 
+                tools='hover,save,pan,box_zoom,reset,wheel_zoom', 
+                active_drag='pan', 
+                active_scroll = 'wheel_zoom', 
+                #tooltips='$name @post: @$name',
+                tooltips=[('Pre', '$name'), ('Post', '@post'), (feature, '@$name')],
+                )
+
+            fig.vbar_stack(
+                popsPre, 
+                x='post', 
+                width=0.9, 
+                color=colors, 
+                source=data,
+                legend_label=popsPre,
+                )
+
+            fig.xgrid.grid_line_color = None
+            fig.legend.title = 'Pre'
+            fig.xaxis.axis_label = 'Post'
+            fig.yaxis.axis_label = feature
+
 
         elif groupBy == 'cell':
             print('Error: plotConn graphType="bar" with groupBy="cell" not implemented')

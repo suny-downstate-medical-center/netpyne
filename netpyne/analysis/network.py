@@ -90,7 +90,7 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
             countMatrix = np.zeros((len(cellGidsPre), len(cellGidsPost)))
         else: 
             print('Conn matrix with groupBy="cell" only supports features= "weight", "delay" or "numConns"')
-            return fig
+            return None, None, None
         cellIndsPre = {cell['gid']: ind for ind,cell in enumerate(cellsPre)}
         cellIndsPost = {cell['gid']: ind for ind,cell in enumerate(cellsPost)}
 
@@ -249,7 +249,7 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
     elif groupBy in sim.net.allCells[0]['tags'] and isinstance(sim.net.allCells[0]['tags'][groupBy], Number):
         if not isinstance(groupByIntervalPre, Number) or not isinstance(groupByIntervalPost, Number):
             print('groupByIntervalPre or groupByIntervalPost not specified')
-            return
+            return None, None, None
 
         # group cells by 'groupBy' feature (eg. 'y') in intervals of 'groupByInterval')
         cellValuesPre = [cell['tags'][groupBy] for cell in cellsPre]
@@ -342,7 +342,7 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
     # no valid groupBy
     else:  
         print('groupBy (%s) is not valid'%(str(groupBy)))
-        return
+        return None, None, None
 
     # normalize by number of postsyn cells
     if groupBy != 'cell':
@@ -521,7 +521,7 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
     # no valid groupBy
     else:  
         print('groupBy (%s) is not valid'%(str(groupBy)))
-        return
+        return None, None, None
 
     if groupBy != 'cell':
         if feature == 'weight': 

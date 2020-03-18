@@ -1278,7 +1278,7 @@ def iplotConn (includePre = ['all'], includePost = ['all'], feature = 'strength'
         - Returns figure handles
     '''
     
-    from .. import sim
+    from netpyne import sim
     from netpyne.analysis import network
     from bokeh.plotting import figure, show
     from bokeh.transform import linear_cmap
@@ -1298,12 +1298,12 @@ def iplotConn (includePre = ['all'], includePost = ['all'], feature = 'strength'
 
 
     if connMatrix is None:
-        print("Error calculating connMatrix in plotConn()")
+        print("Error calculating connMatrix in iplotConn()")
         return None
 
     # TODO: set plot font size in Bokeh
 
-    # for groupBy = 'cell', needed to format data for Bokeh
+    # for groupBy = 'cell' (needed to properly format data for Bokeh)
     if groupBy == 'cell':
         pre = [str(cell['gid']) for cell in pre]
         post = [str(cell['gid']) for cell in post]
@@ -1363,13 +1363,9 @@ def iplotConn (includePre = ['all'], includePost = ['all'], feature = 'strength'
         if groupBy == 'pop':
             
             popsPre, popsPost = pre, post
-
-            fruits = ['Apples', 'Pears', 'Nectarines', 'Plums', 'Grapes', 'Strawberries']
-            years = ["2015", "2016", "2017"]
             colors = viridis(len(popsPre))
 
             data = {'post' : popsPost}
-
             for popIndex, pop in enumerate(popsPre):
                 data[pop] = connMatrix[popIndex, :]
 
@@ -1380,7 +1376,6 @@ def iplotConn (includePre = ['all'], includePost = ['all'], feature = 'strength'
                 tools='hover,save,pan,box_zoom,reset,wheel_zoom', 
                 active_drag='pan', 
                 active_scroll = 'wheel_zoom', 
-                #tooltips='$name @post: @$name',
                 tooltips=[('Pre', '$name'), ('Post', '@post'), (feature, '@$name')],
                 )
 
@@ -1398,12 +1393,13 @@ def iplotConn (includePre = ['all'], includePost = ['all'], feature = 'strength'
             fig.xaxis.axis_label = 'Post'
             fig.yaxis.axis_label = feature
 
-
         elif groupBy == 'cell':
-            print('Error: plotConn graphType="bar" with groupBy="cell" not implemented')
+            print('Error: plotConn graphType="bar" with groupBy="cell" not yet implemented')
+            return None
 
     elif graphType == 'pie':
         print('Error: plotConn graphType="pie" not yet implemented')
+        return None
 
     plot_layout = layout([fig], sizing_mode='stretch_both')
     html = file_html(plot_layout, CDN, title='Connection ' + feature + ' matrix')

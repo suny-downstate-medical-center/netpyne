@@ -89,7 +89,7 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
             connMatrix = np.zeros((len(cellGidsPre), len(cellGidsPost)))
             countMatrix = np.zeros((len(cellGidsPre), len(cellGidsPost)))
         else: 
-            print('Conn matrix with groupBy="cell" only supports features= "weight", "delay" or "numConns"')
+            print('  Conn matrix with groupBy="cell" only supports features= "weight", "delay" or "numConns"')
             return None, None, None
         cellIndsPre = {cell['gid']: ind for ind,cell in enumerate(cellsPre)}
         cellIndsPost = {cell['gid']: ind for ind,cell in enumerate(cellsPost)}
@@ -248,7 +248,7 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
     # Calculate matrix if grouped by numeric tag (eg. 'y')
     elif groupBy in sim.net.allCells[0]['tags'] and isinstance(sim.net.allCells[0]['tags'][groupBy], Number):
         if not isinstance(groupByIntervalPre, Number) or not isinstance(groupByIntervalPost, Number):
-            print('groupByIntervalPre or groupByIntervalPost not specified')
+            print('  groupByIntervalPre or groupByIntervalPost not specified')
             return None, None, None
 
         # group cells by 'groupBy' feature (eg. 'y') in intervals of 'groupByInterval')
@@ -341,15 +341,17 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
 
     # no valid groupBy
     else:  
-        print('groupBy (%s) is not valid'%(str(groupBy)))
+        print('  groupBy (%s) is not valid'%(str(groupBy)))
         return None, None, None
 
     # normalize by number of postsyn cells
     if groupBy != 'cell':
         if feature == 'weight': 
-            connMatrix = weightMatrix / countMatrix  # avg weight per conn (fix to remove divide by zero warning) 
+            connMatrix = weightMatrix / countMatrix  # avg weight per conn
+            connMatrix = np.nan_to_num(connMatrix, nan=0)  # if the count is 0 we get NaNs, but the weight is 0
         elif feature == 'delay': 
             connMatrix = delayMatrix / countMatrix
+            connMatrix = np.nan_to_num(connMatrix, nan=0)  # if the count is 0 we get NaNs, but the delay is 0
         elif feature == 'numConns':
             connMatrix = countMatrix
         elif feature in ['probability', 'strength']:
@@ -429,7 +431,7 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
     
     # Calculate matrix if grouped by cell
     if groupBy == 'cell': 
-        print('plotConn from file for groupBy=cell not implemented yet')
+        print('  plotConn from file for groupBy=cell not implemented yet')
         return None, None, None 
 
     # Calculate matrix if grouped by pop
@@ -525,9 +527,11 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
 
     if groupBy != 'cell':
         if feature == 'weight': 
-            connMatrix = weightMatrix / countMatrix  # avg weight per conn (fix to remove divide by zero warning) 
+            connMatrix = weightMatrix / countMatrix  # avg weight per conn (fix to remove divide by zero warning)
+            connMatrix = np.nan_to_num(connMatrix, nan=0)  # if the count is 0 we get NaNs, but the weight is 0 
         elif feature == 'delay': 
             connMatrix = delayMatrix / countMatrix
+            connMatrix = np.nan_to_num(connMatrix, nan=0)  # if the count is 0 we get NaNs, but the delay is 0
         elif feature == 'numConns':
             connMatrix = countMatrix
         elif feature in ['probability', 'strength']:
@@ -546,8 +550,8 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot connectivity
 # -------------------------------------------------------------------------------------------------------------------
-@exception
-def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', groupByIntervalPre = None, groupByIntervalPost = None, removeWeightNorm = False, graphType = 'matrix', synOrConn = 'syn', synMech = None, connsFile = None, tagsFile = None, clim = None, fontSize = 12, saveData = None, saveFig = None, showFig = True): 
+#@exception
+def plotConn(includePre = ['all'], includePost = ['all'], feature = 'strength', orderBy = 'gid', figSize = (8,8), groupBy = 'pop', groupByIntervalPre = None, groupByIntervalPost = None, removeWeightNorm = False, graphType = 'matrix', synOrConn = 'syn', synMech = None, connsFile = None, tagsFile = None, clim = None, fontSize = 12, saveData = None, saveFig = None, showFig = True):
     ''' 
     Plot network connectivity
         - includePre (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
@@ -579,9 +583,8 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
     else:
         connMatrix, pre, post = _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, removeWeightNorm)
 
-
     if connMatrix is None:
-        print("Error calculating connMatrix in plotConn()")
+        print("  Error calculating connMatrix in plotConn()")
         return None
 
     # set font size
@@ -671,19 +674,20 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
 
             from netpyne.support import stackedBarGraph 
             SBG = stackedBarGraph.StackedBarGrapher()
-    
             fig = plt.figure(figsize=figSize)
             ax = fig.add_subplot(111)
-            SBG.stackedBarPlot(ax, connMatrix.transpose(), colorList, xLabels=popsPost, gap = 0.1, scale=False, xlabel='postsynaptic', ylabel = feature)
+            SBG.stackedBarPlot(ax, connMatrix.transpose(), colorList, xLabels=popsPost, gap = 0.1, scale=False, xlabel='Post', ylabel = feature)
             plt.title ('Connection '+feature+' stacked bar graph')
-            plt.legend(popsPre)
+            plt.legend(popsPre, title='Pre')
             plt.tight_layout()
 
         elif groupBy == 'cell':
-            print('Error: plotConn graphType="bar" with groupBy="cell" not implemented')
+            print('  Error: plotConn graphType="bar" with groupBy="cell" not implemented')
+            return None
 
     elif graphType == 'pie':
-        print('Error: plotConn graphType="pie" not yet implemented')
+        print('  Error: plotConn graphType="pie" not yet implemented')
+        return None
 
 
     #save figure data
@@ -698,7 +702,7 @@ def plotConn (includePre = ['all'], includePost = ['all'], feature = 'strength',
         if isinstance(saveFig, basestring):
             filename = saveFig
         else:
-            filename = sim.cfg.filename+'_'+'conn_'+feature+'.png'
+            filename = sim.cfg.filename+'_plot_conn_'+groupBy+'_'+feature+'_'+graphType+'.png'
         plt.savefig(filename)
 
     # show fig 

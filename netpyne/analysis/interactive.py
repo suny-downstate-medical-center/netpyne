@@ -1298,7 +1298,7 @@ def iplotConn (includePre = ['all'], includePost = ['all'], feature = 'strength'
 
 
     if connMatrix is None:
-        print("Error calculating connMatrix in iplotConn()")
+        print("  Error calculating connMatrix in iplotConn()")
         return None
 
     # TODO: set plot font size in Bokeh
@@ -1320,7 +1320,8 @@ def iplotConn (includePre = ['all'], includePost = ['all'], feature = 'strength'
         field_name=feature,
         palette=Viridis256,
         low=np.nanmin(connMatrix),
-        high=np.nanmax(connMatrix)
+        high=np.nanmax(connMatrix),
+        nan_color='white'
         )
 
         conn_colorbar = ColorBar(color_mapper=conn_colormapper['transform'])
@@ -1394,11 +1395,11 @@ def iplotConn (includePre = ['all'], includePost = ['all'], feature = 'strength'
             fig.yaxis.axis_label = feature
 
         elif groupBy == 'cell':
-            print('Error: plotConn graphType="bar" with groupBy="cell" not yet implemented')
+            print('  Error: plotConn graphType="bar" with groupBy="cell" not yet implemented')
             return None
 
     elif graphType == 'pie':
-        print('Error: plotConn graphType="pie" not yet implemented')
+        print('  Error: plotConn graphType="pie" not yet implemented')
         return None
 
     plot_layout = layout([fig], sizing_mode='stretch_both')
@@ -1416,7 +1417,7 @@ def iplotConn (includePre = ['all'], includePost = ['all'], feature = 'strength'
         if isinstance(saveFig, str):
             filename = saveFig
         else:
-            filename = sim.cfg.filename+'_'+'conn_'+feature+'.html'
+            filename = sim.cfg.filename+'_iplot_conn_'+groupBy+'_'+feature+'_'+graphType+'.html'
         file = open(filename, 'w')
         file.write(html)
         file.close()

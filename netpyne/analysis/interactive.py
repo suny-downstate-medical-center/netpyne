@@ -1254,7 +1254,7 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive connectivity
 # -------------------------------------------------------------------------------------------------------------------
-@exception
+#@exception
 def iplotConn (includePre = ['all'], includePost = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', groupByIntervalPre = None, groupByIntervalPost = None, removeWeightNorm = False, graphType = 'matrix', synOrConn = 'syn', synMech = None, connsFile = None, tagsFile = None, clim = None, fontSize = 12, saveData = None, saveFig = None, showFig = True): 
     ''' 
     Plot network connectivity
@@ -1288,6 +1288,7 @@ def iplotConn (includePre = ['all'], includePost = ['all'], feature = 'strength'
     from bokeh.embed import file_html
     from bokeh.resources import CDN
     from bokeh.layouts import layout
+    from bokeh.colors import RGB
 
     print('Plotting interactive connectivity matrix...')
 
@@ -1316,11 +1317,18 @@ def iplotConn (includePre = ['all'], includePost = ['all'], feature = 'strength'
         pandas_data.columns.name = 'post'
         bokeh_data = pandas_data.reset_index().melt(id_vars=['pre'], value_name=feature)
 
+        # the colormapper doesn't work if both high and low values are the same
+        low = np.nanmin(connMatrix)
+        high = np.nanmax(connMatrix)
+        if low == high:
+            low = low - 0.1 * low
+            high = high + 0.1 * high
+
         conn_colormapper = linear_cmap(
         field_name=feature,
         palette=Viridis256,
-        low=np.nanmin(connMatrix),
-        high=np.nanmax(connMatrix),
+        low=low,
+        high=high,
         nan_color='white'
         )
 
@@ -1364,7 +1372,8 @@ def iplotConn (includePre = ['all'], includePost = ['all'], feature = 'strength'
         if groupBy == 'pop':
             
             popsPre, popsPost = pre, post
-            colors = viridis(len(popsPre))
+            colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+            bar_colors = colors[0:len(popsPre)]
 
             data = {'post' : popsPost}
             for popIndex, pop in enumerate(popsPre):
@@ -1384,7 +1393,7 @@ def iplotConn (includePre = ['all'], includePost = ['all'], feature = 'strength'
                 popsPre, 
                 x='post', 
                 width=0.9, 
-                color=colors, 
+                color=bar_colors, 
                 source=data,
                 legend_label=popsPre,
                 )

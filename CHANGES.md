@@ -1,8 +1,18 @@
 # Version 0.9.6
 
+- Added issue templates for GitHub
+
+- Added interactive plot for connectivity (iplotConn)
+
 - Added 'dynamicRates' option for NetStim populations
 
 - Added option to have a uniform distribution of rates for Vecstim pulses
+
+- Overhaul of contribution guide (CONTRIBUTING.md)
+
+- Improved documentation
+
+- Fixed bugs and improved exception handling in plotConn 
 
 - Fixed loadSave V1 example model
 
@@ -18,13 +28,8 @@
 
 - Fixed bug in run.py: print run time with 2 significant figures
 
-- Fixed utput stat filenames of evolutionary optim: .cvs to .csv 
+- Fixed output stat filenames of evolutionary optim: .cvs to .csv 
 
-- Added issue templates for GitHub
-
-- Overhaul of contribution guide (CONTRIBUTING.md)
-
-- Improvements of documentation
 
 # Version 0.9.5
 

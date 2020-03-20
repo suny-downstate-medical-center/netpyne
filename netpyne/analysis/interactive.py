@@ -25,14 +25,11 @@ from .utils import colorList, exception, getSpktSpkid, _showFigure, _saveFigData
 import numpy as np
 import pandas as pd
 
-
-
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive raster
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
-                spikeHist = False, spikeHistBin = 5, syncLines = False, marker='circle', markerSize = 3, popColors = None, figSize = (10,8), saveData = None, saveFig = None, showFig = False):
+def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid', orderInverse=False, labels='legend', popRates=False, spikeHist=False, spikeHistBin=5, syncLines=False, marker='circle', markerSize=3, popColors=None, figSize=(10,8), saveData=None, saveFig=None, showFig=False):
 
     '''
     Raster plot of network cells
@@ -65,10 +62,9 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     from bokeh.colors import RGB
     from bokeh.models.annotations import Title
 
-
     print('Plotting interactive raster ...')
 
-    TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
+    TOOLS = 'hover,save,pan,box_zoom,reset,wheel_zoom',
 
     colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
 
@@ -102,7 +98,6 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     popColorsTmp = {popLabel: colors[ipop%len(colors)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
     if popColorDict: popColorsTmp.update(popColorDict)
     popColorDict = popColorsTmp
-    print(popColorDict)
     if len(cellGids) > 0:
         gidColors = {cell['gid']: popColorDict[cell['tags']['pop']] for cell in cells}  # dict with color for each gid
         try:
@@ -196,9 +191,17 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     else:
         y_range=(sel['spkind'].min(), sel['spkind'].max())
 
-
-    fig = figure(title="Raster Plot", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label=ylabelText,
-                 x_range=(timeRange[0], timeRange[1]), y_range=y_range, toolbar_location='above')
+    fig = figure(
+        title="Raster Plot", 
+        tools=TOOLS, 
+        active_drag = 'pan', 
+        active_scroll = 'wheel_zoom',
+        tooltips=[('Cell GID', '@y'), ('Spike time', '@x')],
+        x_axis_label="Time (ms)", 
+        y_axis_label=ylabelText,
+        x_range=(timeRange[0], timeRange[1]), 
+        y_range=y_range, 
+        toolbar_location='above')
 
     t = Title()
     if syncLines:
@@ -223,7 +226,7 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         else:
             label = name
 
-        s = fig.scatter(group['spkt'], group['spkind'], color=group['spkgidColor'], marker=marker, size=markerSize, legend=label)
+        s = fig.scatter(group['spkt'], group['spkind'], color=group['spkgidColor'], marker=marker, size=markerSize, legend_label=label)
         #legendItems.append((label, [s]))
 
     if spikeHist:
@@ -231,7 +234,6 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         fig.extra_y_ranges={'spikeHist': Range1d(start=min(histoCount), end=max(histoCount))}
         fig.add_layout(LinearAxis(y_range_name='spikeHist', axis_label='Spike count'), 'right')
         fig.line (histoT, histoCount, line_width=2, y_range_name='spikeHist')
-
 
     legend = Legend(items=legendItems, location=(10,0))
     legend.click_policy='hide'
@@ -252,7 +254,7 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         if isinstance(saveFig, str):
             filename = saveFig
         else:
-            filename = sim.cfg.filename+'_'+'iraster.html'
+            filename = sim.cfg.filename + '_iplot_raster.html'
         file = open(filename, 'w')
         file.write(html)
         file.close()
@@ -1248,5 +1250,191 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             file = open(filename, 'w')
             file.write(html)
             file.close()
+
+    return html
+
+
+# -------------------------------------------------------------------------------------------------------------------
+## Plot interactive connectivity
+# -------------------------------------------------------------------------------------------------------------------
+@exception
+def iplotConn(includePre=['all'], includePost=['all'], feature='strength', orderBy='gid', figSize=(10,10), groupBy='pop', groupByIntervalPre=None, groupByIntervalPost=None, removeWeightNorm=False, graphType='matrix', synOrConn='syn', synMech=None, connsFile=None, tagsFile=None, clim=None, fontSize=12, saveData=None, saveFig=None, showFig=False): 
+    ''' 
+    Plot network connectivity
+        - includePre (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
+        - includePost (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
+        - feature ('weight'|'delay'|'numConns'|'probability'|'strength'|'convergence'|'divergence'): Feature to show in connectivity matrix; 
+            the only features applicable to groupBy='cell' are 'weight', 'delay' and 'numConns';  'strength' = weight * probability (default: 'strength')
+        - groupBy ('pop'|'cell'|'y'|: Show matrix for individual cells, populations, or by other numeric tag such as 'y' (default: 'pop')
+        - groupByInterval (int or float): Interval of groupBy feature to group cells by in conn matrix, e.g. 100 to group by cortical depth in steps of 100 um   (default: None)
+        - orderBy ('gid'|'y'|'ynorm'|...): Unique numeric cell property to order x and y axes by, e.g. 'gid', 'ynorm', 'y' (requires groupBy='cells') (default: 'gid')
+        - graphType ('matrix','bar','pie'): Type of graph to represent data (default: 'matrix')
+        - synOrConn ('syn'|'conn'): Use synapses or connections; note 1 connection can have multiple synapses (default: 'syn')
+        - figSize ((width, height)): Size of figure (default: (10,10))
+        - synMech (['AMPA', 'GABAA',...]): Show results only for these syn mechs (default: None)
+        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
+            if set to True uses filename from simConfig (default: None)
+        - saveFig (None|True|'fileName'): File name where to save the figure; 
+            if set to True uses filename from simConfig (default: None)
+        - showFig (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figure handles
+    '''
+    
+    from netpyne import sim
+    from netpyne.analysis import network
+    from bokeh.plotting import figure, show
+    from bokeh.transform import linear_cmap
+    from bokeh.palettes import Viridis256
+    from bokeh.palettes import viridis 
+    from bokeh.models import ColorBar
+    from bokeh.embed import file_html
+    from bokeh.resources import CDN
+    from bokeh.layouts import layout
+    from bokeh.colors import RGB
+
+    print('Plotting interactive connectivity matrix...')
+
+    if connsFile and tagsFile:
+        connMatrix, pre, post = network._plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile, removeWeightNorm)
+    else:
+        connMatrix, pre, post = network._plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, removeWeightNorm)
+
+
+    if connMatrix is None:
+        print("  Error calculating connMatrix in iplotConn()")
+        return None
+
+    # TODO: set plot font size in Bokeh
+
+    # for groupBy = 'cell' (needed to properly format data for Bokeh)
+    if groupBy == 'cell':
+        pre = [str(cell['gid']) for cell in pre]
+        post = [str(cell['gid']) for cell in post]
+
+    # matrix plot
+    if graphType == 'matrix':
+        
+        pandas_data = pd.DataFrame(data=connMatrix, index=pre, columns=post)
+        pandas_data.index.name = 'pre'
+        pandas_data.columns.name = 'post'
+        bokeh_data = pandas_data.reset_index().melt(id_vars=['pre'], value_name=feature)
+
+        # the colormapper doesn't work if both high and low values are the same
+        low = np.nanmin(connMatrix)
+        high = np.nanmax(connMatrix)
+        if low == high:
+            low = low - 0.1 * low
+            high = high + 0.1 * high
+
+        conn_colormapper = linear_cmap(
+        field_name=feature,
+        palette=Viridis256,
+        low=low,
+        high=high,
+        nan_color='white'
+        )
+
+        conn_colorbar = ColorBar(color_mapper=conn_colormapper['transform'])
+        conn_colorbar.location = (0, 0)
+        conn_colorbar.title = feature
+
+        fig = figure(
+            x_range=pandas_data.columns.values,
+            y_range=np.flip(pandas_data.index.values),
+            tools = 'hover,save,pan,box_zoom,reset,wheel_zoom',
+            active_drag = 'pan',
+            active_scroll = 'wheel_zoom',
+            tooltips=[('Pre', '@pre'), ('Post', '@post'), (feature, '@' + feature)],
+            title='Connection ' + feature + ' matrix',
+            toolbar_location='below',
+            x_axis_location='above'
+            )
+
+        fig.title.align = 'center'
+        fig.xaxis.axis_label = pandas_data.columns.name
+        fig.yaxis.axis_label = pandas_data.index.name
+        fig.yaxis.major_label_orientation = 'horizontal'
+        fig.xaxis.major_label_orientation = 'vertical'
+
+        fig.rect(
+            source=bokeh_data, 
+            x='post', 
+            y='pre', 
+            width=1, 
+            height=1, 
+            color=conn_colormapper
+            )
+
+        fig.add_layout(conn_colorbar, 'right')
+        
+        # TODO: add grid lines?
+            
+    # stacked bar graph
+    elif graphType == 'bar':
+        if groupBy == 'pop':
+            
+            popsPre, popsPost = pre, post
+            colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+            bar_colors = colors[0:len(popsPre)]
+
+            data = {'post' : popsPost}
+            for popIndex, pop in enumerate(popsPre):
+                data[pop] = connMatrix[popIndex, :]
+
+            fig = figure(
+                x_range=popsPost, 
+                title='Connection ' + feature + ' stacked bar graph',
+                toolbar_location=None, 
+                tools='hover,save,pan,box_zoom,reset,wheel_zoom', 
+                active_drag='pan', 
+                active_scroll = 'wheel_zoom', 
+                tooltips=[('Pre', '$name'), ('Post', '@post'), (feature, '@$name')],
+                )
+
+            fig.vbar_stack(
+                popsPre, 
+                x='post', 
+                width=0.9, 
+                color=bar_colors, 
+                source=data,
+                legend_label=popsPre,
+                )
+
+            fig.xgrid.grid_line_color = None
+            fig.legend.title = 'Pre'
+            fig.xaxis.axis_label = 'Post'
+            fig.yaxis.axis_label = feature
+
+        elif groupBy == 'cell':
+            print('  Error: plotConn graphType="bar" with groupBy="cell" not yet implemented')
+            return None
+
+    elif graphType == 'pie':
+        print('  Error: plotConn graphType="pie" not yet implemented')
+        return None
+
+    plot_layout = layout([fig], sizing_mode='stretch_both')
+    html = file_html(plot_layout, CDN, title='Connection ' + feature + ' matrix')
+
+    #save figure data
+    if saveData:
+        figData = {'connMatrix': connMatrix, 'feature': feature, 'groupBy': groupBy,
+         'includePre': includePre, 'includePost': includePost, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+    
+        _saveFigData(figData, saveData, 'conn')
+ 
+    # save figure
+    if saveFig: 
+        if isinstance(saveFig, str):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename+'_iplot_conn_'+groupBy+'_'+feature+'_'+graphType+'.html'
+        file = open(filename, 'w')
+        file.write(html)
+        file.close()
+
+    # show fig 
+    if showFig: show(fig)
 
     return html

@@ -4,6 +4,12 @@
 
 - Added option to have a uniform distribution of rates for Vecstim pulses
 
+- Added issue templates for GitHub
+
+- Overhaul of contribution guide (CONTRIBUTING.md)
+
+- Improvements of documentation
+
 - Fixed loadSave V1 example model
 
 - Fixed bug calculating popRates when no spikes
@@ -18,13 +24,10 @@
 
 - Fixed bug in run.py: print run time with 2 significant figures
 
-- Fixed utput stat filenames of evolutionary optim: .cvs to .csv 
+- Fixed output stat filenames of evolutionary optim: .cvs to .csv 
 
-- Added issue templates for GitHub
+- Fixed bug in interval saving
 
-- Overhaul of contribution guide (CONTRIBUTING.md)
-
-- Improvements of documentation
 
 # Version 0.9.5
 

@@ -25,14 +25,11 @@ from .utils import colorList, exception, getSpktSpkid, _showFigure, _saveFigData
 import numpy as np
 import pandas as pd
 
-
-
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive raster
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
-                spikeHist = False, spikeHistBin = 5, syncLines = False, marker='circle', markerSize = 3, popColors = None, figSize = (10,8), saveData = None, saveFig = None, showFig = False):
+def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid', orderInverse=False, labels='legend', popRates=False, spikeHist=False, spikeHistBin=5, syncLines=False, marker='circle', markerSize=3, popColors=None, figSize=(10,8), saveData=None, saveFig=None, showFig=False):
 
     '''
     Raster plot of network cells
@@ -65,10 +62,9 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     from bokeh.colors import RGB
     from bokeh.models.annotations import Title
 
-
     print('Plotting interactive raster ...')
 
-    TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
+    TOOLS = 'hover,save,pan,box_zoom,reset,wheel_zoom',
 
     colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
 
@@ -195,9 +191,17 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     else:
         y_range=(sel['spkind'].min(), sel['spkind'].max())
 
-
-    fig = figure(title="Raster Plot", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label=ylabelText,
-                 x_range=(timeRange[0], timeRange[1]), y_range=y_range, toolbar_location='above')
+    fig = figure(
+        title="Raster Plot", 
+        tools=TOOLS, 
+        active_drag = 'pan', 
+        active_scroll = 'wheel_zoom',
+        tooltips=[('Cell GID', '@y'), ('Spike time', '@x')],
+        x_axis_label="Time (ms)", 
+        y_axis_label=ylabelText,
+        x_range=(timeRange[0], timeRange[1]), 
+        y_range=y_range, 
+        toolbar_location='above')
 
     t = Title()
     if syncLines:
@@ -222,7 +226,7 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         else:
             label = name
 
-        s = fig.scatter(group['spkt'], group['spkind'], color=group['spkgidColor'], marker=marker, size=markerSize, legend=label)
+        s = fig.scatter(group['spkt'], group['spkind'], color=group['spkgidColor'], marker=marker, size=markerSize, legend_label=label)
         #legendItems.append((label, [s]))
 
     if spikeHist:
@@ -230,7 +234,6 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         fig.extra_y_ranges={'spikeHist': Range1d(start=min(histoCount), end=max(histoCount))}
         fig.add_layout(LinearAxis(y_range_name='spikeHist', axis_label='Spike count'), 'right')
         fig.line (histoT, histoCount, line_width=2, y_range_name='spikeHist')
-
 
     legend = Legend(items=legendItems, location=(10,0))
     legend.click_policy='hide'
@@ -251,7 +254,7 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         if isinstance(saveFig, str):
             filename = saveFig
         else:
-            filename = sim.cfg.filename+'_'+'iraster.html'
+            filename = sim.cfg.filename + '_iplot_raster.html'
         file = open(filename, 'w')
         file.write(html)
         file.close()
@@ -1254,8 +1257,8 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive connectivity
 # -------------------------------------------------------------------------------------------------------------------
-#@exception
-def iplotConn (includePre = ['all'], includePost = ['all'], feature = 'strength', orderBy = 'gid', figSize = (10,10), groupBy = 'pop', groupByIntervalPre = None, groupByIntervalPost = None, removeWeightNorm = False, graphType = 'matrix', synOrConn = 'syn', synMech = None, connsFile = None, tagsFile = None, clim = None, fontSize = 12, saveData = None, saveFig = None, showFig = True): 
+@exception
+def iplotConn(includePre=['all'], includePost=['all'], feature='strength', orderBy='gid', figSize=(10,10), groupBy='pop', groupByIntervalPre=None, groupByIntervalPost=None, removeWeightNorm=False, graphType='matrix', synOrConn='syn', synMech=None, connsFile=None, tagsFile=None, clim=None, fontSize=12, saveData=None, saveFig=None, showFig=False): 
     ''' 
     Plot network connectivity
         - includePre (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])

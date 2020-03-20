@@ -965,8 +965,7 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 ## Plot interactive Traces
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotTraces(include = None, timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False, colors = None, ylim = None, axis='on', fontSize=12,
-    figSize = (10,8), saveData = None, saveFig = None, showFig = True):
+def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', rerun=False, colors=None, ylim=None, axis='on', fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True):
     ''' 
     Plot recorded traces
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of cells for which to plot 
@@ -994,11 +993,11 @@ def iplotTraces(include = None, timeRange = None, overlay = False, oneFigPer = '
     from bokeh.resources import CDN
     from bokeh.embed import file_html
     from bokeh.layouts import layout
+    from bokeh.models import HoverTool
     
     print('Plotting interactive recorded cell traces ...',oneFigPer)
 
-    
-    TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
+    TOOLS = 'save,pan,box_zoom,reset,wheel_zoom',
 
     if include is None:  # if none, record from whatever was recorded
         if 'plotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['plotTraces']:
@@ -1019,10 +1018,22 @@ def iplotTraces(include = None, timeRange = None, overlay = False, oneFigPer = '
     figs = {}
     tracesData = []
 
+    hover = HoverTool(tooltips=[('Time', '@x'), ('Measure', '@y')], mode='vline')
+
     if oneFigPer == 'cell':
+        
         for gid in cellGids:
-            figs['_gid_' + str(gid)] = figure(title="Cell {}, Pop {}".format(gid, gidPops[gid]), tools=TOOLS, x_axis_label="Time (ms)",
-                                              y_axis_label="V_soma")
+            
+            figs['_gid_' + str(gid)] = figure(
+                title = "Cell {}, Pop {}".format(gid, gidPops[gid]), 
+                tools = TOOLS, 
+                active_drag = 'pan', 
+                active_scroll = 'wheel_zoom',
+                x_axis_label="Time (ms)",
+                y_axis_label="V_soma")
+            
+            figs['_gid_' + str(gid)].add_tools(hover)
+            
             for itrace, trace in enumerate(tracesList):
                 if 'cell_{}'.format(gid) in sim.allSimData[trace]:
                     fullTrace = sim.allSimData[trace]['cell_{}'.format(gid)]

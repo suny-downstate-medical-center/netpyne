@@ -965,7 +965,7 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 ## Plot interactive Traces
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', rerun=False, colors=None, ylim=None, axis='on', fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True):
+def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', rerun=False, colors=None, ylim=None, axis='on', fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True, ylabel=None, linkAxes=False):
     ''' 
     Plot recorded traces
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of cells for which to plot 
@@ -992,12 +992,15 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
     from bokeh.plotting import figure, show
     from bokeh.resources import CDN
     from bokeh.embed import file_html
-    from bokeh.layouts import layout
+    from bokeh.layouts import layout, column
     from bokeh.models import HoverTool
+    from bokeh.models import Legend
+    from bokeh.colors import RGB
     
-    print('Plotting interactive recorded cell traces ...',oneFigPer)
+    print('Plotting interactive recorded cell traces per', oneFigPer)
 
-    TOOLS = 'save,pan,box_zoom,reset,wheel_zoom',
+    TOOLS = 'save,pan,box_zoom,reset,wheel_zoom'
+    colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
 
     if include is None:  # if none, record from whatever was recorded
         if 'plotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['plotTraces']:
@@ -1018,22 +1021,28 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
     figs = {}
     tracesData = []
 
-    hover = HoverTool(tooltips=[('Time', '@x'), ('Measure', '@y')], mode='vline')
+    if ylabel is None:
+        y_axis_label = None
+    else:
+        y_axis_label = ylabel
 
     if oneFigPer == 'cell':
         
         for gid in cellGids:
-            
-            figs['_gid_' + str(gid)] = figure(
-                title = "Cell {}, Pop {}".format(gid, gidPops[gid]), 
-                tools = TOOLS, 
-                active_drag = 'pan', 
-                active_scroll = 'wheel_zoom',
-                x_axis_label="Time (ms)",
-                y_axis_label="V_soma")
-            
-            figs['_gid_' + str(gid)].add_tools(hover)
-            
+
+            if overlay:
+                figs['_gid_' + str(gid)] = figure(title = "Cell {}, Pop {}".format(gid, gidPops[gid]), 
+                                                  tools = TOOLS, 
+                                                  active_drag = 'pan', 
+                                                  active_scroll = 'wheel_zoom',
+                                                  x_axis_label="Time (ms)",
+                                                  y_axis_label=y_axis_label
+                                                  )
+                fig = figs['_gid_' + str(gid)]
+
+            else:
+                figs['_gid_' + str(gid)] = []
+
             for itrace, trace in enumerate(tracesList):
                 if 'cell_{}'.format(gid) in sim.allSimData[trace]:
                     fullTrace = sim.allSimData[trace]['cell_{}'.format(gid)]
@@ -1046,11 +1055,40 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
                         lenData = len(data)
                     t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
                     tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
-                    figs['_gid_' + str(gid)].line(t[:lenData], data, line_width=2)
+                    
+                    if overlay:
+                        fig.line(t[:lenData], data, line_width=2, line_color=colors[itrace], legend_label=trace)
+                        hover = HoverTool(tooltips=[('Time', '@x'), ('Value', '@y')], mode='vline')
+                        fig.add_tools(hover)
+                        fig.legend.click_policy="hide"
+                    else:
+                        subfig = figure(title = "Cell {}, Pop {}".format(gid, gidPops[gid]), 
+                                        tools = TOOLS, 
+                                        active_drag = 'pan', 
+                                        active_scroll = 'wheel_zoom',
+                                        x_axis_label="Time (ms)",
+                                        y_axis_label=y_axis_label
+                                        )
+                        subfig.line(t[:lenData], data, line_width=2, line_color=colors[itrace], legend_label=trace)
+                        if linkAxes:
+                            if itrace > 0:
+                                subfig.x_range = figs['_gid_' + str(gid)][0].x_range
+                                subfig.y_range = figs['_gid_' + str(gid)][0].y_range
+                        hover = HoverTool(tooltips=[('Time', '@x'), ('Value', '@y')], mode='vline')
+                        subfig.add_tools(hover)
+                        subfig.legend.click_policy="hide"
+                        figs['_gid_' + str(gid)].append(subfig)
 
     for figLabel, figObj in figs.items():
-        plot_layout = layout(figObj, sizing_mode='stretch_both')
-        html = file_html(plot_layout, CDN, title="figLabel")
+
+        if overlay:
+            plot_layout = layout(figObj, sizing_mode='stretch_both')
+            html = file_html(plot_layout, CDN, title=figLabel)
+            overlay_text = '_overlay'
+        else:
+            plot_layout = column(*figObj, sizing_mode='stretch_both')
+            html = file_html(plot_layout, CDN, title=figLabel)
+            overlay_text = ''
 
         if showFig: show(plot_layout)
 
@@ -1058,7 +1096,7 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
             if isinstance(saveFig, str):
                 filename = saveFig
             else:
-                filename = sim.cfg.filename+ figLabel + '_traces.html'
+                filename = sim.cfg.filename + '_iplot_traces' + figLabel + overlay_text + '.html'
             file = open(filename, 'w')
             file.write(html)
             file.close()

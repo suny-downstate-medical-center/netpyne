@@ -251,7 +251,8 @@ def intervalSave (t):
     from .. import sim
     from ..specs import Dict
     import pickle, os
-    
+    import numpy as np
+
     sim.pc.barrier()    
 
     # create folder if missing

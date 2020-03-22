@@ -8,6 +8,8 @@
 
 - Added option to have a uniform distribution of rates for Vecstim pulses
 
+- Added issue templates for GitHub
+
 - Overhaul of contribution guide (CONTRIBUTING.md)
 
 - Improved documentation
@@ -29,6 +31,8 @@
 - Fixed bug in run.py: print run time with 2 significant figures
 
 - Fixed output stat filenames of evolutionary optim: .cvs to .csv 
+
+- Fixed bug in interval saving
 
 
 # Version 0.9.5

@@ -57,8 +57,8 @@ simConfig.verbose = False  			# Show detailed messages
 simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 simConfig.recordStep = 0.1 			# Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'model_output'  # Set file output name
-simConfig.savePickle = False 		# Save params, network and sim output to pickle file
-simConfig.saveJson = True 	
+simConfig.savePickle = True 		# Save params, network and sim output to pickle file
+simConfig.saveJson = False 	
 simConfig.includeParamsLabel = False
 
 simConfig.saveDataInclude = ['simData', 'simConfig', 'netParams']#, 'net']
@@ -81,8 +81,9 @@ simConfig.printPopAvgRates = True
 
 # Create network and run simulation
 sim.create(netParams=netParams, simConfig=simConfig)
-sim.runSim() #SimWithIntervalFunc(500, modifyGnabar)
-sim.gatherData()                  			# gather spiking data and cell info from each node
+sim.runSimWithIntervalFunc(200, sim.saveSimDataInNode)
+#sim.gatherData()                  			# gather spiking data and cell info from each node
+sim.fileGather()
 sim.saveData()                    			# save params, cell info and sim output to file (pickle,mat,txt,etc)#
 sim.analysis.plotData()         			# plot spike raster etc
 

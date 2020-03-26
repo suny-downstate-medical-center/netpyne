@@ -1,5 +1,9 @@
 # Version 0.9.6
 
+- Added useful hover information to iplots
+
+- Improvements to iplotTraces
+
 - Added interactive plot for connectivity (iplotConn)
 
 - Added 'dynamicRates' option for NetStim populations
@@ -33,6 +37,8 @@
 - Fixed output stat filenames of evolutionary optim: .cvs to .csv 
 
 - Fixed bug in interval saving
+
+- Fixed bug in spikes.py in plotSpikeStats
 
 
 # Version 0.9.5

@@ -1,3 +1,46 @@
+# Version 0.9.6
+
+- Added useful hover information to iplots
+
+- Improvements to iplotTraces
+
+- Added interactive plot for connectivity (iplotConn)
+
+- Added 'dynamicRates' option for NetStim populations
+
+- Added option to have a uniform distribution of rates for Vecstim pulses
+
+- Added function for distributed saving at intervals
+
+- Added issue templates for GitHub
+
+- Overhaul of contribution guide (CONTRIBUTING.md)
+
+- Improved documentation
+
+- Fixed bugs and improved exception handling in plotConn 
+
+- Fixed loadSave V1 example model
+
+- Fixed bug calculating popRates when no spikes
+
+- Fixed bug in _distributeSynsUniformly()
+
+- Fixed bug in saveCellParamsRule()
+
+- Fixed bug in batch.py: initCfg params were not being updated for evol optim
+
+- Fixed bug in subconn.py: missing initialization of newWeightNorm 
+
+- Fixed bug in run.py: print run time with 2 significant figures
+
+- Fixed output stat filenames of evolutionary optim: .cvs to .csv 
+
+- Fixed bug in interval saving
+
+- Fixed bug in spikes.py in plotSpikeStats
+
+
 # Version 0.9.5
 
 - Print start and end date/time

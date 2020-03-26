@@ -782,7 +782,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
         }
     plt.rcParams.update(params)
 
-    xlabels = {'rate': 'Rate (Hz)', 'isicv': 'Irregularity (ISI CV)', 'sync':  'Synchrony', ' pairsync': 'Pairwise synchrony'}
+    xlabels = {'rate': 'Rate (Hz)', 'isicv': 'Irregularity (ISI CV)', 'sync':  'Synchrony', 'pairsync': 'Pairwise synchrony'}
 
     # Replace 'eachPop' with list of pops
     if 'eachPop' in include: 
@@ -1431,7 +1431,11 @@ def popAvgRates (trange = None, show = True):
     if not trange:
         trange = [0, sim.cfg.duration]
     else:
-        spkids,spkts = list(zip(*[(spkid,spkt) for spkid,spkt in zip(spkids,spkts) if trange[0] <= spkt <= trange[1]]))
+        try:
+            spkids, spkts = list(zip(*[(spkid, spkt) for spkid, spkt in zip(spkids, spkts) if trange[0] <= spkt <= trange[1]]))
+        except:
+            spkids, spkts = [], []
+
 
     avgRates = Dict()
     for pop in sim.net.allPops:

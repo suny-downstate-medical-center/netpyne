@@ -1,10 +1,11 @@
 """
-analysis/rxd.py
+analysis/interactive.py
 
 Functions to plot and analyze RxD-related results
 
-Contributors: salvadordura@gmail.com
+Contributors: salvadordura@gmail.com, joe.w.graham@gmail.com
 """
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
@@ -24,14 +25,11 @@ from .utils import colorList, exception, getSpktSpkid, _showFigure, _saveFigData
 import numpy as np
 import pandas as pd
 
-
-
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive raster
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
-                spikeHist = False, spikeHistBin = 5, syncLines = False, marker='circle', markerSize = 3, popColors = None, figSize = (10,8), saveData = None, saveFig = None, showFig = False):
+def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid', orderInverse=False, labels='legend', popRates=False, spikeHist=False, spikeHistBin=5, syncLines=False, marker='circle', markerSize=3, popColors=None, figSize=(10,8), saveData=None, saveFig=None, showFig=False):
 
     '''
     Raster plot of network cells
@@ -45,7 +43,7 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         - spikeHistBin (int): Size of bin in ms to use for histogram (default: 5)
         - syncLines (True|False): calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (default: False)
         - marker ('circle'|'cross'|'dash'|'triangel'| etc..): Mark type used for each spike
-        - popColors (odict): Dictionary with color (value) used for each population (key) (default: None)
+        - popColors (odict): Dictionary with color (value: three item list with float between 0 and 1 for RGB) used for each population (key) (default: None)
         - figSize ((width, height)): Size of figure (default: (10,8))
         - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;
             if set to True uses filename from simConfig (default: None)
@@ -64,15 +62,15 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     from bokeh.colors import RGB
     from bokeh.models.annotations import Title
 
-
     print('Plotting interactive raster ...')
 
-    TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
+    TOOLS = 'hover,save,pan,box_zoom,reset,wheel_zoom',
 
     colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
 
-    popColorDict=popColors.copy()
-    if popColorDict:
+    popColorDict = None
+    if popColors is not None:
+        popColorDict = popColors.copy()
         for pop, color in popColorDict.items():
             popColorDict[pop] = RGB(*[round(f * 255) for f in color])
 
@@ -193,9 +191,17 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
     else:
         y_range=(sel['spkind'].min(), sel['spkind'].max())
 
-
-    fig = figure(title="Raster Plot", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label=ylabelText,
-                 x_range=(timeRange[0], timeRange[1]), y_range=y_range, toolbar_location='above')
+    fig = figure(
+        title="Raster Plot", 
+        tools=TOOLS, 
+        active_drag = 'pan', 
+        active_scroll = 'wheel_zoom',
+        tooltips=[('Cell GID', '@y'), ('Spike time', '@x')],
+        x_axis_label="Time (ms)", 
+        y_axis_label=ylabelText,
+        x_range=(timeRange[0], timeRange[1]), 
+        y_range=y_range, 
+        toolbar_location='above')
 
     t = Title()
     if syncLines:
@@ -220,7 +226,7 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         else:
             label = name
 
-        s = fig.scatter(group['spkt'], group['spkind'], color=group['spkgidColor'], marker=marker, size=markerSize, legend=label)
+        s = fig.scatter(group['spkt'], group['spkind'], color=group['spkgidColor'], marker=marker, size=markerSize, legend_label=label)
         #legendItems.append((label, [s]))
 
     if spikeHist:
@@ -228,7 +234,6 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         fig.extra_y_ranges={'spikeHist': Range1d(start=min(histoCount), end=max(histoCount))}
         fig.add_layout(LinearAxis(y_range_name='spikeHist', axis_label='Spike count'), 'right')
         fig.line (histoT, histoCount, line_width=2, y_range_name='spikeHist')
-
 
     legend = Legend(items=legendItems, location=(10,0))
     legend.click_policy='hide'
@@ -249,7 +254,7 @@ def iplotRaster(include = ['allCells'], timeRange = None, maxSpikes = 1e8, order
         if isinstance(saveFig, str):
             filename = saveFig
         else:
-            filename = sim.cfg.filename+'_'+'iraster.html'
+            filename = sim.cfg.filename + '_iplot_raster.html'
         file = open(filename, 'w')
         file.write(html)
         file.close()
@@ -960,8 +965,7 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 ## Plot interactive Traces
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotTraces(include = None, timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False, colors = None, ylim = None, axis='on', fontSize=12,
-    figSize = (10,8), saveData = None, saveFig = None, showFig = True):
+def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', rerun=False, colors=None, ylim=None, axis='on', fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True, ylabel=None, linkAxes=False):
     ''' 
     Plot recorded traces
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of cells for which to plot 
@@ -988,12 +992,15 @@ def iplotTraces(include = None, timeRange = None, overlay = False, oneFigPer = '
     from bokeh.plotting import figure, show
     from bokeh.resources import CDN
     from bokeh.embed import file_html
-    from bokeh.layouts import layout
+    from bokeh.layouts import layout, column
+    from bokeh.models import HoverTool
+    from bokeh.models import Legend
+    from bokeh.colors import RGB
     
-    print('Plotting interactive recorded cell traces ...',oneFigPer)
+    print('Plotting interactive recorded cell traces per', oneFigPer)
 
-    
-    TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
+    TOOLS = 'save,pan,box_zoom,reset,wheel_zoom'
+    colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
 
     if include is None:  # if none, record from whatever was recorded
         if 'plotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['plotTraces']:
@@ -1014,10 +1021,28 @@ def iplotTraces(include = None, timeRange = None, overlay = False, oneFigPer = '
     figs = {}
     tracesData = []
 
+    if ylabel is None:
+        y_axis_label = None
+    else:
+        y_axis_label = ylabel
+
     if oneFigPer == 'cell':
+        
         for gid in cellGids:
-            figs['_gid_' + str(gid)] = figure(title="Cell {}, Pop {}".format(gid, gidPops[gid]), tools=TOOLS, x_axis_label="Time (ms)",
-                                              y_axis_label="V_soma")
+
+            if overlay:
+                figs['_gid_' + str(gid)] = figure(title = "Cell {}, Pop {}".format(gid, gidPops[gid]), 
+                                                  tools = TOOLS, 
+                                                  active_drag = 'pan', 
+                                                  active_scroll = 'wheel_zoom',
+                                                  x_axis_label="Time (ms)",
+                                                  y_axis_label=y_axis_label
+                                                  )
+                fig = figs['_gid_' + str(gid)]
+
+            else:
+                figs['_gid_' + str(gid)] = []
+
             for itrace, trace in enumerate(tracesList):
                 if 'cell_{}'.format(gid) in sim.allSimData[trace]:
                     fullTrace = sim.allSimData[trace]['cell_{}'.format(gid)]
@@ -1030,11 +1055,100 @@ def iplotTraces(include = None, timeRange = None, overlay = False, oneFigPer = '
                         lenData = len(data)
                     t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
                     tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
-                    figs['_gid_' + str(gid)].line(t[:lenData], data, line_width=2)
+                    
+                    if overlay:
+                        fig.line(t[:lenData], data, line_width=2, line_color=colors[itrace], legend_label=trace)
+                        hover = HoverTool(tooltips=[('Time', '@x'), ('Value', '@y')], mode='vline')
+                        fig.add_tools(hover)
+                        fig.legend.click_policy="hide"
+                    else:
+                        subfig = figure(title = "Cell {}, Pop {}".format(gid, gidPops[gid]), 
+                                        tools = TOOLS, 
+                                        active_drag = 'pan', 
+                                        active_scroll = 'wheel_zoom',
+                                        x_axis_label="Time (ms)",
+                                        y_axis_label=y_axis_label
+                                        )
+                        subfig.line(t[:lenData], data, line_width=2, line_color=colors[itrace], legend_label=trace)
+                        if linkAxes:
+                            if itrace > 0:
+                                subfig.x_range = figs['_gid_' + str(gid)][0].x_range
+                                subfig.y_range = figs['_gid_' + str(gid)][0].y_range
+                        hover = HoverTool(tooltips=[('Time', '@x'), ('Value', '@y')], mode='vline')
+                        subfig.add_tools(hover)
+                        subfig.legend.click_policy="hide"
+                        figs['_gid_' + str(gid)].append(subfig)
 
+    elif oneFigPer == 'trace':
+
+        for itrace, trace in enumerate(tracesList):
+            
+            if overlay:
+                figs['_trace_' + str(trace)] = figure(title = str(trace), 
+                                                  tools = TOOLS, 
+                                                  active_drag = 'pan', 
+                                                  active_scroll = 'wheel_zoom',
+                                                  x_axis_label="Time (ms)",
+                                                  y_axis_label=y_axis_label
+                                                  )
+                fig = figs['_trace_' + str(trace)]
+
+            else:
+                figs['_trace_' + str(trace)] = []
+
+            for igid, gid in enumerate(cellGids):
+                if 'cell_'+str(gid) in sim.allSimData[trace]:
+                    fullTrace = sim.allSimData[trace]['cell_'+str(gid)]
+                    if isinstance(fullTrace, dict):
+                        data = [fullTrace[key][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)] for key in list(fullTrace.keys())]
+                        lenData = len(data[0])
+                        data = np.transpose(np.array(data))
+                    else:
+                        data = np.array(fullTrace[int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)])
+                        lenData = len(data)
+                    t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
+                    tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
+                                        
+                    if overlay:
+                        fig.line(t[:lenData], data, line_width=2, line_color=colors[igid], legend_label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                        hover = HoverTool(tooltips=[('Time', '@x'), ('Value', '@y')], mode='vline')
+                        fig.add_tools(hover)
+                        fig.legend.click_policy="hide"
+                    else:
+                        subfig = figure(title = str(trace), 
+                                        tools = TOOLS, 
+                                        active_drag = 'pan', 
+                                        active_scroll = 'wheel_zoom',
+                                        x_axis_label="Time (ms)",
+                                        y_axis_label=y_axis_label
+                                        )
+
+                        if isinstance(data, list):
+                            for tl,dl in zip(t,data):
+                                subfig.line(tl[:len(dl)], dl, line_width=1.5, line_color=colors[igid], legend_label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                        else:
+                            subfig.line(t[:len(data)], data, line_width=1.5, line_color=colors[igid], legend_label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+
+                        if linkAxes:
+                            if igid > 0:
+                                subfig.x_range = figs['_trace_' + str(trace)][0].x_range
+                                subfig.y_range = figs['_trace_' + str(trace)][0].y_range
+                        hover = HoverTool(tooltips=[('Time', '@x'), ('Value', '@y')], mode='vline')
+                        subfig.add_tools(hover)
+                        subfig.legend.click_policy="hide"
+                        figs['_trace_' + str(trace)].append(subfig)
+                    
+                    
     for figLabel, figObj in figs.items():
-        plot_layout = layout(figObj, sizing_mode='stretch_both')
-        html = file_html(plot_layout, CDN, title="figLabel")
+
+        if overlay:
+            plot_layout = layout(figObj, sizing_mode='stretch_both')
+            html = file_html(plot_layout, CDN, title=figLabel)
+            overlay_text = '_overlay'
+        else:
+            plot_layout = column(*figObj, sizing_mode='stretch_both')
+            html = file_html(plot_layout, CDN, title=figLabel)
+            overlay_text = ''
 
         if showFig: show(plot_layout)
 
@@ -1042,7 +1156,7 @@ def iplotTraces(include = None, timeRange = None, overlay = False, oneFigPer = '
             if isinstance(saveFig, str):
                 filename = saveFig
             else:
-                filename = sim.cfg.filename+ figLabel + '_traces.html'
+                filename = sim.cfg.filename + '_iplot_traces' + figLabel + overlay_text + '.html'
             file = open(filename, 'w')
             file.write(html)
             file.close()
@@ -1245,5 +1359,190 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             file = open(filename, 'w')
             file.write(html)
             file.close()
+
+    return html
+
+
+# -------------------------------------------------------------------------------------------------------------------
+## Plot interactive connectivity
+# -------------------------------------------------------------------------------------------------------------------
+@exception
+def iplotConn(includePre=['all'], includePost=['all'], feature='strength', orderBy='gid', figSize=(10,10), groupBy='pop', groupByIntervalPre=None, groupByIntervalPost=None, removeWeightNorm=False, graphType='matrix', synOrConn='syn', synMech=None, connsFile=None, tagsFile=None, clim=None, fontSize=12, saveData=None, saveFig=None, showFig=False): 
+    ''' 
+    Plot network connectivity
+        - includePre (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
+        - includePost (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
+        - feature ('weight'|'delay'|'numConns'|'probability'|'strength'|'convergence'|'divergence'): Feature to show in connectivity matrix; 
+            the only features applicable to groupBy='cell' are 'weight', 'delay' and 'numConns';  'strength' = weight * probability (default: 'strength')
+        - groupBy ('pop'|'cell'|'y'|: Show matrix for individual cells, populations, or by other numeric tag such as 'y' (default: 'pop')
+        - groupByInterval (int or float): Interval of groupBy feature to group cells by in conn matrix, e.g. 100 to group by cortical depth in steps of 100 um   (default: None)
+        - orderBy ('gid'|'y'|'ynorm'|...): Unique numeric cell property to order x and y axes by, e.g. 'gid', 'ynorm', 'y' (requires groupBy='cells') (default: 'gid')
+        - graphType ('matrix','bar','pie'): Type of graph to represent data (default: 'matrix')
+        - synOrConn ('syn'|'conn'): Use synapses or connections; note 1 connection can have multiple synapses (default: 'syn')
+        - figSize ((width, height)): Size of figure (default: (10,10))
+        - synMech (['AMPA', 'GABAA',...]): Show results only for these syn mechs (default: None)
+        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
+            if set to True uses filename from simConfig (default: None)
+        - saveFig (None|True|'fileName'): File name where to save the figure; 
+            if set to True uses filename from simConfig (default: None)
+        - showFig (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figure handles
+    '''
+    
+    from netpyne import sim
+    from netpyne.analysis import network
+    from bokeh.plotting import figure, show
+    from bokeh.transform import linear_cmap
+    from bokeh.palettes import Viridis256
+    from bokeh.palettes import viridis 
+    from bokeh.models import ColorBar
+    from bokeh.embed import file_html
+    from bokeh.resources import CDN
+    from bokeh.layouts import layout
+    from bokeh.colors import RGB
+
+    print('Plotting interactive connectivity matrix...')
+
+    if connsFile and tagsFile:
+        connMatrix, pre, post = network._plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile, removeWeightNorm)
+    else:
+        connMatrix, pre, post = network._plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, removeWeightNorm)
+
+
+    if connMatrix is None:
+        print("  Error calculating connMatrix in iplotConn()")
+        return None
+
+    # TODO: set plot font size in Bokeh
+
+    # for groupBy = 'cell' (needed to properly format data for Bokeh)
+    if groupBy == 'cell':
+        pre = [str(cell['gid']) for cell in pre]
+        post = [str(cell['gid']) for cell in post]
+
+    # matrix plot
+    if graphType == 'matrix':
+        
+        pandas_data = pd.DataFrame(data=connMatrix, index=pre, columns=post)
+        pandas_data.index.name = 'pre'
+        pandas_data.columns.name = 'post'
+        bokeh_data = pandas_data.reset_index().melt(id_vars=['pre'], value_name=feature)
+
+        # the colormapper doesn't work if both high and low values are the same
+        low = np.nanmin(connMatrix)
+        high = np.nanmax(connMatrix)
+        if low == high:
+            low = low - 0.1 * low
+            high = high + 0.1 * high
+
+        conn_colormapper = linear_cmap(
+        field_name=feature,
+        palette=Viridis256,
+        low=low,
+        high=high,
+        nan_color='white'
+        )
+
+        conn_colorbar = ColorBar(color_mapper=conn_colormapper['transform'])
+        conn_colorbar.location = (0, 0)
+        conn_colorbar.title = feature
+
+        fig = figure(
+            x_range=pandas_data.columns.values,
+            y_range=np.flip(pandas_data.index.values),
+            tools = 'hover,save,pan,box_zoom,reset,wheel_zoom',
+            active_drag = 'pan',
+            active_scroll = 'wheel_zoom',
+            tooltips=[('Pre', '@pre'), ('Post', '@post'), (feature, '@' + feature)],
+            title='Connection ' + feature + ' matrix',
+            toolbar_location='below',
+            x_axis_location='above'
+            )
+
+        fig.xaxis.axis_label = pandas_data.columns.name
+        fig.yaxis.axis_label = pandas_data.index.name
+        fig.yaxis.major_label_orientation = 'horizontal'
+        fig.xaxis.major_label_orientation = 'vertical'
+
+        fig.rect(
+            source=bokeh_data, 
+            x='post', 
+            y='pre', 
+            width=1, 
+            height=1, 
+            color=conn_colormapper
+            )
+
+        fig.add_layout(conn_colorbar, 'right')
+        
+        # TODO: add grid lines?
+            
+    # stacked bar graph
+    elif graphType == 'bar':
+        if groupBy == 'pop':
+            
+            popsPre, popsPost = pre, post
+            colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+            bar_colors = colors[0:len(popsPre)]
+
+            data = {'post' : popsPost}
+            for popIndex, pop in enumerate(popsPre):
+                data[pop] = connMatrix[popIndex, :]
+
+            fig = figure(
+                x_range=popsPost, 
+                title='Connection ' + feature + ' stacked bar graph',
+                toolbar_location=None, 
+                tools='hover,save,pan,box_zoom,reset,wheel_zoom', 
+                active_drag='pan', 
+                active_scroll = 'wheel_zoom', 
+                tooltips=[('Pre', '$name'), ('Post', '@post'), (feature, '@$name')],
+                )
+
+            fig.vbar_stack(
+                popsPre, 
+                x='post', 
+                width=0.9, 
+                color=bar_colors, 
+                source=data,
+                legend_label=popsPre,
+                )
+
+            fig.xgrid.grid_line_color = None
+            fig.legend.title = 'Pre'
+            fig.xaxis.axis_label = 'Post'
+            fig.yaxis.axis_label = feature
+
+        elif groupBy == 'cell':
+            print('  Error: plotConn graphType="bar" with groupBy="cell" not yet implemented')
+            return None
+
+    elif graphType == 'pie':
+        print('  Error: plotConn graphType="pie" not yet implemented')
+        return None
+
+    plot_layout = layout([fig], sizing_mode='stretch_both')
+    html = file_html(plot_layout, CDN, title='Connection ' + feature + ' matrix')
+
+    #save figure data
+    if saveData:
+        figData = {'connMatrix': connMatrix, 'feature': feature, 'groupBy': groupBy,
+         'includePre': includePre, 'includePost': includePost, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+    
+        _saveFigData(figData, saveData, 'conn')
+ 
+    # save figure
+    if saveFig: 
+        if isinstance(saveFig, str):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename+'_iplot_conn_'+groupBy+'_'+feature+'_'+graphType+'.html'
+        file = open(filename, 'w')
+        file.write(html)
+        file.close()
+
+    # show fig 
+    if showFig: show(fig)
 
     return html

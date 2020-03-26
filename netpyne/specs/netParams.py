@@ -468,7 +468,7 @@ class NetParams (object):
             with open(fileName, 'wb') as fileObj:
                 pickle.dump(cellRule, fileObj)
         elif ext == 'json':
-            import sim
+            from .. import sim
             sim.saveJSON(fileName, cellRule)
 
 

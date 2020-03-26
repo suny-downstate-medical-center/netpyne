@@ -11,6 +11,8 @@ def getCells():
 	neuronal_model_id = 472299294   # get this from the web site as above
 	bp.cache_data(neuronal_model_id, working_directory='E2full')
 	os.system('cd E2full; nrnivmodl ./modfiles; cd ..')
+	os.system('cp %s %s'%('E2/cell_template.hoc', 'E2full/.'))
+	os.system('cp %s %s'%('E2/cell_utils.py', 'E2full/.'))
 
 	# E4 cell (L4 Pyr) - https://senselab.med.yale.edu/modeldb/showmodel.cshtml?model=184142
 	neuronal_model_id = 329321704    # get this from the web site as above
@@ -18,7 +20,6 @@ def getCells():
 	os.system('cd E4; nrnivmodl ./modfiles; cd ..')
 	os.system('cp %s %s'%('E2/cell_template.hoc', 'E4/.'))
 	os.system('cp %s %s'%('E2/cell_utils.py', 'E4/.'))
-
 
 	# E5 cell (L5 Pyr) - https://senselab.med.yale.edu/modeldb/showmodel.cshtml?model=184159
 	neuronal_model_id = 471087975    # get this from the web site as above
@@ -41,6 +42,12 @@ def getCells():
 	os.system('cp %s %s'%('E2/cell_template.hoc', 'IL/.'))
 	os.system('cp %s %s'%('E2/cell_utils.py', 'IL/.'))
 
+	# AA cell (all active model L5 Pyr) - http://celltypes.brain-map.org/experiment/electrophysiology/485574832
+	neuronal_model_id = 497232312
+	bp.cache_data(neuronal_model_id, working_directory='AA')
+	os.system('cd AA; nrnivmodl ./modfiles; cd ..')
+	os.system('cp %s %s'%('E2/cell_template.hoc', 'AA/.'))
+
 	os.system('nrnivmodl ./E2/modfiles')
 
 # Generic function to return cell object containing sections 
@@ -52,9 +59,18 @@ def Cell(path = None):
 	os.chdir(owd)
 	return cell
 
+def activeCell(path = None):
+	owd = os.getcwd()
+	os.chdir(path)
+	from active_cell_utils import Utils
+	cell = Utils().cell
+	os.chdir(owd)
+	return cell
+
 # Functions to return object with sections for each specific cell type
 def E2(): return Cell('E2')
 def E4(): return Cell('E4')
 def E5(): return Cell('E5')
 def IF(): return Cell('IF')
 def IL(): return Cell('IL')
+def AA(): return activeCell('AA')

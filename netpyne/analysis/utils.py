@@ -62,7 +62,7 @@ def exception(function):
         except Exception as e:
             # print 
             err = "There was an exception in %s():"%(function.__name__)
-            print(("%s \n %s \n%s"%(err,e,sys.exc_info())))
+            print(("  %s \n    %s \n    %s"%(err,e,sys.exc_info())))
             return -1
  
     return wrapper

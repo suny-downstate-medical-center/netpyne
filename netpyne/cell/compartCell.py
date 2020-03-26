@@ -1203,17 +1203,16 @@ class CompartCell (Cell):
         from .. import sim
 
         from numpy import cumsum
-
-        if 'L' in self.secs[secList[0]]['geom']:
-            secLengths = [self.secs[s]['geom']['L'] for s in secList]
-        elif getattr(self.secs[secList[0]]['hObj'], 'L', None):
-            secLengths = [self.secs[s]['hObj'].L for s in secList]
-        else:
-            secLengths = [1.0 for s in secList]
-            if sim.cfg.verbose: 
-                print(('  Section lengths not available to distribute synapses in cell %d'%self.gid))
-            
         try:
+            if 'L' in self.secs[secList[0]]['geom']:
+                secLengths = [self.secs[s]['geom']['L'] for s in secList]
+            elif getattr(self.secs[secList[0]]['hObj'], 'L', None):
+                secLengths = [self.secs[s]['hObj'].L for s in secList]
+            else:
+                secLengths = [1.0 for s in secList]
+                if sim.cfg.verbose: 
+                    print(('  Section lengths not available to distribute synapses in cell %d'%self.gid))
+
             secLengths = [x for x in secLengths if isinstance(x, Number)]
             totLength = sum(secLengths)
             cumLengths = list(cumsum(secLengths))
@@ -1292,7 +1291,10 @@ class CompartCell (Cell):
         for sec in list(self.secs.values()):
             hSec = sec['hObj']
             for iseg, seg in enumerate(hSec):
-                self.imembPtr.pset(jseg, seg._ref_i_membrane_)  # notice the underscore at the end (in nA)
+                try:
+                    self.imembPtr.pset(jseg, seg._ref_i_membrane_)  # notice the underscore at the end (in nA)
+                except:
+                    '  Error setting Vector to point to i_membrane_'
                 jseg += 1
                 
 

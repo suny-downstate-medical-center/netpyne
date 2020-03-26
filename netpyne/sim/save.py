@@ -584,7 +584,28 @@ def saveSimDataInNode(filename=None):
     dataSave['netpyne_version'] = sim.version(show=False)
     dataSave['netpyne_changeset'] = sim.gitChangeset(show=False)
 
-    dataSave['simData'] = sim.simData
+    simDataVecs = ['spkt','spkid','stims']+list(sim.cfg.recordTraces.keys())
+    singleNodeVecs = ['t']
+
+    saveSimData =  {}
+    for k in list(sim.simData.keys()):  # initialize all keys of allSimData dict
+        saveSimData[k] =  {}
+    for key,val in sim.simData.items():  # update simData dics of dics of h.Vector
+            if key in simDataVecs+singleNodeVecs:          # simData dicts that contain Vectors
+                if isinstance(val,dict):
+                    for cell,val2 in val.items():
+                        if isinstance(val2,dict):
+                            saveSimData[key].update({cell: {}})
+                            for stim,val3 in val2.items():
+                                saveSimData[key][cell].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
+                        else:
+                            saveSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
+                else:
+                    saveSimData[key] = list(saveSimData[key])+list(val) # udpate simData dicts which are Vectors
+            else:
+                saveSimData[key] = val           # update simData dicts which are not Vectors
+
+    dataSave['simData'] = saveSimData
 
     if getattr(sim.net.params, 'version', None): dataSave['netParams_version'] = sim.net.params.version
 

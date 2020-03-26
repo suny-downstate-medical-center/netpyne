@@ -1079,6 +1079,66 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
                         subfig.legend.click_policy="hide"
                         figs['_gid_' + str(gid)].append(subfig)
 
+    elif oneFigPer == 'trace':
+
+        for itrace, trace in enumerate(tracesList):
+            
+            if overlay:
+                figs['_trace_' + str(trace)] = figure(title = str(trace), 
+                                                  tools = TOOLS, 
+                                                  active_drag = 'pan', 
+                                                  active_scroll = 'wheel_zoom',
+                                                  x_axis_label="Time (ms)",
+                                                  y_axis_label=y_axis_label
+                                                  )
+                fig = figs['_trace_' + str(trace)]
+
+            else:
+                figs['_trace_' + str(trace)] = []
+
+            for igid, gid in enumerate(cellGids):
+                if 'cell_'+str(gid) in sim.allSimData[trace]:
+                    fullTrace = sim.allSimData[trace]['cell_'+str(gid)]
+                    if isinstance(fullTrace, dict):
+                        data = [fullTrace[key][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)] for key in list(fullTrace.keys())]
+                        lenData = len(data[0])
+                        data = np.transpose(np.array(data))
+                    else:
+                        data = np.array(fullTrace[int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)])
+                        lenData = len(data)
+                    t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
+                    tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
+                                        
+                    if overlay:
+                        fig.line(t[:lenData], data, line_width=2, line_color=colors[igid], legend_label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                        hover = HoverTool(tooltips=[('Time', '@x'), ('Value', '@y')], mode='vline')
+                        fig.add_tools(hover)
+                        fig.legend.click_policy="hide"
+                    else:
+                        subfig = figure(title = str(trace), 
+                                        tools = TOOLS, 
+                                        active_drag = 'pan', 
+                                        active_scroll = 'wheel_zoom',
+                                        x_axis_label="Time (ms)",
+                                        y_axis_label=y_axis_label
+                                        )
+
+                        if isinstance(data, list):
+                            for tl,dl in zip(t,data):
+                                subfig.line(tl[:len(dl)], dl, line_width=1.5, line_color=colors[igid], legend_label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                        else:
+                            subfig.line(t[:len(data)], data, line_width=1.5, line_color=colors[igid], legend_label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+
+                        if linkAxes:
+                            if igid > 0:
+                                subfig.x_range = figs['_trace_' + str(trace)][0].x_range
+                                subfig.y_range = figs['_trace_' + str(trace)][0].y_range
+                        hover = HoverTool(tooltips=[('Time', '@x'), ('Value', '@y')], mode='vline')
+                        subfig.add_tools(hover)
+                        subfig.legend.click_policy="hide"
+                        figs['_trace_' + str(trace)].append(subfig)
+                    
+                    
     for figLabel, figObj in figs.items():
 
         if overlay:
@@ -1400,7 +1460,6 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
             x_axis_location='above'
             )
 
-        fig.title.align = 'center'
         fig.xaxis.axis_label = pandas_data.columns.name
         fig.yaxis.axis_label = pandas_data.index.name
         fig.yaxis.major_label_orientation = 'horizontal'

@@ -550,7 +550,7 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot connectivity
 # -------------------------------------------------------------------------------------------------------------------
-#@exception
+@exception
 def plotConn(includePre = ['all'], includePost = ['all'], feature = 'strength', orderBy = 'gid', figSize = (8,8), groupBy = 'pop', groupByIntervalPre = None, groupByIntervalPost = None, removeWeightNorm = False, graphType = 'matrix', synOrConn = 'syn', synMech = None, connsFile = None, tagsFile = None, clim = None, fontSize = 12, saveData = None, saveFig = None, showFig = True):
     ''' 
     Plot network connectivity
@@ -598,7 +598,6 @@ def plotConn(includePre = ['all'], includePost = ['all'], feature = 'strength', 
         fig.subplots_adjust(top=0.96) # Less space on top
         fig.subplots_adjust(bottom=0.02) # Less space on bottom
         h = plt.axes()
-
         plt.imshow(connMatrix, interpolation='nearest', cmap='viridis', vmin=np.nanmin(connMatrix), vmax=np.nanmax(connMatrix))  #_bicolormap(gap=0)
 
         # Plot grid lines

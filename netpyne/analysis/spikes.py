@@ -292,33 +292,128 @@ def plotSyncs (include =['allCells', 'eachPop'], timeRanges = None, timeRangeLab
 ## Raster plot
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotRaster (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False,
-        spikeHist=None, spikeHistBin=5, syncLines=False, lw=2, marker='|', markerSize=5, popColors=None, figSize=(10, 8), fontSize=12,
-        dpi = 100, saveData = None, saveFig = None, showFig = True):
-    '''
-    Raster plot of network cells
-        - include (['all',|'allCells',|'allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to include (default: 'allCells')
-        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
-        - maxSpikes (int): maximum number of spikes that will be plotted  (default: 1e8)
-        - orderBy ('gid'|'y'|'ynorm'|...): Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' (default: 'gid')
-        - orderInverse (True|False): Invert the y-axis order (default: False)
-        - labels = ('legend', 'overlay'): Show population labels in a legend or overlayed on one side of raster (default: 'legend')
-        - popRates = (True|False): Include population rates (default: False)
-        - spikeHist (None|'overlay'|'subplot'): overlay line over raster showing spike histogram (spikes/bin) (default: False)
-        - spikeHistBin (int): Size of bin in ms to use for histogram (default: 5)
-        - syncLines (True|False): calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (default: False)
-        - lw (integer): Line width for each spike (default: 2)
-        - marker (char): Marker for each spike (default: '|')
-        - popColors (odict): Dictionary with color (value) used for each population (key) (default: None)
-        - figSize ((width, height)): Size of figure (default: (10,8))
-        - dpi (int): Dots per inch to save fig (default: 100)
-        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;
-            if set to True uses filename from simConfig (default: None)
-        - saveFig (None|True|'fileName'): File name where to save the figure (default: None)
-            if set to True uses filename from simConfig (default: None)
-        - showFig (True|False): Whether to show the figure or not (default: True)
-        - Returns figure handle
-    '''
+def plotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid', orderInverse=False, labels='legend', popRates=False, spikeHist=None, spikeHistBin=5, syncLines=False, lw=2, marker='|', markerSize=5, popColors=None, figSize=(10, 8), fontSize=12, dpi=100, saveData=None, saveFig=None, showFig=True):
+    """Creates a raster plot of network cells.
+
+    Parameters
+    ----------
+    include : list
+        Cells to include in the plot.
+        **Default:** 
+        ``['allCells']`` plots all cells
+        **Options:** 
+        ``['all']`` plots all cells and stimulations, 
+        ``['allNetStims']`` plots just stimulations, 
+        ``['popName1']`` plots a single population, 
+        ``['popName1', 'popName2']`` plots multiple populations, 
+        ``[120]`` plots a single cell, 
+        ``[120, 130]`` plots multiple cells, 
+        ``[('popName1', 56)]`` plots a cell from a specific population, 
+        ``[('popName1', [0, 1]), ('popName2', [4, 5, 6])]``, plots cells from multiple populations
+
+    timeRange : list [start, stop]
+        Time range to plot.
+        **Default:** 
+        ``None`` plots entire time range
+
+    maxSpikes : int
+        Maximum number of spikes to be plotted.
+        **Default:** ``1e8``
+
+    orderBy : str
+        Unique numeric cell property by which to order the y-axis.
+        **Default:** ``'gid'`` orders by cell ID
+        **Options:**
+        ``'y'`` orders by cell y-location,
+        ``'ynorm'`` orders by cell normalized y-location
+
+    orderInverse : bool
+        Inverts the y-axis order if ``True``.
+        **Default:** ``False`` 
+    
+    labels : str
+        Show population labels in a legend or as an overlay on one side of raster.
+        **Default:** ``'legend'``
+        **Options:** ``'overlay'``
+    
+    popRates : bool
+        Include population firing rates on plot if ``True``.
+        **Default:** ``False``
+    
+    spikeHist : str
+        Include spike histogram (spikes/bin) on plot. 
+        **Default:** ``None``
+        **Options:** 
+        ``'overlay'`` overlays the histogram directly on the raster plot
+        ``'subplot'`` shows the histogram as a subplot to the raster plot
+    
+    spikeHistBin : int
+        Size of bin in ms to use for spike histogram. 
+        **Default:** ``5`` 
+    
+    syncLines : bool
+        Calculate synchrony measure and plot vertical lines for each spike to evidence synchrony if ``True``.
+        **Default:** ``False``
+    
+    lw : int
+        Line width for each spike.
+        **Default:** ``2``
+    
+    marker : str
+        Marker for each spike.
+        **Default:** ``'|'``
+    
+    markerSize : int
+        Size of marker for each spike.
+        **Default:** ``5`` 
+    
+    popColors : dict
+        Dictionary with custom color (value) used for each population (key).
+        **Default:** ``None`` uses standard colors
+    
+    figSize : list [width, height]
+        Size of figure in inches.
+        **Default:** ``(10, 8)`` 
+    
+    fontSize : int
+        Font size on figure.
+        **Default:** ``12`` 
+    
+    dpi : int
+        Resolution of figure in dots per inch.
+        **Default:** ``100``
+    
+    saveData : bool or str
+        Whether and where to save the data used to generate the plot. 
+        **Default:** ``False`` 
+        **Options:** ``True`` autosaves the data,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
+    
+    saveFig : bool or str
+        Whether and where to save the figure.
+        **Default:** ``False``
+        **Options:** ``True`` autosaves the figure,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
+    
+    showFig : bool
+        Shows the figure if ``True``.
+        **Default:** ``True``
+
+    Returns
+    -------
+    (fig, dict)
+        A tuple consisting of the matplotlib figure handle and a dictionary containing the plot data.
+
+    See Also
+    --------
+    iplotRaster :
+    plotSpikeHist : 
+
+    Examples
+    --------
+    >>> import netpyne_tutorial
+    >>> out = sim.analysis.plotRaster()
+    """
 
     from .. import sim
 

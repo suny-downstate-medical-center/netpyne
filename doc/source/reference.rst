@@ -841,28 +841,7 @@ Misc/utilities:
 
 Analysis-related functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-* **analysis.plotRaster** (include = ['allCells'], timeRange = None, maxSpikes = 1e8, orderBy = 'gid', orderInverse = False, labels = 'legend', popRates = False, spikeHist = None, spikeHistBin = 5, syncLines = False, figSize = (10,8), saveData = None, saveFig = None, showFig = True)
-    
-    Plot raster (spikes over time) of network cells. Optional arguments:
-
-    - *include*: List of cells to include ([``'all'``, ``'allCells'`` , ``'allNetStims'``, ``120`` , ``'L4'`` , ``('L2', 56)``, ``('L5', [4, 5, 6])``])
-    - *timeRange*: Time range of spikes shown; if ``None`` shows all (``[start:stop]``)
-    - *maxSpikes*: maximum number of spikes that will be plotted (``int``)
-    - *orderBy*: Unique numeric cell property to order y-axis by (``'gid'``, ``'y'``, ``'ynorm'``, ...)
-    - *orderInverse*: Invert the y-axis order (``True``, ``False``)
-    - *labels*: Show population labels in a legend or overlaid on one side of raster (``'legend'``, ``'overlay'``)
-    - *popRates*: Include population rates (``'legend'``, ``'overlay'``)
-    - *spikeHist*: overlay line over raster showing spike histogram (spikes/bin) (``None``, ``'overlay'``, ``'subplot'``)
-    - *spikeHistBin*: Size of bin in ms to use for histogram  (``int``)
-    - *syncLines*: calculate synchrony measure and plot vertical lines for each spike to demonstrate synchrony (``True``, ``False``)
-    - *figSize*: Size of figure (``(width, height)``)
-    - *saveData*: File name where to save the final data used to generate the figure (``None``, ``'fileName'``)
-    - *saveFig*: File name where to save the figure (``None``, ``'fileName'``)
-    - *showFig*: Whether to show the figure or not (``True``, ``False``)
-
-    **analysis.plotRaster** returns the figure handle
-    
+.. autofunction:: netpyne.analysis.plotRaster
 
 * **analysis.plotSpikeHist** (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, overlay=True, graphType='line', yaxis = 'rate', figSize = (10,8), saveData = None, saveFig = None, showFig = True)
      

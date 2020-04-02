@@ -29,29 +29,105 @@ import pandas as pd
 ## Plot interactive raster
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid', orderInverse=False, labels='legend', popRates=False, spikeHist=False, spikeHistBin=5, syncLines=False, marker='circle', markerSize=3, popColors=None, figSize=(10,8), saveData=None, saveFig=None, showFig=False):
+def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid', orderInverse=False, popRates=False, spikeHist=False, spikeHistBin=5, syncLines=False, marker='circle', markerSize=3, popColors=None, saveData=None, saveFig=None, showFig=False):
+    """Creates an interactive html raster plot of network cells using Bokeh.
 
-    '''
-    Raster plot of network cells
-        - include (['all',|'allCells',|'allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to include (default: 'allCells')
-        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
-        - maxSpikes (int): maximum number of spikes that will be plotted  (default: 1e8)
-        - orderBy ('gid'|'y'|'ynorm'|...): Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' (default: 'gid')
-        - orderInverse (True|False): Invert the y-axis order (default: False)
-        - popRates = (True|False): Include population rates (default: False)
-        - spikeHist (True|False): overlay line over raster showing spike histogram (spikes/bin) (default: False)
-        - spikeHistBin (int): Size of bin in ms to use for histogram (default: 5)
-        - syncLines (True|False): calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (default: False)
-        - marker ('circle'|'cross'|'dash'|'triangel'| etc..): Mark type used for each spike
-        - popColors (odict): Dictionary with color (value: three item list with float between 0 and 1 for RGB) used for each population (key) (default: None)
-        - figSize ((width, height)): Size of figure (default: (10,8))
-        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;
-            if set to True uses filename from simConfig (default: None)
-        - saveFig (None|True|'fileName'): File name where to save the figure (default: None)
-            if set to True uses filename from simConfig (default: None)
-        - showFig (True|False): Whether to show the figure or not (default: True)
-        - Returns figure handle
-    '''
+    Parameters
+    ----------
+    include : list
+        Cells to include in the plot.
+        **Default:** 
+        ``['allCells']`` plots all cells
+        **Options:** 
+        ``['all']`` plots all cells and stimulations, 
+        ``['allNetStims']`` plots just stimulations, 
+        ``['popName1']`` plots a single population, 
+        ``['popName1', 'popName2']`` plots multiple populations, 
+        ``[120]`` plots a single cell, 
+        ``[120, 130]`` plots multiple cells, 
+        ``[('popName1', 56)]`` plots a cell from a specific population, 
+        ``[('popName1', [0, 1]), ('popName2', [4, 5, 6])]``, plots cells from multiple populations
+
+    timeRange : list [start, stop]
+        Time range to plot.
+        **Default:** 
+        ``None`` plots entire time range
+
+    maxSpikes : int
+        Maximum number of spikes to be plotted.
+        **Default:** ``1e8``
+
+    orderBy : str
+        Unique numeric cell property by which to order the y-axis.
+        **Default:** ``'gid'`` orders by cell ID
+        **Options:**
+        ``'y'`` orders by cell y-location,
+        ``'ynorm'`` orders by cell normalized y-location
+
+    orderInverse : bool
+        Inverts the y-axis order if ``True``.
+        **Default:** ``False`` 
+    
+    popRates : bool
+        Include population firing rates on plot if ``True``.
+        **Default:** ``False``
+    
+    spikeHist : bool
+        Include spike histogram (spikes/bin) on plot if ``True``. 
+        **Default:** ``False``
+    
+    spikeHistBin : int
+        Size of bin in ms to use for spike histogram. 
+        **Default:** ``5`` 
+    
+    syncLines : bool
+        Calculate synchrony measure and plot vertical lines for each spike to evidence synchrony if ``True``.
+        **Default:** ``False``
+    
+    marker : str
+        `Bokeh marker <https://docs.bokeh.org/en/latest/docs/gallery/markers.html>`_ for each spike.
+        **Default:** ``'circle'``
+    
+    markerSize : int
+        Size of Bokeh marker for each spike.
+        **Default:** ``3`` 
+    
+    popColors : dict
+        Dictionary with custom color (value) used for each population (key).
+        **Default:** ``None`` uses standard colors
+    
+    saveData : bool or str
+        Whether and where to save the data used to generate the plot. 
+        **Default:** ``False`` 
+        **Options:** ``True`` autosaves the data,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
+    
+    saveFig : bool or str
+        Whether and where to save the figure.
+        **Default:** ``False``
+        **Options:** ``True`` autosaves the figure,
+        ``'/path/filename.html'`` saves to a custom path and filename, only valid file extension is ``'.html'``
+    
+    showFig : bool
+        Shows the figure if ``True``.
+        **Default:** ``True``
+
+    Returns
+    -------
+    (str, dict)
+        A tuple consisting of a string containing the html for the figure and a dictionary containing the plot data.
+
+    See Also
+    --------
+    plotRaster :
+    iplotSpikeHist : 
+    plotSpikeHist :
+
+    Examples
+    --------
+    >>> import netpyne, netpyne.examples.example
+    >>> out = netpyne.analysis.iplotRaster()
+    """    
 
     from .. import sim
     from bokeh.plotting import figure, show
@@ -101,7 +177,7 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
     if len(cellGids) > 0:
         gidColors = {cell['gid']: popColorDict[cell['tags']['pop']] for cell in cells}  # dict with color for each gid
         try:
-            sel, spkts,spkgids = getSpktSpkid(cellGids=cellGids, timeRange=timeRange, allCells=(include == ['allCells']))
+            sel, spkts, spkgids = getSpktSpkid(cellGids=cellGids, timeRange=timeRange, allCells=(include == ['allCells']))
         except:
             import sys
             print((sys.exc_info()))
@@ -149,10 +225,10 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
         return None
 
     # Time Range
-    if timeRange == [0,sim.cfg.duration]:
+    if timeRange == [0, sim.cfg.duration]:
         pass
     elif timeRange is None:
-        timeRange = [0,sim.cfg.duration]
+        timeRange = [0, sim.cfg.duration]
     else:
         sel = sel.query('spkt >= @timeRange[0] and spkt <= @timeRange[1]')
 
@@ -176,7 +252,7 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
     if popRates:
         avgRates = {}
         tsecs = (timeRange[1]-timeRange[0])/1e3
-        for i,(pop, popNum) in enumerate(zip(popLabels, popNumCells)):
+        for i, (pop, popNum) in enumerate(zip(popLabels, popNumCells)):
             if numCells > 0 and pop != 'NetStims':
                 if numCellSpks == 0:
                     avgRates[pop] = 0
@@ -226,7 +302,7 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
         else:
             label = name
 
-        s = fig.scatter(group['spkt'], group['spkind'], color=group['spkgidColor'], marker=marker, size=markerSize, legend_label=label)
+        fig.scatter(group['spkt'], group['spkind'], color=group['spkgidColor'], marker=marker, size=markerSize, legend_label=label)
         #legendItems.append((label, [s]))
 
     if spikeHist:
@@ -261,7 +337,7 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
 
     if showFig: show(plot_layout)
 
-    return html
+    return html, {'include': include, 'spkts': spkts, 'spkinds': sel['spkind'].tolist(), 'timeRange': timeRange}
 
 
 # -------------------------------------------------------------------------------------------------------------------

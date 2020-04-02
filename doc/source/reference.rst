@@ -842,6 +842,8 @@ Misc/utilities:
 Analysis-related functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. autofunction:: netpyne.analysis.plotRaster
+.. autofunction:: netpyne.analysis.iplotRaster
+.. autofunction:: netpyne.analysis.plotSpikeHist
 
 * **analysis.plotSpikeHist** (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, overlay=True, graphType='line', yaxis = 'rate', figSize = (10,8), saveData = None, saveFig = None, showFig = True)
      

@@ -408,11 +408,12 @@ def plotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid
     --------
     iplotRaster :
     plotSpikeHist : 
+    iplotSpikeHist :
 
     Examples
     --------
-    >>> import netpyne_tutorial
-    >>> out = sim.analysis.plotRaster()
+    >>> import netpyne, netpyne.examples.example
+    >>> out = netpyne.analysis.plotRaster()
     """
 
     from .. import sim

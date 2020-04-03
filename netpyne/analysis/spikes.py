@@ -926,27 +926,129 @@ def plotSpikeHist(include=['eachPop', 'allCells'], timeRange=None, binSize=5, ov
 ## Plot spike statistics
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRange = None, graphType='boxplot', stats = ['rate', 'isicv'], bins = 50,
-                 popColors = [], histlogy = False, histlogx = False, histmin = 0.0, density = False, includeRate0=False, legendLabels = None, normfit = False,
-                  histShading=True, xlim = None, dpi = 100, figSize = (6,8), fontSize=12, saveData = None, saveFig = None, showFig = True, **kwargs): 
-    ''' 
-    Plot spike histogram
-        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
-            Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
-        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
-        - graphType ('boxplot', 'histogram'): Type of graph to use (default: 'boxplot')
-        - stats (['rate', |'isicv'| 'sync'| 'pairsync']): Measure to plot stats on (default: ['rate', 'isicv'])
-        - bins (int or list of edges): Number of bins (if integer) of edges (if list) for histogram (default: 50)
-        - popColors (dict): Dictionary with color (value) used for each population (key) (default: None)
-        - figSize ((width, height)): Size of figure (default: (10,8))
-        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;
-            if set to True uses filename from simConfig (default: None)
-        - saveFig (None|True|'fileName'): File name where to save the figure;
-            if set to True uses filename from simConfig (default: None)
-        - showFig (True|False): Whether to show the figure or not (default: True)
+def plotSpikeStats(include=['eachPop', 'allCells'], statDataIn=None, timeRange=None, graphType='boxplot', stats=['rate', 'isicv'], bins=50, histlogy=False, histlogx=False, histmin=0.0, density=False, includeRate0=False, legendLabels=None, normfit=False, histShading=True, xlim=None, popColors=None, figSize=(6,8), fontSize=12, dpi=100, saveData=None, saveFig=None, showFig=True, **kwargs): 
+    """Creates plots of cell spiking statistics.
 
-        - Returns figure handle and statData
-    '''
+    Parameters
+    ----------
+    include : list
+        Populations and cells to include in the plot.
+        **Default:** 
+        ``['eachPop', 'allCells']`` plots histogram for each population and overall average
+        **Options:** 
+        ``['all']`` plots all cells and stimulations, 
+        ``['allNetStims']`` plots just stimulations, 
+        ``['popName1']`` plots a single population, 
+        ``['popName1', 'popName2']`` plots multiple populations, 
+        ``[120]`` plots a single cell, 
+        ``[120, 130]`` plots multiple cells, 
+        ``[('popName1', 56)]`` plots a cell from a specific population, 
+        ``[('popName1', [0, 1]), ('popName2', [4, 5, 6])]``, plots cells from multiple populations
+
+    statDataIn : dict
+        A pre-computed dictionary of stats data to import.
+        **Default:** ``None``
+
+    timeRange : list [start, stop]
+        Time range to plot.
+        **Default:** 
+        ``None`` plots entire time range
+
+    graphType : str
+        Whether to plot stats using boxplots or histograms.
+        **Default:** ``'boxplot'``
+        **Options:** ``'histogram'``     
+    
+    stats : list
+        Statistics to plot.  
+        **Default:** ``['rate', 'isicv']``
+        **Options:** ``['rate', 'isicv', 'sync', 'pairsync']``
+    
+    bins : int or list
+        Number of bins (if int) or edges (if list) for histogram 
+        **Default:** ``50``
+
+    histlogx : bool
+        Whether to make the x axis logarithmic
+        **Default:** ``False`` 
+
+    histmin : float
+        The minimumum value to include in analyses.
+        **Default:** ``0.0`` 
+
+    density : bool
+        If ``True``, weights values by density
+        **Default:** ``False`` 
+
+    includeRate0 : bool
+        Needs documentation.
+        **Default:** ``False`` 
+
+    legendLabels : list?
+        Needs documentation.
+        **Default:** ``None`` 
+
+    normfit : bool
+        Needs documentation.
+        **Default:** ``False`` 
+
+    histShading : bool
+        Needs documentation.
+        **Default:** ``True`` 
+
+    xlim : list [min, max]
+        Sets the x limits of the plot.
+        **Default:** ``None``
+
+    popColors : dict
+        Dictionary with custom color (value) used for each population (key).
+        **Default:** ``None`` uses standard colors
+    
+    figSize : list [width, height]
+        Size of figure in inches.
+        **Default:** ``(10, 8)`` 
+    
+    fontSize : int
+        Font size on figure.
+        **Default:** ``12`` 
+    
+    dpi : int
+        Resolution of figure in dots per inch.
+        **Default:** ``100``
+    
+    saveData : bool or str
+        Whether and where to save the data used to generate the plot. 
+        **Default:** ``False`` 
+        **Options:** ``True`` autosaves the data,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
+    
+    saveFig : bool or str
+        Whether and where to save the figure.
+        **Default:** ``False``
+        **Options:** ``True`` autosaves the figure,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
+    
+    showFig : bool
+        Shows the figure if ``True``.
+        **Default:** ``True``
+
+    Returns
+    -------
+    (fig, dict)
+        A tuple consisting of the matplotlib figure handle and a dictionary containing the plot data.
+
+    See Also
+    --------
+    iplotSpikeStats :
+    plotRaster :
+    iplotRaster : 
+    
+
+    Examples
+    --------
+    >>> import netpyne, netpyne.examples.example
+    >>> out = netpyne.analysis.plotSpikeStats()
+    """
 
     from .. import sim
     print('Plotting spike stats...')
@@ -972,11 +1074,11 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
 
     # time range
     if timeRange is None:
-        timeRange = [0,sim.cfg.duration]
+        timeRange = [0, sim.cfg.duration]
 
     for stat in stats:
         # create fig
-        fig,ax1 = plt.subplots(figsize=figSize)
+        fig, ax1 = plt.subplots(figsize=figSize)
         fontsiz = fontSize
         xlabel = xlabels[stat]
 
@@ -1152,9 +1254,6 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
                 if histmin: # min value 
                     data = np.array(data)
                     data = data[data>histmin]
-                
-                # if histlogy:
-                #     data = [np.log10(x) for x in data]
 
                 if density:
                     weights = np.ones_like(data)/float(len(data)) 
@@ -1190,7 +1289,6 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
                         plt.semilogx(x, pdf, color=color, ls='dashed')
                         return pdf
 
-
                     fitmean = np.mean(data)
                     fitstd = np.std(data)
                     pdf=lognorm(fitmean, fitstd, binedges, n, label, colors[i])
@@ -1209,11 +1307,7 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
             plt.ylim(0, 1.1*nmax if density else np.ceil(1.1*nmax)) #min(n[n>=0]), max(n[n>=0]))
             plt.legend(fontsize=fontsiz)
 
-            # plt.show() # REMOVE!
-
             # if xlim: ax.set_xlim(xlim)
-
-            #from IPython import embed; embed()
 
         # scatter
         elif graphType == 'scatter':
@@ -1247,13 +1341,6 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
             plt.ylabel(xlabel, fontsize=fontsiz)
             plt.legend(fontsize=fontsiz)
 
-            #from IPython import embed; embed()
-
-        # elif graphType == 'bar':
-        #     print range(1, len(statData)+1), statData
-        #     plt.bar(range(1, len(statData)+1), statData, tick_label=include[::-1], 
-        #       orientation='horizontal', colors=colors)
-
         try:
             plt.tight_layout()
         except:
@@ -1268,9 +1355,9 @@ def plotSpikeStats (include = ['allCells', 'eachPop'], statDataIn = {}, timeRang
         # save figure
         if saveFig: 
             if isinstance(saveFig, basestring):
-                filename = saveFig+'_'+'spikeStat_'+graphType+'_'+stat+'.png'
+                filename = saveFig + '_plot_spikeStat_' + graphType + '_' + stat + '.png'
             else:
-                filename = sim.cfg.filename+'_'+'spikeStat_'+graphType+'_'+stat+'.png'
+                filename = sim.cfg.filename + '_plot_spikeStat_' + graphType + '_' + stat + '.png'
             plt.savefig(filename, dpi=dpi)
 
         # show fig 

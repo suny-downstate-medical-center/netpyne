@@ -609,7 +609,6 @@ def plotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid
         maxLabelLen = min(6, max([len(l) for l in labels]))
         plt.subplots_adjust(right=(0.95-0.011*maxLabelLen))
 
-
     # Plot spike hist
     if spikeHist == 'overlay':
         ax2 = ax1.twinx()
@@ -627,9 +626,7 @@ def plotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid
 
     # save figure data
     if saveData:
-        figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'spkColors': sel['spkgidColor'].tolist(), 'cellGids': cellGids, 'sortedGids': df.index.tolist(), 'numNetStims': numNetStims,
-        'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'orderInverse': orderInverse, 'spikeHist': spikeHist,
-        'syncLines': syncLines}
+        figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'spkColors': sel['spkgidColor'].tolist(), 'cellGids': cellGids, 'sortedGids': df.index.tolist(), 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'orderInverse': orderInverse, 'spikeHist': spikeHist, 'syncLines': syncLines}
         _saveFigData(figData, saveData, 'raster')
 
     # save figure
@@ -637,7 +634,7 @@ def plotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid
         if isinstance(saveFig, basestring):
             filename = saveFig
         else:
-            filename = sim.cfg.filename+'_'+'raster.png'
+            filename = sim.cfg.filename + '_plot_raster.png'
         plt.savefig(filename, dpi=dpi)
 
     # show fig
@@ -650,27 +647,118 @@ def plotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid
 ## Plot spike histogram
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, overlay=True, graphType='line', yaxis = 'rate',
-    popColors = [], norm = False, dpi = 100, figSize = (10,8), smooth=None, filtFreq = False, filtOrder=3, axis = 'on', saveData = None,
-    saveFig = None, showFig = True, **kwargs):
-    '''
-    Plot spike histogram
-        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include.
-            Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
-        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
-        - binSize (int): Size in ms of each bin (default: 5)
-        - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
-        - graphType ('line'|'bar'): Type of graph to use (line graph or bar plot) (default: 'line')
-        - yaxis ('rate'|'count'): Units of y axis (firing rate in Hz, or spike count) (default: 'rate')
-        - popColors (dict): Dictionary with color (value) used for each population (key) (default: None)
-        - figSize ((width, height)): Size of figure (default: (10,8))
-        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;
-            if set to True uses filename from simConfig (default: None)
-        - saveFig (None|True|'fileName'): File name where to save the figure;
-            if set to True uses filename from simConfig (default: None)
-        - showFig (True|False): Whether to show the figure or not (default: True)
-        - Returns figure handle
-    '''
+def plotSpikeHist(include=['eachPop', 'allCells'], timeRange=None, binSize=5, overlay=True, graphType='line', measure='rate', norm=False, smooth=None, filtFreq=None, filtOrder=3, axis=True, popColors=None, figSize=(10,8), dpi=100, saveData=None, saveFig=None, showFig=True, **kwargs):
+    """Creates a histogram plot of cell spiking.
+
+    Parameters
+    ----------
+    include : list
+        Populations and cells to include in the plot.
+        **Default:** 
+        ``['eachPop', 'allCells']`` plots histogram for each population and overall average
+        **Options:** 
+        ``['all']`` plots all cells and stimulations, 
+        ``['allNetStims']`` plots just stimulations, 
+        ``['popName1']`` plots a single population, 
+        ``['popName1', 'popName2']`` plots multiple populations, 
+        ``[120]`` plots a single cell, 
+        ``[120, 130]`` plots multiple cells, 
+        ``[('popName1', 56)]`` plots a cell from a specific population, 
+        ``[('popName1', [0, 1]), ('popName2', [4, 5, 6])]``, plots cells from multiple populations
+
+    timeRange : list [start, stop]
+        Time range to plot.
+        **Default:** 
+        ``None`` plots entire time range
+
+    binSize : int
+        Size of bin in ms to use for spike histogram. 
+        **Default:** ``5`` 
+
+    overlay : bool
+        Plots each group on a separate axis if ``False``.
+        **Default:** ``True`` plots each group on one axis
+
+    graphType : str
+        Show histograms as line graphs or bar plots.
+        **Default:** ``'line'``
+        **Options:** ``'bar'``
+
+    measure : str
+        Whether to plot spike freguency (rate) or spike count.
+        **Default:** ``'rate'``
+        **Options:** ``'count'``
+
+    norm : bool
+        Whether to normalize the data or not.
+        **Default:** ``False`` does not normalize the data
+
+    smooth : int
+        Window width for smoothing.
+        **Default:** ``None`` does not smooth the data
+
+    filtFreq : int or list
+        Frequency for low-pass filter (int) or frequencies for bandpass filter in a list: [low, high]
+        **Default:** ``None`` does not filter the data
+    
+    filtOrder : int
+        Order of the filter defined by `filtFreq`.
+        **Default:** ``3``
+
+    axis : bool
+        Whether to include a labeled axis on the figure.
+        **Default:** ``True`` includes a labeled axis
+        **Options:** ``False`` includes a scale bar
+
+    popColors : dict
+        Dictionary with custom color (value) used for each population (key).
+        **Default:** ``None`` uses standard colors
+    
+    figSize : list [width, height]
+        Size of figure in inches.
+        **Default:** ``(10, 8)`` 
+    
+    fontSize : int
+        Font size on figure.
+        **Default:** ``12`` 
+    
+    dpi : int
+        Resolution of figure in dots per inch.
+        **Default:** ``100``
+    
+    saveData : bool or str
+        Whether and where to save the data used to generate the plot. 
+        **Default:** ``False`` 
+        **Options:** ``True`` autosaves the data,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
+    
+    saveFig : bool or str
+        Whether and where to save the figure.
+        **Default:** ``False``
+        **Options:** ``True`` autosaves the figure,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
+    
+    showFig : bool
+        Shows the figure if ``True``.
+        **Default:** ``True``
+
+    Returns
+    -------
+    (fig, dict)
+        A tuple consisting of the matplotlib figure handle and a dictionary containing the plot data.
+
+    See Also
+    --------
+    iplotSpikeHist :
+    plotRaster :
+    iplotRaster : 
+    
+
+    Examples
+    --------
+    >>> import netpyne, netpyne.examples.example
+    >>> out = netpyne.analysis.plotSpikeHist()
+    """
 
     from .. import sim
     from ..support.scalebar import add_scalebar
@@ -682,30 +770,29 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         include.remove('eachPop')
         for pop in sim.net.allPops: include.append(pop)
 
-    # Y-axis label
-    if yaxis == 'rate':
+    # Measure
+    if measure == 'rate':
         if norm:
             yaxisLabel = 'Normalized firing rate'
         else:
             yaxisLabel = 'Avg cell firing rate (Hz)'
-    elif yaxis == 'count':
+    elif measure == 'count':
         if norm:
             yaxisLabel = 'Normalized spike count'
         else:
             yaxisLabel = 'Spike count'
     else:
-        print('Invalid yaxis value %s', (yaxis))
+        print('Invalid measure: %s', (measure))
         return
-
 
     # time range
     if timeRange is None:
-        timeRange = [0,sim.cfg.duration]
+        timeRange = [0, sim.cfg.duration]
 
     histoData = []
 
     # create fig
-    fig,ax1 = plt.subplots(figsize=figSize)
+    fig, ax1 = plt.subplots(figsize=figSize)
     fontsiz = 12
 
     # Plot separate line for each entry in include
@@ -744,7 +831,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         histoT = histo[1][:-1]+binSize/2
         histoCount = histo[0]
 
-        if yaxis=='rate':
+        if measure == 'rate':
             histoCount = histoCount * (1000.0 / binSize) / (len(cellGids)+numNetStims) # convert to firing rate
 
         if filtFreq:
@@ -773,8 +860,8 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
             color = popColors[subset] if subset in popColors else colorList[iplot%len(colorList)]
 
         if not overlay:
-            plt.subplot(len(include),1,iplot+1)  # if subplot, create new subplot
-            plt.title (str(subset), fontsize=fontsiz)
+            plt.subplot(len(include), 1, iplot+1)  # if subplot, create new subplot
+            plt.title(str(subset), fontsize=fontsiz)
             color = 'blue'
 
         if graphType == 'line':
@@ -807,19 +894,17 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))
 
     # Set axis or scaleber
-    if axis == 'off':
+    if not axis:
         ax = plt.gca()
         scalebarLoc = kwargs.get('scalebarLoc', 7)
         round_to_n = lambda x, n, m: int(np.round(round(x, -int(np.floor(np.log10(abs(x)))) + (n - 1)) / m)) * m
         sizex = round_to_n((timeRange[1]-timeRange[0])/10.0, 1, 50)
-        add_scalebar(ax, hidex=False, hidey=True, matchx=False, matchy=True, sizex=sizex, sizey=None,
-                    unitsx='ms', unitsy='Hz', scalex=1, scaley=1, loc=scalebarLoc, pad=2, borderpad=0.5, sep=4, prop=None, barcolor="black", barwidth=3)
+        add_scalebar(ax, hidex=False, hidey=True, matchx=False, matchy=True, sizex=sizex, sizey=None, unitsx='ms', unitsy='Hz', scalex=1, scaley=1, loc=scalebarLoc, pad=2, borderpad=0.5, sep=4, prop=None, barcolor="black", barwidth=3)
         plt.axis(axis)
 
     # save figure data
     if saveData:
-        figData = {'histoData': histoData, 'histoT': histoT, 'include': include, 'timeRange': timeRange, 'binSize': binSize,
-         'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+        figData = {'histoData': histoData, 'histoT': histoT, 'include': include, 'timeRange': timeRange, 'binSize': binSize, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
 
         _saveFigData(figData, saveData, 'spikeHist')
 
@@ -828,7 +913,7 @@ def plotSpikeHist (include = ['allCells', 'eachPop'], timeRange = None, binSize 
         if isinstance(saveFig, basestring):
             filename = saveFig
         else:
-            filename = sim.cfg.filename+'_'+'spikeHist.png'
+            filename = sim.cfg.filename+'_plot_spikeHist.png'
         plt.savefig(filename, dpi=dpi)
 
     # show fig

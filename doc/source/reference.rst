@@ -845,10 +845,9 @@ Analysis-related functions
 .. autofunction:: netpyne.analysis.iplotRaster
 .. autofunction:: netpyne.analysis.plotSpikeHist
 .. autofunction:: netpyne.analysis.plotSpikeStats
-
 .. autofunction:: netpyne.analysis.plotRatePSD
-
 .. autofunction:: netpyne.analysis.plotTraces
+
 .. autofunction:: netpyne.analysis.plotLFP
 .. autofunction:: netpyne.analysis.plotShape
 .. autofunction:: netpyne.analysis.plotConn

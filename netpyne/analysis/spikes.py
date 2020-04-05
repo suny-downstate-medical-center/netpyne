@@ -1350,7 +1350,7 @@ def plotSpikeStats(include=['eachPop', 'allCells'], statDataIn=None, timeRange=N
         if saveData:
             figData = {'include': include, 'statData': statData, 'timeRange': timeRange, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
 
-            _saveFigData(figData, saveData, 'spikeStats_'+stat)
+            _saveFigData(figData, saveData, 'spikeStats_' + stat)
 
         # save figure
         if saveFig: 
@@ -1370,30 +1370,128 @@ def plotSpikeStats(include=['eachPop', 'allCells'], statDataIn=None, timeRange=N
 ## Plot spiking power spectral density
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, minFreq=1, maxFreq=100, stepFreq=1, NFFT=256, noverlap=128, smooth=0, overlay=True, ylim = None, transformMethod = 'morlet', norm=False, popColors = {}, lineWidth = 1.5, fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True): 
-    ''' 
-    Plot firing rate power spectral density (PSD)
-        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
-            Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
-        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
-        - binSize (int): Size in ms of spike bins (default: 5)
-        - maxFreq (float): Maximum frequency to show in plot (default: 100)
-        - transformMethod ('morlet'|'fft')
-        - norm (True|False): Normalize power (default: False)
-        - NFFT (float): The number of data points used in each block for the FFT (power of 2) (default: 256)
-        - smooth (int): Window size for smoothing; no smoothing if 0 (default: 0)
-        - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
-        - yaxis ('rate'|'count'): Units of y axis (firing rate in Hz, or spike count) (default: 'rate')
-        - popColors (dict): Dictionary with color (value) used for each population (key) (default: None)
-        - figSize ((width, height)): Size of figure (default: (10,8))
-        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;
-            if set to True uses filename from simConfig (default: None)
-        - saveFig (None|True|'fileName'): File name where to save the figure;
-            if set to True uses filename from simConfig (default: None)
-        - showFig (True|False): Whether to show the figure or not (default: True)
+def plotRatePSD(include=['eachPop', 'allCells'], timeRange=None, binSize=5, minFreq=1, maxFreq=100, transformMethod='morlet', stepFreq=1, NFFT=256, noverlap=128, smooth=0, norm=False, overlay=True, popColors=None, ylim=None, figSize=(10,8), fontSize=12, lineWidth=1.5, saveData=None, saveFig=None, showFig=True): 
+    """Creates a plot of firing rate power spectral density (PSD)
 
-        - Returns figure handle
-    '''
+    Parameters
+    ----------
+    include : list
+        Populations and cells to include in the plot.
+        **Default:** 
+        ``['eachPop', 'allCells']`` plots histogram for each population and overall average
+        **Options:** 
+        ``['all']`` plots all cells and stimulations, 
+        ``['allNetStims']`` plots just stimulations, 
+        ``['popName1']`` plots a single population, 
+        ``['popName1', 'popName2']`` plots multiple populations, 
+        ``[120]`` plots a single cell, 
+        ``[120, 130]`` plots multiple cells, 
+        ``[('popName1', 56)]`` plots a cell from a specific population, 
+        ``[('popName1', [0, 1]), ('popName2', [4, 5, 6])]``, plots cells from multiple populations
+
+    timeRange : list [start, stop]
+        Time range to plot.
+        **Default:** 
+        ``None`` plots entire time range
+
+    binSize : int
+        Size in ms of spike bins.
+        **Default:** ``5``
+
+    minFreq : float
+        Minimum frequency to show in plot.
+        **Default:** ``1`` 
+    
+    maxFreq : float
+        Maximum frequency to show in plot.
+        **Default:** ``100`` 
+
+    transformMethod
+        Sets the transform method.
+        **Default:** ``'morlet'`` 
+        **Options:** ``'fft'``
+    
+    stepFreq : float
+        Step frequency for Morlet transform.
+        **Default:** ``1`` 
+    
+    NFFT : int
+        The number of data points used in each block for the FFT (power of 2)
+        **Default:** ``256`` 
+    
+    noverlap
+        Sets noverlap in FFT transform.
+        **Default:** ``128`` 
+    
+    smooth : int
+        Window size for smoothing; no smoothing if ``0``.
+        **Default:** ``0`` 
+    
+    norm : bool
+        Normalize power.
+        **Default:** ``False`` 
+
+    overlay : bool
+        Whether to overlay plots or use subplots.
+        **Default:** ``True`` overlays plots.
+
+    popColors : dict
+        Dictionary with custom color (value) used for each population (key).
+        **Default:** ``None`` uses standard colors
+
+    ylim : list [min, max]
+        Sets the y limits of the plot.
+        **Default:** ``None``
+    
+    figSize : list [width, height]
+        Size of figure in inches.
+        **Default:** ``(10, 8)`` 
+    
+    fontSize : int
+        Font size on figure.
+        **Default:** ``12`` 
+
+    lineWidth : float
+        Line width in the plot.
+        **Default:** ``1.5``    
+    
+    dpi : int
+        Resolution of figure in dots per inch.
+        **Default:** ``100``
+    
+    saveData : bool or str
+        Whether and where to save the data used to generate the plot. 
+        **Default:** ``False`` 
+        **Options:** ``True`` autosaves the data,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
+    
+    saveFig : bool or str
+        Whether and where to save the figure.
+        **Default:** ``False``
+        **Options:** ``True`` autosaves the figure,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
+    
+    showFig : bool
+        Shows the figure if ``True``.
+        **Default:** ``True``
+
+    Returns
+    -------
+    (fig, dict)
+        A tuple consisting of the matplotlib figure handle and a dictionary containing the plot data.
+
+    See Also
+    --------
+    iplotSpikeStats :
+    plotRaster :
+    iplotRaster : 
+    
+
+    Examples
+    --------
+    >>> import netpyne, netpyne.examples.example
+    >>> out = netpyne.analysis.plotRatePSD()
+    """
 
     from .. import sim
 
@@ -1529,14 +1627,14 @@ def plotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, minF
         figData = {'histData': histData, 'histT': histoT, 'include': include, 'timeRange': timeRange, 'binSize': binSize,
          'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
     
-        _saveFigData(figData, saveData, 'spikeHist')
+        _saveFigData(figData, saveData, 'spikePSD')
  
     # save figure
     if saveFig: 
         if isinstance(saveFig, basestring):
             filename = saveFig
         else:
-            filename = sim.cfg.filename+'_'+'spikePSD.png'
+            filename = sim.cfg.filename + '_plot_spikePSD.png'
         plt.savefig(filename)
 
     # show fig 

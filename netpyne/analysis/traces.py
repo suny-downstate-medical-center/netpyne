@@ -31,7 +31,7 @@ from .utils import colorList, _showFigure, _saveFigData, exception, getCellsIncl
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, title=None, overlay=False, colors=None, ylim=None, axis=True, figSize = (10,8), fontSize=12, saveData=None, saveFig=None, showFig=True):
-        """Creates plots of recorded traces.
+    """Creates plots of recorded traces.
 
     Parameters
     ----------

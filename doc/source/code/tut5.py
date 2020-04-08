@@ -9,28 +9,26 @@ netParams.sizeZ = 100 # z-dimension (horizontal length) size in um
 netParams.propVelocity = 100.0 # propagation velocity (um/ms)
 netParams.probLengthConst = 150.0 # length constant for conn probability (um)
 
+## Cell property rules
+secs = {} # sections dict
+secs['soma'] = {'geom': {}, 'mechs': {}}                              # soma params dict
+secs['soma']['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0}                   # soma geometry
+secs['soma']['mechs']['hh'] = {'gnabar': 0.13, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanism
+netParams.cellParams['E'] = {'secs': secs}                          # add dict to list of cell params
+
+secs = {} # sections dict
+secs['soma'] = {'geom': {}, 'mechs': {}}                              # soma params dict
+secs['soma']['geom'] = {'diam': 10.0, 'L': 9.0, 'Ra': 110.0}                  # soma geometry
+secs['soma']['mechs']['hh'] = {'gnabar': 0.11, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanism
+netParams.cellParams['I'] = {'secs': secs}                       # add dict to list of cell params
 
 ## Population parameters
-netParams.popParams['E2'] = {'cellType': 'E', 'numCells': 50, 'yRange': [100,300], 'cellModel': 'HH'}
-netParams.popParams['I2'] = {'cellType': 'I', 'numCells': 50, 'yRange': [100,300], 'cellModel': 'HH'}
-netParams.popParams['E4'] = {'cellType': 'E', 'numCells': 50, 'yRange': [300,600], 'cellModel': 'HH'}
-netParams.popParams['I4'] = {'cellType': 'I', 'numCells': 50, 'yRange': [300,600], 'cellModel': 'HH'}
-netParams.popParams['E5'] = {'cellType': 'E', 'numCells': 50, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}
-netParams.popParams['I5'] = {'cellType': 'I', 'numCells': 50, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}
-
-
-## Cell property rules
-cellRule = {'conds': {'cellType': 'E'},  'secs': {}}  # cell rule dict
-cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                              # soma params dict
-cellRule['secs']['soma']['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0}                   # soma geometry
-cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.13, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanism
-netParams.cellParams['Erule'] = cellRule                          # add dict to list of cell params
-
-cellRule = {'conds': {'cellType': 'I'},  'secs': {}}  # cell rule dict
-cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                              # soma params dict
-cellRule['secs']['soma']['geom'] = {'diam': 10.0, 'L': 9.0, 'Ra': 110.0}                  # soma geometry
-cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.11, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanism
-netParams.cellParams['Irule'] = cellRule                          # add dict to list of cell params
+netParams.popParams['E2'] = {'cellType': 'E', 'numCells': 50, 'yRange': [100,300]}
+netParams.popParams['I2'] = {'cellType': 'I', 'numCells': 50, 'yRange': [100,300]}
+netParams.popParams['E4'] = {'cellType': 'E', 'numCells': 50, 'yRange': [300,600]}
+netParams.popParams['I4'] = {'cellType': 'I', 'numCells': 50, 'yRange': [300,600]}
+netParams.popParams['E5'] = {'cellType': 'E', 'numCells': 50, 'ynormRange': [0.6,1.0]}
+netParams.popParams['I5'] = {'cellType': 'I', 'numCells': 50, 'ynormRange': [0.6,1.0]}
 
 
 ## Synaptic mechanism parameters

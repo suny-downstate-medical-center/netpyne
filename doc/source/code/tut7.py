@@ -16,18 +16,18 @@ from netpyne import specs
 
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
+
+# Cell parameters
+## PYR cell properties
+secs = {}
+secs['soma'] = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
+secs['soma']['geom'] = {'diam': 18.8, 'L': 18.8}
+secs['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
+netParams.cellParams['PYR'] = {'secs': secs}  # add dict to list of cell properties
+
 # Population parameters
 netParams.popParams['hop'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}     # add dict with params for this pop 
 #netParams.popParams['background'] = {'cellModel': 'NetStim', 'rate': 50, 'noise': 0.5}  # background inputs
-
-# Cell parameters
-
-## PYR cell properties
-cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}}
-cellRule['secs']['soma'] = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
-cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8}
-cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-netParams.cellParams['PYR'] = cellRule  # add dict to list of cell properties
 
 # Synaptic mechanism parameters
 netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}

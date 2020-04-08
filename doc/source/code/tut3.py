@@ -3,21 +3,22 @@ from netpyne import specs, sim
 # Network parameters
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
-## Population parameters
-netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}
-netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'} 
 
 ## Cell property rules
-cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}} 	# cell rule dict
-cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}  											# soma params dict
-cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  									# soma geometry
-cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanisms
-cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
-cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
-cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology 
-cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
-netParams.cellParams['PYRrule'] = cellRule  												# add dict to list of cell parameters
+secs = {} 	# cell rule dict
+secs['soma'] = {'geom': {}, 'mechs': {}}  											# soma params dict
+secs['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  									# soma geometry
+secs['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanisms
+secs['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
+secs['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
+secs['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology 
+secs['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
+netParams.cellParams['PYRrule'] = {'secs': secs}												# add dict to list of cell parameters
 
+
+## Population parameters
+netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20}
+netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20
 
 ## Synaptic mechanism parameters
 netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  # excitatory synaptic mechanism

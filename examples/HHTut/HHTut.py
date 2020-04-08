@@ -24,19 +24,18 @@ simConfig = specs.SimConfig()   # object of class SimConfig to store the simulat
 # NETWORK PARAMETERS
 ###############################################################################
 
-# Population parameters
-netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 200} # add dict with params for this pop 
-
 
 # Cell parameters
 ## PYR cell properties
-cellRule = {'conds': {'cellModel': 'HH', 'cellType': 'PYR'},  'secs': {}} 	# cell rule dict
-cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}  														# soma params dict
-cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  									# soma geometry
-cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanism
-cellRule['secs']['soma']['vinit'] = -71
-netParams.cellParams['PYR'] = cellRule  												# add dict to list of cell params
+secs = {}	# dict with section info
+secs['soma'] = {'geom': {}, 'mechs': {}}  														# soma params dict
+secs['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  									# soma geometry
+secs['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanism
+secs['soma']['vinit'] = -71
+netParams.cellParams['PYR'] = {'secs': secs}										# add cellParams
 
+# Population parameters
+netParams.popParams['PYR'] = {'cellType': 'PYR', 'numCells': 200} # add dict with params for this pop 
 
 # Synaptic mechanism parameters
 netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}

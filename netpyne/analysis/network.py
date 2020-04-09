@@ -856,7 +856,7 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
 
     Parameters
     ----------
-    includePre : 
+    includePre : list
         List of presynaptic cells to include. 
         **Default:** ``['all']``
         **Options:** 
@@ -869,7 +869,7 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
         ``[('popName1', 56)]`` plots a cell from a specific population, 
         ``[('popName1', [0, 1]), ('popName2', [4, 5, 6])]``, plots cells from multiple populations
 
-    includePost : 
+    includePost : list
         List of postsynaptic cells to include. 
         **Default:** ``['all']``
         **Options:** same as in `includePre`

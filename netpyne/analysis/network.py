@@ -851,33 +851,116 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
 ## Plot cell shape
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, showElectrodes = False, synStyle = '.', synSiz=3, dist=0.6, cvar=None, cvals=None, 
-    iv=False, ivprops=None, includeAxon=True, bkgColor = None, fontSize = 12, figSize = (10,8), saveData = None, dpi = 300, saveFig = None, showFig = True): 
-    ''' 
-    Plot 3D cell shape using NEURON Interview PlotShape
-        - includePre: (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of presynaptic cells to consider 
-        when plotting connections (default: ['all'])
-        - includePost: (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of cells to show shape of (default: ['all'])
-        - showSyns (True|False): Show synaptic connections in 3D view (default: False)
-        - showElectrodes (True|False): Show LFP electrodes in 3D view (default: False)
-        - synStyle: Style of marker to show synapses (default: '.') 
-        - dist: 3D distance (like zoom) (default: 0.6)
-        - synSize: Size of marker to show synapses (default: 3)
-        - cvar: ('numSyns'|'weightNorm') Variable to represent in shape plot (default: None)
-        - cvals: List of values to represent in shape plot; must be same as num segments (default: None)
-        - iv: Use NEURON Interviews (instead of matplotlib) to show shape plot (default: None)
-        - ivprops: Dict of properties to plot using Interviews (default: None)
-        - includeAxon: Include axon in shape plot (default: True)
-        - bkgColor (list/tuple with 4 floats): RGBA list/tuple with bakcground color eg. (0.5, 0.2, 0.1, 1.0) (default: None) 
-        - figSize ((width, height)): Size of figure (default: (10,8))
-        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
-            if set to True uses filename from simConfig (default: None)
-        - saveFig (None|True|'fileName'): File name where to save the figure;
-            if set to True uses filename from simConfig (default: None)
-        - showFig (True|False): Whether to show the figure or not (default: True)
+def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElectrodes=False, synStyle='.', synSize=3, dist=0.6, cvar=None, cvals=None, iv=False, ivprops=None, includeAxon=True, bkgColor=None, figSize=(10,8), fontSize=12, saveData=None, dpi=300, saveFig=None, showFig=True): 
+    """Plots 3D cell shapes.
 
-        - Returns figure handles
-    '''
+    Parameters
+    ----------
+    includePre : 
+        List of presynaptic cells to include. 
+        **Default:** ``['all']``
+        **Options:** 
+        ``['all']`` plots all cells and stimulations, 
+        ``['allNetStims']`` plots just stimulations, 
+        ``['popName1']`` plots a single population, 
+        ``['popName1', 'popName2']`` plots multiple populations, 
+        ``[120]`` plots a single cell, 
+        ``[120, 130]`` plots multiple cells, 
+        ``[('popName1', 56)]`` plots a cell from a specific population, 
+        ``[('popName1', [0, 1]), ('popName2', [4, 5, 6])]``, plots cells from multiple populations
+
+    includePost : 
+        List of postsynaptic cells to include. 
+        **Default:** ``['all']``
+        **Options:** same as in `includePre`
+    
+    showSyns : bool
+        Show synaptic connections in 3D view.
+        **Default:** ``False``
+        
+    showElectrodes : bool
+        Show LFP electrodes in 3D view.
+        **Default:** ``False``
+        
+    synStyle : str
+        Style of marker to show synapses. 
+        **Default:** ``'.'``
+        
+    dist : float
+        3D distance (like zoom).
+        **Default:** ``0.6``
+        
+    synSize : int
+        Size of marker to show synapses.
+        **Default:** ``3``
+        
+    cvar : str
+        Variable to represent in shape plot.
+        **Default:** ``None``
+        **Options:** ``'numSyns'`` represents the number of synapses, ``'weightNorm'`` represents the normalized synaptic weight
+        
+    cvals : list
+        List of values to represent in shape plot; must be same as number of segments.
+        **Default:** ``None``
+        
+    iv : bool
+        Use NEURON Interviews (instead of Matplotlib) to show shape plot.
+        **Default:** ``False``
+        
+    ivprops : dict
+        Dictionary of properties to plot using Interviews (default: None)
+        **Default:** ``None``
+        
+    includeAxon : bool
+        Include axon in shape plot.
+        **Default:** ``True``
+        
+    bkgColor : list or tuple
+        RGBA list/tuple with background color.  E.g.: (0.5, 0.2, 0.1, 1.0) 
+        **Default:** ``None``
+
+    figSize : list [width, height]
+        Size of figure in inches.
+        **Default:** ``(10, 8)`` 
+    
+    fontSize : int
+        Font size on figure.
+        **Default:** ``12`` 
+        
+    saveData : bool or str
+        Whether and where to save the data used to generate the plot. 
+        **Default:** ``False`` 
+        **Options:** ``True`` autosaves the data,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
+        
+    dpi : int
+        Resolution of figure in dots per inch.
+        **Default:** ``300``
+        
+    saveFig : bool or str
+        Whether and where to save the figure.
+        **Default:** ``False``
+        **Options:** ``True`` autosaves the figure,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
+    
+    showFig : bool
+        Shows the figure if ``True``.
+        **Default:** ``True``
+
+    Returns
+    -------
+    (fig, dict)
+        A tuple consisting of the matplotlib figure handle and a dictionary containing the plot data.
+
+    See Also
+    --------
+    iplotShape :
+
+    Examples
+    --------
+    >>> import netpyne, netpyne.examples.example
+    >>> out = netpyne.analysis.plotShape()
+    """
 
     from .. import sim
     from neuron import h
@@ -898,7 +981,6 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
         from netpyne.support import morphology as morph # code adapted from https://github.com/ahwillia/PyNeuron-Toolbox
         
         # create secList from include
-        
         secs = None
 
         # Set cvals and secs
@@ -969,7 +1051,7 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
             for cellPost in cellsPost:
                 for sec in list(cellPost.secs.values()):
                     for synMech in sec['synMechs']:
-                        morph.mark_locations(h, sec['hObj'], synMech['loc'], markspec=synStyle, color=synColor, markersize=synSiz)
+                        morph.mark_locations(h, sec['hObj'], synMech['loc'], markspec=synStyle, color=synColor, markersize=synSize)
         
         # Electrodes
         if showElectrodes:
@@ -1037,7 +1119,6 @@ def plotShape (includePost = ['all'], includePre = ['all'], showSyns = False, sh
             else:
                 filename = sim.cfg.filename+'_'+'shape.ps'
             fig.printfile(filename)
-
 
     return fig, {}
 

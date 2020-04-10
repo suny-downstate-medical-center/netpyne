@@ -30,19 +30,63 @@ from .utils import exception, _saveFigData, _showFigure, getCellsInclude
 ## Calculate normalized transfer entropy
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def nTE(cells1 = [], cells2 = [], spks1 = None, spks2 = None, timeRange = None, binSize = 20, numShuffle = 30):
-    ''' 
-    Calculate normalized transfer entropy
-        - cells1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells from which to obtain spike train 1 (default: [])
-        - cells2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells from which to obtain spike train 1 (default: [])
-        - spks1 (list): Spike train 1; list of spike times; if omitted then obtains spikes from cells1 (default: None)
-        - spks2 (list): Spike train 2; list of spike times; if omitted then obtains spikes from cells2 (default: None)
-        - timeRange ([min, max]): Range of time to calculate nTE in ms (default: [0,cfg.duration])
-        - binSize (int): Bin size used to convert spike times into histogram 
-        - numShuffle (int): Number of times to shuffle spike train 1 to calculate TEshuffled; note: nTE = (TE - TEShuffled)/H(X2F|X2P)
+def nTE(cells1=[], cells2=[], spks1=None, spks2=None, timeRange=None, binSize=20, numShuffle=30):
+    """Calculate normalized transfer entropy.
 
-        - Returns nTE (float): normalized transfer entropy 
-    '''
+    Parameters
+    ----------
+    cells1 : list
+        Subset of cells from which to obtain spike train 1.
+        **Default:** ``[]``
+        **Options:** 
+        ``['all']`` plots all cells and stimulations, 
+        ``['allNetStims']`` plots just stimulations, 
+        ``['popName1']`` plots a single population, 
+        ``['popName1', 'popName2']`` plots multiple populations, 
+        ``[120]`` plots a single cell, 
+        ``[120, 130]`` plots multiple cells, 
+        ``[('popName1', 56)]`` plots a cell from a specific population, 
+        ``[('popName1', [0, 1]), ('popName2', [4, 5, 6])]``, plots cells from multiple populations
+
+    cells2 : list
+        Subset of cells from which to obtain spike train 2.
+        **Default:** ``[]``
+        **Options:** same as for `cells1`
+    
+    spks1 : list 
+        Spike train 1; list of spike times; if omitted then obtains spikes from cells1.
+        **Default:** ``None``
+    
+    spks2 : list 
+        Spike train 2; list of spike times; if omitted then obtains spikes from cells2.
+        **Default:** ``None``
+    
+    timeRange : list [min, max] 
+        Range of time to calculate nTE in ms.
+        **Default:** ``None`` uses the entire simulation time range
+
+    binSize : int
+        Bin size used to convert spike times into histogram.
+        **Default:** ``20`` 
+    
+    numShuffle : int 
+        Number of times to shuffle spike train 1 to calculate TEshuffled; note: nTE = (TE - TEShuffled)/H(X2F|X2P).
+        **Default:** ``30``
+    
+    Returns
+    -------
+    float
+        Normalized transfer entropy
+
+    See Also
+    --------
+    granger :
+
+    Examples
+    --------
+    >>> import netpyne, netpyne.examples.example
+    >>> out = netpyne.analysis.nTE()
+    """
 
     from neuron import h
     import netpyne

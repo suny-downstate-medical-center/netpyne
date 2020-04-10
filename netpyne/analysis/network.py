@@ -811,23 +811,80 @@ def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderB
 ## Plot 2D representation of network cell positions and connections
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns = True, popColors = None, fontSize = 12,
-                tagsFile = None, saveData = None, saveFig = None, showFig = True): 
-    ''' 
-    Plot 2D representation of network cell positions and connections
-        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
-        - showConns (True|False): Whether to show connections or not (default: True)
-        - figSize ((width, height)): Size of figure (default: (12,12))
-        - view ('xy', 'xz'): Perspective view: front ('xy') or top-down ('xz')
-        - popColors (dict): Dictionary with color (value) used for each population (key) (default: None)
-        - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
-        - saveFig (None|'fileName'): File name where to save the figure;
-            if set to True uses filename from simConfig (default: None)(default: None)
-        - showFig (True|False): Whether to show the figure or not;
-            if set to True uses filename from simConfig (default: None)
+def plot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, tagsFile=None, figSize=(12,12), fontSize=12, saveData=None, saveFig=None, showFig=True): 
+    """Plots 2D representation of network cell positions and connections.
 
-        - Returns figure handles
-    '''
+    Parameters
+    ----------
+    include : list
+        List of presynaptic cells to include. 
+        **Default:** ``['allCells']``
+        **Options:** 
+        ``['all']`` plots all cells and stimulations, 
+        ``['allNetStims']`` plots just stimulations, 
+        ``['popName1']`` plots a single population, 
+        ``['popName1', 'popName2']`` plots multiple populations, 
+        ``[120]`` plots a single cell, 
+        ``[120, 130]`` plots multiple cells, 
+        ``[('popName1', 56)]`` plots a cell from a specific population, 
+        ``[('popName1', [0, 1]), ('popName2', [4, 5, 6])]``, plots cells from multiple populations
+        
+    view : str
+        Perspective of view.
+        **Default:** ``'xy'`` front view,
+        **Options:** ``'xz'`` top-down view
+    
+    showConns : bool
+        Whether to show connections or not.
+        **Default:** ``True``
+    
+    popColors : dict
+        Dictionary with custom color (value) used for each population (key).
+        **Default:** ``None`` uses standard colors
+    
+    tagsFile : str
+        Path to a saved tags file to use in connectivity plot.
+        **Default:** ``None``
+    
+    figSize : list [width, height]
+        Size of figure in inches.
+        **Default:** ``(12, 12)`` 
+    
+    fontSize : int
+        Font size on figure.
+        **Default:** ``12`` 
+
+    saveData : bool or str
+        Whether and where to save the data used to generate the plot. 
+        **Default:** ``False`` 
+        **Options:** ``True`` autosaves the data,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
+    
+    saveFig : bool or str
+        Whether and where to save the figure.
+        **Default:** ``False``
+        **Options:** ``True`` autosaves the figure,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
+    
+    showFig : bool
+        Shows the figure if ``True``.
+        **Default:** ``True``
+
+    Returns
+    -------
+    (fig, dict)
+        A tuple consisting of the matplotlib figure handle and a dictionary containing the plot data.
+
+    See Also
+    --------
+    iplot2Dnet :
+
+    Examples
+    --------
+    >>> import netpyne, netpyne.examples.example
+    >>> out = netpyne.analysis.plot2Dnet()
+    """
+
     from .. import sim
 
     print('Plotting 2D representation of network cell locations and connections...')
@@ -895,7 +952,6 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
         posX = [cell['tags']['x'] for cell in cells]  # get all x positions
         posY = [cell['tags'][ycoord] for cell in cells]  # get all y positions
     
-
     plt.scatter(posX, posY, s=60, color = cellColors) # plot cell soma positions
     posXpre, posYpre = [], []
     posXpost, posYpost = [], []
@@ -935,7 +991,7 @@ def plot2Dnet (include = ['allCells'], figSize = (12,12), view = 'xy', showConns
         if isinstance(saveFig, basestring):
             filename = saveFig
         else:
-            filename = sim.cfg.filename+'_'+'2Dnet.png'
+            filename = sim.cfg.filename + '_plot_2Dnet.png'
         plt.savefig(filename)
 
     # show fig 

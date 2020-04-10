@@ -551,28 +551,126 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
 ## Plot connectivity
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotConn(includePre = ['all'], includePost = ['all'], feature = 'strength', orderBy = 'gid', figSize = (8,8), groupBy = 'pop', groupByIntervalPre = None, groupByIntervalPost = None, removeWeightNorm = False, graphType = 'matrix', synOrConn = 'syn', synMech = None, connsFile = None, tagsFile = None, clim = None, fontSize = 12, saveData = None, saveFig = None, showFig = True):
-    ''' 
-    Plot network connectivity
-        - includePre (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
-        - includePost (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
-        - feature ('weight'|'delay'|'numConns'|'probability'|'strength'|'convergence'|'divergence'): Feature to show in connectivity matrix; 
-            the only features applicable to groupBy='cell' are 'weight', 'delay' and 'numConns';  'strength' = weight * probability (default: 'strength')
-        - groupBy ('pop'|'cell'|'y'|: Show matrix for individual cells, populations, or by other numeric tag such as 'y' (default: 'pop')
-        - groupByInterval (int or float): Interval of groupBy feature to group cells by in conn matrix, e.g. 100 to group by cortical depth in steps of 100 um   (default: None)
-        - orderBy ('gid'|'y'|'ynorm'|...): Unique numeric cell property to order x and y axes by, e.g. 'gid', 'ynorm', 'y' (requires groupBy='cells') (default: 'gid')
-        - graphType ('matrix','bar','pie'): Type of graph to represent data (default: 'matrix')
-        - synOrConn ('syn'|'conn'): Use synapses or connections; note 1 connection can have multiple synapses (default: 'syn')
-        - figSize ((width, height)): Size of figure (default: (10,10))
-        - synMech (['AMPA', 'GABAA',...]): Show results only for these syn mechs (default: None)
-        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
-            if set to True uses filename from simConfig (default: None)
-        - saveFig (None|True|'fileName'): File name where to save the figure; 
-            if set to True uses filename from simConfig (default: None)
-        - showFig (True|False): Whether to show the figure or not (default: True)
+def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderBy='gid', groupBy='pop', groupByIntervalPre=None, groupByIntervalPost=None, graphType='matrix', removeWeightNorm=False, synOrConn='syn', synMech=None, connsFile=None, tagsFile=None, clim=None, figSize=(8,8), fontSize=12, saveData=None, saveFig=None, showFig=True):
+    """Plots network connectivity.
 
-        - Returns figure handles
-    '''
+    Parameters
+    ----------
+    includePre : list
+        List of presynaptic cells to include. 
+        **Default:** ``['all']``
+        **Options:** 
+        ``['all']`` plots all cells and stimulations, 
+        ``['allNetStims']`` plots just stimulations, 
+        ``['popName1']`` plots a single population, 
+        ``['popName1', 'popName2']`` plots multiple populations, 
+        ``[120]`` plots a single cell, 
+        ``[120, 130]`` plots multiple cells, 
+        ``[('popName1', 56)]`` plots a cell from a specific population, 
+        ``[('popName1', [0, 1]), ('popName2', [4, 5, 6])]``, plots cells from multiple populations
+
+    includePost : list
+        List of postsynaptic cells to include. 
+        **Default:** ``['all']``
+        **Options:** same as in `includePre`
+    
+    feature : str
+        Feature to show in the connectivity plot.  The only features applicable to ``groupBy='cell'`` are ``'weight'``, ``'delay'`` and ``'numConns'``.
+        **Default:** ``'strength'``
+        **Options:** 
+        ``'weight'`` weight of connection, 
+        ``'delay'`` delay in connection,
+        ``'numConns'`` number of connections,
+        ``'probability'`` probabiluty of connection,
+        ``'strength'`` weight * probability, 
+        ``'convergence'`` number of presynaptic cells per postynaptic one,
+        ``'divergence'`` number of postsynaptic cells per presynaptic one
+    
+    orderBy : str
+        Unique numeric cell property by which to order x and y axes.
+        **Default:** ``'gid'``
+        **Options:** ``'gid'``, ``'y'``, ``'ynorm'``
+
+    groupBy : str
+        Plot connectivity for populations, individual cells, or by other numeric tags such as ``'y'``. 
+        **Default:** ``'pop'``
+        **Options:** ``'pop'``, ``'cell'``, ``'y'`` 
+
+    groupByIntervalPre : int or float
+        Interval of `groupBy` feature to group presynaptic cells by in connectivity plot, e.g. ``100`` to group by cortical depth in steps of 100 um.
+        **Default:** ``None``
+    
+    groupByIntervalPost : int or float
+        Interval of `groupBy` feature to group postsynaptic cells by in connectivity plot, e.g. ``100`` to group by cortical depth in steps of 100 um.
+        **Default:** ``None``
+    
+    graphType : str
+        Type of graph to represent data.
+        **Default:** ``'matrix'``
+        **Options:** ``'matrix'``, ``'bar'``, ``'pie'``
+
+    removeWeightNorm : bool
+        **Default:** ``False``
+
+    synOrConn : str
+        Use synapses or connections; note one connection can have multiple synapses.
+        **Default:** ``'syn'``
+        **Options:** ``'syn'``, ``'conn'``
+
+    synMech : list
+        Show results only for these synaptic mechanisms, e.g. ``['AMPA', 'GABAA', ...]``.
+        **Default:** ``None``
+    
+    connsFile : str
+        Path to a saved data file of connectivity to plot from.
+        **Default:** ``None``
+    
+    tagsFile : str
+        Path to a saved tags file to use in connectivity plot.
+        **Default:** ``None``
+    
+    clim : list [min, max]
+        List of numeric values for the limits of the colorbar.
+        **Default:** ``None`` uses the min and max of the connectivity matrix
+
+    figSize : list [width, height]
+        Size of figure in inches.
+        **Default:** ``(8, 8)`` 
+    
+    fontSize : int
+        Font size on figure.
+        **Default:** ``12`` 
+
+    saveData : bool or str
+        Whether and where to save the data used to generate the plot. 
+        **Default:** ``False`` 
+        **Options:** ``True`` autosaves the data,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
+    
+    saveFig : bool or str
+        Whether and where to save the figure.
+        **Default:** ``False``
+        **Options:** ``True`` autosaves the figure,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
+    
+    showFig : bool
+        Shows the figure if ``True``.
+        **Default:** ``True``
+
+    Returns
+    -------
+    (fig, dict)
+        A tuple consisting of the matplotlib figure handle and a dictionary containing the plot data.
+
+    See Also
+    --------
+    iplotConn :
+
+    Examples
+    --------
+    >>> import netpyne, netpyne.examples.example
+    >>> out = netpyne.analysis.plotConn()
+    """
     
     from .. import sim
 
@@ -601,7 +699,6 @@ def plotConn(includePre = ['all'], includePost = ['all'], feature = 'strength', 
         plt.imshow(connMatrix, interpolation='nearest', cmap='viridis', vmin=np.nanmin(connMatrix), vmax=np.nanmax(connMatrix))  #_bicolormap(gap=0)
 
         # Plot grid lines
-            
         if groupBy == 'cell':
             cellsPre, cellsPost = pre, post
 

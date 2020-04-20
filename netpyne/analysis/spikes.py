@@ -926,7 +926,7 @@ def plotSpikeHist(include=['eachPop', 'allCells'], timeRange=None, binSize=5, ov
 ## Plot spike statistics
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotSpikeStats(include=['eachPop', 'allCells'], statDataIn=None, timeRange=None, graphType='boxplot', stats=['rate', 'isicv'], bins=50, histlogy=False, histlogx=False, histmin=0.0, density=False, includeRate0=False, legendLabels=None, normfit=False, histShading=True, xlim=None, popColors=None, figSize=(6,8), fontSize=12, dpi=100, saveData=None, saveFig=None, showFig=True, **kwargs): 
+def plotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=None, graphType='boxplot', stats=['rate', 'isicv'], bins=50, histlogy=False, histlogx=False, histmin=0.0, density=False, includeRate0=False, legendLabels=None, normfit=False, histShading=True, xlim=None, popColors={}, figSize=(6,8), fontSize=12, dpi=100, saveData=None, saveFig=None, showFig=True, **kwargs): 
     """Creates plots of cell spiking statistics.
 
     Parameters
@@ -947,7 +947,7 @@ def plotSpikeStats(include=['eachPop', 'allCells'], statDataIn=None, timeRange=N
 
     statDataIn : dict
         A pre-computed dictionary of stats data to import.
-        **Default:** ``None``
+        **Default:** ``{}``
 
     timeRange : list [start, stop]
         Time range to plot.
@@ -1002,7 +1002,7 @@ def plotSpikeStats(include=['eachPop', 'allCells'], statDataIn=None, timeRange=N
 
     popColors : dict
         Dictionary with custom color (value) used for each population (key).
-        **Default:** ``None`` uses standard colors
+        **Default:** ``{}`` uses standard colors
     
     figSize : list [width, height]
         Size of figure in inches.
@@ -1184,9 +1184,7 @@ def plotSpikeStats(include=['eachPop', 'allCells'], statDataIn=None, timeRange=N
 
                     statData.append(syncMat)
 
-            #colors.insert(0, popColors[subset] if subset in popColors 
-            colors.append(popColors[subset] if subset in popColors 
-                else colorList[iplot%len(colorList)])  # colors in inverse order
+            colors.append(popColors[subset] if subset in popColors else colorList[iplot%len(colorList)])  # colors in inverse order
 
         # if 'allCells' included make it black
         if include[0] == 'allCells':

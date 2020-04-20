@@ -854,7 +854,7 @@ def plotSpikeHist(include=['eachPop', 'allCells'], timeRange=None, binSize=5, ov
 
         histoData.append(histoCount)
 
-        if isinstance(subset, list): 
+        if not isinstance(subset, list): 
             color = colorList[iplot%len(colorList)]
         else:   
             color = popColors[subset] if subset in popColors else colorList[iplot%len(colorList)]
@@ -884,7 +884,7 @@ def plotSpikeHist(include=['eachPop', 'allCells'], timeRange=None, binSize=5, ov
     # Add legend
     if overlay:
         for i,subset in enumerate(include):
-            if isinstance(subset, list):
+            if not isinstance(subset, list):
                 color = colorList[i%len(colorList)]
             else:
                 color = popColors[subset] if subset in popColors else colorList[i%len(colorList)]

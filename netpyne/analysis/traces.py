@@ -30,7 +30,7 @@ from .utils import colorList, _showFigure, _saveFigData, exception, getCellsIncl
 ## Plot recorded cell traces (V, i, g, etc.)
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, title=None, overlay=False, colors=None, ylim=None, axis=True, figSize = (10,8), fontSize=12, saveData=None, saveFig=None, showFig=True):
+def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, title=None, overlay=False, colors=None, ylim=None, axis=True, scaleBarLoc=1, figSize = (10,8), fontSize=12, saveData=None, saveFig=None, showFig=True):
     """Creates plots of recorded traces.
 
     Parameters
@@ -82,7 +82,13 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
     axis : bool
         Whether to show axis or not; if not, then a scalebar is included.
         **Default:** ``True``
-    
+
+    scaleBarLoc : int
+        Sets the location of the scale bar (added when axis=False).
+        **Default:** ``1``
+        **Options:** 
+        ``1``  upper right, ``2`` upper left, ``3`` lower left, ``4`` lower right, ``5`` right, ``6`` center left, ``7`` center right, ``8`` lower center, ``9`` upper center, ``10`` center
+
     figSize : list [width, height]
         Size of figure in inches.
         **Default:** ``(10, 8)`` 
@@ -166,6 +172,15 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
     plt.rcParams.update({'font.size': fontSize})
     fontsiz = fontSize
 
+    # add scale bar
+    def addScaleBar(timeRange=timeRange, loc=scaleBarLoc):
+        ax = plt.gca()
+        sizex =  (timeRange[1]-timeRange[0])/20.0
+        #yl = plt.ylim()
+        #plt.ylim(yl[0]-0.2*(yl[1]-yl[0]), yl[1])
+        add_scalebar(ax, hidex=False, hidey=True, matchx=False, matchy=True, sizex=sizex, sizey=None, unitsx='ms', unitsy='mV', scalex=1, scaley=1, loc=loc, pad=-1, borderpad=0.5, sep=4, prop=None, barcolor="black", barwidth=3)
+        plt.axis(axis)
+
     # Plot one fig per trace for given cell list
     def plotFigPerTrace(subGids):
         fontsiz = 12
@@ -230,20 +245,19 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
                     if ylim: plt.ylim(ylim)
                     plt.title('%s '%(trace))
                     
-            if not axis:  # if no axis, add scalebar
-                ax = plt.gca()
-                sizex =  (timeRange[1]-timeRange[0])/20.0
-                # yl = plt.ylim()
-                # plt.ylim(yl[0]-0.2*(yl[1]-yl[0]), yl[1])
-                add_scalebar(ax, hidex=False, hidey=True, matchx=False, matchy=True, sizex=sizex, sizey=None, unitsx='ms', unitsy='mV', scalex=1, scaley=1, loc=1, pad=-1, borderpad=0.5, sep=4, prop=None, barcolor="black", barwidth=3)   
-                plt.axis(axis) 
+                    if not overlay:
+                        if not axis or axis=='off':  # if no axis, add scalebar
+                            addScaleBar()
 
-            if overlay and len(subGids) < 20:
-                #maxLabelLen = 10
-                #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen)) 
-                #plt.legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
-                plt.legend()  # PUT BACK!!!!!!
-                pass
+            if overlay: 
+                if not axis or axis=='off':  # if no axis, add scalebar
+                    addScaleBar()
+                if len(subGids) < 20:
+                    #maxLabelLen = 10
+                    #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen)) 
+                    #plt.legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
+                    plt.legend()  # PUT BACK!!!!!!
+
 
 
     # Plot one fig per cell
@@ -299,20 +313,16 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
                     plt.xlim(timeRange)
                     if ylim: plt.ylim(ylim)
                     if itrace==0: plt.title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                    if not overlay:
+                        if not axis or axis=='off':  # if no axis, add scalebar
+                            addScaleBar()       
                     
             if overlay: 
+                if not axis or axis=='off':  # if no axis, add scalebar
+                    addScaleBar() 
                 #maxLabelLen = 10
                 #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))
-                plt.legend()#fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
-
-            if axis == 'off':  # if no axis, add scalebar
-                ax = plt.gca()
-                sizex = timeRange[1]-timeRange[0]/20
-                yl = plt.ylim()
-                plt.ylim(yl[0]-0.2*(yl[1]-yl[0]), yl[1])  # leave space for scalebar?
-                add_scalebar(ax, hidex=False, hidey=True, matchx=False, matchy=True,  sizex=sizex, sizey=None, 
-                    unitsx='ms', unitsy='mV', scalex=1, scaley=1, loc=4, pad=10, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)   
-                plt.axis(axis)                 
+                plt.legend() #fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
 
             if title:
                 figs['_gid_'+str(gid)].suptitle(cell['tags'][title])

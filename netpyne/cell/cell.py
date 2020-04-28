@@ -101,7 +101,7 @@ class Cell (object):
             currenttime = currenttime+isi+variation*(rand()-0.5)
         
         # Create single pulse
-        npts = pulselength*width/timeres
+        npts = int(pulselength*width/timeres)
         x = (r_[0:npts]-npts/2+1)*timeres
         if stimshape=='gaussian': 
             pulse = exp(-2*(2*x/width-1)**2) # Offset by 2 standard deviations from start
@@ -116,7 +116,7 @@ class Cell (object):
         events = zeros((allpts))
         events[array(array(output)/timeres,dtype=int)] = 1
         fulloutput = convolve(events,pulse,mode='full')*weight # Calculate the convolved input signal, scaled by rate
-        fulloutput = fulloutput[npts/2-1:-npts/2]   # Slices out where the convolved pulse train extends before and after sequence of allpts.
+        fulloutput = fulloutput[int(npts/2-1):int(-npts/2)]   # Slices out where the convolved pulse train extends before and after sequence of allpts.
         fulltime = (r_[0:allpts]*timeres+start)*1e3 # Create time vector and convert to ms
         
         fulltime = hstack((0,fulltime,fulltime[-1]+timeres*1e3)) # Create "bookends" so always starts and finishes at zero

@@ -1,4 +1,4 @@
-
+d
 """
 network/conn.py 
 
@@ -26,12 +26,12 @@ from array import array as arrayFast
 from numbers import Number
 from numpy import array, sin, cos, tan, exp, sqrt, mean, inf, dstack, unravel_index, argsort, zeros, ceil, copy 
 
-
 # -----------------------------------------------------------------------------
 # Connect Cells
 # -----------------------------------------------------------------------------
 def connectCells (self):
     from .. import sim
+    h = sim.h; pc = h.ParallelContext[0]; idhost, nhost, cvode = pc.id(), pc.nhost(), h.CVode()
 
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'connectTime')
@@ -52,6 +52,7 @@ def connectCells (self):
 
     gapJunctions = False  # assume no gap junctions by default
 
+    print("AAAAAAAAAAAAAAAA %d %d"%(idhost,nhost),[x for x in self.params.connParams.items()])
     for connParamLabel,connParamTemp in self.params.connParams.items():  # for each conn rule or parameter set
         connParam = connParamTemp.copy()
         connParam['label'] = connParamLabel

@@ -281,7 +281,7 @@ def getCellParams(cell, varList={}, origGlob={}):
 
     # create dict with hname of each element in dir(cell)
     dirCellHnames = {}  
-    for dirCellName in dirCell:
+    for dirCellName in [d for d in dirCell if not d.startswith('__')]:  # avoid attributes starting with '__'
         dirCellObject = getattr(cell, dirCellName)
         if isinstance(dirCellObject, list):
             for i, dirCellObjectItem in enumerate(dirCellObject):

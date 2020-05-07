@@ -1,3 +1,7 @@
+# Version 0.9.7
+
+- Fixed bug importing cells (avoid reading __docstring__)
+
 # Version 0.9.6
 
 - Added useful hover information to iplots

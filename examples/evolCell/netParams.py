@@ -31,18 +31,15 @@ netParams.loadCellParamsRule('ITS4_reduced', 'ITS4_reduced_cellParams.json')
 netParams.cellParams['ITS4_reduced']['conds'] = {'cellType': 'ITS4'}
 
 for sec, secDict in netParams.cellParams['ITS4_reduced']['secs'].items():
-    print(sec)
     if sec in cfg.tune:
         # vinit
-        print(cfg.tune)
         if 'vinit' in cfg.tune[sec]:
-            print(secDict['vinit'], cfg.tune[sec]['vinit'])
             secDict['vinit'] = cfg.tune[sec]['vinit']
         
         # mechs
         for mech in secDict['mechs']:
             if mech in cfg.tune[sec]:
-                for param in secDict['mechs']:
+                for param in secDict['mechs'][mech]:
                     if param in cfg.tune[sec][mech]:
                         secDict['mechs'][mech][param] = cfg.tune[sec][mech][param]  
         
@@ -51,7 +48,6 @@ for sec, secDict in netParams.cellParams['ITS4_reduced']['secs'].items():
             if geomParam in cfg.tune[sec]:
                 secDict['geom'][geomParam] = cfg.tune[sec][geomParam]
 
-#netParams.cellParams['ITS4_reduced']['secs'] = secDict
 
 #------------------------------------------------------------------------------
 # Population parameters
@@ -66,10 +62,14 @@ if cfg.addIClamp:
      for iclabel in [k for k in dir(cfg) if k.startswith('IClamp')]:
         ic = getattr(cfg, iclabel, None)  # get dict with params
 
-        # add stim source
-        netParams.stimSourceParams[iclabel] = {'type': 'IClamp', 'delay': ic['start'], 'dur': ic['dur'], 'amp': ic['amp']}
-        
-        # connect stim source to target
-        netParams.stimTargetParams[iclabel+'_'+ic['pop']] = \
-            {'source': iclabel, 'conds': {'pop': ic['pop']}, 'sec': ic['sec'], 'loc': ic['loc']}
+        amps = ic['amp'] if isinstance(ic['amp'], list) else [ic['amp']]  # make amps a list if not already
+        starts = ic['start'] if isinstance(ic['start'], list) else [ic['start']]  # make amps a list if not already
+
+        for amp, start in zip(amps, starts):    
+            # add stim source
+            netParams.stimSourceParams[iclabel+'_'+str(amp)] = {'type': 'IClamp', 'delay': start, 'dur': ic['dur'], 'amp': amp}
+            
+            # connect stim source to target
+            netParams.stimTargetParams[iclabel+'_'+ic['pop']+'_'+str(amp)] = \
+                {'source': iclabel+'_'+str(amp), 'conds': {'pop': ic['pop']}, 'sec': ic['sec'], 'loc': ic['loc']}
 

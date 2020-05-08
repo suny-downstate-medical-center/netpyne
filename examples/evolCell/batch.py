@@ -10,69 +10,31 @@ To run use: mpiexec -np [num_cores] nrniv -mpi batch.py
 def evolCell():
     # parameters space to explore
     params = specs.ODict()
-    params[('tune', 'soma', 'vinit')] = [-75, -75] #[-90, -60]
-    params[('tune', 'dend', 'cadad', 'kd')] = [0.0, 0.0]
-    params[('tune', 'dend1', 'Ra')] = [0.015915494309189534, 0.015915494309189534]
 
-        # "soma": {
-        #     "geom": {
-        #         "Ra": 100.0,
-        #         "cm": 0.75,
-        #     "mechs": {
-        #         "kv": {
-        #             "gbar": 1700.0
-        #         },
-        #         "naz": {
-        #             "gmax": 72000.0
-        #         },
-        #         "pas": {
-        #             "e": -70.0,
-        #             "g": 3.3333333333333335e-05
-        # "dend": {
-        #     "geom": {
-        #         "Ra": 0.02974858749381221,
-        #         "cm": 0.75,
-        #     "mechs": {
-        #         "Nca": {
-        #             "gmax": 0.3
-        #         },
-        #         "kca": {
-        #             "gbar": 3.0
-        #         },
-        #         "km": {
-        #             "gbar": 0.1
-        #         },
-        #         "naz": {
-        #             "gmax": 15.0
-        #         },
-        #         "pas": {
-        #             "e": -70.0,
-        #             "g": 3.3333333333333335e-05
-        #         }
-        # "dend1": {
-        #     "geom": {
-        #         "Ra": 0.015915494309189534,
-        #         "cm": 0.75,
-        #     "mechs": {
-        #         "Nca": {
-        #             "gmax": 0.3
-        #         },
-        #         "kca": {
-        #             "gbar": 3.0
-        #         },
-        #         "km": {
-        #             "gbar": 0.1
-        #         },
-        #         "naz": {
-        #             "gmax": 15.0
-        #         },
-        #         "pas": {
-        #             "e": -70.0,
-        #             "g": 3.3333333333333335e-05
-        #         }
-        #     },
+    params[('tune', 'soma', 'Ra')] = [100.*0.5, 100*1.5] 
+    params[('tune', 'soma', 'cm')] = [0.75*0.5, 0.75*1.5]
+    params[('tune', 'soma', 'kv', 'gbar')] = [1700.0*0.5, 1700.0*1.5]
+    params[('tune', 'soma', 'naz', 'gmax')] = [72000.0*0.5, 72000.0*1.5]
+    params[('tune', 'soma', 'pas', 'e')] = [-70*1.5, -70.0*0.5]
+    params[('tune', 'soma', 'pas', 'g')] = [3.3333333333333335e-05*0.5, 3.3333333333333335e-05*1.5]
 
-        #         }
+    params[('tune', 'dend', 'Ra')] = [0.02974858749381221*0.5, 0.02974858749381221*1.5] 
+    params[('tune', 'dend', 'cm')] = [0.75*0.5, 0.75*1.5]
+    params[('tune', 'dend', 'Nca', 'gmax')] = [0.3*0.5, 0.3*1.5]
+    params[('tune', 'dend', 'kca', 'gbar')] = [3.0 * 0.5, 3.0 * 1.5]
+    params[('tune', 'dend', 'km', 'gbar')] = [0.1*0.5, 0.1*1.5]
+    params[('tune', 'dend', 'naz', 'gmax')] = [15.0*0.5, 15.0*1.5]
+    params[('tune', 'dend', 'pas', 'e')] = [-70*1.5, -70.0*0.5]
+    params[('tune', 'dend', 'pas', 'g')] = [3.3333333333333335e-05*0.5, 3.3333333333333335e-05*1.5]
+
+    params[('tune', 'dend1', 'Ra')] = [0.015915494309189534*0.5, 0.015915494309189534*1.5] 
+    params[('tune', 'dend1', 'cm')] = [0.75*0.5, 0.75*1.5]
+    params[('tune', 'dend1', 'Nca', 'gmax')] = [0.3*0.5, 0.3*1.5]
+    params[('tune', 'dend1', 'kca', 'gbar')] = [3.0*0.5, 3.0*1.5]
+    params[('tune', 'dend1', 'km', 'gbar')] = [0.1*0.5, 0.1*1.5]
+    params[('tune', 'dend1', 'naz', 'gmax')] = [15.0*0.5, 15.0*1.5]
+    params[('tune', 'dend1', 'pas', 'e')] = [-70*1.5, -70.0*0.5]
+    params[('tune', 'dend1', 'pas', 'g')] = [3.3333333333333335e-05*0.5, 3.3333333333333335e-05*1.5]
 
 
     # current injection params
@@ -144,7 +106,7 @@ def evolCell():
         'evolAlgorithm': 'custom',
         'fitnessFunc': fitnessFunc, # fitness expression (should read simData)
         'fitnessFuncArgs': fitnessFuncArgs,
-        'pop_size': 1,
+        'pop_size': 40,
         'num_elites': 1, # keep this number of parents for next generation if they are fitter than children
         'mutation_rate': 0.4,
         'crossover': 0.5,

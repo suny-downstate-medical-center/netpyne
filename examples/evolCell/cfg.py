@@ -31,7 +31,7 @@ cfg.printPopAvgRates = [500, cfg.duration]
 #------------------------------------------------------------------------------
 # Recording 
 #------------------------------------------------------------------------------
-cfg.recordTraces = {} #'V_soma': {'sec': 'soma', 'loc': 0.5, 'var': 'v'}}
+cfg.recordTraces = {'V_soma': {'sec': 'soma', 'loc': 0.5, 'var': 'v'}}
 cfg.recordStims = False  
 cfg.recordStep = 0.1 
 
@@ -51,8 +51,8 @@ cfg.saveDataInclude = ['simConfig', 'netParams', 'net', 'simData']
 #------------------------------------------------------------------------------
 cfg.analysis['plotfI'] = {'amps': [0.1], 'times': [1000], 'dur': 1000, 'targetRates': [10], 'saveFig': True, 'showFig': True}
 
-# cfg.analysis['plotTraces'] = {'include': [0], 'oneFigPer': 'cell', 'saveFig': True, 
-# 							  'showFig': False, 'figSize': (40,8), 'timeRange': [0,cfg.duration]}
+cfg.analysis['plotTraces'] = {'include': [0], 'oneFigPer': 'cell', 'saveFig': True, 
+ 							  'showFig': False, 'figSize': (40,8), 'timeRange': [0,cfg.duration]}
 
 #------------------------------------------------------------------------------
 # Current inputs 

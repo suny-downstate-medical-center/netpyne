@@ -27,13 +27,16 @@ netParams = specs.NetParams()   # object of class NetParams to store the network
 #------------------------------------------------------------------------------
 
 # cell params
-cellParam = netParams.loadCellParamsRule('ITS4_reduced', 'ITS4_reduced_cellParams.json')
-cellParam['conds'] = {'cellType': 'ITS4'}
+netParams.loadCellParamsRule('ITS4_reduced', 'ITS4_reduced_cellParams.json')
+netParams.cellParams['ITS4_reduced']['conds'] = {'cellType': 'ITS4'}
 
-for sec, secDict in cellParam['secs']:
+for sec, secDict in netParams.cellParams['ITS4_reduced']['secs'].items():
+    print(sec)
     if sec in cfg.tune:
         # vinit
+        print(cfg.tune)
         if 'vinit' in cfg.tune[sec]:
+            print(secDict['vinit'], cfg.tune[sec]['vinit'])
             secDict['vinit'] = cfg.tune[sec]['vinit']
         
         # mechs
@@ -48,6 +51,7 @@ for sec, secDict in cellParam['secs']:
             if geomParam in cfg.tune[sec]:
                 secDict['geom'][geomParam] = cfg.tune[sec][geomParam]
 
+#netParams.cellParams['ITS4_reduced']['secs'] = secDict
 
 #------------------------------------------------------------------------------
 # Population parameters

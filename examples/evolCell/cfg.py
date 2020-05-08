@@ -43,7 +43,7 @@ cfg.simLabel = 'sim1'
 cfg.saveFolder = 'data'
 cfg.savePickle = True
 cfg.saveJson = False
-cfg.saveDataInclude = ['simConfig', 'netParams']#, 'net'] #'simData',
+cfg.saveDataInclude = ['simConfig', 'netParams', 'net', 'simData']
 
 
 #------------------------------------------------------------------------------

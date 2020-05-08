@@ -1,4 +1,4 @@
-from np
+import numpy as np
 from netpyne import specs
 from netpyne.batch import Batch
 
@@ -16,23 +16,23 @@ def evolCell():
 
     # current injection params
     amps = list(np.arange(0.0, 0.65, 0.05))  # amplitudes
-    times = list(np.arange(1000, 2000 * len(amp), 2000))  # start times
+    times = list(np.arange(1000, 2000 * len(amps), 2000))  # start times
  
     # initial cfg set up
-    initCfg = specs.ODict()
-    initCfg['duration'] = 2000 * len(amp)
+    initCfg = {} # specs.ODict()
+    initCfg['duration'] = 2000 * len(amps)
     initCfg[('hParams', 'celsius')] = 37
 
     initCfg['savePickle'] = True
     initCfg['saveJson'] = False
-    initCfg['saveDataInclude'] = ['simConfig', 'netParams']
+    initCfg['saveDataInclude'] = ['simConfig', 'netParams', 'net', 'simData']
 
     initCfg[('IClamp1', 'pop')] = 'ITS4'
     initCfg[('IClamp1', 'amp')] = amps
     initCfg[('IClamp1', 'start')] = times
     initCfg[('IClamp1', 'dur')] = 1000
 
-    for k, v in params:
+    for k, v in params.items():
         initCfg[k] = v[0]  # initialize params in cfg so they can be modified    
 
     # fitness function
@@ -68,8 +68,8 @@ def evolCell():
     b = Batch(params=params, initCfg=initCfg)
     
     # Set output folder, grid method (all param combinations), and run configuration
-    b.batchLabel = 'simple'
-    b.saveFolder = './'+b.batchLabel
+    b.batchLabel = 'ITS4_evol'
+    b.saveFolder = 'data/'+b.batchLabel
     b.method = 'evol'
     b.runCfg = {
         'type': 'mpi_bulletin',#'hpc_slurm', 

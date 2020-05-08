@@ -1,3 +1,4 @@
+from np
 from netpyne import specs
 from netpyne.batch import Batch
 
@@ -6,28 +7,44 @@ from netpyne.batch import Batch
 To run use: mpiexec -np [num_cores] nrniv -mpi batch.py
 '''
 
-def batchEvol():
+def evolCell():
     # parameters space to explore
-    
     params = specs.ODict()
     params[('tune', 'soma', 'vinit')] = [-90, -60]
     params[('tune', 'dend', 'cadad', 'kd')] = [0.0, 0.1]
     params[('tune', 'dend1', 'Ra')] = [0.01, 0.02]
 
+    # current injection params
+    amps = list(np.arange(0.0, 0.65, 0.05))  # amplitudes
+    times = list(np.arange(1000, 2000 * len(amp), 2000))  # start times
+ 
+    # initial cfg set up
+    initCfg = specs.ODict()
+    initCfg['duration'] = 2000 * len(amp)
+    initCfg[('hParams', 'celsius')] = 37
+
+    initCfg['savePickle'] = True
+    initCfg['saveJson'] = False
+    initCfg['saveDataInclude'] = ['simConfig', 'netParams']
+
+    initCfg[('IClamp1', 'pop')] = 'ITS4'
+    initCfg[('IClamp1', 'amp')] = amps
+    initCfg[('IClamp1', 'start')] = times
+    initCfg[('IClamp1', 'dur')] = 1000
+
+    for k, v in params:
+        initCfg[k] = v[0]  # initialize params in cfg so they can be modified    
 
     # fitness function
-    from cfg import cfg
     fitnessFuncArgs = {}
-    fitnessFuncArgs['times'] = cfg.IClamp1['start']
-    fitnessFuncArgs['duration'] = cfg.IClamp1['duration']
+    fitnessFuncArgs['times'] = times
+    fitnessFuncArgs['duration'] = 1000
     fitnessFuncArgs['targetRates'] = [0, 0, 19, 29, 37, 45, 51, 57, 63, 68, 73, 77, 81]
-    
     
     def fitnessFunc(simData, **kwargs):
         import numpy as np
         from netpyne import sim
 
-        amps = kwargs['amps']
         times = kwargs['times']
         duration = kwargs['duration']
         targetRates = kwargs['targetRates']
@@ -46,8 +63,9 @@ def batchEvol():
 
         return fitness
         
+
     # create Batch object with paramaters to modify, and specifying files to use
-    b = Batch(params=params)
+    b = Batch(params=params, initCfg=initCfg)
     
     # Set output folder, grid method (all param combinations), and run configuration
     b.batchLabel = 'simple'
@@ -83,8 +101,8 @@ def batchEvol():
     # Run batch simulations
     b.run()
 
+
 # Main code
 if __name__ == '__main__':
-    batchEvol()  # 'simple' or 'complex' 
-
+    evolCell() 
 

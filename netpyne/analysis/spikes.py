@@ -1810,3 +1810,37 @@ def popAvgRates (trange = None, show = True):
             print('   %s : %.3f Hz'%(pop, avgRates[pop]))
 
     return avgRates
+
+
+#------------------------------------------------------------------------------
+# Calculate and plot f-I curve
+#------------------------------------------------------------------------------
+@exception
+def plotfI(amps, times, dur, targetRates=[], saveFig=None, showFig=True):
+    from .. import sim
+
+    fI = [len([spkt for spkt in sim.allSimData['spkt']
+                                if t <= spkt < t + dur]) / (dur / 1000.0) for t in times]
+    sim.allSimData['fI'] = fI                       
+    
+    plt.figure(figsize = (10,6))
+    plt.plot(amps, sim.allSimData['rates'], label='Model', linewidth=2, marker='o')
+    if targetRates:
+        plt.plot(amps, targetRates, label = 'Experiment', linestyle = 'dotted', marker='o')
+    plt.xlabel('Current amplitude (nA)')
+    plt.ylabel('Rate (Hz)')
+    plt.legend()
+
+    # save figure
+    if saveFig: 
+        if isinstance(saveFig, basestring):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename+'_'+'fI.png'
+        plt.savefig(filename)
+
+    # show fig 
+    if showFig: _showFigure()
+
+    return fig, {'fI': fI}
+

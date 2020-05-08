@@ -1819,10 +1819,7 @@ def popAvgRates (trange = None, show = True):
 def plotfI(amps, times, dur, targetRates=[], saveFig=None, showFig=True):
     from .. import sim
 
-    fI = [len([spkt for spkt in sim.allSimData['spkt']
-                                if t <= spkt < t + dur]) / (dur / 1000.0) for t in times]
-    sim.allSimData['fI'] = fI                       
-    
+    fI = sim.allSimData['fI']
     fig=plt.figure(figsize = (10,6))
     plt.plot(amps, fI, label='Model', linewidth=2, marker='o')
     if targetRates:

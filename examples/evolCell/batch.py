@@ -10,9 +10,10 @@ def batchEvol():
     # parameters space to explore
     
     params = specs.ODict()
-    params['prob'] = [0.01, 0.5]
-    params['weight'] = [0.001, 0.1]
-    params['delay'] = [1, 20]
+    params[('tune', 'soma', 'vinit')] = [-90, -60]
+    params[('tune', 'dend', 'cadad', 'kd')] = [0.0, 0.1]
+    params[('tune', 'dend1', 'Ra')] = [0.01, 0.02]
+
 
     # fitness function
     from cfg import cfg

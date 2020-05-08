@@ -95,10 +95,10 @@ def evolCell():
     initCfg[('IClamp1', 'start')] = times
     initCfg[('IClamp1', 'dur')] = 1000
 
-    initCfg[('analysis', 'plotfI', 'amps') = amps
-    initCfg[('analysis', 'plotfI', 'times') = times
-    initCfg[('analysis', 'plotfI', 'dur') = dur
-    initCfg[('analysis', 'plotfI', 'targetRates') = targetRates
+    initCfg[('analysis', 'plotfI', 'amps')] = amps
+    initCfg[('analysis', 'plotfI', 'times')] = times
+    initCfg[('analysis', 'plotfI', 'dur')] = dur
+    initCfg[('analysis', 'plotfI', 'targetRates')] = targetRates
     
     for k, v in params.items():
         initCfg[k] = v[0]  # initialize params in cfg so they can be modified    

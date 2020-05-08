@@ -1823,8 +1823,8 @@ def plotfI(amps, times, dur, targetRates=[], saveFig=None, showFig=True):
                                 if t <= spkt < t + dur]) / (dur / 1000.0) for t in times]
     sim.allSimData['fI'] = fI                       
     
-    plt.figure(figsize = (10,6))
-    plt.plot(amps, sim.allSimData['rates'], label='Model', linewidth=2, marker='o')
+    fig=plt.figure(figsize = (10,6))
+    plt.plot(amps, fI, label='Model', linewidth=2, marker='o')
     if targetRates:
         plt.plot(amps, targetRates, label = 'Experiment', linestyle = 'dotted', marker='o')
     plt.xlabel('Current amplitude (nA)')

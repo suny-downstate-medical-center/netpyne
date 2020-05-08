@@ -654,7 +654,7 @@ wait
                             if simData:
                                 fitness[candidate_index] = fitnessFunc(simData, **fitnessFuncArgs)
                                 jobs_completed += 1
-                                print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
+                                print('  Candidate %d fitness = %.3g' % (candidate_index, fitness[candidate_index]))
                         except Exception as e:
                             # print 
                             err = "There was an exception evaluating candidate %d:"%(candidate_index)

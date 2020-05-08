@@ -116,7 +116,6 @@ def evolCell():
         print(' Candidate rates: ', simData['fI'])
         print(' Target rates:    ', targetRates)
         print(' Difference:      ', diffRates)
-        print(' FITNESS: ', fitness)
 
         return fitness
         

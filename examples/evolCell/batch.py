@@ -111,9 +111,9 @@ def evolCell():
         'mutation_rate': 0.4,
         'crossover': 0.5,
         'maximize': False, # maximize fitness function?
-        'max_generations': 1,
+        'max_generations': 20,
         'time_sleep': 5, # wait this time before checking again if sim is completed (for each generation)
-        'maxiter_wait': 12, # max number of times to check if sim is completed (for each generation)
+        'maxiter_wait': 20, # max number of times to check if sim is completed (for each generation)
         'defaultFitness': 1000 # set fitness value in case simulation time is over
     }
     # Run batch simulations

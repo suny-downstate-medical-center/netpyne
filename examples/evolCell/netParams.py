@@ -27,10 +27,10 @@ netParams = specs.NetParams()   # object of class NetParams to store the network
 #------------------------------------------------------------------------------
 
 # cell params
-netParams.loadCellParamsRule('ITS4_reduced', 'ITS4_reduced_cellParams.json')
-netParams.cellParams['ITS4_reduced']['conds'] = {'cellType': 'ITS4'}
+netParams.loadCellParamsRule('NGF_reduced', 'NGF_reduced_cellParams.json')
+netParams.cellParams['NGF_reduced']['conds'] = {'cellType': 'NGF'}
 
-for sec, secDict in netParams.cellParams['ITS4_reduced']['secs'].items():
+for sec, secDict in netParams.cellParams['NGF2_reduced']['secs'].items():
     if sec in cfg.tune:
         # vinit
         if 'vinit' in cfg.tune[sec]:
@@ -52,7 +52,7 @@ for sec, secDict in netParams.cellParams['ITS4_reduced']['secs'].items():
 #------------------------------------------------------------------------------
 # Population parameters
 #------------------------------------------------------------------------------
-netParams.popParams['ITS4'] = {'cellType': 'ITS4', 'numCells': 1}
+netParams.popParams['NGF'] = {'cellType': 'NGF', 'numCells': 1}
 
 
 #------------------------------------------------------------------------------

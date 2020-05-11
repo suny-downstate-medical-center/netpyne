@@ -256,9 +256,22 @@ def gatherData (gatherLFP = True):
 
             if 'plotfI' in sim.cfg.analysis:
                 times = sim.cfg.analysis['plotfI'].get('times', [0, sim.cfg.duration])
-                dur = sim.cfg.analysis['plotfI'].get('dur', sim.cfg.duration) 
+                dur = sim.cfg.analysis['plotfI'].get('dur', sim.cfg.duration)
+                onset = sim.cfg.analysis['plotfI'].get('calculateOnset', False)
+                durSteady = sim.cfg.analysis['plotfI'].get('durSteady', None) 
+
                 sim.allSimData['fI'] = [len([spkt for spkt in sim.allSimData['spkt']
                                 if t <= spkt < t + dur]) / (dur / 1000.0) for t in times]  
+
+                if onset: # rate based on inter-spike interval of 1st 2 spikes 
+                    sim.allSimData['fI_onset'] = []
+                    for t in times:
+                        allSpks = [spkt for spkt in sim.allSimData['spkt'] if t <= spkt < t + dur]
+                        sim.allSimData['fI_onset'].append(1000.0/(allSpks[1] - allSpks[0]))  
+                
+                if durSteady: # rate based on the last 'dur' ms
+                    sim.allSimData['fI_steady'] = [len([spkt for spkt in sim.allSimData['spkt']
+                                if t + dur - durSteady <= spkt < t + dur]) / (durSteady / 1000.0) for t in times]  
 
             sim.allSimData['avgRate'] = sim.firingRate  # save firing rate
 

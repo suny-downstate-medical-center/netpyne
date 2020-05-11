@@ -39,7 +39,7 @@ cfg.recordStep = 0.1
 #------------------------------------------------------------------------------
 # Saving
 #------------------------------------------------------------------------------
-cfg.simLabel = 'sim1'
+cfg.simLabel = 'sim2'
 cfg.saveFolder = 'data'
 cfg.savePickle = True
 cfg.saveJson = False
@@ -59,14 +59,16 @@ cfg.analysis['plotTraces'] = {'include': [0], 'oneFigPer': 'cell', 'saveFig': Tr
 #------------------------------------------------------------------------------
 cfg.addIClamp = 1
 
-cfg.IClamp1 = {'pop': 'ITS4', 'sec': 'soma', 'loc': 0.5, 'start': 100, 'dur': 1000, 'amp': 0.5}
+cfg.IClamp1 = {'pop': 'NGF', 'sec': 'soma', 'loc': 0.5, 'start': 100, 'dur': 1000, 'amp': 0.5}
 
 
 #------------------------------------------------------------------------------
 # Parameters
 #------------------------------------------------------------------------------
 # example of how to set params; but set from batch.py
+'''
 cfg.tune = specs.Dict()
 cfg.tune['soma']['vinit'] = -75.0
 cfg.tune['dend']['cadad']['kd'] = 0.0
 cfg.tune['dend1']['Ra'] = 0.015915494309189534
+'''

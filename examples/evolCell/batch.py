@@ -7,7 +7,8 @@ from netpyne.batch import Batch
 To run use: mpiexec -np [num_cores] nrniv -mpi batch.py
 '''
 
-def evolCell():
+# ---------------------------------------------------------------------------------------------- #
+def evolCellITS4():
     # parameters space to explore
     params = specs.ODict()
 
@@ -120,7 +121,133 @@ def evolCell():
     b.run()
 
 
+# ---------------------------------------------------------------------------------------------- #
+def evolCellNGF():
+    # parameters space to explore
+    params = specs.ODict()
+
+    params[('tune', 'soma', 'Ra')] = [100.*0.5, 100*1.5] 
+    params[('tune', 'soma', 'cm')] = [0.75*0.5, 0.75*1.5]
+    # params[('tune', 'soma', 'kv', 'gbar')] = [1700.0*0.5, 1700.0*1.5]
+    # params[('tune', 'soma', 'naz', 'gmax')] = [72000.0*0.5, 72000.0*1.5]
+    # params[('tune', 'soma', 'pas', 'e')] = [-70*1.5, -70.0*0.5]
+    # params[('tune', 'soma', 'pas', 'g')] = [3.3333333333333335e-05*0.5, 3.3333333333333335e-05*1.5]
+
+    # params[('tune', 'dend', 'Ra')] = [0.02974858749381221*0.5, 0.02974858749381221*1.5] 
+    # params[('tune', 'dend', 'cm')] = [0.75*0.5, 0.75*1.5]
+    # params[('tune', 'dend', 'Nca', 'gmax')] = [0.3*0.5, 0.3*1.5]
+    # params[('tune', 'dend', 'kca', 'gbar')] = [3.0 * 0.5, 3.0 * 1.5]
+    # params[('tune', 'dend', 'km', 'gbar')] = [0.1*0.5, 0.1*1.5]
+    # params[('tune', 'dend', 'naz', 'gmax')] = [15.0*0.5, 15.0*1.5]
+    # params[('tune', 'dend', 'pas', 'e')] = [-70*1.5, -70.0*0.5]
+    # params[('tune', 'dend', 'pas', 'g')] = [3.3333333333333335e-05*0.5, 3.3333333333333335e-05*1.5]
+
+    # params[('tune', 'dend1', 'Ra')] = [0.015915494309189534*0.5, 0.015915494309189534*1.5] 
+    # params[('tune', 'dend1', 'cm')] = [0.75*0.5, 0.75*1.5]
+    # params[('tune', 'dend1', 'Nca', 'gmax')] = [0.3*0.5, 0.3*1.5]
+    # params[('tune', 'dend1', 'kca', 'gbar')] = [3.0*0.5, 3.0*1.5]
+    # params[('tune', 'dend1', 'km', 'gbar')] = [0.1*0.5, 0.1*1.5]
+    # params[('tune', 'dend1', 'naz', 'gmax')] = [15.0*0.5, 15.0*1.5]
+    # params[('tune', 'dend1', 'pas', 'e')] = [-70*1.5, -70.0*0.5]
+    # params[('tune', 'dend1', 'pas', 'g')] = [3.3333333333333335e-05*0.5, 3.3333333333333335e-05*1.5]
+
+
+    # current injection params
+    amps = list(np.arange(0.04, 0.13, 0.01))  # amplitudes
+    times = list(np.arange(1000, 1500 * len(amps), 1500))  # start times
+    dur = 500  # ms
+    durSteady = 200  # ms
+    targetRatesOnset = [43., 52., 68., 80., 96., 110., 119., 131., 139.]
+    targetRatesSteady = [22., 24., 27., 30., 33., 25., 37., 39., 41.]
+    #targetRates = [(o + s) / 2 for o, s in zip(targetRatesOnset, targetRatesSteady)]
+    
+    # initial cfg set up
+    initCfg = {} # specs.ODict()
+    initCfg['duration'] = 1500 * len(amps)
+    initCfg[('hParams', 'celsius')] = 37
+
+    initCfg['savePickle'] = True
+    initCfg['saveJson'] = False
+    initCfg['saveDataInclude'] = ['simConfig', 'netParams', 'net', 'simData']
+
+    initCfg[('IClamp1', 'pop')] = 'NGF'
+    initCfg[('IClamp1', 'amp')] = amps
+    initCfg[('IClamp1', 'start')] = times
+    initCfg[('IClamp1', 'dur')] = 1000
+
+    initCfg[('analysis', 'plotfI', 'amps')] = amps
+    initCfg[('analysis', 'plotfI', 'times')] = times
+    initCfg[('analysis', 'plotfI', 'calculateOnset')] = True
+    initCfg[('analysis', 'plotfI', 'dur')] = dur
+    initCfg[('analysis', 'plotfI', 'durSteady')] = durSteady
+    #initCfg[('analysis', 'plotfI', 'targetRates')] = targetRates
+    initCfg[('analysis', 'plotfI', 'targetRatesOnset')] = targetRatesOnset
+    initCfg[('analysis', 'plotfI', 'targetRatesSteady')] = targetRatesSteady
+    
+    for k, v in params.items():
+        initCfg[k] = v[0]  # initialize params in cfg so they can be modified    
+
+    # fitness function
+    fitnessFuncArgs = {}
+    fitnessFuncArgs['targetRatesOnset'] = targetRatesOnset
+    fitnessFuncArgs['targetRatesSteadt'] = targetRatesSteady
+    
+    def fitnessFunc(simData, **kwargs):
+        targetRatesOnset = kwargs['targetRatesOnset']
+        targetRatesSteady = kwargs['targetRatesSteady']
+            
+        diffRatesOnset = [abs(x-t) for x,t in zip(simData['fI_onset'], targetRatesOnset)]
+        diffRatesSteady = [abs(x-t) for x,t in zip(simData['fI_steady'], targetRatesSteady)]
+
+        fitness = np.mean(diffRatesOnset+diffRatesSteady)
+        
+        print(' Candidate rates: ', simData['fI_onset']+simData['fI_steady'])
+        print(' Target rates:    ', targetRatesOnset+targetRatesSteady)
+        print(' Difference:      ', diffRatesOnset+diffRatesSteady)
+
+        return fitness
+        
+
+    # create Batch object with paramaters to modify, and specifying files to use
+    b = Batch(params=params, initCfg=initCfg)
+    
+    # Set output folder, grid method (all param combinations), and run configuration
+    b.batchLabel = 'NGF_evol'
+    b.saveFolder = 'data/'+b.batchLabel
+    b.method = 'evol'
+    b.runCfg = {
+        'type': 'mpi_bulletin',#'hpc_slurm', 
+        'script': 'init.py',
+        # # options required only for hpc
+        # 'mpiCommand': 'mpirun',  
+        # 'nodes': 1,
+        # 'coresPerNode': 2,
+        # 'allocation': 'default',
+        # 'email': 'salvadordura@gmail.com',
+        # 'reservation': None,
+        # 'folder': '/home/salvadord/evol'
+        # #'custom': 'export LD_LIBRARY_PATH="$HOME/.openmpi/lib"' # only for conda users
+    }
+    b.evolCfg = {
+        'evolAlgorithm': 'custom',
+        'fitnessFunc': fitnessFunc, # fitness expression (should read simData)
+        'fitnessFuncArgs': fitnessFuncArgs,
+        'pop_size': 2,
+        'num_elites': 1, # keep this number of parents for next generation if they are fitter than children
+        'mutation_rate': 0.4,
+        'crossover': 0.5,
+        'maximize': False, # maximize fitness function?
+        'max_generations': 1,
+        'time_sleep': 5, # wait this time before checking again if sim is completed (for each generation)
+        'maxiter_wait': 20, # max number of times to check if sim is completed (for each generation)
+        'defaultFitness': 1000 # set fitness value in case simulation time is over
+    }
+    # Run batch simulations
+    b.run()
+
+
+# ---------------------------------------------------------------------------------------------- #
 # Main code
 if __name__ == '__main__':
-    evolCell() 
+    evolCellNGF() 
 

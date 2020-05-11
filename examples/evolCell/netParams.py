@@ -30,7 +30,7 @@ netParams = specs.NetParams()   # object of class NetParams to store the network
 netParams.loadCellParamsRule('NGF_reduced', 'NGF_reduced_cellParams.json')
 netParams.cellParams['NGF_reduced']['conds'] = {'cellType': 'NGF'}
 
-for sec, secDict in netParams.cellParams['NGF2_reduced']['secs'].items():
+for sec, secDict in netParams.cellParams['NGF_reduced']['secs'].items():
     if sec in cfg.tune:
         # vinit
         if 'vinit' in cfg.tune[sec]:

@@ -22,7 +22,7 @@ cfg = specs.SimConfig()
 #------------------------------------------------------------------------------
 cfg.duration = 26*1e3			## Duration of the sim, in ms -- value from M1 cfg.py 
 cfg.dt = 0.05                   ## Internal Integration Time Step -- value from M1 cfg.py 
-cfg.verbose = 0              	## Show detailed messages
+cfg.verbose = 1           	## Show detailed messages
 cfg.hParams['celsius'] = 37
 cfg.printRunTime = 1
 cfg.printPopAvgRates = [500, cfg.duration]
@@ -66,8 +66,8 @@ cfg.IClamp1 = {'pop': 'NGF', 'sec': 'soma', 'loc': 0.5, 'start': 100, 'dur': 100
 # Parameters
 #------------------------------------------------------------------------------
 # example of how to set params; but set from batch.py
-'''
 cfg.tune = specs.Dict()
+'''
 cfg.tune['soma']['vinit'] = -75.0
 cfg.tune['dend']['cadad']['kd'] = 0.0
 cfg.tune['dend1']['Ra'] = 0.015915494309189534

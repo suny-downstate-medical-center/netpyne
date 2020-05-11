@@ -1820,16 +1820,18 @@ def plotfI(amps, times, dur, targetRates=[], calculateOnset=False, targetRatesOn
     from .. import sim
 
     outData = {}
-
-    fI = sim.allSimData['fI']
-    fig=plt.figure(figsize = (10,6))
-    plt.plot(amps, fI, label='Model', linewidth=2, marker='o')
-    if targetRates:
-        plt.plot(amps, targetRates, label = 'Experiment', linestyle = 'dotted', marker='o')
-    plt.xlabel('Current amplitude (nA)')
-    plt.ylabel('Rate (Hz)')
-    plt.legend()
-    outData['fI'] = fI
+    
+    fig = plt.figure(figsize=(10, 6))
+        
+    if not 'fI_steady' in sim.allSimData:
+        fI = sim.allSimData['fI']
+        plt.plot(amps, fI, label='Model', linewidth=2, marker='o')
+        if targetRates:
+            plt.plot(amps, targetRates, label = 'Experiment', linestyle = 'dotted', marker='o')
+        plt.xlabel('Current amplitude (nA)')
+        plt.ylabel('Rate (Hz)')
+        plt.legend()
+        outData['fI'] = fI
 
     if 'fI_onset' in sim.allSimData:
         fI_onset = sim.allSimData['fI_onset']

@@ -41,7 +41,7 @@ def evolCellITS4():
     # current injection params
     amps = list(np.arange(0.0, 0.65, 0.05))  # amplitudes
     times = list(np.arange(1000, 2000 * len(amps), 2000))  # start times
-    dur = 1000  # ms
+    dur = 500  # ms
     targetRates = [0., 0., 19., 29., 37., 45., 51., 57., 63., 68., 73., 77., 81.]
  
     # initial cfg set up
@@ -158,7 +158,7 @@ def evolCellNGF():
     dur = 500  # ms
     durSteady = 200  # ms
     targetRatesOnset = [43., 52., 68., 80., 96., 110., 119., 131., 139.]
-    targetRatesSteady = [22., 24., 27., 30., 33., 25., 37., 39., 41.]
+    targetRatesSteady = [22., 24., 27., 30., 33., 35., 37., 39., 41.]
     #targetRates = [(o + s) / 2 for o, s in zip(targetRatesOnset, targetRatesSteady)]
     
     # initial cfg set up
@@ -173,14 +173,15 @@ def evolCellNGF():
     initCfg[('IClamp1', 'pop')] = 'NGF'
     initCfg[('IClamp1', 'amp')] = amps
     initCfg[('IClamp1', 'start')] = times
-    initCfg[('IClamp1', 'dur')] = 1000
+    initCfg[('IClamp1', 'dur')] = dur
 
+    initCfg[('analysis', 'plotTraces', 'timeRange')] = [0, initCfg['duration']] 
     initCfg[('analysis', 'plotfI', 'amps')] = amps
     initCfg[('analysis', 'plotfI', 'times')] = times
     initCfg[('analysis', 'plotfI', 'calculateOnset')] = True
     initCfg[('analysis', 'plotfI', 'dur')] = dur
     initCfg[('analysis', 'plotfI', 'durSteady')] = durSteady
-    #initCfg[('analysis', 'plotfI', 'targetRates')] = targetRates
+    initCfg[('analysis', 'plotfI', 'targetRates')] = [] #
     initCfg[('analysis', 'plotfI', 'targetRatesOnset')] = targetRatesOnset
     initCfg[('analysis', 'plotfI', 'targetRatesSteady')] = targetRatesSteady
     
@@ -190,7 +191,7 @@ def evolCellNGF():
     # fitness function
     fitnessFuncArgs = {}
     fitnessFuncArgs['targetRatesOnset'] = targetRatesOnset
-    fitnessFuncArgs['targetRatesSteadt'] = targetRatesSteady
+    fitnessFuncArgs['targetRatesSteady'] = targetRatesSteady
     
     def fitnessFunc(simData, **kwargs):
         targetRatesOnset = kwargs['targetRatesOnset']

@@ -1816,11 +1816,11 @@ def popAvgRates (trange = None, show = True):
 # Calculate and plot f-I curve
 #------------------------------------------------------------------------------
 @exception
-def plotfI(amps, times, dur, targetRates=[], targetRatesOnset=[], targetRatesSteady=[],
-            saveFig=None, showFig=True):
+def plotfI(amps, times, dur, targetRates=[], calculateOnset=False, targetRatesOnset=[], durSteady=None, targetRatesSteady=[], saveFig=None, showFig=True):
     from .. import sim
 
     outData = {}
+
     fI = sim.allSimData['fI']
     fig=plt.figure(figsize = (10,6))
     plt.plot(amps, fI, label='Model', linewidth=2, marker='o')
@@ -1833,7 +1833,7 @@ def plotfI(amps, times, dur, targetRates=[], targetRatesOnset=[], targetRatesSte
 
     if 'fI_onset' in sim.allSimData:
         fI_onset = sim.allSimData['fI_onset']
-        plt.plot(amps, fI, label='Model (onset)', linewidth=2, marker='o')
+        plt.plot(amps, fI_onset, label='Model (onset)', linewidth=2, marker='o')
         if targetRatesOnset:
             plt.plot(amps, targetRatesOnset, label = 'Experiment (onset)', linestyle = 'dotted', marker='o')
         plt.xlabel('Current amplitude (nA)')
@@ -1844,8 +1844,8 @@ def plotfI(amps, times, dur, targetRates=[], targetRatesOnset=[], targetRatesSte
     if 'fI_steady' in sim.allSimData:
         fI_steady = sim.allSimData['fI_steady']
         plt.plot(amps, fI_steady, label='Model (steady)', linewidth=2, marker='o')
-        if targetRates:
-            plt.plot(amps, targetRates, label = 'Experiment (steady)', linestyle = 'dotted', marker='o')
+        if targetRatesSteady:
+            plt.plot(amps, targetRatesSteady, label = 'Experiment (steady)', linestyle = 'dotted', marker='o')
         plt.xlabel('Current amplitude (nA)')
         plt.ylabel('Rate (Hz)')
         plt.legend()

@@ -267,7 +267,7 @@ def gatherData (gatherLFP = True):
                     sim.allSimData['fI_onset'] = []
                     for t in times:
                         allSpks = [spkt for spkt in sim.allSimData['spkt'] if t <= spkt < t + dur]
-                        if allSpks >= 2:
+                        if len(allSpks) >= 2:
                             sim.allSimData['fI_onset'].append(1000.0 / (allSpks[1] - allSpks[0]))
                         else:
                             sim.allSimData['fI_onset'].append(0.0)

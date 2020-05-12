@@ -242,7 +242,7 @@ def evolCellNGF():
         'crossover': 0.5,
         'maximize': False, # maximize fitness function?
         'max_generations': 10,
-        'time_sleep': 5, # wait this time before checking again if sim is completed (for each generation)
+        'time_sleep': 10, # wait this time before checking again if sim is completed (for each generation)
         'maxiter_wait': 20, # max number of times to check if sim is completed (for each generation)
         'defaultFitness': 1000 # set fitness value in case simulation time is over
     }

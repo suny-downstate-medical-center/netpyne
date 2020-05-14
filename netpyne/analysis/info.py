@@ -1,10 +1,7 @@
 """
-analysis/info.py
-
-Functions to plot and analyze information theory-related results
-
-Contributors: salvadordura@gmail.com
+Functions to plot and analyze results related to information theory
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals

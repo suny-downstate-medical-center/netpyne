@@ -1,9 +1,5 @@
 """
-analysis/interactive.py
-
-Functions to plot and analyze RxD-related results
-
-Contributors: salvadordura@gmail.com, joe.w.graham@gmail.com
+Functions to produce interactive plots
 """
 
 from __future__ import unicode_literals

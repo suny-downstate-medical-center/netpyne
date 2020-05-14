@@ -1,10 +1,7 @@
 """
-analysis/rxd.py
-
-Functions to plot and analyze RxD-related results
-
-Contributors: salvadordura@gmail.com
+Functions to plot and analyze reaction/diffusion-related results
 """
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division

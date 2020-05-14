@@ -1,10 +1,7 @@
 """
-analysis/lfp.py
-
 Functions to plot and analyze LFP-related results
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals

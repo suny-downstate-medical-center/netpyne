@@ -81,9 +81,10 @@ simConfig.printPopAvgRates = True
 
 # Create network and run simulation
 sim.create(netParams=netParams, simConfig=simConfig)
-sim.runSimWithIntervalFunc(200, sim.saveSimDataInNode)
-#sim.gatherData()                  			# gather spiking data and cell info from each node
-sim.fileGather()
+sim.runSim()
+#sim.runSimWithIntervalFunc(200, sim.saveSimDataInNode)
+sim.gatherData()                  			# gather spiking data and cell info from each node
+#sim.fileGather()
 sim.saveData()                    			# save params, cell info and sim output to file (pickle,mat,txt,etc)#
 sim.analysis.plotData()         			# plot spike raster etc
 

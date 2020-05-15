@@ -3,6 +3,13 @@ This is a script to build the NetPyNE html documentation
 
 All steps should be executed from netpyne/doc
 
+The following is required:
+Autodoc summary table: https://autodocsumm.readthedocs.io/en/latest/index.html
+
+Which can be installed with:
+pip install autodocsumm
+
+
 Here are the steps to release a new version of NetPyNE
 (step 9 is completed by this file):
 
@@ -40,13 +47,13 @@ Here are the steps to release a new version of NetPyNE
     13a) New release announcement text:
          NetPyNE v#.#.# is now available. For a complete list of changes and bug fixes see: https://github.com/Neurosim-lab/netpyne/releases/tag/v#.#.#
          See here for instructions to install or update to the latest version: http://www.netpyne.org/install.html
-14) Announce on NEURON forum:
-    https://www.neuron.yale.edu/phpBB/viewtopic.php?f=45&t=3685&sid=9c380fe3a835babd47148c81ae71343e
-15) Announce to Google group:
-    https://groups.google.com/forum/#!forum/netpyne-mailing
-16) Announce on Slack in #netpyne channel
-17) Announce on Twitter
-    Username: _netpyne_
+    13b) Announce on NEURON forum:
+         https://www.neuron.yale.edu/phpBB/viewtopic.php?f=45&t=3685&sid=9c380fe3a835babd47148c81ae71343e
+    13c) Announce to Google group:
+         https://groups.google.com/forum/#!forum/netpyne-mailing
+    13d) Announce on Slack in #netpyne channel
+    13e) Announce on Twitter
+         Username: _netpyne_
 18) Bask in the glory that is NetPyNE
 """
 

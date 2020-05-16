@@ -46,7 +46,6 @@ def connectCells (self):
 
     gapJunctions = False  # assume no gap junctions by default
 
-    print("AAAAAAAAAAAAAAAA %d %d"%(idhost,nhost),[x for x in self.params.connParams.items()])
     for connParamLabel,connParamTemp in self.params.connParams.items():  # for each conn rule or parameter set
         connParam = connParamTemp.copy()
         connParam['label'] = connParamLabel

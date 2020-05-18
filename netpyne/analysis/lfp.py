@@ -1,10 +1,7 @@
 """
-analysis/lfp.py
-
 Functions to plot and analyze LFP-related results
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
@@ -34,46 +31,157 @@ from .utils import colorList, exception, _saveFigData, _showFigure, _smooth1d
 ## Plot LFP (time-resolved, power spectral density, time-frequency and 3D locations)
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange=None, NFFT=256, noverlap=128, 
-    nperseg=256, minFreq=1, maxFreq=100, stepFreq=1, smooth=0, separation=1.0, includeAxon=True, logx=False, logy=False, normSignal=False, normPSD=False, normSpec=False, dpi=200, overlay=False, filtFreq = False, filtOrder=3, detrend=False, transformMethod='morlet', fontSize=14, colors = None, maxPlots=8, lineWidth=1.5, figSize = (8,8), saveData = None, saveFig = None, showFig = True): 
-    ''' 
-    Plot LFP
-        - electrodes (list): List of electrodes to include; 'avg'=avg of all electrodes; 'all'=each electrode separately (default: ['avg', 'all'])
-        - plots (list): list of plot types to show (default: ['timeSeries', 'PSD', 'timeFreq', 'locations']) 
-        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
-        - NFFT (int, power of 2): Number of data points used in each block for the PSD and time-freq FFT (default: 256)
-        - noverlap (int, <nperseg): Number of points of overlap between segments for PSD and time-freq (default: 128)
-        - minFreq (float)
-        - maxFreq (float): Maximum frequency shown in plot for PSD and time-freq (default: 100 Hz)
-        - stepFreq (float)
-        - nperseg (int): Length of each segment for time-freq (default: 256)
-        - smooth (int): Window size for smoothing LFP; no smoothing if 0 (default: 0)
-        - separation (float): Separation factor between time-resolved LFP plots; multiplied by max LFP value (default: 1.0)
-        - includeAxon (boolean): Whether to show the axon in the location plot (default: True)
-        - logx (boolean)
-        - logy (boolean)
-        - normSignal (boolean)
-        - normPSD (boolean)
-        - filtFreq (float)
-        - filtOrder (int)
-        - detrend (false)
-        - transformMethod ('morlet'|'fft')
-        - overlay (boolean)
-        - dpi (int) 
-        - colors
-        - maxPlots
-        - lineWidth
-        - figSize ((width, height)): Size of figure (default: (10,8))
-        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
-            if set to True uses filename from simConfig (default: None)
-        - saveFig (None|True|'fileName'): File name where to save the figure;
-            if set to True uses filename from simConfig (default: None)
-        - showFig (True|False): Whether to show the figure or not (default: True)
+def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram', 'locations'], NFFT=256, noverlap=128, nperseg=256, minFreq=1, maxFreq=100, stepFreq=1, smooth=0, separation=1.0, includeAxon=True, logx=False, logy=False, normSignal=False, normPSD=False, normSpec=False, filtFreq=False, filtOrder=3, detrend=False, transformMethod='morlet', maxPlots=8, overlay=False, colors=None, figSize=(8, 8), fontSize=14, lineWidth=1.5, dpi=200, saveData=None, saveFig=None, showFig=True): 
+    """Plots local field potentials.
 
-        - Returns figure handles
+    Parameters
+    ----------
+    timeRange : list [start, stop]
+        Time range to plot.
+        **Default:** 
+        ``None`` plots entire time range
+
+    electrodes : list
+        List of electrodes to include; ``'avg'`` is the average of all electrodes; ``'all'`` is each electrode separately.
+        **Default:** ``['avg', 'all']``
     
-    Note: should probably split funcs for signal, psd, spectrogram and locs
-    '''
+    plots : list
+        List of plot types to show.
+        **Default:** ``['timeSeries', 'PSD', 'spectrogram', 'locations']``
+    
+    NFFT : int (power of 2)
+        Number of data points used in each block for the PSD and time-freq FFT. 
+        **Default:** ``256``
+    
+    noverlap : int (<nperseg)
+        Number of points of overlap between segments for PSD and time-freq.
+        **Default:** ``128``
+    
+    nperseg
+        Length of each segment for time-freq.
+        **Default:** ``256``
+    
+    minFreq : float
+        Minimum frequency shown in plot for PSD and time-freq.
+        **Default:** ``1``
+    
+    maxFreq : float
+        Maximum frequency shown in plot for PSD and time-freq.
+        **Default:** ``100``
+    
+    stepFreq : float
+        Step frequency.
+        **Default:** ``1``
+    
+    smooth : int
+        Window size for smoothing LFP; no smoothing if ``0``
+        **Default:** ``0``
+    
+    separation : float
+        Separation factor between time-resolved LFP plots; multiplied by max LFP value.
+        **Default:** ``1.0``
+    
+    includeAxon : bool
+        Whether to show the axon in the location plot.
+        **Default:** ``True``
+    
+    logx : bool
+        Whether to make x-axis logarithmic
+        **Default:** ``False``
+    
+    logy : bool
+        Whether to make y-axis logarithmic
+        **Default:** ``False``
+    
+    normSignal : bool
+        Whether to normalize the signal.
+        **Default:** ``False``
+    
+    normPSD : bool
+        Whether to normalize the power spectral density.
+        **Default:** ``False, 
+    
+    normSpec : bool
+        Needs documentation.
+        **Default:** ``False``
+    
+    filtFreq : int or list
+        Frequency for low-pass filter (int) or frequencies for bandpass filter in a list: [low, high]
+        **Default:** ``False`` does not filter the data
+    
+    filtOrder : int
+        Order of the filter defined by `filtFreq`.
+        **Default:** ``3``
+    
+    detrend : bool
+        Whether to detrend.
+        **Default:** ``False``
+    
+    transformMethod : str
+        Transform method.
+        **Default:** ``'morlet'``
+        **Options:** ``'fft'``
+
+    maxPlots : int
+        Maximum number of subplots. Currently unused.
+        **Default:** ``8``
+
+    overlay : bool
+        Whether to overlay plots or use subplots.
+        **Default:** ``False`` overlays plots.
+
+    colors : list
+        List of normalized RGB colors to use.
+        **Default:** ``None`` uses standard colors
+
+    figSize : list [width, height]
+        Size of figure in inches.
+        **Default:** ``(10, 8)`` 
+    
+    fontSize : int
+        Font size on figure.
+        **Default:** ``14`` 
+
+    lineWidth : int
+        Line width.
+        **Default:** ``1.5``
+
+    dpi : int
+        Resolution of figure in dots per inch.
+        **Default:** ``100``
+    
+    saveData : bool or str
+        Whether and where to save the data used to generate the plot. 
+        **Default:** ``False`` 
+        **Options:** ``True`` autosaves the data,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
+    
+    saveFig : bool or str
+        Whether and where to save the figure.
+        **Default:** ``False``
+        **Options:** ``True`` autosaves the figure,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
+    
+    showFig : bool
+        Shows the figure if ``True``.
+        **Default:** ``True``
+
+    Returns
+    -------
+    (figs, dict)
+        A tuple consisting of the matplotlib figure handles and a dictionary containing the plot data.
+
+    See Also
+    --------
+    iplotLFP :
+
+    Examples
+    --------
+    >>> import netpyne, netpyne.examples.example
+    >>> out = netpyne.analysis.plotLFP()
+    """
+
+    # Note: should probably split funcs for signal, psd, spectrogram and locs
 
     from .. import sim
     from ..support.scalebar import add_scalebar
@@ -126,7 +234,6 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
     #maxPlots = 8.0
     
     data = {'lfp': lfp}  # returned data
-
 
     # time series -----------------------------------------
     if 'timeSeries' in plots:
@@ -182,11 +289,9 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             m /= 10.0
         labely = '%.3g $\mu$V'%(sizey*scaley)#)[1:]
         if len(electrodes) > 1:
-            add_scalebar(ax,hidey=True, matchy=False, hidex=False, matchx=False, sizex=0, sizey=-sizey, labely=labely, unitsy='$\mu$V', scaley=scaley, 
-                loc=3, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
+            add_scalebar(ax,hidey=True, matchy=False, hidex=False, matchx=False, sizex=0, sizey=-sizey, labely=labely, unitsy='$\mu$V', scaley=scaley, loc=3, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
         else:
-            add_scalebar(ax, hidey=True, matchy=False, hidex=True, matchx=True, sizex=None, sizey=-sizey, labely=labely, unitsy='$\mu$V', scaley=scaley, 
-                unitsx='ms', loc=3, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
+            add_scalebar(ax, hidey=True, matchy=False, hidex=True, matchx=True, sizex=None, sizey=-sizey, labely=labely, unitsy='$\mu$V', scaley=scaley, unitsx='ms', loc=3, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
         # save figure
         if saveFig: 
             if isinstance(saveFig, basestring):
@@ -200,7 +305,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         if overlay:
             figs.append(plt.figure(figsize=figSize))
         else:
-            numCols = 1# np.round(len(electrodes) / maxPlots) + 1
+            numCols = 1 # np.round(len(electrodes) / maxPlots) + 1
             figs.append(plt.figure(figsize=(figSize[0]*numCols, figSize[1])))
             #import seaborn as sb
 
@@ -231,8 +336,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             # FFT transform method
             elif transformMethod == 'fft':
                 Fs = int(1000.0/sim.cfg.recordStep)
-                power = mlab.psd(lfpPlot, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning, 
-                    noverlap=noverlap, pad_to=None, sides='default', scale_by_freq=None)
+                power = mlab.psd(lfpPlot, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning, noverlap=noverlap, pad_to=None, sides='default', scale_by_freq=None)
 
                 if smooth:
                     signal = _smooth1d(10*np.log10(power[0]), smooth)
@@ -277,7 +381,6 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
                 plt.title('Electrode %s'%(str(elec)), fontsize=fontSize)
             plt.ylabel(ylabel, fontsize=fontSize)
             
-
         # format plot
         plt.xlabel('Frequency (Hz)', fontsize=fontSize)
         if overlay:
@@ -295,7 +398,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
-                filename = sim.cfg.filename+'_'+'lfp_psd.png'
+                filename = sim.cfg.filename + '_plot_lfp_psd.png'
             plt.savefig(filename, dpi=dpi)
 
     # Spectrogram ------------------------------
@@ -424,9 +527,7 @@ def plotLFP (electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
     #save figure data
     if saveData:
         figData = outputData
-    
         _saveFigData(figData, saveData, 'lfp')
-
 
     # show fig 
     if showFig: _showFigure()

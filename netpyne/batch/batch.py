@@ -202,8 +202,8 @@ class Batch(object):
 
 
     def openFiles2SaveStats(self):
-        stat_file_name = '%s/%s_stats.cvs' %(self.saveFolder, self.batchLabel)
-        ind_file_name = '%s/%s_stats_indiv.cvs' %(self.saveFolder, self.batchLabel)
+        stat_file_name = '%s/%s_stats.csv' %(self.saveFolder, self.batchLabel)
+        ind_file_name = '%s/%s_stats_indiv.csv' %(self.saveFolder, self.batchLabel)
         individual = open(ind_file_name, 'w')
         stats = open(stat_file_name, 'w')
         stats.write('#gen  pop-size  worst  best  median  average  std-deviation\n')
@@ -533,11 +533,16 @@ wait
                     # name and path
                     jobName = "gen_" + str(ngen) + "_cand_" + str(candidate_index)
                     jobPath = genFolderPath + '/' + jobName
+
+                    # set initial cfg initCfg
+                    if len(self.initCfg) > 0:
+                        for paramLabel, paramVal in self.initCfg.items():
+                            self.setCfgNestedParam(paramLabel, paramVal)
                     
                     # modify cfg instance with candidate values
                     for label, value in zip(paramLabels, candidate):
-                        self.setCfgNestedParam(label, value)
                         print('set %s=%s' % (label, value))
+                        self.setCfgNestedParam(label, value)
                     
                     #self.setCfgNestedParam("filename", jobPath)
                     self.cfg.simLabel = jobName
@@ -696,6 +701,8 @@ wait
             def generator(random, args):
                 # generate initial values for candidates
                 return [random.uniform(l, u) for l, u in zip(args.get('lower_bound'), args.get('upper_bound'))]
+
+
             # -------------------------------------------------------------------------------
             # Mutator
             # -------------------------------------------------------------------------------
@@ -771,9 +778,9 @@ wait
                 for iworker in range(int(pc.nhost())):
                     pc.runworker()
 
-            ####################################################################
-            #                       Evolution strategy
-            ####################################################################
+            #------------------------------------------------------------------
+            # Evolutionary algorithm method
+            #-------------------------------------------------------------------
             # Custom algorithm based on Krichmar's params
             if self.evolCfg['evolAlgorithm'] == 'custom':
                 ea = EC.EvolutionaryComputation(rand)
@@ -817,10 +824,12 @@ wait
                 ea.topology = swarm.topologies.ring_topology
             
             else:
-                raise ValueError("%s is not a valid strategy" %(self.evolCfg['evolAlgorithm']))
-            ####################################################################
+                raise ValueError("%s is not a valid strategy" % (self.evolCfg['evolAlgorithm']))
+                
             ea.terminator = EC.terminators.generation_termination
             ea.observer = [EC.observers.stats_observer, EC.observers.file_observer]
+
+
             # -------------------------------------------------------------------------------
             # Run algorithm
             # ------------------------------------------------------------------------------- 

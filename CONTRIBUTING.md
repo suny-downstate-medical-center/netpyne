@@ -1,218 +1,209 @@
 
-# How to contribute
+# NetPyNE Contribution Guide
 
-Thank you for your interest in contributing to the NetPyNE tool!. NetPyNE is open source and available at [GitHub repository](https://github.com/Neurosim-lab/netpyne).
+## Table of Contents
 
-[NetPyNE](http://netpyne.org/overview.html) is currently being developed and supported by [Neurosim lab](http://neurosimlab.org/) and accepts contributions in the form of bug reports, fixes, feature additions, and documentation improvements (even just typo corrections). The best way to start contributing is by [opening an issue](https://github.com/Neurosim-lab/netpyne/issues) or by [forking](https://help.github.com/en/articles/fork-a-repo) the repository on our GitHub page and making a [Pull Request](https://help.github.com/en/articles/creating-a-pull-request) with your changes.
+- [NetPyNE Overview](#netpyne-overview)
+- [Opening an Issue](#opening-an-issue-in-netpyne)
+  - [Issue types](#issue-types)
+    - [Bug reports](#bug-reports)
+    - [Documentation improvements](#documentation-improvements)
+    - [Feature requests](#feature-requests)
+    - [Questions](#questions)
+    - [Other Issues](#other-issues)
+- [Submitting Improvements](#submitting-improvements-to-netpyne)
+  - [Forking the NetPyNE repo](#forking-the-netpyne-repo)
+  - [Cloning your fork locally](#cloning-your-fork-locally)
+  - [Synchronizing your fork and clone](#synchronizing-your-fork-and-clone)
+  - [Making changes to your clone](#making-changes-to-your-clone)
+  - [Committing the changes](#committing-the-changes)
+  - [Pushing to your fork](#pushing-to-your-fork)
+  - [Making a pull request](#making-a-pull-request)
+- [NetPyNE Coding Conventions](#netpyne-coding-conventions)
 
-Users and contributors to NetPyNE are expected to follow our [coding conventions](#coding-conventions).
 
-#### Table Of Contents
+## NetPyNE Overview
 
-- [Overview of contribution process](#overview-of-contribution-process)
-- [Getting started](#getting-started)
-  - [Configuring git](#configuring-git)
-  - [Make a local copy of GitHub repository](#make-a-local-copy-of-github-repository)
-  - [Basic git commands](#basic-git-commands)
-  - [Connecting to GitHub with SSH (optional)](#connecting-to-github-with-ssh-optional)
-- [Opening an issue](#opening-an-issue)
-- [Opening a pull request](#opening-a-pull-request)
-- [Coding conventions](#coding-conventions)
+Thank you for your interest in contributing to the NetPyNE Python package!  We encourage contributions to NetPyNE from individuals at all levels -- students, postdocs, academics, industry coders, hobbyists, etc.  For more information about NetPyNE, please see this [detailed overview](http://netpyne.org/overview.html) or our [eLife article](https://elifesciences.org/articles/44494).
 
-## Overview of contribution process
-> _Hint:_ **Working on your first pull request?** Learn how from this guide in GitHub. [How to Contribute to Open Source Project](https://opensource.guide/how-to-contribute/)
+> **Note:** Please read [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/) for an excellent guide to making open source contributions, for first-timers and for veterans.
 
-In general you’ll be working with three different copies of the Neurosim-lab/netpyne repository codebase: the official remote copy at https://github.com/Neurosim-lab/netpyne (usually called upstream), your remote [fork](https://help.github.com/en/articles/fork-a-repo) of the upstream repository (similar URL, but with your username in place of Nuerosim-lab, and usually called origin), and the local copy of the codebase on your computer. The typical contribution process is to:
+NetPyNE is open-source and available in a GitHub repository at https://github.com/Neurosim-lab/netpyne, with detailed documentation at http://netpyne.org.  There is also a [Google Groups Q&A forum](https://groups.google.com/forum/#!forum/netpyne-forum) and a [NEURON/NetPyNE forum](https://www.neuron.yale.edu/phpBB/viewforum.php?f=45).
 
-1. synchronize your local copy with `upstream`
-2. make changes to your local copy
-3. [push](https://help.github.com/en/articles/pushing-commits-to-a-remote-repository) your changes to `origin` (your remote fork of the `upstream`)
-4. submit a [pull request](https://help.github.com/en/articles/creating-a-pull-request-from-a-fork) from your fork into `upstream`
+There is a separate [GitHub repository](https://github.com/Neurosim-lab/NetPyNE-UI) for the NetPyNE graphical user interface with its own [documentation](https://github.com/Neurosim-lab/NetPyNE-UI/wiki).  
 
-The next sections describe this process in more detail.
+NetPyNE is currently being developed and supported by the [Neurosim lab](http://neurosimlab.org/) and accepts contributions in the form of bug reports and fixes, feature requests and additions, and documentation improvements (even just typo corrections).  The best way to start contributing is by opening an [issue](https://github.com/Neurosim-lab/netpyne/issues).  If you're ready to contribute more directly to the project, please read on to learn the process for submitting improvements to the repository and opening a [pull request](https://github.com/Neurosim-lab/netpyne/pulls).
 
-## Getting started
-> **Note:** If you are new in GitHubs see this [link](https://guides.github.com/activities/hello-world/).
+We ask that NetPyNE users and contributors adhere to our [Code of Conduct](https://github.com/Neurosim-lab/netpyne/blob/development/CODE_OF_CONDUCT.md) and [Coding Conventions](#netpyne-coding-conventions).
 
-### Configuring git
-To get set up for contributing, make sure you have git installed on your local computer:
+> **Note:** This guide assumes you already have Git installed and configured on your machine.  If this is not the case, please see [Set up Git](https://help.github.com/en/github/getting-started-with-github/set-up-git) in [GitHub Help](https://help.github.com/en) for detailed Git installation and configuration instructions.  
 
-* On Linux, the command `sudo apt install git` is usually sufficient; see the [official Linux instructions](https://git-scm.com/download/linux) for more options.
+## Opening an Issue in NetPyNE
 
-* On MacOS, download the [.dmg installer](https://git-scm.com/download/mac); Atlassian also provides [more detailed instructions and alternatives](https://www.atlassian.com/git/tutorials/install-git) such as using MacPorts or Homebrew.
+The best way to start contributing to NetPyNE is by opening an [issue](https://github.com/Neurosim-lab/netpyne/issues).
 
-* On Windows, we recommend [git Bash](https://gitforwindows.org/) rather than the [official Windows version of git](https://git-scm.com/download/win), because git Bash provides its own shell that includes many Linux-equivalent command line programs that are useful for development. Windows 10 also offers the [Windows subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/about) that offers similar functionality to git Bash.
+> **Note:** See [creating an issue](https://help.github.com/en/articles/creating-an-issue) in [GitHub Help](https://help.github.com/en) for detailed instructions.
 
-> **Git GUI alternative**
-> [GitHub desktop](https://desktop.github.com/) is a GUI alternative to command line git that some users appreciate; it is available for :+1: Windowns and MacOS
+1. Go to the [NetPyNE GitHub repo](https://github.com/Neurosim-lab/netpyne).
+2. Click on the "Issues" tab and then click on "New issue".
+3. Choose the type of issue you would like to submit.
+4. Provide a brief, informative title and a clear and concise description of the issue.
+5. Click on "Submit new issue".
 
-Once git is installed, the only absolutely necessary configuration step is identifying yourself and your contact info:
+### Issue types
 
-```bash
-~$ git config --global user.name "Your Name"
-~$ git config --global user.email you@yourdomain.example.com
-```
+You can open an issue to report a bug, suggest improvements in documentation, request a new feature, ask a general question, or to discuss high-level topics or ideas.
 
-Make sure that the same email address is associated with your GitHub account and with your local git configuration. It is possible to associate multiple emails with a GitHub account, so if you initially set them up with different emails, just add the local email to the GitHub account.
+#### Bug reports
 
-To customize git’s behavior see [configuring git](https://www.git-scm.com/book/en/v2/Customizing-Git-Git-Configuration) for more information. Once you have git installed and configured, go to [the Neurosym-lab/netpyne GitHub page](https://github.com/Neurosim-lab/netpyne) and create a [fork](https://help.github.com/en/articles/fork-a-repo) into your GitHub user account.
+Before submitting a bug report, please first check existing [bug reports](https://github.com/Neurosim-lab/netpyne/labels/bug) to see if the problem has already been reported.  If it has, please add a comment to the existing issue rather than creating a new one.
 
-### Make a local copy of GitHub repository
+Have you tested on the latest version of NetPyNE?  If not, please [upgrade NetPyNE to the latest version](http://netpyne.org/install.html#upgrade-to-the-latest-released-version-of-netpyne-via-pip) and ensure the bug still exists.
 
-> **Supported Python environments**
->We strongly recommend the [Anaconda](https://www.anaconda.com/distribution/) or [Miniconda](https://conda.io/en/latest/miniconda.html) environment managers for Python.
+If the bug hasn't been reported previously and you're using the latest version of NetPyNE, then please submit a bug report using the following guidelines:
 
-You must clone the Nerosim-lab/netpyne repository from your remote fork, and also connect the local copy to the `upstream` version of the codebase, so you can stay up-to-date with changes from other contributors.
+* Create a brief, informative title
+* Provide a clear and concise description of the bug
+* Describe the exact steps that will reproduce the bug
+* Explain the behavior you expected to see
+* Provide information about your system:
+  * Operating system and version
+  * NetPyNE version (see `CHANGES.md` for version)
+  * NEURON version (run `nrniv --version` in a terminal)
+  * Python version (run `python --version` in a terminal)
+* Describe any additional context needed to understand the bug
 
-Make a local clone of your remote fork (`origin`):
+#### Documentation improvements
 
-```bash
- ~$ cd $INSTALL_LOCATION
- ~$ git clone https://github.com/$GITHUB_USERNAME/netpyne.git
-```
+We are constantly striving to improve the [documentation](http://netpyne.org/) for NetPyNE.  If anything isn't clear, enough information isn't provided, or you have an idea for a tutorial or example, please submit a documentation improvement issue.
 
-> **Remote URLs in git**
->Here we use `https://`, instead of `git@` addresses, in the URL for the `upstream` remote repository. `https://` URLs are read-only, so you can `pull` changes from `upstream` into your local copy (to stay up-to-date with changes from other contributors) but you cannot `push` changes from your computer into the `upstream` remote. Instead, you must `push` your changes to your own remote fork (`origin`) first, and then create a pull request from your remote into the `upstream` remote. In [a later section](#connecting-to-github-with-ssh-optional) you’ll see a second kind of remote URL for connecting to GitHub using SSH.
+Please provide a clear and concise description of the desired documentation improvement for a specific function, a process, a tutorial, or even a simple typo.
 
-Finally, set up a link between your local clone and the official repository (`upstream`):
+#### Feature requests
 
-```bash
-~$ cd netpyne
-~$ git remote add upstream https://github.com/Neurosim-lab/netpyne.git
-~$ git fetch --all
-~$ git remote -v   #Shows your tracked repositories.
-```
+Before submitting a feature request issue, please check the [NetPyNE documentation](http://netpyne.org/) to ensure it doesn't already exist, and check the [existing feature requests](https://github.com/Neurosim-lab/netpyne/labels/enhancement) to ensure nobody has already requested your desired feature.  If someone has already requested a feature similar to your idea, please add a comment to that issue rather than creating a new one.
 
-### Basic git commands
+If the feature doesn't already exist and nobody has requested it before, then please submit a feature request issue using the following guidelines:
 
-Learning to work with git can take a long time, because it is a complex and powerful tool for managing versions of files across multiple users, each of whom have multiple copies of the codebase. We’ve already seen in the setup commands above a few useful git commands:
+* Create a brief, informative title
+* Provide a clear and concise description of the requested feature
+* If your feature is related to a problem:
+  * Provide a clear and concise description of the problem, e.g. "I'm frustrated when [...]"
+  * Explain the solution you would like to see
+  * Describe any alternate solutions you've considered
+* Provide any additional context needed to understand the feature request
 
-* `git clone <URL_OF_REMOTE_REPO>` (make a local copy of a repository).
-* `git remote add <NICKNAME_OF_REMOTE> <URL_OF_REMOTE_REPO>` (connect a local copy to an additional remote).
-* `git fetch --all` (get the current state of connected remote repos).
+#### Questions
 
-Other commands that you will undoubtedly need related to branches can be found [here](https://help.github.com/en/articles/about-branches). Branches represent multiple copies of the codebase within a local clone or remote repo. Branches are typically used to experiment with new features while still keeping a clean, working copy of the original codebase that you can switch back to at any time. The default branch of any repo is always called `master`, and it is recommended that you reserve the `master` branch to be that clean copy of the working `upstream` codebase. 
+Questions about NetPyNE are best sent to the [Google Groups Q&A forum](https://groups.google.com/forum/#!forum/netpyne-forum) or the [NEURON/NetPyNE forum](https://www.neuron.yale.edu/phpBB/viewforum.php?f=45), so that they are available to the entire NetPyNE community.  Please consider asking any questions you may have on one of these open forums before submitting a question here.
 
-In Neurosim-lab/netpyne repo, you must not work in the `master` branch, there is a branch called `development` for contribuiting. Therefore, if you want to add a new change, you should first synchronize your local `development` branch with the `upstream` repository, then make your changes and `push` to your fork, and then do a [pull request](#opening-a-pull-request) to `Neurosim-lab:development`.
+#### Other Issues
 
-Also you can create a new branch based on `development` and [check it out](https://git-scm.com/docs/git-checkout) so that any changes you make will exist on that new branch:
+If you have any ideas for improvement of NetPyNE that don't fall into any of the other categories, please submit them as "Other issues".  This would be a good place to discuss a high-level topic or idea (for example: community, vision, or policies).
 
-```bash
- ~$ git checkout development            # switch to local development branch
- ~$ git fetch upstream                  # get the current state of the remote upstream repo
- ~$ git merge upstream/development      # synchronize local development branch with remote upstream development branch
- ~$ git checkout -b new-branch          # create local branch "new-branch" and check it out
-```
+## Submitting Improvements to NetPyNE
 
-> **Alternative**
-> You can save some typing by using `~$ git pull upstream/development` to replace the `fetch` and `merge` lines above.
+If you are using NetPyNE and would like to contribute directly to the project, here's the place to find out how.  We encourage contributions to NetPyNE from individuals at all levels -- students, postdocs, academics, industry coders, hobbyists, etc.
 
-> **Note:** You could synchronize your local `master` branch with that of the `upstream` repository to have the updated version, but you **_must never_** make any changes on the `master` branch.
+In general, you’ll be working with three different copies of the NetPyNE repository codebase: the official remote copy at https://github.com/Neurosim-lab/netpyne (usually called `upstream`), your remote fork (copy) of the upstream repository (usually called `origin`), and the local clone (copy) of your remote fork on your computer.  All contributions to NetPyNE are added to the `development` branch, and later incorporated into the `master` branch at regular intervals for each new NetPyNE stable release.
 
-Now that you’re on a new branch, you can fix a bug or add a new feature, add a test, update the documentation, etc. When you’re done, it’s time to organize your changes into a series of [commits](https://git-scm.com/docs/git-commit). Commits are like snapshots of the repository — actually, more like a description of what has to change to get from the most recent snapshot to the current snapshot.
+The process for contributions is: fork the NetPyNE repo, clone it to your local machine, switch to the development branch, link your clone to the official NetPyNE repo, ensure your fork and clone are synchronized with the official repo, create a new branch for your changes, make the changes, commit those changes, push the commit to your fork, and make a pull request.  These steps are described in detail next.
 
-Git knows that people often work on multiple changes in multiple files all at once, but that ultimately they should separate those changes into sets of related changes that are grouped together based on common goals (so that it’s easier for their colleagues to understand and review the changes). For example, you might want to group all the code changes together in one commit, put new unit tests in another commit, and changes to the documentation in a third commit. Git makes this easy(ish) with something called the [stage](https://git-scm.com/book/en/v2/Git-Tools-Interactive-Staging) (or _staging area_). After you’ve made some changes to the codebase, you’ll have what git calls “unstaged changes”, which will show up with the [status](https://git-scm.com/docs/git-status) command:
+### Forking the NetPyNE repo
 
-```bash
- ~$ git status    # see what state the local copy of the codebase is in
-```
+All changes to the NetPyNE repo (repository) must be submitted from your own fork of the repo.
 
-Those unstaged changes can be [added](https://git-scm.com/docs/git-add) to the stage one by one, by either adding a whole file’s worth of changes, or by adding only certain lines interactively:
+> **Note:** See [fork a repo](https://help.github.com/en/github/getting-started-with-github/fork-a-repo) in [GitHub Help](https://help.github.com/en) for detailed instructions.  
 
-```bash
- ~$ git add some_file.py               # add all the changes you made to this file
- ~$ git add some_new_file.py           # add a completely new file in its entirety
- ~$ git add -p docs/some_other_file.py # enter interactive staging mode, to add only portions of a file.
-```
+Log into your GitHub account and navigate to the [NetPyNE repo](https://github.com/Neurosim-lab/netpyne).  In the upper right corner of the page, click on "Fork".  
 
-Once you’ve collected all the related changes together on the stage, the `git status` command will now refer to them as _“changes staged for commit”_. You can commit them to the current branch with the [commit](https://git-scm.com/docs/git-commit) command. If you just type `git commit` by itself, git will open the text editor you configured it to use so that you can write a _commit message_ — a short description of the changes you’ve grouped together in this commit. You can bypass the text editor by passing a commit message on the command line with the `-m` flag. For example, if your first commit adds a new feature, your commit message might be:
+The official NetPyNE repository is located at `https://github.com/Neurosim-lab/netpyne` while your fork will be located at `https://github.com/your-GitHub-username/netpyne`.
 
-```bash
- ~$ git commit -m 'Author: adds feature X'
-```
+Changes are constantly being added to the NetPyNE repository, so it is essential that you ensure your fork is synchronized with the official repo before making any changes of your own.  If you have an existing fork of NetPyNE and haven't made any changes you want to keep, the easiest way to synchronize with the official repo is to delete your fork and create a new one.  To delete your fork, navigate to its webpage (`https://github.com/your-GitHub-username/netpyne`), click on "Settings", then under "Danger Zone" click on "Delete this repository" and follow the directions.  Be sure to delete any local clones of your NetPyNE fork as well.
 
-Once you’ve made the commit, the stage is now empty, and you can repeat the cycle. When you’re done and everything looks good, it’s time to push your changes to your fork:
+> **Note:** See [deleting a repository](https://help.github.com/en/github/administering-a-repository/deleting-a-repository) in [GitHub Help](https://help.github.com/en) for detailed instructions.
 
-```bash
- # push local changes to remote branch origin/new-branch
- # (this will create the remote branch if it doesn't already exist)
- ~$ git push origin your-branch
-```
+### Cloning your fork locally
 
-Finally, go to the [Neurosin-lab/netpyne GitHub page](https://github.com/Neurosim-lab/netpyne), click on the pull requests tab, click the “new pull request” button, and choose “compare across forks” to select `your-branch` as the “head repository” and select `development` branch as "base repository".
+In order to work with the NetPyNE codebase, you must get a clone (copy) of your remote fork into your local machine.
 
-> **Note:** See the GitHub help page on [creating a PR from a fork](https://help.github.com/en/articles/creating-a-pull-request-from-a-fork) for more information about opening pull requests. To learn more about git, check out the [GitHub help website](https://help.github.com/en), the [GitHub Learning Lab](https://lab.github.com/) tutorial series, and the [pro git book](https://git-scm.com/book/en/v2).
+> **Note:** See [cloning a repository](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository) in [GitHub Help](https://help.github.com/en) for detailed instructions.
 
-### Connecting to GitHub with SSH (optional)
+Navigate in your browser to your fork of NetPyNE (`https://github.com/your-GitHub-username/netpyne`).  Under the repository name, click "Clone or download".  Copy the URL under "Clone with HTTPS".  Open a terminal on your machine and change directories to where you want the clone (e.g. `mkdir ~/github_repos; cd ~/github_repos`).  Type `git clone ` (note the space after "clone"), paste the copied URL, and press Enter.  Your local clone will be created (e.g. `~/github_repos/netpyne`).
 
-One easy way to speed up development is to reduce the number of times you have to type your password. SSH (secure shell) allows authentication with pre-shared key pairs. The private half of your key pair is kept secret on your computer, while the public half of your key pair is added to your GitHub account; when you connect to GitHub from your computer, the local git client checks the remote (public) key against your local (private) key, and grants access your account only if the keys fit. GitHub has several help pages that guide you through the process.
+At this point, your clone is only linked to your fork of NetPyNE.  Open a terminal, change to the directory of your fork (e.g. `cd ~/github_repos/netpyne`), and enter `git remote -v` to see this.  Remember that your fork is called `origin` while the official NetPyNE repository is called `upstream`.
 
-Once you have set up GitHub to use SSH authentication, you should change the addresses of your Neurosim-lab GitHub remotes, from `https://` addresses to `git@` addresses, so that git knows to connect via SSH instead of HTTPS.
->**Note:** You can only have a _SSH key_ for repositories where you are a contributor.
+In a terminal, from the directory of your clone, enter the following to link your clone to the official NetPyNE repository: `git remote add upstream https://github.com/Neurosim-lab/netpyne`.  Verify that your clone is linked by entering the command `git remote -v`.
 
-## Opening an issue
+Ensure that you are in the `development` branch of your clone by entering the command `git checkout development`.
 
-You should usually open an issue in the following situations:
+### Synchronizing your fork and clone
 
-* Report an error you can’t solve yourself.
-* Discuss a high-level topic or idea (for example, community, vision or policies)
-* Propose a new feature or other project idea
+Before you start making changes to the codebase in your clone, it is necessary to ensure that your clone and your fork are synchronized with the official NetPyNE codebase, to avoid conflicting changes.
 
-Tips for communicating on issues:
+> **Note:** See [syncing a fork](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/syncing-a-fork) in [GitHub Help](https://help.github.com/en) for detailed instructions.  Remember that instead of working with the `master` branch, you will be working with the `development` branch.
 
-* **If you see an open issue that you want to tackle**, comment on the issue to let people know you’re on it. That way, people are less likely to duplicate your work.
-* **If an issue was opened a while ago**, it’s possible that it’s being addressed somewhere else, or has already been resolved, so comment to ask for confirmation before starting work.
-* **If you opened an issue, but figured out the answer later on your own**, comment on the issue to let people know, then close the issue. Even documenting that outcome is a contribution to the project.
+Open a terminal and change to the directory of your NetPyNE clone.  Fetch any changes in the official NetPyNE repository by entering `git fetch upstream`.  Ensure you are in the `development` branch by entering `git checkout development`.  Now merge any changes from the official repo into your clone by entering `git merge upstream/development`.  
 
-> **Note:** See in [GitHub Help](https://help.github.com/en) how to [creating an issue](https://help.github.com/en/articles/creating-an-issue).
+### Making changes to your clone
 
-## Opening a pull request
+At this point, you have forked the NetPyNE repo, cloned it to your local machine, switched to the development branch, linked your clone to the official NetPyNE repo, and ensured your fork and clone are synchronized with the official repo.  Now it's time to actually make improvements to the code or documentation.
 
-You should usually open a pull request in the following situations:
+It's good practice to create a new branch for each improvement you'd like to make.  This keeps your local `development` branch the same as in your fork (i.e. clean and safe).  To create a new branch, open a terminal and change to the directory of your clone.  Then enter `git checkout -b name-of-your-new-branch`.  
 
-* Submit trivial fixes (for example, a typo, a broken link or an obvious error).
-* Start work on a contribution that was already asked for, or that you’ve already discussed, in an issue.
+> **Note:** You can also [create a new branch directly on GitHub](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-and-deleting-branches-within-your-repository).  You will then need to enter `git fetch origin` to get the new branch into your local clone and `git checkout name-of-your-new-branch` to switch to your new branch. 
 
-A pull request doesn’t have to represent finished work. It’s usually better to open a pull request early on, so others can watch or give feedback on your progress. Just mark it as a “WIP” (Work in Progress) in the subject line. You can always add more commits later.
+At this point, you can use the code editor of your choice to make changes to any of the files in your clone.  [Visual Studio Code](https://code.visualstudio.com/) and [Sublime Text](https://www.sublimetext.com/) are popular choices.  After making changes, be sure the code still runs and behaves as you expect.
 
-Always reference the issue related to the PR with `#number-of-issue` and use the markdown to make your comments more readable.
+### Committing the changes
 
-> **Note:** If this is your first pull request, check out [Make a Pull Request](http://makeapullrequest.com/), which [**@kentcdodds**](https://github.com/kentcdodds) created as a walkthrough video tutorial. You can also practice making a pull request in the [First Contributions](https://github.com/Roshanjossey/first-contributions) repository, created by [**@Roshanjossey**](https://github.com/Roshanjossey).
+Once you've made changes and tested them, it's time to commit them to your local clone.  Open a terminal and change to the directory of your clone.  Enter `git status` to see what files have been changed.  Enter `git add filename` (replace *filename* with the actual name of your file) to stage (prepare) a particular file for committing.  Alternatively, you can enter `git add .` to stage all changed files.  Enter `git status` again to ensure the file(s) you want to commit are ready.  Finally, to commit the changes to your local clone, enter `git commit -m "A concise description of your changes"` (include the quotes).  
 
-## Coding conventions
+> **Note:** You can also just enter `git commit`.  Git will then open your terminal's default text editor and ask you to enter a commit message (e.g. "A concise description of your changes").
+
+### Pushing to your fork
+
+Now that you have your changes committed to your local clone, it's time to push them to your remote fork on GitHub.  In a terminal, from the directory of your clone, enter `git push origin name-of-your-new-branch`.
+
+> **Note:** See [pushing commits to a remote repository](https://help.github.com/en/github/using-git/pushing-commits-to-a-remote-repository) in [GitHub Help](https://help.github.com/en) for detailed instructions.  
+
+### Making a pull request
+
+Now that you've got your improvements into your remote fork of NetPyNE on GitHub, it's time to submit the improvements to the official NetPyNE repository.  This is accomplished by creating a "pull request".
+
+> **Note:** See [creating a pull request from a fork](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request-from-a-forkk) in [GitHub Help](https://help.github.com/en) for detailed instructions.
+
+In your browser, go to https://github.com/Neurosim-lab/netpyne and click on the "New pull request" button
+.  This will bring you to the "Compare changes" page where you should click on "compare across forks".  Ensure the "base repository" is `Neurosim-lab/netpyne` and the "base" is `development`.  Set the head repository to `your-GitHub-username/netpyne` and the "compare" to `name-of-your-new-branch`.  Type a title and description for your pull request (if your modifications were in response to an issue, include the issue number).  Finally, click on "Create Pull Request".
+
+> **Note:** A pull request doesn’t have to represent finished work.  It’s actually better to open a pull request early on, so others can give feedback on your progress.  Just mention in the description that it is a "Work in Progress". You can always add more commits later after discussions with the NetPyNE community.  Please see [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/) for an excellent overview of the process.
+
+Congratulations!  You have now submitted a direct improvement to NetPyNE!  Maintainers of NetPyNE will review your changes, ensure that they are functional and meet our coding conventions, and perhaps suggest improvements to make the changes even better.  Thank you for helping support open-source software!
+
+## NetPyNE Coding Conventions
 
 **Adhere to standard Python style guidelines**
+
 All contributions to NetPyNE are checked against style guidelines described in PEP 8 (we are gradually updating the existing code). We also check for common coding errors (such as variables that are defined but never used).
 
 Several text editors or IDEs also have Python style checking, which can highlight style errors while you code (and train you to make those errors less frequently). This functionality is built-in to the Spyder IDE, but most editors have plug-ins that provide similar functionality. Search for `python linter <name of your favorite editor>` to learn more.
 
 **Use consistent variable naming**
+
 Functions and instances/variables should use `CamelCase` (`nSamples` rather than `n_samples`). Avoid single-character variable names, unless inside a [comprehension](https://docs.python.org/3/glossary.html#term-list-comprehension) or [generator](https://docs.python.org/3/tutorial/classes.html#tut-generators).
 
 **Follow NumPy style for docstrings**
-In most cases imitating existing docstrings will be sufficient, but consult the [Numpy docstring style guidelines](https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt) for more complicated formatting such as embedding example code, citing references, or including rendered mathematics. Private function/method docstrings may be brief for simple functions/methods, but complete docstrings are appropriate when private functions/methods are relatively complex (we are gradually updating the code to include docstrings for all functions).
+
+In most cases imitating existing docstrings will be sufficient, but consult the [NumPy docstring style guidelines](https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt) for more complicated formatting such as embedding example code, citing references, or including rendered mathematics. Private function/method docstrings may be brief for simple functions/methods, but complete docstrings are appropriate when private functions/methods are relatively complex (we are gradually updating the code to include docstrings for all functions).
 
 **Other style guidance**
 
-* Add description, arguments and returns (I/O params) to all functions and methos.
+* Add description, arguments and returns (I/O params) to all functions and methods.
 * Both the docstrings and dedicated documentation pages (readme file, tutorials, how-to examples, discussions, and glossary) should include cross-references to any mentioned module, class, function, method, attribute, or documentation page.
-* We use [Travis](https://travis-ci.org/) as a continuous integration tool, to run tests after every commit to check the model examples still work and produce the expected result.
+* We use [Travis](https://travis-ci.org/) as a continuous integration tool, to run tests after every commit to check that the model examples still work and produce the expected result.
 * Use a code checker:
-  * [pylint](https://pypi.org/project/pylint/): a  Python static code analysis tool.
-  * [pyflakes](https://pypi.python.org/pypi/pyflakes/):a tool to check Python code for errors by parsing the source file instead of importing it.
+  * [pylint](https://pypi.org/project/pylint/): a Python static code analysis tool.
+  * [pyflakes](https://pypi.python.org/pypi/pyflakes/): a tool to check Python code for errors by parsing the source file instead of importing it.
   * [pycodestyle](https://pypi.org/project/pycodestyle/): (formerly `pep8`) a tool to check Python code against some of the style conventions in PEP 8.
-  * [flake8](https://pypi.org/project/flake8/): a tool that glues together `pycodestyle`, `pyflakes`, `mccabe` to check the style and quality of Python code.
+  * [flake8](https://pypi.org/project/flake8/): a tool that glues together `pycodestyle`, `pyflakes`, and `mccabe` to check the style and quality of Python code.
   * [vim-flake8](https://github.com/nvie/vim-flake8): a `flake8` plugin for Vim.
-
-<!-- Links References -->
-
-<!--[NlN-repo]: (https://github.com/Neurosim-lab/netpyne)
-[GH-fork]: (https://help.github.com/en/articles/fork-a-repo)
-[GH-pr]: (https://help.github.com/en/articles/creating-a-pull-request)
-[GH-push]: (https://help.github.com/en/articles/pushing-commits-to-a-remote-repository)
-[GH-prfork]: (https://help.github.com/en/articles/creating-a-pull-request-from-a-fork)
-[GH-start]: (https://guides.github.com/activities/hello-world/)
-[GH-netpyne]: (https://github.com/Neurosim-lab/netpyne)
-[GH-help]: (https://help.github.com/en)
-[GH-llab]: (https://lab.github.com/)
-[GH-issue]: (https://help.github.com/en/articles/creating-an-issue) -->

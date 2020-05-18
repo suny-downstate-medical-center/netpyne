@@ -1,11 +1,10 @@
 """
-sim.py
+Functions for handling simulations
 
 Contains all the model shared variables and modules.
 It is imported as "sim" from all other file,  so that any variable or module can be referenced from any module using sim.varName
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
@@ -38,7 +37,7 @@ from .run import preRun, runSim, runSimWithIntervalFunc, loadBalance, calculateL
 from .gather import gatherData, _gatherAllCellTags, _gatherAllCellConnPreGids, _gatherCells, fileGather
 
 # import saving functions
-from .save import saveJSON, saveData, distributedSaveHDF5, compactConnFormat, intervalSave, saveInNode
+from .save import saveJSON, saveData, distributedSaveHDF5, compactConnFormat, intervalSave, saveSimDataInNode, saveInNode
 
 # import loading functions
 from .load import loadSimCfg, loadNetParams, loadNet, loadSimData, loadAll, loadHDF5, ijsonLoad

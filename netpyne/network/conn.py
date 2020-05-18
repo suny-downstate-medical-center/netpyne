@@ -25,7 +25,6 @@ from numpy import array, sin, cos, tan, exp, sqrt, mean, inf, dstack, unravel_in
 # -----------------------------------------------------------------------------
 def connectCells (self):
     from .. import sim
-    h = sim.h; pc = h.ParallelContext[0]; idhost, nhost, cvode = pc.id(), pc.nhost(), h.CVode()
 
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'connectTime')

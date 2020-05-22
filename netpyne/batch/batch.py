@@ -69,15 +69,6 @@ def runJob(script, cfgSavePath, netParamsSavePath):
 # -------------------------------------------------------------------------------
 def createFolder(folder):
     import os
-    if os.path.exists(folder):
-        if pc.id()==0:
-            try:
-                import shutil
-                shutil.rmtree(folder)
-                # shutil.rmtree(folder)
-            except OSError:
-                print(' Could not delete %s' %(folder))
-        
     if not os.path.exists(folder):
         try:
             os.mkdir(folder)

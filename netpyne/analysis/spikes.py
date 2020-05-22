@@ -1779,31 +1779,63 @@ def plotRateSpectrogram(include=['allCells', 'eachPop'], timeRange=None, binSize
 # Calculate and print avg pop rates
 #------------------------------------------------------------------------------
 @exception
-def popAvgRates (trange = None, show = True):
+def popAvgRates (tranges = None, show = True):
     from .. import sim
+
+    avgRates = Dict()
 
     if not hasattr(sim, 'allSimData') or 'spkt' not in sim.allSimData:
         print('Error: sim.allSimData not available; please call sim.gatherData()')
         return None
 
-    spkts = sim.allSimData['spkt']
-    spkids = sim.allSimData['spkid']
+    spktsAll = sim.allSimData['spkt']
+    spkidsAll = sim.allSimData['spkid']
+    
+    spkidsList, spktsList = [], []
 
-    if not trange:
-        trange = [0, sim.cfg.duration]
+    if not tranges:
+        tranges = [[0, sim.cfg.duration]]
+
+    elif isinstance(tranges, list):
+    
+        # convert single time interval to list
+        if not isinstance(tranges[0], (list, tuple)):
+            tranges = [tranges]
+
+        # calculate for multiple time intervals
+        if isinstance(tranges[0], (list,tuple)):
+            for trange in tranges:
+                try:
+                    spkids, spkts = list(zip(*[(spkid, spkt) for spkid, spkt in zip(spkidsAll, spktsAll) if trange[0] <= spkt <= trange[1]]))
+                except:
+                    spkids, spkts = [], []
+                spkidsList.append(spkids)
+                spktsList.append(spkts)
+
     else:
-        try:
-            spkids, spkts = list(zip(*[(spkid, spkt) for spkid, spkt in zip(spkids, spkts) if trange[0] <= spkt <= trange[1]]))
-        except:
-            spkids, spkts = [], []
+        return avgRates
 
-
-    avgRates = Dict()
     for pop in sim.net.allPops:
-        numCells = float(len(sim.net.allPops[pop]['cellGids']))
-        if numCells > 0:
-            tsecs = float((trange[1]-trange[0]))/1000.0
-            avgRates[pop] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['pop']==pop])/numCells/tsecs
-            print('   %s : %.3f Hz'%(pop, avgRates[pop]))
+
+        if len(tranges) > 1:
+            print('   %s ' % (pop))
+            avgRates[pop] = Dict()
+            
+        for spkids, spkts, trange in zip(spkidsList, spktsList, tranges):
+            numCells = float(len(sim.net.allPops[pop]['cellGids']))
+            if numCells > 0:
+                
+                # single time intervals
+                if len(tranges) == 1:
+                    tsecs = float((trange[1]-trange[0]))/1000.0
+                    avgRates[pop] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['pop']==pop])/numCells/tsecs
+                    print('   %s : %.3f Hz'%(pop, avgRates[pop]))
+                
+                # multiple time intervals
+                else:
+
+                    tsecs = float((trange[1]-trange[0]))/1000.0
+                    avgRates[pop][(trange[0], trange[1])] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['pop']==pop])/numCells/tsecs
+                    print('        (%d - %d ms): %.3f Hz'%(trange[0], trange[1], avgRates[pop][(trange[0], trange[1])]))
 
     return avgRates

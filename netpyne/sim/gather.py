@@ -247,8 +247,8 @@ def gatherData (gatherLFP = True):
         if 'runTime' in sim.timingData:
             print(('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate)))
             if sim.cfg.printPopAvgRates and not sim.cfg.gatherOnlySimData:
-                trange = sim.cfg.printPopAvgRates if isinstance(sim.cfg.printPopAvgRates,list) else None
-                sim.allSimData['popRates'] = sim.analysis.popAvgRates(trange=trange)
+                tranges = sim.cfg.printPopAvgRates if isinstance(sim.cfg.printPopAvgRates,list) else None
+                sim.allSimData['popRates'] = sim.analysis.popAvgRates(tranges=tranges)
             print(('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration/1e3, sim.nhosts)))
             print(('  Run time: %0.2f s' % (sim.timingData['runTime'])))
 
@@ -423,13 +423,17 @@ def fileGather (gatherLFP = True):
 
         print(('  Cells: %i' % (sim.numCells) ))
         print(('  Connections: %i (%0.2f per cell)' % (sim.totalConnections, sim.connsPerCell)))
+        
         if sim.totalSynapses != sim.totalConnections:
             print(('  Synaptic contacts: %i (%0.2f per cell)' % (sim.totalSynapses, sim.synsPerCell)))
-        if 'runTime' in sim.timingData:
+        
+        if 'runTime' in sim.timingData:  # if the sim has ran calculate spiking stats 
             print(('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate)))
+
             if sim.cfg.printPopAvgRates and not sim.cfg.gatherOnlySimData:
-                trange = sim.cfg.printPopAvgRates if isinstance(sim.cfg.printPopAvgRates,list) else None
-                sim.allSimData['popRates'] = sim.analysis.popAvgRates(trange=trange)
+                tranges = sim.cfg.printPopAvgRates if isinstance(sim.cfg.printPopAvgRates,list) else None
+                sim.allSimData['popRates'] = sim.analysis.popAvgRates(tranges=tranges)
+
             print(('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration/1e3, sim.nhosts)))
             print(('  Run time: %0.2f s' % (sim.timingData['runTime'])))
 

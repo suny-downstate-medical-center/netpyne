@@ -70,7 +70,7 @@ simConfig.analysis['plotRaster'] = True 			# Plot a raster
 simConfig.analysis['plotTraces'] = {'include': [1]} 			# Plot recorded traces for this list of cells
 #simConfig.analysis['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
 #simConfig.analysis['plotLFP'] = True
-simConfig.printPopAvgRates = True
+simConfig.printPopAvgRates =  [[250,500], [500,750], [750,1000]]
 
 
 # def modifyGnabar(t):
@@ -81,9 +81,9 @@ simConfig.printPopAvgRates = True
 
 # Create network and run simulation
 sim.create(netParams=netParams, simConfig=simConfig)
-sim.runSimWithIntervalFunc(200, sim.saveSimDataInNode)
-#sim.gatherData()                  			# gather spiking data and cell info from each node
-sim.fileGather()
+sim.runSim() #SimWithIntervalFunc(200, sim.saveSimDataInNode)
+sim.gatherData()                  			# gather spiking data and cell info from each node
+#sim.fileGather()
 sim.saveData()                    			# save params, cell info and sim output to file (pickle,mat,txt,etc)#
 sim.analysis.plotData()         			# plot spike raster etc
 

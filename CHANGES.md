@@ -1,5 +1,7 @@
 # Version 0.9.7
 
+- Calculation of population avg rates now accepts multiple time intervals
+
 - Fixed bug importing cells (avoid reading __docstring__)
 
 # Version 0.9.6

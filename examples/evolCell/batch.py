@@ -91,7 +91,7 @@ def evolCellITS4():
     b.saveFolder = 'data/'+b.batchLabel
     b.method = 'evol'
     b.runCfg = {
-        'type': 'mpi_bulletin',#'hpc_slurm', 
+        'type': 'mpi_bulletin', #'hpc_slurm', 
         'script': 'init.py',
         # # options required only for hpc
         # 'mpiCommand': 'mpirun',  

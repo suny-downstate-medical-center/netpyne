@@ -100,7 +100,7 @@ def preRun ():
 #------------------------------------------------------------------------------
 # Run Simulation
 #------------------------------------------------------------------------------
-def runSim (reRun=False):
+def runSim (skipPreRun=False):
     from .. import sim
 
     sim.pc.barrier()
@@ -113,7 +113,7 @@ def runSim (reRun=False):
     sim.pc.barrier()
     sim.timing('start', 'runTime')
 
-    if not reRun:
+    if not skipPreRun:
         preRun()
     
     h.finitialize(float(sim.cfg.hParams['v_init']))

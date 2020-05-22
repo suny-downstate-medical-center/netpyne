@@ -20,7 +20,7 @@ cfg = specs.SimConfig()
 #------------------------------------------------------------------------------
 # Run parameters
 #------------------------------------------------------------------------------
-cfg.duration = 26*1e3			## Duration of the sim, in ms -- value from M1 cfg.py 
+cfg.duration = 10*1e3			## Duration of the sim, in ms -- value from M1 cfg.py 
 cfg.dt = 0.05                   ## Internal Integration Time Step -- value from M1 cfg.py 
 cfg.verbose = 1           	## Show detailed messages
 cfg.hParams['celsius'] = 37
@@ -52,7 +52,7 @@ cfg.saveDataInclude = ['simConfig', 'netParams', 'net', 'simData']
 cfg.analysis['plotfI'] = {'amps': [0.1], 'times': [1000], 'dur': 1000, 'targetRates': [10], 'saveFig': True, 'showFig': True}
 
 cfg.analysis['plotTraces'] = {'include': [0], 'oneFigPer': 'cell', 'saveFig': True, 
- 							  'showFig': False, 'figSize': (40,8), 'timeRange': [0,cfg.duration]}
+ 							  'showFig': False, 'figSize': (12,8), 'timeRange': [0,cfg.duration]}
 
 #------------------------------------------------------------------------------
 # Current inputs 

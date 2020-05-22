@@ -253,5 +253,6 @@ def evolCellNGF():
 # ---------------------------------------------------------------------------------------------- #
 # Main code
 if __name__ == '__main__':
-    evolCellNGF() 
+    evolCellITS4()
+    # evolCellNGF() 
 

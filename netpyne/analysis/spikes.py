@@ -1819,7 +1819,7 @@ def popAvgRates (tranges = None, show = True):
 
         if len(tranges) > 1:
             print('   %s ' % (pop))
-            avgRates[pop] = Dict()
+            avgRates[pop] = {}
             
         for spkids, spkts, trange in zip(spkidsList, spktsList, tranges):
             numCells = float(len(sim.net.allPops[pop]['cellGids']))
@@ -1833,9 +1833,8 @@ def popAvgRates (tranges = None, show = True):
                 
                 # multiple time intervals
                 else:
-
                     tsecs = float((trange[1]-trange[0]))/1000.0
-                    avgRates[pop][(trange[0], trange[1])] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['pop']==pop])/numCells/tsecs
-                    print('        (%d - %d ms): %.3f Hz'%(trange[0], trange[1], avgRates[pop][(trange[0], trange[1])]))
+                    avgRates[pop]['%d_%d'%(trange[0], trange[1])] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['pop']==pop])/numCells/tsecs
+                    print('        (%d - %d ms): %.3f Hz'%(trange[0], trange[1], avgRates[pop]['%d_%d'%(trange[0], trange[1])]))
 
     return avgRates

@@ -48,7 +48,8 @@ if pc.id()==0: pc.master_works_on_jobs(0)
 def runEvolJob(script, cfgSavePath, netParamsSavePath, simDataPath):
     import os
     print('\nJob in rank id: ',pc.id())
-    command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath) 
+    command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath)
+    print(command)
 
     with open(simDataPath+'.run', 'w') as outf, open(simDataPath+'.err', 'w') as errf:
         pid = Popen(command.split(' '), stdout=outf, stderr=errf, preexec_fn=os.setsid).pid

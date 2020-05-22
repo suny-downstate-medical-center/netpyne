@@ -13,7 +13,7 @@ secs['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dic
 secs['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
 secs['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology 
 secs['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
-netParams.cellParams['PYRrule'] = {'secs': secs}												# add dict to list of cell parameters
+netParams.cellParams['PYR'] = {'secs': secs}												# add dict to list of cell parameters
 
 
 ## Population parameters

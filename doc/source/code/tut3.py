@@ -18,7 +18,7 @@ netParams.cellParams['PYRrule'] = {'secs': secs}												# add dict to list o
 
 ## Population parameters
 netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20}
-netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20
+netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20}
 
 ## Synaptic mechanism parameters
 netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e': 0}  # excitatory synaptic mechanism

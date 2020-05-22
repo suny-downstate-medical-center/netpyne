@@ -205,7 +205,7 @@ class Cell (object):
                                     synMech = synMechList[0] # 0th one which would have been returned by next()
                                 ptr = getattr(synMech['hObj'], '_ref_'+params['var'])
                             else:
-                                ptr = []
+                                ptr = None
                         else:  # eg. soma(0.5)._ref_v
                             ptr = getattr(self.secs[params['sec']]['hObj'](params['loc']), '_ref_'+params['var'])
                     elif 'synMech' in params:  # special case where want to record from multiple synMechs

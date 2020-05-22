@@ -198,14 +198,14 @@ class Cell (object):
                         elif 'synMech' in params:  # eg. soma(0.5).AMPA._ref_g
                             sec = self.secs[params['sec']]
                             synMechList = [synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech'] and synMech['loc']==params['loc']] # make list with this label/loc
-                            if 'index' in params and index<len(synMechList) and len(synMechList)>0:
-                                synMech = synMechList[params['index']]
-                            else:
-                                try:
+                            if len(synMechList) > 0:
+                                if 'index' in params and index<len(synMechList):
+                                    synMech = synMechList[params['index']]
+                                else:
                                     synMech = synMechList[0] # 0th one which would have been returned by next()
-                                except:
-                                    pass
-                            ptr = getattr(synMech['hObj'], '_ref_'+params['var'])
+                                ptr = getattr(synMech['hObj'], '_ref_'+params['var'])
+                            else:
+                                ptr = []
                         else:  # eg. soma(0.5)._ref_v
                             ptr = getattr(self.secs[params['sec']]['hObj'](params['loc']), '_ref_'+params['var'])
                     elif 'synMech' in params:  # special case where want to record from multiple synMechs

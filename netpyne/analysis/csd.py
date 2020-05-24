@@ -1,23 +1,24 @@
 """
+Functions to plot and extract CSD info from LFP data
 Contributors: Erica Y Griffith, Sam Neymotin, Salvador Dura-Bernal
 """
 
-"""
-Functions to plot and extract CSD info from LFP data
-"""
-
-
-### THIS SET OF IMPORTS FROM FUTURE IS IN lfp.py, traces.py, and spikes.py
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
+### THIS SET OF IMPORTS FROM FUTURE IS IN lfp.py, traces.py, and spikes.py
+
+# THIRD PARTY IMPORTS
+import numpy as np
+
+## LOCAL APPLICATION IMPORTS 
+from .filter import lowpass,bandpass
 
 
 #### THESE FUNCTIONS ARE FROM samn --> https://github.com/NathanKlineInstitute/OEvent/blob/master/csd.py
 #### NOT YET ADAPTED TO NETPYNE
-from filter import lowpass,bandpass
-import numpy as np
+
 
 # lowpass filter the items in lfps. lfps is a list or numpy array of LFPs arranged spatially by column
 def getlowpass (lfps,sampr,maxf):
@@ -56,12 +57,13 @@ def removemean (x, ax=1):
 # get CSD - first do a lowpass filter. lfps is a list or numpy array of LFPs arranged spatially by column
 # spacing_um is electrode's contact spacing in units of micron
 # returns CSD in units of mV/mm**2 (assuming lfps are in mV)
-@exception
+
+#@exception
 def getCSD (lfps,sampr,spacing_um=100.0,minf=0.05,maxf=300,norm=True,vaknin=False):
   from .. import sim 
 
   # from netpyne/analysis/lfp.py, line 200 
-  lfp = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+  lfps = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
 
 
   datband = getbandpass(lfps,sampr,minf,maxf)

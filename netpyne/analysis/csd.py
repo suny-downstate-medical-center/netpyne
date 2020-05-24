@@ -59,6 +59,11 @@ def removemean (x, ax=1):
 @exception
 def getCSD (lfps,sampr,spacing_um=100.0,minf=0.05,maxf=300,norm=True,vaknin=False):
   from .. import sim 
+
+  # from netpyne/analysis/lfp.py, line 200 
+  lfp = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+
+
   datband = getbandpass(lfps,sampr,minf,maxf)
   #datband = getlowpass(lfps,sampr,maxf)
   if datband.shape[0] > datband.shape[1]: # take CSD along smaller dimension

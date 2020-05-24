@@ -64,3 +64,9 @@ from .rxd import plotRxDConcentration
 # Import HNN-related functions
 # -------------------------------------------------------------------------------------------------------------------
 from .interactive import iplotDipole, iplotDipoleSpectrogram,  iplotDipolePSD, iplotRaster, iplotSpikeHist, iplotRatePSD, iplotTraces, iplotLFP, iplotConn
+
+
+# -------------------------------------------------------------------------------------------------------------------
+# Import CSD-related functions
+# -------------------------------------------------------------------------------------------------------------------
+from .csd import getCSD

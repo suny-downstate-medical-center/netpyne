@@ -56,7 +56,9 @@ def removemean (x, ax=1):
 # get CSD - first do a lowpass filter. lfps is a list or numpy array of LFPs arranged spatially by column
 # spacing_um is electrode's contact spacing in units of micron
 # returns CSD in units of mV/mm**2 (assuming lfps are in mV)
+@exception
 def getCSD (lfps,sampr,spacing_um=100.0,minf=0.05,maxf=300,norm=True,vaknin=False):
+  from .. import sim 
   datband = getbandpass(lfps,sampr,minf,maxf)
   #datband = getlowpass(lfps,sampr,maxf)
   if datband.shape[0] > datband.shape[1]: # take CSD along smaller dimension

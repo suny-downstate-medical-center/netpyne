@@ -160,14 +160,18 @@ def _delete_module(modname):
             pass
 
 def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
+    """
+    Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)
+    """
+    
     h.initnrn()
+    
     varList = mechVarList()  # list of properties for all density mechanisms and point processes
     origGlob = getGlobals(list(varList['mechs'].keys())+list(varList['pointps'].keys()))
     origGlob['v_init'] = -65  # add by hand since won't be set unless load h.load_file('stdrun')
 
     if cellArgs is None: cellArgs = [] # Define as empty list if not otherwise defined
 
-    ''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
     if fileName.endswith('.hoc') or fileName.endswith('.tem'):
         h.load_file(fileName)
         if not cellInstance:
@@ -221,9 +225,12 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
 
 
 def importCellsFromNet (netParams, fileName, labelList, condsList, cellNamesList, importSynMechs):
+    """
+    Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)
+    """
+    
     h.initnrn()
     
-    ''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
     if fileName.endswith('.hoc') or fileName.endswith('.tem'):
         print('Importing from .hoc network not yet supported')
         return

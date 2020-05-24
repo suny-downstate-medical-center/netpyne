@@ -432,10 +432,11 @@ def clearObj (obj):
 # Support funcs to load from mat
 #------------------------------------------------------------------------------
 def _mat2dict(obj): 
-    '''
+    """
     A recursive function which constructs from matobjects nested dictionaries
     Enforce lists for conns, synMechs and stims even if 1 element (matlab converts to dict otherwise)
-    '''
+    """
+    
     import scipy.io as spio
     import numpy as np
 

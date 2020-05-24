@@ -33,7 +33,9 @@ from ..specs import Dict
 ###############################################################################
 
 class Cell (object):
-    ''' Generic class for neuron models '''
+    """
+    Generic class for neuron models
+    """
     
     def __init__ (self, gid, tags):
         from .. import sim
@@ -287,7 +289,10 @@ class Cell (object):
 
 
     def __getstate__ (self): 
-        ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
+        """
+        Removes non-picklable h objects so can be pickled and sent via py_alltoall
+        """
+        
         from .. import sim
 
         odict = self.__dict__.copy() # copy the dict since we change it

@@ -104,14 +104,15 @@ class Dict(dict):
             return x
 
     def __rename__(self, old, new, label=None):
-        '''
+        """
         old (string): old dict key
         new (string): new dict key
         label (list/tuple of strings): nested keys pointing to dict with key to be replaced; 
             e.g. ('PYR', 'secs'); use None to replace root key; defaults to None 
         
         returns: True if successful, False otherwse
-        '''
+        """
+
         obj = self
         if isinstance(label, (tuple, list)):
             for ip in range(len(label)):
@@ -234,14 +235,15 @@ class ODict(OrderedDict):
             return x
 
     def __rename__(self, old, new, label=None):
-        '''
+        """
         old (string): old dict key
         new (string): new dict key
         label (list/tuple of strings): nested keys pointing to dict with key to be replaced; 
             e.g. ('PYR', 'secs'); use None to replace root key; defaults to None 
         
         returns: True if successful, False otherwse
-        '''
+        """
+        
         obj = self
         if isinstance(label, (tuple, list)):
             for ip in range(len(label)):

@@ -341,10 +341,11 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False):
-    '''
+    """
     expData: experimental data; a dict with ['x'] and ['y'] 1-d vectors (either lists or np.arrays) of same length
     showFig: show output figure in web browser (default: None)
-    '''
+    """
+
     from .. import sim
     from bokeh.plotting import figure, show
     from bokeh.resources import CDN
@@ -447,10 +448,10 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False):
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1, maxFreq = 80, stepFreq = 1, norm = True, showFig=False):
-    '''
+    """
     expData: experimental data; a dict with ['x'] and ['y'] 1-d vectors (either lists or np.arrays) of same length
     showFig: show output figure in web browser (default: None)
-    '''
+    """
     from .. import sim
     from bokeh.plotting import figure, show
     from bokeh.models import BasicTicker, ColorBar, ColumnDataSource, LinearColorMapper, PrintfTickFormatter
@@ -596,10 +597,11 @@ def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minF
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1, maxFreq = 80, stepFreq = 1, norm = True, showFig=False):
-    '''
+    """
     expData: experimental data; a dict with ['x'] and ['y'] 1-d vectors (either lists or np.arrays) of same length
     showFig: show output figure in web browser (default: None)
-    '''
+    """
+
     from .. import sim
     from bokeh.plotting import figure, show
     from bokeh.resources import CDN
@@ -727,7 +729,7 @@ def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1,
 @exception
 def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRange = None, binSize = 5, overlay=True, yaxis = 'rate',
     popColors=[], norm=False, smooth=None, filtFreq=False, filtOrder=3, saveData = None, saveFig = None, showFig = False):
-    '''
+    """
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include.
             Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
@@ -743,7 +745,7 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
             if set to True uses filename from simConfig (default: None)
         - showFig (True|False): Whether to show the figure or not (default: True)
         - Returns figure handle
-    '''
+    """
         
     from .. import sim
     from bokeh.plotting import figure, show
@@ -887,9 +889,9 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
 ## Plot interactive Rate PSD
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, maxFreq = 100, NFFT = 256, noverlap = 128, smooth = 0, overlay=True, ylim = None,
-                 popColors = {}, figSize=(1000, 400), saveData = None, saveFig = None, showFig = False):
-    ''' 
+def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, maxFreq = 100, NFFT = 256, noverlap = 128, smooth = 0, overlay=True, ylim = None, popColors = {}, figSize=(1000, 400), saveData = None, saveFig = None, showFig = False):
+    
+    """ 
     Plot firing rate power spectral density (PSD)
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
             Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
@@ -910,7 +912,7 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         - showFig (True|False): Whether to show the figure or not (default: True)
 
         - Returns figure handle
-    '''
+    """
     
     from .. import sim
     from bokeh.plotting import figure, show
@@ -1038,7 +1040,7 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', rerun=False, colors=None, ylim=None, axis='on', fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True, ylabel=None, linkAxes=False):
-    ''' 
+    """
     Plot recorded traces
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of cells for which to plot 
             the recorded traces (default: [])
@@ -1058,7 +1060,7 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
         - showFig (True|False): Whether to show the figure or not (default: True)
 
         - Returns figure handles
-    '''
+    """
     
     from .. import sim
     from bokeh.plotting import figure, show
@@ -1440,7 +1442,7 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotConn(includePre=['all'], includePost=['all'], feature='strength', orderBy='gid', figSize=(10,10), groupBy='pop', groupByIntervalPre=None, groupByIntervalPost=None, removeWeightNorm=False, graphType='matrix', synOrConn='syn', synMech=None, connsFile=None, tagsFile=None, clim=None, fontSize=12, saveData=None, saveFig=None, showFig=False): 
-    ''' 
+    """
     Plot network connectivity
         - includePre (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
         - includePost (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
@@ -1460,7 +1462,7 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
         - showFig (True|False): Whether to show the figure or not (default: True)
 
         - Returns figure handles
-    '''
+    """
     
     from netpyne import sim
     from netpyne.analysis import network

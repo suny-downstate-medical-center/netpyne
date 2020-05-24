@@ -307,9 +307,12 @@ def _disynapticBiasProb2(self, probMatrix, allRands, bias, prePreGids, postPreGi
 # Full connectivity
 # -----------------------------------------------------------------------------
 def fullConn (self, preCellsTags, postCellsTags, connParam):
+    """
+    Generates connections between all pre and post-syn cells
+    """
+
     from .. import sim
 
-    ''' Generates connections between all pre and post-syn cells '''
     if sim.cfg.verbose: print('Generating set of all-to-all connections (rule: %s) ...' % (connParam['label']))
 
     # get list of params that have a lambda function
@@ -352,9 +355,12 @@ def generateRandsPrePost(self, pre, post):
 # Probabilistic connectivity 
 # -----------------------------------------------------------------------------
 def probConn (self, preCellsTags, postCellsTags, connParam):
+    """
+    Generates connections between all pre and post-syn cells based on probability values
+    """
+
     from .. import sim
 
-    ''' Generates connections between all pre and post-syn cells based on probability values'''
     if sim.cfg.verbose: print('Generating set of probabilistic connections (rule: %s) ...' % (connParam['label']))
 
     allRands = self.generateRandsPrePost(preCellsTags, postCellsTags)
@@ -420,9 +426,12 @@ def randUniqueInt(self, r, N, vmin, vmax):
 # Convergent connectivity 
 # -----------------------------------------------------------------------------
 def convConn (self, preCellsTags, postCellsTags, connParam):
+    """
+    Generates connections between all pre and post-syn cells based on probability values
+    """
+
     from .. import sim
 
-    ''' Generates connections between all pre and post-syn cells based on probability values'''
     if sim.cfg.verbose: print('Generating set of convergent connections (rule: %s) ...' % (connParam['label']))
            
     # get list of params that have a lambda function
@@ -467,9 +476,12 @@ def convConn (self, preCellsTags, postCellsTags, connParam):
 # Divergent connectivity 
 # -----------------------------------------------------------------------------
 def divConn (self, preCellsTags, postCellsTags, connParam):
+    """
+    Generates connections between all pre and post-syn cells based on probability values
+    """
+
     from .. import sim
 
-    ''' Generates connections between all pre and post-syn cells based on probability values'''
     if sim.cfg.verbose: print('Generating set of divergent connections (rule: %s) ...' % (connParam['label']))
      
     # get list of params that have a lambda function
@@ -512,9 +524,12 @@ def divConn (self, preCellsTags, postCellsTags, connParam):
 # From list connectivity 
 # -----------------------------------------------------------------------------
 def fromListConn (self, preCellsTags, postCellsTags, connParam):
+    """
+    Generates connections between all pre and post-syn cells based list of relative cell ids
+    """
+
     from .. import sim
 
-    ''' Generates connections between all pre and post-syn cells based list of relative cell ids'''
     if sim.cfg.verbose: print('Generating set of connections from list (rule: %s) ...' % (connParam['label']))
 
     orderedPreGids = sorted(preCellsTags)

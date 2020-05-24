@@ -43,7 +43,9 @@ from ..specs import Dict
 # global variables for dipole calculation, should be node-independent 
 
 class CompartCell (Cell):
-    ''' Class for section-based neuron models '''
+    """
+    Class for section-based neuron models
+    """
     
     def __init__ (self, gid, tags, create=True, associateGid=True):
         super(CompartCell, self).__init__(gid, tags)
@@ -1250,8 +1252,11 @@ class CompartCell (Cell):
 
 
     def getSomaPos(self):
-        ''' Get soma position;
-        Used to calculate seg coords for LFP calc (one per population cell; assumes same morphology)'''
+        """
+        Get soma position;
+        Used to calculate seg coords for LFP calc (one per population cell; assumes same morphology)
+        """
+
         n3dsoma = 0
         r3dsoma = np.zeros(3)
         for sec in [sec for secName, sec in self.secs.items() if 'soma' in secName]:
@@ -1272,7 +1277,10 @@ class CompartCell (Cell):
         return r3dsoma
     
     def calcAbsSegCoords(self):
-        ''' Calculate absolute seg coords by translating the relative seg coords -- used for LFP calc'''
+        """
+        Calculate absolute seg coords by translating the relative seg coords -- used for LFP calc
+        """
+        
         from .. import sim
 
         p3dsoma = self.getSomaPos()

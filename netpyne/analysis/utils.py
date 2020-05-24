@@ -316,7 +316,10 @@ def invertDictMapping(d):
 ## Get subset of spkt, spkid based on a timeRange and cellGids list; ~10x speedup over list iterate
 # -------------------------------------------------------------------------------------------------------------------
 def getSpktSpkid(cellGids=[], timeRange=None, allCells=False):
-    '''return spike ids and times; with allCells=True just need to identify slice of time so can omit cellGids'''
+    """
+    return spike ids and times; with allCells=True just need to identify slice of time so can omit cellGids
+    """
+    
     from .. import sim
     import pandas as pd
     

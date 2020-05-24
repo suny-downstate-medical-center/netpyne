@@ -7,7 +7,9 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 def checkOutput(modelName, verbose=False):
-	''' Compare output of models with expected results'''
+	"""
+	Compare output of models with expected results
+	"""
 
 	from .. import  sim
 	if sim.rank == 0:

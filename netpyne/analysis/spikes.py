@@ -38,14 +38,14 @@ from .utils import colorList, exception, getCellsInclude, getSpktSpkid, _showFig
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def calculateRate (include = ['allCells', 'eachPop'], peakBin = 5, timeRange = None): 
-    ''' 
+    """
     Calculate avg and peak rate of different subsets of cells for specific time period
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
             Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
         - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
         - peakBin (int): Histogram bin size used to calculate peak firing rate; if None, peak rate not calculated (default: 5)
         - Returns list with rates
-    '''
+    """
 
     from .. import sim
 
@@ -111,9 +111,8 @@ def calculateRate (include = ['allCells', 'eachPop'], peakBin = 5, timeRange = N
 ## Plot avg and peak rates at different time periods 
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None, timeRangeLabels = None, colors = None, figSize = ((5,5)), saveData = None, 
-        ylim = None, saveFig = None, showFig = True):
-    ''' 
+def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None, timeRangeLabels = None, colors = None, figSize = ((5,5)), saveData = None, ylim = None, saveFig = None, showFig = True):
+    """
     Calculate avg and peak rate of different subsets of cells for specific time period
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
             Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
@@ -128,7 +127,8 @@ def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None,
         - showFig (True|False): Whether to show the figure or not (default: True)
 
         - Returns figs
-    '''
+    """
+
     from .. import sim
 
     if not colors: colors = colorList
@@ -218,9 +218,8 @@ def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None,
 ## Plot sync at different time periods 
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotSyncs (include =['allCells', 'eachPop'], timeRanges = None, timeRangeLabels = None, colors = None, figSize = ((5,5)), saveData = None, 
-        saveFig = None, showFig = True):
-    ''' 
+def plotSyncs (include =['allCells', 'eachPop'], timeRanges = None, timeRangeLabels = None, colors = None, figSize = ((5,5)), saveData = None. saveFig = None, showFig = True):
+    """
     Calculate avg and peak rate of different subsets of cells for specific time period
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
             Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
@@ -234,7 +233,8 @@ def plotSyncs (include =['allCells', 'eachPop'], timeRanges = None, timeRangeLab
         - showFig (True|False): Whether to show the figure or not (default: True)
 
         - Returns figs
-    '''
+    """
+
     from .. import sim
 
     if not colors: colors = colorList
@@ -1643,7 +1643,7 @@ def plotRatePSD(include=['eachPop', 'allCells'], timeRange=None, binSize=5, minF
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def plotRateSpectrogram(include=['allCells', 'eachPop'], timeRange=None, binSize=5, minFreq=1, maxFreq=100, stepFreq=1, NFFT=256, noverlap=128, smooth=0, overlay=True, ylim = None, transformMethod = 'morlet', norm=False, popColors = {}, lineWidth = 1.5, fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True): 
-    ''' 
+    """
     Plot firing rate spectrogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
             Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
@@ -1665,7 +1665,7 @@ def plotRateSpectrogram(include=['allCells', 'eachPop'], timeRange=None, binSize
         - showFig (True|False): Whether to show the figure or not (default: True)
 
         - Returns figure handle
-    '''
+    """
 
     from .. import sim
 

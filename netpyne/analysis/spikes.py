@@ -218,7 +218,7 @@ def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None,
 ## Plot sync at different time periods 
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotSyncs (include =['allCells', 'eachPop'], timeRanges = None, timeRangeLabels = None, colors = None, figSize = ((5,5)), saveData = None. saveFig = None, showFig = True):
+def plotSyncs(include=['allCells', 'eachPop'], timeRanges=None, timeRangeLabels=None, colors=None, figSize=((5,5)), saveData=None, saveFig = None, showFig=True):
     """
     Calculate avg and peak rate of different subsets of cells for specific time period
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 

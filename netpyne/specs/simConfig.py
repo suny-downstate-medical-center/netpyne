@@ -28,7 +28,7 @@ from .dicts import Dict, ODict
 # SIMULATION CONFIGURATION CLASS
 # ----------------------------------------------------------------------------
 
-class SimConfig (object):
+class SimConfig(object):
 
     def __init__(self, simConfigDict = None):
         # Simulation parameters

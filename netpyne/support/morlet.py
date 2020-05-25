@@ -18,11 +18,11 @@ import numpy as np
 import scipy.signal as sps
 import matplotlib.pyplot as plt
 
-def index2ms (idx, sampr): return 1e3*idx/sampr # index to millisecond; sampr=sampling rate in Hz
-def ms2index (ms, sampr): return int(sampr*ms/1e3) # millisecond to index; sampr=sampling rate in Hz
+def index2ms(idx, sampr): return 1e3*idx/sampr # index to millisecond; sampr=sampling rate in Hz
+def ms2index(ms, sampr): return int(sampr*ms/1e3) # millisecond to index; sampr=sampling rate in Hz
 
 # calculate the Morlet wavelet for central frequency f
-def Morlet (sampr, freq, width=7.0):
+def Morlet(sampr, freq, width=7.0):
   """ Morlet's wavelet for frequency f and time t
       Wavelet normalized so total energy is 1
       freq: specific frequency (Hz)
@@ -38,7 +38,7 @@ def Morlet (sampr, freq, width=7.0):
   return A * np.exp(-t**2. / (2. * st**2.)) * np.exp(1.j * 2. * np.pi * freq * t)
 
 # Return an array containing the energy as function of time for freq f
-def MorletVec (sig, sampr, freq, width, m=None, getphase=False):
+def MorletVec(sig, sampr, freq, width, m=None, getphase=False):
   """ Final units of y: signal units squared. For instance, a signal of Am would have Am^2
   The energy is calculated using Morlet's wavelets; also returns phase when getphase==True
   sig: input signal

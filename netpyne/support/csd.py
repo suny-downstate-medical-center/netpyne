@@ -11,7 +11,7 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
-def Vaknin (x):
+def Vaknin(x):
   """
   Vaknin correction for CSD analysis (Max Sherman [Brown U] implementation)
   Allows CSD to be performed on all N contacts instead of N-2 contacts
@@ -27,12 +27,12 @@ def Vaknin (x):
   x_new[1:-1, :] = x
   return x_new
 
-def removemean (x, ax=1):
+def removemean(x, ax=1):
   # remove the mean from each dimension of x
   mean = np.mean(x, axis=ax, keepdims=True)
   x -= mean
 
-def getCSD (lfps,sampr,minf=0.05,maxf=300,norm=True,vaknin=False,spacing=1.0):
+def getCSD(lfps,sampr,minf=0.05,maxf=300,norm=True,vaknin=False,spacing=1.0):
   """
    get current source density approximation using set of local field potentials with equidistant spacing
    first performs a lowpass filter

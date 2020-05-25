@@ -1779,7 +1779,7 @@ def plotRateSpectrogram(include=['allCells', 'eachPop'], timeRange=None, binSize
 # Calculate and print avg pop rates
 #------------------------------------------------------------------------------
 @exception
-def popAvgRates (tranges = None, show = True):
+def popAvgRates(tranges = None, show = True):
     from .. import sim
 
     avgRates = Dict()

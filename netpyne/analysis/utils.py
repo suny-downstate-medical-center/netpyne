@@ -287,7 +287,7 @@ def getCellsIncludeTags(include, tags, tagsFormat=None):
 # -------------------------------------------------------------------------------------------------------------------
 ## Synchrony measure
 # -------------------------------------------------------------------------------------------------------------------
-def syncMeasure ():
+def syncMeasure():
     from .. import sim
 
     t0=-1 
@@ -319,7 +319,7 @@ def getSpktSpkid(cellGids=[], timeRange=None, allCells=False):
     """
     return spike ids and times; with allCells=True just need to identify slice of time so can omit cellGids
     """
-    
+
     from .. import sim
     import pandas as pd
     

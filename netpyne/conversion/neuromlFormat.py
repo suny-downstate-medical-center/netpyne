@@ -45,7 +45,7 @@ from .. import specs
 ###############################################################################
 ### Get connection centric network representation as used in NeuroML2
 ###############################################################################  
-def _convertNetworkRepresentation (net, gids_vs_pop_indices):
+def _convertNetworkRepresentation(net, gids_vs_pop_indices):
 
     from .. import sim
 
@@ -86,7 +86,7 @@ def _convertNetworkRepresentation (net, gids_vs_pop_indices):
 ###############################################################################
 ### Get stimulations in representation as used in NeuroML2
 ###############################################################################  
-def _convertStimulationRepresentation (net,gids_vs_pop_indices, nml_doc):
+def _convertStimulationRepresentation(net,gids_vs_pop_indices, nml_doc):
 
     stims = {}
 
@@ -140,7 +140,7 @@ if neuromlExists:
     ###############################################################################
     ### Export synapses to NeuroML2
     ############################################################################### 
-    def _export_synapses (net, nml_doc):
+    def _export_synapses(net, nml_doc):
 
         from .. import sim
 
@@ -220,7 +220,7 @@ if neuromlExists:
     ###############################################################################
     ### Export generated structure of network to NeuroML 2 
     ###############################################################################         
-    def exportNeuroML2 (reference, connections=True, stimulations=True, format='xml', default_cell_radius=5):
+    def exportNeuroML2(reference, connections=True, stimulations=True, format='xml', default_cell_radius=5):
 
         from .. import sim
 

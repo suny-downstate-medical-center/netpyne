@@ -24,7 +24,7 @@ from . import utils
 #------------------------------------------------------------------------------
 # Commands required just before running simulation
 #------------------------------------------------------------------------------
-def preRun ():
+def preRun():
     from .. import sim
 
 
@@ -100,7 +100,7 @@ def preRun ():
 #------------------------------------------------------------------------------
 # Run Simulation
 #------------------------------------------------------------------------------
-def runSim ():
+def runSim():
     from .. import sim
 
     sim.pc.barrier()
@@ -129,7 +129,7 @@ def runSim ():
 #------------------------------------------------------------------------------
 # Run Simulation
 #------------------------------------------------------------------------------
-def runSimWithIntervalFunc (interval, func):
+def runSimWithIntervalFunc(interval, func):
     from .. import sim
     sim.pc.barrier()
     sim.timing('start', 'runTime')
@@ -176,7 +176,7 @@ def calculateLFP():
 #------------------------------------------------------------------------------
 # Calculate and print load balance
 #------------------------------------------------------------------------------
-def loadBalance (printNodeTimes = False):
+def loadBalance(printNodeTimes = False):
     from .. import sim
 
     computation_time = sim.pc.step_time()

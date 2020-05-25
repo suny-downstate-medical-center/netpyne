@@ -81,7 +81,7 @@ def createFolder(folder):
 # -------------------------------------------------------------------------------
 # function to convert tuples to strings (avoids erro when saving/loading)
 # -------------------------------------------------------------------------------
-def tupleToStr (obj):
+def tupleToStr(obj):
     #print '\nbefore:', obj
     if type(obj) == list:
         for item in obj:

@@ -30,7 +30,7 @@ from numpy import array, sin, cos, tan, exp, sqrt, mean, inf, dstack, unravel_in
 # -----------------------------------------------------------------------------
 # Connect Cells
 # -----------------------------------------------------------------------------
-def connectCells (self):
+def connectCells(self):
     from .. import sim
 
     # Instantiate network connections based on the connectivity rules defined in params
@@ -169,7 +169,7 @@ def _findPrePostCellsCondition(self, allCellTags, preConds, postConds):
 # -----------------------------------------------------------------------------
 # Convert connection param string to function
 # -----------------------------------------------------------------------------
-def _connStrToFunc (self, preCellsTags, postCellsTags, connParam):
+def _connStrToFunc(self, preCellsTags, postCellsTags, connParam):
     # list of params that have a function passed in as a string
     paramsStrFunc = [param for param in self.connStringFuncParams+['probability', 'convergence', 'divergence'] if param in connParam and isinstance(connParam[param], basestring)]  
 
@@ -306,7 +306,7 @@ def _disynapticBiasProb2(self, probMatrix, allRands, bias, prePreGids, postPreGi
 # -----------------------------------------------------------------------------
 # Full connectivity
 # -----------------------------------------------------------------------------
-def fullConn (self, preCellsTags, postCellsTags, connParam):
+def fullConn(self, preCellsTags, postCellsTags, connParam):
     """
     Generates connections between all pre and post-syn cells
     """
@@ -354,7 +354,7 @@ def generateRandsPrePost(self, pre, post):
 # -----------------------------------------------------------------------------
 # Probabilistic connectivity 
 # -----------------------------------------------------------------------------
-def probConn (self, preCellsTags, postCellsTags, connParam):
+def probConn(self, preCellsTags, postCellsTags, connParam):
     """
     probConn
     Generates connections between all pre and post-syn cells based on probability values
@@ -477,7 +477,7 @@ def convConn(self, preCellsTags, postCellsTags, connParam):
 # -----------------------------------------------------------------------------
 # Divergent connectivity 
 # -----------------------------------------------------------------------------
-def divConn (self, preCellsTags, postCellsTags, connParam):
+def divConn(self, preCellsTags, postCellsTags, connParam):
     """
     divConn
     Generates connections between all pre and post-syn cells based on probability values
@@ -526,7 +526,7 @@ def divConn (self, preCellsTags, postCellsTags, connParam):
 # -----------------------------------------------------------------------------
 # From list connectivity 
 # -----------------------------------------------------------------------------
-def fromListConn (self, preCellsTags, postCellsTags, connParam):
+def fromListConn(self, preCellsTags, postCellsTags, connParam):
     """
     Generates connections between all pre and post-syn cells based list of relative cell ids
     """
@@ -570,7 +570,7 @@ def fromListConn (self, preCellsTags, postCellsTags, connParam):
 # -----------------------------------------------------------------------------
 # Set parameters and create connection
 # -----------------------------------------------------------------------------
-def _addCellConn (self, connParam, preCellGid, postCellGid):
+def _addCellConn(self, connParam, preCellGid, postCellGid):
     from .. import sim
 
     # set final param values

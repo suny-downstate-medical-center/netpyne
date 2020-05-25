@@ -18,14 +18,6 @@ standard_library.install_aliases()
 from .filter import lowpass,bandpass
 from .utils import exception
 
-###### TESTING ######
-@exception
-def getCSD (): #lfps=True,sampr=0.1,spacing_um=100.0,minf=0.05,maxf=300,norm=True,vaknin=False):
-  print('IT WORKED')
-#####################
-
-
-
 
 # #### THESE FUNCTIONS ARE FROM samn --> https://github.com/NathanKlineInstitute/OEvent/blob/master/csd.py
 # #### NOT YET ADAPTED TO NETPYNE
@@ -66,41 +58,53 @@ def getCSD (): #lfps=True,sampr=0.1,spacing_um=100.0,minf=0.05,maxf=300,norm=Tru
 #   print(np.mean(x, axis=ax, keepdims=True))
 
 
-# # get CSD - first do a lowpass filter. lfps is a list or numpy array of LFPs arranged spatially by column
-# # spacing_um is electrode's contact spacing in units of micron
-# # returns CSD in units of mV/mm**2 (assuming lfps are in mV)
+# get CSD - first do a lowpass filter. lfps is a list or numpy array of LFPs arranged spatially by column
+# spacing_um is electrode's contact spacing in units of micron
+# returns CSD in units of mV/mm**2 (assuming lfps are in mV)
 
-# #@exception
-# def getCSD (lfps=True,sampr=0.1,spacing_um=100.0,minf=0.05,maxf=300,norm=True,vaknin=False):
-#   # put sampr = 0.1 to see if this will help me use getCSD in a file
-#   # put lfps = True (added the =True) to 
-#   from .. import sim 
+#@exception
+def getCSD (lfps=True,sampr=0.1,spacing_um=100.0,minf=0.05,maxf=300,norm=True,vaknin=False):
+  # put sampr = 0.1 to see if this will help me use getCSD in a file
+  # put lfps = True (added the =True) to 
+  from .. import sim 
 
-#   if lfps is True: 
-#     # from netpyne/analysis/lfp.py, line 200 
-#     lfps = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
-#     ### STOPPING HERE TO TEST FUNCTIONALITY
+  if lfps is True: 
+    # from netpyne/analysis/lfp.py, line 200 
+    lfp_data = np.array(sim.allSimData['LFP']) #np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
 
-#   datband = getbandpass(lfps,sampr,minf,maxf)
-#   #datband = getlowpass(lfps,sampr,maxf)
-#   if datband.shape[0] > datband.shape[1]: # take CSD along smaller dimension
-#     ax = 1
-#   else:
-#     ax = 0
-#   # can change to run Vaknin on bandpass filtered LFPs before calculating CSD, that
-#   # way would have same number of channels in CSD and LFP (but not critical, and would take more RAM);
-#   # also might want to subtract mean of each channel before calculating the diff(diff) ?
-#   #
-#   if vaknin: datband = Vaknin(datband)
-#   if norm: removemean(datband,ax=ax)
-#   # when drawing CSD make sure that negative values (depolarizing intracellular current) drawn in red,
-#   # and positive values (hyperpolarizing intracellular current) drawn in blue
-#   spacing_mm = spacing_um/1000 # spacing in mm
-#   CSD = -np.diff(datband,n=2,axis=ax)/spacing_mm**2 # now each column (or row) is an electrode -- CSD along electrodes
-#   """
-#   CSD = Vaknin(CSD)
-#   """  
-#   return CSD
+  CSD_data = lfp_data
+  sim.allSimData['CSD'] = CSD_data ## Add to allSimData for access outside of this function or script 
+  return CSD_data
+
+
+### COMMENTING OUT FOR TESTING ### 
+  # datband = getbandpass(lfp_data,sampr,minf,maxf)
+  # #datband = getlowpass(lfps,sampr,maxf)
+  # if datband.shape[0] > datband.shape[1]: # take CSD along smaller dimension
+  #   ax = 1
+  # else:
+  #   ax = 0
+  
+  # # can change to run Vaknin on bandpass filtered LFPs before calculating CSD, that
+  # # way would have same number of channels in CSD and LFP (but not critical, and would take more RAM);
+  # # also might want to subtract mean of each channel before calculating the diff(diff) ?
+  # #
+  
+  # if vaknin: datband = Vaknin(datband)
+  # if norm: removemean(datband,ax=ax)
+  
+  # # when drawing CSD make sure that negative values (depolarizing intracellular current) drawn in red,
+  # # and positive values (hyperpolarizing intracellular current) drawn in blue
+  
+  # spacing_mm = spacing_um/1000 # spacing in mm
+  # CSD = -np.diff(datband,n=2,axis=ax)/spacing_mm**2 # now each column (or row) is an electrode -- CSD along electrodes
+ 
+  # """
+  # CSD = Vaknin(CSD)
+  # """  
+  # return CSD
+### END OF TESTING LINES ### 
+
 
 # # get bipolar waveforms - first do a lowpass filter. lfps is a list or numpy array of LFPs arranged spatially by column
 # # spacing_um is electrode's contact spacing in units of micron

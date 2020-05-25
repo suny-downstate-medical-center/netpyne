@@ -356,6 +356,7 @@ def generateRandsPrePost(self, pre, post):
 # -----------------------------------------------------------------------------
 def probConn (self, preCellsTags, postCellsTags, connParam):
     """
+    probConn
     Generates connections between all pre and post-syn cells based on probability values
     """
 
@@ -425,8 +426,9 @@ def randUniqueInt(self, r, N, vmin, vmax):
 # -----------------------------------------------------------------------------
 # Convergent connectivity 
 # -----------------------------------------------------------------------------
-def convConn (self, preCellsTags, postCellsTags, connParam):
+def convConn(self, preCellsTags, postCellsTags, connParam):
     """
+    convConn
     Generates connections between all pre and post-syn cells based on probability values
     """
 
@@ -477,6 +479,7 @@ def convConn (self, preCellsTags, postCellsTags, connParam):
 # -----------------------------------------------------------------------------
 def divConn (self, preCellsTags, postCellsTags, connParam):
     """
+    divConn
     Generates connections between all pre and post-syn cells based on probability values
     """
 

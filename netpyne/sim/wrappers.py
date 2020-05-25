@@ -18,6 +18,7 @@ from future import standard_library
 standard_library.install_aliases()
 def create (netParams=None, simConfig=None, output=False):
     """
+    create
     Sequence of commands to create network
     """
 
@@ -42,6 +43,7 @@ def create (netParams=None, simConfig=None, output=False):
 #------------------------------------------------------------------------------
 def simulate ():
     """
+    simulate
     Sequence of commands to simulate network
     """
 
@@ -54,6 +56,7 @@ def simulate ():
 #------------------------------------------------------------------------------
 def intervalSimulate (interval):
     """
+    intervalSimulate
     Sequence of commands to simulate network
     """
 
@@ -67,6 +70,7 @@ def intervalSimulate (interval):
 #------------------------------------------------------------------------------
 def analyze ():
     """
+    analyze
     Sequence of commands to simulate network
     """
 
@@ -80,6 +84,7 @@ def analyze ():
 #------------------------------------------------------------------------------
 def createSimulate (netParams=None, simConfig=None, output=False):
     """
+    createSimulate
     Sequence of commands create, simulate and analyse network
     """
 
@@ -95,6 +100,7 @@ def createSimulate (netParams=None, simConfig=None, output=False):
 #------------------------------------------------------------------------------
 def createSimulateAnalyze (netParams=None, simConfig=None, output=False):
     """
+    createSimulateAnalyze
     Sequence of commands create, simulate and analyse network
     """
     
@@ -109,6 +115,7 @@ def createSimulateAnalyze (netParams=None, simConfig=None, output=False):
 #------------------------------------------------------------------------------
 def intervalCreateSimulateAnalyze (netParams=None, simConfig=None, output=False, interval=None):
     """
+    intervalCreateSimulateAnalyze
     Sequence of commands create, simulate and analyse network
     """
 
@@ -136,6 +143,7 @@ def intervalCreateSimulateAnalyze (netParams=None, simConfig=None, output=False,
 #------------------------------------------------------------------------------
 def load (filename, simConfig=None, output=False, instantiate=True, createNEURONObj=True):
     """
+    load
     Sequence of commands load, simulate and analyse network
     """
 
@@ -187,9 +195,10 @@ def loadSimulateAnalyze (filename, simConfig=None, output=False):
 #------------------------------------------------------------------------------
 def createExportNeuroML2 (netParams=None, simConfig=None, reference=None, connections=True, stimulations=True, output=False, format='xml'):
     """
+    createExportNeuroML2
     Sequence of commands to create and export network to NeuroML2
     """
-    
+
     from .. import sim
     import __main__ as top
     if not netParams: netParams = top.netParams

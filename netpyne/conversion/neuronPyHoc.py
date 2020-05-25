@@ -161,6 +161,7 @@ def _delete_module(modname):
 
 def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
     """
+    importCell
     Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)
     """
     
@@ -226,6 +227,7 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
 
 def importCellsFromNet (netParams, fileName, labelList, condsList, cellNamesList, importSynMechs):
     """
+    importCellsFromNet
     Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)
     """
     

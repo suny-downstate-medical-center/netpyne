@@ -342,6 +342,7 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
 @exception
 def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False):
     """
+    iplotDipole
     expData: experimental data; a dict with ['x'] and ['y'] 1-d vectors (either lists or np.arrays) of same length
     showFig: show output figure in web browser (default: None)
     """
@@ -449,6 +450,7 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False):
 @exception
 def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1, maxFreq = 80, stepFreq = 1, norm = True, showFig=False):
     """
+    iplotDipoleSpectrogram
     expData: experimental data; a dict with ['x'] and ['y'] 1-d vectors (either lists or np.arrays) of same length
     showFig: show output figure in web browser (default: None)
     """
@@ -598,6 +600,7 @@ def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minF
 @exception
 def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1, maxFreq = 80, stepFreq = 1, norm = True, showFig=False):
     """
+    iplotDipolePSD
     expData: experimental data; a dict with ['x'] and ['y'] 1-d vectors (either lists or np.arrays) of same length
     showFig: show output figure in web browser (default: None)
     """

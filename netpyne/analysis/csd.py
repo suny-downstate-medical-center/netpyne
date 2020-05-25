@@ -20,7 +20,6 @@ from .utils import exception, _saveFigData, _showFigure
 
 
 # #### THESE FUNCTIONS ARE FROM samn --> https://github.com/NathanKlineInstitute/OEvent/blob/master/csd.py
-# #### NOT YET ADAPTED TO NETPYNE
 
 
 # # lowpass filter the items in lfps. lfps is a list or numpy array of LFPs arranged spatially by column
@@ -63,15 +62,46 @@ from .utils import exception, _saveFigData, _showFigure
 # returns CSD in units of mV/mm**2 (assuming lfps are in mV)
 
 #@exception
-def getCSD (sampr=0.1,spacing_um=100.0,minf=0.05,maxf=300,norm=True,vaknin=False):
+def getCSD (sampr=None,spacing_um=100.0,minf=0.05,maxf=300,norm=True,vaknin=False,timeRange=None):
+  """ Extracts CSD values from simulated LFP data 
+
+      Parameters
+      ----------
+      sampr : float
+        Sampling rate for data recording. 
+        **Default:** 
+        ``None`` uses cfg.recordStep
+
+
+      timeRange : list [start, stop]
+        Time range to plot.
+        **Default:** 
+        ``None`` plots entire time range
+
+  """ 
   from .. import sim 
-  sim_data = sim.allSimData.keys()
-  
-  if 'LFP' in sim_data:
-    lfp_data = np.array(sim.allSimData['LFP']) # from netpyne/analysis/lfp.py, line 200  #np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+  ## SET DEFAULT ARGUMENT / PARAMETER VALUES ##
+  if timeRange is None:                 # Specify the time range of relevant LFP data 
+    timeRange = [0,sim.cfg.duration]    # This makes the timeRange equal to the entire sim duration
+  if sampr is None:
+    sampr = sim.cfg.recordStep          # Sampling rate of data recording during the simulation 
+
+  ## Check if LFP was recorded during the simulation 
+  sim_data_categories = sim.allSimData.keys()
+  ## GET LFP DATA 
+  if 'LFP' in sim_data_categories:
+    lfp_data = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:] # from lfp.py, line 200
+    
+
+    spacing_mm = spacing_um/1000 # spacing in mm
+
     CSD_data = lfp_data
+    
+
+
     sim.allSimData['CSD'] = CSD_data ## Add to allSimData for access outside of this function or script 
 
+  
   elif 'LFP' not in sim_data:
     print('!! WARNING: NO LFP DATA !! Need to re-run simulation with cfg.recordLFP enabled')
     CSD_data = []
@@ -109,12 +139,14 @@ def getCSD (sampr=0.1,spacing_um=100.0,minf=0.05,maxf=300,norm=True,vaknin=False
 ### END OF TESTING LINES ### 
 
 
-### PLOTTING CSD #### 
-def plotCSD(csd=True):
-  print('Plotting CSD... ') # NO PLOT YET 
 
-  if csd == True:
-    #This means LFPs have already been gotten by getCSD()
+
+### PLOTTING CSD #### 
+def plotCSD():
+  print('Plotting CSD... ') # NO PLOT YET 
+  sim_data = sim.allSimData.keys()
+
+  if 'CSD' in sim_data:
     print('CSD values have already been extracted from LFP by getCSD()')
   else:
     sim.analysis.getCSD() # WHAT ABOUT ARGS? 

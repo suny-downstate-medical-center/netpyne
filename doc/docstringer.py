@@ -1,10 +1,19 @@
+"""
+docstringer
+
+Requires docstring-parser
+>>> pip install docstring-parser
+"""
+
 import importlib
 import inspect
 import sys
 import os
+import shutil
+from docstring_parser import parse
 
 # Use the local files rather than those from any existing NetPyNE installation
-sys.path.insert(0, os.path.dirname(os.getcwd()) )
+sys.path.insert(0, os.path.dirname(os.getcwd()))
 
 
 modules_list = [
@@ -511,6 +520,14 @@ def find_all(main, sub):
 count = 0
 made_orig_dir = False
 
+# Copy the original package directory to save a copy
+package_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+netpyne_dir = os.path.join(package_dir, 'netpyne')
+netpyne_orig = os.path.join(package_dir, 'netpyne_orig')
+if not os.path.isdir(netpyne_orig):
+    shutil.copytree(netpyne_dir, netpyne_orig)
+
+
 for module in modules_list:
 
     imp_mod = imp_item = imp_file = opts = old_docs = None
@@ -558,7 +575,7 @@ for module in modules_list:
             new_docs = new_docs + '    ' + param_name + ' : ' + param_default_type + '\n'
             new_docs = new_docs + '        Description of ' + param_name + '\n'
             if param_default == 'Required':
-                new_docs = new_docs + '        **Required**\n'
+                new_docs = new_docs + '        **(required)**\n'
             else:
                 new_docs = new_docs + '        **Default**: ``' + param_default + '``\n'
                 new_docs = new_docs + '        **Options**: \n '
@@ -619,20 +636,21 @@ print('  docstrings created:', count)
 
 
 '''
-Need to swap new docstrings into files
-Need to write in docstrings where there were none
-
-Copy original files into new folder at beginning
 Look into auto-getting all functions/classes
+
+Need to document class methods
+
 Parse existing docstrings if possible?
+
 Put parsed info into new docstrings
 
+Need to create GitHub issues with original docstrings
 
+Go through Sphinx warnings
 
-Then generate new documentation and check it out
-Need to check on how Classes are handled...
-Need to create GitHub issues
-Need to print original docstring in GitHub issue 
+Fix See Also parentheses
+
+Make docstringer into a package?
 '''
 
 

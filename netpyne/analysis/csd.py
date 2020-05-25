@@ -63,15 +63,20 @@ from .utils import exception, _saveFigData, _showFigure
 # returns CSD in units of mV/mm**2 (assuming lfps are in mV)
 
 #@exception
-def getCSD (lfps=True,sampr=0.1,spacing_um=100.0,minf=0.05,maxf=300,norm=True,vaknin=False):
+def getCSD (sampr=0.1,spacing_um=100.0,minf=0.05,maxf=300,norm=True,vaknin=False):
   from .. import sim 
+  sim_data = sim.allSimData.keys()
+  
+  if 'LFP' in sim_data:
+    lfp_data = np.array(sim.allSimData['LFP']) # from netpyne/analysis/lfp.py, line 200  #np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+    CSD_data = lfp_data
+    sim.allSimData['CSD'] = CSD_data ## Add to allSimData for access outside of this function or script 
 
-  if lfps is True: 
-    # from netpyne/analysis/lfp.py, line 200 
-    lfp_data = np.array(sim.allSimData['LFP']) #np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+  elif 'LFP' not in sim_data:
+    print('!! WARNING: NO LFP DATA !! Need to re-run simulation with cfg.recordLFP enabled')
+    CSD_data = []
 
-  CSD_data = lfp_data
-  sim.allSimData['CSD'] = CSD_data ## Add to allSimData for access outside of this function or script 
+
   return CSD_data
 
 
@@ -105,8 +110,16 @@ def getCSD (lfps=True,sampr=0.1,spacing_um=100.0,minf=0.05,maxf=300,norm=True,va
 
 
 ### PLOTTING CSD #### 
-def plotCSD():
+def plotCSD(csd=True):
   print('Plotting CSD... ') # NO PLOT YET 
+
+  if csd == True:
+    #This means LFPs have already been gotten by getCSD()
+    print('CSD values have already been extracted from LFP by getCSD()')
+  else:
+    sim.analysis.getCSD() # WHAT ABOUT ARGS? 
+
+
 
 
 # # get bipolar waveforms - first do a lowpass filter. lfps is a list or numpy array of LFPs arranged spatially by column

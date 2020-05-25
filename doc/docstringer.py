@@ -575,7 +575,7 @@ for module in modules_list:
         new_docs = new_docs + '    ' + module + ' :\n\n'
 
         new_docs = new_docs + '    Examples\n    ========\n'
-        new_docs = new_docs + '    >>> import netpyne, netpyne.examples.example'
+        new_docs = new_docs + '    >>> import netpyne, netpyne.examples.example\n'
         new_docs = new_docs + '    >>> ' + module + '.' + item + '()\n'
 
 

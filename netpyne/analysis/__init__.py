@@ -69,4 +69,4 @@ from .interactive import iplotDipole, iplotDipoleSpectrogram,  iplotDipolePSD, i
 # -------------------------------------------------------------------------------------------------------------------
 # Import CSD-related functions
 # -------------------------------------------------------------------------------------------------------------------
-from .csd import getCSD
+from .csd import getCSD, plotCSD

@@ -16,7 +16,7 @@ standard_library.install_aliases()
 
 ## LOCAL APPLICATION IMPORTS 
 from .filter import lowpass,bandpass
-from .utils import exception
+from .utils import exception, _saveFigData, _showFigure
 
 
 # #### THESE FUNCTIONS ARE FROM samn --> https://github.com/NathanKlineInstitute/OEvent/blob/master/csd.py
@@ -64,8 +64,6 @@ from .utils import exception
 
 #@exception
 def getCSD (lfps=True,sampr=0.1,spacing_um=100.0,minf=0.05,maxf=300,norm=True,vaknin=False):
-  # put sampr = 0.1 to see if this will help me use getCSD in a file
-  # put lfps = True (added the =True) to 
   from .. import sim 
 
   if lfps is True: 
@@ -104,6 +102,11 @@ def getCSD (lfps=True,sampr=0.1,spacing_um=100.0,minf=0.05,maxf=300,norm=True,va
   # """  
   # return CSD
 ### END OF TESTING LINES ### 
+
+
+### PLOTTING CSD #### 
+def plotCSD():
+  print('Plotting CSD... ') # NO PLOT YET 
 
 
 # # get bipolar waveforms - first do a lowpass filter. lfps is a list or numpy array of LFPs arranged spatially by column

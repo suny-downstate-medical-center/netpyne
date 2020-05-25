@@ -36,7 +36,7 @@ def getbandpass (lfps,sampr,minf=0.05,maxf=300):   # lfps should be a list or nu
 def Vaknin (x): ## Allows CSD to be performed on all N contacts instead of N-2 contacts (See Vaknin et al (1988) for more details)
   # Preallocate array with 2 more rows than input array
   x_new = np.zeros((x.shape[0]+2, x.shape[1]))
-  # print x_new.shape
+  # print(x_new.shape)
   # Duplicate first and last row of x into first and last row of x_new
   x_new[0, :] = x[0, :]
   x_new[-1, :] = x[-1, :]
@@ -49,7 +49,7 @@ def Vaknin (x): ## Allows CSD to be performed on all N contacts instead of N-2 c
 def removemean (x, ax=1):
   mean = np.mean(x, axis=ax, keepdims=True)
   x -= mean
-  print(np.mean(x, axis=ax, keepdims=True))
+  #print(np.mean(x, axis=ax, keepdims=True))
 
 
 

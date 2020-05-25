@@ -95,5 +95,5 @@ class MorletSpec():
                 self.TFR[j, :],self.PHS[j, :] = MorletVec(sig, self.sampr, freq, self.width, getphase=True)
         else:
             for j,freq in enumerate(self.f):
-            self.TFR[j, :] = MorletVec(sig, self.sampr, freq, self.width, getphase=False)
+                self.TFR[j, :] = MorletVec(sig, self.sampr, freq, self.width, getphase=False)
 

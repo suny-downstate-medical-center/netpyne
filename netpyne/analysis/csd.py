@@ -62,13 +62,13 @@ from .utils import exception, _saveFigData, _showFigure
 # returns CSD in units of mV/mm**2 (assuming lfps are in mV)
 
 #@exception
-def getCSD (sampr=None,spacing_um=100.0,minf=0.05,maxf=300,norm=True,vaknin=False,timeRange=None):
+def getCSD (sampr=None,timeRange=None,spacing_um=100.0,minf=0.05,maxf=300,norm=True,vaknin=False):
   """ Extracts CSD values from simulated LFP data 
 
       Parameters
       ----------
       sampr : float
-        Sampling rate for data recording. 
+        Sampling rate for data recording.
         **Default:** 
         ``None`` uses cfg.recordStep
 
@@ -78,7 +78,29 @@ def getCSD (sampr=None,spacing_um=100.0,minf=0.05,maxf=300,norm=True,vaknin=Fals
         **Default:** 
         ``None`` plots entire time range
 
-  """ 
+      spacing_um : float
+        Electrode's contact spacing in units of microns <-- VERTICALLY, I ASSUME?
+        **Default:** ``100.0``
+
+      minf : float
+        Minimum frequency for bandpass filter (Hz).
+        **Default:** ``0.05`` 
+
+      maxf : float
+        Maximum frequency cutoff for bandpass filter (Hz).
+        **Default:** ``300``
+
+      norm : bool
+        Needs documentation.
+        **Default:**
+        ``True``
+
+      vaknin : bool
+        Needs documentation.
+        **Default**
+        ``False``
+  """
+
   from .. import sim 
   ## SET DEFAULT ARGUMENT / PARAMETER VALUES ##
   if timeRange is None:                 # Specify the time range of relevant LFP data 
@@ -88,10 +110,10 @@ def getCSD (sampr=None,spacing_um=100.0,minf=0.05,maxf=300,norm=True,vaknin=Fals
 
   ## Check if LFP was recorded during the simulation 
   sim_data_categories = sim.allSimData.keys()
-  ## GET LFP DATA 
   if 'LFP' in sim_data_categories:
-    lfp_data = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:] # from lfp.py, line 200
-    
+    ## Get LFP data
+    lfp_data = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:] # from lfp.py, line 200; array splicing
+
 
     spacing_mm = spacing_um/1000 # spacing in mm
 

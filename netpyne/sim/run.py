@@ -90,8 +90,8 @@ def preRun ():
     # handler for recording LFP
     if sim.cfg.recordLFP:
         def recordLFPHandler():
-            sim.cvode.event(h.t + int(sim.cfg.recordStep), sim.calculateLFP)
-            sim.cvode.event(h.t + int(sim.cfg.recordStep), recordLFPHandler)
+            sim.cvode.event(h.t + float(sim.cfg.recordStep), sim.calculateLFP)
+            sim.cvode.event(h.t + float(sim.cfg.recordStep), recordLFPHandler)
 
         sim.recordLFPHandler = recordLFPHandler
         sim.fih.append(h.FInitializeHandler(0, sim.recordLFPHandler))  # initialize imemb
@@ -153,8 +153,8 @@ def runSimWithIntervalFunc (interval, func):
 # Calculate LFP (fucntion called at every time step)      
 #------------------------------------------------------------------------------
 def calculateLFP():
-    from .. import sim    
-
+    from .. import sim
+    
     # Set pointers to i_membrane in each cell (required form LFP calc )        
     for cell in sim.net.compartCells:
         cell.setImembPtr()
@@ -170,7 +170,9 @@ def calculateLFP():
         if sim.cfg.saveLFPCells: 
             sim.simData['LFPCells'][gid][saveStep - 1,:] = ecp  # contribution of individual cells (stored optionally)
         
-        sim.simData['LFP'][saveStep-1, :] += ecp  # sum of all cells
+        sim.simData['LFP'][saveStep - 1,:] += ecp  # sum of all cells
+        
+    
 
     
 #------------------------------------------------------------------------------

@@ -20,7 +20,7 @@ from ..specs import Dict, ODict
 #------------------------------------------------------------------------------
 # Gather data from nodes
 #------------------------------------------------------------------------------
-def gatherData (gatherLFP = True):
+def gatherData(gatherLFP = True):
     from .. import sim
         
     sim.timing('start', 'gatherTime')
@@ -260,7 +260,7 @@ def gatherData (gatherLFP = True):
 #------------------------------------------------------------------------------
 #  Gathers simData from filess
 #------------------------------------------------------------------------------
-def fileGather (gatherLFP = True):
+def fileGather(gatherLFP = True):
     import os, pickle
     from .. import sim
     
@@ -445,7 +445,7 @@ def fileGather (gatherLFP = True):
 #------------------------------------------------------------------------------
 # Gather tags from cells
 #------------------------------------------------------------------------------
-def _gatherAllCellTags ():
+def _gatherAllCellTags():
     from .. import sim
 
     data = [{cell.gid: cell.tags for cell in sim.net.cells}]*sim.nhosts  # send cells data to other nodes
@@ -471,7 +471,7 @@ def _gatherAllCellTags ():
 #------------------------------------------------------------------------------
 # Gather tags from cells
 #------------------------------------------------------------------------------
-def _gatherAllCellConnPreGids ():
+def _gatherAllCellConnPreGids():
     from .. import sim
 
     data = [{cell.gid: [conn['preGid'] for conn in cell.conns] for cell in sim.net.cells}]*sim.nhosts  # send cells data to other nodes
@@ -497,7 +497,7 @@ def _gatherAllCellConnPreGids ():
 #------------------------------------------------------------------------------
 # Gather data from nodes
 #------------------------------------------------------------------------------
-def _gatherCells ():
+def _gatherCells():
     from .. import sim
 
     ## Pack data from all hosts

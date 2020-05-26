@@ -30,7 +30,7 @@ from .. import conversion
 # PopParams class
 # ----------------------------------------------------------------------------
 
-class PopParams (ODict):
+class PopParams(ODict):
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -53,7 +53,7 @@ class PopParams (ODict):
 # CellParams class
 # ----------------------------------------------------------------------------
     
-class CellParams (ODict):
+class CellParams(ODict):
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -83,7 +83,7 @@ class CellParams (ODict):
 # ConnParams class
 # ----------------------------------------------------------------------------
 
-class ConnParams (ODict):
+class ConnParams(ODict):
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -102,7 +102,7 @@ class ConnParams (ODict):
 # SynMechParams class
 # ----------------------------------------------------------------------------
 
-class SynMechParams (ODict):
+class SynMechParams(ODict):
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -121,7 +121,7 @@ class SynMechParams (ODict):
 # SubConnParams class
 # ----------------------------------------------------------------------------
 
-class SubConnParams (ODict):
+class SubConnParams(ODict):
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -140,7 +140,7 @@ class SubConnParams (ODict):
 # StimSourceParams class
 # ----------------------------------------------------------------------------
 
-class StimSourceParams (ODict):
+class StimSourceParams(ODict):
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -159,7 +159,7 @@ class StimSourceParams (ODict):
 # StimTargetParams class
 # ----------------------------------------------------------------------------
 
-class StimTargetParams (ODict):
+class StimTargetParams(ODict):
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -178,7 +178,7 @@ class StimTargetParams (ODict):
 # RxD class
 # ----------------------------------------------------------------------------
 
-class RxDParams (ODict):
+class RxDParams(ODict):
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -196,7 +196,7 @@ class RxDParams (ODict):
 # NETWORK PARAMETERS CLASS
 # ----------------------------------------------------------------------------
 
-class NetParams (object):
+class NetParams(object):
 
     def __init__(self, netParamsDict=None):
         self._labelid = 0

@@ -7,7 +7,6 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
-### THIS SET OF IMPORTS FROM FUTURE IS IN lfp.py, traces.py, and spikes.py
 
 # THIRD PARTY IMPORTS
 import numpy as np
@@ -110,6 +109,7 @@ def getCSD (sampr=None,timeRange=None,spacing_um=100.0,minf=0.05,maxf=300,norm=T
 
   ## Check if LFP was recorded during the simulation 
   sim_data_categories = sim.allSimData.keys()
+  
   if 'LFP' in sim_data_categories:
     # Get LFP data
     lfp_data = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:] # from lfp.py, line 200; array splicing
@@ -118,7 +118,7 @@ def getCSD (sampr=None,timeRange=None,spacing_um=100.0,minf=0.05,maxf=300,norm=T
     datband = getbandpass(lfp_data,sampr,minf,maxf) 
 
     # Take CSD along smaller dimension
-    if datband.shape[0] > datband.shape[1]: # take CSD along smaller dimension
+    if datband.shape[0] > datband.shape[1]: 
       ax = 1
     else:
       ax = 0
@@ -150,7 +150,33 @@ def getCSD (sampr=None,timeRange=None,spacing_um=100.0,minf=0.05,maxf=300,norm=T
 ######### PLOTTING CSD #########
 ################################
 
-def plotCSD():
+def plotCSD(timeRange=None, saveData=None, saveFig=None, showFig=True):
+  """ Plots CSD values extracted from simulated LFP data 
+      
+      Parameters
+      ----------
+      timeRange : list [start, stop]
+        Time range to plot.
+        **Default:** 
+        ``None`` plots entire time range
+
+      saveData : bool or str
+        Whether and where to save the data used to generate the plot. 
+        **Default:** ``False`` 
+        **Options:** ``True`` autosaves the data
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
+     
+     saveFig : bool or str
+        Whether and where to save the figure.
+        **Default:** ``False``
+        **Options:** ``True`` autosaves the figure,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
+    
+      showFig : bool
+        Shows the figure if ``True``.
+        **Default:** ``True``
+        
+  """
   print('Plotting CSD... ') # NO PLOT YET 
   sim_data = sim.allSimData.keys()
 

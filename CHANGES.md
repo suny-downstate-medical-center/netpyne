@@ -4,6 +4,8 @@
 
 - Fixed bug importing cells (avoid reading __docstring__)
 
+- Fixed bug when recording LFP with recordStep <1.0ms
+
 # Version 0.9.6
 
 - Added useful hover information to iplots

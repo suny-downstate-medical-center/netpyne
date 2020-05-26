@@ -175,15 +175,28 @@ def plotCSD(timeRange=None, saveData=None, saveFig=None, showFig=True):
       showFig : bool
         Shows the figure if ``True``.
         **Default:** ``True``
-        
+
   """
+  from .. import sim
+
   print('Plotting CSD... ') # NO PLOT YET 
+  
+  ## CHECK IF CSD VALUES HAVE ALREADY BEEN EXTRACTED FROM LFP 
   sim_data = sim.allSimData.keys()
 
+  ## STORE CSD DATA 
   if 'CSD' in sim_data:
-    print('CSD values have already been extracted from LFP by getCSD()')
-  else:
-    sim.analysis.getCSD() # WHAT ABOUT ARGS? 
+    CSD_data = sim.allSimData['CSD']
+  elif 'CSD' not in sim_data:
+    print('NEED TO GET CSD VALUES FROM LFP DATA -- run sim.analysis.getCSD()')
+    sim.analysis.getCSD()   # WHAT ABOUT ARGS? ANY NEEDED? 
+    CSD_data = sim.allSimData['CSD']
+
+
+  ## time range
+  if timeRange is None:
+    timeRange = [0, sim.cfg.duration]   # default time range is entire length of the sim 
+
 
 # NOTE ON COLORS: 
 # # when drawing CSD make sure that negative values (depolarizing intracellular current) drawn in red,

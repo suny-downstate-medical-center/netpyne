@@ -10,8 +10,10 @@ from __future__ import absolute_import
 
 # THIRD PARTY IMPORTS
 import numpy as np
+import scipy                                  # for plotCSD()
 from future import standard_library
 standard_library.install_aliases()
+from matplotlib import pyplot as plt 
 
 ## LOCAL APPLICATION IMPORTS 
 from .filter import lowpass,bandpass
@@ -196,6 +198,33 @@ def plotCSD(timeRange=None, saveData=None, saveFig=None, showFig=True):
   ## time range
   if timeRange is None:
     timeRange = [0, sim.cfg.duration]   # default time range is entire length of the sim 
+
+
+
+  ## CODE FROM GRAPH.PY, FROM SAM, lines 76-99:
+  # plot 3: CSD w/ same smoothing as Sherman et al. 2016
+# X = ttavg
+# Y = range(avgCSD.shape[0])
+# CSD_spline=scipy.interpolate.RectBivariateSpline(Y, X, avgCSD)
+# Y_plot = np.linspace(0,avgCSD.shape[0],num=1000)
+# Z = CSD_spline(Y_plot, X)
+# #Z = np.clip(Z, -Z.max(), Z.max())
+# ​
+# spline=axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r')
+# axs[0].set_title('RectBivariateSpline',fontsize=12)
+# ​
+# height = axs[0].get_ylim()[0]
+# perlayer_height = int(height/avgCSD.shape[0])
+# xmin = axs[0].get_xlim()[0]
+# xmax = axs[0].get_xlim()[1]
+# for i,val in enumerate(values):
+#     if start_or_end[i] == "start":
+#       axs[0].hlines(values[i]+0.02, xmin, xmax,
+#                 colors='black', linestyles='dashed')
+#       axs[0].text(2, values[i]+0.7, sink_or_source[i], fontsize=10)
+#     else:
+#       axs[0].hlines(values[i]+1.02, xmin, xmax,
+#                 colors='black', linestyles='dashed')
 
 
 # NOTE ON COLORS: 

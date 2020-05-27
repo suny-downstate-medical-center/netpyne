@@ -215,8 +215,14 @@ def plotCSD(timeRange=None, sampr=None, saveData=None, saveFig=None, showFig=Tru
     CSD_data = np.array(CSD_data)
 
   ## Get average ERP for CSD data 
+  # (1) Get sampling rate 
   if sampr is None:
     sampr = sim.cfg.recordStep  # First need sampling rate (ms)
+  
+  # (2) Set epoch params
+  swindowms = 0
+  ewindowms = 50      # WHY THESE VALUES? NEED TO BE CHANGED? 
+  windoms = ewindowms - swindowms
   
   ttavg,avgCSD = getAvgERP(CSD_data, sampr, tts, swindowms, ewindowms) ## NEED TO ATTEND TO tts, swindowms, ewindowms 
 
@@ -225,6 +231,12 @@ def plotCSD(timeRange=None, sampr=None, saveData=None, saveFig=None, showFig=Tru
   CSD_spline=scipy.interpolate.RectBivariateSpline(Y, X, avgCSD)
   Y_plot = np.linspace(0,avgCSD.shape[0],num=1000) # SURE ABOUT SHAPE? NUM? 
   Z = CSD_spline(Y_plot, X)
+
+  ## SET EXTENT OF AXES FOR PLOTS:
+  xmin = 0 
+  xmax = int(ttavg[-1])     # why this index and also, need to resolve ttavg
+  ymin = 1    # where does this come from? 
+  ymax = 24   # where does this come from?
 
   ## time range
   if timeRange is None:

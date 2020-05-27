@@ -170,7 +170,7 @@ def getAvgERP (dat, sampr, trigtimes, swindowms, ewindowms):
 
 
 
-def plotCSD(timeRange=None, saveData=None, saveFig=None, showFig=True):
+def plotCSD(timeRange=None, sampr=None, saveData=None, saveFig=None, showFig=True):
   """ Plots CSD values extracted from simulated LFP data 
       
       Parameters
@@ -214,7 +214,17 @@ def plotCSD(timeRange=None, saveData=None, saveFig=None, showFig=True):
     CSD_data = sim.allSimData['CSD']
     CSD_data = np.array(CSD_data)
 
-  ttavg,avgCSD = getAvgERP(CSD_data, sampr, tts, swindowms, ewindowms)
+  ## Get average ERP for CSD data 
+  if sampr is None:
+    sampr = sim.cfg.recordStep  # First need sampling rate (ms)
+  
+  ttavg,avgCSD = getAvgERP(CSD_data, sampr, tts, swindowms, ewindowms) ## NEED TO ATTEND TO tts, swindowms, ewindowms 
+
+  X = ttavg
+  Y = range(avgCSD.shape[0])
+  CSD_spline=scipy.interpolate.RectBivariateSpline(Y, X, avgCSD)
+  Y_plot = np.linspace(0,avgCSD.shape[0],num=1000) # SURE ABOUT SHAPE? NUM? 
+  Z = CSD_spline(Y_plot, X)
 
   ## time range
   if timeRange is None:

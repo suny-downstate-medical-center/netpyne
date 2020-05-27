@@ -672,7 +672,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
         #### NOTE: commented out because generated error when running via mpiexec
         ####       maybe find way to check if exectued via mpi 
 
-from neuroml.hdf5.DefaultNetworkHandler import DefaultNetworkHandler
+#from neuroml.hdf5.DefaultNetworkHandler import DefaultNetworkHandler
 
 
 class NetPyNEBuilder(DefaultNetworkHandler):

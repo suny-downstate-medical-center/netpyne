@@ -13,6 +13,7 @@ import numpy as np
 import scipy                                  # for plotCSD()
 from future import standard_library
 standard_library.install_aliases()
+import matplotlib 
 from matplotlib import pyplot as plt 
 
 ## LOCAL APPLICATION IMPORTS 
@@ -199,12 +200,14 @@ def plotCSD(timeRange=None, sampr=None, saveData=None, saveFig=None, showFig=Tru
   """
   from .. import sim
 
-  print('Plotting CSD... ') # NO PLOT YET 
+  print('Plotting CSD... ')
   
-  ## CHECK IF CSD VALUES HAVE ALREADY BEEN EXTRACTED FROM LFP 
+  ##### (1) CHECK IF CSD VALUES HAVE ALREADY BEEN EXTRACTED FROM LFP #####
   sim_data = sim.allSimData.keys()
 
-  ## STORE CSD DATA 
+
+
+  ##### (2) STORE CSD DATA #####
   if 'CSD' in sim_data:
     CSD_data = sim.allSimData['CSD']
     CSD_data = np.array(CSD_data)       ## Needs to be in numpy array format for getAvgERP fx 
@@ -214,33 +217,85 @@ def plotCSD(timeRange=None, sampr=None, saveData=None, saveFig=None, showFig=Tru
     CSD_data = sim.allSimData['CSD']
     CSD_data = np.array(CSD_data)
 
-  ## Get average ERP for CSD data 
-  # (1) Get sampling rate 
+
+  ##### (3) GET AVERAGE ERP FOR CSD DATA #####
+
+  # (i) Get sampling rate 
   if sampr is None:
     sampr = sim.cfg.recordStep  # First need sampling rate (ms)
   
-  # (2) Set epoch params
+  # (ii) Set epoch params
   swindowms = 0
   ewindowms = 50      # WHY THESE VALUES? NEED TO BE CHANGED? 
   windoms = ewindowms - swindowms
-  
-  ttavg,avgCSD = getAvgERP(CSD_data, sampr, tts, swindowms, ewindowms) ## NEED TO ATTEND TO tts, swindowms, ewindowms 
 
+  # (iii) Get tts (removeBadEpochs <-- )
+  # FILL THIS IN!!! 
+
+  # (iv) Get averages 
+  ttavg,avgCSD = getAvgERP(CSD_data, sampr, tts, swindowms, ewindowms) ## NEED TO ATTEND TO tts
+
+
+
+
+  ##### (4) INTERPOLATION #####
   X = ttavg
   Y = range(avgCSD.shape[0])
   CSD_spline=scipy.interpolate.RectBivariateSpline(Y, X, avgCSD)
   Y_plot = np.linspace(0,avgCSD.shape[0],num=1000) # SURE ABOUT SHAPE? NUM? 
   Z = CSD_spline(Y_plot, X)
 
-  ## SET EXTENT OF AXES FOR PLOTS:
+
+
+  ##### (5) SET UP PLOTTING #####
+
+  # (i) Set up axes 
   xmin = 0 
-  xmax = int(ttavg[-1])     # why this index and also, need to resolve ttavg
+  xmax = int(ttavg[-1])     # why this index? and also, need to resolve ttavg <--
   ymin = 1    # where does this come from? 
   ymax = 24   # where does this come from?
+  extent_xy = [xmin, xmax, ymax, ymin]
 
-  ## time range
-  if timeRange is None:
-    timeRange = [0, sim.cfg.duration]   # default time range is entire length of the sim 
+  # (ii) Make the outer grid
+  fig = plt.figure(figsize=(10, 8))
+  numplots=1
+  gs_outer = matplotlib.gridspec.GridSpec(2, 4, figure=fig, wspace=0.4, hspace=0.2, height_ratios = [20, 1])
+
+  # (iii) Title
+  fig.suptitle('CSD in A1')            #("Averaged Laminar CSD (n=%d) in A1 after 40 dB stimuli"%len(tts))
+
+  # (iii) Create subplots w/ common axis labels and tick marks
+  axs = []
+  for i in range(numplots):
+    axs.append(plt.Subplot(fig,gs_outer[i*2:i*2+2]))
+    fig.add_subplot(axs[i])
+    axs[i].set_yticks(np.arange(1, 24, step=1))
+    axs[i].set_ylabel('Contact', fontsize=12)
+    axs[i].set_xlabel('Time (ms)',fontsize=12)
+    axs[i].set_xticks(np.arange(0, 60, step=10))
+
+  # (iv)
+  spline=axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r')
+  axs[0].set_title('RectBivariateSpline',fontsize=12)
+
+  height = axs[0].get_ylim()[0]
+  perlayer_height = int(height/avgCSD.shape[0])
+  xmin = axs[0].get_xlim()[0]
+  xmax = axs[0].get_xlim()[1]
+  for i,val in enumerate(values):
+    if start_or_end[i] == "start":
+      axs[0].hlines(values[i]+0.02, xmin, xmax, colors='black', linestyles='dashed')
+      axs[0].text(2, values[i]+0.7, sink_or_source[i], fontsize=10)
+    else:
+      axs[0].hlines(values[i]+1.02, xmin, xmax, colors='black', linestyles='dashed')
+
+
+  # COLORBAR
+  ## FILL THIS IN
+
+  # DISPLAY FINAL FIGURE
+  plt.show()
+
 
 
 

@@ -58,7 +58,7 @@ def removemean (x, ax=1):
 ################################################
 ######### GET CSD VALUES FROM LFP DATA #########
 ################################################
-@exception
+#@exception
 def getCSD (sampr=None,timeRange=None,spacing_um=100.0,minf=0.05,maxf=300,norm=True,vaknin=False):
   """ Extracts CSD values from simulated LFP data 
 
@@ -105,7 +105,7 @@ def getCSD (sampr=None,timeRange=None,spacing_um=100.0,minf=0.05,maxf=300,norm=T
     timeRange = [0,sim.cfg.duration]    # This makes the timeRange equal to the entire sim duration
   
   if sampr is None:
-    sampr = sim.cfg.recordStep          # Sampling rate of data recording during the simulation 
+    sampr = 1./sim.cfg.recordStep          # Sampling rate of data recording during the simulation 
   
   spacing_mm = spacing_um/1000          # Spacing between electrodes --> convert from micron to mm 
 

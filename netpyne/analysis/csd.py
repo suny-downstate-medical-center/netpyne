@@ -153,24 +153,6 @@ def getCSD (sampr=None,timeRange=None,spacing_um=100.0,minf=0.05,maxf=300,norm=T
 ######### PLOTTING CSD #########
 ################################
 
-### getAvgERP <-- function from analysis-scripts-master used in plotCSD()
-# get the average ERP (dat should be either LFP or CSD; type --> numpy array)
-# def getAvgERP (dat, sampr, trigtimes, swindowms, ewindowms):
-#   nrow = dat.shape[0]
-#   tt = np.linspace(swindowms, ewindowms,ms2index(ewindowms - swindowms,sampr))
-#   swindowidx = ms2index(swindowms,sampr) # could be negative
-#   ewindowidx = ms2index(ewindowms,sampr)
-#   avgERP = np.zeros((nrow,len(tt)))
-#   for chan in range(nrow): # go through channels
-#     for trigidx in trigtimes: # go through stimuli
-#       sidx = max(0,trigidx+swindowidx)
-#       eidx = min(dat.shape[1],trigidx+ewindowidx)
-#       avgERP[chan,:] += dat[chan, sidx:eidx]
-#     avgERP[chan,:] /= float(len(trigtimes))
-#   return tt,avgERP
-
-
-
 def plotCSD(timeRange=None,saveData=None, saveFig=None, showFig=True):
   """ Plots CSD values extracted from simulated LFP data 
       

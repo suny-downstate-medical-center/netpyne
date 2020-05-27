@@ -155,19 +155,19 @@ def getCSD (sampr=None,timeRange=None,spacing_um=100.0,minf=0.05,maxf=300,norm=T
 
 ### getAvgERP <-- function from analysis-scripts-master used in plotCSD()
 # get the average ERP (dat should be either LFP or CSD; type --> numpy array)
-def getAvgERP (dat, sampr, trigtimes, swindowms, ewindowms):
-  nrow = dat.shape[0]
-  tt = np.linspace(swindowms, ewindowms,ms2index(ewindowms - swindowms,sampr))
-  swindowidx = ms2index(swindowms,sampr) # could be negative
-  ewindowidx = ms2index(ewindowms,sampr)
-  avgERP = np.zeros((nrow,len(tt)))
-  for chan in range(nrow): # go through channels
-    for trigidx in trigtimes: # go through stimuli
-      sidx = max(0,trigidx+swindowidx)
-      eidx = min(dat.shape[1],trigidx+ewindowidx)
-      avgERP[chan,:] += dat[chan, sidx:eidx]
-    avgERP[chan,:] /= float(len(trigtimes))
-  return tt,avgERP
+# def getAvgERP (dat, sampr, trigtimes, swindowms, ewindowms):
+#   nrow = dat.shape[0]
+#   tt = np.linspace(swindowms, ewindowms,ms2index(ewindowms - swindowms,sampr))
+#   swindowidx = ms2index(swindowms,sampr) # could be negative
+#   ewindowidx = ms2index(ewindowms,sampr)
+#   avgERP = np.zeros((nrow,len(tt)))
+#   for chan in range(nrow): # go through channels
+#     for trigidx in trigtimes: # go through stimuli
+#       sidx = max(0,trigidx+swindowidx)
+#       eidx = min(dat.shape[1],trigidx+ewindowidx)
+#       avgERP[chan,:] += dat[chan, sidx:eidx]
+#     avgERP[chan,:] /= float(len(trigtimes))
+#   return tt,avgERP
 
 
 
@@ -224,25 +224,25 @@ def plotCSD(timeRange=None, sampr=None, saveData=None, saveFig=None, showFig=Tru
   if sampr is None:
     sampr = sim.cfg.recordStep  # First need sampling rate (ms)
   
-  # (ii) Set epoch params
-  swindowms = 0
-  ewindowms = 50      # WHY THESE VALUES? NEED TO BE CHANGED? 
-  windoms = ewindowms - swindowms
+  # # (ii) Set epoch params
+  # swindowms = 0
+  # ewindowms = 50      # WHY THESE VALUES? NEED TO BE CHANGED? 
+  # windoms = ewindowms - swindowms
 
   # (iii) Get tts (removeBadEpochs <-- )
   # FILL THIS IN!!! 
 
   # (iv) Get averages 
-  ttavg,avgCSD = getAvgERP(CSD_data, sampr, tts, swindowms, ewindowms) ## NEED TO ATTEND TO tts
+  # ttavg,avgCSD = getAvgERP(CSD_data, sampr, tts, swindowms, ewindowms) ## NEED TO ATTEND TO tts
 
 
 
 
   ##### (4) INTERPOLATION #####
-  X = ttavg
-  Y = range(avgCSD.shape[0])
-  CSD_spline=scipy.interpolate.RectBivariateSpline(Y, X, avgCSD)
-  Y_plot = np.linspace(0,avgCSD.shape[0],num=1000) # SURE ABOUT SHAPE? NUM? 
+  X = sim.allSimData['t']
+  Y = range(CSD_data.shape[0])
+  CSD_spline=scipy.interpolate.RectBivariateSpline(Y, X, CSD_data)
+  Y_plot = np.linspace(0,CSD_data.shape[0],num=1000) # SURE ABOUT SHAPE? NUM? 
   Z = CSD_spline(Y_plot, X)
 
 
@@ -251,7 +251,7 @@ def plotCSD(timeRange=None, sampr=None, saveData=None, saveFig=None, showFig=Tru
 
   # (i) Set up axes 
   xmin = 0 
-  xmax = int(ttavg[-1])     # why this index? and also, need to resolve ttavg <--
+  xmax = int(sim.allSimData['t'][-1])     # why this index? and also, need to resolve ttavg <--
   ymin = 1    # where does this come from? 
   ymax = 24   # where does this come from?
   extent_xy = [xmin, xmax, ymax, ymin]

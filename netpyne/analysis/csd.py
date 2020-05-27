@@ -153,7 +153,7 @@ def getCSD (sampr=None,timeRange=None,spacing_um=100.0,minf=0.05,maxf=300,norm=T
 ######### PLOTTING CSD #########
 ################################
 
-def plotCSD(timeRange=None,saveData=None, saveFig=None, showFig=True):
+def plotCSD(saveData=None, saveFig=None, showFig=True):
   """ Plots CSD values extracted from simulated LFP data 
       
       Parameters
@@ -218,16 +218,16 @@ def plotCSD(timeRange=None,saveData=None, saveFig=None, showFig=True):
   ymax = 24   # where does this come from?
   extent_xy = [xmin, xmax, ymax, ymin]
 
-  # (ii) Make the outer grid
-  fig = plt.figure(figsize=(10, 8))
-  numplots=1
-  gs_outer = matplotlib.gridspec.GridSpec(2, 4, figure=fig, wspace=0.4, hspace=0.2, height_ratios = [20, 1])
+  # (ii) Set up figure 
+  fig = plt.figure() #plt.figure(figsize=(10, 8)) #<-- quite large; for multiple subplots 
 
   # (iii) Title
-  fig.suptitle('CSD in A1')            #("Averaged Laminar CSD (n=%d) in A1 after 40 dB stimuli"%len(tts))
+  fig.suptitle('Current Source Density')            #("Averaged Laminar CSD (n=%d) in A1 after 40 dB stimuli"%len(tts))
 
-  # (iii) Create subplots w/ common axis labels and tick marks
+  # (iii) Create plots w/ common axis labels and tick marks
   axs = []
+  numplots=1
+  gs_outer = matplotlib.gridspec.GridSpec(2, 4, figure=fig, wspace=0.4, hspace=0.2, height_ratios = [20, 1])
   for i in range(numplots):
     axs.append(plt.Subplot(fig,gs_outer[i*2:i*2+2]))
     fig.add_subplot(axs[i])
@@ -244,6 +244,14 @@ def plotCSD(timeRange=None,saveData=None, saveFig=None, showFig=True):
   perlayer_height = int(height/CSD_data.shape[0])
   xmin = axs[0].get_xlim()[0]
   xmax = axs[0].get_xlim()[1]
+
+
+
+
+   # DISPLAY FINAL FIGURE
+  plt.show()
+
+
   # values = [1, 4, 5, 9, 10, 11, 12, 13, 14, 16] ### WHAT IS THIS ABOUT? 
   # for i,val in enumerate(values):
   #   if start_or_end[i] == "start":
@@ -256,8 +264,7 @@ def plotCSD(timeRange=None,saveData=None, saveFig=None, showFig=True):
   # COLORBAR
   ## FILL THIS IN
 
-  # DISPLAY FINAL FIGURE
-  plt.show()
+ 
 
 
 # NOTE ON COLORS: 

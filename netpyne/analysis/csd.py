@@ -171,7 +171,7 @@ def getCSD (sampr=None,timeRange=None,spacing_um=100.0,minf=0.05,maxf=300,norm=T
 
 
 
-def plotCSD(timeRange=None, sampr=None, saveData=None, saveFig=None, showFig=True):
+def plotCSD(timeRange=None,saveData=None, saveFig=None, showFig=True):
   """ Plots CSD values extracted from simulated LFP data 
       
       Parameters
@@ -206,7 +206,6 @@ def plotCSD(timeRange=None, sampr=None, saveData=None, saveFig=None, showFig=Tru
   sim_data = sim.allSimData.keys()
 
 
-
   ##### (2) STORE CSD DATA #####
   if 'CSD' in sim_data:
     CSD_data = sim.allSimData['CSD']
@@ -218,28 +217,9 @@ def plotCSD(timeRange=None, sampr=None, saveData=None, saveFig=None, showFig=Tru
     CSD_data = np.array(CSD_data)
 
 
-  ##### (3) GET AVERAGE ERP FOR CSD DATA #####
 
-  # (i) Get sampling rate 
-  if sampr is None:
-    sampr = sim.cfg.recordStep  # First need sampling rate (ms)
-  
-  # # (ii) Set epoch params
-  # swindowms = 0
-  # ewindowms = 50      # WHY THESE VALUES? NEED TO BE CHANGED? 
-  # windoms = ewindowms - swindowms
-
-  # (iii) Get tts (removeBadEpochs <-- )
-  # FILL THIS IN!!! 
-
-  # (iv) Get averages 
-  # ttavg,avgCSD = getAvgERP(CSD_data, sampr, tts, swindowms, ewindowms) ## NEED TO ATTEND TO tts
-
-
-
-
-  ##### (4) INTERPOLATION #####
-  X = sim.allSimData['t']
+  ##### (3) INTERPOLATION #####
+  X = sim.allSimData['t']       # TIME POINTS IN THE SIM
   Y = range(CSD_data.shape[0])
   CSD_spline=scipy.interpolate.RectBivariateSpline(Y, X, CSD_data)
   Y_plot = np.linspace(0,CSD_data.shape[0],num=1000) # SURE ABOUT SHAPE? NUM? 
@@ -247,7 +227,7 @@ def plotCSD(timeRange=None, sampr=None, saveData=None, saveFig=None, showFig=Tru
 
 
 
-  ##### (5) SET UP PLOTTING #####
+  ##### (4) SET UP PLOTTING #####
 
   # (i) Set up axes 
   xmin = 0 
@@ -279,15 +259,16 @@ def plotCSD(timeRange=None, sampr=None, saveData=None, saveFig=None, showFig=Tru
   axs[0].set_title('RectBivariateSpline',fontsize=12)
 
   height = axs[0].get_ylim()[0]
-  perlayer_height = int(height/avgCSD.shape[0])
+  perlayer_height = int(height/CSD_data.shape[0])
   xmin = axs[0].get_xlim()[0]
   xmax = axs[0].get_xlim()[1]
-  for i,val in enumerate(values):
-    if start_or_end[i] == "start":
-      axs[0].hlines(values[i]+0.02, xmin, xmax, colors='black', linestyles='dashed')
-      axs[0].text(2, values[i]+0.7, sink_or_source[i], fontsize=10)
-    else:
-      axs[0].hlines(values[i]+1.02, xmin, xmax, colors='black', linestyles='dashed')
+  # values = [1, 4, 5, 9, 10, 11, 12, 13, 14, 16] ### WHAT IS THIS ABOUT? 
+  # for i,val in enumerate(values):
+  #   if start_or_end[i] == "start":
+  #     axs[0].hlines(values[i]+0.02, xmin, xmax, colors='black', linestyles='dashed')
+  #     axs[0].text(2, values[i]+0.7, sink_or_source[i], fontsize=10)
+  #   else:
+  #     axs[0].hlines(values[i]+1.02, xmin, xmax, colors='black', linestyles='dashed')
 
 
   # COLORBAR
@@ -297,83 +278,9 @@ def plotCSD(timeRange=None, sampr=None, saveData=None, saveFig=None, showFig=Tru
   plt.show()
 
 
-
-
-  ## CODE FROM GRAPH.PY, FROM SAM, lines 76-99:
-  # plot 3: CSD w/ same smoothing as Sherman et al. 2016
-# X = ttavg
-# Y = range(avgCSD.shape[0])
-# CSD_spline=scipy.interpolate.RectBivariateSpline(Y, X, avgCSD)
-# Y_plot = np.linspace(0,avgCSD.shape[0],num=1000)
-# Z = CSD_spline(Y_plot, X)
-# #Z = np.clip(Z, -Z.max(), Z.max())
-# ​
-# spline=axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r')
-# axs[0].set_title('RectBivariateSpline',fontsize=12)
-# ​
-# height = axs[0].get_ylim()[0]
-# perlayer_height = int(height/avgCSD.shape[0])
-# xmin = axs[0].get_xlim()[0]
-# xmax = axs[0].get_xlim()[1]
-# for i,val in enumerate(values):
-#     if start_or_end[i] == "start":
-#       axs[0].hlines(values[i]+0.02, xmin, xmax,
-#                 colors='black', linestyles='dashed')
-#       axs[0].text(2, values[i]+0.7, sink_or_source[i], fontsize=10)
-#     else:
-#       axs[0].hlines(values[i]+1.02, xmin, xmax,
-#                 colors='black', linestyles='dashed')
-
-
 # NOTE ON COLORS: 
 # # when drawing CSD make sure that negative values (depolarizing intracellular current) drawn in red,
 # # and positive values (hyperpolarizing intracellular current) drawn in blue
 
 
 
-
-##################################################
-################ UNUSED FUNCTIONS ################
-##################################################
-
-## These are from Sam Neymotin; https://github.com/NathanKlineInstitute/OEvent/blob/master/csd.py
-
-
-### LOWPASS FILTER ###
-
-# # lowpass filter the items in lfps. lfps is a list or numpy array of LFPs arranged spatially by column
-# def getlowpass (lfps,sampr,maxf):
-#   datlow = []
-#   for i in range(len(lfps[0])): datlow.append(lowpass(lfps[:,i],maxf,df=sampr,zerophase=True))
-#   datlow = np.array(datlow)
-#   return datlow
-
-
-### BIPOLAR WAVEFORMS ###
-
-# # get bipolar waveforms - first do a lowpass filter. lfps is a list or numpy array of LFPs arranged spatially by column
-# # spacing_um is electrode's contact spacing in units of micron
-# # returns bipolar signal in units of mV/mm (assuming lfps are in mV)
-# def getBipolar (lfps,sampr,spacing_um=100.0,minf=0.05,maxf=300,norm=True,vaknin=False):
-#   datband = getbandpass(lfps,sampr,minf,maxf)
-#   if datband.shape[0] > datband.shape[1]: # take CSD along smaller dimension
-#     ax = 1
-#   else:
-#     ax = 0
-#   if vaknin: datband = Vaknin(datband)    
-#   if norm: removemean(datband,ax=ax)    
-#   # can change to run Vaknin on bandpass filtered LFPs before calculating bipolar waveforms, that
-#   # way would have same number of channels in bipolar and LFP (but not critical, and would take more RAM);
-#   # also might want to subtract mean of each channel before calculating the diff ?
-#   spacing_mm = spacing_um/1000 # spacing in mm
-#   bipolar = -np.diff(datband,n=1,axis=ax)/spacing_mm # now each column (or row) is an electrode -- bipolar along electrodes
-#   return bipolar
-
-
-### MULTI-UNIT ACTIVITY ###
-
-# # get MUA - first do a bandpass filter then rectify. 
-# #  lfps is a list or numpy array of LFPs arranged spatially by column
-# def getMUA (lfps,sampr,minf=300,maxf=5000):
-#   datband = getbandpass(lfps,sampr,minf,maxf)
-#   return np.abs(datband)

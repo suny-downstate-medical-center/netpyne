@@ -291,7 +291,7 @@ def _addReactions(self, params, multicompartment=False):
     reactionDictKey = 'multicompartmentReactions' if multicompartment else 'reactions'
 
     for label, param in params.items():
-        dynamicVars = {'sim': sim}
+        dynamicVars = {'sim': sim ,'log': rxd.rxdmath.log, 'exp' : rxd.rxdmath.exp, 'tanh' : rxd.rxdmath.tanh, 'v' : rxd.v}
         # reactant
         if 'reactant' not in param:
             print('  Error creating %s %s: "reactant" parameter was missing'%(reactionStr,label))
@@ -305,6 +305,8 @@ def _addReactions(self, params, multicompartment=False):
             print('  Error creating %s %s: "product" parameter was missing'%(reactionStr,label))
             continue
         productStr = self._replaceRxDStr(param['product'])
+        #from IPython import embed
+        #embed()
         exec('product = ' + productStr, dynamicVars)
         if 'product' not in dynamicVars: dynamicVars['product']  # fix for python 2
 
@@ -314,6 +316,7 @@ def _addReactions(self, params, multicompartment=False):
             continue
         if isinstance(param['rate_f'], basestring):
             rate_fStr = self._replaceRxDStr(param['rate_f'])
+            #import IPython; IPython.embed()
             exec('rate_f = ' + rate_fStr, dynamicVars)
             if 'rate_f' not in dynamicVars: dynamicVars['rate_f']  # fix for python 2
         else:

@@ -73,7 +73,7 @@ script:
     # HHTut example
     - cd ../../../examples/HHTut
     - python HHTut_run.py -nogui
-    - python HHTut_export.py -nogui
+    # - python HHTut_export.py -nogui # commented until neuroml2 adapted to simplified cellParams
     # HybridTut example
     - cd ../HybridTut
     - $NEURON_HOME/x86_64/bin/nrnivmodl .

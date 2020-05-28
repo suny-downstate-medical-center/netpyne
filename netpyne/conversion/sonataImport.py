@@ -46,10 +46,12 @@ def _parse_entry(w):
             return float(w)
         except:
             return w
-'''
-    Load a generic csv file as used in Sonata
-'''
+
 def load_csv_props(info_file):
+    """
+    Load a generic csv file as used in Sonata
+    """
+
     info = {}
     columns = {}
     for line in open(info_file):
@@ -81,7 +83,10 @@ class EmptyCell():
 
 
 def _distributeCells(numCellsPop):
-    ''' distribute cells across compute nodes using round-robin'''
+    """
+    Distribute cells across compute nodes using round-robin
+    """
+
     from .. import sim
         
     hostCells = {}
@@ -163,9 +168,10 @@ def fix_sec_nseg(secs, dL):
 
 
 def swap_soma_xy(secs):
-    '''
+    """
     Swap soma x and y coords so cylinder is vertical instead of horizontal
-    '''
+    """
+
     for secName in [sec for sec in secs if 'soma' in sec]:
         for i,pt in enumerate(secs[secName]['geom']['pt3d']):
             secs[secName]['geom']['pt3d'][i] = (pt[1], pt[0], pt[2], pt[3])
@@ -535,7 +541,10 @@ class SONATAImporter():
     # Create connections
     # ------------------------------------------------------------------------------------------------------------
     def createConns(self):
-        # SONATA method - works but same results as NeuroMLlite
+        """
+        SONATA method - works but same results as NeuroMLlite
+        """
+        
         '''
         from sonata.io import File, Edge
         data = File(data_files=[self.subs('$NETWORK_DIR/excvirt_cortex_edges.h5')],
@@ -1110,12 +1119,12 @@ class SONATAImporter():
     # Read simulation output from HDF5
     # ------------------------------------------------------------------------------------------------------------
 
-
-    '''
+    def subs(self, path):
+        """
         Search the strings in a config file for a substitutable value, e.g. 
         "morphologies_dir": "$COMPONENT_DIR/morphologies",
-    '''
-    def subs(self, path):
+        """
+        
         #print_v('Checking for %s in %s'%(substitutes.keys(),path))
 
         for s in sorted(self.substitutes, key=lambda k: len(k), reverse=True):

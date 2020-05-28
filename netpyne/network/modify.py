@@ -17,7 +17,7 @@ from __future__ import absolute_import
 # -----------------------------------------------------------------------------
 from future import standard_library
 standard_library.install_aliases()
-def modifyCells (self, params, updateMasterAllCells=False):
+def modifyCells(self, params, updateMasterAllCells=False):
     from .. import sim
 
     # Instantiate network connections based on the connectivity rules defined in params
@@ -38,7 +38,7 @@ def modifyCells (self, params, updateMasterAllCells=False):
 # -----------------------------------------------------------------------------
 # Modify synMech params
 # -----------------------------------------------------------------------------
-def modifySynMechs (self, params, updateMasterAllCells=False):
+def modifySynMechs(self, params, updateMasterAllCells=False):
     from .. import sim
 
     # Instantiate network connections based on the connectivity rules defined in params
@@ -59,7 +59,7 @@ def modifySynMechs (self, params, updateMasterAllCells=False):
 # -----------------------------------------------------------------------------
 # Modify conn params
 # -----------------------------------------------------------------------------
-def modifyConns (self, params, updateMasterAllCells=False):
+def modifyConns(self, params, updateMasterAllCells=False):
     from .. import sim
 
     # Instantiate network connections based on the connectivity rules defined in params
@@ -80,7 +80,7 @@ def modifyConns (self, params, updateMasterAllCells=False):
 # -----------------------------------------------------------------------------
 # Modify stim source params
 # -----------------------------------------------------------------------------
-def modifyStims (self, params, updateMasterAllCells=False):
+def modifyStims(self, params, updateMasterAllCells=False):
     from .. import sim
     
     # Instantiate network connections based on the connectivity rules defined in params

@@ -20,7 +20,7 @@ from ..specs import Dict, ODict
 #------------------------------------------------------------------------------
 # Gather data from nodes
 #------------------------------------------------------------------------------
-def gatherData (gatherLFP = True):
+def gatherData(gatherLFP = True):
     from .. import sim
         
     sim.timing('start', 'gatherTime')
@@ -251,6 +251,7 @@ def gatherData (gatherLFP = True):
             print(('  Run time: %0.2f s' % (sim.timingData['runTime'])))
             
             if sim.cfg.printPopAvgRates and not sim.cfg.gatherOnlySimData:
+
                 trange = sim.cfg.printPopAvgRates if isinstance(sim.cfg.printPopAvgRates,list) else None
                 sim.allSimData['popRates'] = sim.analysis.popAvgRates(trange=trange)
 
@@ -284,7 +285,7 @@ def gatherData (gatherLFP = True):
 #------------------------------------------------------------------------------
 #  Gathers simData from filess
 #------------------------------------------------------------------------------
-def fileGather (gatherLFP = True):
+def fileGather(gatherLFP = True):
     import os, pickle
     from .. import sim
     
@@ -447,8 +448,10 @@ def fileGather (gatherLFP = True):
 
         print(('  Cells: %i' % (sim.numCells) ))
         print(('  Connections: %i (%0.2f per cell)' % (sim.totalConnections, sim.connsPerCell)))
+        
         if sim.totalSynapses != sim.totalConnections:
             print(('  Synaptic contacts: %i (%0.2f per cell)' % (sim.totalSynapses, sim.synsPerCell)))
+
         if 'runTime' in sim.timingData:
             print(('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate)))              
             print(('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration/1e3, sim.nhosts)))
@@ -472,7 +475,7 @@ def fileGather (gatherLFP = True):
 #------------------------------------------------------------------------------
 # Gather tags from cells
 #------------------------------------------------------------------------------
-def _gatherAllCellTags ():
+def _gatherAllCellTags():
     from .. import sim
 
     data = [{cell.gid: cell.tags for cell in sim.net.cells}]*sim.nhosts  # send cells data to other nodes
@@ -498,7 +501,7 @@ def _gatherAllCellTags ():
 #------------------------------------------------------------------------------
 # Gather tags from cells
 #------------------------------------------------------------------------------
-def _gatherAllCellConnPreGids ():
+def _gatherAllCellConnPreGids():
     from .. import sim
 
     data = [{cell.gid: [conn['preGid'] for conn in cell.conns] for cell in sim.net.cells}]*sim.nhosts  # send cells data to other nodes
@@ -524,7 +527,7 @@ def _gatherAllCellConnPreGids ():
 #------------------------------------------------------------------------------
 # Gather data from nodes
 #------------------------------------------------------------------------------
-def _gatherCells ():
+def _gatherCells():
     from .. import sim
 
     ## Pack data from all hosts

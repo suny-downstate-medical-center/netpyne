@@ -1,0 +1,7 @@
+{{ header | heading }}
+
+.. toctree::
+{% for docname in docnames %}
+   {{ docname }}
+{%- endfor %}
+

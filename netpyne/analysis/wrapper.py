@@ -1,10 +1,7 @@
 """
-analysis/wrapper.py
-
 Wrapper function to call analysis functions specified in simConfig
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
@@ -21,7 +18,7 @@ except:
 # -------------------------------------------------------------------------------------------------------------------
 ## Wrapper to run analysis functions in simConfig
 # -------------------------------------------------------------------------------------------------------------------
-def plotData ():
+def plotData():
     from .. import sim
 
     ## Plotting

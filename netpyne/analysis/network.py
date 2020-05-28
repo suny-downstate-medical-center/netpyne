@@ -1,10 +1,7 @@
 """
-analysis/network.py
-
 Functions to plot and analyze connectivity-related results
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals

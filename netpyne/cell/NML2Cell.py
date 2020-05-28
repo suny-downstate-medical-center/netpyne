@@ -26,7 +26,9 @@ from ..specs import Dict
 ###############################################################################
 
 class NML2Cell (CompartCell):
-    ''' Class for NeuroML2 neuron models: No different than CompartCell '''
+    """
+    Class for NeuroML2 neuron models: No different than CompartCell
+    """
     
     ''' Might this be useful to show better name for cell when psection() called?
     def __str__():

@@ -1,10 +1,7 @@
 """
-analysis/spikes.py
-
 Functions to plot and analyze spike-related results
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
@@ -41,14 +38,14 @@ from .utils import colorList, exception, getCellsInclude, getSpktSpkid, _showFig
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def calculateRate (include = ['allCells', 'eachPop'], peakBin = 5, timeRange = None): 
-    ''' 
+    """
     Calculate avg and peak rate of different subsets of cells for specific time period
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
             Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
         - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
         - peakBin (int): Histogram bin size used to calculate peak firing rate; if None, peak rate not calculated (default: 5)
         - Returns list with rates
-    '''
+    """
 
     from .. import sim
 
@@ -114,9 +111,8 @@ def calculateRate (include = ['allCells', 'eachPop'], peakBin = 5, timeRange = N
 ## Plot avg and peak rates at different time periods 
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None, timeRangeLabels = None, colors = None, figSize = ((5,5)), saveData = None, 
-        ylim = None, saveFig = None, showFig = True):
-    ''' 
+def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None, timeRangeLabels = None, colors = None, figSize = ((5,5)), saveData = None, ylim = None, saveFig = None, showFig = True):
+    """
     Calculate avg and peak rate of different subsets of cells for specific time period
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
             Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
@@ -131,7 +127,8 @@ def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None,
         - showFig (True|False): Whether to show the figure or not (default: True)
 
         - Returns figs
-    '''
+    """
+
     from .. import sim
 
     if not colors: colors = colorList
@@ -221,9 +218,8 @@ def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None,
 ## Plot sync at different time periods 
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotSyncs (include =['allCells', 'eachPop'], timeRanges = None, timeRangeLabels = None, colors = None, figSize = ((5,5)), saveData = None, 
-        saveFig = None, showFig = True):
-    ''' 
+def plotSyncs(include=['allCells', 'eachPop'], timeRanges=None, timeRangeLabels=None, colors=None, figSize=((5,5)), saveData=None, saveFig = None, showFig=True):
+    """
     Calculate avg and peak rate of different subsets of cells for specific time period
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
             Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
@@ -237,7 +233,8 @@ def plotSyncs (include =['allCells', 'eachPop'], timeRanges = None, timeRangeLab
         - showFig (True|False): Whether to show the figure or not (default: True)
 
         - Returns figs
-    '''
+    """
+
     from .. import sim
 
     if not colors: colors = colorList
@@ -634,7 +631,7 @@ def plotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid
         if isinstance(saveFig, basestring):
             filename = saveFig
         else:
-            filename = sim.cfg.filename + '_plot_raster.png'
+            filename = sim.cfg.filename + '_raster.png'
         plt.savefig(filename, dpi=dpi)
 
     # show fig
@@ -1646,7 +1643,7 @@ def plotRatePSD(include=['eachPop', 'allCells'], timeRange=None, binSize=5, minF
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def plotRateSpectrogram(include=['allCells', 'eachPop'], timeRange=None, binSize=5, minFreq=1, maxFreq=100, stepFreq=1, NFFT=256, noverlap=128, smooth=0, overlay=True, ylim = None, transformMethod = 'morlet', norm=False, popColors = {}, lineWidth = 1.5, fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True): 
-    ''' 
+    """
     Plot firing rate spectrogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
             Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
@@ -1668,7 +1665,7 @@ def plotRateSpectrogram(include=['allCells', 'eachPop'], timeRange=None, binSize
         - showFig (True|False): Whether to show the figure or not (default: True)
 
         - Returns figure handle
-    '''
+    """
 
     from .. import sim
 
@@ -1782,32 +1779,63 @@ def plotRateSpectrogram(include=['allCells', 'eachPop'], timeRange=None, binSize
 # Calculate and print avg pop rates
 #------------------------------------------------------------------------------
 @exception
-def popAvgRates (trange = None, show = True):
+def popAvgRates(tranges = None, show = True):
     from .. import sim
+
+    avgRates = Dict()
 
     if not hasattr(sim, 'allSimData') or 'spkt' not in sim.allSimData:
         print('Error: sim.allSimData not available; please call sim.gatherData()')
         return None
 
-    spkts = sim.allSimData['spkt']
-    spkids = sim.allSimData['spkid']
+    spktsAll = sim.allSimData['spkt']
+    spkidsAll = sim.allSimData['spkid']
+    
+    spkidsList, spktsList = [], []
 
-    if not trange:
-        trange = [0, sim.cfg.duration]
+    if not tranges:
+        tranges = [[0, sim.cfg.duration]]
+
+    elif isinstance(tranges, list):
+    
+        # convert single time interval to list
+        if not isinstance(tranges[0], (list, tuple)):
+            tranges = [tranges]
+
+        # calculate for multiple time intervals
+        if isinstance(tranges[0], (list,tuple)):
+            for trange in tranges:
+                try:
+                    spkids, spkts = list(zip(*[(spkid, spkt) for spkid, spkt in zip(spkidsAll, spktsAll) if trange[0] <= spkt <= trange[1]]))
+                except:
+                    spkids, spkts = [], []
+                spkidsList.append(spkids)
+                spktsList.append(spkts)
+
     else:
-        try:
-            spkids, spkts = list(zip(*[(spkid, spkt) for spkid, spkt in zip(spkids, spkts) if trange[0] <= spkt <= trange[1]]))
-        except:
-            spkids, spkts = [], []
+        return avgRates
 
-
-    avgRates = Dict()
     for pop in sim.net.allPops:
-        numCells = float(len(sim.net.allPops[pop]['cellGids']))
-        if numCells > 0:
-            tsecs = float((trange[1]-trange[0]))/1000.0
-            avgRates[pop] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['pop']==pop])/numCells/tsecs
-            print('   %s : %.3f Hz'%(pop, avgRates[pop]))
+
+        if len(tranges) > 1:
+            print('   %s ' % (pop))
+            avgRates[pop] = {}
+            
+        for spkids, spkts, trange in zip(spkidsList, spktsList, tranges):
+            numCells = float(len(sim.net.allPops[pop]['cellGids']))
+            if numCells > 0:
+                
+                # single time intervals
+                if len(tranges) == 1:
+                    tsecs = float((trange[1]-trange[0]))/1000.0
+                    avgRates[pop] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['pop']==pop])/numCells/tsecs
+                    print('   %s : %.3f Hz'%(pop, avgRates[pop]))
+                
+                # multiple time intervals
+                else:
+                    tsecs = float((trange[1]-trange[0]))/1000.0
+                    avgRates[pop]['%d_%d'%(trange[0], trange[1])] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['pop']==pop])/numCells/tsecs
+                    print('        (%d - %d ms): %.3f Hz'%(trange[0], trange[1], avgRates[pop]['%d_%d'%(trange[0], trange[1])]))
 
     return avgRates
 

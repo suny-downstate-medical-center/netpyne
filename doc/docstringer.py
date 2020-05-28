@@ -20,7 +20,7 @@ from types import ModuleType, FunctionType, MethodType
 
 
 # Use the local files rather than those from any existing NetPyNE installation
-sys.path.insert(0, os.path.dirname(os.getcwd()))
+#sys.path.insert(0, os.path.dirname(os.getcwd()))
 
 # Get the directory where this file resides
 docstringer_dir = os.path.dirname(os.path.abspath(__file__))
@@ -759,20 +759,10 @@ def get_all_methods(package_name):
 # Archive current netpyne package
 archive_dir, package_dir = archive_package(overwrite=True)
 
+
 # Restore netpyne package to its pre-docstringer state
 #original_archive_dir = os.path.join(os.path.dirname(package_dir), 'netpyne_orig')
 #restore_archive(original_archive_dir, package_dir)
-
-
-# functions = get_all_functions('netpyne')
-# classes = get_all_classes('netpyne')
-# objects = functions + classes
-
-# print()
-# print('docstringer')
-# print('===========')
-# print(objects)
-# print()
 
 
 
@@ -782,6 +772,7 @@ item_count = 0
 undoc_count = 0
 bad_count = 0
 good_count = 0
+
 
 print('docstringer is processing the following functions and classes:')
 print('==============================================================')
@@ -962,6 +953,14 @@ print('  docstrings created   :', item_count)
 print('  prev undocumented    :', undoc_count)
 print('  bad docstrings unused:', bad_count)
 print('  good docstrings used :', good_count)
+print()
+print('  your original package was copied here:')
+print('     ', archive_dir )
+print()
+print('  your docstrung package is here: ')
+print('     ', package_dir)
+print()
+
 
 
 

@@ -207,7 +207,7 @@ def _addSpecies(self, params):
         
         # initial
         if 'initial' not in param:
-            param['initial'] == None
+            param['initial'] = None
         if isinstance(param['initial'], basestring):  # string-based func
             funcStr = self._replaceRxDStr(param['initial'], constants=True, regions=True, species=False)
 

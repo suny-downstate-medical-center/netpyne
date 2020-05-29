@@ -167,8 +167,10 @@ def _smooth1d(x,window_len=11,window='hanning'):
 # -------------------------------------------------------------------------------------------------------------------
 ## Get subset of cells and netstims indicated by include list
 # -------------------------------------------------------------------------------------------------------------------
-def getCellsInclude(include):
-    from .. import sim
+def getCellsInclude(include, sim = None):
+
+    if not sim:
+        from .. import sim
 
     allCells = sim.net.allCells
     allNetStimLabels = list(sim.net.params.stimSourceParams.keys())
@@ -315,12 +317,14 @@ def invertDictMapping(d):
 # -------------------------------------------------------------------------------------------------------------------
 ## Get subset of spkt, spkid based on a timeRange and cellGids list; ~10x speedup over list iterate
 # -------------------------------------------------------------------------------------------------------------------
-def getSpktSpkid(cellGids=[], timeRange=None, allCells=False):
+def getSpktSpkid(cellGids=[], timeRange=None, sim = None):
     """
     return spike ids and times; with allCells=True just need to identify slice of time so can omit cellGids
     """
 
-    from .. import sim
+    if not sim:
+        from .. import sim
+    
     import pandas as pd
     
     try: # Pandas 0.24 and later
@@ -334,7 +338,7 @@ def getSpktSpkid(cellGids=[], timeRange=None, allCells=False):
         min, max = [int(df['spkt'].searchsorted(timeRange[i])) for i in range(2)] # binary search faster than query
     else: # timeRange None or empty list means all times
         min, max = 0, len(df)
-    if len(cellGids)==0 or allCells: # get all by either using flag or giving empty list -- can get rid of the flag
+    if len(cellGids)==0:
         sel = df[min:max]
     else:
         sel = df[min:max].query('spkid in @cellGids')

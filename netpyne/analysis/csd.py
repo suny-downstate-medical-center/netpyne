@@ -153,7 +153,7 @@ def getCSD (sampr=None,timeRange=None,spacing_um=100.0,minf=0.05,maxf=300,norm=T
 ######### PLOTTING CSD #########
 ################################
 
-def plotCSD(saveData=None, saveFig=None, showFig=True):
+def plotCSD(timeRange=None,saveData=None, saveFig=None, showFig=True):
   """ Plots CSD values extracted from simulated LFP data 
       
       Parameters
@@ -201,7 +201,11 @@ def plotCSD(saveData=None, saveFig=None, showFig=True):
 
 
   ##### (3) INTERPOLATION #####
-  X = sim.allSimData['t']       # TIME POINTS IN THE SIM
+  ## SET UP TIME POINTS FOR X AXIS 
+  if timeRange is None:
+    timeRange = [0,sim.cfg.duration]
+  X = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
+
   Y = range(CSD_data.shape[0])
   CSD_spline=scipy.interpolate.RectBivariateSpline(Y, X, CSD_data)
   Y_plot = np.linspace(0,CSD_data.shape[0],num=1000) # SURE ABOUT SHAPE? NUM? 

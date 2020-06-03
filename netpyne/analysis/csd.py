@@ -153,7 +153,7 @@ def getCSD (sampr=None,timeRange=None,spacing_um=100.0,minf=0.05,maxf=300,norm=T
 ######### PLOTTING CSD #########
 ################################
 
-def plotCSD(timeRange=None,saveData=None, saveFig=None, showFig=True):
+def plotCSD(timeRange=None,spacing_um=None,hlines=True,saveData=None, saveFig=None, showFig=True):
   """ Plots CSD values extracted from simulated LFP data 
       
       Parameters
@@ -217,10 +217,12 @@ def plotCSD(timeRange=None,saveData=None, saveFig=None, showFig=True):
   ##### (4) SET UP PLOTTING #####
 
   # (i) Set up axes 
+  if spacing_um is None:
+    spacing_um = sim.cfg.recordLFP[1][1] - sim.cfg.recordLFP[0][1]
   xmin = 0 
   xmax = int(X[-1]) + 1  #int(sim.allSimData['t'][-1])     # why this index? and also, need to resolve ttavg <--
   ymin = 1    # where does this come from? 
-  ymax = int(Y[-1]) + 1   # where does this come from?
+  ymax = sim.cfg.recordLFP[-1][1] + spacing_um #int(Y[-1]) + 1   # where does this come from?
   extent_xy = [xmin, xmax, ymax, ymin]
 
   # (ii) Set up figure 
@@ -237,7 +239,7 @@ def plotCSD(timeRange=None,saveData=None, saveFig=None, showFig=True):
     axs.append(plt.Subplot(fig,gs_outer[i*2:i*2+2]))
     fig.add_subplot(axs[i])
     #axs[i].set_yticks(np.arange(1, 24, step=1)) # np.arange(1, 24, step=1))
-    axs[i].set_ylabel('Contact', fontsize=12)
+    axs[i].set_ylabel('Contact depth', fontsize=12)
     axs[i].set_xlabel('Time (ms)',fontsize=12)
     #axs[i].set_xticks(np.arange(0, 60, step=10)) # np.arange(0, 60, step=10))
 
@@ -249,6 +251,10 @@ def plotCSD(timeRange=None,saveData=None, saveFig=None, showFig=True):
   perlayer_height = int(height/CSD_data.shape[0])
   xmin = axs[0].get_xlim()[0]
   xmax = axs[0].get_xlim()[1]
+  ## Add horizontal lines at locations of each electrode -- is this helpful? 
+  if hlines is True:
+    for i in range(len(sim.cfg.recordLFP)):
+      axs[0].hlines(sim.cfg.recordLFP[i][1], xmin, xmax, colors='black', linestyles='dashed')
 
 
 

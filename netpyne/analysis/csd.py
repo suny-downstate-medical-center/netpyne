@@ -71,9 +71,9 @@ def getCSD (sampr=None,timeRange=None,spacing_um=100.0,minf=0.05,maxf=300,norm=T
 
 
       timeRange : list [start, stop]
-        Time range to plot.
+        Time range to calculate CSD.
         **Default:** 
-        ``None`` plots entire time range
+        ``None`` uses entire time range
 
       spacing_um : float
         Electrode's contact spacing in units of microns <-- VERTICALLY, I ASSUME?
@@ -206,8 +206,10 @@ def plotCSD(timeRange=None,spacing_um=None,hlines=True,saveData=None, saveFig=No
     #timeRange = [0,sim.cfg.duration] 
     timeRange = sim.cfg.analysis['getCSD']['timeRange']
   X = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
-
+  
   Y = np.arange(CSD_data.shape[0])
+  #Y = np.arange(0,CSD_data.shape[0]/1000,1/1000)
+  #Y = Y/1000 # This is to test if issue with plotting is because of unit conversion 
   CSD_spline=scipy.interpolate.RectBivariateSpline(Y, X, CSD_data)
   Y_plot = np.linspace(0,CSD_data.shape[0],num=1000) # SURE ABOUT SHAPE? NUM? 
   Z = CSD_spline(Y_plot, X)
@@ -219,27 +221,30 @@ def plotCSD(timeRange=None,spacing_um=None,hlines=True,saveData=None, saveFig=No
   # (i) Set up axes 
   if spacing_um is None:
     spacing_um = sim.cfg.recordLFP[1][1] - sim.cfg.recordLFP[0][1]
+  spacing_mm = spacing_um/1000  # 
+
+
   xmin = 0 
   xmax = int(X[-1]) + 1  #int(sim.allSimData['t'][-1])     # why this index? and also, need to resolve ttavg <--
   ymin = 1    # where does this come from? 
-  ymax = sim.cfg.recordLFP[-1][1] + spacing_um #int(Y[-1]) + 1   # where does this come from?
+  ymax = sim.cfg.recordLFP[-1][1] + spacing_um #(sim.cfg.recordLFP[-1][1])/1000 + spacing_mm #depth 
   extent_xy = [xmin, xmax, ymax, ymin]
 
   # (ii) Set up figure 
   fig = plt.figure() #plt.figure(figsize=(10, 8)) #<-- quite large; for multiple subplots 
 
   # (iii) Title
-  fig.suptitle('Current Source Density')            #("Averaged Laminar CSD (n=%d) in A1 after 40 dB stimuli"%len(tts))
+  fig.suptitle('Current Source Density')
 
   # (iii) Create plots w/ common axis labels and tick marks
   axs = []
-  numplots=1
+  numplots=2 #changed from 1 for LFP overlay testing 
   gs_outer = matplotlib.gridspec.GridSpec(2, 4, figure=fig, wspace=0.4, hspace=0.2, height_ratios = [20, 1])
   for i in range(numplots):
     axs.append(plt.Subplot(fig,gs_outer[i*2:i*2+2]))
     fig.add_subplot(axs[i])
     #axs[i].set_yticks(np.arange(1, 24, step=1)) # np.arange(1, 24, step=1))
-    axs[i].set_ylabel('Contact depth', fontsize=12)
+    axs[i].set_ylabel('Contact depth (um)', fontsize=12)
     axs[i].set_xlabel('Time (ms)',fontsize=12)
     #axs[i].set_xticks(np.arange(0, 60, step=10)) # np.arange(0, 60, step=10))
 
@@ -247,8 +252,8 @@ def plotCSD(timeRange=None,spacing_um=None,hlines=True,saveData=None, saveFig=No
   spline=axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r')
   axs[0].set_title('RectBivariateSpline',fontsize=12)
 
-  height = axs[0].get_ylim()[0]
-  perlayer_height = int(height/CSD_data.shape[0])
+  #height = axs[0].get_ylim()[0]
+  #perlayer_height = int(height/CSD_data.shape[0])
   xmin = axs[0].get_xlim()[0]
   xmax = axs[0].get_xlim()[1]
   ## Add horizontal lines at locations of each electrode -- is this helpful? 
@@ -258,18 +263,32 @@ def plotCSD(timeRange=None,spacing_um=None,hlines=True,saveData=None, saveFig=No
 
 
 
+  ### LFP OVERLAY PLOTTING 
+  axs[1].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r')
+  axs[1].set_title('LFP overlay',fontsize=12)
+
+  # grid for LFP plots
+  LFP_data = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+  nrow = LFP_data.shape[1] # LFP_data.shape[0] gives you number of recorded time points.... 
+  gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(nrow, 1, subplot_spec=gs_outer[2:4], wspace=0.0, hspace=0.0)
+  clr = 'gray'
+  lw=0.5
+  subaxs = []
+
+  # go down grid and add LFP from each channel
+  for chan in range(nrow):
+    subaxs.append(plt.Subplot(fig,gs_inner[chan],frameon=False))
+    fig.add_subplot(subaxs[chan])
+    subaxs[chan].margins(0.0,0.01)
+    subaxs[chan].get_xaxis().set_visible(False)
+    subaxs[chan].get_yaxis().set_visible(False)
+    subaxs[chan].plot(X,LFP_data[:,chan],color=clr,linewidth=lw)
+
+
 
    # DISPLAY FINAL FIGURE
   plt.show()
 
-
-  # values = [1, 4, 5, 9, 10, 11, 12, 13, 14, 16] ### WHAT IS THIS ABOUT? 
-  # for i,val in enumerate(values):
-  #   if start_or_end[i] == "start":
-  #     axs[0].hlines(values[i]+0.02, xmin, xmax, colors='black', linestyles='dashed')
-  #     axs[0].text(2, values[i]+0.7, sink_or_source[i], fontsize=10)
-  #   else:
-  #     axs[0].hlines(values[i]+1.02, xmin, xmax, colors='black', linestyles='dashed')
 
 
   # COLORBAR

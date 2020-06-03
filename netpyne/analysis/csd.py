@@ -190,23 +190,24 @@ def plotCSD(timeRange=None,saveData=None, saveFig=None, showFig=True):
 
   ##### (2) STORE CSD DATA #####
   if 'CSD' in sim_data:
-    CSD_data = sim.allSimData['CSD']
-    CSD_data = np.array(CSD_data)       ## Needs to be in numpy array format for getAvgERP fx 
+    CSD_data = sim.allSimData['CSD']     ## Should already be numpy array from getCSD()
+    #CSD_data = np.array(CSD_data)       ## Needs to be in numpy array format for getAvgERP fx 
   elif 'CSD' not in sim_data:
     print('NEED TO GET CSD VALUES FROM LFP DATA -- run sim.analysis.getCSD()')
     sim.analysis.getCSD()   # WHAT ABOUT ARGS? ANY NEEDED? 
     CSD_data = sim.allSimData['CSD']
-    CSD_data = np.array(CSD_data)
+    #CSD_data = np.array(CSD_data)
 
 
 
   ##### (3) INTERPOLATION #####
   ## SET UP TIME POINTS FOR X AXIS 
   if timeRange is None:
-    timeRange = [0,sim.cfg.duration]
+    #timeRange = [0,sim.cfg.duration] 
+    timeRange = sim.cfg.analysis['getCSD']['timeRange']
   X = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
 
-  Y = range(CSD_data.shape[0])
+  Y = np.arange(CSD_data.shape[0])
   CSD_spline=scipy.interpolate.RectBivariateSpline(Y, X, CSD_data)
   Y_plot = np.linspace(0,CSD_data.shape[0],num=1000) # SURE ABOUT SHAPE? NUM? 
   Z = CSD_spline(Y_plot, X)
@@ -217,9 +218,9 @@ def plotCSD(timeRange=None,saveData=None, saveFig=None, showFig=True):
 
   # (i) Set up axes 
   xmin = 0 
-  xmax = int(sim.allSimData['t'][-1])     # why this index? and also, need to resolve ttavg <--
+  xmax = int(X[-1]) + 1  #int(sim.allSimData['t'][-1])     # why this index? and also, need to resolve ttavg <--
   ymin = 1    # where does this come from? 
-  ymax = 24   # where does this come from?
+  ymax = int(Y[-1]) + 1   # where does this come from?
   extent_xy = [xmin, xmax, ymax, ymin]
 
   # (ii) Set up figure 
@@ -235,10 +236,10 @@ def plotCSD(timeRange=None,saveData=None, saveFig=None, showFig=True):
   for i in range(numplots):
     axs.append(plt.Subplot(fig,gs_outer[i*2:i*2+2]))
     fig.add_subplot(axs[i])
-    axs[i].set_yticks(np.arange(1, 24, step=1))
+    #axs[i].set_yticks(np.arange(1, 24, step=1)) # np.arange(1, 24, step=1))
     axs[i].set_ylabel('Contact', fontsize=12)
     axs[i].set_xlabel('Time (ms)',fontsize=12)
-    axs[i].set_xticks(np.arange(0, 60, step=10))
+    #axs[i].set_xticks(np.arange(0, 60, step=10)) # np.arange(0, 60, step=10))
 
   # (iv)
   spline=axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r')

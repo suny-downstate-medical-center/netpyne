@@ -30,6 +30,8 @@ from .utils import exception, _saveFigData, _showFigure
 def getbandpass (lfps,sampr,minf=0.05,maxf=300):   # lfps should be a list or numpy array of LFPs arranged spatially in a column
   datband = []
   for i in range(len(lfps[0])): datband.append(bandpass(lfps[:,i],minf,maxf,df=sampr,zerophase=True))
+  #lfps_transpose = np.transpose(lfps)
+  #for i in range(len(lfps_transpose[0])): datband.append(bandpass(lfps_transpose[:,i],minf,maxf,df=sampr,zerophase=True))
   datband = np.array(datband)
   return datband
 
@@ -250,6 +252,7 @@ def plotCSD(timeRange=None,spacing_um=None,hlines=True,saveData=None, saveFig=No
 
   # (iv)
   spline=axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r')
+  axs[0].set_ylabel('Contact depth (um)')
   axs[0].set_title('RectBivariateSpline',fontsize=12)
 
   #height = axs[0].get_ylim()[0]

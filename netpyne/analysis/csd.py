@@ -256,17 +256,20 @@ def plotCSD(timeRange=None,spacing_um=None,hlines=True,saveData=None, saveFig=No
     axs[i].set_xlabel('Time (ms)',fontsize=12)
     axs[i].tick_params(axis='y', which='major', labelsize=8)
 
-  # (iv) Set up title and y axis label and x axis limits for CSD plot
+  # (iv) Set up title and y axis label and axis limits for CSD plot
   spline=axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r')
   axs[0].set_ylabel('Contact depth (um)')
   axs[0].set_title('RectBivariateSpline',fontsize=12)
   xmin = axs[0].get_xlim()[0]
   xmax = axs[0].get_xlim()[1]
+  #ymin = axs[0].get_ylim()[0]
+  #ymax = axs[0].get_ylim()[1]
 
   ## Add horizontal lines at locations of each electrode
   if hlines is True:
     for i in range(len(sim.cfg.recordLFP)):
       axs[0].hlines(sim.cfg.recordLFP[i][1], xmin, xmax, colors='black', linestyles='dashed')
+      #axs[0].vlines(sim.cfg.recordLFP[i][0], ymin, ymax, colors='black', linestyles='dashed')
 
 
 
@@ -293,7 +296,9 @@ def plotCSD(timeRange=None,spacing_um=None,hlines=True,saveData=None, saveFig=No
       subaxs[chan].get_yaxis().set_visible(False)
       subaxs[chan].plot(X,LFP_data[:,chan],color=clr,linewidth=lw)
 
-
+  # ax_bottom = plt.subplot(gs_inner[1,1:3])
+  # fig.colorbar(spline,cax=ax_bottom,orientation='horizontal',use_gridspec=False)
+  # ax_bottom.set_xlabel(r'CSD (mV/mm$^2$)', fontsize=12)
 
    # DISPLAY FINAL FIGURE
   plt.show()

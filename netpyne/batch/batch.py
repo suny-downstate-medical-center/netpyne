@@ -42,6 +42,7 @@ from .utils import bashTemplate
 from .utils import createFolder
 from .grid import gridSearch
 from .evol import evolOptim
+from .asd import asdOptim
 
 
 pc = h.ParallelContext() # use bulletin board master/slave
@@ -104,8 +105,12 @@ class Batch(object):
         odict = deepcopy(self.__dict__)
         if 'evolCfg' in odict:
             odict['evolCfg']['fitnessFunc'] = 'removed'
+        if 'optimCfg' in odict:
+            odict['optimCfg']['fitnessFunc'] = 'removed'
+
         odict['initCfg'] = tupleToStr(odict['initCfg'])
-        dataSave = {'batch': tupleToStr(odict)} 
+        dataSave = {'batch': tupleToStr(odict)}
+        
         if ext == 'json':
             from .. import sim
             #from json import encoder

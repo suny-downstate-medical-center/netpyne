@@ -169,7 +169,7 @@ def asd(function, x, args=None, stepsize=0.1, sinc=2, sdec=2, pinc=2, pdec=2,
     if all(stepsizes == 0): stepsizes += stepsize # Handle the case where all step sizes are 0
     if any(stepsizes == 0): stepsizes[stepsizes == 0] = np.mean(stepsizes[stepsizes != 0]) # Replace step sizes of zeros with the mean of non-zero entries
     if args is None: args = {} # Reset if no function arguments supplied
-    fval = function(x, **args) # Calculate initial value of the objective function
+    fval = function(x, args) # Calculate initial value of the objective function
     fvalorig = fval # Store the original value of the objective function, since fval is overwritten on each step
     xorig = dcp(x) # Keep the original x, just in case
 
@@ -275,12 +275,6 @@ def asd(function, x, args=None, stepsize=0.1, sinc=2, sdec=2, pinc=2, pdec=2,
 
 
 
-
-
-
-
-
-
 # -------------------------------------------------------------------------------
 # Adaptive Stochastic Descente (ASD) optimization
 # -------------------------------------------------------------------------------
@@ -305,9 +299,12 @@ def asdOptim(self, pc):
     # -------------------------------------------------------------------------------
     # ASD optimization: Parallel evaluation
     # -------------------------------------------------------------------------------
-    def evaluator(candidates, args):
+    def evaluator(x, args):
         import os
         import signal
+
+        candidates = [x] # only 1 candidate for now
+
         global ngen
         ngen += 1
         total_jobs = 0
@@ -382,7 +379,7 @@ def asdOptim(self, pc):
                 # ----------------------------------------------------------------------
                 # MPI master-slaves
                 # ----------------------------------------------------------------------
-                pc.submit(runEvolJob, script, cfgSavePath, netParamsSavePath, jobPath)
+                pc.submit(runASDJob, script, cfgSavePath, netParamsSavePath, jobPath)
                 print('-'*80)
 
             else:
@@ -459,7 +456,7 @@ def asdOptim(self, pc):
         jobs_completed = 0
         fitness = [None for cand in candidates]
         # print outfilestem
-        print("Waiting for jobs from generation %d/%d ..." %(ngen, args.get('max_generations')))
+        print("Waiting for jobs from generation %d/%d ..." %(ngen, args.get('maxiters')))
         # print "PID's: %r" %(pids)
         # start fitness calculation
         while jobs_completed < total_jobs:
@@ -554,15 +551,19 @@ def asdOptim(self, pc):
       label          None    A label to use to annotate the output
     ''' 
 
+    if len(self.params[0]['values']) > 2:
+        x0 = [x['values'][2] for x in self.params]  # 3rd value is initial value
+    else:
+        x0 = [x['values'][0] + (x['values'][1]-x['values'][0])/2 for x in self.params]  # if no 3rd value, calculate midpoint (min + (max-min)/2)
+
+    kwargs['paramLabels'] = [x['label'] for x in self.params]
     kwargs['xmin'] = [x['values'][0] for x in self.params]
     kwargs['xmax'] = [x['values'][1] for x in self.params]
-    if len(self.params[0]['values'] > 2):
-        kwargs['x0'] = [x['values'][2] for x in self.params]  # 3rd value is initial value
-    else:
-        kwargs['x0'] = [x['values'][0] + (x['values'][1]-x['values'][0])/2 for x in self.params]  # if no 3rd value, calculate midpoint (min + (max-min)/2)
-    
-    kwargs['args'] = {'cfg': self.cfg}  # include here args/params to pass to evaluator function
-    kwargs['args']['netParamsSavePath'] = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
+
+    if 'args' not in kwargs: kwargs['args'] = {}
+    kwargs['args']['cfg'] = self.cfg  # include here args/params to pass to evaluator function
+    kwargs['args']['netParamsSavePath'] = self.saveFolder + '/' + self.batchLabel + '_netParams.py'
+    kwargs['args']['maxiters'] = self.optimCfg['maxiters'] if 'maxiters' in self.optimCfg else 1000
     
     for key, value in self.optimCfg.items(): 
         kwargs[key] = value
@@ -579,7 +580,7 @@ def asdOptim(self, pc):
     # -------------------------------------------------------------------------------
     # Run algorithm
     # ------------------------------------------------------------------------------- 
-    output = asd(evaluator, **kwargs)
+    output = asd(evaluator, x0, **kwargs)
     
     # print best and finish
     print(('Best Solution: \n{0}'.format(str(max(output['x'])))))

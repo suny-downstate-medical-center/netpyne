@@ -41,7 +41,7 @@ import numpy.random as nr
 import numpy as np
 
 from neuron import h
-from netpyne import specs
+from netpyne import sim,specs
 from .utils import createFolder
 from .utils import bashTemplate
 from .utils import dcp, sigfig
@@ -177,7 +177,7 @@ def asd(function, x, args=None, stepsize=0.1, sinc=2, sdec=2, pinc=2, pdec=2,
     abserrorhistory = np.zeros(stalliters) # Store previous error changes
     relerrorhistory = np.zeros(stalliters) # Store previous error changes
     fvals = np.zeros(maxiters + 1) # Store all objective function values
-    allsteps = np.zeros((maxiters + 1, nparams)) # Store all parameters
+    allsteps = np.zeros((maxiters + 1, nparams))  # Store all parameters
     fvals[0] = fvalorig # Store initial function output
     allsteps[0, :] = xorig # Store initial input vector
 
@@ -213,7 +213,7 @@ def asd(function, x, args=None, stepsize=0.1, sinc=2, sdec=2, pinc=2, pdec=2,
         # Calculate the new value 
         xnew = dcp(x) # Initialize the new parameter set
         xnew[par] = newval # Update the new parameter set
-        fvalnew = function(xnew, **args) # Calculate the objective function for the new parameter set
+        fvalnew = function(xnew, args) # Calculate the objective function for the new parameter set
         eps = 1e-12 # Small value to avoid divide-by-zero errors
         if abs(fvalnew)<eps and abs(fval)<eps: ratio = 1 # They're both zero: set the ratio to 1
         elif abs(fvalnew)<eps:                 ratio = 1.0/eps # Only the denominator is zero: reset to the maximum ratio
@@ -303,7 +303,8 @@ def asdOptim(self, pc):
         import os
         import signal
 
-        candidates = [x] # only 1 candidate for now
+        candidates = [list(x)]  # only 1 candidate for now
+        print(candidates)
 
         global ngen
         ngen += 1
@@ -362,6 +363,7 @@ def asdOptim(self, pc):
                     self.setCfgNestedParam(paramLabel, paramVal)
             
             # modify cfg instance with candidate values
+            print(paramLabels, candidate)
             for label, value in zip(paramLabels, candidate):
                 print('set %s=%s' % (label, value))
                 self.setCfgNestedParam(label, value)
@@ -513,8 +515,9 @@ def asdOptim(self, pc):
         # return
         print("-"*80)
         print("  Completed a generation  ")
-        print("-"*80)
-        return fitness
+        print("-" * 80)
+        
+        return fitness[0]  # single candidate for now
         
 
 
@@ -556,14 +559,16 @@ def asdOptim(self, pc):
     else:
         x0 = [x['values'][0] + (x['values'][1]-x['values'][0])/2 for x in self.params]  # if no 3rd value, calculate midpoint (min + (max-min)/2)
 
-    kwargs['paramLabels'] = [x['label'] for x in self.params]
     kwargs['xmin'] = [x['values'][0] for x in self.params]
     kwargs['xmax'] = [x['values'][1] for x in self.params]
 
     if 'args' not in kwargs: kwargs['args'] = {}
     kwargs['args']['cfg'] = self.cfg  # include here args/params to pass to evaluator function
+    kwargs['args']['paramLabels'] = [x['label'] for x in self.params]
     kwargs['args']['netParamsSavePath'] = self.saveFolder + '/' + self.batchLabel + '_netParams.py'
     kwargs['args']['maxiters'] = self.optimCfg['maxiters'] if 'maxiters' in self.optimCfg else 1000
+    kwargs['args']['fitnessFunc'] = self.optimCfg['fitnessFunc']
+    kwargs['args']['fitnessFuncArgs'] = self.optimCfg['fitnessFuncArgs']
     
     for key, value in self.optimCfg.items(): 
         kwargs[key] = value
@@ -583,11 +588,12 @@ def asdOptim(self, pc):
     output = asd(evaluator, x0, **kwargs)
     
     # print best and finish
-    print(('Best Solution: \n{0}'.format(str(max(output['x'])))))
-    print("-"*80)
+    print('Best Solution with fitness = %.4g: \n' % (output['fval']), output['x'])
+    print("-" * 80)
     print("   Completed adaptive stochasitc parameter optimization   ")
     print("-" * 80)
     
-    with open('%s/%s_output.json' % (self.saveFolder, self.batchLabel)) as f:
-        json.dump(output, f)
+    sim.saveJSON('%s/%s_output.json' % (self.saveFolder, self.batchLabel), output)
+    sleep(1)
+
     sys.exit()

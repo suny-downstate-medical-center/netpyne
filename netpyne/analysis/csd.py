@@ -155,7 +155,7 @@ def getCSD (sampr=None,timeRange=None,spacing_um=100.0,minf=0.05,maxf=300,norm=T
 ######### PLOTTING CSD #########
 ################################
 
-def plotCSD(timeRange=None,spacing_um=None,hlines=True,saveData=None, saveFig=None, showFig=True):
+def plotCSD(timeRange=None,spacing_um=None,hlines=True,saveData=None, saveFig=None, showFig=True, LFP_overlay=True):
   """ Plots CSD values extracted from simulated LFP data 
       
       Parameters
@@ -205,8 +205,20 @@ def plotCSD(timeRange=None,spacing_um=None,hlines=True,saveData=None, saveFig=No
   ##### (3) INTERPOLATION #####
   ## SET UP TIME POINTS FOR X AXIS 
   if timeRange is None:
-    #timeRange = [0,sim.cfg.duration] 
-    timeRange = sim.cfg.analysis['getCSD']['timeRange']
+    # OPTION 1: Use same time range as used in getCSD()
+    if 'getCSD' in sim.cfg.analysis.keys() and 'timeRange' in sim.cfg.analysis['getCSD']:
+      timeRange = sim.cfg.analysis['getCSD']['timeRange']
+
+    # OPTION 2: Use same time range as LFP plotting
+    elif 'getCSD' not in sim.cfg.analysis.keys() and 'plotLFP' in sim.cfg.analysis.keys() and 'timeRange' in sim.cfg.analysis['plotLFP'].keys():
+        timeRange = sim.cfg.analysis['plotLFP']['timeRange']
+    
+    # OPTION 3: Use entire simulation time range
+    else:
+      timeRange = [0,sim.cfg.duration]
+
+
+
   X = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
   
   Y = np.arange(CSD_data.shape[0])
@@ -240,14 +252,19 @@ def plotCSD(timeRange=None,spacing_um=None,hlines=True,saveData=None, saveFig=No
 
   # (iii) Create plots w/ common axis labels and tick marks
   axs = []
-  numplots=2 #changed from 1 for LFP overlay testing 
+  if LFP_overlay is True:
+    numplots=2
+  else:
+    numplots=1
+
   gs_outer = matplotlib.gridspec.GridSpec(2, 4, figure=fig, wspace=0.4, hspace=0.2, height_ratios = [20, 1])
   for i in range(numplots):
     axs.append(plt.Subplot(fig,gs_outer[i*2:i*2+2]))
     fig.add_subplot(axs[i])
     #axs[i].set_yticks(np.arange(1, 24, step=1)) # np.arange(1, 24, step=1))
-    axs[i].set_ylabel('Contact depth (um)', fontsize=12)
+    #axs[i].set_ylabel('Contact depth (um)', fontsize=12)
     axs[i].set_xlabel('Time (ms)',fontsize=12)
+    axs[i].tick_params(axis='y', which='major', labelsize=8)
     #axs[i].set_xticks(np.arange(0, 60, step=10)) # np.arange(0, 60, step=10))
 
   # (iv)
@@ -267,25 +284,28 @@ def plotCSD(timeRange=None,spacing_um=None,hlines=True,saveData=None, saveFig=No
 
 
   ### LFP OVERLAY PLOTTING 
-  axs[1].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r')
-  axs[1].set_title('LFP overlay',fontsize=12)
+  if LFP_overlay is True:
+    axs[1].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r')
+    axs[1].set_title('LFP overlay',fontsize=12)
+    #axs[1].set_yticks(fontsize=8)
+    #axs[1].tick_params(axis='y', which='major', labelsize=8)
 
-  # grid for LFP plots
-  LFP_data = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
-  nrow = LFP_data.shape[1] # LFP_data.shape[0] gives you number of recorded time points.... 
-  gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(nrow, 1, subplot_spec=gs_outer[2:4], wspace=0.0, hspace=0.0)
-  clr = 'gray'
-  lw=0.5
-  subaxs = []
+    # grid for LFP plots
+    LFP_data = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+    nrow = LFP_data.shape[1] # LFP_data.shape[0] gives you number of recorded time points.... 
+    gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(nrow, 1, subplot_spec=gs_outer[2:4], wspace=0.0, hspace=0.0)
+    clr = 'gray'
+    lw=0.5
+    subaxs = []
 
-  # go down grid and add LFP from each channel
-  for chan in range(nrow):
-    subaxs.append(plt.Subplot(fig,gs_inner[chan],frameon=False))
-    fig.add_subplot(subaxs[chan])
-    subaxs[chan].margins(0.0,0.01)
-    subaxs[chan].get_xaxis().set_visible(False)
-    subaxs[chan].get_yaxis().set_visible(False)
-    subaxs[chan].plot(X,LFP_data[:,chan],color=clr,linewidth=lw)
+    # go down grid and add LFP from each channel
+    for chan in range(nrow):
+      subaxs.append(plt.Subplot(fig,gs_inner[chan],frameon=False))
+      fig.add_subplot(subaxs[chan])
+      subaxs[chan].margins(0.0,0.01)
+      subaxs[chan].get_xaxis().set_visible(False)
+      subaxs[chan].get_yaxis().set_visible(False)
+      subaxs[chan].plot(X,LFP_data[:,chan],color=clr,linewidth=lw)
 
 
 

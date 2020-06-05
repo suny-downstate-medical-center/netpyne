@@ -201,4 +201,4 @@ class Batch(object):
         # Adaptive Stochastic Descent (ASD) optimization
         # -------------------------------------------------------------------------------
         elif self.method == 'asd':
-            evolOptim(self, pc)
+            asdOptim(self, pc)

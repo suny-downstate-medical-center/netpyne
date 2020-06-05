@@ -186,24 +186,19 @@ def plotCSD(timeRange=None,spacing_um=None,hlines=True,saveData=None, saveFig=No
 
   print('Plotting CSD... ')
   
-  ##### (1) CHECK IF CSD VALUES HAVE ALREADY BEEN EXTRACTED FROM LFP #####
+  ##### RETRIEVE CSD DATA #####
   sim_data = sim.allSimData.keys()
 
-
-  ##### (2) STORE CSD DATA #####
   if 'CSD' in sim_data:
     CSD_data = sim.allSimData['CSD']     ## Should already be numpy array from getCSD()
-    #CSD_data = np.array(CSD_data)       ## Needs to be in numpy array format for getAvgERP fx 
   elif 'CSD' not in sim_data:
     print('NEED TO GET CSD VALUES FROM LFP DATA -- run sim.analysis.getCSD()')
     sim.analysis.getCSD()   # WHAT ABOUT ARGS? ANY NEEDED? 
     CSD_data = sim.allSimData['CSD']
-    #CSD_data = np.array(CSD_data)
 
 
 
-  ##### (3) INTERPOLATION #####
-  ## SET UP TIME POINTS FOR X AXIS 
+  ## Get the time range that we want CSD data from:
   if timeRange is None:
     # OPTION 1: Use same time range as used in getCSD()
     if 'getCSD' in sim.cfg.analysis.keys() and 'timeRange' in sim.cfg.analysis['getCSD']:
@@ -218,25 +213,22 @@ def plotCSD(timeRange=None,spacing_um=None,hlines=True,saveData=None, saveFig=No
       timeRange = [0,sim.cfg.duration]
 
 
-
+  ## INTERPOLATION ## 
   X = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
-  
   Y = np.arange(CSD_data.shape[0])
-  #Y = np.arange(0,CSD_data.shape[0]/1000,1/1000)
-  #Y = Y/1000 # This is to test if issue with plotting is because of unit conversion 
+  #Y = np.arange(0,CSD_data.shape[0],1)
   CSD_spline=scipy.interpolate.RectBivariateSpline(Y, X, CSD_data)
-  Y_plot = np.linspace(0,CSD_data.shape[0],num=1000) # SURE ABOUT SHAPE? NUM? 
+  Y_plot = np.linspace(0,CSD_data.shape[0],num=1000) 
   Z = CSD_spline(Y_plot, X)
 
 
 
-  ##### (4) SET UP PLOTTING #####
+  ##### SET UP PLOTTING #####
 
   # (i) Set up axes 
   if spacing_um is None:
     spacing_um = sim.cfg.recordLFP[1][1] - sim.cfg.recordLFP[0][1]
   spacing_mm = spacing_um/1000  # 
-
 
   xmin = 0 
   xmax = int(X[-1]) + 1  #int(sim.allSimData['t'][-1])     # why this index? and also, need to resolve ttavg <--
@@ -250,7 +242,7 @@ def plotCSD(timeRange=None,spacing_um=None,hlines=True,saveData=None, saveFig=No
   # (iii) Title
   fig.suptitle('Current Source Density')
 
-  # (iii) Create plots w/ common axis labels and tick marks
+  # (iv) Create plots w/ common axis labels and tick marks
   axs = []
   if LFP_overlay is True:
     numplots=2
@@ -261,22 +253,17 @@ def plotCSD(timeRange=None,spacing_um=None,hlines=True,saveData=None, saveFig=No
   for i in range(numplots):
     axs.append(plt.Subplot(fig,gs_outer[i*2:i*2+2]))
     fig.add_subplot(axs[i])
-    #axs[i].set_yticks(np.arange(1, 24, step=1)) # np.arange(1, 24, step=1))
-    #axs[i].set_ylabel('Contact depth (um)', fontsize=12)
     axs[i].set_xlabel('Time (ms)',fontsize=12)
     axs[i].tick_params(axis='y', which='major', labelsize=8)
-    #axs[i].set_xticks(np.arange(0, 60, step=10)) # np.arange(0, 60, step=10))
 
-  # (iv)
+  # (iv) Set up title and y axis label and x axis limits for CSD plot
   spline=axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r')
   axs[0].set_ylabel('Contact depth (um)')
   axs[0].set_title('RectBivariateSpline',fontsize=12)
-
-  #height = axs[0].get_ylim()[0]
-  #perlayer_height = int(height/CSD_data.shape[0])
   xmin = axs[0].get_xlim()[0]
   xmax = axs[0].get_xlim()[1]
-  ## Add horizontal lines at locations of each electrode -- is this helpful? 
+
+  ## Add horizontal lines at locations of each electrode
   if hlines is True:
     for i in range(len(sim.cfg.recordLFP)):
       axs[0].hlines(sim.cfg.recordLFP[i][1], xmin, xmax, colors='black', linestyles='dashed')
@@ -287,8 +274,7 @@ def plotCSD(timeRange=None,spacing_um=None,hlines=True,saveData=None, saveFig=No
   if LFP_overlay is True:
     axs[1].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r')
     axs[1].set_title('LFP overlay',fontsize=12)
-    #axs[1].set_yticks(fontsize=8)
-    #axs[1].tick_params(axis='y', which='major', labelsize=8)
+
 
     # grid for LFP plots
     LFP_data = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
@@ -313,11 +299,6 @@ def plotCSD(timeRange=None,spacing_um=None,hlines=True,saveData=None, saveFig=No
   plt.show()
 
 
-
-  # COLORBAR
-  ## FILL THIS IN
-
- 
 
 
 # NOTE ON COLORS: 

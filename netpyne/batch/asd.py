@@ -484,11 +484,14 @@ def asdOptim(self, pc):
                 print("Max iterations reached, the %d unfinished jobs will be canceled and set to default fitness" % (len(unfinished)))
                 for canditade_index in unfinished:
                     fitness[canditade_index] = defaultFitness
-                    jobs_completed += 1      
-                    if 'scancelUser' in kwargs:
-                        os.system('scancel -u %s'%(kwargs['scancelUser']))
-                    else:              
-                        os.system('scancel %d'%(jobids[candidate_index]))  # terminate unfinished job (resubmitted jobs not terminated!)
+                    jobs_completed += 1
+                    try:   
+                        if 'scancelUser' in kwargs:
+                            os.system('scancel -u %s'%(kwargs['scancelUser']))
+                        else:              
+                            os.system('scancel %d' % (jobids[candidate_index]))  # terminate unfinished job (resubmitted jobs not terminated!)
+                    except:
+                        pass
             sleep(args.get('time_sleep', 1))
         
         # kill all processes

@@ -246,6 +246,7 @@ def asd(function, x, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, pin
         allsteps[count,:] = x  # Store parameters
         
         if saveFile:
+            print('HERE')
             sim.saveJSON(saveFile, {'x': allsteps, 'fvals': fvals})
         sleep(1)
 

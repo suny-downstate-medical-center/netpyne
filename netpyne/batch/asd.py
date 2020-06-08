@@ -50,7 +50,7 @@ pc = h.ParallelContext() # use bulletin board master/slave
 
 
 
-def asd(function, x, args=None, stepsize=0.1, sinc=2, sdec=2, pinc=2, pdec=2,
+def asd(function, x, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, pinc=2, pdec=2,
     pinitial=None, sinitial=None, xmin=None, xmax=None, maxiters=None, maxtime=None, 
     abstol=1e-6, reltol=1e-3, stalliters=None, stoppingfunc=None, randseed=None, 
     label=None, verbose=2, **kwargs):
@@ -243,7 +243,11 @@ def asd(function, x, args=None, stepsize=0.1, sinc=2, sdec=2, pinc=2, pdec=2,
 
         # Store output information
         fvals[count] = fval # Store objective function evaluations
-        allsteps[count, :] = x # Store parameters
+        allsteps[count,:] = x  # Store parameters
+        
+        if saveFile:
+            sim.saveJSON(saveFile, {'x': allsteps, 'fvals': fvals})
+        sleep(1)
 
         # Stopping criteria
         if count >= maxiters: # Stop if the iteration limit is exceeded
@@ -593,7 +597,8 @@ def asdOptim(self, pc):
     # -------------------------------------------------------------------------------
     # Run algorithm
     # ------------------------------------------------------------------------------- 
-    output = asd(evaluator, x0, **kwargs)
+    saveFile = '%s/%s_output.json' % (self.saveFolder, self.batchLabel)
+    output = asd(evaluator, x0, saveFile, **kwargs)
     
     # print best and finish
     print('Best Solution with fitness = %.4g: \n' % (output['fval']), output['x'])
@@ -601,7 +606,7 @@ def asdOptim(self, pc):
     print("   Completed adaptive stochasitc parameter optimization   ")
     print("-" * 80)
     
-    sim.saveJSON('%s/%s_output.json' % (self.saveFolder, self.batchLabel), output)
+    sim.saveJSON('%s/%s_result.json' % (self.saveFolder, self.batchLabel), output)
     sleep(1)
 
     sys.exit()

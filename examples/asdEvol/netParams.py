@@ -37,5 +37,4 @@ netParams.connParams['S->M'] = {
     'probability': cfg.prob,
     'weight': cfg.weight,
     'delay': cfg.delay,
-    'synMech': 'exc'
-	
+    'synMech': 'exc'}

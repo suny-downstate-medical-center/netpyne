@@ -215,12 +215,12 @@ def asd(function, x, args=None, stepsize=0.1, sinc=2, sdec=2, pinc=2, pdec=2,
         xnew[par] = newval # Update the new parameter set
         fvalnew = function(xnew, args) # Calculate the objective function for the new parameter set
         eps = 1e-12  # Small value to avoid divide-by-zero errors
-        print(abs(fvalnew))
-        print(abs(fval))
-        print(eps)
-        if abs(fvalnew)<eps and abs(fval)<eps: ratio = 1 # They're both zero: set the ratio to 1
-        elif abs(fvalnew)<eps:                 ratio = 1.0/eps # Only the denominator is zero: reset to the maximum ratio
-        else:                                  ratio = fval/float(fvalnew) # The normal situation: calculate the real ratio
+        try:
+            if abs(fvalnew)<eps and abs(fval)<eps: ratio = 1 # They're both zero: set the ratio to 1
+            elif abs(fvalnew)<eps:                 ratio = 1.0/eps # Only the denominator is zero: reset to the maximum ratio
+            else:                                  ratio = fval / float(fvalnew)  # The normal situation: calculate the real ratio
+        except:
+            ratio = 1.0  
         abserrorhistory[np.mod(count, stalliters)] = max(0, fval-fvalnew) # Keep track of improvements in the error
         relerrorhistory[np.mod(count, stalliters)] = max(0, ratio-1.0) # Keep track of improvements in the error
         if verbose >= 3: print(offset + 'step=%i choice=%s, par=%s, pm=%s, origval=%s, newval=%s' % (count, choice, par, pm, x[par], xnew[par]))

@@ -1307,8 +1307,7 @@ try:
             #self.stimLists[inputListId]['conds']['locList'].append(fract)
 
 except:
-    if sim.cfg.verbose:
-        print(' Warning: An Exception occurred when loading NeuroML ...')
+    print(' Warning: An Exception occurred when loading NeuroML ...')
 
 
 ###############################################################################

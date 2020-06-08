@@ -569,6 +569,8 @@ def asdOptim(self, pc):
     kwargs['args']['maxiters'] = self.optimCfg['maxiters'] if 'maxiters' in self.optimCfg else 1000
     kwargs['args']['fitnessFunc'] = self.optimCfg['fitnessFunc']
     kwargs['args']['fitnessFuncArgs'] = self.optimCfg['fitnessFuncArgs']
+    kwargs['args']['maxiter_wait'] = self.optimCfg['maxiter_wait']
+    kwargs['args']['time_sleep'] = self.optimCfg['time_sleep']
     
     for key, value in self.optimCfg.items(): 
         kwargs[key] = value

@@ -432,10 +432,13 @@ def asdOptim(self, pc):
                 with open(batchfile, 'w') as text_file:
                     text_file.write("%s" % jobString)
                 
-                #with open(jobPath+'.run', 'a+') as outf, open(jobPath+'.err', 'w') as errf:
-                with open(jobPath+'.jobid', 'w') as outf, open(jobPath+'.err', 'w') as errf:
-                    pids.append(Popen([executer, batchfile], stdout=outf, stderr=errf, preexec_fn=os.setsid).pid)
-                    
+                if type == 'mpi_direct':
+                    with open(jobPath+'.run', 'a+') as outf, open(jobPath+'.err', 'w') as errf:
+                        pids.append(Popen([executer, batchfile], stdout=outf, stderr=errf, preexec_fn=os.setsid).pid)
+                else:
+                    with open(jobPath+'.jobid', 'w') as outf, open(jobPath+'.err', 'w') as errf:
+                        pids.append(Popen([executer, batchfile], stdout=outf, stderr=errf, preexec_fn=os.setsid).pid)
+
                 #proc = Popen(command.split([executer, batchfile]), stdout=PIPE, stderr=PIPE)
                 sleep(0.1)
                 #read = proc.stdout.read()  

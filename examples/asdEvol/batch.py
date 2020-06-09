@@ -50,7 +50,7 @@ def batchASD():
         # options required only for mpi_direct or hpc
         'mpiCommand': 'mpiexec',  
         'nodes': 1,
-        'coresPerNode': 2,
+        'coresPerNode': 5,
         # 'allocation': 'default',
         # 'email': 'salvadordura@gmail.com',
         # 'reservation': None,
@@ -76,6 +76,8 @@ def batchASD():
         #'randseed':     None,    #    The random seed to use
         'verbose':      2,       #    How much information to print during the run
         #'label':        None    #    A label to use to annotate the output
+        'maxiter_wait': 10,
+        'time_sleep': 5
     }
 
     # Run batch simulations

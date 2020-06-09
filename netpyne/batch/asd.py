@@ -246,7 +246,6 @@ def asd(function, x, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, pin
         allsteps[count,:] = x  # Store parameters
         
         if saveFile:
-            print('HERE')
             sim.saveJSON(saveFile, {'x': allsteps, 'fvals': fvals})
         sleep(1)
 
@@ -435,17 +434,23 @@ def asdOptim(self, pc):
                 
                 #with open(jobPath+'.run', 'a+') as outf, open(jobPath+'.err', 'w') as errf:
                 with open(jobPath+'.jobid', 'w') as outf, open(jobPath+'.err', 'w') as errf:
-                    pids.append(Popen([executer, batchfile], stdout=outf,  stderr=errf, preexec_fn=os.setsid).pid)
+                    pids.append(Popen([executer, batchfile], stdout=outf, stderr=errf, preexec_fn=os.setsid).pid)
+                    
                 #proc = Popen(command.split([executer, batchfile]), stdout=PIPE, stderr=PIPE)
                 sleep(0.1)
-                #read = proc.stdout.read()                            
-                with open(jobPath+'.jobid', 'r') as outf:
-                    read=outf.readline()
-                print(read)
-                if len(read) > 0:
-                    jobid = int(read.split()[-1])
-                    jobids[candidate_index] = jobid
-                print('jobids', jobids)
+                #read = proc.stdout.read()  
+
+                if type == 'mpi_direct':
+                    with open('./pids.pid', 'a') as file:
+                        file.write(str(pids))                          
+                else:
+                    with open(jobPath+'.jobid', 'r') as outf:
+                        read=outf.readline()
+                    print(read)
+                    if len(read) > 0:
+                        jobid = int(read.split()[-1])
+                        jobids[candidate_index] = jobid
+                    print('jobids', jobids)
             total_jobs += 1
             sleep(0.1)
 
@@ -503,7 +508,7 @@ def asdOptim(self, pc):
             sleep(args.get('time_sleep', 1))
         
         # kill all processes
-        if type=='mpi_bulletin':
+        if type == 'mpi_bulletin':
             try:
                 with open("./pids.pid", 'r') as file: # read pids for mpi_bulletin
                     pids = [int(i) for i in file.read().split(' ')[:-1]]
@@ -517,14 +522,30 @@ def asdOptim(self, pc):
                         pass
             except:
                 pass
+        
+        elif type == 'mpi_direct':
+            try:
+                with open("./pids.pid", 'r') as file: # read pids for mpi_bulletin
+                    pids = [int(i) for i in file.read().replace('[', '').replace(']', '').split(' ')]
+            except:
+                print('Could not find pids to kill processes ...')
+                pass
+
+            else:            
+                with open("./pids.pid", 'w') as file: # delete content
+                    pass
+                for pid in pids:
+                    print('killing processes %d-%d ...' % (int(pid), int(pid + numproc + 1)))
+                    for i in range(pid, int(pid+numproc+2)):
+                        try:
+                            os.killpg(os.getpgid(i), signal.SIGTERM)
+                            #print('killed ', i)
+                        except:
+                            print(' Failed killing job ',i)
+
         # don't want to to this for hpcs since jobs are running on compute nodes not master 
-        # else: 
-        #     try: 
-        #         for pid in pids: os.killpg(os.getpgid(pid), signal.SIGTERM)
-        #     except:
-        #         pass
-        # return
-        print("-"*80)
+
+        print("-" * 80)
         print("  Completed a generation  ")
         print("-" * 80)
         
@@ -580,8 +601,8 @@ def asdOptim(self, pc):
     kwargs['args']['maxiters'] = self.optimCfg['maxiters'] if 'maxiters' in self.optimCfg else 1000
     kwargs['args']['fitnessFunc'] = self.optimCfg['fitnessFunc']
     kwargs['args']['fitnessFuncArgs'] = self.optimCfg['fitnessFuncArgs']
-    kwargs['args']['maxiter_wait'] = self.optimCfg['maxiter_wait']
-    kwargs['args']['time_sleep'] = self.optimCfg['time_sleep']
+    kwargs['args']['maxiter_wait'] = self.optimCfg.get('maxiter_wait', 10)
+    kwargs['args']['time_sleep'] = self.optimCfg.get('time_sleep', 60)
     
     for key, value in self.optimCfg.items(): 
         kwargs[key] = value

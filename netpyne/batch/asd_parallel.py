@@ -30,6 +30,7 @@ import json
 import logging
 import datetime
 import os
+import signal
 import glob
 from copy import copy
 from random import Random
@@ -230,11 +231,12 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
             # Calculate the new value 
             xnew = dcp(x) # Initialize the new parameter set
             xnew[par] = newval  # Update the new parameter set
-        
+            xnewPop.append(xnew)
+
         fvalnewPop = function(xnewPop, args)  # Calculate the objective function for the new parameter sets
             
-        for x, xnew, fval, fvalorig, fvalnew, probabilities, stepsizes, abserrorhistory, relerrorhistory in \
-            zip(xPop, xnewPop, fvalPop, fvalorigPop, fvalnewPop, probabilitiesPop, stepsizesPop, abserrorhistoryPop, relerrorhistoryPop):
+        for icand, (x, xnew, fval, fvalorig, fvalnew, probabilities, stepsizes, abserrorhistory, relerrorhistory) in \
+            enumerate(zip(xPop, xnewPop, fvalPop, fvalorigPop, fvalnewPop, probabilitiesPop, stepsizesPop, abserrorhistoryPop, relerrorhistoryPop)):
 
             eps = 1e-12  # Small value to avoid divide-by-zero errors
             try:
@@ -248,12 +250,12 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
             if verbose >= 3: print(offset + 'candidate %d, step=%i choice=%s, par=%s, pm=%s, origval=%s, newval=%s' % (icand, count, choice, par, pm, x[par], xnew[par]))
 
             # Check if this step was an improvement
-            fvalold = fval # Store old fval
+            fvalold = float(fval) # Store old fval
             if fvalnew < fvalold: # New parameter set is better than previous one
                 probabilities[choice] = probabilities[choice] * pinc # Increase probability of picking this parameter again
                 stepsizes[choice] = stepsizes[choice] * sinc # Increase size of step for next time
-                x = xnew # Reset current parameters
-                fval = fvalnew # Reset current error
+                x = dcp(xnew) # Reset current parameters
+                fval = float(fvalnew) # Reset current error
                 flag = '++' # Marks an improvement
             else: # New parameter set is the same or worse than the previous one
                 probabilities[choice] = probabilities[choice] / pdec # Decrease probability of picking this parameter again
@@ -261,11 +263,12 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
                 flag = '--' # Marks no change
                 if np.isnan(fvalnew):
                     if verbose >= 1: print('ASD: Warning, objective function returned NaN')
-            if verbose >= 2: print(offset + label + 'candidate %d, step %i (%0.1f s) %s (orig: %s | best:%s | new:%s | diff:%s)' % (icand, count, time() - start, flag) + sigfig([fvalorig, fvalold, fvalnew, fvalnew - fvalold]))
+            
+            if verbose >= 2: print(offset + label + 'candidate %d, step %i (%0.1f s) %s (orig: %s | best:%s | new:%s | diff:%s)' % ((icand, count, time() - start, flag) + sigfig([fvalorig, fvalold, fvalnew, fvalnew - fvalold])))
 
             # Store output information
-            fvals[count] = fval # Store objective function evaluations
-            allsteps[count,:] = x  # Store parameters
+            fvals[count] = float(fval) # Store objective function evaluations
+            allsteps[count,:] = dcp(x)  # Store parameters
         
         if saveFile:
             sim.saveJSON(saveFile, {'x': allstepsPop, 'fvals': fvalsPop})
@@ -333,8 +336,8 @@ def asdOptim(self, pc):
     # ASD optimization: Parallel evaluation
     # -------------------------------------------------------------------------------
     def evaluator(candidates, args):
+
         import os
-        import signal
 
         global ngen
         ngen += 1
@@ -551,6 +554,28 @@ def asdOptim(self, pc):
                 pass
         
         elif type == 'mpi_direct':
+            
+            import psutil
+
+            PROCNAME = "nrniv"
+
+            for proc in psutil.process_iter():
+                # check whether the process name matches
+                if proc.name() == PROCNAME:
+                    proc.kill()
+            '''
+            import subprocess, signal
+            import os
+            p = subprocess.Popen(['ps', '-A'], stdout=subprocess.PIPE)
+            out, err = p.communicate()
+
+            for line in out.splitlines():
+                if 'nrniv' in line:
+                    pid = int(line.split(None, 1)[0])
+                    os.kill(pid, signal.SIGKILL)
+            '''
+
+            '''
             try:
                 with open("./pids.pid", 'r') as file: # read pids for mpi_bulletin
                     pids = [int(i) for i in file.read().replace('[', '').replace(']', '').split(' ')]
@@ -569,7 +594,7 @@ def asdOptim(self, pc):
                             #print('killed ', i)
                         except:
                             print(' Failed killing job ',i)
-
+            '''
         # don't want to to this for hpcs since jobs are running on compute nodes not master 
 
         print("-" * 80)
@@ -659,8 +684,8 @@ def asdOptim(self, pc):
     output = asd(evaluator, x0, saveFile, **kwargs)
     
     # print best and finish
-    bestFval = np.max(output['fval'])
-    bestX = output['x'][np.argmax(output['fval'])]
+    bestFval = np.min(output['fval'])
+    bestX = output['x'][np.argmin(output['fval'])]
     
     print('Best Solution with fitness = %.4g: \n' % (bestFval), bestX)
     print("-" * 80)

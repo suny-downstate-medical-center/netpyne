@@ -74,7 +74,7 @@ def batchASD():
         #'stalliters':   10*len(params)*len(params),  #    Number of iterations over which to calculate TolFun (n = number of parameters)
         #'stoppingfunc': None,    #    External method that can be used to stop the calculation from the outside.
         #'randseed':     None,    #    The random seed to use
-        'verbose':      4,       #    How much information to print during the run
+        'verbose':      2,       #    How much information to print during the run
         #'label':        None    #    A label to use to annotate the output
         'maxiter_wait': 10,
         'time_sleep': 5,

@@ -563,38 +563,7 @@ def asdOptim(self, pc):
                 # check whether the process name matches
                 if proc.name() == PROCNAME:
                     proc.kill()
-            '''
-            import subprocess, signal
-            import os
-            p = subprocess.Popen(['ps', '-A'], stdout=subprocess.PIPE)
-            out, err = p.communicate()
-
-            for line in out.splitlines():
-                if 'nrniv' in line:
-                    pid = int(line.split(None, 1)[0])
-                    os.kill(pid, signal.SIGKILL)
-            '''
-
-            '''
-            try:
-                with open("./pids.pid", 'r') as file: # read pids for mpi_bulletin
-                    pids = [int(i) for i in file.read().replace('[', '').replace(']', '').split(' ')]
-            except:
-                print('Could not find pids to kill processes ...')
-                pass
-
-            else:            
-                with open("./pids.pid", 'w') as file: # delete content
-                    pass
-                for pid in pids:
-                    print('killing processes %d-%d ...' % (int(pid), int(pid + numproc + 1)))
-                    for i in range(pid, int(pid+numproc+2)):
-                        try:
-                            os.killpg(os.getpgid(i), signal.SIGTERM)
-                            #print('killed ', i)
-                        except:
-                            print(' Failed killing job ',i)
-            '''
+            
         # don't want to to this for hpcs since jobs are running on compute nodes not master 
 
         print("-" * 80)

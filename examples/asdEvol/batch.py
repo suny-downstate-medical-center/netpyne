@@ -77,7 +77,8 @@ def batchASD():
         'verbose':      2,       #    How much information to print during the run
         #'label':        None    #    A label to use to annotate the output
         'maxiter_wait': 10,
-        'time_sleep': 5
+        'time_sleep': 5,
+        'popsize': 3
     }
 
     # Run batch simulations

@@ -42,7 +42,7 @@ from .utils import bashTemplate
 from .utils import createFolder
 from .grid import gridSearch
 from .evol import evolOptim
-from .asd import asdOptim
+from .asd_parallel import asdOptim
 
 
 pc = h.ParallelContext() # use bulletin board master/slave

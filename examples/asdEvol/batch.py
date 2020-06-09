@@ -50,7 +50,7 @@ def batchASD():
         # options required only for mpi_direct or hpc
         'mpiCommand': 'mpiexec',  
         'nodes': 1,
-        'coresPerNode': 5,
+        'coresPerNode': 2,
         # 'allocation': 'default',
         # 'email': 'salvadordura@gmail.com',
         # 'reservation': None,

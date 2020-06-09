@@ -266,6 +266,8 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
             
             if verbose >= 2: print(offset + label + 'candidate %d, step %i (%0.1f s) %s (orig: %s | best:%s | new:%s | diff:%s)' % ((icand, count, time() - start, flag) + sigfig([fvalorig, fvalold, fvalnew, fvalnew - fvalold])))
 
+            import IPython; IPython.embed()
+
             # Store output information
             fvals[count] = float(fval) # Store objective function evaluations
             allsteps[count,:] = dcp(x)  # Store parameters
@@ -558,7 +560,6 @@ def asdOptim(self, pc):
             import psutil
 
             PROCNAME = "nrniv"
-
             for proc in psutil.process_iter():
                 # check whether the process name matches
                 if proc.name() == PROCNAME:

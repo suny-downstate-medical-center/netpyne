@@ -621,8 +621,10 @@ def asdOptim(self, pc):
 
     # 3rd value is list with initial values
     if len(self.params[0]['values']) > 2 and isinstance(self.params[0]['values'][2], list):
-        x0 = [x['values'][2] for x in self.params]  
         popsize = len(self.params[0]['values'][2])
+        x0 = []
+        for i in range(popsize):
+            x0.append([x['values'][2][i] for x in self.params])
 
     # if no 3rd value, calculate random values
     else:

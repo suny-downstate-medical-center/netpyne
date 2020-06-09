@@ -12,9 +12,9 @@ def batchASD():
     
     ## simple net
     params = specs.ODict()
-    params['prob'] = [0.01, 0.5]  # can add 3rd value for starting value (0)
-    params['weight'] = [0.001, 0.1]
-    params['delay'] = [1, 20]
+    params['prob'] = [0.01, 0.5, [0.4, 0.3]]  # can add 3rd value for starting value (0)
+    params['weight'] = [0.001, 0.1, [0.1, 0.2]]
+    params['delay'] = [1, 20, [5, 3]]
 
     pops = {}
     pops['S'] = {'target': 5, 'width': 2, 'min': 2}
@@ -78,7 +78,7 @@ def batchASD():
         #'label':        None    #    A label to use to annotate the output
         'maxiter_wait': 10,
         'time_sleep': 5,
-        'popsize': 3
+        'popsize': 1
     }
 
     # Run batch simulations

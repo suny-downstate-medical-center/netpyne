@@ -301,8 +301,9 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
 
     # Return
     if verbose >= 2:
+        print('\n=== %s %s (steps: %i) ===' % (label, exitreason, count))
         for icand, fvals in enumerate(fvalsPop):
-            print('\n=== %s %s (candidate: %d | steps: %i | orig: %s | best: %s | ratio: %s) ===' % ((label, exitreason, icand, count) + sigfig([fvals[0], fvals[-1], fvals[-1] / fvals[0]])))
+            print('  == candidate: %d | orig: %s | best: %s | ratio: %s ==' % ((icand) + sigfig([fvals[0], fvals[-1], fvals[-1] / fvals[0]])))
 
 
     output = {}
@@ -616,15 +617,16 @@ def asdOptim(self, pc):
 
     kwargs['xmin'] = [x['values'][0] for x in self.params]
     kwargs['xmax'] = [x['values'][1] for x in self.params]
-    popsize = self.optimCfg['popsize'] 
+
 
     # 3rd value is list with initial values
-    if len(self.params[0]['values']) > 2 and isinstance(self.params[0]['values'][3], list):
+    if len(self.params[0]['values']) > 2 and isinstance(self.params[0]['values'][2], list):
         x0 = [x['values'][2] for x in self.params]  
         popsize = len(self.params[0]['values'][3])
 
     # if no 3rd value, calculate random values
-    else: 
+    else:
+        popsize = self.optimCfg.get('popsize', 1) 
         x0 = []
         for p in range(popsize):
             x0.append([np.random.uniform(x['values'][0], x['values'][1]) for x in self.params])

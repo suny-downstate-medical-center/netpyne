@@ -181,7 +181,9 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
     
     # evaluate initial values
     fvalPop = function(xPop, args)
-    fvalorigPop = [float(fval) for fval in fvalPop]    
+    fvalorigPop = [float(fval) for fval in fvalPop]
+    fvaloldPop = [float(fval) for fval in fvalPop]
+
     xorigPop = [dcp(x) for x in xPop] # Keep the original x, just in case
 
     # Initialize history
@@ -233,10 +235,14 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
             xnew[par] = newval  # Update the new parameter set
             xnewPop.append(xnew)
 
+            # update pop variables
+            
+            xPop[icand], fvalPop[icand], probabilitiesPop[icand], stepsizesPop[icand] = x, fval, probabilities, stepsizes 
+
         fvalnewPop = function(xnewPop, args)  # Calculate the objective function for the new parameter sets
             
-        for icand, (x, xnew, fval, fvalorig, fvalnew, probabilities, stepsizes, abserrorhistory, relerrorhistory) in \
-            enumerate(zip(xPop, xnewPop, fvalPop, fvalorigPop, fvalnewPop, probabilitiesPop, stepsizesPop, abserrorhistoryPop, relerrorhistoryPop)):
+        for icand, (x, xnew, fval, fvalorig, fvalnew, fvalold, fvals, probabilities, stepsizes, abserrorhistory, relerrorhistory) in \
+            enumerate(zip(xPop, xnewPop, fvalPop, fvalorigPop, fvalnewPop, fvaloldPop, fvalsPop, probabilitiesPop, stepsizesPop, abserrorhistoryPop, relerrorhistoryPop)):
 
             eps = 1e-12  # Small value to avoid divide-by-zero errors
             try:
@@ -266,11 +272,11 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
             
             if verbose >= 2: print(offset + label + 'candidate %d, step %i (%0.1f s) %s (orig: %s | best:%s | new:%s | diff:%s)' % ((icand, count, time() - start, flag) + sigfig([fvalorig, fvalold, fvalnew, fvalnew - fvalold])))
 
-            import IPython; IPython.embed()
-
             # Store output information
             fvals[count] = float(fval) # Store objective function evaluations
             allsteps[count,:] = dcp(x)  # Store parameters
+
+            xPop[icand], xnewPop[icand], fvalPop[icand], fvalorigPop[icand], fvalnewPop[icand], fvaloldPop[icand], fvalsPop[icand], probabilitiesPop[icand], stepsizesPop[icand], abserrorhistoryPop[icand], relerrorhistoryPop[icand] = x, xnew, fval, fvalorig, fvalnew, fvalold, fvals, probabilities, stepsizes, abserrorhistory, relerrorhistory
         
         if saveFile:
             sim.saveJSON(saveFile, {'x': allstepsPop, 'fvals': fvalsPop})
@@ -296,7 +302,7 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
     # Return
     if verbose >= 2:
         for icand, fvals in enumerate(fvalsPop):
-            print('=== %s %s (candidate: %d | steps: %i | orig: %s | best: %s | ratio: %s) ===' % ((label, exitreason, icand, count) + sigfig([fvals[0], fvals[-1], fvals[-1] / fvals[0]])))
+            print('\n=== %s %s (candidate: %d | steps: %i | orig: %s | best: %s | ratio: %s) ===' % ((label, exitreason, icand, count) + sigfig([fvals[0], fvals[-1], fvals[-1] / fvals[0]])))
 
 
     output = {}
@@ -657,7 +663,7 @@ def asdOptim(self, pc):
     bestFval = np.min(output['fval'])
     bestX = output['x'][np.argmin(output['fval'])]
     
-    print('Best Solution with fitness = %.4g: \n' % (bestFval), bestX)
+    print('\nBest Solution with fitness = %.4g: \n' % (bestFval), bestX)
     print("-" * 80)
     print("   Completed adaptive stochasitc parameter optimization   ")
     print("-" * 80)

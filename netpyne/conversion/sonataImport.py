@@ -2,8 +2,6 @@
 conversion/sonata.py
 
 Functions to import/export to SONATA format
-
-Contributors: salvadordura@gmail.com
 """
 
 import os

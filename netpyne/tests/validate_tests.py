@@ -3,9 +3,8 @@
 test_validate.py
 
 Testing code for Validation class
-
-Contributors: mitra.sidddhartha@gmail.com
 """
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division

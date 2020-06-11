@@ -2,8 +2,6 @@
 analysis.py 
 
 Functions to read and plot figures from the batch simulation results. 
-
-Contributors: salvadordura@gmail.com
 """
 
 import json

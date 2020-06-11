@@ -2,9 +2,8 @@
 specs/utils.py 
 
 Helper functions for high-level specifications
-
-Contributors: salvador dura@gmail.com
 """
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division

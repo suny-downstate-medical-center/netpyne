@@ -2,9 +2,8 @@
 batch/batch.py 
 
 Class to setup and run batch simulations
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division

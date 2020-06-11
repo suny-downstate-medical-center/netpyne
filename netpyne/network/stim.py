@@ -3,9 +3,8 @@
 stim.py 
 
 Methods to create stims in the network
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division

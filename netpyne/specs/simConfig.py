@@ -2,9 +2,8 @@
 specs/simConfig.py
 
 SimConfig class includes simulation configuration parameters and methods
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division

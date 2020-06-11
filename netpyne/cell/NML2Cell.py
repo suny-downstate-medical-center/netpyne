@@ -2,9 +2,8 @@
 cell/NML2Cell.py 
 
 Contains pointCell class 
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
@@ -34,4 +33,6 @@ class NML2Cell (CompartCell):
     def __str__():
         return "%s"%self.tags['cellType']
     '''
+
+    pass
         

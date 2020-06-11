@@ -4,8 +4,6 @@ params.py
 netParams is a dict containing a set of network parameters using a standardized structure
 
 simConfig is a dict containing a set of simulation configurations using a standardized structure
-
-Contributors: salvadordura@gmail.com
 """
 
 from netpyne import specs

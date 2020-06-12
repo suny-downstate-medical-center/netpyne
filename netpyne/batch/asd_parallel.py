@@ -240,7 +240,8 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
             xPop[icand], fvalPop[icand], probabilitiesPop[icand], stepsizesPop[icand] = x, fval, probabilities, stepsizes 
 
         fvalnewPop = function(xnewPop, args)  # Calculate the objective function for the new parameter sets
-            
+        
+        print('\n')
         for icand, (x, xnew, fval, fvalorig, fvalnew, fvalold, fvals, probabilities, stepsizes, abserrorhistory, relerrorhistory) in \
             enumerate(zip(xPop, xnewPop, fvalPop, fvalorigPop, fvalnewPop, fvaloldPop, fvalsPop, probabilitiesPop, stepsizesPop, abserrorhistoryPop, relerrorhistoryPop)):
 
@@ -278,6 +279,8 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
 
             xPop[icand], xnewPop[icand], fvalPop[icand], fvalorigPop[icand], fvalnewPop[icand], fvaloldPop[icand], fvalsPop[icand], probabilitiesPop[icand], stepsizesPop[icand], abserrorhistoryPop[icand], relerrorhistoryPop[icand] = x, xnew, fval, fvalorig, fvalnew, fvalold, fvals, probabilities, stepsizes, abserrorhistory, relerrorhistory
         
+        print('\n')
+            
         if saveFile:
             sim.saveJSON(saveFile, {'x': allstepsPop, 'fvals': fvalsPop})
         sleep(1)

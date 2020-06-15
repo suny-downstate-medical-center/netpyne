@@ -280,7 +280,7 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
             xPop[icand], xnewPop[icand], fvalPop[icand], fvalorigPop[icand], fvalnewPop[icand], fvaloldPop[icand], fvalsPop[icand], probabilitiesPop[icand], stepsizesPop[icand], abserrorhistoryPop[icand], relerrorhistoryPop[icand] = x, xnew, fval, fvalorig, fvalnew, fvalold, fvals, probabilities, stepsizes, abserrorhistory, relerrorhistory
         
         print('\n')
-            
+
         if saveFile:
             sim.saveJSON(saveFile, {'x': allstepsPop, 'fvals': fvalsPop})
         sleep(1)
@@ -570,13 +570,14 @@ def asdOptim(self, pc):
             import psutil
 
             PROCNAME = "nrniv"
+
             for proc in psutil.process_iter():
                 # check whether the process name matches
-                if proc.name() == PROCNAME:
-                    try:
+                try:
+                    if proc.name() == PROCNAME:
                         proc.kill()
-                    except:
-                        pass
+                except:
+                    pass
             
         # don't want to to this for hpcs since jobs are running on compute nodes not master 
 

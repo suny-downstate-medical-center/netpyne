@@ -82,19 +82,22 @@ class CompartCell (Cell):
         
         for propLabel, prop in sim.net.params.cellParams.items():  # for each set of cell properties
             conditionsMet = 1
-            for (condKey,condVal) in prop['conds'].items():  # check if all conditions are met
-                if isinstance(condVal, list): 
-                    if isinstance(condVal[0], Number):
-                        if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
-                            conditionsMet = 0
-                            break
-                    elif isinstance(condVal[0], basestring):
-                        if self.tags.get(condKey) not in condVal:
-                            conditionsMet = 0
-                            break 
-                elif self.tags.get(condKey) != condVal: 
-                    conditionsMet = 0
-                    break
+            if 'conds' in prop and len(prop['conds']) > 0:
+                for (condKey,condVal) in prop['conds'].items():  # check if all conditions are met
+                    if isinstance(condVal, list): 
+                        if isinstance(condVal[0], Number):
+                            if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
+                                conditionsMet = 0
+                                break
+                        elif isinstance(condVal[0], basestring):
+                            if self.tags.get(condKey) not in condVal:
+                                conditionsMet = 0
+                                break 
+                    elif self.tags.get(condKey) != condVal: 
+                        conditionsMet = 0
+                        break
+            elif self.tags['cellType'] != propLabel:  # simplified method for defining cell params (when no 'conds')
+                conditionsMet = False
             if conditionsMet:  # if all conditions are met, set values for this cell
                 if sim.cfg.includeParamsLabel:
                     if 'label' not in self.tags:

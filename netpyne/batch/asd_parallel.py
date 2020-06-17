@@ -292,7 +292,7 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
         if (time() - start) > maxtime:
             exitreason = 'Time limit reached (%s > %s)' % sigfig([(time()-start), maxtime])
             break
-        if (count > stalliters) and (np.mean(abs([np.mean(x) for x in abserrorhistoryPop])) < abstol): # Stop if improvement is too small
+        if (count > stalliters) and (np.mean([np.mean(abs(x)) for x in abserrorhistoryPop]) < abstol): # Stop if improvement is too small
             exitreason = 'Absolute improvement too small (%s < %s)' % sigfig([np.mean([np.mean(x) for x in abserrorhistoryPop]), abstol])
             break
         if (count > stalliters) and (np.mean([sum(x) for x in relerrorhistoryPop]) < reltol): # Stop if improvement is too small

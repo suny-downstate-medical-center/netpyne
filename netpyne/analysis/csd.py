@@ -115,7 +115,7 @@ def getCSD (empirical=False,LFP_empirical_data=None,sampr=None,timeRange=None,sp
         ``False``
   """
 
-  if empirical is False:
+  if empirical is False:   ### GET LFP DATA FROM SIMULATION
     from .. import sim 
 
     ## SET DEFAULT ARGUMENT / PARAMETER VALUES 
@@ -132,41 +132,15 @@ def getCSD (empirical=False,LFP_empirical_data=None,sampr=None,timeRange=None,sp
     sim_data_categories = sim.allSimData.keys()
   
     if 'LFP' in sim_data_categories:
-      # Get LFP data
       lfp_data = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:] # from lfp.py, line 200; array splicing
     
-      # Bandpass filter the LFP data with getbandpass() fx defined above
-      datband = getbandpass(lfp_data,sampr,minf,maxf) 
-
-      # Take CSD along smaller dimension
-      if datband.shape[0] > datband.shape[1]: 
-        ax = 1
-      else:
-        ax = 0
-
-      # VAKNIN CORRECTION
-      if vaknin: 
-        datband = Vaknin(datband)
-
-      # NORM <-- ASKING SAM MORE ABOUT THIS
-      if norm: 
-        removemean(datband,ax=ax)
-
-      # now each column (or row) is an electrode -- take CSD along electrodes
-      CSD_data = -np.diff(datband,n=2,axis=ax)/spacing_mm**2  ## CSD_data should be in mV/mm**2, assuming that LFP data is in mV. 
-      
-      # Add CSD values to sim.allSimData for access outside of this function or script 
-      sim.allSimData['CSD'] = CSD_data
-  
     elif 'LFP' not in sim_data:
       print('!! WARNING: NO LFP DATA !! Need to re-run simulation with cfg.recordLFP enabled')
       CSD_data = []
 
-    # returns CSD in units of mV/mm**2 (assuming lfps are in mV)
-    return CSD_data
+  #######################################################
 
-  ####################################################################################################
-  elif empirical is True:
+  elif empirical is True:   ### GET LFP DATA AND CONFIRM EXISTENCE OF OTHER NECESSARY PARAMS FROM USER
     if LFP_empirical_data is None: 
       print('MUST PROVIDE LFP DATA')
     if sampr is None:
@@ -178,7 +152,35 @@ def getCSD (empirical=False,LFP_empirical_data=None,sampr=None,timeRange=None,sp
       dt = (1.0 / sampr) * 1000 # ensure dt is in units of ms  
       lfp_data = np.array(LFP_empirical_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]
 
-      datband = getbandpass(lfp_data,sampr,minf,maxf)
+
+  # Bandpass filter the LFP data with getbandpass() fx defined above
+  datband = getbandpass(lfp_data,sampr,minf,maxf) 
+
+  # Take CSD along smaller dimension
+  if datband.shape[0] > datband.shape[1]: 
+    ax = 1
+  else:
+    ax = 0
+
+  # VAKNIN CORRECTION
+  if vaknin: 
+    datband = Vaknin(datband)
+
+  # NORM <-- ASKING SAM MORE ABOUT THIS
+  if norm: 
+    removemean(datband,ax=ax)
+
+  # now each column (or row) is an electrode -- take CSD along electrodes
+  CSD_data = -np.diff(datband,n=2,axis=ax)/spacing_mm**2  ## CSD_data should be in mV/mm**2, assuming that LFP data is in mV. 
+
+  # Add CSD values to sim.allSimData for access outside of this function or script 
+  if empirical is True:
+    sim.allSimData['CSD'] = CSD_data
+
+  # returns CSD in units of mV/mm**2 (assuming lfps are in mV)
+  return CSD_data
+
+
 
 
 

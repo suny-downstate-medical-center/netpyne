@@ -599,7 +599,7 @@ def asdOptim(self, pc):
         print("  Completed a generation  ")
         print("-" * 80)
         
-        return [-1, fitness[1]]  # single candidate for now
+        return fitness # single candidate for now
         
 
 

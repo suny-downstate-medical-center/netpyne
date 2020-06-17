@@ -183,6 +183,7 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
     fvalPop = function(xPop, args)
     fvalorigPop = [float(fval) for fval in fvalPop]
     fvaloldPop = [float(fval) for fval in fvalPop]
+    fvalnewPop = [float(fval) for fval in fvalPop]
 
     xorigPop = [dcp(x) for x in xPop] # Keep the original x, just in case
 
@@ -206,34 +207,39 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
         count += 1  # Increment the count
 
         xnewPop = []
-        for icand, (x, fval, probabilities, stepsizes) in enumerate(zip(xPop, fvalPop, probabilitiesPop, stepsizesPop)):
+        for icand, (x, fval, fvalnew, probabilities, stepsizes) in enumerate(zip(xPop, fvalPop, fvalnewPop, probabilitiesPop, stepsizesPop)):
 
             if verbose == 1: print(offset + label + 'Iteration %i; elapsed %0.1f s; objective: %0.3e' % (count, time() - start, fval)) # For more verbose, use other print statement below
             if verbose >= 4: print('\n\n Count=%i \n x=%s \n probabilities=%s \n stepsizes=%s' % (count, x, probabilities, stepsizes))
             
-            # Calculate next parameters
-            probabilities = probabilities / sum(probabilities) # Normalize probabilities
-            cumprobs = np.cumsum(probabilities) # Calculate the cumulative distribution
-            inrange = False
-            for r in range(maxrangeiters): # Try to find parameters within range
-                choice = np.flatnonzero(cumprobs > nr.random())[0] # Choose a parameter and upper/lower at random
-                par = np.mod(choice, nparams) # Which parameter was chosen
-                pm = np.floor((choice) / nparams) # Plus or minus
-                newval = x[par] + ((-1)**pm) * stepsizes[choice] # Calculate the new vector
-                if newval<xmin[par]: newval = xmin[par] # Reset to the lower limit
-                if newval>xmax[par]: newval = xmax[par] # Reset to the upper limit
-                inrange = (newval != x[par])
-                if verbose >= 4: print(offset*2 + 'count=%i r=%s, choice=%s, par=%s, x[par]=%s, pm=%s, step=%s, newval=%s, xmin=%s, xmax=%s, inrange=%s' % (count, r, choice, par, x[par], (-1)**pm, stepsizes[choice], newval, xmin[par], xmax[par], inrange))
-                if inrange: # Proceed as long as they're not equal
-                    break
-            if not inrange: # Treat it as a failure if a value in range can't be found
-                probabilities[choice] = probabilities[choice] / pdec
-                stepsizes[choice] = stepsizes[choice] / sdec
+            if fvalnew == -1:
+                print('Note: rerunning candidate %i since it did not complete in previous iteration ...\n' % (icand))
+                xnew = dcp(x)  # if -1 means error evaluating function (eg. preempted job on HPC) so rerun same param set
+                xnewPop.append(xnew)
+            else:   
+                # Calculate next parameters
+                probabilities = probabilities / sum(probabilities) # Normalize probabilities
+                cumprobs = np.cumsum(probabilities) # Calculate the cumulative distribution
+                inrange = False
+                for r in range(maxrangeiters): # Try to find parameters within range
+                    choice = np.flatnonzero(cumprobs > nr.random())[0] # Choose a parameter and upper/lower at random
+                    par = np.mod(choice, nparams) # Which parameter was chosen
+                    pm = np.floor((choice) / nparams) # Plus or minus
+                    newval = x[par] + ((-1)**pm) * stepsizes[choice] # Calculate the new vector
+                    if newval<xmin[par]: newval = xmin[par] # Reset to the lower limit
+                    if newval>xmax[par]: newval = xmax[par] # Reset to the upper limit
+                    inrange = (newval != x[par])
+                    if verbose >= 4: print(offset*2 + 'count=%i r=%s, choice=%s, par=%s, x[par]=%s, pm=%s, step=%s, newval=%s, xmin=%s, xmax=%s, inrange=%s' % (count, r, choice, par, x[par], (-1)**pm, stepsizes[choice], newval, xmin[par], xmax[par], inrange))
+                    if inrange: # Proceed as long as they're not equal
+                        break
+                if not inrange: # Treat it as a failure if a value in range can't be found
+                    probabilities[choice] = probabilities[choice] / pdec
+                    stepsizes[choice] = stepsizes[choice] / sdec
 
-            # Calculate the new value 
-            xnew = dcp(x) # Initialize the new parameter set
-            xnew[par] = newval  # Update the new parameter set
-            xnewPop.append(xnew)
+                # Calculate the new value 
+                xnew = dcp(x) # Initialize the new parameter set
+                xnew[par] = newval  # Update the new parameter set
+                xnewPop.append(xnew)
 
             # update pop variables
             
@@ -245,31 +251,39 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
         for icand, (x, xnew, fval, fvalorig, fvalnew, fvalold, fvals, probabilities, stepsizes, abserrorhistory, relerrorhistory) in \
             enumerate(zip(xPop, xnewPop, fvalPop, fvalorigPop, fvalnewPop, fvaloldPop, fvalsPop, probabilitiesPop, stepsizesPop, abserrorhistoryPop, relerrorhistoryPop)):
 
-            eps = 1e-12  # Small value to avoid divide-by-zero errors
-            try:
-                if abs(fvalnew)<eps and abs(fval)<eps: ratio = 1 # They're both zero: set the ratio to 1
-                elif abs(fvalnew)<eps:                 ratio = 1.0/eps # Only the denominator is zero: reset to the maximum ratio
-                else:                                  ratio = fval / float(fvalnew)  # The normal situation: calculate the real ratio
-            except:
-                ratio = 1.0  
-            abserrorhistory[np.mod(count, stalliters)] = max(0, fval-fvalnew) # Keep track of improvements in the error
-            relerrorhistory[np.mod(count, stalliters)] = max(0, ratio-1.0) # Keep track of improvements in the error
-            if verbose >= 3: print(offset + 'candidate %d, step=%i choice=%s, par=%s, pm=%s, origval=%s, newval=%s' % (icand, count, choice, par, pm, x[par], xnew[par]))
+            if fvalnew == -1:
+                ratio = 1
+                abserrorhistory[np.mod(count, stalliters)] = 0
+                relerrorhistory[np.mod(count, stalliters)] = 0
+                fvalold = float(fval)
+                flag = '--'  # Marks no change
 
-            # Check if this step was an improvement
-            fvalold = float(fval) # Store old fval
-            if fvalnew < fvalold: # New parameter set is better than previous one
-                probabilities[choice] = probabilities[choice] * pinc # Increase probability of picking this parameter again
-                stepsizes[choice] = stepsizes[choice] * sinc # Increase size of step for next time
-                x = dcp(xnew) # Reset current parameters
-                fval = float(fvalnew) # Reset current error
-                flag = '++' # Marks an improvement
-            else: # New parameter set is the same or worse than the previous one
-                probabilities[choice] = probabilities[choice] / pdec # Decrease probability of picking this parameter again
-                stepsizes[choice] = stepsizes[choice] / sdec # Decrease size of step for next time
-                flag = '--' # Marks no change
-                if np.isnan(fvalnew):
-                    if verbose >= 1: print('ASD: Warning, objective function returned NaN')
+            else:  
+                eps = 1e-12  # Small value to avoid divide-by-zero errors
+                try:
+                    if abs(fvalnew)<eps and abs(fval)<eps: ratio = 1 # They're both zero: set the ratio to 1
+                    elif abs(fvalnew)<eps:                 ratio = 1.0/eps # Only the denominator is zero: reset to the maximum ratio
+                    else:                                  ratio = fval / float(fvalnew)  # The normal situation: calculate the real ratio
+                except:
+                    ratio = 1.0  
+                abserrorhistory[np.mod(count, stalliters)] = max(0, fval-fvalnew) # Keep track of improvements in the error
+                relerrorhistory[np.mod(count, stalliters)] = max(0, ratio-1.0) # Keep track of improvements in the error
+                if verbose >= 3: print(offset + 'candidate %d, step=%i choice=%s, par=%s, pm=%s, origval=%s, newval=%s' % (icand, count, choice, par, pm, x[par], xnew[par]))
+
+                # Check if this step was an improvement
+                fvalold = float(fval) # Store old fval
+                if fvalnew < fvalold: # New parameter set is better than previous one
+                    probabilities[choice] = probabilities[choice] * pinc # Increase probability of picking this parameter again
+                    stepsizes[choice] = stepsizes[choice] * sinc # Increase size of step for next time
+                    x = dcp(xnew) # Reset current parameters
+                    fval = float(fvalnew) # Reset current error
+                    flag = '++' # Marks an improvement
+                else: # New parameter set is the same or worse than the previous one
+                    probabilities[choice] = probabilities[choice] / pdec # Decrease probability of picking this parameter again
+                    stepsizes[choice] = stepsizes[choice] / sdec # Decrease size of step for next time
+                    flag = '--' # Marks no change
+                    if np.isnan(fvalnew):
+                        if verbose >= 1: print('ASD: Warning, objective function returned NaN')
             
             if verbose >= 2: print(offset + label + 'candidate %d, step %i (%0.1f s) %s (orig: %s | best:%s | new:%s | diff:%s)' % ((icand, count, time() - start, flag) + sigfig([fvalorig, fvalold, fvalnew, fvalnew - fvalold])))
 
@@ -306,7 +320,8 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
     if verbose >= 2:
         print('\n=== %s %s (steps: %i) ===' % (label, exitreason, count))
         for icand, fvals in enumerate(fvalsPop):
-            print('  == candidate: %d | orig: %s | best: %s | ratio: %s ==' % ((icand) + sigfig([fvals[0], fvals[-1], fvals[-1] / fvals[0]])))
+            print(fvals[0], fvals[-1])
+            print('  == candidate: %d | orig: %s | best: %s | ratio: %s ==' % ((icand,) + sigfig([fvals[0], fvals[-1], fvals[-1] / fvals[0]])))
 
 
     output = {}
@@ -496,7 +511,6 @@ def asdOptim(self, pc):
             sleep(0.1)
 
 
-
         # ----------------------------------------------------------------------
         # gather data and compute fitness
         # ----------------------------------------------------------------------
@@ -538,7 +552,7 @@ def asdOptim(self, pc):
             if num_iters >= args.get('maxiter_wait', 5000): 
                 print("Max iterations reached, the %d unfinished jobs will be canceled and set to default fitness" % (len(unfinished)))
                 for canditade_index in unfinished:
-                    fitness[canditade_index] = defaultFitness
+                    fitness[canditade_index] = -1 # rerun those that didn't complete; defaultFitness
                     jobs_completed += 1
                     try:   
                         if 'scancelUser' in kwargs:
@@ -585,7 +599,7 @@ def asdOptim(self, pc):
         print("  Completed a generation  ")
         print("-" * 80)
         
-        return fitness  # single candidate for now
+        return [-1, fitness[1]]  # single candidate for now
         
 
 

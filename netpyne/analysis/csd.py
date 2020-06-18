@@ -107,7 +107,7 @@ def rdmat (fn,samprds=0):
 ################################################
 ######### GET CSD VALUES FROM LFP DATA #########
 ################################################
-def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_empirical_data=None,sampr=None,timeRange=None,spacing_um=100.0,minf=0.05,maxf=300,norm=True,vaknin=False):
+def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_empirical_data=None,sampr=None,timeRange=None,spacing_um=None,spacing_NHP=100.0,minf=0.05,maxf=300,norm=True,vaknin=False):  # should spacing_um be None and vaknin be True? 
   """ Extracts CSD values from simulated LFP data 
 
       Parameters
@@ -156,6 +156,11 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
       spacing_um : float
         Electrode's contact spacing in units of microns 
         ** MUST BE PROVIDED BY USER IF LFP DATA IS EMPIRICAL (else default value of 100 microns is used) ** 
+        **Default:** ``None``
+
+      spacing_NHP : float
+        Electrode's contact spacing in units of microns
+        100 microns is the default for NHP data thus far. 
         **Default:** ``100.0``
 
       minf : float
@@ -187,11 +192,11 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
   
     if sampr is None:
       sampr = 1./sim.cfg.recordStep          # Sampling rate of data recording during the simulation 
-      dt = sim.cfg.recordStep
       #sim.allSimData['CSD']['sim']['sampr'] = sampr
 
     # Spacing between electrodes --> convert from micron to mm 
-    spacing_mm = spacing_um/1000
+    if spacing_um is None:
+      spacing_um = sim.cfg.recordLFP[1][1] - sim.cfg.recordLFP[0][1]
     #sim.allSimData['CSD']['sim']['spacing_um'] = spacing_um   # store spacing in units of microns
 
 
@@ -203,7 +208,7 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
     
     elif 'LFP' not in sim_data:
       print('!! WARNING: NO LFP DATA !! Need to re-run simulation with cfg.recordLFP enabled')
-      CSD_data = []
+      #CSD_data = []
 
   #######################################################
 
@@ -214,20 +219,27 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
       print('MUST PROVIDE TIME RANGE in ms')
     if sampr is None:
       print('MUST PROVIDE SAMPLING RATE in Hz')
+    if spacing_um is None:
+      print('MUST PROVIDE SPACING BETWEEN ELECTRODES in MICRONS')
 
-    spacing_mm = spacing_um/1000      # convert spacing from microns to mm 
+    
+    ## GET EMPIRICAL LFP DATA OVER THE SPECIFIED TIME RANGE
     dt = (1.0 / sampr) * 1000         # ensure dt is in units of ms  
     lfp_data = np.array(LFP_empirical_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]  # get lfp_data in timeRange specified 
 
   ####################################################### 
   elif empirical is True and NHP is True:   ### GET DATA FROM NHP .mat FILES 
-    [sampr,lfp_data,dt,tt] = rdmat(fn=NHP_fileName,samprds=samprds) 
-
+    [sampr,lfp_data,dt,tt] = rdmat(fn=NHP_fileName,samprds=samprds)  #sampr should equal samprds by the time rdmat is run
+    
+    if spacing_um is None:
+      spacing_um = spacing_NHP
 
   #############################################################
    # Now lfp_data exists for either empirical or simulated data 
   #############################################################
 
+  # Convert spacing from microns to mm 
+  spacing_mm = spacing_um/1000
 
   # Bandpass filter the LFP data with getbandpass() fx defined above
   datband = getbandpass(lfp_data,sampr,minf,maxf) 

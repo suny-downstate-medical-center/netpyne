@@ -21,11 +21,14 @@ from .utils import colorList, exception, getSpktSpkid, _showFigure, _saveFigData
 import numpy as np
 import pandas as pd
 
+from bokeh.themes import built_in_themes
+from bokeh.io import curdoc
+
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive raster
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid', orderInverse=False, popRates=False, spikeHist=False, spikeHistBin=5, syncLines=False, marker='circle', markerSize=3, popColors=None, saveData=None, saveFig=None, showFig=False):
+def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid', orderInverse=False, popRates=False, spikeHist=False, spikeHistBin=5, syncLines=False, marker='circle', markerSize=3, popColors=None, saveData=None, saveFig=None, showFig=False, **kwargs):
     """Creates an interactive html raster plot of network cells using Bokeh.
 
     Parameters
@@ -135,6 +138,9 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
     from bokeh.models.annotations import Title
 
     print('Plotting interactive raster ...')
+
+    if 'theme' in kwargs:
+        curdoc().theme = kwargs['theme']
 
     TOOLS = 'hover,save,pan,box_zoom,reset,wheel_zoom',
 
@@ -340,7 +346,7 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
 ## Plot interactive dipole
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False):
+def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False, **kwargs):
     """
     iplotDipole
     expData: experimental data; a dict with ['x'] and ['y'] 1-d vectors (either lists or np.arrays) of same length
@@ -352,6 +358,9 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False):
     from bokeh.resources import CDN
     from bokeh.embed import file_html
     from bokeh.layouts import layout
+
+    if 'theme' in kwargs:
+        curdoc().theme = kwargs['theme']
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
@@ -448,7 +457,7 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False):
 ## Plot interactive dipole Spectrogram
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1, maxFreq = 80, stepFreq = 1, norm = True, showFig=False):
+def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1, maxFreq = 80, stepFreq = 1, norm = True, showFig=False, **kwargs):
     """
     iplotDipoleSpectrogram
     expData: experimental data; a dict with ['x'] and ['y'] 1-d vectors (either lists or np.arrays) of same length
@@ -461,6 +470,8 @@ def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minF
     from bokeh.embed import file_html
     from bokeh.layouts import layout
 
+    if 'theme' in kwargs:
+        curdoc().theme = kwargs['theme']
 
     # renormalize the dipole and save
     def baseline_renormalize():
@@ -598,7 +609,7 @@ def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minF
 ## Plot interactive dipole Spectrogram
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1, maxFreq = 80, stepFreq = 1, norm = True, showFig=False):
+def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1, maxFreq = 80, stepFreq = 1, norm = True, showFig=False, **kwargs):
     """
     iplotDipolePSD
     expData: experimental data; a dict with ['x'] and ['y'] 1-d vectors (either lists or np.arrays) of same length
@@ -611,6 +622,8 @@ def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1,
     from bokeh.embed import file_html
     from bokeh.layouts import layout
 
+    if 'theme' in kwargs:
+        curdoc().theme = kwargs['theme']
 
     # renormalize the dipole and save
     def baseline_renormalize():
@@ -731,7 +744,7 @@ def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1,
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRange = None, binSize = 5, overlay=True, yaxis = 'rate',
-    popColors=[], norm=False, smooth=None, filtFreq=False, filtOrder=3, saveData = None, saveFig = None, showFig = False):
+    popColors=[], norm=False, smooth=None, filtFreq=False, filtOrder=3, saveData = None, saveFig = None, showFig = False, **kwargs):
     """
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include.
@@ -759,6 +772,9 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
     from bokeh.colors import RGB
     
     print('Plotting interactive spike histogram...')
+
+    if 'theme' in kwargs:
+        curdoc().theme = kwargs['theme']
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
@@ -892,7 +908,7 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
 ## Plot interactive Rate PSD
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, maxFreq = 100, NFFT = 256, noverlap = 128, smooth = 0, overlay=True, ylim = None, popColors = {}, figSize=(1000, 400), saveData = None, saveFig = None, showFig = False):
+def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, maxFreq = 100, NFFT = 256, noverlap = 128, smooth = 0, overlay=True, ylim = None, popColors = {}, figSize=(1000, 400), saveData = None, saveFig = None, showFig = False, **kwargs):
     
     """ 
     Plot firing rate power spectral density (PSD)
@@ -926,6 +942,9 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
     from bokeh.models import Legend
     
     print('Plotting interactive firing rate power spectral density (PSD) ...')
+
+    if 'theme' in kwargs:
+        curdoc().theme = kwargs['theme']
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
@@ -1042,7 +1061,7 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 ## Plot interactive Traces
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', rerun=False, colors=None, ylim=None, axis='on', fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True, ylabel=None, linkAxes=False):
+def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', rerun=False, colors=None, ylim=None, axis='on', fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True, ylabel=None, linkAxes=False, **kwargs):
     """
     Plot recorded traces
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of cells for which to plot 
@@ -1075,6 +1094,9 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
     from bokeh.colors import RGB
     
     print('Plotting interactive recorded cell traces per', oneFigPer)
+
+    if 'theme' in kwargs:
+        curdoc().theme = kwargs['theme']
 
     TOOLS = 'save,pan,box_zoom,reset,wheel_zoom'
     colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
@@ -1246,7 +1268,7 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange = None, NFFT = 256, noverlap = 128,
-             nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, logx=False, logy=False, norm=False, dpi = 200, overlay=False, filtFreq = False, filtOrder=3, detrend=False, colors = None, saveData = None, saveFig = None, showFig = False):
+             nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, logx=False, logy=False, norm=False, dpi = 200, overlay=False, filtFreq = False, filtOrder=3, detrend=False, colors = None, saveData = None, saveFig = None, showFig = False, **kwargs):
     from .. import sim
     from bokeh.plotting import figure, show
     from bokeh.resources import CDN
@@ -1255,6 +1277,9 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
     from bokeh.colors import RGB
 
     print('Plotting interactive LFP ...')
+
+    if 'theme' in kwargs:
+        curdoc().theme = kwargs['theme']
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
@@ -1444,7 +1469,7 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 ## Plot interactive connectivity
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotConn(includePre=['all'], includePost=['all'], feature='strength', orderBy='gid', figSize=(10,10), groupBy='pop', groupByIntervalPre=None, groupByIntervalPost=None, removeWeightNorm=False, graphType='matrix', synOrConn='syn', synMech=None, connsFile=None, tagsFile=None, clim=None, fontSize=12, saveData=None, saveFig=None, showFig=False): 
+def iplotConn(includePre=['all'], includePost=['all'], feature='strength', orderBy='gid', figSize=(10,10), groupBy='pop', groupByIntervalPre=None, groupByIntervalPost=None, removeWeightNorm=False, graphType='matrix', synOrConn='syn', synMech=None, connsFile=None, tagsFile=None, clim=None, fontSize=12, saveData=None, saveFig=None, showFig=False, **kwargs): 
     """
     Plot network connectivity
         - includePre (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
@@ -1480,6 +1505,9 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
     from bokeh.colors import RGB
 
     print('Plotting interactive connectivity matrix...')
+
+    if 'theme' in kwargs:
+        curdoc().theme = kwargs['theme']
 
     if connsFile and tagsFile:
         connMatrix, pre, post = network._plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile, removeWeightNorm)

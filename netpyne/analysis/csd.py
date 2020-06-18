@@ -182,7 +182,7 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
         ``False``
 
       getAllData : bool
-        True will have this function return timeRange, sampr, spacing_um, lfp_data, and CSD_data.
+        True will have this function returns dt, tt, timeRange, sampr, spacing_um, lfp_data, and CSD_data.
         False will return only CSD_data. 
         **Default**
         ``False``
@@ -196,6 +196,7 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
     ## SET DEFAULT ARGUMENT / PARAMETER VALUES 
     if timeRange is None:                 # Specify the time range of relevant LFP data 
       timeRange = [0,sim.cfg.duration]    # This makes the timeRange equal to the entire sim duration
+    
     dt = sim.cfg.recordStep                         # units: ms 
     tt = np.arange(timeRange[0], timeRange[1],dt)   # make array of time points 
       #sim.allSimData['CSD']['sim']['timeRange'] = timeRange
@@ -206,6 +207,7 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
 
     # Spacing between electrodes --> convert from micron to mm 
     if spacing_um is None:
+      print('NOTE: using sim.cfg.recordLFP to determine spacing_um !!')
       spacing_um = sim.cfg.recordLFP[1][1] - sim.cfg.recordLFP[0][1]
     #sim.allSimData['CSD']['sim']['spacing_um'] = spacing_um   # store spacing in units of microns
 
@@ -218,7 +220,7 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
     
     elif 'LFP' not in sim_data:
       print('!! WARNING: NO LFP DATA !! Need to re-run simulation with cfg.recordLFP enabled')
-      #CSD_data = []
+      # WHAT KIND OF ERROR GOES HERE? 
 
 
 
@@ -242,10 +244,14 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
     lfp_data = np.array(LFP_empirical_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]  # get lfp_data in timeRange specified 
 
 
+
   ############### CONDITION 3 : NHP DATA #######################################
-  
+
   elif empirical is True and NHP is True:   ### GET DATA FROM NHP .mat FILES 
     [sampr,lfp_data,dt,tt] = rdmat(fn=NHP_fileName,samprds=NHP_samprds)  #sampr should equal NHP_samprds by the time rdmat is run
+    ## ^^ dt and tt are in seconds (see rdmat above)
+    dt = dt * 1000    # convert to milliseconds
+    tt = tt * 1000    # convert to milliseconds <-- tt can be multiplied like this since it is a numpy array 
     timeRange = (tt[0],tt[-1])  # TEST THIS 
 
     if spacing_um is None:  # Means that spacing_NHP only used if there is no spacing_um specified (otherwise spacing_um will be used)
@@ -287,7 +293,7 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
     sim.allSimData['CSD']['sim']['timeRange'] = timeRange
     sim.allSimData['CSD']['sim']['sampr'] = sampr
     sim.allSimData['CSD']['sim']['spacing_um'] = spacing_um 
-    sim.allSimData['CSD']['sim'] = CSD_data
+    sim.allSimData['CSD']['sim']['CSD_data'] = CSD_data
 
 
   elif empirical is True and NHP is False:
@@ -296,10 +302,10 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
       sim.allSimData['CSD']['emp']['timeRange'] = timeRange
       sim.allSimData['CSD']['emp']['sampr'] = sampr
       sim.allSimData['CSD']['emp']['spacing_um'] = spacing_um
-      sim.allSimData['CSD']['emp'] = CSD_data    # STORE EMPIRICAL CSD DATA IN SIM IF RELEVANT
+      sim.allSimData['CSD']['emp']['CSD_data'] = CSD_data    # STORE EMPIRICAL CSD DATA IN SIM IF RELEVANT
     except: 
       print('NOTE: No sim.allSimData construct available to store empirical CSD data')
-    
+
 
 
   elif empirical is True and NHP is True:
@@ -308,7 +314,7 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
       sim.allSimData['CSD']['NHP']['timeRange'] = timeRange
       sim.allSimData['CSD']['NHP']['sampr'] = sampr
       sim.allSimData['CSD']['NHP']['spacing_um'] = spacing_um
-      sim.allSimData['CSD']['NHP'] = CSD_data    # STORE EMPIRICAL CSD DATA IN SIM IF RELEVANT
+      sim.allSimData['CSD']['NHP']['CSD_data'] = CSD_data    # STORE EMPIRICAL CSD DATA IN SIM IF RELEVANT
     except: 
       print('NOTE: No sim.allSimData construct available to store NHP CSD data')
 
@@ -381,54 +387,88 @@ def plotCSD(empirical=False,timeRange=None,spacing_um=None,hlines=True,saveData=
 
   print('Plotting CSD... ')
   
-  ##### RETRIEVE CSD DATA AND OTHER NECESSARY PARAM VALUES #####
+  ############### CONDITION 1 : DATA COMES FROM SIMULATION ###############
   if empirical is False:
+    print('sim data used for plotting')
+    
     from .. import sim
+
+    ## NEED TO PUT IN CODE THAT CHECKS IF THIS EXISTS, AND IF NOT, TO RUN getCSD()
     
-    sim_data = sim.allSimData.keys()
+    ## RETRIEVE CSD DATA (in mV/mm*2)
+    CSD_data = sim.allSimData['CSD']['sim']['CSD_data']
+    
+    ## RETRIEVE TIME RANGE (in ms), IF UNSPECIFIED IN ARGS 
+    if timeRange is None: 
+      timeRange = sim.allSimData['CSD']['sim']['timeRange']
+    dt = sim.cfg.recordStep                                       # dt --> recording time step (ms)
+    tt = np.arange(timeRange[0],timeRange[1],dt)                  # tt --> time points 
 
-    dt = sim.cfg.recordStep
+    ## RETRIEVE SPACING BETWEEN ELECTRODE CONTACTS (in microns)
+    spacing_um = sim.allSimData['CSD']['sim']['spacing_um']
+    spacing_mm = spacing_um/1000    # convert from microns to mm 
 
-    if spacing_um is None:
-      spacing_um = sim.cfg.recordLFP[1][1] - sim.cfg.recordLFP[0][1]
-    spacing_mm = spacing_um/1000  # convert from microns to mm 
+
+
+  ############### CONDITION 2 : ARBITRARY INPUT DATA #####################
+  elif empirical is True and NHP is False:
+    print('Arbitrary input data used for plotting')
+
+  ############### CONDITION 3 : DATA COMES FROM NHP ######################
+  elif empirical is True and NHP is True: 
+    print('NHP data used for plotting')
+
+
+
+  ################## OLD CODE <-- ANYTHING TO SALVAGE HERE? ############################################
+  # ##### RETRIEVE CSD DATA AND OTHER NECESSARY PARAM VALUES #####
+  # if empirical is False:
+  #   from .. import sim
+    
+  #   sim_data = sim.allSimData.keys()
+
+  #   dt = sim.cfg.recordStep
+
+  #   if spacing_um is None:
+  #     spacing_um = sim.cfg.recordLFP[1][1] - sim.cfg.recordLFP[0][1]
+  #   spacing_mm = spacing_um/1000  # convert from microns to mm 
     
 
-    # EXTRACT CSD DATA FROM SIM DATA
-    if 'CSD' in sim_data:
-      CSD_data = sim.allSimData['CSD']     ## Should already be numpy array from getCSD()
-    elif 'CSD' not in sim_data:
-      print('NEED TO GET CSD VALUES FROM LFP DATA -- run sim.analysis.getCSD()')
-      # sim.analysis.getCSD()   # WHAT ABOUT ARGS? ANY NEEDED? 
-      # CSD_data = sim.allSimData['CSD']
+  #   # EXTRACT CSD DATA FROM SIM DATA
+  #   if 'CSD' in sim_data:
+  #     CSD_data = sim.allSimData['CSD']     ## Should already be numpy array from getCSD()
+  #   elif 'CSD' not in sim_data:
+  #     print('NEED TO GET CSD VALUES FROM LFP DATA -- run sim.analysis.getCSD()')
+  #     # sim.analysis.getCSD()   # WHAT ABOUT ARGS? ANY NEEDED? 
+  #     # CSD_data = sim.allSimData['CSD']
 
 
 
-    ## Get the time range that we want CSD data from:
-    if timeRange is None:
-      # OPTION 1: Use same time range as used in getCSD()
-      if 'getCSD' in sim.cfg.analysis.keys() and 'timeRange' in sim.cfg.analysis['getCSD']:
-        timeRange = sim.cfg.analysis['getCSD']['timeRange']
+  #   ## Get the time range that we want CSD data from:
+  #   if timeRange is None:
+  #     # OPTION 1: Use same time range as used in getCSD()
+  #     if 'getCSD' in sim.cfg.analysis.keys() and 'timeRange' in sim.cfg.analysis['getCSD']:
+  #       timeRange = sim.cfg.analysis['getCSD']['timeRange']
 
-      # OPTION 2: Use same time range as LFP plotting
-      elif 'getCSD' not in sim.cfg.analysis.keys() and 'plotLFP' in sim.cfg.analysis.keys() and 'timeRange' in sim.cfg.analysis['plotLFP'].keys():
-          timeRange = sim.cfg.analysis['plotLFP']['timeRange']
+  #     # OPTION 2: Use same time range as LFP plotting
+  #     elif 'getCSD' not in sim.cfg.analysis.keys() and 'plotLFP' in sim.cfg.analysis.keys() and 'timeRange' in sim.cfg.analysis['plotLFP'].keys():
+  #         timeRange = sim.cfg.analysis['plotLFP']['timeRange']
     
-      # OPTION 3: Use entire simulation time range
-      else:
-        timeRange = [0,sim.cfg.duration]
+  #     # OPTION 3: Use entire simulation time range
+  #     else:
+  #       timeRange = [0,sim.cfg.duration]
 
 
 
-  ##### RETRIEVE CSD DATA AND OTHER NECESSARY PARAM VALUES ##### 
-  elif empirical is True: 
-    try: 
-      from .. import sim
-      CSD_data = sim.allSimData['CSD_empirical']
-    except:
-      print('Empirical CSD data not stored in sim.allSimData -- run getCSD() on user-provided LFP data')
+  # ##### RETRIEVE CSD DATA AND OTHER NECESSARY PARAM VALUES ##### 
+  # elif empirical is True: 
+  #   try: 
+  #     from .. import sim
+  #     CSD_data = sim.allSimData['CSD_empirical']
+  #   except:
+  #     print('Empirical CSD data not stored in sim.allSimData -- run getCSD() on user-provided LFP data')
 
-    dt = 
+  #   dt = 
 
   ## INTERPOLATION ## 
   X = np.arange(timeRange[0], timeRange[1], dt)  # dt == sim.cfg.recordStep if data is from simulation 

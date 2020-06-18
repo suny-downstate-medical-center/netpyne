@@ -246,7 +246,8 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
   
   elif empirical is True and NHP is True:   ### GET DATA FROM NHP .mat FILES 
     [sampr,lfp_data,dt,tt] = rdmat(fn=NHP_fileName,samprds=NHP_samprds)  #sampr should equal NHP_samprds by the time rdmat is run
-    
+    timeRange = (tt[0],tt[-1])  # TEST THIS 
+
     if spacing_um is None:  # Means that spacing_NHP only used if there is no spacing_um specified (otherwise spacing_um will be used)
       spacing_um = spacing_NHP
 
@@ -287,11 +288,6 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
     sim.allSimData['CSD']['sim']['sampr'] = sampr
     sim.allSimData['CSD']['sim']['spacing_um'] = spacing_um 
     sim.allSimData['CSD']['sim'] = CSD_data
-    
-    if getAllData is True:
-      return lfp_data, CSD_data, sampr, timeRange, spacing_um 
-    if getAllData is False:
-      return CSD_data       # returns CSD in units of mV/mm**2 (assuming lfps are in mV)
 
 
   elif empirical is True and NHP is False:
@@ -304,19 +300,24 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
     except: 
       print('NOTE: No sim.allSimData construct available to store empirical CSD data')
     
-    if getAllData is True:
-      return lfp_data, CSD_data, sampr, timeRange, spacing_um
-    if getAllData is False:
-      return CSD_data         # returns CSD in units of mV/mm**2 (assuming lfps are in mV)
 
 
   elif empirical is True and NHP is True:
-    if getAllData is True:
-      return lfp_data, CSD_data, sampr, dt, tt, spacing_um
-    if getAllData is False:
-      return CSD_data           # returns CSD in units of mV/mm**2 (assuming lfps are in mV)
+    try:
+      from .. import sim
+      sim.allSimData['CSD']['NHP']['timeRange'] = timeRange
+      sim.allSimData['CSD']['NHP']['sampr'] = sampr
+      sim.allSimData['CSD']['NHP']['spacing_um'] = spacing_um
+      sim.allSimData['CSD']['NHP'] = CSD_data    # STORE EMPIRICAL CSD DATA IN SIM IF RELEVANT
+    except: 
+      print('NOTE: No sim.allSimData construct available to store NHP CSD data')
 
 
+  # RETURN CSD AND OTHER RELEVANT PARAM VALUES, IF DESIRED 
+  if getAllData is True:
+    return lfp_data, CSD_data, timeRange, sampr, spacing_um, dt, tt
+  if getAllData is False:
+    return CSD_data       # returns CSD in units of mV/mm**2 (assuming lfps are in mV)
 
 
 

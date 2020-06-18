@@ -15,6 +15,16 @@ from future import standard_library
 standard_library.install_aliases()
 import matplotlib 
 from matplotlib import pyplot as plt 
+## imports for rdmat ## 
+import sys
+import os
+import h5py
+from collections import OrderedDict  
+## imports for downsample ## 
+import warnings 
+from scipy.fftpack import hilbert
+from scipy.signal import (cheb2ord, cheby2, convolve, get_window, iirfilter,
+                          remez, decimate)
 
 ## LOCAL APPLICATION IMPORTS 
 from .filter import lowpass,bandpass
@@ -56,11 +66,48 @@ def removemean (x, ax=1):
   #print(np.mean(x, axis=ax, keepdims=True))
 
 
+###### FUNCTIONS SPECIFIC TO NHP DATA ######
+
+# DOWNSAMPLE LFP FROM NHP DATA 
+def downsample (olddata,oldrate,newrate):  
+  ratio=oldrate/float(newrate) # Calculate ratio of sampling rates
+  newdata = decimate(olddata, int(ratio), ftype='fir',zero_phase=True)
+  return newdata    
+
+# EXTRACT DATA FROM NHP .mat FILE
+def rdmat (fn,samprds=0):  
+  fp = h5py.File(fn,'r') # open the .mat / HDF5 formatted data
+  sampr = fp['craw']['adrate'][0][0] # original sampling rate
+  print('fn:',fn,'sampr:',sampr,'samprds:',samprds)
+  dt = 1.0 / sampr # time-step in seconds
+  dat = fp['craw']['cnt'] # cnt record stores the electrophys data
+  npdat = np.zeros(dat.shape)
+  tmax = ( len(npdat) - 1.0 ) * dt # use original sampling rate for tmax - otherwise shifts phase
+  dat.read_direct(npdat) # read it into memory; note that this LFP data usually stored in microVolt
+  npdat *= 0.001 # convert microVolt to milliVolt here
+  fp.close()
+  if samprds > 0.0: # resample the LFPs
+    dsfctr = sampr/samprds
+    dt = 1.0 / samprds
+    siglen = max((npdat.shape[0],npdat.shape[1]))
+    nchan = min((npdat.shape[0],npdat.shape[1]))
+    npds = [] # zeros((int(siglen/float(dsfctr)),nchan))
+    # print dsfctr, dt, siglen, nchan, samprds, ceil(int(siglen / float(dsfctr))), npds.shape
+    for i in range(nchan): 
+      print('resampling channel', i)
+      npds.append(downsample(npdat[:,i], sampr, samprds))
+    npdat = np.array(npds)
+    npdat = npdat.T
+    sampr = samprds
+  tt = np.linspace(0,tmax,len(npdat)) # time in seconds
+  return sampr,npdat,dt,tt # npdat is LFP in units of milliVolt
+##################################################################
+
 
 ################################################
 ######### GET CSD VALUES FROM LFP DATA #########
 ################################################
-def getCSD (empirical=False,LFP_empirical_data=None,sampr=None,timeRange=None,spacing_um=100.0,minf=0.05,maxf=300,norm=True,vaknin=False):
+def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_empirical_data=None,sampr=None,timeRange=None,spacing_um=100.0,minf=0.05,maxf=300,norm=True,vaknin=False):
   """ Extracts CSD values from simulated LFP data 
 
       Parameters
@@ -70,6 +117,22 @@ def getCSD (empirical=False,LFP_empirical_data=None,sampr=None,timeRange=None,sp
         False == LFP data used for CSD comes from simulation.
         **Default:**
         ``False``
+
+      NHP : bool
+        True == NHP data from A1 project being analyzed
+        False == empirical data from another source 
+        **Default:**
+        ``False`` 
+
+      NHP_fileName : str
+        NHP data file being used to extract lfp and csd data. 
+        **Default:**
+        ``None`` 
+
+      NHP_samprds : float
+        Downsampling rate for NHP data
+        **Default:**
+        ``11*1e3``  <-- CHECK ON THIS 
 
       LFP_empirical_data : list      
         LFP data provided by user   (mV).
@@ -82,13 +145,13 @@ def getCSD (empirical=False,LFP_empirical_data=None,sampr=None,timeRange=None,sp
         Sampling rate for data recording (Hz).
         ** MUST BE PROVIDED BY USER IF LFP DATA IS EMPIRICAL ** 
         **Default:** 
-        ``None`` uses 1./sim.cfg.recordStep
+        ``None`` uses 1./sim.cfg.recordStep if data is from sim 
 
       timeRange : list [start, stop]  
         Time range to calculate CSD (ms). 
         ** MUST BE PROVIDED BY USER IF LFP DATA IS EMPIRICAL ** 
         **Default:** 
-        ``None`` uses entire time range
+        ``None`` uses entire time range if data is from sim
 
       spacing_um : float
         Electrode's contact spacing in units of microns 
@@ -120,16 +183,16 @@ def getCSD (empirical=False,LFP_empirical_data=None,sampr=None,timeRange=None,sp
     ## SET DEFAULT ARGUMENT / PARAMETER VALUES 
     if timeRange is None:                 # Specify the time range of relevant LFP data 
       timeRange = [0,sim.cfg.duration]    # This makes the timeRange equal to the entire sim duration
-      sim.allSimData['CSD']['sim']['timeRange'] = timeRange
+      #sim.allSimData['CSD']['sim']['timeRange'] = timeRange
   
     if sampr is None:
       sampr = 1./sim.cfg.recordStep          # Sampling rate of data recording during the simulation 
-      sim.allSimData['CSD']['sim']['sampr'] = sampr
+      dt = sim.cfg.recordStep
+      #sim.allSimData['CSD']['sim']['sampr'] = sampr
 
     # Spacing between electrodes --> convert from micron to mm 
     spacing_mm = spacing_um/1000
-    sim.allSimData['CSD']['sim']['spacing_um'] = spacing_um   # store spacing in units of microns
-    #sim.allSimData['CSD']['sim']['spacing_mm'] = spacimg_mm   # store spacing in units of millimeters 
+    #sim.allSimData['CSD']['sim']['spacing_um'] = spacing_um   # store spacing in units of microns
 
 
     ## Check if LFP was recorded during the simulation 
@@ -144,7 +207,7 @@ def getCSD (empirical=False,LFP_empirical_data=None,sampr=None,timeRange=None,sp
 
   #######################################################
 
-  elif empirical is True:   ### GET LFP DATA AND CONFIRM EXISTENCE OF OTHER NECESSARY PARAMS FROM USER
+  elif empirical is True and NHP is False:   ### GET LFP DATA AND CONFIRM EXISTENCE OF OTHER NECESSARY PARAMS FROM USER
     if LFP_empirical_data is None: 
       print('MUST PROVIDE LFP DATA')
     if timeRange is None:
@@ -152,19 +215,13 @@ def getCSD (empirical=False,LFP_empirical_data=None,sampr=None,timeRange=None,sp
     if sampr is None:
       print('MUST PROVIDE SAMPLING RATE in Hz')
 
-    else:
-      try:
-        from .. import sim
-        sim.allSimData['CSD']['emp']['timeRange'] = timeRange
-        sim.allSimData['CSD']['emp']['sampr'] = sampr
-        sim.allSimData['CSD']['emp']['spacing_um'] = spacing_um
-      except:
-        print('CSD data will not be stored in sim.allSimData (construct unavailable) - plotting continues...')
-
     spacing_mm = spacing_um/1000      # convert spacing from microns to mm 
     dt = (1.0 / sampr) * 1000         # ensure dt is in units of ms  
     lfp_data = np.array(LFP_empirical_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]  # get lfp_data in timeRange specified 
 
+  ####################################################### 
+  elif empirical is True and NHP is True:   ### GET DATA FROM NHP .mat FILES 
+    [sampr,lfp_data,dt,tt] = rdmat(fn=NHP_fileName,samprds=samprds) 
 
 
   #############################################################
@@ -192,20 +249,32 @@ def getCSD (empirical=False,LFP_empirical_data=None,sampr=None,timeRange=None,sp
   # now each column (or row) is an electrode -- take CSD along electrodes
   CSD_data = -np.diff(datband,n=2,axis=ax)/spacing_mm**2  ## CSD_data should be in mV/mm**2, assuming that LFP data is in mV. 
 
-  # Add CSD values to sim.allSimData for access outside of this function or script 
+
+  # Add CSD and other param values to sim.allSimData for access outside of this function or script 
   if empirical is False:
-    sim.allSimData['CSD'] = CSD_data
-  elif empirical is True:
+    from .. import sim 
+    sim.allSimData['CSD']['sim']['timeRange'] = timeRange
+    sim.allSimData['CSD']['sim']['sampr'] = sampr
+    sim.allSimData['CSD']['sim']['spacing_um'] = spacing_um 
+    sim.allSimData['CSD']['sim'] = CSD_data
+    return CSD_data 
+  
+  elif empirical is True and NHP is False:
     try:
       from .. import sim
-      sim.allSimData['CSD_empirical'] = CSD_data    # STORE EMPIRICAL CSD DATA IN SIM IF RELEVANT
-      sim.allSimData['CSD_sampr'] = sampr
+      sim.allSimData['CSD']['emp']['timeRange'] = timeRange
+      sim.allSimData['CSD']['emp']['sampr'] = sampr
+      sim.allSimData['CSD']['emp']['spacing_um'] = spacing_um
+      sim.allSimData['CSD']['emp'] = CSD_data    # STORE EMPIRICAL CSD DATA IN SIM IF RELEVANT
     except: 
-      print('No sim.allSimData available to store empirical CSD data')
-
+      print('NOTE: No sim.allSimData construct available to store empirical CSD data')
+    return CSD_data ## ANYTHING ELSE? 
+  
+  elif empirical is True and NHP is True:
+    return lfp_data, CSD_data, sampr, dt, tt 
 
   # returns CSD in units of mV/mm**2 (assuming lfps are in mV)
-  return CSD_data
+  #return CSD_data
 
 
 

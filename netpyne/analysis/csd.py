@@ -391,28 +391,57 @@ def plotCSD(empirical=False,timeRange=None,spacing_um=None,hlines=True,saveData=
   if empirical is False:
     print('sim data used for plotting')
     
-    from .. import sim
+    try: 
+      from .. import sim
+    except:
+      print('RUN SIMULATION TO ACQUIRE DATA')
+    else:
+      CSD_data = sim.allSimData['CSD']['sim']['CSD_data']   ## RETRIEVE CSD DATA (in mV/mm*2)
+      
+      if timeRange is None:  ## RETRIEVE TIME RANGE (in ms), IF UNSPECIFIED IN ARGS
+        timeRange = sim.allSimData['CSD']['sim']['timeRange']
+      
+      dt = sim.cfg.recordStep                                       # dt --> recording time step (ms)
+      tt = np.arange(timeRange[0],timeRange[1],dt)                  # tt --> time points 
+      
+      spacing_um = sim.allSimData['CSD']['sim']['spacing_um']   ## RETRIEVE SPACING BETWEEN ELECTRODE CONTACTS (in microns)
+      spacing_mm = spacing_um/1000    # convert from microns to mm 
 
-    ## NEED TO PUT IN CODE THAT CHECKS IF THIS EXISTS, AND IF NOT, TO RUN getCSD()
-    
-    ## RETRIEVE CSD DATA (in mV/mm*2)
-    CSD_data = sim.allSimData['CSD']['sim']['CSD_data']
-    
-    ## RETRIEVE TIME RANGE (in ms), IF UNSPECIFIED IN ARGS 
-    if timeRange is None: 
-      timeRange = sim.allSimData['CSD']['sim']['timeRange']
-    dt = sim.cfg.recordStep                                       # dt --> recording time step (ms)
-    tt = np.arange(timeRange[0],timeRange[1],dt)                  # tt --> time points 
-
-    ## RETRIEVE SPACING BETWEEN ELECTRODE CONTACTS (in microns)
-    spacing_um = sim.allSimData['CSD']['sim']['spacing_um']
-    spacing_mm = spacing_um/1000    # convert from microns to mm 
 
 
 
   ############### CONDITION 2 : ARBITRARY INPUT DATA #####################
   elif empirical is True and NHP is False:
     print('Arbitrary input data used for plotting')
+
+    try: 
+      from .. import sim
+      if 'emp' in sim.allSimData['CSD'].keys():
+        print("Empirical CSD data stored in sim.allSimData['CSD']['emp']")
+      ## GET sim.allSimData['CSD']['emp']
+    
+    except:
+      print('No sim.allSimData construct. Acquiring params and CSD data... ')
+      [lfp_data, CSD_data, timeRange, sampr, spacing_um, dt, tt] = getCSD(empirical=True,NHP=False)# timeRange, sampr, spacing_um
+    
+    else:        # This block runs if 'try' statement executes without error
+      CSD_data = sim.allSimData['CSD']['emp']['CSD_data']   ## RETRIEVE CSD DATA (in mV/mm*2)
+      
+      if timeRange is None:  ## RETRIEVE TIME RANGE (in ms), IF UNSPECIFIED IN ARGS
+        timeRange = sim.allSimData['CSD']['emp']['timeRange']
+      
+      dt = sim.cfg.recordStep                                       # dt --> recording time step (ms)
+      tt = np.arange(timeRange[0],timeRange[1],dt)                  # tt --> time points 
+      
+      spacing_um = sim.allSimData['CSD']['emp']['spacing_um']   ## RETRIEVE SPACING BETWEEN ELECTRODE CONTACTS (in microns)
+      spacing_mm = spacing_um/1000    # convert from microns to mm 
+
+
+
+    # NEED AN IF STATEMENT TO CHECK IF THE DATA MADE IT INTO sim.allSimData['CSD']['emp']
+    # BUT IF IT DOESN'T EXIST THERE, THEN: 
+    [lfp_data, CSD_data, timeRange, sampr, spacing_um, dt, tt] = getCSD(empirical=True,NHP=False)# MORE ARGS -- timeRange, sampr, spacing_um
+
 
   ############### CONDITION 3 : DATA COMES FROM NHP ######################
   elif empirical is True and NHP is True: 

@@ -107,7 +107,7 @@ def rdmat (fn,samprds=0):
 ################################################
 ######### GET CSD VALUES FROM LFP DATA #########
 ################################################
-def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_empirical_data=None,sampr=None,timeRange=None,spacing_um=None,spacing_NHP=100.0,minf=0.05,maxf=300,norm=True,vaknin=False):  # should spacing_um be None and vaknin be True? 
+def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_empirical_data=None,sampr=None,timeRange=None,spacing_um=None,spacing_NHP=100.0,minf=0.05,maxf=300,norm=True,vaknin=False,getAllData=False):  # should spacing_um be None and vaknin be True? 
   """ Extracts CSD values from simulated LFP data 
 
       Parameters
@@ -180,7 +180,15 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
         Needs documentation. <---- ?? 
         **Default**
         ``False``
+
+      getAllData : bool
+        True will have this function return timeRange, sampr, spacing_um, lfp_data, and CSD_data.
+        False will return only CSD_data. 
+        **Default**
+        ``False``
   """
+
+  ############### CONDITION 1 : LFP DATA COMES FROM SIMULATION ###############
 
   if empirical is False:   ### GET LFP DATA FROM SIMULATION
     from .. import sim 
@@ -188,6 +196,8 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
     ## SET DEFAULT ARGUMENT / PARAMETER VALUES 
     if timeRange is None:                 # Specify the time range of relevant LFP data 
       timeRange = [0,sim.cfg.duration]    # This makes the timeRange equal to the entire sim duration
+    dt = sim.cfg.recordStep                         # units: ms 
+    tt = np.arange(timeRange[0], timeRange[1],dt)   # make array of time points 
       #sim.allSimData['CSD']['sim']['timeRange'] = timeRange
   
     if sampr is None:
@@ -210,7 +220,9 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
       print('!! WARNING: NO LFP DATA !! Need to re-run simulation with cfg.recordLFP enabled')
       #CSD_data = []
 
-  #######################################################
+
+
+  ############### CONDITION 2 : ARBITRARY LFP DATA ############################
 
   elif empirical is True and NHP is False:   ### GET LFP DATA AND CONFIRM EXISTENCE OF OTHER NECESSARY PARAMS FROM USER
     if LFP_empirical_data is None: 
@@ -224,15 +236,21 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
 
     
     ## GET EMPIRICAL LFP DATA OVER THE SPECIFIED TIME RANGE
-    dt = (1.0 / sampr) * 1000         # ensure dt is in units of ms  
+    dt = (1.0 / sampr) * 1000                       # ensure dt is in units of ms 
+    tt = np.arange(timeRange[0],timeRange[1],dt)    # make array of time points 
+    
     lfp_data = np.array(LFP_empirical_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]  # get lfp_data in timeRange specified 
 
-  ####################################################### 
+
+  ############### CONDITION 3 : NHP DATA #######################################
+  
   elif empirical is True and NHP is True:   ### GET DATA FROM NHP .mat FILES 
-    [sampr,lfp_data,dt,tt] = rdmat(fn=NHP_fileName,samprds=samprds)  #sampr should equal samprds by the time rdmat is run
+    [sampr,lfp_data,dt,tt] = rdmat(fn=NHP_fileName,samprds=NHP_samprds)  #sampr should equal NHP_samprds by the time rdmat is run
     
-    if spacing_um is None:
+    if spacing_um is None:  # Means that spacing_NHP only used if there is no spacing_um specified (otherwise spacing_um will be used)
       spacing_um = spacing_NHP
+
+
 
   #############################################################
    # Now lfp_data exists for either empirical or simulated data 
@@ -269,8 +287,13 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
     sim.allSimData['CSD']['sim']['sampr'] = sampr
     sim.allSimData['CSD']['sim']['spacing_um'] = spacing_um 
     sim.allSimData['CSD']['sim'] = CSD_data
-    return CSD_data 
-  
+    
+    if getAllData is True:
+      return lfp_data, CSD_data, sampr, timeRange, spacing_um 
+    if getAllData is False:
+      return CSD_data       # returns CSD in units of mV/mm**2 (assuming lfps are in mV)
+
+
   elif empirical is True and NHP is False:
     try:
       from .. import sim
@@ -280,13 +303,21 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
       sim.allSimData['CSD']['emp'] = CSD_data    # STORE EMPIRICAL CSD DATA IN SIM IF RELEVANT
     except: 
       print('NOTE: No sim.allSimData construct available to store empirical CSD data')
-    return CSD_data ## ANYTHING ELSE? 
-  
-  elif empirical is True and NHP is True:
-    return lfp_data, CSD_data, sampr, dt, tt 
+    
+    if getAllData is True:
+      return lfp_data, CSD_data, sampr, timeRange, spacing_um
+    if getAllData is False:
+      return CSD_data         # returns CSD in units of mV/mm**2 (assuming lfps are in mV)
 
-  # returns CSD in units of mV/mm**2 (assuming lfps are in mV)
-  #return CSD_data
+
+  elif empirical is True and NHP is True:
+    if getAllData is True:
+      return lfp_data, CSD_data, sampr, dt, tt, spacing_um
+    if getAllData is False:
+      return CSD_data           # returns CSD in units of mV/mm**2 (assuming lfps are in mV)
+
+
+
 
 
 

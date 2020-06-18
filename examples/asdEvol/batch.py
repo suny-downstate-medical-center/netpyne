@@ -60,6 +60,7 @@ def batchASD():
     b.optimCfg = {
         'fitnessFunc': fitnessFunc, # fitness expression (should read simData)
         'fitnessFuncArgs': fitnessFuncArgs,
+        'maxFitness': fitnessFuncArgs['maxFitness'],
         'stepsize':     0.1,     #   Initial step size as a fraction of each parameter
         'sinc':         2,       #   Step size learning rate (increase)
         'sdec':         2,       #   Step size learning rate (decrease)

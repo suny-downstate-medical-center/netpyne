@@ -54,7 +54,7 @@ pc = h.ParallelContext() # use bulletin board master/slave
 def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, pinc=2, pdec=2,
     pinitial=None, sinitial=None, xmin=None, xmax=None, maxiters=None, maxtime=None, 
     abstol=1e-6, reltol=1e-3, stalliters=None, stoppingfunc=None, randseed=None, 
-    label=None, verbose=2, **kwargs):
+    label=None, maxFitness=None, verbose=2, **kwargs):
     """
     Optimization using adaptive stochastic descent (ASD).
     
@@ -212,7 +212,7 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
             if verbose == 1: print(offset + label + 'Iteration %i; elapsed %0.1f s; objective: %0.3e' % (count, time() - start, fval)) # For more verbose, use other print statement below
             if verbose >= 4: print('\n\n Count=%i \n x=%s \n probabilities=%s \n stepsizes=%s' % (count, x, probabilities, stepsizes))
             
-            if fvalnew == -1:
+            if fvalnew == maxFitness:
                 print('Note: rerunning candidate %i since it did not complete in previous iteration ...\n' % (icand))
                 xnew = dcp(x)  # if -1 means error evaluating function (eg. preempted job on HPC) so rerun same param set
                 xnewPop.append(xnew)
@@ -396,7 +396,7 @@ def asdOptim(self, pc):
         # fitness function
         fitnessFunc = args.get('fitnessFunc')
         fitnessFuncArgs = args.get('fitnessFuncArgs')
-        defaultFitness = args.get('defaultFitness')
+        maxFitness = args.get('maxFitness')
         
         # read params or set defaults
         sleepInterval = args.get('sleepInterval', 0.2)
@@ -552,7 +552,7 @@ def asdOptim(self, pc):
             if num_iters >= args.get('maxiter_wait', 5000): 
                 print("Max iterations reached, the %d unfinished jobs will be canceled and set to default fitness" % (len(unfinished)))
                 for canditade_index in unfinished:
-                    fitness[canditade_index] = -1 # rerun those that didn't complete; defaultFitness
+                    fitness[canditade_index] = maxFitness # rerun those that didn't complete; 
                     jobs_completed += 1
                     try:   
                         if 'scancelUser' in kwargs:
@@ -599,7 +599,7 @@ def asdOptim(self, pc):
         print("  Completed a generation  ")
         print("-" * 80)
         
-        return fitness # single candidate for now
+        return [fitness[0], maxFitness] # single candidate for now
         
 
 
@@ -665,6 +665,8 @@ def asdOptim(self, pc):
     kwargs['args']['maxiter_wait'] = self.optimCfg['maxiter_wait']
     kwargs['args']['time_sleep'] = self.optimCfg['time_sleep']
     kwargs['args']['popsize'] = popsize
+    kwargs['args']['maxFitness'] = self.optimCfg.get('maxFitness', 1000)
+    
     
     for key, value in self.optimCfg.items(): 
         kwargs[key] = value

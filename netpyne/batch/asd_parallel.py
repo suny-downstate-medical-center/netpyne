@@ -214,7 +214,7 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
             
             if fvalnew == maxFitness:
                 print('Note: rerunning candidate %i since it did not complete in previous iteration ...\n' % (icand))
-                xnew = dcp(x)  # if -1 means error evaluating function (eg. preempted job on HPC) so rerun same param set
+                xnew = dcp(x)  # if maxFitness means error evaluating function (eg. preempted job on HPC) so rerun same param set
                 xnewPop.append(xnew)
             else:   
                 # Calculate next parameters
@@ -598,7 +598,7 @@ def asdOptim(self, pc):
         print("  Completed a generation  ")
         print("-" * 80)
         
-        return [fitness[0], maxFitness] # single candidate for now
+        return fitness # single candidate for now
         
 
 

@@ -2,6 +2,8 @@
 
 - Simplified cellParams to use dict key as 'cellType' and make 'conds' optional
 
+- Added netParams method addCellParamsTemplate() to create predefined cell templates 
+
 - Calculation of population avg rates now accepts multiple time intervals
 
 - Optional index argument to record from synMech

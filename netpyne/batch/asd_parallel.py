@@ -291,7 +291,7 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
             fvals[count] = float(fval) # Store objective function evaluations
             allsteps[count,:] = dcp(x)  # Store parameters
 
-            xPop[icand], xnewPop[icand], fvalPop[icand], fvalorigPop[icand], fvalnewPop[icand], fvaloldPop[icand], fvalsPop[icand], probabilitiesPop[icand], stepsizesPop[icand], abserrorhistoryPop[icand], relerrorhistoryPop[icand] = x, xnew, fval, fvalorig, fvalnew, fvalold, fvals, probabilities, stepsizes, abserrorhistory, relerrorhistory
+            xPop[icand], xnewPop[icand], fvalPop[icand], fvalorigPop[icand], fvalnewPop[icand], fvaloldPop[icand], fvalsPop[icand], probabilitiesPop[icand], stepsizesPop[icand], abserrorhistoryPop[icand], relerrorhistoryPop[icand], allstepsPop[icand] = x, xnew, fval, fvalorig, fvalnew, fvalold, fvals, probabilities, stepsizes, abserrorhistory, relerrorhistory, allsteps
         
         print('\n')
 
@@ -682,7 +682,7 @@ def asdOptim(self, pc):
     # -------------------------------------------------------------------------------
     # Run algorithm
     # ------------------------------------------------------------------------------- 
-    saveFile = '%s/%s_output.json' % (self.saveFolder, self.batchLabel)
+    saveFile = '%s/%s_temp_output.json' % (self.saveFolder, self.batchLabel)
     output = asd(evaluator, x0, saveFile, **kwargs)
     
     # print best and finish
@@ -694,7 +694,7 @@ def asdOptim(self, pc):
     print("   Completed adaptive stochasitc parameter optimization   ")
     print("-" * 80)
     
-    sim.saveJSON('%s/%s_result.json' % (self.saveFolder, self.batchLabel), output)
+    sim.saveJSON('%s/%s_output.json' % (self.saveFolder, self.batchLabel), output)
     #sleep(1)
 
     sys.exit()

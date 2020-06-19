@@ -68,7 +68,7 @@ def batchASD():
         'pdec':         2,       #   Parameter selection learning rate (decrease)
         #'pinitial':     None,    #    Set initial parameter selection probabilities
         #'sinitial':     None,    #    Set initial step sizes; if empty, calculated from stepsize instead
-        'maxiters':     10,    #    Maximum number of iterations (1 iteration = 1 function evaluation)
+        'maxiters':     2,    #    Maximum number of iterations (1 iteration = 1 function evaluation)
         'maxtime':      3600,    #    Maximum time allowed, in seconds
         'abstol':       1e-6,    #    Minimum absolute change in objective function
         'reltol':       1e-3,    #    Minimum relative change in objective function

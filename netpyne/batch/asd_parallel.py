@@ -320,7 +320,6 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
     if verbose >= 2:
         print('\n=== %s %s (steps: %i) ===' % (label, exitreason, count))
         for icand, fvals in enumerate(fvalsPop):
-            print(fvals[0], fvals[-1])
             print('  == candidate: %d | orig: %s | best: %s | ratio: %s ==' % ((icand,) + sigfig([fvals[0], fvals[-1], fvals[-1] / fvals[0]])))
 
 

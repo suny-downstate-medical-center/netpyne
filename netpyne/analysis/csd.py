@@ -602,9 +602,10 @@ def plotCSD(empirical=False,timeRange=None,spacing_um=None,hlines=True,saveData=
   ##### SET UP PLOTTING #####
 
   # (i) Set up axes 
-  if spacing_um is None:
-    spacing_um = sim.cfg.recordLFP[1][1] - sim.cfg.recordLFP[0][1]
-  spacing_mm = spacing_um/1000  # convert from microns to mm 
+  ####### <-- ALREADY SET UP ABOVE FOR EMPIRICAL IS FALSE (SIM DATA)
+  # if spacing_um is None:
+  #   spacing_um = sim.cfg.recordLFP[1][1] - sim.cfg.recordLFP[0][1]
+  # spacing_mm = spacing_um/1000  # convert from microns to mm 
 
   xmin = 0 
   xmax = int(X[-1]) + 1  #int(sim.allSimData['t'][-1])     # why this index? and also, need to resolve ttavg <--
@@ -677,6 +678,8 @@ def plotCSD(empirical=False,timeRange=None,spacing_um=None,hlines=True,saveData=
   # fig.colorbar(spline,cax=ax_bottom,orientation='horizontal',use_gridspec=False)
   # ax_bottom.set_xlabel(r'CSD (mV/mm$^2$)', fontsize=12)
 
+  # SAVE FIGURE
+  plt.savefig('csd_fig.png')
    # DISPLAY FINAL FIGURE
   plt.show()
 

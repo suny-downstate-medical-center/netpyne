@@ -259,6 +259,7 @@ def setupRecording():
                 if item in netStimLabels:
                     sim.cfg.recordStim = True
                     break
+    
 
     if 'plotSpikeHist' in sim.cfg.analysis:
         if sim.cfg.analysis['plotSpikeHist']==True:
@@ -285,6 +286,8 @@ def setupRecording():
         # get list of cells from argument of plotTraces function
         if 'plotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['plotTraces']:
             cellsPlot = utils.getCellsList(sim.cfg.analysis['plotTraces']['include'])
+        elif 'iplotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['iplotTraces']:
+            cellsPlot = utils.getCellsList(sim.cfg.analysis['iplotTraces']['include'])
         else:
             cellsPlot = []
 

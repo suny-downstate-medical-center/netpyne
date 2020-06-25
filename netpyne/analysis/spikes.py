@@ -1838,3 +1838,59 @@ def popAvgRates(tranges = None, show = True):
                     print('        (%d - %d ms): %.3f Hz'%(trange[0], trange[1], avgRates[pop]['%d_%d'%(trange[0], trange[1])]))
 
     return avgRates
+
+
+#------------------------------------------------------------------------------
+# Calculate and plot f-I curve
+#------------------------------------------------------------------------------
+@exception
+def plotfI(amps, times, dur, targetRates=[], calculateOnset=False, targetRatesOnset=[], durSteady=None, targetRatesSteady=[], saveFig=None, showFig=True):
+    from .. import sim
+
+    outData = {}
+    
+    fig = plt.figure(figsize=(10, 6))
+        
+    if not 'fI_steady' in sim.allSimData:
+        fI = sim.allSimData['fI']
+        plt.plot(amps, fI, label='Model', linewidth=2, marker='o')
+        if targetRates:
+            plt.plot(amps, targetRates, label = 'Experiment', linestyle = 'dotted', marker='o')
+        plt.xlabel('Current amplitude (nA)')
+        plt.ylabel('Rate (Hz)')
+        plt.legend()
+        outData['fI'] = fI
+
+    if 'fI_onset' in sim.allSimData:
+        fI_onset = sim.allSimData['fI_onset']
+        plt.plot(amps, fI_onset, label='Model (onset)', linewidth=2, marker='o')
+        if targetRatesOnset:
+            plt.plot(amps, targetRatesOnset, label = 'Experiment (onset)', linestyle = 'dotted', marker='o')
+        plt.xlabel('Current amplitude (nA)')
+        plt.ylabel('Rate (Hz)')
+        plt.legend()
+        outData['fI_onset'] = fI_onset
+
+    if 'fI_steady' in sim.allSimData:
+        fI_steady = sim.allSimData['fI_steady']
+        plt.plot(amps, fI_steady, label='Model (steady)', linewidth=2, marker='o')
+        if targetRatesSteady:
+            plt.plot(amps, targetRatesSteady, label = 'Experiment (steady)', linestyle = 'dotted', marker='o')
+        plt.xlabel('Current amplitude (nA)')
+        plt.ylabel('Rate (Hz)')
+        plt.legend()
+        outData['fI_steady'] = fI_steady
+
+    # save figure
+    if saveFig: 
+        if isinstance(saveFig, basestring):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename+'_'+'fI.png'
+        plt.savefig(filename)
+
+    # show fig 
+    if showFig: _showFigure()
+
+    return fig, outData
+

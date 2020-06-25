@@ -25,6 +25,7 @@ except NameError:
 
 import imp
 import json
+import pickle
 import logging
 import datetime
 from neuron import h
@@ -48,7 +49,7 @@ def runEvolJob(script, cfgSavePath, netParamsSavePath, simDataPath):
     import os
     print('\nJob in rank id: ',pc.id())
     command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath)
-    print(command)
+    print(command+'\n')
 
     with open(simDataPath+'.run', 'w') as outf, open(simDataPath+'.err', 'w') as errf:
         pid = Popen(command.split(' '), stdout=outf, stderr=errf, preexec_fn=os.setsid).pid
@@ -565,7 +566,7 @@ wait
                         # MPI job commnand
                         # ----------------------------------------------------------------------
                         command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
-                        
+
                         # ----------------------------------------------------------------------
                         # run on local machine with <nodes*coresPerNode> cores
                         # ----------------------------------------------------------------------
@@ -642,12 +643,17 @@ wait
                     for candidate_index in unfinished:
                         try: # load simData and evaluate fitness
                             jobNamePath = genFolderPath + "/gen_" + str(ngen) + "_cand_" + str(candidate_index)
+                            simData = None
                             if os.path.isfile(jobNamePath+'.json'):
                                 with open('%s.json'% (jobNamePath)) as file:
                                     simData = json.load(file)['simData']
+                            elif os.path.isfile(jobNamePath+'.pkl'):
+                                with open('%s.pkl'% (jobNamePath), 'rb') as file:
+                                    simData = pickle.load(file)['simData']
+                            if simData:
                                 fitness[candidate_index] = fitnessFunc(simData, **fitnessFuncArgs)
                                 jobs_completed += 1
-                                print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
+                                print('  Candidate %d fitness = %.3g' % (candidate_index, fitness[candidate_index]))
                         except Exception as e:
                             # print 
                             err = "There was an exception evaluating candidate %d:"%(candidate_index)

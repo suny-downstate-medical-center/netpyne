@@ -33,7 +33,8 @@ from .network import plotConn, _plotConnCalculateFromSim, _plotConnCalculateFrom
 # -------------------------------------------------------------------------------------------------------------------
 # Import spike-related functions
 # -------------------------------------------------------------------------------------------------------------------
-from .spikes import calculateRate, plotRates, plotSyncs, plotRaster, plotSpikeHist, plotSpikeStats, plotRatePSD, plotRateSpectrogram, popAvgRates
+from .spikes import calculateRate, plotRates, plotSyncs, plotRaster, plotSpikeHist, plotSpikeStats, \
+    plotRatePSD, plotRateSpectrogram, popAvgRates, plotfI
 
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -63,4 +64,5 @@ from .rxd import plotRxDConcentration
 # -------------------------------------------------------------------------------------------------------------------
 # Import HNN-related functions
 # -------------------------------------------------------------------------------------------------------------------
-from .interactive import iplotDipole, iplotDipoleSpectrogram,  iplotDipolePSD, iplotRaster, iplotSpikeHist, iplotRatePSD, iplotTraces, iplotLFP, iplotConn
+from .interactive import iplotDipole, iplotDipoleSpectrogram, iplotDipolePSD, iplotRaster, iplotSpikeHist, \
+    iplotRatePSD, iplotTraces, iplotLFP, iplotConn

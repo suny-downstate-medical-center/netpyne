@@ -3,9 +3,8 @@
 network.py 
 
 Defines Network class which contains cell objects and network-realated methods
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division

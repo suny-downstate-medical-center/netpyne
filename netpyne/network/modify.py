@@ -3,9 +3,8 @@
 network/modify.py 
 
 Network class methods to modify the network instance
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division

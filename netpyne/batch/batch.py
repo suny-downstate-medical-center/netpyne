@@ -2,9 +2,8 @@
 batch/batch.py 
 
 Class to setup and run batch simulations
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
@@ -26,6 +25,7 @@ except NameError:
 
 import imp
 import json
+import pickle
 import logging
 import datetime
 from copy import copy
@@ -43,7 +43,6 @@ from .utils import createFolder
 from .grid import gridSearch
 from .evol import evolOptim
 from .asd_parallel import asdOptim
-
 
 pc = h.ParallelContext() # use bulletin board master/slave
 if pc.id()==0: pc.master_works_on_jobs(0) 
@@ -200,7 +199,6 @@ class Batch(object):
         # -------------------------------------------------------------------------------
         elif self.method == 'evol':
             evolOptim(self, pc)
-
 
         # -------------------------------------------------------------------------------
         # Adaptive Stochastic Descent (ASD) optimization

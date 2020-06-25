@@ -1308,11 +1308,6 @@ except:
     print(' Warning: An Exception occurred when loading NeuroML ...')
 
 
-###############################################################################
-# Import network from NeuroML2
-###############################################################################
-def importNeuroML2(fileName, simConfig, simulate=True, analyze=True):
-
     ###############################################################################
     # Import network from NeuroML2
     ###############################################################################
@@ -1470,5 +1465,3 @@ def importNeuroML2(fileName, simConfig, simulate=True, analyze=True):
             h('forall  if (ismembrane("ca_ion")) { print "Ca ions: ", secname(), ": eca: ", eca, ", cai: ", cai, ", cao: ", cao } ')'''
 
         return nmlHandler.gids
-except:
-    pass

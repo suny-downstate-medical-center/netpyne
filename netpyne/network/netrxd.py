@@ -3,9 +3,8 @@
 network/rxd.py 
 
 Network class methods to add RxD  
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
@@ -27,7 +26,7 @@ import copy
 # -----------------------------------------------------------------------------
 # Add RxD
 # -----------------------------------------------------------------------------
-def addRxD (self):
+def addRxD(self):
     from .. import sim
 
     if len(self.params.rxdParams):

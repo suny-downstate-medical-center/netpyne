@@ -3,8 +3,6 @@
 netParams.py 
 
 High-level specifications for M1 network model using NetPyNE
-
-Contributors: salvadordura@gmail.com
 """
 
 from netpyne import specs

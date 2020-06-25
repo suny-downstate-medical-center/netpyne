@@ -2,9 +2,8 @@
 conversion/neuromlFormat.py 
 
 Contains functions related to neuroml conversion (import from and export to) 
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
@@ -45,7 +44,7 @@ from .. import specs
 ###############################################################################
 ### Get connection centric network representation as used in NeuroML2
 ###############################################################################  
-def _convertNetworkRepresentation (net, gids_vs_pop_indices):
+def _convertNetworkRepresentation(net, gids_vs_pop_indices):
 
     from .. import sim
 
@@ -86,7 +85,7 @@ def _convertNetworkRepresentation (net, gids_vs_pop_indices):
 ###############################################################################
 ### Get stimulations in representation as used in NeuroML2
 ###############################################################################  
-def _convertStimulationRepresentation (net,gids_vs_pop_indices, nml_doc):
+def _convertStimulationRepresentation(net,gids_vs_pop_indices, nml_doc):
 
     stims = {}
 
@@ -135,543 +134,544 @@ def H(x):
 
     return 1 * (x > 0)
 
-if neuromlExists:
+#if neuromlExists:
 
-    ###############################################################################
-    ### Export synapses to NeuroML2
-    ############################################################################### 
-    def _export_synapses (net, nml_doc):
+###############################################################################
+### Export synapses to NeuroML2
+############################################################################### 
+def _export_synapses(net, nml_doc):
 
-        from .. import sim
+    from .. import sim
 
-        syn_types = {}
-        for id,syn in net.params.synMechParams.items():
-            syn_types[id]=syn['mod']
-            if sim.cfg.verbose: print('Exporting details of syn: %s'%syn)
-            if syn['mod'] == 'Exp2Syn':
-                syn0 = neuroml.ExpTwoSynapse(id=id, 
-                                             gbase='1uS',
-                                             erev='%smV'%syn['e'],
-                                             tau_rise='%sms'%syn['tau1'],
-                                             tau_decay='%sms'%syn['tau2'])
+    syn_types = {}
+    for id,syn in net.params.synMechParams.items():
+        syn_types[id]=syn['mod']
+        if sim.cfg.verbose: print('Exporting details of syn: %s'%syn)
+        if syn['mod'] == 'Exp2Syn':
+            syn0 = neuroml.ExpTwoSynapse(id=id, 
+                                            gbase='1uS',
+                                            erev='%smV'%syn['e'],
+                                            tau_rise='%sms'%syn['tau1'],
+                                            tau_decay='%sms'%syn['tau2'])
 
-                nml_doc.exp_two_synapses.append(syn0)
-            elif syn['mod'] == 'ExpSyn':
-                syn0 = neuroml.ExpOneSynapse(id=id, 
-                                             gbase='1uS',
-                                             erev='%smV'%syn['e'],
-                                             tau_decay='%sms'%syn['tau'])
+            nml_doc.exp_two_synapses.append(syn0)
+        elif syn['mod'] == 'ExpSyn':
+            syn0 = neuroml.ExpOneSynapse(id=id, 
+                                            gbase='1uS',
+                                            erev='%smV'%syn['e'],
+                                            tau_decay='%sms'%syn['tau'])
 
-                nml_doc.exp_one_synapses.append(syn0)
-            elif syn['mod'] == 'ElectSyn':
-                syn0 = neuroml.GapJunction(id=id, 
-                                             conductance='%smS'%syn['g'])
+            nml_doc.exp_one_synapses.append(syn0)
+        elif syn['mod'] == 'ElectSyn':
+            syn0 = neuroml.GapJunction(id=id, 
+                                            conductance='%smS'%syn['g'])
 
-                nml_doc.gap_junctions.append(syn0)
+            nml_doc.gap_junctions.append(syn0)
+        else:
+            raise Exception("Cannot yet export synapse type: %s"%syn['mod'])
+        
+    return syn_types
+
+hh_nml2_chans = """
+
+<neuroml xmlns="http://www.neuroml.org/schema/neuroml2"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://www.neuroml.org/schema/neuroml2  https://raw.githubusercontent.com/NeuroML/NeuroML2/master/Schemas/NeuroML2/NeuroML_v2beta3.xsd"   
+            id="kChan">
+            
+    <ionChannelHH id="leak_hh" conductance="10pS" type="ionChannelPassive">
+        
+        <notes>Single ion channel in NeuroML2 format: passive channel providing a leak conductance </notes>
+        
+    </ionChannelHH>
+    
+    <ionChannelHH id="na_hh" conductance="10pS" species="na">
+        
+        <notes>Single ion channel in NeuroML2 format: standard Sodium channel from the Hodgkin Huxley model</notes>
+
+        <gateHHrates id="m" instances="3">
+            <forwardRate type="HHExpLinearRate" rate="1per_ms" midpoint="-40mV" scale="10mV"/>
+            <reverseRate type="HHExpRate" rate="4per_ms" midpoint="-65mV" scale="-18mV"/>
+        </gateHHrates>
+
+        <gateHHrates id="h" instances="1">
+            <forwardRate type="HHExpRate" rate="0.07per_ms" midpoint="-65mV" scale="-20mV"/>
+            <reverseRate type="HHSigmoidRate" rate="1per_ms" midpoint="-35mV" scale="10mV"/>
+        </gateHHrates>
+
+    </ionChannelHH>
+
+    <ionChannelHH id="k_hh" conductance="10pS" species="k">
+        
+        <notes>Single ion channel in NeuroML2 format: standard Potassium channel from the Hodgkin Huxley model</notes>
+
+        <gateHHrates id="n" instances="4">
+            <forwardRate type="HHExpLinearRate" rate="0.1per_ms" midpoint="-55mV" scale="10mV"/>
+            <reverseRate type="HHExpRate" rate="0.125per_ms" midpoint="-65mV" scale="-80mV"/>
+        </gateHHrates>
+            
+    </ionChannelHH>
+    
+
+</neuroml>
+"""
+
+###############################################################################
+### Export generated structure of network to NeuroML 2 
+###############################################################################         
+def exportNeuroML2(reference, connections=True, stimulations=True, format='xml', default_cell_radius=5):
+
+    from .. import sim
+
+    net = sim.net
+    
+    import random
+    myrandom = random.Random(12345)
+
+    
+    print("Exporting network to NeuroML 2, reference: %s"%reference)
+    
+    import neuroml
+    import neuroml.writers as writers
+
+    nml_doc = neuroml.NeuroMLDocument(id='%s'%reference)
+    nml_net = neuroml.Network(id='%s'%reference)
+    nml_doc.networks.append(nml_net)
+
+    import netpyne
+    nml_doc.notes = 'NeuroML 2 file exported from NetPyNE v%s'%(netpyne.__version__)
+
+    gids_vs_pop_indices ={}
+    populations_vs_components = {}
+    
+    cells_added = []
+    
+    for np_pop in list(net.pops.values()): 
+        if sim.cfg.verbose: print("-- Adding population: %s"%np_pop.tags)
+        
+        cell_param_set = {} 
+
+        for cell_name in list(net.params.cellParams.keys()):
+            cell_param_set0 = net.params.cellParams[cell_name]
+            someMatches = False
+            someMisMatches = False
+            if sim.cfg.verbose: print("  -- Comparing conds: %s"%cell_param_set0)
+            for cond in cell_param_set0['conds']:
+                if len(cell_param_set0['conds'][cond])>0:
+                    if cond in np_pop.tags and cell_param_set0['conds'][cond] == np_pop.tags[cond]:
+                        if sim.cfg.verbose: print("    Cond: %s matches..."%cond)
+                        someMatches = True
+                    else:
+                        if sim.cfg.verbose: print("    Cond: %s DOESN'T match (%s != %s)..."%(cond,cell_param_set0['conds'][cond],np_pop.tags[cond] if cond in np_pop.tags else "???"))
+                        someMisMatches = True
+            if someMatches and not someMisMatches:
+                if sim.cfg.verbose: print("   Matches: %s"%cell_param_set0)
+                cell_param_set.update(cell_param_set0)
+            
+        if not np_pop.tags['cellModel'] == 'NetStim' and len(cell_param_set)==0:
+            print("Error, could not find cellParams for %s"%np_pop.tags)
+            exit(-1)
+            
+        if not np_pop.tags['cellModel'] == 'NetStim':
+            if not 'cellModel' in cell_param_set['conds'] or cell_param_set['conds']['cellModel']=={}:
+                cell_id = 'CELL_%s'%(cell_param_set['conds']['cellType'])
+            elif not 'cellType' in cell_param_set['conds'] or cell_param_set['conds']['cellType']=={}:
+                cell_id = 'CELL_%s'%(cell_param_set['conds']['cellModel'])
             else:
-                raise Exception("Cannot yet export synapse type: %s"%syn['mod'])
+                cell_id = 'CELL_%s_%s'%(cell_param_set['conds']['cellModel'],cell_param_set['conds']['cellType'])
+
+            populations_vs_components[np_pop.tags['pop']]=cell_id
             
-        return syn_types
-
-    hh_nml2_chans = """
-
-    <neuroml xmlns="http://www.neuroml.org/schema/neuroml2"
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xsi:schemaLocation="http://www.neuroml.org/schema/neuroml2  https://raw.githubusercontent.com/NeuroML/NeuroML2/master/Schemas/NeuroML2/NeuroML_v2beta3.xsd"   
-             id="kChan">
-             
-        <ionChannelHH id="leak_hh" conductance="10pS" type="ionChannelPassive">
             
-            <notes>Single ion channel in NeuroML2 format: passive channel providing a leak conductance </notes>
+        if not np_pop.tags['cellModel'] == 'NetStim' and not str(cell_param_set) in cells_added:
+            if sim.cfg.verbose: print("---------------  Adding a cell from pop %s: \n%s"%(np_pop.tags,cell_param_set))
             
-        </ionChannelHH>
-        
-        <ionChannelHH id="na_hh" conductance="10pS" species="na">
+            # print("=====  Adding the cell %s: \n%s"%(cell_name,pp.pprint(cell_param_set)))
             
-            <notes>Single ion channel in NeuroML2 format: standard Sodium channel from the Hodgkin Huxley model</notes>
+            # Single section; one known mechanism...
+            soma = cell_param_set['secs']['soma']
 
-            <gateHHrates id="m" instances="3">
-                <forwardRate type="HHExpLinearRate" rate="1per_ms" midpoint="-40mV" scale="10mV"/>
-                <reverseRate type="HHExpRate" rate="4per_ms" midpoint="-65mV" scale="-18mV"/>
-            </gateHHrates>
+            if len(cell_param_set['secs']) == 1 \
+                and soma is not None\
+                and 'mechs' not in soma \
+                and len(soma['pointps']) == 1:
 
-            <gateHHrates id="h" instances="1">
-                <forwardRate type="HHExpRate" rate="0.07per_ms" midpoint="-65mV" scale="-20mV"/>
-                <reverseRate type="HHSigmoidRate" rate="1per_ms" midpoint="-35mV" scale="10mV"/>
-            </gateHHrates>
+                pproc = list(soma['pointps'].values())[0]
 
-        </ionChannelHH>
+                print("Assuming abstract cell with behaviour set by single point process: %s!"%pproc)
 
-        <ionChannelHH id="k_hh" conductance="10pS" species="k">
-            
-            <notes>Single ion channel in NeuroML2 format: standard Potassium channel from the Hodgkin Huxley model</notes>
+                if pproc['mod'] == 'Izhi2007b':
+                    izh = neuroml.Izhikevich2007Cell(id=cell_id)
+                    izh.a = '%s per_ms'%pproc['a']
+                    izh.b = '%s nS'%pproc['b']
+                    izh.c = '%s mV'%pproc['c']
+                    izh.d = '%s pA'%pproc['d']
 
-            <gateHHrates id="n" instances="4">
-                <forwardRate type="HHExpLinearRate" rate="0.1per_ms" midpoint="-55mV" scale="10mV"/>
-                <reverseRate type="HHExpRate" rate="0.125per_ms" midpoint="-65mV" scale="-80mV"/>
-            </gateHHrates>
-                
-        </ionChannelHH>
-        
+                    izh.v0 = '%s mV'%pproc['vr'] # Note: using vr for v0
+                    izh.vr = '%s mV'%pproc['vr']
+                    izh.vt = '%s mV'%pproc['vt']
+                    izh.vpeak = '%s mV'%pproc['vpeak']
+                    izh.C = '%s pF'%(pproc['C']*100)
+                    izh.k = '%s nS_per_mV'%pproc['k']
 
-    </neuroml>
-    """
-
-    ###############################################################################
-    ### Export generated structure of network to NeuroML 2 
-    ###############################################################################         
-    def exportNeuroML2 (reference, connections=True, stimulations=True, format='xml', default_cell_radius=5):
-
-        from .. import sim
-
-        net = sim.net
-        
-        import random
-        myrandom = random.Random(12345)
-
-        
-        print("Exporting network to NeuroML 2, reference: %s"%reference)
-        
-        import neuroml
-        import neuroml.writers as writers
-
-        nml_doc = neuroml.NeuroMLDocument(id='%s'%reference)
-        nml_net = neuroml.Network(id='%s'%reference)
-        nml_doc.networks.append(nml_net)
-
-        import netpyne
-        nml_doc.notes = 'NeuroML 2 file exported from NetPyNE v%s'%(netpyne.__version__)
-
-        gids_vs_pop_indices ={}
-        populations_vs_components = {}
-        
-        cells_added = []
-        
-        for np_pop in list(net.pops.values()): 
-            if sim.cfg.verbose: print("-- Adding population: %s"%np_pop.tags)
-            
-            cell_param_set = {} 
-
-            for cell_name in list(net.params.cellParams.keys()):
-                cell_param_set0 = net.params.cellParams[cell_name]
-                someMatches = False
-                someMisMatches = False
-                if sim.cfg.verbose: print("  -- Comparing conds: %s"%cell_param_set0)
-                for cond in cell_param_set0['conds']:
-                    if len(cell_param_set0['conds'][cond])>0:
-                        if cond in np_pop.tags and cell_param_set0['conds'][cond] == np_pop.tags[cond]:
-                            if sim.cfg.verbose: print("    Cond: %s matches..."%cond)
-                            someMatches = True
-                        else:
-                            if sim.cfg.verbose: print("    Cond: %s DOESN'T match (%s != %s)..."%(cond,cell_param_set0['conds'][cond],np_pop.tags[cond] if cond in np_pop.tags else "???"))
-                            someMisMatches = True
-                if someMatches and not someMisMatches:
-                    if sim.cfg.verbose: print("   Matches: %s"%cell_param_set0)
-                    cell_param_set.update(cell_param_set0)
-                
-            if not np_pop.tags['cellModel'] == 'NetStim' and len(cell_param_set)==0:
-                print("Error, could not find cellParams for %s"%np_pop.tags)
-                exit(-1)
-                
-            if not np_pop.tags['cellModel'] == 'NetStim':
-                if not 'cellModel' in cell_param_set['conds'] or cell_param_set['conds']['cellModel']=={}:
-                    cell_id = 'CELL_%s'%(cell_param_set['conds']['cellType'])
-                elif not 'cellType' in cell_param_set['conds'] or cell_param_set['conds']['cellType']=={}:
-                    cell_id = 'CELL_%s'%(cell_param_set['conds']['cellModel'])
+                    nml_doc.izhikevich2007_cells.append(izh)
                 else:
-                    cell_id = 'CELL_%s_%s'%(cell_param_set['conds']['cellModel'],cell_param_set['conds']['cellType'])
+                    print("Unknown point process: %s; can't convert to NeuroML 2 equivalent!"%pproc['mod'])
+                    exit(1)
+            else:
+                print("Assuming normal cell with behaviour set by ion channel mechanisms!")
 
-                populations_vs_components[np_pop.tags['pop']]=cell_id
-                
-                
-            if not np_pop.tags['cellModel'] == 'NetStim' and not str(cell_param_set) in cells_added:
-                if sim.cfg.verbose: print("---------------  Adding a cell from pop %s: \n%s"%(np_pop.tags,cell_param_set))
-                
-                # print("=====  Adding the cell %s: \n%s"%(cell_name,pp.pprint(cell_param_set)))
-                
-                # Single section; one known mechanism...
-                soma = cell_param_set['secs']['soma']
-
-                if len(cell_param_set['secs']) == 1 \
-                   and soma is not None\
-                   and 'mechs' not in soma \
-                   and len(soma['pointps']) == 1:
-
-                    pproc = list(soma['pointps'].values())[0]
-
-                    print("Assuming abstract cell with behaviour set by single point process: %s!"%pproc)
-
-                    if pproc['mod'] == 'Izhi2007b':
-                        izh = neuroml.Izhikevich2007Cell(id=cell_id)
-                        izh.a = '%s per_ms'%pproc['a']
-                        izh.b = '%s nS'%pproc['b']
-                        izh.c = '%s mV'%pproc['c']
-                        izh.d = '%s pA'%pproc['d']
-
-                        izh.v0 = '%s mV'%pproc['vr'] # Note: using vr for v0
-                        izh.vr = '%s mV'%pproc['vr']
-                        izh.vt = '%s mV'%pproc['vt']
-                        izh.vpeak = '%s mV'%pproc['vpeak']
-                        izh.C = '%s pF'%(pproc['C']*100)
-                        izh.k = '%s nS_per_mV'%pproc['k']
-
-                        nml_doc.izhikevich2007_cells.append(izh)
-                    else:
-                        print("Unknown point process: %s; can't convert to NeuroML 2 equivalent!"%pproc['mod'])
-                        exit(1)
-                else:
-                    print("Assuming normal cell with behaviour set by ion channel mechanisms!")
-
-                    cell = neuroml.Cell(id=cell_id)
-                    cell.notes = "Cell exported from NetPyNE:\n%s"%cell_param_set
-                    cell.morphology = neuroml.Morphology(id='morph_%s'%cell_id)
-                    cell.biophysical_properties = neuroml.BiophysicalProperties(id='biophys_%s'%cell_id)
-                    mp = neuroml.MembraneProperties()
-                    cell.biophysical_properties.membrane_properties = mp
-                    ip = neuroml.IntracellularProperties()
-                    cell.biophysical_properties.intracellular_properties = ip
-
-                    count = 0
-
-                    import neuroml.nml.nml
-                    chans_doc = neuroml.nml.nml.parseString(hh_nml2_chans)
-                    chans_added = []
-
-                    nml_segs = {}
-
-                    parentDistal = neuroml.Point3DWithDiam(x=0,y=0,z=0,diameter=0)
-
-                    for np_sec_name in list(cell_param_set['secs'].keys()):
-
-                        parent_seg = None
-
-                        np_sec = cell_param_set['secs'][np_sec_name]
-                        nml_seg = neuroml.Segment(id=count,name=np_sec_name)
-                        nml_segs[np_sec_name] = nml_seg
-
-                        if 'topol' in np_sec and len(np_sec['topol'])>0:
-                            parent_seg = nml_segs[np_sec['topol']['parentSec']]
-                            nml_seg.parent = neuroml.SegmentParent(segments=parent_seg.id)
-
-                            if not (np_sec['topol']['parentX'] == 1.0 and  np_sec['topol']['childX'] == 0):
-                                print("Currently only support cell topol with parentX == 1.0 and childX == 0")
-                                exit(1)
-
-                        if not ( ('pt3d' not in np_sec['geom']) or len(np_sec['geom']['pt3d'])==0 or len(np_sec['geom']['pt3d'])==2 ):
-                            print("Currently only support cell geoms with 2 pt3ds (or 0 and diam/L specified): %s"%np_sec['geom'])
-                            exit(1)
-
-                        if ('pt3d' not in np_sec['geom'] or len(np_sec['geom']['pt3d'])==0):
-
-                            if parent_seg == None:
-                                nml_seg.proximal = neuroml.Point3DWithDiam(x=parentDistal.x,
-                                                                  y=parentDistal.y,
-                                                                  z=parentDistal.z,
-                                                                  diameter=np_sec['geom']['diam'])
-
-                            nml_seg.distal = neuroml.Point3DWithDiam(x=parentDistal.x,
-                                                                  y=(parentDistal.y+np_sec['geom']['L']),
-                                                                  z=parentDistal.z,
-                                                                  diameter=np_sec['geom']['diam'])
-                        else:
-
-                            prox = np_sec['geom']['pt3d'][0]
-
-                            nml_seg.proximal = neuroml.Point3DWithDiam(x=prox[0],
-                                                                      y=prox[1],
-                                                                      z=prox[2],
-                                                                      diameter=prox[3])
-                            dist = np_sec['geom']['pt3d'][1]
-                            nml_seg.distal = neuroml.Point3DWithDiam(x=dist[0],
-                                                                      y=dist[1],
-                                                                      z=dist[2],
-                                                                      diameter=dist[3])
-
-                        nml_seg_section = neuroml.SegmentGroup(id='%s_SECTION'%np_sec_name, neuro_lex_id="sao864921383")
-                        nml_seg_section.members.append(neuroml.Member(segments=count))
-                        cell.morphology.segment_groups.append(nml_seg_section)
-                        
-                        nml_seg_group = neuroml.SegmentGroup(id='%s_group'%np_sec_name)
-                        nml_seg_group.includes.append(neuroml.Include(segment_groups=nml_seg_section.id))
-                        cell.morphology.segment_groups.append(nml_seg_group)
-
-
-                        cell.morphology.segments.append(nml_seg)
-
-                        count+=1
-
-                        ip.resistivities.append(neuroml.Resistivity(value="%s ohm_cm"%np_sec['geom']['Ra'], 
-                                                                   segment_groups=nml_seg_group.id))
-
-                        '''
-                        See https://github.com/Neurosim-lab/netpyne/issues/130
-                        '''
-                        cm = np_sec['geom']['cm'] if 'cm' in np_sec['geom'] else 1
-                        if isinstance(cm,dict) and len(cm)==0:
-                            cm = 1
-                        mp.specific_capacitances.append(neuroml.SpecificCapacitance(value="%s uF_per_cm2"%cm, 
-                                                                   segment_groups=nml_seg_group.id))
-
-                        vinit = np_sec['vinit'] if 'vinit' in np_sec else -65
-                        
-                        if isinstance(vinit,dict) and len(vinit)==0:
-                            vinit = -65
-                            
-                        mp.init_memb_potentials.append(neuroml.InitMembPotential(value="%s mV"%vinit))
-
-                        mp.spike_threshes.append(neuroml.SpikeThresh(value="%s mV"%sim.net.params.defaultThreshold))
-
-                        for mech_name in list(np_sec['mechs'].keys()):
-                            mech = np_sec['mechs'][mech_name]
-                            if mech_name == 'hh':
-
-                                for chan in chans_doc.ion_channel_hhs:
-                                    if (chan.id == 'leak_hh' or chan.id == 'na_hh' or chan.id == 'k_hh'):
-                                        if not chan.id in chans_added:
-                                            nml_doc.ion_channel_hhs.append(chan)
-                                            chans_added.append(chan.id)
-
-
-                                leak_cd = neuroml.ChannelDensity(id='leak_%s'%nml_seg_group.id,
-                                                            ion_channel='leak_hh',
-                                                            cond_density='%s S_per_cm2'%mech['gl'],
-                                                            erev='%s mV'%mech['el'],
-                                                            ion='non_specific')
-                                mp.channel_densities.append(leak_cd)
-
-                                k_cd = neuroml.ChannelDensity(id='k_%s'%nml_seg_group.id,
-                                                            ion_channel='k_hh',
-                                                            cond_density='%s S_per_cm2'%mech['gkbar'],
-                                                            erev='%s mV'%'-77',
-                                                            ion='k')
-                                mp.channel_densities.append(k_cd)
-
-                                na_cd = neuroml.ChannelDensity(id='na_%s'%nml_seg_group.id,
-                                                            ion_channel='na_hh',
-                                                            cond_density='%s S_per_cm2'%mech['gnabar'],
-                                                            erev='%s mV'%'50',
-                                                            ion='na')
-                                mp.channel_densities.append(na_cd)
-
-                            elif mech_name == 'pas':
-
-                                for chan in chans_doc.ion_channel_hhs:
-                                    if (chan.id == 'leak_hh'):
-                                        if not chan.id in chans_added:
-                                            nml_doc.ion_channel_hhs.append(chan)
-                                            chans_added.append(chan.id)
-
-                                leak_cd = neuroml.ChannelDensity(id='leak_%s'%nml_seg_group.id,
-                                                            ion_channel='leak_hh',
-                                                            cond_density='%s mS_per_cm2'%mech['g'],
-                                                            erev='%s mV'%mech['e'],
-                                                            ion='non_specific')
-                                mp.channel_densities.append(leak_cd)
-                            else:
-                                print("Currently NML2 export only supports mech hh, not: %s"%mech_name)
-                                exit(1)
-
-
-                    nml_doc.cells.append(cell)
-                    
-                cells_added.append(str(cell_param_set))
-                
-            
-        for np_pop in list(net.pops.values()): 
-            index = 0
-            print("Adding population: %s"%np_pop.tags)
-            
-            type = 'populationList'
-            if not np_pop.tags['cellModel'] ==  'NetStim':
-                comp_id = populations_vs_components[np_pop.tags['pop']]
-                pop = neuroml.Population(id=np_pop.tags['pop'],component=comp_id, type=type)
-                pop.properties.append(neuroml.Property('radius',default_cell_radius))
-                
-                pop.properties.append(neuroml.Property('color','%s %s %s'%(myrandom.random(),myrandom.random(),myrandom.random())))
-                
-                nml_net.populations.append(pop)
-
-                for cell in net.cells:
-                    if cell.gid in np_pop.cellGids:
-                        gids_vs_pop_indices[cell.gid] = (np_pop.tags['pop'],index)
-                        inst = neuroml.Instance(id=index)
-                        index+=1
-                        pop.instances.append(inst)
-                        inst.location = neuroml.Location(cell.tags['x'],cell.tags['y'],cell.tags['z'])
-                
-                pop.size = index
-                
-        syn_types = _export_synapses(net, nml_doc)
-
-        if connections:
-            nn = _convertNetworkRepresentation(net, gids_vs_pop_indices)
-
-            half_elect_conns_added = []
-            for proj_info in list(nn.keys()):
-
-                prefix = "NetConn"
-                popPre,popPost,synMech = proj_info
-                if sim.cfg.verbose: print("Adding proj: %s->%s (%s)"%(popPre,popPost,synMech))
-                
-                if syn_types[synMech]!='ElectSyn':
-                    projection = neuroml.Projection(id="%s_%s_%s_%s"%(prefix,popPre, popPost,synMech), 
-                                      presynaptic_population=popPre, 
-                                      postsynaptic_population=popPost, 
-                                      synapse=synMech)
-                                      
-                    nml_net.projections.append(projection)
-                else:
-                    
-                    projection = neuroml.ElectricalProjection(id="%s_%s_%s_%s"%(prefix,popPre, popPost,synMech), 
-                                      presynaptic_population=popPre, 
-                                      postsynaptic_population=popPost)
-                                      
-                    nml_net.electrical_projections.append(projection)
-                    
-                index = 0    
-                
-                
-                for conn in nn[proj_info]:
-                    if sim.cfg.verbose: print("Adding conn %s"%conn)
-                    
-                    if syn_types[synMech]!='ElectSyn':
-                        connection = neuroml.ConnectionWD(id=index, \
-                                    pre_cell_id="../%s/%i/%s"%(popPre, conn['indexPre'], populations_vs_components[popPre]), \
-                                    pre_segment_id=0, \
-                                    pre_fraction_along=0.5,
-                                    post_cell_id="../%s/%i/%s"%(popPost, conn['indexPost'], populations_vs_components[popPost]), \
-                                    post_segment_id=0,
-                                    post_fraction_along=0.5,
-                                    delay = '%s ms'%conn['delay'],
-                                    weight = conn['weight'])
-                                    
-                        projection.connection_wds.append(connection)
-                        
-                    else:
-                        ''' <electricalConnectionInstance id="0" preCell="../iafPop1/0/iaf" postCell="../iafPop2/0/iaf" preSegment="0" 
-                           preFractionAlong="0.5" postSegment="0" postFractionAlong="0.5" synapse="gj1"/>'''
-                        weight = conn['weight']
-                        if weight!=1:
-                            raise Exception('Cannot yet support electrical connections where weight !=1!')
-                        
-                        connection = neuroml.ElectricalConnectionInstance(id=index, \
-                                    pre_cell="../%s/%i/%s"%(popPre, conn['indexPre'], populations_vs_components[popPre]), \
-                                    pre_segment=0, \
-                                    pre_fraction_along=0.5,
-                                    post_cell="../%s/%i/%s"%(popPost, conn['indexPost'], populations_vs_components[popPost]), \
-                                    post_segment=0,
-                                    post_fraction_along=0.5, 
-                                    synapse=synMech)
-                                    
-                        other_half_elect_conn = "%s_%s_%s_%s -> %s_%s_%s_%s"%(popPost,
-                                                                      connection.post_cell,
-                                                                            connection.post_segment,
-                                                                            connection.post_fraction_along,
-                                                                            popPre,
-                                                                            connection.pre_cell,
-                                                                            connection.pre_segment,
-                                                                            connection.pre_fraction_along)
-                                                                            
-                        if not other_half_elect_conn in half_elect_conns_added:
-                            projection.electrical_connection_instances.append(connection)
-                            half_elect_conns_added.append("%s_%s_%s_%s -> %s_%s_%s_%s"%(popPre,
-                                                                            connection.pre_cell,
-                                                                            connection.pre_segment,
-                                                                            connection.pre_fraction_along,
-                                                                            popPost,
-                                                                            connection.post_cell,
-                                                                            connection.post_segment,
-                                                                            connection.post_fraction_along))
-                        
-                    index+=1
-
-
-        if stimulations:
-            stims = _convertStimulationRepresentation(net, gids_vs_pop_indices, nml_doc)
-
-            for stim_info in list(stims.keys()):
-                name_stim, post_pop, rate, noise, synMech = stim_info
-
-                if sim.cfg.verbose: print("Adding stim: %s"%[stim_info])
-
-                if noise==0:
-                    source = neuroml.SpikeGenerator(id=name_stim,period="%ss"%(1./rate))
-                    nml_doc.spike_generators.append(source)
-                elif noise==1:
-                    source = neuroml.SpikeGeneratorPoisson(id=name_stim,average_rate="%s Hz"%(rate))
-                    nml_doc.spike_generator_poissons.append(source)
-                else:
-                    raise Exception("Noise = %s is not yet supported!"%noise)
-
-
-                stim_pop = neuroml.Population(id='Pop_%s'%name_stim,component=source.id,size=len(stims[stim_info]))
-                nml_net.populations.append(stim_pop)
-
-
-                proj = neuroml.Projection(id="NetConn_%s__%s"%(name_stim, post_pop), 
-                      presynaptic_population=stim_pop.id, 
-                      postsynaptic_population=post_pop, 
-                      synapse=synMech)
-
-                nml_net.projections.append(proj)
+                cell = neuroml.Cell(id=cell_id)
+                cell.notes = "Cell exported from NetPyNE:\n%s"%cell_param_set
+                cell.morphology = neuroml.Morphology(id='morph_%s'%cell_id)
+                cell.biophysical_properties = neuroml.BiophysicalProperties(id='biophys_%s'%cell_id)
+                mp = neuroml.MembraneProperties()
+                cell.biophysical_properties.membrane_properties = mp
+                ip = neuroml.IntracellularProperties()
+                cell.biophysical_properties.intracellular_properties = ip
 
                 count = 0
-                for stim in stims[stim_info]:
-                    #print("  Adding stim: %s"%stim)
 
-                    connection = neuroml.ConnectionWD(id=count, \
-                            pre_cell_id="../%s[%i]"%(stim_pop.id, count), \
-                            pre_segment_id=0, \
-                            pre_fraction_along=0.5,
-                            post_cell_id="../%s/%i/%s"%(post_pop, stim['index'], populations_vs_components[post_pop]), \
-                            post_segment_id=0,
-                            post_fraction_along=0.5,
-                            delay = '%s ms'%stim['delay'],
-                            weight = stim['weight'])
+                import neuroml.nml.nml
+                chans_doc = neuroml.nml.nml.parseString(hh_nml2_chans)
+                chans_added = []
+
+                nml_segs = {}
+
+                parentDistal = neuroml.Point3DWithDiam(x=0,y=0,z=0,diameter=0)
+
+                for np_sec_name in list(cell_param_set['secs'].keys()):
+
+                    parent_seg = None
+
+                    np_sec = cell_param_set['secs'][np_sec_name]
+                    nml_seg = neuroml.Segment(id=count,name=np_sec_name)
+                    nml_segs[np_sec_name] = nml_seg
+
+                    if 'topol' in np_sec and len(np_sec['topol'])>0:
+                        parent_seg = nml_segs[np_sec['topol']['parentSec']]
+                        nml_seg.parent = neuroml.SegmentParent(segments=parent_seg.id)
+
+                        if not (np_sec['topol']['parentX'] == 1.0 and  np_sec['topol']['childX'] == 0):
+                            print("Currently only support cell topol with parentX == 1.0 and childX == 0")
+                            exit(1)
+
+                    if not ( ('pt3d' not in np_sec['geom']) or len(np_sec['geom']['pt3d'])==0 or len(np_sec['geom']['pt3d'])==2 ):
+                        print("Currently only support cell geoms with 2 pt3ds (or 0 and diam/L specified): %s"%np_sec['geom'])
+                        exit(1)
+
+                    if ('pt3d' not in np_sec['geom'] or len(np_sec['geom']['pt3d'])==0):
+
+                        if parent_seg == None:
+                            nml_seg.proximal = neuroml.Point3DWithDiam(x=parentDistal.x,
+                                                                y=parentDistal.y,
+                                                                z=parentDistal.z,
+                                                                diameter=np_sec['geom']['diam'])
+
+                        nml_seg.distal = neuroml.Point3DWithDiam(x=parentDistal.x,
+                                                                y=(parentDistal.y+np_sec['geom']['L']),
+                                                                z=parentDistal.z,
+                                                                diameter=np_sec['geom']['diam'])
+                    else:
+
+                        prox = np_sec['geom']['pt3d'][0]
+
+                        nml_seg.proximal = neuroml.Point3DWithDiam(x=prox[0],
+                                                                    y=prox[1],
+                                                                    z=prox[2],
+                                                                    diameter=prox[3])
+                        dist = np_sec['geom']['pt3d'][1]
+                        nml_seg.distal = neuroml.Point3DWithDiam(x=dist[0],
+                                                                    y=dist[1],
+                                                                    z=dist[2],
+                                                                    diameter=dist[3])
+
+                    nml_seg_section = neuroml.SegmentGroup(id='%s_SECTION'%np_sec_name, neuro_lex_id="sao864921383")
+                    nml_seg_section.members.append(neuroml.Member(segments=count))
+                    cell.morphology.segment_groups.append(nml_seg_section)
+                    
+                    nml_seg_group = neuroml.SegmentGroup(id='%s_group'%np_sec_name)
+                    nml_seg_group.includes.append(neuroml.Include(segment_groups=nml_seg_section.id))
+                    cell.morphology.segment_groups.append(nml_seg_group)
+
+
+                    cell.morphology.segments.append(nml_seg)
+
                     count+=1
 
-                    proj.connection_wds.append(connection)
+                    ip.resistivities.append(neuroml.Resistivity(value="%s ohm_cm"%np_sec['geom']['Ra'], 
+                                                                segment_groups=nml_seg_group.id))
+
+                    '''
+                    See https://github.com/Neurosim-lab/netpyne/issues/130
+                    '''
+                    cm = np_sec['geom']['cm'] if 'cm' in np_sec['geom'] else 1
+                    if isinstance(cm,dict) and len(cm)==0:
+                        cm = 1
+                    mp.specific_capacitances.append(neuroml.SpecificCapacitance(value="%s uF_per_cm2"%cm, 
+                                                                segment_groups=nml_seg_group.id))
+
+                    vinit = np_sec['vinit'] if 'vinit' in np_sec else -65
+                    
+                    if isinstance(vinit,dict) and len(vinit)==0:
+                        vinit = -65
+                        
+                    mp.init_memb_potentials.append(neuroml.InitMembPotential(value="%s mV"%vinit))
+
+                    mp.spike_threshes.append(neuroml.SpikeThresh(value="%s mV"%sim.net.params.defaultThreshold))
+
+                    for mech_name in list(np_sec['mechs'].keys()):
+                        mech = np_sec['mechs'][mech_name]
+                        if mech_name == 'hh':
+
+                            for chan in chans_doc.ion_channel_hhs:
+                                if (chan.id == 'leak_hh' or chan.id == 'na_hh' or chan.id == 'k_hh'):
+                                    if not chan.id in chans_added:
+                                        nml_doc.ion_channel_hhs.append(chan)
+                                        chans_added.append(chan.id)
 
 
-        nml_file_name = '%s.net.nml'%reference
-        
-        if format=='xml':
-            print("Writing %s to %s (%s)"%(nml_doc, nml_file_name, nml_file_name.__class__))
-            writers.NeuroMLWriter.write(nml_doc, nml_file_name)
-        elif format=='hdf5':
-            
-            nml_file_name+='.h5'
-            writers.NeuroMLHdf5Writer.write(nml_doc, nml_file_name)
+                            leak_cd = neuroml.ChannelDensity(id='leak_%s'%nml_seg_group.id,
+                                                        ion_channel='leak_hh',
+                                                        cond_density='%s S_per_cm2'%mech['gl'],
+                                                        erev='%s mV'%mech['el'],
+                                                        ion='non_specific')
+                            mp.channel_densities.append(leak_cd)
+
+                            k_cd = neuroml.ChannelDensity(id='k_%s'%nml_seg_group.id,
+                                                        ion_channel='k_hh',
+                                                        cond_density='%s S_per_cm2'%mech['gkbar'],
+                                                        erev='%s mV'%'-77',
+                                                        ion='k')
+                            mp.channel_densities.append(k_cd)
+
+                            na_cd = neuroml.ChannelDensity(id='na_%s'%nml_seg_group.id,
+                                                        ion_channel='na_hh',
+                                                        cond_density='%s S_per_cm2'%mech['gnabar'],
+                                                        erev='%s mV'%'50',
+                                                        ion='na')
+                            mp.channel_densities.append(na_cd)
+
+                        elif mech_name == 'pas':
+
+                            for chan in chans_doc.ion_channel_hhs:
+                                if (chan.id == 'leak_hh'):
+                                    if not chan.id in chans_added:
+                                        nml_doc.ion_channel_hhs.append(chan)
+                                        chans_added.append(chan.id)
+
+                            leak_cd = neuroml.ChannelDensity(id='leak_%s'%nml_seg_group.id,
+                                                        ion_channel='leak_hh',
+                                                        cond_density='%s mS_per_cm2'%mech['g'],
+                                                        erev='%s mV'%mech['e'],
+                                                        ion='non_specific')
+                            mp.channel_densities.append(leak_cd)
+                        else:
+                            print("Currently NML2 export only supports mech hh, not: %s"%mech_name)
+                            exit(1)
 
 
-        import pyneuroml.lems
-
-        pyneuroml.lems.generate_lems_file_for_neuroml("Sim_%s"%reference, 
-                                   nml_file_name, 
-                                   reference, 
-                                   sim.cfg.duration, 
-                                   sim.cfg.dt, 
-                                   'LEMS_%s.xml'%reference,
-                                   '.',
-                                   copy_neuroml = False,
-                                   include_extra_files = [],
-                                   gen_plots_for_all_v = False,
-                                   gen_plots_for_only_populations = list(populations_vs_components.keys()),
-                                   gen_saves_for_all_v = False,
-                                   plot_all_segments = False, 
-                                   gen_saves_for_only_populations = list(populations_vs_components.keys()),
-                                   save_all_segments = False)
-                               
-                               
+                nml_doc.cells.append(cell)
                 
-    ###############################################################################
-    ### Class for handling NeuroML2 constructs and generating the equivalent in 
-    ### NetPyNE's internal representation
-    ############################################################################### 
+            cells_added.append(str(cell_param_set))
+            
+        
+    for np_pop in list(net.pops.values()): 
+        index = 0
+        print("Adding population: %s"%np_pop.tags)
+        
+        type = 'populationList'
+        if not np_pop.tags['cellModel'] ==  'NetStim':
+            comp_id = populations_vs_components[np_pop.tags['pop']]
+            pop = neuroml.Population(id=np_pop.tags['pop'],component=comp_id, type=type)
+            pop.properties.append(neuroml.Property('radius',default_cell_radius))
+            
+            pop.properties.append(neuroml.Property('color','%s %s %s'%(myrandom.random(),myrandom.random(),myrandom.random())))
+            
+            nml_net.populations.append(pop)
 
-          #### NOTE: commented out because generated error when running via mpiexec
-          ####       maybe find way to check if exectued via mpi 
+            for cell in net.cells:
+                if cell.gid in np_pop.cellGids:
+                    gids_vs_pop_indices[cell.gid] = (np_pop.tags['pop'],index)
+                    inst = neuroml.Instance(id=index)
+                    index+=1
+                    pop.instances.append(inst)
+                    inst.location = neuroml.Location(cell.tags['x'],cell.tags['y'],cell.tags['z'])
+            
+            pop.size = index
+            
+    syn_types = _export_synapses(net, nml_doc)
 
+    if connections:
+        nn = _convertNetworkRepresentation(net, gids_vs_pop_indices)
+
+        half_elect_conns_added = []
+        for proj_info in list(nn.keys()):
+
+            prefix = "NetConn"
+            popPre,popPost,synMech = proj_info
+            if sim.cfg.verbose: print("Adding proj: %s->%s (%s)"%(popPre,popPost,synMech))
+            
+            if syn_types[synMech]!='ElectSyn':
+                projection = neuroml.Projection(id="%s_%s_%s_%s"%(prefix,popPre, popPost,synMech), 
+                                    presynaptic_population=popPre, 
+                                    postsynaptic_population=popPost, 
+                                    synapse=synMech)
+                                    
+                nml_net.projections.append(projection)
+            else:
+                
+                projection = neuroml.ElectricalProjection(id="%s_%s_%s_%s"%(prefix,popPre, popPost,synMech), 
+                                    presynaptic_population=popPre, 
+                                    postsynaptic_population=popPost)
+                                    
+                nml_net.electrical_projections.append(projection)
+                
+            index = 0    
+            
+            
+            for conn in nn[proj_info]:
+                if sim.cfg.verbose: print("Adding conn %s"%conn)
+                
+                if syn_types[synMech]!='ElectSyn':
+                    connection = neuroml.ConnectionWD(id=index, \
+                                pre_cell_id="../%s/%i/%s"%(popPre, conn['indexPre'], populations_vs_components[popPre]), \
+                                pre_segment_id=0, \
+                                pre_fraction_along=0.5,
+                                post_cell_id="../%s/%i/%s"%(popPost, conn['indexPost'], populations_vs_components[popPost]), \
+                                post_segment_id=0,
+                                post_fraction_along=0.5,
+                                delay = '%s ms'%conn['delay'],
+                                weight = conn['weight'])
+                                
+                    projection.connection_wds.append(connection)
+                    
+                else:
+                    ''' <electricalConnectionInstance id="0" preCell="../iafPop1/0/iaf" postCell="../iafPop2/0/iaf" preSegment="0" 
+                        preFractionAlong="0.5" postSegment="0" postFractionAlong="0.5" synapse="gj1"/>'''
+                    weight = conn['weight']
+                    if weight!=1:
+                        raise Exception('Cannot yet support electrical connections where weight !=1!')
+                    
+                    connection = neuroml.ElectricalConnectionInstance(id=index, \
+                                pre_cell="../%s/%i/%s"%(popPre, conn['indexPre'], populations_vs_components[popPre]), \
+                                pre_segment=0, \
+                                pre_fraction_along=0.5,
+                                post_cell="../%s/%i/%s"%(popPost, conn['indexPost'], populations_vs_components[popPost]), \
+                                post_segment=0,
+                                post_fraction_along=0.5, 
+                                synapse=synMech)
+                                
+                    other_half_elect_conn = "%s_%s_%s_%s -> %s_%s_%s_%s"%(popPost,
+                                                                    connection.post_cell,
+                                                                        connection.post_segment,
+                                                                        connection.post_fraction_along,
+                                                                        popPre,
+                                                                        connection.pre_cell,
+                                                                        connection.pre_segment,
+                                                                        connection.pre_fraction_along)
+                                                                        
+                    if not other_half_elect_conn in half_elect_conns_added:
+                        projection.electrical_connection_instances.append(connection)
+                        half_elect_conns_added.append("%s_%s_%s_%s -> %s_%s_%s_%s"%(popPre,
+                                                                        connection.pre_cell,
+                                                                        connection.pre_segment,
+                                                                        connection.pre_fraction_along,
+                                                                        popPost,
+                                                                        connection.post_cell,
+                                                                        connection.post_segment,
+                                                                        connection.post_fraction_along))
+                    
+                index+=1
+
+
+    if stimulations:
+        stims = _convertStimulationRepresentation(net, gids_vs_pop_indices, nml_doc)
+
+        for stim_info in list(stims.keys()):
+            name_stim, post_pop, rate, noise, synMech = stim_info
+
+            if sim.cfg.verbose: print("Adding stim: %s"%[stim_info])
+
+            if noise==0:
+                source = neuroml.SpikeGenerator(id=name_stim,period="%ss"%(1./rate))
+                nml_doc.spike_generators.append(source)
+            elif noise==1:
+                source = neuroml.SpikeGeneratorPoisson(id=name_stim,average_rate="%s Hz"%(rate))
+                nml_doc.spike_generator_poissons.append(source)
+            else:
+                raise Exception("Noise = %s is not yet supported!"%noise)
+
+
+            stim_pop = neuroml.Population(id='Pop_%s'%name_stim,component=source.id,size=len(stims[stim_info]))
+            nml_net.populations.append(stim_pop)
+
+
+            proj = neuroml.Projection(id="NetConn_%s__%s"%(name_stim, post_pop), 
+                    presynaptic_population=stim_pop.id, 
+                    postsynaptic_population=post_pop, 
+                    synapse=synMech)
+
+            nml_net.projections.append(proj)
+
+            count = 0
+            for stim in stims[stim_info]:
+                #print("  Adding stim: %s"%stim)
+
+                connection = neuroml.ConnectionWD(id=count, \
+                        pre_cell_id="../%s[%i]"%(stim_pop.id, count), \
+                        pre_segment_id=0, \
+                        pre_fraction_along=0.5,
+                        post_cell_id="../%s/%i/%s"%(post_pop, stim['index'], populations_vs_components[post_pop]), \
+                        post_segment_id=0,
+                        post_fraction_along=0.5,
+                        delay = '%s ms'%stim['delay'],
+                        weight = stim['weight'])
+                count+=1
+
+                proj.connection_wds.append(connection)
+
+
+    nml_file_name = '%s.net.nml'%reference
+    
+    if format=='xml':
+        print("Writing %s to %s (%s)"%(nml_doc, nml_file_name, nml_file_name.__class__))
+        writers.NeuroMLWriter.write(nml_doc, nml_file_name)
+    elif format=='hdf5':
+        
+        nml_file_name+='.h5'
+        writers.NeuroMLHdf5Writer.write(nml_doc, nml_file_name)
+
+
+    import pyneuroml.lems
+
+    pyneuroml.lems.generate_lems_file_for_neuroml("Sim_%s"%reference, 
+                                nml_file_name, 
+                                reference, 
+                                sim.cfg.duration, 
+                                sim.cfg.dt, 
+                                'LEMS_%s.xml'%reference,
+                                '.',
+                                copy_neuroml = False,
+                                include_extra_files = [],
+                                gen_plots_for_all_v = False,
+                                gen_plots_for_only_populations = list(populations_vs_components.keys()),
+                                gen_saves_for_all_v = False,
+                                plot_all_segments = False, 
+                                gen_saves_for_only_populations = list(populations_vs_components.keys()),
+                                save_all_segments = False)
+                            
+                            
+            
+###############################################################################
+### Class for handling NeuroML2 constructs and generating the equivalent in 
+### NetPyNE's internal representation
+############################################################################### 
+
+        #### NOTE: commented out because generated error when running via mpiexec
+        ####       maybe find way to check if exectued via mpi 
+
+try:
     from neuroml.hdf5.DefaultNetworkHandler import DefaultNetworkHandler
 
 
@@ -780,7 +780,7 @@ if neuromlExists:
                 
                 cell = component_obj
                 cellRule = {'conds':{'cellType': component, 
-                                     'cellModel': component},  
+                                        'cellModel': component},  
                             'secs': {}, 
                             'secLists':{}}
                 
@@ -908,7 +908,7 @@ if neuromlExists:
                     
                 
                 for cm in cell.biophysical_properties.membrane_properties.channel_densities:
-                              
+                                
                     group = 'all' if not cm.segment_groups else cm.segment_groups
                     for section_name in seg_grps_vs_nrn_sections[group]:
                         gmax = pynml.convert_to_units(cm.cond_density,'S_per_cm2')
@@ -929,7 +929,7 @@ if neuromlExists:
                             cellRule['secs'][section_name]['ions'][ion]['e'] = erev
                 
                 for cm in cell.biophysical_properties.membrane_properties.channel_density_v_shifts:
-                              
+                                
                     group = 'all' if not cm.segment_groups else cm.segment_groups
                     for section_name in seg_grps_vs_nrn_sections[group]:
                         gmax = pynml.convert_to_units(cm.cond_density,'S_per_cm2')
@@ -974,7 +974,7 @@ if neuromlExists:
                             
                             
                 for cm in cell.biophysical_properties.membrane_properties.channel_density_ghk2s:
-                              
+                                
                     group = 'all' if not cm.segment_groups else cm.segment_groups
                     for section_name in seg_grps_vs_nrn_sections[group]:
                         gmax = pynml.convert_to_units(cm.cond_density,'S_per_cm2')
@@ -1108,7 +1108,7 @@ if neuromlExists:
                     
                 cellRule = {'label': component, 
                             'conds': {'cellType': component, 
-                                      'cellModel': component},  
+                                        'cellModel': component},  
                             'secs': {}} # This parameter is required to distinguish NML2 "point processes" from artificial cells
 
                 soma = {'geom': {}, 'pointps':{}}  # soma properties
@@ -1140,7 +1140,7 @@ if neuromlExists:
                 soma['pointps'][component] = {'mod':component}
                 cellRule['secs'] = {'soma': soma}  # add sections to dict
                 self.cellParams[component] = cellRule
-              
+                
             self.gids[population_id] = [-1]*size
 
         def _determine_ion(self, channel_density):
@@ -1226,7 +1226,7 @@ if neuromlExists:
             #self.log.debug("A connection "+str(id)+" of: "+projName+": "+prePop+"["+str(preCellId)+"]."+pre_seg_name+"("+str(pre_fract)+")" \
             #                      +" -> "+postPop+"["+str(postCellId)+"]."+post_seg_name+"("+str(post_fract)+")"+", syn: "+ str(synapseType) \
             #                      +", weight: "+str(weight)+", delay: "+str(delay))
-                                  
+                                    
             self.connections[projName].append( (self.gids[prePop][preCellId], pre_seg_name,pre_fract, \
                                                 self.gids[postPop][postCellId], post_seg_name, post_fract, \
                                                 delay, weight) )
@@ -1245,9 +1245,9 @@ if neuromlExists:
             
             #TODO Make better check for stoch/poisson/noisy inputs!
             if isinstance(input_comp_obj,neuroml.PoissonFiringSynapse) \
-              or isinstance(input_comp_obj,neuroml.TransientPoissonFiringSynapse) \
-              or 'noisy' in component.lower()\
-              or 'poisson' in component.lower():
+                or isinstance(input_comp_obj,neuroml.TransientPoissonFiringSynapse) \
+                or 'noisy' in component.lower()\
+                or 'poisson' in component.lower():
                 format = 'NeuroML2_stochastic_input'
                 
             self.popStimSources[inputListId] = {'label': inputListId, 'type': component, 'originalFormat': format}
@@ -1416,17 +1416,17 @@ if neuromlExists:
                     if weight!=1:
                         raise Exception('Cannot yet support inputs where weight !=1!')
                     connParam = {'synsPerConn': 1, 
-                                 'sec': post_seg, 
-                                 'loc': post_fract, 
-                                 'gapJunction': True, 
-                                 'weight': weight}
+                                    'sec': post_seg, 
+                                    'loc': post_fract, 
+                                    'gapJunction': True, 
+                                    'weight': weight}
                 else:
                     connParam = {'delay': delay,
-                                 'weight': weight,
-                                 'synsPerConn': 1, 
-                                 'sec': post_seg, 
-                                 'loc': post_fract} 
-                                 #'threshold': threshold}
+                                    'weight': weight,
+                                    'synsPerConn': 1, 
+                                    'sec': post_seg, 
+                                    'loc': post_fract} 
+                                    #'threshold': threshold}
 
                 connParam['synMech'] = synapse
 
@@ -1462,3 +1462,5 @@ if neuromlExists:
             h('forall  if (ismembrane("ca_ion")) { print "Ca ions: ", secname(), ": eca: ", eca, ", cai: ", cai, ", cao: ", cao } ')'''
 
         return nmlHandler.gids
+except:
+    pass

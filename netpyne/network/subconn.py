@@ -3,9 +3,8 @@
 network/subconn.py 
 
 Methods to distribute synapses at the subcellular level (e.g. dendritic) in the network
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals

@@ -2,8 +2,6 @@
 cfg.py 
 
 Simulation configuration for M1 model (using NetPyNE)
-
-Contributors: salvadordura@gmail.com
 """
 
 from netpyne import specs

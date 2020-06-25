@@ -2,9 +2,8 @@
 conversion/pythonScript.py 
 
 Contains functions to export a model as a python script   
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division

@@ -2,9 +2,8 @@
 sim/save.py
 
 Functions related to saving 
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
@@ -46,7 +45,7 @@ def saveJSON(fileName, data):
 #------------------------------------------------------------------------------
 # Save data
 #------------------------------------------------------------------------------
-def saveData (include = None, filename = None):
+def saveData(include = None, filename = None):
     from .. import sim
 
     if sim.rank == 0 and not getattr(sim.net, 'allCells', None): needGather = True
@@ -247,7 +246,7 @@ def compactConnFormat():
 #------------------------------------------------------------------------------
 # Gathers data in master and saves it mid run
 #------------------------------------------------------------------------------
-def intervalSave (t):
+def intervalSave(t):
     from .. import sim
     from ..specs import Dict
     import pickle, os

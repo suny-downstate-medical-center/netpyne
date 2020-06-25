@@ -4,9 +4,8 @@ Contains Dict and ODict classes
 
 Reproduce dict and OrderedDict behavior but add support to use object-like dot notation
 e.g. cell.secs.soma.geom.diam
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division

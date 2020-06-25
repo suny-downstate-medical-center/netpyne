@@ -2,9 +2,8 @@
 sim/run.py
 
 Functions related to running the simulation
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals

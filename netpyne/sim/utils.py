@@ -4,10 +4,8 @@ sim/utils.py
 Helper functions related to the simulation
 
 Private methods: _mat2dict, _dict2utf8, decimalToFloat, tupleToList, replaceDictODict, replaceNoneObj
-
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division

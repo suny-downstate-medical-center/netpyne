@@ -2,9 +2,8 @@
 conversion/neuron.py 
 
 Functions to import cells, synapses and networks from NEURON
-
-Contributors: salvador dura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division

@@ -2,8 +2,6 @@
 init.py 
 
 Example of saving different network components to file
-
-Contributors: salvadordura@gmail.com
 """
 
 from netpyne import sim

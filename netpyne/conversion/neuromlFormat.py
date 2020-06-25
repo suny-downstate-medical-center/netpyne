@@ -2,9 +2,8 @@
 conversion/neuromlFormat.py 
 
 Contains functions related to neuroml conversion (import from and export to) 
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
@@ -675,7 +674,6 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
 try:
     from neuroml.hdf5.DefaultNetworkHandler import DefaultNetworkHandler
 
-
     class NetPyNEBuilder(DefaultNetworkHandler):
 
         cellParams = OrderedDict()
@@ -1315,155 +1313,162 @@ except:
 ###############################################################################
 def importNeuroML2(fileName, simConfig, simulate=True, analyze=True):
 
-    from .. import sim
+    ###############################################################################
+    # Import network from NeuroML2
+    ###############################################################################
+    def importNeuroML2(fileName, simConfig, simulate=True, analyze=True):
 
-    netParams = specs.NetParams()
+        from .. import sim
 
-    import pprint
-    pp = pprint.PrettyPrinter(indent=4)
+        netParams = specs.NetParams()
 
-    print("Importing NeuroML 2 network from: %s"%fileName)
+        import pprint
+        pp = pprint.PrettyPrinter(indent=4)
 
-    nmlHandler = None
-    
-    verbose = False
+        print("Importing NeuroML 2 network from: %s"%fileName)
 
-    if fileName.endswith(".nml"):
-
-        import logging
-        logging.basicConfig(level=logging.WARNING, format="%(name)-19s %(levelname)-5s - %(message)s")
-
-        from neuroml.hdf5.NeuroMLXMLParser import NeuroMLXMLParser
-
-        nmlHandler = NetPyNEBuilder(netParams, simConfig=simConfig, verbose=verbose)     
-
-        currParser = NeuroMLXMLParser(nmlHandler) # The XML handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
-
-        currParser.parse(fileName)
-
-        nmlHandler.finalise()
-
-        print('Finished import of NeuroML2; populations vs gids NML has calculated: ')
-        for pop in nmlHandler.gids:
-            g = nmlHandler.gids[pop]
-            print('   %s: %s'%(pop, g if len(g)<10 else str(g[:8]).replace(']',', ..., %s]'%g[-1])))
-        #print('Connections: %s'%nmlHandler.connections)
-
-    if fileName.endswith(".h5"):
-
-        import logging
-        logging.basicConfig(level=logging.WARNING, format="%(name)-19s %(levelname)-5s - %(message)s")
-
-        from neuroml.hdf5.NeuroMLHdf5Parser import NeuroMLHdf5Parser
-
-        nmlHandler = NetPyNEBuilder(netParams, simConfig=simConfig, verbose=verbose)     
-
-        currParser = NeuroMLHdf5Parser(nmlHandler) # The HDF5 handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
-
-        currParser.parse(fileName)
-
-        nmlHandler.finalise()
-
-        print('Finished import: %s'%nmlHandler.gids)
-        #print('Connections: %s'%nmlHandler.connections)
-
-
-    sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
-
-    #pp.pprint(netParams)
-    #pp.pprint(simConfig)
-    sim.net.createPops()  
-    cells = sim.net.createCells()                 # instantiate network cells based on defined populations  
-
-
-    # Check gids equal....
-    for popLabel,pop in sim.net.pops.items():
-        if sim.cfg.verbose: print("gid: %s: %s, %s"%(popLabel,pop, pop.cellGids))
-        for gid in pop.cellGids:
-            assert gid in nmlHandler.gids[popLabel]
+        nmlHandler = None
         
-    for proj_id in list(nmlHandler.projection_infos.keys()):
-        projName, prePop, postPop, synapse, ptype = nmlHandler.projection_infos[proj_id]
-        if sim.cfg.verbose: print("Creating connections for %s (%s): %s->%s via %s"%(projName, ptype, prePop, postPop, synapse))
-        
-        preComp = nmlHandler.pop_ids_vs_components[prePop]
-        
-        from neuroml import Cell
-        '''
-        
-        No longer used in connections, defined in section on cell...
-        
-        if isinstance(preComp,Cell):
-            if len(preComp.biophysical_properties.membrane_properties.spike_threshes)>0:
-                st = preComp.biophysical_properties.membrane_properties.spike_threshes[0]
-                # Ensure threshold is same everywhere on cell
-                assert(st.segment_groups=='all')
-                assert(len(preComp.biophysical_properties.membrane_properties.spike_threshes)==1)
-                threshold = pynml.convert_to_units(st.value,'mV')
+        verbose = False
+
+        if fileName.endswith(".nml"):
+
+            import logging
+            logging.basicConfig(level=logging.WARNING, format="%(name)-19s %(levelname)-5s - %(message)s")
+
+            from neuroml.hdf5.NeuroMLXMLParser import NeuroMLXMLParser
+
+            nmlHandler = NetPyNEBuilder(netParams, simConfig=simConfig, verbose=verbose)     
+
+            currParser = NeuroMLXMLParser(nmlHandler) # The XML handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
+
+            currParser.parse(fileName)
+
+            nmlHandler.finalise()
+
+            print('Finished import of NeuroML2; populations vs gids NML has calculated: ')
+            for pop in nmlHandler.gids:
+                g = nmlHandler.gids[pop]
+                print('   %s: %s'%(pop, g if len(g)<10 else str(g[:8]).replace(']',', ..., %s]'%g[-1])))
+            #print('Connections: %s'%nmlHandler.connections)
+
+        if fileName.endswith(".h5"):
+
+            import logging
+            logging.basicConfig(level=logging.WARNING, format="%(name)-19s %(levelname)-5s - %(message)s")
+
+            from neuroml.hdf5.NeuroMLHdf5Parser import NeuroMLHdf5Parser
+
+            nmlHandler = NetPyNEBuilder(netParams, simConfig=simConfig, verbose=verbose)     
+
+            currParser = NeuroMLHdf5Parser(nmlHandler) # The HDF5 handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
+
+            currParser.parse(fileName)
+
+            nmlHandler.finalise()
+
+            print('Finished import: %s'%nmlHandler.gids)
+            #print('Connections: %s'%nmlHandler.connections)
+
+
+        sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
+
+        #pp.pprint(netParams)
+        #pp.pprint(simConfig)
+        sim.net.createPops()  
+        cells = sim.net.createCells()                 # instantiate network cells based on defined populations  
+
+
+        # Check gids equal....
+        for popLabel,pop in sim.net.pops.items():
+            if sim.cfg.verbose: print("gid: %s: %s, %s"%(popLabel,pop, pop.cellGids))
+            for gid in pop.cellGids:
+                assert gid in nmlHandler.gids[popLabel]
+            
+        for proj_id in list(nmlHandler.projection_infos.keys()):
+            projName, prePop, postPop, synapse, ptype = nmlHandler.projection_infos[proj_id]
+            if sim.cfg.verbose: print("Creating connections for %s (%s): %s->%s via %s"%(projName, ptype, prePop, postPop, synapse))
+            
+            preComp = nmlHandler.pop_ids_vs_components[prePop]
+            
+            from neuroml import Cell
+            '''
+            
+            No longer used in connections, defined in section on cell...
+            
+            if isinstance(preComp,Cell):
+                if len(preComp.biophysical_properties.membrane_properties.spike_threshes)>0:
+                    st = preComp.biophysical_properties.membrane_properties.spike_threshes[0]
+                    # Ensure threshold is same everywhere on cell
+                    assert(st.segment_groups=='all')
+                    assert(len(preComp.biophysical_properties.membrane_properties.spike_threshes)==1)
+                    threshold = pynml.convert_to_units(st.value,'mV')
+                else:
+                    threshold = 0
+            elif hasattr(preComp,'thresh'):
+                threshold = pynml.convert_to_units(preComp.thresh,'mV')
+            elif hasattr(preComp,'v_thresh'):
+                threshold = float(preComp.v_thresh) # PyNN cells...
             else:
-                threshold = 0
-        elif hasattr(preComp,'thresh'):
-            threshold = pynml.convert_to_units(preComp.thresh,'mV')
-        elif hasattr(preComp,'v_thresh'):
-            threshold = float(preComp.v_thresh) # PyNN cells...
-        else:
-            threshold = 0.0'''
+                threshold = 0.0'''
 
-        for conn in nmlHandler.connections[projName]:
-            
-            pre_id, pre_seg, pre_fract, post_id, post_seg, post_fract, delay, weight = conn
-            
-            #connParam = {'delay':delay,'weight':weight,'synsPerConn':1, 'sec':post_seg, 'loc':post_fract, 'threshold':threshold}
-            connParam = {'delay':delay,'weight':weight,'synsPerConn':1, 'sec':post_seg, 'loc':post_fract}
-            
-            if ptype == 'electricalProjection':
-
-                if weight!=1:
-                    raise Exception('Cannot yet support inputs where weight !=1!')
-                connParam = {'synsPerConn': 1, 
-                                'sec': post_seg, 
-                                'loc': post_fract, 
-                                'gapJunction': True, 
-                                'weight': weight}
-            else:
-                connParam = {'delay': delay,
-                                'weight': weight,
-                                'synsPerConn': 1, 
-                                'sec': post_seg, 
-                                'loc': post_fract} 
-                                #'threshold': threshold}
-
-            connParam['synMech'] = synapse
-
-            if post_id in sim.net.gid2lid:  # check if postsyn is in this node's list of gids
-                sim.net._addCellConn(connParam, pre_id, post_id)
+            for conn in nmlHandler.connections[projName]:
                 
-    
-    # add gap junctions of presynaptic cells (need to do separately because could be in different ranks)
-    for preGapParams in getattr(sim.net, 'preGapJunctions', []):
-        if preGapParams['gid'] in sim.net.gid2lid:  # only cells in this rank
-            cell = sim.net.cells[sim.net.gid2lid[preGapParams['gid']]] 
-            cell.addConn(preGapParams)
-            
-    print('  Number of connections on node %i: %i ' % (sim.rank, sum([len(cell.conns) for cell in sim.net.cells])))
+                pre_id, pre_seg, pre_fract, post_id, post_seg, post_fract, delay, weight = conn
+                
+                #connParam = {'delay':delay,'weight':weight,'synsPerConn':1, 'sec':post_seg, 'loc':post_fract, 'threshold':threshold}
+                connParam = {'delay':delay,'weight':weight,'synsPerConn':1, 'sec':post_seg, 'loc':post_fract}
+                
+                if ptype == 'electricalProjection':
 
+                    if weight!=1:
+                        raise Exception('Cannot yet support inputs where weight !=1!')
+                    connParam = {'synsPerConn': 1, 
+                                    'sec': post_seg, 
+                                    'loc': post_fract, 
+                                    'gapJunction': True, 
+                                    'weight': weight}
+                else:
+                    connParam = {'delay': delay,
+                                    'weight': weight,
+                                    'synsPerConn': 1, 
+                                    'sec': post_seg, 
+                                    'loc': post_fract} 
+                                    #'threshold': threshold}
+
+                connParam['synMech'] = synapse
+
+                if post_id in sim.net.gid2lid:  # check if postsyn is in this node's list of gids
+                    sim.net._addCellConn(connParam, pre_id, post_id)
                     
+        
+        # add gap junctions of presynaptic cells (need to do separately because could be in different ranks)
+        for preGapParams in getattr(sim.net, 'preGapJunctions', []):
+            if preGapParams['gid'] in sim.net.gid2lid:  # only cells in this rank
+                cell = sim.net.cells[sim.net.gid2lid[preGapParams['gid']]] 
+                cell.addConn(preGapParams)
+                
+        print('  Number of connections on node %i: %i ' % (sim.rank, sum([len(cell.conns) for cell in sim.net.cells])))
 
-    #conns = sim.net.connectCells()                # create connections between cells based on params
-    stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
-    simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
-    
-    if simulate:
-        sim.runSim()                      # run parallel Neuron simulation  
-        sim.gatherData()                  # gather spiking data and cell info from each node
+                        
 
-    if analyze:
-        sim.saveData()                    # save params, cell info and sim output to file (pickle,mat,txt,etc)
-        sim.analysis.plotData()               # plot spike raster
-        '''
-        h('forall psection()')
-        h('forall  if (ismembrane("na_ion")) { print "Na ions: ", secname(), ": ena: ", ena, ", nai: ", nai, ", nao: ", nao } ')
-        h('forall  if (ismembrane("k_ion")) { print "K ions: ", secname(), ": ek: ", ek, ", ki: ", ki, ", ko: ", ko } ')
-        h('forall  if (ismembrane("ca_ion")) { print "Ca ions: ", secname(), ": eca: ", eca, ", cai: ", cai, ", cao: ", cao } ')'''
+        #conns = sim.net.connectCells()                # create connections between cells based on params
+        stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
+        simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
+        
+        if simulate:
+            sim.runSim()                      # run parallel Neuron simulation  
+            sim.gatherData()                  # gather spiking data and cell info from each node
 
-    return nmlHandler.gids
+        if analyze:
+            sim.saveData()                    # save params, cell info and sim output to file (pickle,mat,txt,etc)
+            sim.analysis.plotData()               # plot spike raster
+            '''
+            h('forall psection()')
+            h('forall  if (ismembrane("na_ion")) { print "Na ions: ", secname(), ": ena: ", ena, ", nai: ", nai, ", nao: ", nao } ')
+            h('forall  if (ismembrane("k_ion")) { print "K ions: ", secname(), ": ek: ", ek, ", ki: ", ki, ", ko: ", ko } ')
+            h('forall  if (ismembrane("ca_ion")) { print "Ca ions: ", secname(), ": eca: ", eca, ", cai: ", cai, ", cao: ", cao } ')'''
+
+        return nmlHandler.gids
+except:
+    pass

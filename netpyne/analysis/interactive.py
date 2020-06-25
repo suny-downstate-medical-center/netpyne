@@ -1392,7 +1392,7 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 
         # format plot
 
-        plot_layout = column(figs['psd'] )
+        plot_layout = column(figs['psd'], sizing_mode='stretch_both')
         html = file_html(plot_layout, CDN, title="LFP Power Spectral Density")
 
         show(plot_layout)
@@ -1448,7 +1448,7 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             figs['spectro'].append(p)
 
 
-        plot_layout = column(figs['spectro'] )
+        plot_layout = column(figs['spectro'], sizing_mode='stretch_both')
         html = file_html(plot_layout, CDN, title="LFP Power Spectral Density")
 
         show(plot_layout)

@@ -46,7 +46,7 @@ python:
 
 install:
     - cd ..
-    - pip install numpy matplotlib scipy pandas future tables
+    - pip install numpy matplotlib scipy pandas future tables bokeh
     - pip install pyneuroml # This will install libNeuroML also
     - git clone --branch 7.6.2 https://github.com/neuronsimulator/nrn
     - cd nrn

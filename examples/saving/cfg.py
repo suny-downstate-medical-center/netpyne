@@ -4,8 +4,6 @@ cfg.py
 Example of saving different network components to file
 
 cfg is an object containing a set of simulation configurations using a standardized structure
-
-Contributors: salvadordura@gmail.com
 """
 
 from netpyne import specs

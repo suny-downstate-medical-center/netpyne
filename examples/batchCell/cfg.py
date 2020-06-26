@@ -2,8 +2,6 @@
 cfg.py 
 
 Simulation configuration 
-
-Contributors: salvadordura@gmail.com
 """
 
 from netpyne import specs

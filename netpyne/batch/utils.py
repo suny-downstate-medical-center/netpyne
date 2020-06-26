@@ -2,8 +2,6 @@
 batch/utils.py 
 
 Helper functions to set up and run batch simulations
-
-Contributors: salvadordura@gmail.com
 """
 from __future__ import unicode_literals
 from __future__ import print_function
@@ -14,7 +12,9 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 def bashTemplate(template):
-    ''' return the bash commands required by template for batch simulation'''
+    """
+    return the bash commands required by template for batch simulation
+    """
     
     if template=='mpi_direct':
         return """#!/bin/bash 

@@ -8,8 +8,6 @@ Usage:
 
 MPI usage:
     mpiexec -n 4 nrniv -python -mpi init.py
-
-Contributors: salvadordura@gmail.com
 """
 
 from netpyne import sim

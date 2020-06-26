@@ -54,7 +54,7 @@ Here are the steps to release a new version of NetPyNE
     13d) Announce on Slack in #netpyne channel
     13e) Announce on Twitter
          Username: _netpyne_
-18) Bask in the glory that is NetPyNE
+14) Bask in the glory that is NetPyNE
 """
 
 import shutil

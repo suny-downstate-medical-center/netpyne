@@ -2,9 +2,8 @@
 cell/compartCell.py 
 
 Contains compartCell class 
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
@@ -43,7 +42,9 @@ from ..specs import Dict
 # global variables for dipole calculation, should be node-independent 
 
 class CompartCell (Cell):
-    ''' Class for section-based neuron models '''
+    """
+    Class for section-based neuron models
+    """
     
     def __init__ (self, gid, tags, create=True, associateGid=True):
         super(CompartCell, self).__init__(gid, tags)
@@ -81,19 +82,22 @@ class CompartCell (Cell):
         
         for propLabel, prop in sim.net.params.cellParams.items():  # for each set of cell properties
             conditionsMet = 1
-            for (condKey,condVal) in prop['conds'].items():  # check if all conditions are met
-                if isinstance(condVal, list): 
-                    if isinstance(condVal[0], Number):
-                        if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
-                            conditionsMet = 0
-                            break
-                    elif isinstance(condVal[0], basestring):
-                        if self.tags.get(condKey) not in condVal:
-                            conditionsMet = 0
-                            break 
-                elif self.tags.get(condKey) != condVal: 
-                    conditionsMet = 0
-                    break
+            if 'conds' in prop and len(prop['conds']) > 0:
+                for (condKey,condVal) in prop['conds'].items():  # check if all conditions are met
+                    if isinstance(condVal, list): 
+                        if isinstance(condVal[0], Number):
+                            if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
+                                conditionsMet = 0
+                                break
+                        elif isinstance(condVal[0], basestring):
+                            if self.tags.get(condKey) not in condVal:
+                                conditionsMet = 0
+                                break 
+                    elif self.tags.get(condKey) != condVal: 
+                        conditionsMet = 0
+                        break
+            elif self.tags['cellType'] != propLabel:  # simplified method for defining cell params (when no 'conds')
+                conditionsMet = False
             if conditionsMet:  # if all conditions are met, set values for this cell
                 if sim.cfg.includeParamsLabel:
                     if 'label' not in self.tags:
@@ -1250,8 +1254,11 @@ class CompartCell (Cell):
 
 
     def getSomaPos(self):
-        ''' Get soma position;
-        Used to calculate seg coords for LFP calc (one per population cell; assumes same morphology)'''
+        """
+        Get soma position;
+        Used to calculate seg coords for LFP calc (one per population cell; assumes same morphology)
+        """
+
         n3dsoma = 0
         r3dsoma = np.zeros(3)
         for sec in [sec for secName, sec in self.secs.items() if 'soma' in secName]:
@@ -1272,7 +1279,10 @@ class CompartCell (Cell):
         return r3dsoma
     
     def calcAbsSegCoords(self):
-        ''' Calculate absolute seg coords by translating the relative seg coords -- used for LFP calc'''
+        """
+        Calculate absolute seg coords by translating the relative seg coords -- used for LFP calc
+        """
+        
         from .. import sim
 
         p3dsoma = self.getSomaPos()

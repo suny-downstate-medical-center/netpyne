@@ -3,28 +3,28 @@ from netpyne import specs, sim
 # Network parameters
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
-## Population parameters
-netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'Izhi'} 
-netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}
-
 
 ## Cell property rules
-cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'HH'},  'secs': {}} 	# cell rule dict
-cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}  													# soma params dict
-cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  								# soma geometry
-cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  	# soma hh mechanisms
-cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  										# dend params dict
-cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}						# dend geometry
-cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}					# dend topology 
-cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 									# dend mechanisms
-netParams.cellParams['PYR_HH_rule'] = cellRule  														# add dict to list of cell parameters
+secs = {} 	# cell rule dict
+secs['soma'] = {'geom': {}, 'mechs': {}}  													# soma params dict
+secs['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  								# soma geometry
+secs['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  	# soma hh mechanisms
+secs['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  										# dend params dict
+secs['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}						# dend geometry
+secs['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}					# dend topology 
+secs['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 									# dend mechanisms
+netParams.cellParams['PYR_HH'] = {'secs': secs}  														# add dict to list of cell parameters
 
-cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'Izhi'},  'secs': {}} 						# cell rule dict
-cellRule['secs']['soma'] = {'geom': {}, 'pointps': {}}  												# soma params dict
-cellRule['secs']['soma']['geom'] = {'diam': 10.0, 'L': 10.0, 'cm': 31.831}  							# soma geometry
-cellRule['secs']['soma']['pointps']['Izhi'] = {'mod':'Izhi2007b', 'C':1, 'k':0.7, 
+secs = {}						# cell rule dict
+secs['soma'] = {'geom': {}, 'pointps': {}}  												# soma params dict
+secs['soma']['geom'] = {'diam': 10.0, 'L': 10.0, 'cm': 31.831}  							# soma geometry
+secs['soma']['pointps']['Izhi'] = {'mod':'Izhi2007b', 'C':1, 'k':0.7, 
 	'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}  					# soma hh mechanisms
-netParams.cellParams['PYR_Izhi_rule'] = cellRule  														# add dict to list of cell parameters
+netParams.cellParams['PYR_Izhi'] = {'secs': secs}														# add dict to list of cell parameters
+
+## Population parameters
+netParams.popParams['S'] = {'cellType': 'PYR_Izhi', 'numCells': 20} 
+netParams.popParams['M'] = {'cellType': 'PYR_HH', 'numCells': 20}
 
 
 ## Synaptic mechanism parameters
@@ -33,7 +33,7 @@ netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 1.0, 'tau2': 5.0, 'e
 
 # Stimulation parameters
 netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 100, 'noise': 0.5}
-netParams.stimTargetParams['bkg->PYR'] = {'source': 'bkg', 'conds': {'cellType': 'PYR'}, 'weight': 0.01, 'delay': 5, 'synMech': 'exc'}
+netParams.stimTargetParams['bkg->PYR'] = {'source': 'bkg', 'conds': {'cellType': ['PYR_Izhi', 'PYR_HH']}, 'weight': 0.01, 'delay': 5, 'synMech': 'exc'}
 
 
 ## Cell connectivity rules

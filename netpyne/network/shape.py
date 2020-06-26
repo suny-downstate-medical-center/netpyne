@@ -3,9 +3,8 @@
 network/shape.py 
 
 Network class methods to deal with the each population's cell shape (morphology) 
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division

@@ -3,9 +3,8 @@
 pop.py 
 
 Contains Population related classes 
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
@@ -31,7 +30,9 @@ from neuron import h # Import NEURON
 ###############################################################################
 
 class Pop (object):
-    ''' Python class to instantiate the network population '''
+    """
+    Python class to instantiate the network population
+    """
     
     def __init__(self, label, tags):
         self.tags = tags # list of tags/attributes of population (eg. numCells, cellModel,...)
@@ -42,7 +43,10 @@ class Pop (object):
 
 
     def _distributeCells(self, numCellsPop):
-        ''' distribute cells across compute nodes using round-robin'''
+        """
+        Distribute cells across compute nodes using round-robin
+        """
+
         from .. import sim
             
         hostCells = {}
@@ -62,7 +66,10 @@ class Pop (object):
 
 
     def createCells(self):
-        '''Function to instantiate Cell objects based on the characteristics of this population'''
+        """
+        Function to instantiate Cell objects based on the characteristics of this population
+        """
+
         # add individual cells
         if 'cellsList' in self.tags:
             cells = self.createCellsList()
@@ -89,7 +96,10 @@ class Pop (object):
 
 
     def createCellsFixedNum (self):
-        ''' Create population cells based on fixed number of cells'''
+        """
+        Create population cells based on fixed number of cells
+        """
+
         from .. import sim
 
         cells = []
@@ -167,7 +177,10 @@ class Pop (object):
 
                 
     def createCellsDensity (self):
-        ''' Create population cells based on density'''
+        """
+        Create population cells based on density
+        """
+
         from .. import sim
 
         cells = []
@@ -283,7 +296,10 @@ class Pop (object):
 
 
     def createCellsList (self):
-        ''' Create population cells based on list of individual cells'''
+        """
+        Create population cells based on list of individual cells
+        """
+
         from .. import sim
         
         cells = []
@@ -312,7 +328,10 @@ class Pop (object):
 
 
     def createCellsGrid (self):
-        ''' Create population cells based on fixed number of cells'''
+        """
+        Create population cells based on fixed number of cells
+        """
+
         from .. import sim
 
         cells = []
@@ -359,7 +378,10 @@ class Pop (object):
 
 
     def _setCellClass (self):
-        ''' Set cell class (CompartCell, PointCell, etc)'''
+        """
+        Set cell class (CompartCell, PointCell, etc)
+        """
+
         from .. import sim
         
         # Check whether it's a NeuroML2 based cell
@@ -458,9 +480,11 @@ class Pop (object):
 
 
     def __getstate__ (self): 
+        """Removes non-picklable h objects so can be pickled and sent via py_alltoall
+        """
+
         from .. import sim
-        
-        ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
+
         odict = self.__dict__.copy() # copy the dict since we change it
         odict = sim.replaceFuncObj(odict)  # replace h objects with None so can be pickled
         #odict['cellModelClass'] = str(odict['cellModelClass'])

@@ -2,9 +2,8 @@
 conversion/excel.py 
 
 Functions to import from Excel
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
@@ -17,7 +16,10 @@ from builtins import str
 from future import standard_library
 standard_library.install_aliases()
 def importConnFromExcel (fileName, sheetName):
-    ''' Import connectivity rules from Excel sheet'''
+    """
+    Import connectivity rules from Excel sheet
+    """
+    
     import openpyxl as xl
 
     # set columns

@@ -4,10 +4,8 @@ sim/utils.py
 Helper functions related to the simulation
 
 Private methods: _mat2dict, _dict2utf8, decimalToFloat, tupleToList, replaceDictODict, replaceNoneObj
-
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
@@ -38,7 +36,7 @@ from ..specs import Dict, ODict
 #------------------------------------------------------------------------------
 # Convert dict strings to utf8 so can be saved in HDF5 format
 #------------------------------------------------------------------------------
-def cellByGid (gid):
+def cellByGid(gid):
     from .. import sim
 
     cell = next((c for c in sim.net.cells if c.gid==gid), None)
@@ -48,7 +46,7 @@ def cellByGid (gid):
 #------------------------------------------------------------------------------
 # Get cells list for recording based on set of conditions
 #------------------------------------------------------------------------------
-def getCellsList (include, returnGids=False):
+def getCellsList(include, returnGids=False):
     from .. import sim
 
     if sim.nhosts > 1 and any(isinstance(cond, tuple) or isinstance(cond,list) for cond in include): # Gather tags from all cells
@@ -90,7 +88,7 @@ def getCellsList (include, returnGids=False):
 #------------------------------------------------------------------------------
 # Timing - Stop Watch
 #------------------------------------------------------------------------------
-def timing (mode, processName):
+def timing(mode, processName):
     from .. import sim
 
     if sim.rank == 0 and sim.cfg.timing:
@@ -103,7 +101,7 @@ def timing (mode, processName):
 #------------------------------------------------------------------------------
 # Print netpyne version
 #------------------------------------------------------------------------------
-def version (show=True):
+def version(show=True):
     from netpyne import __version__
     if show:
         print(__version__)
@@ -113,7 +111,7 @@ def version (show=True):
 #------------------------------------------------------------------------------
 # Print github version
 #------------------------------------------------------------------------------
-def gitChangeset (show=True):
+def gitChangeset(show=True):
     import netpyne, os, subprocess 
     
     currentPath = os.getcwd()
@@ -134,7 +132,7 @@ def gitChangeset (show=True):
 #------------------------------------------------------------------------------
 # Hash function for string
 #------------------------------------------------------------------------------
-def hashStr (obj):
+def hashStr(obj):
     #return hash(obj) & 0xffffffff  # hash func
     return int(hashlib.md5(obj.encode('utf-8')).hexdigest()[0:8],16)  # convert 8 first chars of md5 hash in base 16 to int
 
@@ -167,7 +165,7 @@ def unique(seq):
 #------------------------------------------------------------------------------
 # Check memory 
 #------------------------------------------------------------------------------
-def checkMemory ():
+def checkMemory():
     from .. import sim
     
     # print memory diagnostic info
@@ -189,7 +187,7 @@ def checkMemory ():
 #------------------------------------------------------------------------------
 # Replace item with specific key from dict or list (used to remove h objects)
 #------------------------------------------------------------------------------
-def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT', exclude_list=[]):
+def copyReplaceItemObj(obj, keystart, newval, objCopy='ROOT', exclude_list=[]):
     if type(obj) == list:
         if objCopy=='ROOT':
             objCopy = []
@@ -223,7 +221,7 @@ def copyReplaceItemObj (obj, keystart, newval, objCopy='ROOT', exclude_list=[]):
 #------------------------------------------------------------------------------
 # Remove item with specific key from dict or list (used to remove h objects)
 #------------------------------------------------------------------------------
-def copyRemoveItemObj (obj, keystart,  objCopy='ROOT', exclude_list=[]):
+def copyRemoveItemObj(obj, keystart,  objCopy='ROOT', exclude_list=[]):
     if type(obj) == list:
         if objCopy=='ROOT':
             objCopy = []
@@ -257,7 +255,7 @@ def copyRemoveItemObj (obj, keystart,  objCopy='ROOT', exclude_list=[]):
 #------------------------------------------------------------------------------
 # Replace item with specific key from dict or list (used to remove h objects)
 #------------------------------------------------------------------------------
-def replaceItemObj (obj, keystart, newval, exclude_list=[]):
+def replaceItemObj(obj, keystart, newval, exclude_list=[]):
     if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict]:
@@ -275,7 +273,7 @@ def replaceItemObj (obj, keystart, newval, exclude_list=[]):
 #------------------------------------------------------------------------------
 # Recursivele replace dict keys
 #------------------------------------------------------------------------------
-def replaceKeys (obj, oldkey, newkey):
+def replaceKeys(obj, oldkey, newkey):
     if type(obj) == list:
         for item in obj:
             if isinstance(item, (list, dict, Dict, ODict, OrderedDict)):
@@ -294,7 +292,7 @@ def replaceKeys (obj, oldkey, newkey):
 #------------------------------------------------------------------------------
 # Replace functions from dict or list with function string (so can be pickled)
 #------------------------------------------------------------------------------
-def replaceFuncObj (obj):
+def replaceFuncObj(obj):
     if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict]:
@@ -312,7 +310,7 @@ def replaceFuncObj (obj):
 #------------------------------------------------------------------------------
 # Replace None from dict or list with [](so can be saved to .mat)
 #------------------------------------------------------------------------------
-def replaceNoneObj (obj):
+def replaceNoneObj(obj):
     if type(obj) == list:# or type(obj) == tuple:
         for item in obj:
             if isinstance(item, (list, dict, Dict, ODict)):
@@ -332,7 +330,7 @@ def replaceNoneObj (obj):
 #------------------------------------------------------------------------------
 # Replace Dict with dict and Odict with OrderedDict
 #------------------------------------------------------------------------------
-def replaceDictODict (obj):
+def replaceDictODict(obj):
     if type(obj) == list:
         for item in obj:
             if type(item) == Dict:
@@ -357,7 +355,7 @@ def replaceDictODict (obj):
 #------------------------------------------------------------------------------
 # Rename objects
 #------------------------------------------------------------------------------
-def rename (obj, old, new, label=None):
+def rename(obj, old, new, label=None):
     try:
         return obj.rename(old, new, label)
     except:
@@ -371,7 +369,7 @@ def rename (obj, old, new, label=None):
 #------------------------------------------------------------------------------
 # Replace tuples with str
 #------------------------------------------------------------------------------
-def tupleToList (obj):
+def tupleToList(obj):
     if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict]:
@@ -391,7 +389,7 @@ def tupleToList (obj):
 #------------------------------------------------------------------------------
 # Replace Decimal with float
 #------------------------------------------------------------------------------
-def decimalToFloat (obj):
+def decimalToFloat(obj):
     from decimal import Decimal
     if type(obj) == list:
         for i,item in enumerate(obj):
@@ -412,7 +410,7 @@ def decimalToFloat (obj):
 #------------------------------------------------------------------------------
 # Recursively remove items of an object (used to avoid mem leaks)
 #------------------------------------------------------------------------------
-def clearObj (obj):
+def clearObj(obj):
     if type(obj) == list:
         for item in obj:
             if isinstance(item, (list, dict, Dict, ODict)):
@@ -432,10 +430,11 @@ def clearObj (obj):
 # Support funcs to load from mat
 #------------------------------------------------------------------------------
 def _mat2dict(obj): 
-    '''
+    """
     A recursive function which constructs from matobjects nested dictionaries
     Enforce lists for conns, synMechs and stims even if 1 element (matlab converts to dict otherwise)
-    '''
+    """
+
     import scipy.io as spio
     import numpy as np
 
@@ -483,7 +482,7 @@ def _mat2dict(obj):
 #------------------------------------------------------------------------------
 # Convert dict strings to utf8 so can be saved in HDF5 format
 #------------------------------------------------------------------------------
-def _dict2utf8 (obj):
+def _dict2utf8(obj):
 #unidict = {k.decode('utf8'): v.decode('utf8') for k, v in strdict.items()}
     #print obj
     import collections
@@ -504,7 +503,7 @@ def _dict2utf8 (obj):
 #------------------------------------------------------------------------------
 # Clear all sim objects in memory
 #------------------------------------------------------------------------------
-def clearAll ():
+def clearAll():
     from .. import sim
 
     # clean up

@@ -2,9 +2,8 @@
 cell/cell.py 
 
 Contains generic Cell class
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
@@ -33,7 +32,9 @@ from ..specs import Dict
 ###############################################################################
 
 class Cell (object):
-    ''' Generic class for neuron models '''
+    """
+    Generic class for neuron models
+    """
     
     def __init__ (self, gid, tags):
         from .. import sim
@@ -197,8 +198,15 @@ class Cell (object):
                             ptr = getattr(getattr(self.secs[params['sec']]['hObj'](params['loc']), params['mech']), '_ref_'+params['var'])
                         elif 'synMech' in params:  # eg. soma(0.5).AMPA._ref_g
                             sec = self.secs[params['sec']]
-                            synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech'] and synMech['loc']==params['loc']), None)
-                            ptr = getattr(synMech['hObj'], '_ref_'+params['var'])
+                            synMechList = [synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech'] and synMech['loc']==params['loc']] # make list with this label/loc
+                            if len(synMechList) > 0:
+                                if 'index' in params and index<len(synMechList):
+                                    synMech = synMechList[params['index']]
+                                else:
+                                    synMech = synMechList[0] # 0th one which would have been returned by next()
+                                ptr = getattr(synMech['hObj'], '_ref_'+params['var'])
+                            else:
+                                ptr = None
                         else:  # eg. soma(0.5)._ref_v
                             ptr = getattr(self.secs[params['sec']]['hObj'](params['loc']), '_ref_'+params['var'])
                     elif 'synMech' in params:  # special case where want to record from multiple synMechs
@@ -287,7 +295,10 @@ class Cell (object):
 
 
     def __getstate__ (self): 
-        ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
+        """
+        Removes non-picklable h objects so can be pickled and sent via py_alltoall
+        """
+        
         from .. import sim
 
         odict = self.__dict__.copy() # copy the dict since we change it

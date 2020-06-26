@@ -330,11 +330,16 @@ def optunaOptim(self, pc):
     # -------------------------------------------------------------------------------
     import os
     from time import sleep
-    from mpi4py import MPI
 
-    comm = MPI.COMM_WORLD
-    size = comm.Get_size()
-    rank = comm.Get_rank()
+    try:
+        from mpi4py import MPI
+
+        comm = MPI.COMM_WORLD
+        size = comm.Get_size()
+        rank = comm.Get_rank()
+    except:  
+        size = 1
+        rank = 0
 
     # create main sim directory and save scripts
     self.saveScripts()

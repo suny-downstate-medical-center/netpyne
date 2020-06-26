@@ -52,7 +52,7 @@ def _convertNetworkRepresentation(net, gids_vs_pop_indices):
 
     for np_pop in list(net.pops.values()): 
         print("Adding conns for: %s"%np_pop.tags)
-        if not np_pop.tags['cellModel'] ==  'NetStim':
+        if 'cellModel' in np_pop.tags and not np_pop.tags['cellModel'] ==  'NetStim':
             for cell in net.cells:
                 if cell.gid in np_pop.cellGids:
                     popPost, indexPost = gids_vs_pop_indices[cell.gid]
@@ -90,7 +90,7 @@ def _convertStimulationRepresentation(net,gids_vs_pop_indices, nml_doc):
     stims = {}
 
     for np_pop in list(net.pops.values()): 
-        if not np_pop.tags['cellModel'] ==  'NetStim':
+        if 'cellModel' in np_pop.tags and not np_pop.tags['cellModel'] ==  'NetStim':
             print("Adding stims for: %s"%np_pop.tags)
             for cell in net.cells:
                 if cell.gid in np_pop.cellGids:
@@ -256,23 +256,24 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
             someMatches = False
             someMisMatches = False
             if sim.cfg.verbose: print("  -- Comparing conds: %s"%cell_param_set0)
-            for cond in cell_param_set0['conds']:
-                if len(cell_param_set0['conds'][cond])>0:
-                    if cond in np_pop.tags and cell_param_set0['conds'][cond] == np_pop.tags[cond]:
-                        if sim.cfg.verbose: print("    Cond: %s matches..."%cond)
-                        someMatches = True
-                    else:
-                        if sim.cfg.verbose: print("    Cond: %s DOESN'T match (%s != %s)..."%(cond,cell_param_set0['conds'][cond],np_pop.tags[cond] if cond in np_pop.tags else "???"))
-                        someMisMatches = True
+            if 'conds' in cell_param_set0:
+                for cond in cell_param_set0['conds']:
+                    if len(cell_param_set0['conds'][cond])>0:
+                        if cond in np_pop.tags and cell_param_set0['conds'][cond] == np_pop.tags[cond]:
+                            if sim.cfg.verbose: print("    Cond: %s matches..."%cond)
+                            someMatches = True
+                        else:
+                            if sim.cfg.verbose: print("    Cond: %s DOESN'T match (%s != %s)..."%(cond,cell_param_set0['conds'][cond],np_pop.tags[cond] if cond in np_pop.tags else "???"))
+                            someMisMatches = True
             if someMatches and not someMisMatches:
                 if sim.cfg.verbose: print("   Matches: %s"%cell_param_set0)
                 cell_param_set.update(cell_param_set0)
             
-        if not np_pop.tags['cellModel'] == 'NetStim' and len(cell_param_set)==0:
+        if 'cellModel' in np_pop.tags and not np_pop.tags['cellModel'] == 'NetStim' and len(cell_param_set)==0:
             print("Error, could not find cellParams for %s"%np_pop.tags)
             exit(-1)
             
-        if not np_pop.tags['cellModel'] == 'NetStim':
+        if 'cellModel' in np_pop.tags and not np_pop.tags['cellModel'] == 'NetStim':
             if not 'cellModel' in cell_param_set['conds'] or cell_param_set['conds']['cellModel']=={}:
                 cell_id = 'CELL_%s'%(cell_param_set['conds']['cellType'])
             elif not 'cellType' in cell_param_set['conds'] or cell_param_set['conds']['cellType']=={}:
@@ -283,7 +284,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
             populations_vs_components[np_pop.tags['pop']]=cell_id
             
             
-        if not np_pop.tags['cellModel'] == 'NetStim' and not str(cell_param_set) in cells_added:
+        if 'cellModel' in np_pop.tags and not np_pop.tags['cellModel'] == 'NetStim' and not str(cell_param_set) in cells_added:
             if sim.cfg.verbose: print("---------------  Adding a cell from pop %s: \n%s"%(np_pop.tags,cell_param_set))
             
             # print("=====  Adding the cell %s: \n%s"%(cell_name,pp.pprint(cell_param_set)))
@@ -481,7 +482,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
         print("Adding population: %s"%np_pop.tags)
         
         type = 'populationList'
-        if not np_pop.tags['cellModel'] ==  'NetStim':
+        if 'cellModel' in np_pop.tags and not np_pop.tags['cellModel'] ==  'NetStim':
             comp_id = populations_vs_components[np_pop.tags['pop']]
             pop = neuroml.Population(id=np_pop.tags['pop'],component=comp_id, type=type)
             pop.properties.append(neuroml.Property('radius',default_cell_radius))

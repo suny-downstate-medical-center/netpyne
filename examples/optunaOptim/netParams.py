@@ -3,7 +3,7 @@ from netpyne import specs, sim
 try:
 	from __main__ import cfg
 except:
-	from simConfig import cfg
+	from cfg import cfg
 
 # Network parameters
 netParams = specs.NetParams()

@@ -125,7 +125,7 @@ def optunaOptim(self, pc):
         # --------------------------------------
         # generate param values for optuna trial
         candidate = []
-        for paramLabel, minVal, maxVal in paramLabels, minVals, maxVals:
+        for paramLabel, minVal, maxVal in zip(paramLabels, minVals, maxVals):
             candidate.append(trial.suggest_uniform(paramLabel, minVal, maxVal))
 
         # remember pids and jobids in a list
@@ -249,7 +249,7 @@ def optunaOptim(self, pc):
                 
         num_iters = 0
         jobs_completed = 0
-        fitness = [None for cand in candidates]
+        fitness = [None]  # just 1 candidate
         # print outfilestem
         print("Waiting for jobs from generation %d/%d ..." %(ngen, args.get('maxiters')))
         # print "PID's: %r" %(pids)
@@ -257,20 +257,17 @@ def optunaOptim(self, pc):
         while jobs_completed < total_jobs:
             unfinished = [i for i, x in enumerate(fitness) if x is None ]
             for candidate_index in unfinished:
-                try: # load simData and evaluate fitness
-                    jobNamePath = genFolderPath + "/gen_" + str(ngen) + "_cand_" + str(candidate_index)
-                    if os.path.isfile(jobNamePath+'.json'):
-                        with open('%s.json'% (jobNamePath)) as file:
-                            simData = json.load(file)['simData']
-                        fitness[candidate_index] = fitnessFunc(simData, **fitnessFuncArgs)
-                        jobs_completed += 1
-                        print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
-                except Exception as e:
-                    # print 
-                    err = "There was an exception evaluating candidate %d:"%(candidate_index)
-                    print(("%s \n %s"%(err,e)))
-                    #pass
-                    #print 'Error evaluating fitness of candidate %d'%(candidate_index)
+                #try: # load simData and evaluate fitness
+                jobNamePath = genFolderPath + "/trial_" + str(ngen) 
+                if os.path.isfile(jobNamePath+'.json'):
+                    with open('%s.json'% (jobNamePath)) as file:
+                        simData = json.load(file)['simData']
+                    fitness[candidate_index] = fitnessFunc(simData, **fitnessFuncArgs)
+                    jobs_completed += 1
+                    print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
+                # except Exception as e:
+                #     err = "There was an exception evaluating candidate %d:"%(candidate_index)
+                #     print(("%s \n %s"%(err,e)))
             num_iters += 1
             print('completed: %d' %(jobs_completed))
             if num_iters >= args.get('maxiter_wait', 5000): 
@@ -354,6 +351,7 @@ def optunaOptim(self, pc):
     args['paramLabels'] = [x['label'] for x in self.params]
     args['netParamsSavePath'] = self.saveFolder + '/' + self.batchLabel + '_netParams.py'
     args['maxiters'] = self.optimCfg['maxiters'] if 'maxiters' in self.optimCfg else 1000
+    args['maxtime'] = self.optimCfg['maxtime'] if 'maxtime' in self.optimCfg else None
     args['fitnessFunc'] = self.optimCfg['fitnessFunc']
     args['fitnessFuncArgs'] = self.optimCfg['fitnessFuncArgs']
     args['maxiter_wait'] = self.optimCfg['maxiter_wait']
@@ -364,7 +362,7 @@ def optunaOptim(self, pc):
         args[key] = value
     
     for key, value in self.runCfg.items(): 
-        args['args'][key] = value
+        args[key] = value
 
 
     # if using pc bulletin board, initialize all workers
@@ -378,7 +376,7 @@ def optunaOptim(self, pc):
     
     sleep(rank) # each process wiats a different time to avoid saturating sqlite database
     study = optuna.create_study(study_name=self.batchLabel, storage='sqlite:///%s/%s_storage.db' % (self.saveFolder, self.batchLabel), load_if_exists=True)
-    study.optimize(lambda trial: objective(trial, args), n_trials=args['maxiters']) #timeout
+    study.optimize(lambda trial: objective(trial, args), n_trials=args['maxiters'], timeout=args['maxtime'])
 
     # print best and finish
     if rank == size-1:

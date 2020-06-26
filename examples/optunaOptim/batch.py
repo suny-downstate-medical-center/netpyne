@@ -7,14 +7,14 @@ from netpyne.batch import Batch
 To run use: mpiexec -np [num_cores] nrniv -mpi batchRun.py
 '''
 
-def batchASD():
+def batchOptuna():
     # parameters space to explore
     
     ## simple net
     params = specs.ODict()
-    params['prob'] = [0.01, 0.5, [0.4, 0.3]]  # can add 3rd value for starting value (0)
-    params['weight'] = [0.001, 0.1, [0.1, 0.2]]
-    params['delay'] = [1, 20, [5, 3]]
+    params['prob'] = [0.01, 0.5]  # can add 3rd value for starting value (0)
+    params['weight'] = [0.001, 0.1]
+    params['delay'] = [1, 20]
 
     pops = {}
     pops['S'] = {'target': 5, 'width': 2, 'min': 2}
@@ -30,6 +30,9 @@ def batchASD():
         pops = kwargs['pops']
         maxFitness = kwargs['maxFitness']
         popFitness = [None for i in pops.items()]
+
+        import IPython; IPython.embed()
+
         popFitness = [min(np.exp(  abs(v['target'] - simData['popRates'][k])  /  v['width']), maxFitness) 
                 if simData["popRates"][k]>v['min'] else maxFitness for k,v in pops.items()]
         fitness = np.mean(popFitness)
@@ -43,7 +46,7 @@ def batchASD():
     # Set output folder, grid method (all param combinations), and run configuration
     b.batchLabel = 'simple'
     b.saveFolder = './'+b.batchLabel
-    b.method = 'asd'
+    b.method = 'optuna'
     b.runCfg = {
         'type': 'mpi_direct',#'hpc_slurm', 
         'script': 'init.py',
@@ -61,25 +64,11 @@ def batchASD():
         'fitnessFunc': fitnessFunc, # fitness expression (should read simData)
         'fitnessFuncArgs': fitnessFuncArgs,
         'maxFitness': fitnessFuncArgs['maxFitness'],
-        'stepsize':     0.1,     #   Initial step size as a fraction of each parameter
-        'sinc':         2,       #   Step size learning rate (increase)
-        'sdec':         2,       #   Step size learning rate (decrease)
-        'pinc':         2,       #   Parameter selection learning rate (increase)
-        'pdec':         2,       #   Parameter selection learning rate (decrease)
-        #'pinitial':     None,    #    Set initial parameter selection probabilities
-        #'sinitial':     None,    #    Set initial step sizes; if empty, calculated from stepsize instead
         'maxiters':     2,    #    Maximum number of iterations (1 iteration = 1 function evaluation)
         'maxtime':      3600,    #    Maximum time allowed, in seconds
-        'abstol':       1e-6,    #    Minimum absolute change in objective function
-        'reltol':       1e-3,    #    Minimum relative change in objective function
-        #'stalliters':   10*len(params)*len(params),  #    Number of iterations over which to calculate TolFun (n = number of parameters)
-        #'stoppingfunc': None,    #    External method that can be used to stop the calculation from the outside.
-        #'randseed':     None,    #    The random seed to use
-        'verbose':      2,       #    How much information to print during the run
-        #'label':        None    #    A label to use to annotate the output
         'maxiter_wait': 10,
         'time_sleep': 5,
-        'popsize': 1
+        'popsize': 1  # unused - run with mpi 
     }
 
     # Run batch simulations
@@ -87,4 +76,4 @@ def batchASD():
 
 # Main code
 if __name__ == '__main__':
-    batchASD()  # 'simple' or 'complex' 
+    batchOptuna()  # 'simple' or 'complex' 

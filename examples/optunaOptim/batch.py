@@ -31,8 +31,6 @@ def batchOptuna():
         maxFitness = kwargs['maxFitness']
         popFitness = [None for i in pops.items()]
 
-        import IPython; IPython.embed()
-
         popFitness = [min(np.exp(  abs(v['target'] - simData['popRates'][k])  /  v['width']), maxFitness) 
                 if simData["popRates"][k]>v['min'] else maxFitness for k,v in pops.items()]
         fitness = np.mean(popFitness)
@@ -64,7 +62,7 @@ def batchOptuna():
         'fitnessFunc': fitnessFunc, # fitness expression (should read simData)
         'fitnessFuncArgs': fitnessFuncArgs,
         'maxFitness': fitnessFuncArgs['maxFitness'],
-        'maxiters':     2,    #    Maximum number of iterations (1 iteration = 1 function evaluation)
+        'maxiters':     20,    #    Maximum number of iterations (1 iteration = 1 function evaluation)
         'maxtime':      3600,    #    Maximum time allowed, in seconds
         'maxiter_wait': 10,
         'time_sleep': 5,

@@ -40,6 +40,7 @@ from subprocess import Popen, PIPE
 import importlib, types
 import numpy.random as nr
 import numpy as np
+import pickle
 
 from neuron import h
 from netpyne import sim, specs
@@ -147,7 +148,7 @@ def optunaOptim(self, pc):
                 self.setCfgNestedParam(paramLabel, paramVal)
         
         # modify cfg instance with candidate values
-        print(paramLabels, candidate)
+        #print(paramLabels, candidate)
         for label, value in zip(paramLabels, candidate):
             print('set %s=%s' % (label, value))
             self.setCfgNestedParam(label, value)
@@ -384,14 +385,14 @@ def optunaOptim(self, pc):
         importance = optuna.importance.get_param_importances(study=study)
 
         print('\nBest trial: ', study.best_trial)
-        print('\nParameter importance: ', importance) 
+        print('\nParameter importance: ', dict(importance)) 
         
         print('\nBest Solution with fitness = %.4g: \n' % (study.best_value), study.best_params)
 
         print('\nSaving to output.pkl...\n')
         output = {'study': study, 'df': df, 'importance': importance}
-        with open('%s/%s_output.json' % (self.saveFolder, self.batchLabel), 'w') as f:
-            pickle.dump(f, output)
+        with open('%s/%s_output.pkl' % (self.saveFolder, self.batchLabel), 'wb') as f:
+            pickle.dump(output, f)
         
         sleep(1)
 

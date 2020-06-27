@@ -43,7 +43,11 @@ from .utils import createFolder
 from .grid import gridSearch
 from .evol import evolOptim
 from .asd_parallel import asdOptim
-from .optuna_parallel import optunaOptim
+
+try:
+    from .optuna_parallel import optunaOptim
+except:
+    print('Warning: Could not import "optuna" package...')
 
 pc = h.ParallelContext() # use bulletin board master/slave
 if pc.id()==0: pc.master_works_on_jobs(0) 
@@ -211,4 +215,7 @@ class Batch(object):
         # Optuna optimization (https://github.com/optuna/optuna)
         # -------------------------------------------------------------------------------
         elif self.method == 'optuna':
-            optunaOptim(self, pc)
+            try:
+                optunaOptim(self, pc)
+            except:
+                pass

@@ -127,7 +127,7 @@ def optunaOptim(self, pc):
         # generate param values for optuna trial
         candidate = []
         for paramLabel, minVal, maxVal in zip(paramLabels, minVals, maxVals):
-            candidate.append(trial.suggest_uniform(paramLabel, minVal, maxVal))
+            candidate.append(trial.suggest_uniform(str(paramLabel), minVal, maxVal))
 
         # remember pids and jobids in a list
         pids = []

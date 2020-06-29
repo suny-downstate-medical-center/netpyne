@@ -363,6 +363,7 @@ def optunaOptim(self, pc):
     args['maxiter_wait'] = self.optimCfg['maxiter_wait']
     args['time_sleep'] = self.optimCfg['time_sleep']
     args['maxFitness'] = self.optimCfg.get('maxFitness', 1000)
+    args['direction'] = self.optimCfg['direction'] if 'direction' in self.optimCfg else 'minimize'
       
     for key, value in self.optimCfg.items(): 
         args[key] = value
@@ -381,7 +382,8 @@ def optunaOptim(self, pc):
     # ------------------------------------------------------------------------------- 
     
     sleep(rank) # each process wiats a different time to avoid saturating sqlite database
-    study = optuna.create_study(study_name=self.batchLabel, storage='sqlite:///%s/%s_storage.db' % (self.saveFolder, self.batchLabel), load_if_exists=True)
+    study = optuna.create_study(study_name=self.batchLabel, storage='sqlite:///%s/%s_storage.db' % (self.saveFolder, self.batchLabel),
+                                load_if_exists=True, direction=args['direction'])
     study.optimize(lambda trial: objective(trial, args), n_trials=args['maxiters'], timeout=args['maxtime'])
 
     # print best and finish

@@ -384,7 +384,11 @@ def optunaOptim(self, pc):
     sleep(rank) # each process wiats a different time to avoid saturating sqlite database
     study = optuna.create_study(study_name=self.batchLabel, storage='sqlite:///%s/%s_storage.db' % (self.saveFolder, self.batchLabel),
                                 load_if_exists=True, direction=args['direction'])
-    study.optimize(lambda trial: objective(trial, args), n_trials=args['maxiters'], timeout=args['maxtime'])
+    try:
+        study.optimize(lambda trial: objective(trial, args), n_trials=args['maxiters'], timeout=args['maxtime'])
+    except Exception as e:
+        print(e)
+
 
     # print best and finish
     if rank == size-1:

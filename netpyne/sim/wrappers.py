@@ -65,12 +65,12 @@ def intervalSimulate(interval):
     sim.fileGather()                  # gather spiking data and cell info from saved file
     
 #------------------------------------------------------------------------------
-# Wrapper to simulate network
+# Wrapper to analyze network
 #------------------------------------------------------------------------------
 def analyze():
     """
     analyze
-    Sequence of commands to simulate network
+    Sequence of commands to analyze network
     """
 
     from .. import sim

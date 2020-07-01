@@ -218,4 +218,4 @@ class Batch(object):
             try:
                 optunaOptim(self, pc)
             except:
-                pass
+                print(' Warning: an exception occurred when running Optuna optimization...')

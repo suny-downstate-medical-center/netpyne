@@ -516,7 +516,10 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
         figs.append(fig)
 
 
-    outputData = {'LFP': lfp, 't': t, 'electrodes': electrodes, 'timeRange': timeRange, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+    outputData = {'LFP': lfp, 'electrodes': electrodes, 'timeRange': timeRange, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+
+    if 'timeSeries' in plots:
+        outputData.update({'t': t})
 
     if 'PSD' in plots:
         outputData.update({'allFreqs': allFreqs, 'allSignal': allSignal})

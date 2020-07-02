@@ -151,7 +151,10 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
 
     TOOLS = 'hover,save,pan,box_zoom,reset,wheel_zoom',
 
-    colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    if not 'palette' in kwargs:
+        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    else:
+        colors = kwargs['palette']
 
     popColorDict = None
     if popColors is not None:
@@ -768,8 +771,7 @@ def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1,
 ## ISSUES: Y scale, add colors to be effective
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRange = None, binSize = 5, overlay=True, yaxis = 'rate',
-    popColors=[], norm=False, smooth=None, filtFreq=False, filtOrder=3, saveData = None, saveFig = None, showFig = False, **kwargs):
+def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRange = None, binSize = 5, overlay=True, yaxis = 'rate', popColors=[], norm=False, smooth=None, filtFreq=False, filtOrder=3, saveData = None, saveFig = None, showFig = False, **kwargs):
     """
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include.
@@ -809,7 +811,10 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
-    colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    if not 'palette' in kwargs:
+        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    else:
+        colors = kwargs['palette']
             
     popColorDict=popColors.copy()
     if popColorDict:
@@ -985,7 +990,10 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
-    colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    if not 'palette' in kwargs:
+        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    else:
+        colors = kwargs['palette']
 
     popColorDict=popColors.copy()
     if popColorDict:
@@ -1142,7 +1150,11 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
             curdoc().theme = theme
 
     TOOLS = 'save,pan,box_zoom,reset,wheel_zoom'
-    colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    
+    if not 'palette' in kwargs:
+        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    else:
+        colors = kwargs['palette']
 
     if include is None:  # if none, record from whatever was recorded
         if 'plotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['plotTraces']:
@@ -1337,8 +1349,10 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 
     lfp = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
 
-    if not colors:
+    if not 'colorList' in kwargs:
         colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    else:
+        colors = colorList
 
     # electrode selection
     if 'all' in electrodes:
@@ -1643,7 +1657,8 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
         if groupBy == 'pop':
             
             popsPre, popsPost = pre, post
-            colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+            #colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+            colors = colorList
             bar_colors = colors[0:len(popsPre)]
 
             data = {'post' : popsPost}

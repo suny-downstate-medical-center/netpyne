@@ -349,7 +349,7 @@ def getSpktSpkid(cellGids=[], timeRange=None, sim = None):
 ## Default NetPyNE Bokeh theme -- based on dark_minimal
 # -------------------------------------------------------------------------------------------------------------------
 
-# Note: The Bokeh plotting API’s defaults override some theme properties. Namely: fill_alpha, 
+# Note: The Bokeh plotting APIs defaults override some theme properties. Namely: fill_alpha, 
 # fill_color, line_alpha, line_color, text_alpha and text_color. Those properties should 
 # therefore be set explicitly when using the plotting API.
 

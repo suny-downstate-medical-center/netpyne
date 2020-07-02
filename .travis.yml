@@ -107,6 +107,7 @@ script:
     - $NEURON_HOME/x86_64/bin/nrnivmodl .
     #- python SimpleNet_import.py -nogui # commented until neuroml2 adapted to simplified cellParams
 
+
     - cd ../..
 
 notifications: 

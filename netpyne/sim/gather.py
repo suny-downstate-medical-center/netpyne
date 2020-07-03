@@ -243,13 +243,38 @@ def gatherData(gatherLFP = True):
         print(('  Connections: %i (%0.2f per cell)' % (sim.totalConnections, sim.connsPerCell)))
         if sim.totalSynapses != sim.totalConnections:
             print(('  Synaptic contacts: %i (%0.2f per cell)' % (sim.totalSynapses, sim.synsPerCell)))
+        
         if 'runTime' in sim.timingData:
-            print(('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate)))
-            if sim.cfg.printPopAvgRates and not sim.cfg.gatherOnlySimData:
-                tranges = sim.cfg.printPopAvgRates if isinstance(sim.cfg.printPopAvgRates,list) else None
-                sim.allSimData['popRates'] = sim.analysis.popAvgRates(tranges=tranges)
+            print(('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate)))            
             print(('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration/1e3, sim.nhosts)))
             print(('  Run time: %0.2f s' % (sim.timingData['runTime'])))
+            
+            if sim.cfg.printPopAvgRates and not sim.cfg.gatherOnlySimData:
+
+                trange = sim.cfg.printPopAvgRates if isinstance(sim.cfg.printPopAvgRates,list) else None
+                sim.allSimData['popRates'] = sim.analysis.popAvgRates(tranges=trange)
+
+            if 'plotfI' in sim.cfg.analysis:
+                times = sim.cfg.analysis['plotfI'].get('times', [0, sim.cfg.duration])
+                dur = sim.cfg.analysis['plotfI'].get('dur', sim.cfg.duration)
+                onset = sim.cfg.analysis['plotfI'].get('calculateOnset', False)
+                durSteady = sim.cfg.analysis['plotfI'].get('durSteady', None) 
+
+                sim.allSimData['fI'] = [len([spkt for spkt in sim.allSimData['spkt']
+                                if t <= spkt < t + dur]) / (dur / 1000.0) for t in times]  
+
+                if onset: # rate based on inter-spike interval of 1st 2 spikes 
+                    sim.allSimData['fI_onset'] = []
+                    for t in times:
+                        allSpks = [spkt for spkt in sim.allSimData['spkt'] if t <= spkt < t + dur]
+                        if len(allSpks) >= 2:
+                            sim.allSimData['fI_onset'].append(1000.0 / (allSpks[1] - allSpks[0]))
+                        else:
+                            sim.allSimData['fI_onset'].append(0.0)
+                
+                if durSteady: # rate based on the last 'dur' ms
+                    sim.allSimData['fI_steady'] = [len([spkt for spkt in sim.allSimData['spkt']
+                                if t + dur - durSteady <= spkt < t + dur]) / (durSteady / 1000.0) for t in times]  
 
             sim.allSimData['avgRate'] = sim.firingRate  # save firing rate
 
@@ -425,17 +450,22 @@ def fileGather(gatherLFP = True):
         
         if sim.totalSynapses != sim.totalConnections:
             print(('  Synaptic contacts: %i (%0.2f per cell)' % (sim.totalSynapses, sim.synsPerCell)))
-        
-        if 'runTime' in sim.timingData:  # if the sim has ran calculate spiking stats 
-            print(('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate)))
 
-            if sim.cfg.printPopAvgRates and not sim.cfg.gatherOnlySimData:
-                tranges = sim.cfg.printPopAvgRates if isinstance(sim.cfg.printPopAvgRates,list) else None
-                sim.allSimData['popRates'] = sim.analysis.popAvgRates(tranges=tranges)
-
+        if 'runTime' in sim.timingData:
+            print(('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate)))              
             print(('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration/1e3, sim.nhosts)))
             print(('  Run time: %0.2f s' % (sim.timingData['runTime'])))
 
+            if sim.cfg.printPopAvgRates and not sim.cfg.gatherOnlySimData:
+                trange = sim.cfg.printPopAvgRates if isinstance(sim.cfg.printPopAvgRates,list) else None
+                sim.allSimData['popRates'] = sim.analysis.popAvgRates(tranges=trange)
+            
+            if 'plotfI' in sim.cfg.analysis:
+                times = get(sim.cfg.analysis['plotfI'], 'times', [0, sim.cfg.duration])
+                dur = get(sim.cfg.analysis['plotfI'], 'dur', sim.cfg.duration) 
+                sim.allSimData['fI'] = [len([spkt for spkt in sim.allSimData['spkt']
+                                if t <= spkt < t + dur]) / (dur / 1000.0) for t in times]                    
+    
             sim.allSimData['avgRate'] = sim.firingRate  # save firing rate
 
         return sim.allSimData

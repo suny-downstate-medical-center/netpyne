@@ -1,0 +1,182 @@
+{
+    "conds": {
+        "cellModel": "HH_reduced",
+        "cellType": "NGF",
+        "ynorm": [
+            0.0,
+            1
+        ]
+    },
+    "globals": {
+        "celsius": 37.0,
+        "v_init": -67.66
+    },
+    "secLists": {
+        "all": [
+            "soma",
+            "dend"
+        ],
+        "dend_all": [
+            "dend"
+        ],
+        "proximal": [
+            "soma",
+            "dend"
+        ]
+    },
+    "secs": {
+        "dend": {
+            "geom": {
+                "L": 44.0,
+                "Ra": 14.0,
+                "cm": 1.5,
+                "diam": 7.0,
+                "nseg": 1,
+                "pt3d": [
+                    [
+                        0,
+                        9.5,
+                        0,
+                        7.0
+                    ],
+                    [
+                        0,
+                        53.5,
+                        0,
+                        7.0
+                    ]
+                ]
+            },
+            "ions": {
+                "k": {
+                    "e": -90.0,
+                    "i": 54.4,
+                    "o": 2.5
+                },
+                "na": {
+                    "e": 55.0,
+                    "i": 10.0,
+                    "o": 140.0
+                }
+            },
+            "mechs": {
+                "ch_Kdrfastngf": {
+                    "gmax": 0.03,
+                    "offset5": 17.0,
+                    "offset6": 17.0,
+                    "slope5": 0.07,
+                    "slope6": 0.264
+                },
+                "ch_Navngf": {
+                    "gmax": 3.7860265
+                },
+                "pas": {
+                    "e": -67.0,
+                    "g": 0.0003
+                }
+            },
+            "topol": {
+                "childX": 0.0,
+                "parentSec": "soma",
+                "parentX": 0.0
+            },
+            "vinit": -67.66,
+            "weightNorm": [
+                0.0002480674001114169
+            ]
+        },
+        "soma": {
+            "geom": {
+                "L": 9.5,
+                "Ra": 14.0,
+                "cm": 1.5,
+                "diam": 9.5,
+                "nseg": 1,
+                "pt3d": [
+                    [
+                        0,
+                        0,
+                        0,
+                        9.5
+                    ],
+                    [
+                        0,
+                        9.5,
+                        0,
+                        9.5
+                    ]
+                ]
+            },
+            "ions": {
+                "ca": {
+                    "e": 130.0,
+                    "i": 5e-05,
+                    "o": 2.0
+                },
+                "k": {
+                    "e": -90.0,
+                    "i": 54.4,
+                    "o": 2.5
+                },
+                "na": {
+                    "e": 55.0,
+                    "i": 10.0,
+                    "o": 140.0
+                }
+            },
+            "mechs": {
+                "ch_CavL": {
+                    "gmax": 0.056108352
+                },
+                "ch_CavN": {
+                    "gmax": 0.00058169587
+                },
+                "ch_KCaS": {
+                    "gmax": 0.006
+                },
+                "ch_Kdrfastngf": {
+                    "gmax": 0.09,
+                    "offset5": 17.0,
+                    "offset6": 17.0,
+                    "slope5": 0.07,
+                    "slope6": 0.264
+                },
+                "ch_KvAngf": {
+                    "a0l": 0.08,
+                    "a0n": 0.02,
+                    "gmax": 0.052,
+                    "gml": 1.0,
+                    "gmn": 0.6,
+                    "zetal": 4.0,
+                    "zetan": -3.0
+                },
+                "ch_KvCaB": {
+                    "gmax": 1.0235317e-06
+                },
+                "ch_Navngf": {
+                    "gmax": 0.1
+                },
+                "hd": {
+                    "clk": 0.0,
+                    "ehd": -30.0,
+                    "elk": -70.0,
+                    "gbar": 1e-05,
+                    "vhalfl": -90.0
+                },
+                "iconc_Ca": {
+                    "caiinf": 5e-06,
+                    "catau": 10.0
+                },
+                "pas": {
+                    "e": -85.0,
+                    "g": 5e-07
+                }
+            },
+            "topol": {},
+            "vinit": -67.66,
+            "weightNorm": [
+                0.0002480052323912068
+            ]
+        }
+    }
+}

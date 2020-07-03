@@ -16,13 +16,14 @@ if __gui__:
     from matplotlib import mlab
     from matplotlib_scalebar import scalebar
 from numbers import Number
-from .utils import colorList, exception, getSpktSpkid, _showFigure, _saveFigData, getCellsInclude, syncMeasure, _smooth1d
+from .utils import colorList, exception, getSpktSpkid, _showFigure, _saveFigData, getCellsInclude, syncMeasure, _smooth1d, _guiTheme
 
 import numpy as np
 import pandas as pd
 
 from bokeh.themes import built_in_themes
 from bokeh.io import curdoc
+
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive raster
@@ -140,11 +141,20 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
     print('Plotting interactive raster ...')
 
     if 'theme' in kwargs:
-        curdoc().theme = kwargs['theme']
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
 
     TOOLS = 'hover,save,pan,box_zoom,reset,wheel_zoom',
 
-    colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    if not 'palette' in kwargs:
+        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    else:
+        colors = kwargs['palette']
 
     popColorDict = None
     if popColors is not None:
@@ -360,7 +370,13 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False, 
     from bokeh.layouts import layout
 
     if 'theme' in kwargs:
-        curdoc().theme = kwargs['theme']
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
@@ -471,7 +487,13 @@ def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minF
     from bokeh.layouts import layout
 
     if 'theme' in kwargs:
-        curdoc().theme = kwargs['theme']
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
 
     # renormalize the dipole and save
     def baseline_renormalize():
@@ -623,7 +645,13 @@ def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1,
     from bokeh.layouts import layout
 
     if 'theme' in kwargs:
-        curdoc().theme = kwargs['theme']
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
 
     # renormalize the dipole and save
     def baseline_renormalize():
@@ -743,8 +771,7 @@ def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1,
 ## ISSUES: Y scale, add colors to be effective
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRange = None, binSize = 5, overlay=True, yaxis = 'rate',
-    popColors=[], norm=False, smooth=None, filtFreq=False, filtOrder=3, saveData = None, saveFig = None, showFig = False, **kwargs):
+def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRange = None, binSize = 5, overlay=True, yaxis = 'rate', popColors=[], norm=False, smooth=None, filtFreq=False, filtOrder=3, saveData = None, saveFig = None, showFig = False, **kwargs):
     """
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include.
@@ -774,11 +801,20 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
     print('Plotting interactive spike histogram...')
 
     if 'theme' in kwargs:
-        curdoc().theme = kwargs['theme']
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
-    colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    if not 'palette' in kwargs:
+        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    else:
+        colors = kwargs['palette']
             
     popColorDict=popColors.copy()
     if popColorDict:
@@ -944,11 +980,20 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
     print('Plotting interactive firing rate power spectral density (PSD) ...')
 
     if 'theme' in kwargs:
-        curdoc().theme = kwargs['theme']
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
-    colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    if not 'palette' in kwargs:
+        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    else:
+        colors = kwargs['palette']
 
     popColorDict=popColors.copy()
     if popColorDict:
@@ -1096,10 +1141,20 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
     print('Plotting interactive recorded cell traces per', oneFigPer)
 
     if 'theme' in kwargs:
-        curdoc().theme = kwargs['theme']
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
 
     TOOLS = 'save,pan,box_zoom,reset,wheel_zoom'
-    colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    
+    if not 'palette' in kwargs:
+        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    else:
+        colors = kwargs['palette']
 
     if include is None:  # if none, record from whatever was recorded
         if 'plotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['plotTraces']:
@@ -1239,7 +1294,7 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
                     
                     
     for figLabel, figObj in figs.items():
-
+        
         if overlay:
             plot_layout = layout(figObj, sizing_mode='stretch_both')
             html = file_html(plot_layout, CDN, title=figLabel)
@@ -1279,7 +1334,13 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
     print('Plotting interactive LFP ...')
 
     if 'theme' in kwargs:
-        curdoc().theme = kwargs['theme']
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
@@ -1288,8 +1349,10 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 
     lfp = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
 
-    if not colors:
+    if not 'colorList' in kwargs:
         colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    else:
+        colors = colorList
 
     # electrode selection
     if 'all' in electrodes:
@@ -1392,7 +1455,7 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 
         # format plot
 
-        plot_layout = column(figs['psd'] )
+        plot_layout = column(figs['psd'], sizing_mode='stretch_both')
         html = file_html(plot_layout, CDN, title="LFP Power Spectral Density")
 
         show(plot_layout)
@@ -1441,14 +1504,14 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         for i,elec in enumerate(electrodes):
             p = figure(title="Electrode {}".format(str(elec)), tools=TOOLS, x_range=(0, timeRange[1]), y_range=(0, maxFreq),
                        x_axis_label = "Time (ms)", y_axis_label = "Frequency(Hz)")
-            mapper = linear_cmap (field_name='dB/Hz', palette='Spectral11', low=vmin, high=vmax)
+            mapper = linear_cmap(field_name='dB/Hz', palette='Spectral11', low=vmin, high=vmax)
             color_bar = ColorBar(color_mapper=mapper['transform'], width=8, location=(0,0), label_standoff=7, major_tick_line_color=None)
             p.image(image=[x_mesh, y_mesh, logx_spec[i]], x=0, y=0, color_mapper=mapper['transform'], dw=timeRange[1], dh=100)
             p.add_layout(color_bar, 'right')
             figs['spectro'].append(p)
 
 
-        plot_layout = column(figs['spectro'] )
+        plot_layout = column(figs['spectro'], sizing_mode='stretch_both')
         html = file_html(plot_layout, CDN, title="LFP Power Spectral Density")
 
         show(plot_layout)
@@ -1507,7 +1570,13 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
     print('Plotting interactive connectivity matrix...')
 
     if 'theme' in kwargs:
-        curdoc().theme = kwargs['theme']
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
 
     if connsFile and tagsFile:
         connMatrix, pre, post = network._plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile, removeWeightNorm)
@@ -1588,7 +1657,8 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
         if groupBy == 'pop':
             
             popsPre, popsPost = pre, post
-            colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+            #colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+            colors = colorList
             bar_colors = colors[0:len(popsPre)]
 
             data = {'post' : popsPost}
@@ -1651,3 +1721,102 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
     if showFig: show(fig)
 
     return html
+
+
+
+
+# -------------------------------------------------------------------------------------------------------------------
+## Plot interactive RxD concentration
+# -------------------------------------------------------------------------------------------------------------------
+@exception
+def iplotRxDConcentration(speciesLabel, regionLabel, plane='xy', saveFig=None, showFig=True, **kwargs):
+        
+    from .. import sim
+    from bokeh.plotting import figure, show
+    from bokeh.resources import CDN
+    from bokeh.embed import file_html
+    from bokeh.layouts import layout, column, row
+    from bokeh.colors import RGB
+    from bokeh.transform import linear_cmap
+    from bokeh.models import ColorBar
+
+    print('Plotting interactive RxD concentration ...')
+
+    if 'theme' in kwargs:
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
+
+    if not 'palette' in kwargs:
+        from bokeh.palettes import Viridis256
+        colors = Viridis256
+        #colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] 
+    else:
+        colors = kwargs['palette']
+
+    TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
+
+    species = sim.net.rxd['species'][speciesLabel]['hObj']
+    region = sim.net.rxd['regions'][regionLabel]['hObj']
+    plane2mean = {'xz': 1, 'xy': 2}
+
+    data = species[region].states3d[:].mean(plane2mean[plane]).T
+    data = np.flipud(data) # This does not flip the axis values, should improve
+    dh, dw = np.shape(data)
+
+    low = np.nanmin(data)
+    high = np.nanmax(data)
+    if low == high:
+        low = low - 0.1 * low
+        high = high + 0.1 * high
+
+    conc_colormapper = linear_cmap(
+        field_name = '[' + species.name + '] (mM)',
+        palette = colors,
+        low = low,
+        high = high,
+        nan_color = 'white',
+        )
+
+    conc_colorbar = ColorBar(
+        color_mapper = conc_colormapper['transform'], 
+        label_standoff = 12,
+        title_standoff = 12,
+        )
+    conc_colorbar.title = '[' + species.name + '] (mM)'
+  
+    fig = figure(
+        title = 'RxD: ' + species.name + ' concentration',
+        toolbar_location = 'above', 
+        tools = 'hover,save,pan,box_zoom,reset,wheel_zoom', 
+        active_drag = 'pan', 
+        active_scroll = 'wheel_zoom', 
+        tooltips = [("x", "$x"), ("y", "$y"), ("value", "@image")],
+        match_aspect = True,
+        x_axis_label = plane[0] + " location (um)", 
+        y_axis_label = plane[1] + " location (um)",
+        )
+
+    fig.image(image=[data], x=0, y=0, dw=dw, dh=dh, color_mapper=conc_colormapper['transform'], level="image")
+    fig.add_layout(conc_colorbar, 'right')
+
+    plot_layout = layout([fig], sizing_mode='scale_height')
+    html = file_html(plot_layout, CDN, title="RxD Concentration")
+
+    if showFig:
+        show(plot_layout)
+
+    if saveFig:
+        if isinstance(saveFig, str):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename + '_RxD_concentration.html'
+        outfile = open(filename, 'w')
+        outfile.write(html)
+        outfile.close()
+
+    return html, data

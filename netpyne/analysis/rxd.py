@@ -47,7 +47,7 @@ def plotRxDConcentration(speciesLabel, regionLabel, plane='xy', figSize=(5,10), 
         sb.location = 'lower left'
         ax.add_artist(sb)
     
-    plt.colorbar(label="$%s^+$ (mM)"%(species.name))
+    plt.colorbar(label='[' + species.name + '] (mM)')
     plt.xlabel(plane[0] + ' location (um)')
     plt.ylabel(plane[1] + ' location (um)')  
     if title:

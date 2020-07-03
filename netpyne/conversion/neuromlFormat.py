@@ -675,7 +675,6 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
 try:
     from neuroml.hdf5.DefaultNetworkHandler import DefaultNetworkHandler
 
-
     class NetPyNEBuilder(DefaultNetworkHandler):
 
         cellParams = OrderedDict()
@@ -1306,6 +1305,10 @@ try:
             #self.stimLists[inputListId]['conds']['secList'].append(seg_name)
             #self.stimLists[inputListId]['conds']['locList'].append(fract)
 
+except:
+    print(' Warning: An Exception occurred when loading NeuroML ...')
+
+
     ###############################################################################
     # Import network from NeuroML2
     ###############################################################################
@@ -1463,5 +1466,3 @@ try:
             h('forall  if (ismembrane("ca_ion")) { print "Ca ions: ", secname(), ": eca: ", eca, ", cai: ", cai, ", cao: ", cao } ')'''
 
         return nmlHandler.gids
-except:
-    pass

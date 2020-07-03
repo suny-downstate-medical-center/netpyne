@@ -1923,11 +1923,17 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
             for con in postCell['conns']:  # plot connections between cells
                 if not isinstance(con['preGid'], basestring) and con['preGid'] in cellGids:
                     posXpre,posYpre = next(((cell['tags']['x'],cell['tags'][ycoord]) for cell in cells if cell['gid']==con['preGid']), None)  
-                    posXpost,posYpost = postCell['tags']['x'], postCell['tags'][ycoord] 
-                    color='red'
+                    posXpost, posYpost = postCell['tags']['x'], postCell['tags'][ycoord]
+                    if kwargs['theme'] == 'gui':
+                        color = 'yellow'
+                    else:
+                        color='red'
                     if con['synMech'] in ['inh', 'GABA', 'GABAA', 'GABAB']:
-                        color = 'blue'
-                    width = 0.1 #50*con['weight']
+                        if kwargs['theme'] == 'gui':
+                            color = 'lightcyan'
+                        else:
+                            color = 'blue'
+                    width = 0.2 #50*con['weight']
                     fig.line([posXpre, posXpost], [posYpre, posYpost], color=color, line_width=width) # plot line from pre to post
     
     fontsiz = fontSize

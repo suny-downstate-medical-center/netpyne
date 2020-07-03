@@ -10,6 +10,8 @@
 
 - Population average rates function now accepts multiple time intervals 
 
+- Added interactive plot2Dnet function
+
 - Fixed bug importing cells (avoid reading __docstring__)
 
 - Fixed bug when recording LFP with recordStep <1.0ms

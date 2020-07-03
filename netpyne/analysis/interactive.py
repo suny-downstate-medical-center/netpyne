@@ -11,6 +11,11 @@ from future import standard_library
 standard_library.install_aliases()
 from netpyne import __gui__
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 if __gui__:
     import matplotlib.pyplot as plt
     from matplotlib import mlab
@@ -1722,6 +1727,242 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
 
     return html
 
+
+# -------------------------------------------------------------------------------------------------------------------
+## Plot 2D representation of network cell positions and connections
+# -------------------------------------------------------------------------------------------------------------------
+#@exception
+def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, tagsFile=None, figSize=(12,12), fontSize=12, saveData=None, saveFig=None, showFig=True, **kwargs): 
+    """Plots 2D representation of network cell positions and connections.
+
+    Parameters
+    ----------
+    include : list
+        List of presynaptic cells to include. 
+        **Default:** ``['allCells']``
+        **Options:** 
+        ``['all']`` plots all cells and stimulations, 
+        ``['allNetStims']`` plots just stimulations, 
+        ``['popName1']`` plots a single population, 
+        ``['popName1', 'popName2']`` plots multiple populations, 
+        ``[120]`` plots a single cell, 
+        ``[120, 130]`` plots multiple cells, 
+        ``[('popName1', 56)]`` plots a cell from a specific population, 
+        ``[('popName1', [0, 1]), ('popName2', [4, 5, 6])]``, plots cells from multiple populations
+        
+    view : str
+        Perspective of view.
+        **Default:** ``'xy'`` front view,
+        **Options:** ``'xz'`` top-down view
+    
+    showConns : bool
+        Whether to show connections or not.
+        **Default:** ``True``
+    
+    popColors : dict
+        Dictionary with custom color (value) used for each population (key).
+        **Default:** ``None`` uses standard colors
+    
+    tagsFile : str
+        Path to a saved tags file to use in connectivity plot.
+        **Default:** ``None``
+    
+    figSize : list [width, height]
+        Size of figure in inches.
+        **Default:** ``(12, 12)`` 
+    
+    fontSize : int
+        Font size on figure.
+        **Default:** ``12`` 
+
+    saveData : bool or str
+        Whether and where to save the data used to generate the plot. 
+        **Default:** ``False`` 
+        **Options:** ``True`` autosaves the data,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
+    
+    saveFig : bool or str
+        Whether and where to save the figure.
+        **Default:** ``False``
+        **Options:** ``True`` autosaves the figure,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
+    
+    showFig : bool
+        Shows the figure if ``True``.
+        **Default:** ``True``
+
+    Returns
+    -------
+    (fig, dict)
+        A tuple consisting of the matplotlib figure handle and a dictionary containing the plot data.
+
+    See Also
+    --------
+    iplot2Dnet :
+
+    Examples
+    --------
+    >>> import netpyne, netpyne.examples.example
+    >>> out = netpyne.analysis.plot2Dnet()
+    """
+
+    from .. import sim
+    from bokeh.plotting import figure, show
+    from bokeh.resources import CDN
+    from bokeh.embed import file_html
+    from bokeh.layouts import layout
+    from bokeh.models import Legend
+    from bokeh.colors import RGB
+    from bokeh.models.annotations import Title
+
+    print('Plotting interactive 2D representation of network cell locations and connections...')
+
+    if 'theme' in kwargs:
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
+
+    TOOLS = 'hover,save,pan,box_zoom,reset,wheel_zoom',
+
+    if not 'palette' in kwargs:
+        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    else:
+        colors = kwargs['palette']
+
+    # front view
+    if view == 'xy':
+        ycoord = 'y'
+    elif view == 'xz':
+        ycoord = 'z'
+
+    if tagsFile:
+        print('Loading tags file...')
+        import json
+        with open(tagsFile, 'r') as fileObj: tagsTmp = json.load(fileObj)['tags']
+        tagsFormat = tagsTmp.pop('format', [])
+        tags = {int(k): v for k,v in tagsTmp.items()} # find method to load json with int keys?
+        del tagsTmp
+
+        # set indices of fields to read compact format (no keys)
+        missing = []
+        popIndex = tagsFormat.index('pop') if 'pop' in tagsFormat else missing.append('pop')
+        xIndex = tagsFormat.index('x') if 'x' in tagsFormat else missing.append('x')
+        yIndex = tagsFormat.index('y') if 'y' in tagsFormat else missing.append('y')
+        zIndex = tagsFormat.index('z') if 'z' in tagsFormat else missing.append('z')
+        if len(missing) > 0:
+            print("Missing:")
+            print(missing)
+            return None, None, None 
+
+        # find pre and post cells
+        if tags:
+            cellGids = getCellsIncludeTags(include, tags, tagsFormat)
+            popLabels = list(set([tags[gid][popIndex] for gid in cellGids]))
+            
+            # pop and cell colors
+            popColorsTmp = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
+            if popColors: popColorsTmp.update(popColors)
+            popColors = popColorsTmp
+            cellColors = [popColors[tags[gid][popIndex]] for gid in cellGids]
+            
+            # cell locations
+            posX = [tags[gid][xIndex] for gid in cellGids]  # get all x positions
+            if ycoord == 'y':
+                posY = [tags[gid][yIndex] for gid in cellGids]  # get all y positions
+            elif ycoord == 'z':
+                posY = [tags[gid][zIndex] for gid in cellGids]  # get all y positions
+        else:
+            print('Error loading tags from file') 
+            return None
+
+    else:
+        cells, cellGids, _ = getCellsInclude(include)           
+        selectedPops = [cell['tags']['pop'] for cell in cells]
+        popLabels = [pop for pop in sim.net.allPops if pop in selectedPops] # preserves original ordering
+        
+        # pop and cell colors
+        popColorsTmp = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
+        if popColors: popColorsTmp.update(popColors)
+        popColors = popColorsTmp
+        cellColors = ['#%02x%02x%02x' % tuple([int(col * 255) for col in popColors[cell['tags']['pop']]]) for cell in cells]
+
+
+        # cell locations
+        posX = [cell['tags']['x'] for cell in cells]  # get all x positions
+        posY = [cell['tags'][ycoord] for cell in cells]  # get all y positions
+    
+
+    fig = figure(
+        title="2D Network representation", 
+        tools=TOOLS, 
+        active_drag = 'pan', 
+        active_scroll = 'wheel_zoom',
+        tooltips=[('y location', '@y'), ('x location', '@x')],
+        x_axis_label="x (um)", 
+        y_axis_label='y (um)',
+        x_range=[min(posX)-0.05*max(posX),1.05*max(posX)], 
+        y_range=[1.05*max(posY), min(posY)-0.05*max(posY)], 
+        toolbar_location='above')
+
+    if 'radius' in kwargs:
+        radius = kwargs['radius']
+    else:
+        radius = 1.0
+
+    fig.scatter(posX, posY, radius=radius, fill_color=cellColors, line_color=None)  # plot cell soma positions
+    
+ 
+    posXpre, posYpre = [], []
+    posXpost, posYpost = [], []
+    if showConns and not tagsFile:
+        for postCell in cells:
+            for con in postCell['conns']:  # plot connections between cells
+                if not isinstance(con['preGid'], basestring) and con['preGid'] in cellGids:
+                    posXpre,posYpre = next(((cell['tags']['x'],cell['tags'][ycoord]) for cell in cells if cell['gid']==con['preGid']), None)  
+                    posXpost,posYpost = postCell['tags']['x'], postCell['tags'][ycoord] 
+                    color='red'
+                    if con['synMech'] in ['inh', 'GABA', 'GABAA', 'GABAB']:
+                        color = 'blue'
+                    width = 0.1 #50*con['weight']
+                    fig.line([posXpre, posXpost], [posYpre, posYpost], color=color, line_width=width) # plot line from pre to post
+    
+    fontsiz = fontSize
+
+    for popLabel in popLabels:
+        fig.line(0,0,color=tuple([int(x*255) for x in popColors[popLabel]]), legend_label=popLabel)
+
+    legend = Legend(location=(10,0))
+    legend.click_policy='hide'
+    fig.add_layout(legend, 'right')
+
+    plot_layout = layout([fig], sizing_mode='stretch_both') 
+    html = file_html(plot_layout, CDN, title="Raster Plot")   
+
+    # save figure data
+    if saveData:
+        figData = {'posX': posX, 'posY': posY, 'posX': cellColors, 'posXpre': posXpre, 'posXpost': posXpost, 'posYpre': posYpre, 'posYpost': posYpost,
+         'include': include, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+    
+        _saveFigData(figData, saveData, '2Dnet')
+ 
+    # save figure
+    if saveFig: 
+        if isinstance(saveFig, str):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename+'_iplot_2Dnet_'+groupBy+'_'+feature+'_'+graphType+'.html'
+        file = open(filename, 'w')
+        file.write(html)
+        file.close()
+
+    # show fig 
+    if showFig: show(fig)
+
+    return fig, {'include': include, 'posX': posX, 'posY': posY, 'posXpre': posXpre, 'posXpost': posXpost, 'posYpre': posYpre, 'posYpost': posYpost}
 
 
 

@@ -1504,7 +1504,7 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         for i,elec in enumerate(electrodes):
             p = figure(title="Electrode {}".format(str(elec)), tools=TOOLS, x_range=(0, timeRange[1]), y_range=(0, maxFreq),
                        x_axis_label = "Time (ms)", y_axis_label = "Frequency(Hz)")
-            mapper = linear_cmap (field_name='dB/Hz', palette='Spectral11', low=vmin, high=vmax)
+            mapper = linear_cmap(field_name='dB/Hz', palette='Spectral11', low=vmin, high=vmax)
             color_bar = ColorBar(color_mapper=mapper['transform'], width=8, location=(0,0), label_standoff=7, major_tick_line_color=None)
             p.image(image=[x_mesh, y_mesh, logx_spec[i]], x=0, y=0, color_mapper=mapper['transform'], dw=timeRange[1], dh=100)
             p.add_layout(color_bar, 'right')
@@ -1721,3 +1721,102 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
     if showFig: show(fig)
 
     return html
+
+
+
+
+# -------------------------------------------------------------------------------------------------------------------
+## Plot interactive RxD concentration
+# -------------------------------------------------------------------------------------------------------------------
+@exception
+def iplotRxDConcentration(speciesLabel, regionLabel, plane='xy', saveFig=None, showFig=True, **kwargs):
+        
+    from .. import sim
+    from bokeh.plotting import figure, show
+    from bokeh.resources import CDN
+    from bokeh.embed import file_html
+    from bokeh.layouts import layout, column, row
+    from bokeh.colors import RGB
+    from bokeh.transform import linear_cmap
+    from bokeh.models import ColorBar
+
+    print('Plotting interactive RxD concentration ...')
+
+    if 'theme' in kwargs:
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
+
+    if not 'palette' in kwargs:
+        from bokeh.palettes import Viridis256
+        colors = Viridis256
+        #colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] 
+    else:
+        colors = kwargs['palette']
+
+    TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
+
+    species = sim.net.rxd['species'][speciesLabel]['hObj']
+    region = sim.net.rxd['regions'][regionLabel]['hObj']
+    plane2mean = {'xz': 1, 'xy': 2}
+
+    data = species[region].states3d[:].mean(plane2mean[plane]).T
+    data = np.flipud(data) # This does not flip the axis values, should improve
+    dh, dw = np.shape(data)
+
+    low = np.nanmin(data)
+    high = np.nanmax(data)
+    if low == high:
+        low = low - 0.1 * low
+        high = high + 0.1 * high
+
+    conc_colormapper = linear_cmap(
+        field_name = '[' + species.name + '] (mM)',
+        palette = colors,
+        low = low,
+        high = high,
+        nan_color = 'white',
+        )
+
+    conc_colorbar = ColorBar(
+        color_mapper = conc_colormapper['transform'], 
+        label_standoff = 12,
+        title_standoff = 12,
+        )
+    conc_colorbar.title = '[' + species.name + '] (mM)'
+  
+    fig = figure(
+        title = 'RxD: ' + species.name + ' concentration',
+        toolbar_location = 'above', 
+        tools = 'hover,save,pan,box_zoom,reset,wheel_zoom', 
+        active_drag = 'pan', 
+        active_scroll = 'wheel_zoom', 
+        tooltips = [("x", "$x"), ("y", "$y"), ("value", "@image")],
+        match_aspect = True,
+        x_axis_label = plane[0] + " location (um)", 
+        y_axis_label = plane[1] + " location (um)",
+        )
+
+    fig.image(image=[data], x=0, y=0, dw=dw, dh=dh, color_mapper=conc_colormapper['transform'], level="image")
+    fig.add_layout(conc_colorbar, 'right')
+
+    plot_layout = layout([fig], sizing_mode='scale_height')
+    html = file_html(plot_layout, CDN, title="RxD Concentration")
+
+    if showFig:
+        show(plot_layout)
+
+    if saveFig:
+        if isinstance(saveFig, str):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename + '_RxD_concentration.html'
+        outfile = open(filename, 'w')
+        outfile.write(html)
+        outfile.close()
+
+    return html, data

@@ -1305,8 +1305,6 @@ try:
             #self.stimLists[inputListId]['conds']['secList'].append(seg_name)
             #self.stimLists[inputListId]['conds']['locList'].append(fract)
 
-except:
-    print(' Warning: An Exception occurred when loading NeuroML ...')
 
 
     ###############################################################################
@@ -1466,3 +1464,7 @@ except:
             h('forall  if (ismembrane("ca_ion")) { print "Ca ions: ", secname(), ": eca: ", eca, ", cai: ", cai, ", cao: ", cao } ')'''
 
         return nmlHandler.gids
+    
+    
+except:
+    print(' Warning: An Exception occurred when loading NeuroML ...')

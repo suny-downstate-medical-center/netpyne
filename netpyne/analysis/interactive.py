@@ -847,7 +847,7 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
             
     figs=[]
     if overlay:
-        figs.append(figure(title="Spike Historgram", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label=yaxisLabel, toolbar_location='above'))
+        figs.append(figure(title="Spike Histogram", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label=yaxisLabel, toolbar_location='above'))
         fig = figs[0]
         legendItems = []  
       
@@ -930,7 +930,7 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
 
     print(figs)
     plot_layout = gridplot(figs, ncols=1, merge_tools=False, sizing_mode='stretch_both')
-    html = file_html(plot_layout, CDN, title="Spike Historgram")
+    html = file_html(plot_layout, CDN, title="Spike Histogram")
 
     if showFig: show(plot_layout)
 
@@ -949,8 +949,7 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
 ## Plot interactive Rate PSD
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, maxFreq = 100, NFFT = 256, noverlap = 128, smooth = 0, overlay=True, ylim = None, popColors = {}, figSize=(1000, 400), saveData = None, saveFig = None, showFig = False, **kwargs):
-    
+def iplotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, maxFreq=100, NFFT=256, noverlap=128, smooth=0, overlay=True, ylim=None, popColors={}, saveData=None, saveFig=None, showFig=False, **kwargs):
     """ 
     Plot firing rate power spectral density (PSD)
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
@@ -1000,7 +999,7 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
     else:
         colors = kwargs['palette']
 
-    popColorDict=popColors.copy()
+    popColorDict = popColors.copy()
     if popColorDict:
         for pop, color in popColorDict.items():
             popColorDict[pop] = RGB(*[round(f * 255) for f in color])
@@ -1012,17 +1011,16 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 
     # time range
     if timeRange is None:
-        timeRange = [0,sim.cfg.duration]
+        timeRange = [0, sim.cfg.duration]
 
     histData = []
 
     allPower, allSignal, allFreqs = [], [], []
     legendItems = []
     
-    
-    figs=[]
+    figs = []
     if overlay:
-        figs.append(figure(title="PSD Rate Plot", tools=TOOLS, x_axis_label="Frequncy (Hz)", y_axis_label="Power Spectral Density (db/Hz)", toolbar_location='above'))
+        figs.append(figure(title="PSD Rate Plot", tools=TOOLS, x_axis_label="Frequency (Hz)", y_axis_label="Power Spectral Density (db/Hz)", toolbar_location='above'))
         fig = figs[0]
         legendItems = []  
 
@@ -1033,7 +1031,6 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
             fig = figs[iplot]
             
         cells, cellGids, netStimLabels = getCellsInclude([subset])
-        numNetStims = 0
 
         # Select cells to include
         if len(cellGids) > 0:
@@ -1043,7 +1040,6 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
                 spkinds,spkts = [],[]
         else:
             spkinds,spkts = [],[]
-
 
         # Add NetStim spikes
         spkts, spkinds = list(spkts), list(spkinds)
@@ -1091,7 +1087,8 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         legend.click_policy = 'hide'
         fig.add_layout(legend)
 
-    plot_layout = layout(figs, ncols=1, plot_width=figSize[0], figHeight=figSize[1], sizing_mode='stretch_both')
+    plot_layout = layout(figs, sizing_mode='stretch_both')
+
     html = file_html(plot_layout, CDN, title="PSD Rate Plot")
 
     if showFig: show(plot_layout)
@@ -1100,7 +1097,7 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         if isinstance(saveFig, str):
             filename = saveFig
         else:
-            filename = sim.cfg.filename+'_'+'ipsd.html'
+            filename = sim.cfg.filename + '_ipsd.html'
         file = open(filename, 'w')
         file.write(html)
         file.close()

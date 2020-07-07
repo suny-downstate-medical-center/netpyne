@@ -1933,7 +1933,7 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
                             color = 'lightcyan'
                         else:
                             color = 'blue'
-                    width = 0.2 #50*con['weight']
+                    width = 0.1 #50*con['weight']
                     fig.line([posXpre, posXpost], [posYpre, posYpost], color=color, line_width=width) # plot line from pre to post
     
     fontsiz = fontSize

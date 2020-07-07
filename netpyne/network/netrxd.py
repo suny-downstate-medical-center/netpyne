@@ -24,8 +24,6 @@ import copy
 try:
     from neuron.crxd import rxdmath 
 except:
-    from neuron.rxd import rxdmath 
-else:
     print('Warning: Could not import rxdmath module')
 
 # -----------------------------------------------------------------------------

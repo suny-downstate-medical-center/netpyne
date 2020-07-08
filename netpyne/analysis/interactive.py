@@ -1728,7 +1728,7 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot 2D representation of network cell positions and connections
 # -------------------------------------------------------------------------------------------------------------------
-#@exception
+@exception
 def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, tagsFile=None, figSize=(12,12), fontSize=12, saveData=None, saveFig=None, showFig=True, **kwargs): 
     """Plots 2D representation of network cell positions and connections.
 

@@ -2241,7 +2241,6 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
                 active_drag = 'pan', 
                 active_scroll = 'wheel_zoom', 
                 #tooltips = [("x", "$x"), ("y", "$y"), ("value", "@image")],
-                #match_aspect = True,
                 x_axis_label = 'Population', 
                 y_axis_label = xlabel,
                 x_range = labels
@@ -2258,20 +2257,28 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
             iqr = q3 - q1
             upper = q3 + 1.5 * iqr
             lower = q1 - 1.5 * iqr
+            qmin = df.quantile(q=0.00)
+            qmax = df.quantile(q=1.00)
 
-            # # find the outliers for each category
-            # def outliers(group):
-            #     cat = group.name
-            #     return group[(group.score > upper.loc[cat]['score']) | (group.score < lower.loc[cat]['score'])]['score']
-            # out = groups.apply(outliers).dropna()
+            out_highs = df[df > upper]
+            out_lows  = df[df < lower]
 
-            # # prepare outlier data for plotting, we need coordinates for every outlier.
-            # if not out.empty:
-            #     outx = []
-            #     outy = []
-            #     for keys in out.index:
-            #         outx.append(keys[0])
-            #         outy.append(out.loc[keys[0]].loc[keys[1]])
+            # outliers
+            for index, label in enumerate(labels):
+                out_x = []
+                out_y = []
+                out_high = out_highs[label].dropna() 
+                if not out_high.empty:
+                    for val in out_high:
+                        out_x.append(label)
+                        out_y.append(val)
+                out_low = out_lows[label].dropna() 
+                if not out_low.empty:
+                    for val in out_low:
+                        out_x.append(label)
+                        out_y.append(val)
+                if out_x:
+                    fig.circle_cross(out_x, out_y, size=10, fill_color=box_colors[index], fill_alpha=0.6, line_color=line_color)
 
             # if no outliers, shrink lengths of stems to be no longer than the minimums or maximums
             # qmin = groups.quantile(q=0.00)
@@ -2284,9 +2291,6 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
             fig.segment(labels, lower, labels, q1, line_color=line_color, line_width=line_width)
 
             # boxes
-            #fig.vbar(labels, 0.7, q2.score, q3.score, fill_color="#E08E79", line_color="black")
-            #fig.vbar(labels, 0.7, q1.score, q2.score, fill_color="#3B8686", line_color="black")
-
             mapper = factor_cmap('labels', palette=colors, factors=labels)
             fig.vbar(labels, 0.7, q2, q3, line_color=line_color, line_width=line_width, fill_color=box_colors)
             fig.vbar(labels, 0.7, q1, q2, line_color=line_color, line_width=line_width, fill_color=box_colors)
@@ -2295,14 +2299,12 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
             fig.rect(labels, lower, 20, 1, width_units='screen', height_units='screen', line_color=line_color, line_width=line_width)
             fig.rect(labels, upper, 20, 1, width_units='screen', height_units='screen', line_color=line_color, line_width=line_width)
 
-            # outliers
-            # if not out.empty:
-            #     p.circle(outx, outy, size=6, color="#F38630", fill_alpha=0.6)
+            
 
         else:
             raise Exception('Only boxplot is currently supported in iplotSpikeStats.')
 
-        plot_layout = layout([fig], sizing_mode='scale_height')
+        plot_layout = layout([fig], sizing_mode='stretch_both')
         html = file_html(plot_layout, CDN, title="Spike Statistics")
 
         if showFig:
@@ -2317,8 +2319,7 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
             outfile.write(html)
             outfile.close()
 
-        #return html, data
-
+    return df
 
 
     

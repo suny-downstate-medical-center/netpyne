@@ -29,6 +29,9 @@ import pandas as pd
 from bokeh.themes import built_in_themes
 from bokeh.io import curdoc
 
+bokeh_theme = curdoc().theme
+
+
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive raster
@@ -2064,3 +2067,261 @@ def iplotRxDConcentration(speciesLabel, regionLabel, plane='xy', saveFig=None, s
         outfile.close()
 
     return html, data
+
+
+
+# -------------------------------------------------------------------------------------------------------------------
+## Plot interactive spike statistics
+# -------------------------------------------------------------------------------------------------------------------
+#@exception
+def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=None, graphType='boxplot', stats=['rate', 'isicv'], bins=50, histlogy=False, histlogx=False, histmin=0.0, density=False, includeRate0=False, legendLabels=None, normfit=False, histShading=True, xlim=None, popColors={}, saveData=None, saveFig=None, showFig=True, **kwargs):
+        
+    from .. import sim
+    from bokeh.plotting import figure, show
+    from bokeh.resources import CDN
+    from bokeh.embed import file_html
+    from bokeh.layouts import layout, column, row
+    from bokeh.colors import RGB
+    from bokeh.transform import linear_cmap
+    from bokeh.transform import factor_cmap
+    from bokeh.models import ColorBar
+    from bokeh.palettes import Spectral6
+    from bokeh.models.mappers import CategoricalColorMapper
+
+    print('Plotting interactive spike statistics ...')
+
+    TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
+
+    xlabels = {'rate': 'Rate (Hz)', 'isicv': 'Irregularity (ISI CV)', 'sync':  'Synchrony', 'pairsync': 'Pairwise synchrony'}
+
+    # Replace 'eachPop' with list of pops
+    if 'eachPop' in include: 
+        include.remove('eachPop')
+        for pop in sim.net.allPops: include.append(pop)
+
+    # time range
+    if timeRange is None:
+        timeRange = [0, sim.cfg.duration]
+
+    for stat in stats:
+
+        if 'theme' in kwargs:
+            if kwargs['theme'] != 'default':
+                if kwargs['theme'] == 'gui':
+                    from bokeh.themes import Theme
+                    theme = Theme(json=_guiTheme)
+                else:
+                    theme = kwargs['theme']
+                curdoc().theme = theme
+            else:
+                curdoc().theme = bokeh_theme
+        else:
+            curdoc().theme = bokeh_theme
+
+        if not 'palette' in kwargs:
+            colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] 
+        else:
+            colors = kwargs['palette']
+        
+        xlabel = xlabels[stat]
+        statData = []
+        gidsData = []
+        ynormsData = []
+
+        # Calculate data for each entry in include
+        for iplot,subset in enumerate(include):
+
+            if stat in statDataIn:
+                statData = statDataIn[stat]['statData']
+                gidsData = statDataIn[stat].get('gidsData', [])
+                ynormsData = statDataIn[stat].get('ynormsData', [])
+
+            else:
+                cells, cellGids, netStimLabels = getCellsInclude([subset])
+                numNetStims = 0
+
+                # Select cells to include
+                if len(cellGids) > 0:
+                    try:
+                        spkinds,spkts = list(zip(*[(spkgid,spkt) for spkgid,spkt in 
+                            zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]))
+                    except:
+                        spkinds,spkts = [],[]
+                else: 
+                    spkinds,spkts = [],[]
+
+                # Add NetStim spikes
+                spkts, spkinds = list(spkts), list(spkinds)
+                numNetStims = 0
+                if 'stims' in sim.allSimData:
+                    for netStimLabel in netStimLabels:
+                        netStimSpks = [spk for cell,stims in sim.allSimData['stims'].items() \
+                        for stimLabel,stimSpks in stims.items() 
+                            for spk in stimSpks if stimLabel == netStimLabel]
+                        if len(netStimSpks) > 0:
+                            lastInd = max(spkinds) if len(spkinds)>0 else 0
+                            spktsNew = netStimSpks 
+                            spkindsNew = [lastInd+1+i for i in range(len(netStimSpks))]
+                            spkts.extend(spktsNew)
+                            spkinds.extend(spkindsNew)
+                            numNetStims += 1
+                try:
+                    spkts,spkinds = list(zip(*[(spkt, spkind) for spkt, spkind in zip(spkts, spkinds) 
+                        if timeRange[0] <= spkt <= timeRange[1]]))
+                except:
+                    pass
+
+                # rate stats
+                if stat == 'rate':
+                    toRate = 1e3/(timeRange[1]-timeRange[0])
+                    if includeRate0:
+                        rates = [spkinds.count(gid)*toRate for gid in cellGids] \
+                            if len(spkinds)>0 else [0]*len(cellGids) #cellGids] #set(spkinds)] 
+                    else:
+                        rates = [spkinds.count(gid)*toRate for gid in set(spkinds)] \
+                            if len(spkinds)>0 else [0] #cellGids] #set(spkinds)] 
+                    statData.append(rates)
+
+                # Inter-spike interval (ISI) coefficient of variation (CV) stats
+                elif stat == 'isicv':
+                    import numpy as np
+                    spkmat = [[spkt for spkind,spkt in zip(spkinds,spkts) if spkind==gid] 
+                        for gid in set(spkinds)]
+                    isimat = [[t - s for s, t in zip(spks, spks[1:])] for spks in spkmat if len(spks)>10]
+                    isicv = [np.std(x) / np.mean(x) if len(x)>0 else 0 for x in isimat] # if len(x)>0] 
+                    statData.append(isicv) 
+
+                # synchrony
+                elif stat in ['sync', 'pairsync']:
+                    try: 
+                        import pyspike  
+                    except:
+                        print("Error: plotSpikeStats() requires the PySpike python package \
+                            to calculate synchrony (try: pip install pyspike)")
+                        return 0
+                    
+                    spkmat = [pyspike.SpikeTrain([spkt for spkind,spkt in zip(spkinds,spkts) 
+                        if spkind==gid], timeRange) for gid in set(spkinds)]
+                    if stat == 'sync':
+                        # (SPIKE-Sync measure)' # see http://www.scholarpedia.org/article/Measures_of_spike_train_synchrony
+                        syncMat = [pyspike.spike_sync(spkmat)]
+                        #graphType = 'bar'
+                    elif stat == 'pairsync':
+                        # (SPIKE-Sync measure)' # see http://www.scholarpedia.org/article/Measures_of_spike_train_synchrony
+                        syncMat = np.mean(pyspike.spike_sync_matrix(spkmat), 0)
+                        
+                    statData.append(syncMat)
+
+        # boxplot
+        if graphType == 'boxplot':
+            
+            line_width = 2
+            line_color = 'black'
+            if 'theme' in kwargs:
+                if kwargs['theme'] == 'gui' or 'dark' in kwargs['theme']:
+                    line_color = 'lightgray'
+            
+            labels = legendLabels if legendLabels else include
+            data_lists = statData[::-1]
+            data_lists.reverse()
+            box_colors = colors[0:len(labels)]
+
+            if include[0] == 'allCells':
+                del box_colors[-1]
+                box_colors.insert(0, ('darkslategray')) 
+
+            data = {}
+            for label, data_list in zip(labels, data_lists):
+                data[label] = data_list
+
+            fig = figure(
+                title = 'Spike statistics: ' + xlabels[stat],
+                toolbar_location = 'above', 
+                tools = 'hover,save,pan,box_zoom,reset,wheel_zoom', 
+                active_drag = 'pan', 
+                active_scroll = 'wheel_zoom', 
+                #tooltips = [("x", "$x"), ("y", "$y"), ("value", "@image")],
+                x_axis_label = 'Population', 
+                y_axis_label = xlabel,
+                x_range = labels
+            )
+
+            fig.xgrid.visible = False
+
+            df = pd.DataFrame(dict([ (k,pd.Series(v)) for k,v in data.items() ]))
+
+            #groups = df.groupby('group')
+            q1 = df.quantile(q=0.25)
+            q2 = df.quantile(q=0.5)
+            q3 = df.quantile(q=0.75)
+            iqr = q3 - q1
+            upper = q3 + 1.5 * iqr
+            lower = q1 - 1.5 * iqr
+            qmin = df.quantile(q=0.00)
+            qmax = df.quantile(q=1.00)
+
+            out_highs = df[df > upper]
+            out_lows  = df[df < lower]
+
+            # outliers
+            for index, label in enumerate(labels):
+                out_x = []
+                out_y = []
+                out_high = out_highs[label].dropna() 
+                if not out_high.empty:
+                    for val in out_high:
+                        out_x.append(label)
+                        out_y.append(val)
+                out_low = out_lows[label].dropna() 
+                if not out_low.empty:
+                    for val in out_low:
+                        out_x.append(label)
+                        out_y.append(val)
+                if out_x:
+                    fig.circle_cross(out_x, out_y, size=10, fill_color=box_colors[index], fill_alpha=0.6, line_color=line_color)
+
+            # if no outliers, shrink lengths of stems to be no longer than the minimums or maximums
+            # qmin = groups.quantile(q=0.00)
+            # qmax = groups.quantile(q=1.00)
+            # upper.score = [min([x,y]) for (x,y) in zip(list(qmax.loc[:,'score']),upper.score)]
+            # lower.score = [max([x,y]) for (x,y) in zip(list(qmin.loc[:,'score']),lower.score)]
+
+            # stems
+            fig.segment(labels, upper, labels, q3, line_color=line_color, line_width=line_width)
+            fig.segment(labels, lower, labels, q1, line_color=line_color, line_width=line_width)
+
+            # boxes
+            mapper = factor_cmap('labels', palette=colors, factors=labels)
+            fig.vbar(labels, 0.7, q2, q3, line_color=line_color, line_width=line_width, fill_color=box_colors)
+            fig.vbar(labels, 0.7, q1, q2, line_color=line_color, line_width=line_width, fill_color=box_colors)
+
+            # whiskers (almost-0 height rects simpler than segments)
+            fig.rect(labels, lower, 20, 1, width_units='screen', height_units='screen', line_color=line_color, line_width=line_width)
+            fig.rect(labels, upper, 20, 1, width_units='screen', height_units='screen', line_color=line_color, line_width=line_width)
+
+            
+
+        else:
+            raise Exception('Only boxplot is currently supported in iplotSpikeStats.')
+
+        plot_layout = layout([fig], sizing_mode='stretch_both')
+        html = file_html(plot_layout, CDN, title="Spike Statistics")
+
+        if showFig:
+            show(plot_layout)
+
+        if saveFig:
+            if isinstance(saveFig, str):
+                filename = saveFig
+            else:
+                filename = sim.cfg.filename + '_spike_' + stat + '.html'
+            outfile = open(filename, 'w')
+            outfile.write(html)
+            outfile.close()
+
+    return df
+
+
+    
+
+    

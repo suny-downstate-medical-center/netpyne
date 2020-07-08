@@ -776,7 +776,6 @@ def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1,
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive Spike Histogram
-## ISSUES: Y scale, add colors to be effective
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRange = None, binSize = 5, overlay=True, yaxis = 'rate', popColors=[], norm=False, smooth=None, filtFreq=False, filtOrder=3, saveData = None, saveFig = None, showFig = False, **kwargs):

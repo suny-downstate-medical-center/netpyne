@@ -2239,7 +2239,7 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
                 tools = 'hover,save,pan,box_zoom,reset,wheel_zoom', 
                 active_drag = 'pan', 
                 active_scroll = 'wheel_zoom', 
-                #tooltips = [("x", "$x"), ("y", "$y"), ("value", "@image")],
+                tooltips = [(stat, "$y")],
                 x_axis_label = 'Population', 
                 y_axis_label = xlabel,
                 x_range = labels
@@ -2249,7 +2249,6 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
 
             df = pd.DataFrame(dict([ (k,pd.Series(v)) for k,v in data.items() ]))
 
-            #groups = df.groupby('group')
             q1 = df.quantile(q=0.25)
             q2 = df.quantile(q=0.5)
             q3 = df.quantile(q=0.75)
@@ -2258,6 +2257,7 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
             lower = q1 - 1.5 * iqr
             qmin = df.quantile(q=0.00)
             qmax = df.quantile(q=1.00)
+            qmean = df.mean()
 
             out_highs = df[df > upper]
             out_lows  = df[df < lower]
@@ -2268,35 +2268,37 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
                 out_y = []
                 out_high = out_highs[label].dropna() 
                 if not out_high.empty:
+                    upper[label] = df[df < upper][label].max()
                     for val in out_high:
                         out_x.append(label)
                         out_y.append(val)
+                else:
+                    upper[label] = qmax[label]
                 out_low = out_lows[label].dropna() 
                 if not out_low.empty:
+                    lower[label] = df[df > lower][label].min()
                     for val in out_low:
                         out_x.append(label)
                         out_y.append(val)
+                else:
+                    lower[label] = qmin[label]
                 if out_x:
-                    fig.circle_cross(out_x, out_y, size=10, fill_color=box_colors[index], fill_alpha=0.6, line_color=line_color)
-
-            # if no outliers, shrink lengths of stems to be no longer than the minimums or maximums
-            # qmin = groups.quantile(q=0.00)
-            # qmax = groups.quantile(q=1.00)
-            # upper.score = [min([x,y]) for (x,y) in zip(list(qmax.loc[:,'score']),upper.score)]
-            # lower.score = [max([x,y]) for (x,y) in zip(list(qmin.loc[:,'score']),lower.score)]
+                    fig.circle_x(out_x, out_y, size=10, fill_color=box_colors[index], fill_alpha=0.8, line_color=line_color)
 
             # stems
             fig.segment(labels, upper, labels, q3, line_color=line_color, line_width=line_width)
             fig.segment(labels, lower, labels, q1, line_color=line_color, line_width=line_width)
 
             # boxes
-            mapper = factor_cmap('labels', palette=colors, factors=labels)
             fig.vbar(labels, 0.7, q2, q3, line_color=line_color, line_width=line_width, fill_color=box_colors)
             fig.vbar(labels, 0.7, q1, q2, line_color=line_color, line_width=line_width, fill_color=box_colors)
 
             # whiskers (almost-0 height rects simpler than segments)
             fig.rect(labels, lower, 20, 1, width_units='screen', height_units='screen', line_color=line_color, line_width=line_width)
             fig.rect(labels, upper, 20, 1, width_units='screen', height_units='screen', line_color=line_color, line_width=line_width)
+
+            # means
+            fig.circle_cross(labels, qmean, size=10, fill_color='white', fill_alpha=0.5, line_color='black')
 
             
 
@@ -2317,10 +2319,3 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
             outfile = open(filename, 'w')
             outfile.write(html)
             outfile.close()
-
-    return df
-
-
-    
-
-    

@@ -365,6 +365,491 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
 
     return figs, {'tracesData': tracesData, 'include': include}
 
+
+
+'''
+# -------------------------------------------------------------------------------------------------------------------
+## Plot recorded cell traces (V, i, g, etc.)
+# -------------------------------------------------------------------------------------------------------------------
+@exception
+def plotTracesSpectrogram(include=None, timeRange=None, oneFigPer='cell', rerun=False, title=None, overlay=False, colors=None, ylim=None, axis=True, scaleBarLoc=1, spikeClipping = [1,3], figSize = (10,8), fontSize=12, saveData=None, saveFig=None, showFig=True):
+    """Creates plots of recorded traces.
+
+    Parameters
+    ----------
+    include : list
+        Populations and cells to include in the plot.
+        **Default:** 
+        ``['eachPop', 'allCells']`` plots histogram for each population and overall average
+        **Options:** 
+        ``['all']`` plots all cells and stimulations, 
+        ``['allNetStims']`` plots just stimulations, 
+        ``['popName1']`` plots a single population, 
+        ``['popName1', 'popName2']`` plots multiple populations, 
+        ``[120]`` plots a single cell, 
+        ``[120, 130]`` plots multiple cells, 
+        ``[('popName1', 56)]`` plots a cell from a specific population, 
+        ``[('popName1', [0, 1]), ('popName2', [4, 5, 6])]``, plots cells from multiple populations
+
+    timeRange : list [start, stop]
+        Time range to plot.
+        **Default:** 
+        ``None`` plots entire time range
+
+    oneFigPer : str
+        Whether to plot one figure per cell (showing multiple traces) or per trace (showing multiple cells).
+        **Default:** ``'cell'`` 
+        **Options:** ``'trace'``
+
+    rerun : bool
+        Rerun simulation so a new set of cells gets recorded.
+        **Default:** ``False`` 
+    
+    title : str
+        Set the whole figure title, works only with ``oneFigPer='cell'``.
+        **Default:** ``None``
+
+    overlay : bool
+        Whether to overlay plots or use subplots.
+        **Default:** ``True`` overlays plots.
+
+    colors : list
+        List of normalized RGB colors to use for traces.
+        **Default:** ``None`` uses standard colors
+
+    ylim : list [min, max]
+        Sets the y limits of the plot.
+        **Default:** ``None``
+
+    axis : bool
+        Whether to show axis or not; if not, then a scalebar is included.
+        **Default:** ``True``
+
+    scaleBarLoc : int
+        Sets the location of the scale bar (added when axis=False).
+        **Default:** ``1``
+        **Options:** 
+        ``1``  upper right, ``2`` upper left, ``3`` lower left, ``4`` lower right, ``5`` right, ``6`` center left, ``7`` center right, ``8`` lower center, ``9`` upper center, ``10`` center
+
+    figSize : list [width, height]
+        Size of figure in inches.
+        **Default:** ``(10, 8)`` 
+    
+    fontSize : int
+        Font size on figure.
+        **Default:** ``12`` 
+    
+    saveData : bool or str
+        Whether and where to save the data used to generate the plot. 
+        **Default:** ``False`` 
+        **Options:** ``True`` autosaves the data,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
+    
+    saveFig : bool or str
+        Whether and where to save the figure.
+        **Default:** ``False``
+        **Options:** ``True`` autosaves the figure,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
+    
+    showFig : bool
+        Shows the figure if ``True``.
+        **Default:** ``True``
+
+    Returns
+    -------
+    (fig, dict)
+        A tuple consisting of the matplotlib figure handle and a dictionary containing the plot data.
+
+    See Also
+    --------
+    iplotTraces :
+
+    Examples
+    --------
+    >>> import netpyne, netpyne.examples.example
+    >>> out = netpyne.analysis.plotTraces()
+    """
+    
+    from .. import sim
+    from ..support.scalebar import add_scalebar
+
+    print('Plotting recorded cell traces ...', oneFigPer)
+
+    if include is None:  # if none, record from whatever was recorded
+        if 'plotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['plotTraces']:
+            include = sim.cfg.analysis['plotTraces']['include'] + sim.cfg.recordCells
+        else:
+            include = sim.cfg.recordCells
+            
+    global colorList
+    if isinstance(colors, list): 
+        colorList2 = colors
+    else:
+        colorList2 = colorList
+
+    # rerun simulation so new include cells get recorded from
+    if rerun: 
+        cellsRecord = [cell.gid for cell in sim.getCellsList(include)]
+        for cellRecord in cellsRecord:
+            if cellRecord not in sim.cfg.recordCells:
+                sim.cfg.recordCells.append(cellRecord)
+        sim.setupRecording()
+        sim.simulate()
+
+    tracesList = list(sim.cfg.recordTraces.keys())
+    tracesList.sort()
+    cells, cellGids, _ = getCellsInclude(include)
+    gidPops = {cell['gid']: cell['tags']['pop'] for cell in cells}
+
+    # time range
+    if timeRange is None:
+        timeRange = [0,sim.cfg.duration]
+
+    recordStep = sim.cfg.recordStep
+
+    figs = {}
+    tracesData = []
+
+    # set font size
+    plt.rcParams.update({'font.size': fontSize})
+    fontsiz = fontSize
+
+    # add scale bar
+    def addScaleBar(timeRange=timeRange, loc=scaleBarLoc):
+        ax = plt.gca()
+        sizex =  (timeRange[1]-timeRange[0])/20.0
+        #yl = plt.ylim()
+        #plt.ylim(yl[0]-0.2*(yl[1]-yl[0]), yl[1])
+        add_scalebar(ax, hidex=False, hidey=True, matchx=False, matchy=True, sizex=sizex, sizey=None, unitsx='ms', unitsy='mV', scalex=1, scaley=1, loc=loc, pad=-1, borderpad=0.5, sep=4, prop=None, barcolor="black", barwidth=3)
+        plt.axis(axis)
+
+    # Plot one fig per trace for given cell list
+    def plotFigPerTrace(subGids):
+        fontsiz = 12
+        for itrace, trace in enumerate(tracesList):
+            figs['_trace_'+str(trace)] = plt.figure(figsize=figSize) # Open a new figure
+            for igid, gid in enumerate(subGids):
+                # print('recordStep',recordStep)
+                if 'cell_'+str(gid) in sim.allSimData[trace]:
+                    fullTrace = sim.allSimData[trace]['cell_'+str(gid)]
+                    if isinstance(fullTrace, dict):
+                        if recordStep == 'adaptive':
+                            t = []
+                            t_indexes = []
+                            data = []
+                            lenData = []
+                            for key in list(fullTrace.keys()):
+                                t.append(np.array(sim.allSimData[trace]['cell_time_'+str(gid)][key]))
+                                t_indexes.append(t[-1].__ge__(timeRange[0]).__and__(t[-1].__le__(timeRange[1])))
+                                data.append(np.array(fullTrace[key])[t_indexes[-1]])
+                                lenData = len(data[-1])
+                                t[-1] = t[-1][t_indexes[-1]]
+                        else:
+                            data = [fullTrace[key][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)] for key in list(fullTrace.keys())]
+                            lenData = len(data[0])
+                            data = np.transpose(np.array(data))
+                            t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
+                    else:
+                        if recordStep == 'adaptive':
+                            t = np.array(sim.allSimData[trace]['cell_time_'+str(gid)])
+                            t_indexes = t.__ge__(timeRange[0]).__and__(t.__le__(timeRange[1]))
+                            data = np.array(sim.allSimData[trace]['cell_'+str(gid)])[t_indexes]
+                            lenData = len(data)
+                            t = t[t_indexes]
+                        else:
+                            data = np.array(fullTrace[int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)])
+                            lenData = len(data)
+                            t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
+                    tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
+                    color = colorList2[igid%len(colorList2)]
+                    if not overlay:
+                        plt.subplot(len(subGids),1,igid+1)
+                        plt.ylabel(trace, fontsize=fontsiz)
+                    if recordStep == 'adaptive':
+                        if isinstance(data, list):
+                            for tl,dl in zip(t,data):
+                                plt.plot(tl[:len(dl)], dl, linewidth=1.5,
+                                         color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                        else:
+                            plt.plot(t, data, linewidth=1.5,
+                                     color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                            plt.plot(t, data, linewidth=1.5, color=color, label=trace)
+                    else:
+                        if isinstance(data, list):
+                            for tl,dl in zip(t,data):
+                                plt.plot(tl[:len(dl)], dl, linewidth=1.5,
+                                         color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                        else:
+                            plt.plot(t[:len(data)], data, linewidth=1.5,
+                                     color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                    plt.xlabel('Time (ms)', fontsize=fontsiz)
+                    plt.xlim(timeRange)
+                    if ylim: plt.ylim(ylim)
+                    plt.title('%s '%(trace))
+                    
+                    if not overlay:
+                        if not axis or axis=='off':  # if no axis, add scalebar
+                            addScaleBar()
+
+            if overlay: 
+                if not axis or axis=='off':  # if no axis, add scalebar
+                    addScaleBar()
+                if len(subGids) < 20:
+                    #maxLabelLen = 10
+                    #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen)) 
+                    #plt.legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
+                    plt.legend()  # PUT BACK!!!!!!
+
+
+
+    # Plot one fig per cell
+    if oneFigPer == 'cell':
+        for cell, gid in zip(cells,cellGids):
+            figs['_gid_'+str(gid)] = plt.figure(figsize=figSize) # Open a new figure
+            for itrace, trace in enumerate(tracesList):
+                if 'cell_'+str(gid) in sim.allSimData[trace]:
+                    fullTrace = sim.allSimData[trace]['cell_'+str(gid)]
+                    if isinstance(fullTrace, dict):
+                        if recordStep == 'adaptive':
+                            t = []
+                            t_indexes = []
+                            data = []
+                            lenData = []
+                            for key in list(fullTrace.keys()):
+                                t.append(np.array(sim.allSimData[trace]['cell_time_'+str(gid)][key]))
+                                t_indexes.append(t[-1].__ge__(timeRange[0]).__and__(t[-1].__le__(timeRange[1])))
+                                data.append(np.array(fullTrace[key])[t_indexes[-1]])
+                                lenData = len(data[-1])
+                                t[-1] = t[-1][t_indexes[-1]]
+                        else:
+                                data = [fullTrace[key][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)] for key in list(fullTrace.keys())]
+                                lenData = len(data[0])
+                                data = np.transpose(np.array(data))
+                                t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
+                    else:
+                        if recordStep == 'adaptive':
+                            t = np.array(sim.allSimData[trace]['cell_time_'+str(gid)])
+                            t_indexes = t.__ge__(timeRange[0]).__and__(t.__le__(timeRange[1]))
+                            data = np.array(sim.allSimData[trace]['cell_'+str(gid)])[t_indexes]
+                            lenData = len(data)
+                            t = t[t_indexes]
+                        else:
+                            data = np.array(fullTrace[int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)])
+                            lenData = len(data)
+                            t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
+                    tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
+                    color = colorList2[itrace%len(colorList2)]
+                    if not overlay:
+                        plt.subplot(len(tracesList),1,itrace+1)
+                        color = 'blue'
+                    if recordStep == 'adaptive':
+                        if isinstance(data, list) and isinstance(data[0], (list, np.array)):
+                            for tl,dl in zip(t,data):
+                                plt.plot(tl, dl, linewidth=1.5, color=color, label=trace)
+                        else:
+                            plt.plot(t, data, linewidth=1.5, color=color, label=trace)
+                    else:
+                        plt.plot(t[:lenData], data, linewidth=1.5, color=color, label=trace)
+                    plt.xlabel('Time (ms)', fontsize=fontsiz)
+                    plt.ylabel(trace, fontsize=fontsiz)
+                    plt.xlim(timeRange)
+                    if ylim: plt.ylim(ylim)
+                    if itrace==0: plt.title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                    if not overlay:
+                        if not axis or axis=='off':  # if no axis, add scalebar
+                            addScaleBar()       
+                    
+            if overlay: 
+                if not axis or axis=='off':  # if no axis, add scalebar
+                    addScaleBar() 
+                #maxLabelLen = 10
+                #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))
+                plt.legend() #fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
+
+            if title:
+                figs['_gid_'+str(gid)].suptitle(cell['tags'][title])
+                
+    # Plot one fig per trace
+    elif oneFigPer == 'trace':
+        plotFigPerTrace(cellGids)
+
+    # Plot one fig per trace for each population
+    elif oneFigPer == 'popTrace':
+        allPopGids = invertDictMapping(gidPops)
+        for popLabel, popGids in allPopGids.items():
+            plotFigPerTrace(popGids)
+
+
+    try:
+        plt.tight_layout()
+    except:
+        pass
+
+    #save figure data
+    if saveData:
+        figData = {'tracesData': tracesData, 'include': include, 'timeRange': timeRange, 'oneFigPer': oneFigPer,
+         'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+    
+        _saveFigData(figData, saveData, 'traces')
+ 
+    # save figure
+    if saveFig: 
+        if isinstance(saveFig, basestring):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename+'_'+'traces.png'
+        if len(figs) > 1:
+            for figLabel, figObj in figs.items():
+                plt.figure(figObj.number)
+                plt.savefig(filename[:-4]+figLabel+filename[-4:])
+        else:
+            plt.savefig(filename)
+
+    # show fig 
+    if showFig: _showFigure()
+
+    return figs, {'tracesData': tracesData, 'include': include}
+
+
+
+
+def plotRateSpectrogram(include=['allCells', 'eachPop'], timeRange=None, binSize=5, minFreq=1, maxFreq=100, stepFreq=1, NFFT=256, noverlap=128, smooth=0, overlay=True, ylim = None, transformMethod = 'morlet', norm=False, popColors = {}, lineWidth = 1.5, fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True): 
+    """
+    Plot firing rate spectrogram
+        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
+            Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
+        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
+        - binSize (int): Size in ms of spike bins (default: 5)
+        - maxFreq (float): Maximum frequency to show in plot (default: 100)
+        - transformMethod ('morlet'|'fft')
+        - norm (True|False): Normalize power (default: False)
+        - NFFT (float): The number of data points used in each block for the FFT (power of 2) (default: 256)
+        - smooth (int): Window size for smoothing; no smoothing if 0 (default: 0)
+        - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
+        - yaxis ('rate'|'count'): Units of y axis (firing rate in Hz, or spike count) (default: 'rate')
+        - popColors (dict): Dictionary with color (value) used for each population (key) (default: None)
+        - figSize ((width, height)): Size of figure (default: (10,8))
+        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;
+            if set to True uses filename from simConfig (default: None)
+        - saveFig (None|True|'fileName'): File name where to save the figure;
+            if set to True uses filename from simConfig (default: None)
+        - showFig (True|False): Whether to show the figure or not (default: True)
+
+        - Returns figure handle
+    """
+
+    from .. import sim
+
+    print('Plotting firing rate spectrogram ...')
+    
+    # Replace 'eachPop' with list of pops
+    if 'eachPop' in include: 
+        include.remove('eachPop')
+        for pop in sim.net.allPops: include.append(pop)
+
+    # time range
+    if timeRange is None:
+        timeRange = [0,sim.cfg.duration]
+
+    histData = []
+
+    # create fig
+    fig,ax1 = plt.subplots(figsize=figSize)
+    fontsiz = fontSize
+
+    # set font size
+    plt.rcParams.update({'font.size': fontSize})
+        
+    allSignal, allFreqs = [], []
+
+    # Plot separate line for each entry in include
+    for iplot,subset in enumerate(include):
+        cells, cellGids, netStimLabels = getCellsInclude([subset])   
+        numNetStims = 0
+
+        # Select cells to include
+        if len(cellGids) > 0:
+            try:
+                spkinds,spkts = list(zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]))
+            except:
+                spkinds,spkts = [],[]
+        else: 
+            spkinds,spkts = [],[]
+
+
+        # Add NetStim spikes
+        spkts, spkinds = list(spkts), list(spkinds)
+        numNetStims = 0
+        if 'stims' in sim.allSimData:
+            for netStimLabel in netStimLabels:
+                netStimSpks = [spk for cell,stims in sim.allSimData['stims'].items() \
+                    for stimLabel,stimSpks in stims.items() for spk in stimSpks if stimLabel == netStimLabel]
+                if len(netStimSpks) > 0:
+                    lastInd = max(spkinds) if len(spkinds)>0 else 0
+                    spktsNew = netStimSpks 
+                    spkindsNew = [lastInd+1+i for i in range(len(netStimSpks))]
+                    spkts.extend(spktsNew)
+                    spkinds.extend(spkindsNew)
+                    numNetStims += 1
+
+        histo = np.histogram(spkts, bins = np.arange(timeRange[0], timeRange[1], binSize))
+        histoT = histo[1][:-1]+binSize/2
+        histoCount = histo[0] 
+        histoCount = histoCount * (1000.0 / binSize) / (len(cellGids)+numNetStims) # convert to rates
+
+        histData.append(histoCount)
+
+        # Morlet wavelet transform method
+        if transformMethod == 'morlet':
+            from ..support.morlet import MorletSpec, index2ms
+
+            Fs = 1000.0 / binSize
+
+            morletSpec = MorletSpec(histoCount, Fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq)
+            freqs = morletSpec.f
+            spec = morletSpec.TFR
+            ylabel = 'Power'
+            allSignal.append(spec)
+            allFreqs.append(freqs)
+
+    # plotting
+    T = timeRange
+    for iplot,(subset, freqs, signal) in enumerate(zip(include, allFreqs, allSignal)):
+
+        plt.subplot(len(include),1,iplot+1)  # if subplot, create new subplot
+        plt.title(str(subset), fontsize=fontsiz)
+
+        plt.imshow(signal, extent=(np.amin(T), np.amax(T), np.amin(freqs), np.amax(freqs)), origin='lower', interpolation='None', aspect='auto',cmap=plt.get_cmap('viridis'))
+        plt.colorbar(label='Power')
+        plt.ylabel('Time (ms)')
+        plt.ylabel('Hz')
+        plt.tight_layout()                
+
+    # save figure data
+    if saveData:
+        figData = {'histData': histData, 'histT': histoT, 'include': include, 'timeRange': timeRange, 'binSize': binSize,
+         'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+    
+        _saveFigData(figData, saveData, 'spikeHist')
+ 
+    # save figure
+    if saveFig: 
+        if isinstance(saveFig, basestring):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename+'_'+'spikeSpectrogram.png'
+        plt.savefig(filename)
+
+    # show fig 
+    if showFig: _showFigure()
+
+    return fig, {'allSignal': allSignal, 'allFreqs':allFreqs}
+
+
+
+'''
+
+
 # -------------------------------------------------------------------------------------------------------------------
 ## EPSPs amplitude
 # -------------------------------------------------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 # Version 0.9.7
 
-** New features **
+**New features**
 
 - Simplified cellParams to use dict key as 'cellType' and make 'conds' optional
 
@@ -49,7 +49,7 @@
 - Cleaned up iplotLFP and improved color-handling with themes
 
 
-** Documentation improvements **
+**Documentation improvements**
 
 - Changed all triple single-quoted docstrings to triple double-quoted
 
@@ -62,7 +62,7 @@
 - Removed old unused Makefile for docs
 
 
-** Bug fixes ** 
+**Bug fixes** 
 
 - Fixed bug importing cells (avoid reading __docstring__)
 

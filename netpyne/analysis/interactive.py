@@ -1326,8 +1326,8 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
 ## Plot interactive LFP
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange = None, NFFT = 256, noverlap = 128,
-             nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, logx=False, logy=False, norm=False, dpi = 200, overlay=False, filtFreq = False, filtOrder=3, detrend=False, colors = None, saveData = None, saveFig = None, showFig = False, **kwargs):
+def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange=None, NFFT=256, noverlap=128, nperseg=256, maxFreq=100, smooth=0, separation=1.0, includeAxon=True, logx=False, logy=False, norm=False, overlay=False, filtFreq=False, filtOrder=3, detrend=False, colors=None, saveData=None, saveFig=None, showFig=False, **kwargs):
+    
     from .. import sim
     from bokeh.plotting import figure, show
     from bokeh.resources import CDN
@@ -1346,17 +1346,17 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
                 theme = kwargs['theme']
             curdoc().theme = theme
 
+    if not 'palette' in kwargs:
+        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] 
+    else:
+        colors = kwargs['palette']
+
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
     if timeRange is None:
         timeRange = [0,sim.cfg.duration]
 
     lfp = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
-
-    if not 'colorList' in kwargs:
-        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
-    else:
-        colors = colorList
 
     # electrode selection
     if 'all' in electrodes:
@@ -1380,10 +1380,15 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         offset = 1.0*ydisp
         t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
 
+        avg_color = 'black'
+        if 'theme' in kwargs:
+            if kwargs['theme'] == 'gui' or 'dark' in kwargs['theme']:
+                avg_color = 'white'
+
         for i,elec in enumerate(electrodes[::-1]):
             if elec == 'avg':
                 dplSum = np.mean(lfp, axis=1)
-                color = 'black'
+                color = avg_color
                 lw=1.0
                 # figs['timeSeries'].line(t, -lfpPlot+(i*ydisp), line_color=color)
             elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
@@ -1429,12 +1434,17 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         data['allFreqs'] = allFreqs
         data['allSignal'] = allSignal
 
+        avg_color = 'black'
+        if 'theme' in kwargs:
+            if kwargs['theme'] == 'gui' or 'dark' in kwargs['theme']:
+                avg_color = 'white'
+
         for i,elec in enumerate(electrodes):
             p = figure(title="Electrode {}".format(str(elec)), tools=TOOLS, x_axis_label="Frequency (Hz)", y_axis_label="db/Hz")
 
             if elec == 'avg':
                 lfpPlot = np.mean(lfp, axis=1)
-                color = 'black'
+                color = avg_color
                 lw=1.5
             elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
                 lfpPlot = lfp[:, elec]
@@ -1442,8 +1452,7 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
                 lw=1.5
 
             Fs = int(1000.0/sim.cfg.recordStep)
-            power = mlab.psd(lfpPlot, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning,
-                             noverlap=noverlap, pad_to=None, sides='default', scale_by_freq=None)
+            power = mlab.psd(lfpPlot, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning, noverlap=noverlap, pad_to=None, sides='default', scale_by_freq=None)
 
             if smooth:
                 signal = _smooth1d(10*np.log10(power[0]), smooth)
@@ -1457,13 +1466,10 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             p.line(freqs[freqs<maxFreq], signal[freqs<maxFreq], color=color)
             figs['psd'].append(p)
 
-        # format plot
-
         plot_layout = column(figs['psd'], sizing_mode='stretch_both')
         html = file_html(plot_layout, CDN, title="LFP Power Spectral Density")
 
-        show(plot_layout)
-
+        if showFig: show(plot_layout)
 
         if saveFig:
             if isinstance(saveFig, basestring):
@@ -1514,11 +1520,10 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
             p.add_layout(color_bar, 'right')
             figs['spectro'].append(p)
 
-
         plot_layout = column(figs['spectro'], sizing_mode='stretch_both')
         html = file_html(plot_layout, CDN, title="LFP Power Spectral Density")
 
-        show(plot_layout)
+        if showFig: show(plot_layout)
 
         if saveFig:
             if isinstance(saveFig, str):
@@ -2072,7 +2077,7 @@ def iplotRxDConcentration(speciesLabel, regionLabel, plane='xy', saveFig=None, s
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive spike statistics
 # -------------------------------------------------------------------------------------------------------------------
-#@exception
+@exception
 def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=None, graphType='boxplot', stats=['rate', 'isicv'], bins=50, histlogy=False, histlogx=False, histmin=0.0, density=False, includeRate0=False, legendLabels=None, normfit=False, histShading=True, xlim=None, popColors={}, saveData=None, saveFig=None, showFig=True, **kwargs):
         
     from .. import sim
@@ -2239,7 +2244,7 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
                 tools = 'hover,save,pan,box_zoom,reset,wheel_zoom', 
                 active_drag = 'pan', 
                 active_scroll = 'wheel_zoom', 
-                #tooltips = [("x", "$x"), ("y", "$y"), ("value", "@image")],
+                tooltips = [(stat, "$y")],
                 x_axis_label = 'Population', 
                 y_axis_label = xlabel,
                 x_range = labels
@@ -2249,7 +2254,6 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
 
             df = pd.DataFrame(dict([ (k,pd.Series(v)) for k,v in data.items() ]))
 
-            #groups = df.groupby('group')
             q1 = df.quantile(q=0.25)
             q2 = df.quantile(q=0.5)
             q3 = df.quantile(q=0.75)
@@ -2258,6 +2262,7 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
             lower = q1 - 1.5 * iqr
             qmin = df.quantile(q=0.00)
             qmax = df.quantile(q=1.00)
+            qmean = df.mean()
 
             out_highs = df[df > upper]
             out_lows  = df[df < lower]
@@ -2268,35 +2273,37 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
                 out_y = []
                 out_high = out_highs[label].dropna() 
                 if not out_high.empty:
+                    upper[label] = df[df < upper][label].max()
                     for val in out_high:
                         out_x.append(label)
                         out_y.append(val)
+                else:
+                    upper[label] = qmax[label]
                 out_low = out_lows[label].dropna() 
                 if not out_low.empty:
+                    lower[label] = df[df > lower][label].min()
                     for val in out_low:
                         out_x.append(label)
                         out_y.append(val)
+                else:
+                    lower[label] = qmin[label]
                 if out_x:
-                    fig.circle_cross(out_x, out_y, size=10, fill_color=box_colors[index], fill_alpha=0.6, line_color=line_color)
-
-            # if no outliers, shrink lengths of stems to be no longer than the minimums or maximums
-            # qmin = groups.quantile(q=0.00)
-            # qmax = groups.quantile(q=1.00)
-            # upper.score = [min([x,y]) for (x,y) in zip(list(qmax.loc[:,'score']),upper.score)]
-            # lower.score = [max([x,y]) for (x,y) in zip(list(qmin.loc[:,'score']),lower.score)]
+                    fig.circle_x(out_x, out_y, size=10, fill_color=box_colors[index], fill_alpha=0.8, line_color=line_color)
 
             # stems
             fig.segment(labels, upper, labels, q3, line_color=line_color, line_width=line_width)
             fig.segment(labels, lower, labels, q1, line_color=line_color, line_width=line_width)
 
             # boxes
-            mapper = factor_cmap('labels', palette=colors, factors=labels)
             fig.vbar(labels, 0.7, q2, q3, line_color=line_color, line_width=line_width, fill_color=box_colors)
             fig.vbar(labels, 0.7, q1, q2, line_color=line_color, line_width=line_width, fill_color=box_colors)
 
             # whiskers (almost-0 height rects simpler than segments)
             fig.rect(labels, lower, 20, 1, width_units='screen', height_units='screen', line_color=line_color, line_width=line_width)
             fig.rect(labels, upper, 20, 1, width_units='screen', height_units='screen', line_color=line_color, line_width=line_width)
+
+            # means
+            fig.circle_cross(labels, qmean, size=10, fill_color='white', fill_alpha=0.5, line_color='black')
 
             
 
@@ -2317,10 +2324,3 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
             outfile = open(filename, 'w')
             outfile.write(html)
             outfile.close()
-
-    return df
-
-
-    
-
-    

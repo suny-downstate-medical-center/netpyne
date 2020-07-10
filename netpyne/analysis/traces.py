@@ -438,4 +438,3 @@ def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='a
     if showFig: _showFigure()
 
     return fig, {'peaks': peaks}
-

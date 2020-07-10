@@ -560,7 +560,7 @@ def saveInNode(gatherLFP=True, include=None, filename=None):
 #------------------------------------------------------------------------------
 # Save data in each node
 #------------------------------------------------------------------------------
-def saveSimDataInNode(filename=None):
+def saveSimDataInNode(filename=None, removeTraces=False):
     from .. import sim
     from ..specs import Dict, ODict    
 
@@ -606,6 +606,10 @@ def saveSimDataInNode(filename=None):
 
     dataSave['simData'] = saveSimData
 
+    if removeTraces:
+        for k in sim.cfg.recordTraces.keys():
+            del sim.simData[k]
+
     if getattr(sim.net.params, 'version', None): dataSave['netParams_version'] = sim.net.params.version
 
     if dataSave:
@@ -631,7 +635,6 @@ def saveSimDataInNode(filename=None):
             print(('Saving output as %s ... ' % (filePath+str(sim.rank)+'.json ')))
             #dataSave = utils.replaceDictODict(dataSave)  # not required since json saves as dict
             sim.saveJSON(filePath+ str(sim.rank) + '.json', dataSave)
-            print('Finished saving!')
             print('Finished saving!')
 
         # Save timing

@@ -49,20 +49,16 @@ simConfig.verbose = False  			# Show detailed messages
 simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 simConfig.recordStep = 1 			# Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'model_output'  # Set file output name
-simConfig.savePickle = True 		# Save params, network and sim output to pickle file
+simConfig.savePickle = False 		# Save params, network and sim output to pickle file
 
 simConfig.analysis['plotRaster'] = True 			# Plot a raster
-simConfig.analysis['plotTraces'] = {'include': ['S', 'M']} 			# Plot recorded traces for this list of cells
+simConfig.analysis['plotTraces'] = {'include': [1]} 			# Plot recorded traces for this list of cells
 simConfig.analysis['plot2Dnet']  = True           # plot 2D visualization of cell positions and connections
 
 
 # Create network and run simulation
-sim.create(netParams = netParams, simConfig = simConfig)    
-sim.runSim()
-sim.saveSimDataInNode(removeTraces=True)
-sim.gatherData()
-sim.saveData()
-
+sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
+   
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty
 
 # check model output

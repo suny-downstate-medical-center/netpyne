@@ -1350,9 +1350,9 @@ def plotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=Non
         # save figure
         if saveFig: 
             if isinstance(saveFig, basestring):
-                filename = saveFig + '_plot_spikeStat_' + graphType + '_' + stat + '.png'
+                filename = saveFig + '_spikeStat_' + graphType + '_' + stat + '.png'
             else:
-                filename = sim.cfg.filename + '_plot_spikeStat_' + graphType + '_' + stat + '.png'
+                filename = sim.cfg.filename + '_spikeStat_' + graphType + '_' + stat + '.png'
             plt.savefig(filename, dpi=dpi)
 
         # show fig 

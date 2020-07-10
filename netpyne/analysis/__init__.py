@@ -64,8 +64,9 @@ from .rxd import plotRxDConcentration
 # -------------------------------------------------------------------------------------------------------------------
 # Import interactive functions functions
 # -------------------------------------------------------------------------------------------------------------------
+
 try:
-    from .interactive import iplotDipole, iplotDipoleSpectrogram, iplotDipolePSD, iplotRaster, iplotSpikeHist, \
-        iplotRatePSD, iplotTraces, iplotLFP, iplotConn
+  from .interactive import iplotDipole, iplotDipoleSpectrogram, iplotDipolePSD, iplotRaster, iplotSpikeHist, iplotRatePSD, iplotTraces, iplotLFP, iplotConn, iplotRxDConcentration, iplot2Dnet, iplotSpikeStats
 except:
-    print('Warning: could not import interactive plotting functions; make sure the "bokeh" packages is installed.')
+    print('Warning: could not import interactive plotting functions; make sure the "bokeh" package is installed.')
+

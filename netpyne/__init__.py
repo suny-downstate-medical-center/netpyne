@@ -1,5 +1,5 @@
 """
-NetPyNE (Networks using Python and NEURON) is a Python package to facilitate the development, simulation, parallelization, and analysis of biological neuronal networks using the NEURON simulator.
+NetPyNE (Networks using Python and NEURON) is a Python package to facilitate the development, simulation, parallelization, analysis, and optimization of biological neuronal networks using the NEURON simulator.
 
 NetPyNE consists of a number of sub-packages and modules.
 """

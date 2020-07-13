@@ -455,15 +455,14 @@ class NetParams(object):
     def addCellParamsTemplate(self, label, conds={}, template=None):
         if label in self.cellParams:
             print('CellParams key %s already exists...' % (label))
-
+        secs = {}
+        
         if template == 'Simple_HH':
-            secs = {}	
             secs['soma'] = {'geom': {}, 'mechs': {}}
             secs['soma']['geom'] = {'diam': 20, 'L': 20, 'Ra': 100.0, 'cm': 1}  	 									
             secs['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.0003, 'el': -54.3}
 
         elif template == 'BallStick_HH':
-            secs = {}	# dict with section info
             secs['soma'] = {'geom': {}, 'mechs': {}}
             secs['soma']['geom'] = {'diam': 12, 'L': 12, 'Ra': 100.0, 'cm': 1}  	 									
             secs['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.0003, 'el': -54.3} 		

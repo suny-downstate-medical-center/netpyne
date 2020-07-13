@@ -1995,12 +1995,12 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
                 if not isinstance(con['preGid'], basestring) and con['preGid'] in cellGids:
                     posXpre,posYpre = next(((cell['tags']['x'],cell['tags'][ycoord]) for cell in cells if cell['gid']==con['preGid']), None)  
                     posXpost, posYpost = postCell['tags']['x'], postCell['tags'][ycoord]
-                    if kwargs['theme'] == 'gui':
+                    if kwargs.get('theme', '') == 'gui':
                         color = 'yellow'
                     else:
                         color='red'
                     if con['synMech'] in ['inh', 'GABA', 'GABAA', 'GABAB']:
-                        if kwargs['theme'] == 'gui':
+                        if kwargs.get('theme', '') == 'gui':
                             color = 'lightcyan'
                         else:
                             color = 'blue'
@@ -2039,7 +2039,7 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
     # show fig 
     if showFig: show(fig)
 
-    return fig, {'include': include, 'posX': posX, 'posY': posY, 'posXpre': posXpre, 'posXpost': posXpost, 'posYpre': posYpre, 'posYpost': posYpost}
+    return html, {'include': include, 'posX': posX, 'posY': posY, 'posXpre': posXpre, 'posXpost': posXpost, 'posYpre': posYpre, 'posYpost': posYpost}
 
 
 
@@ -2391,3 +2391,5 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
             outfile = open(filename, 'w')
             outfile.write(html)
             outfile.close()
+
+    return html

@@ -131,7 +131,7 @@ First, we need to define the properties of each cell type, by adding items to th
 
 * ``secs`` - dictionary containing the properties of sections, e.g. geometry, mechanisms
 
-In our example we create a cell type we'll call ``PYR``, therefore applying to our two populations (``S`` and ``P``) currently composed of pyramidal cells. We specify that we want them to have a section labeled ``soma`` with a certain geometry, a Hodgkin-Huxley mechanism (``hh``)::
+In our example we create a cell type we'll call ``PYR``, which we will use in both our populations. We specify that we want them to have a section labeled ``soma`` with a certain geometry and a Hodgkin-Huxley mechanism (``hh``)::
 
 	PYRcell = {'secs': {}}
 	PYRcell['secs']['soma'] = {'geom': {}, 'mechs': {}} 
@@ -150,7 +150,7 @@ Take a moment to examine the nested dictionary structure used to define the cell
 
 
 Populations
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^
 
 Now we need to create some populations for our network, by adding items to the ``popParams`` dictionary in ``netParams``. Each ``popParams`` item includes a key (population label) and a value consisting of a dictionary with the following population parameters (see :ref:`pop_params` for more details):
 
@@ -191,7 +191,7 @@ Synaptic mechanisms will be added to cells as required during the connection pha
 
 
 Stimulation
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^
 
 Let's now add a some background stimulation to the cells using ``NetStim`` (NEURON's artificial spike generator). We will create a source of stimulation labeled ``bkg`` and we will specify we want a firing rate of ``100`` Hz and with a noise level of ``0.5``::
 
@@ -204,7 +204,7 @@ Next we will specify what cells will be targeted by this stimulation. In this ca
 
  
 Connectivity rules
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
 
 Finally, we need to specify how to connect the cells, by adding items (connectivity rules) to the ``connParams`` dictionary. Each ``connParams`` item includes a key (conn rule label), and a values  consisting of a dictionary with the following fields:
 
@@ -304,15 +304,18 @@ Tutorial 3: Adding a compartment (dendrite) to cells
 Here we extend the pyramidal cell type by adding a dendritic section with a passive mechanism. Note that for the ``dend`` section we included the ``topol`` dict defining how it connects to its parent ``soma`` section::
 
 	## Cell property rules
-	cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}} 	# cell rule dict
-	cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}  											# soma params dict
-	cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  									# soma geometry
-	cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanisms
-	cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
-	cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
-	cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology 
-	cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
-	netParams.cellParams['PYRrule'] = cellRule  												# add dict to list of cell parameters
+	PYRcell = {'secs': {}}
+
+	PYRcell['secs']['soma'] = {'geom': {}, 'mechs': {}}  
+	PYRcell['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  
+	PYRcell['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
+
+	PYRcell['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}} 
+	PYRcell['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1} 
+	PYRcell['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0} 
+	PYRcell['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 
+
+	netParams.cellParams['PYR'] = PYRcell
 
 
 We can also update the connectivity rule to specify that the ``S`` cells should connect to the dendrite of ``M`` cells, by adding the dict entry ``'sec': 'dend'`` as follows::
@@ -322,7 +325,7 @@ We can also update the connectivity rule to specify that the ``S`` cells should 
 		'weight': 0.01, 			# synaptic weight 
 		'delay': 5,					# transmission delay (ms) 
 		'sec': 'dend',				# section to connect to
-		'loc': 1.0,				# location of synapse
+		'loc': 1.0,					# location of synapse
 		'synMech': 'exc'}   		# target synaptic mechanism
 
 The full tutorial code for this example is available here: :download:`tut3.py <code/tut3.py>`.

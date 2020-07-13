@@ -1,20 +1,20 @@
 .. _tutorial:
 
-Tutorial
+NetPyNE Tutorial
 =======================================
 
-This tutorial provides an overview of how to use the NetPyNE python package to create a simple network. 
+This tutorial provides an overview of how to use the NetPyNE Python package to create a simple simulation of a network of neurons. 
 
-Downloading and installation instructions here: :ref:`install`
+Downloading and installation instructions for NetPyNE can be found here: :ref:`install`
 
-A good understanding of python nested dictionaries and lists is recommended, since they are are used to specify the parameters. There are many good online Python courses available, e.g. http://www.codecademy.com/en/tracks/python or https://developers.google.com/edu/python/.
+A good understanding of Python nested dictionaries and lists is recommended, since they are are used to specify the parameters. There are many good online Python courses available, e.g. from `CodeAcademy <https://www.codecademy.com/catalog/language/python/>`_ or `Google <https://developers.google.com/edu/python/>`_.
 
 .. seealso:: For a comprehensive description of all the features available in NetPyNE see :ref:`package_reference`.
 
 .. _simple_example:
 
-Very simple and quick example (Tutorial 1)
-------------------------------------------
+Tutorial 1: Very simple and quick example
+-----------------------------------------
 To start in an encouraging way, we will implement the simplest example possible consisting of just 3 lines! This will create a simple network (200 randomly connected cells), run a 1-second simulation, and plot the network raster plot and the voltage trace of a cell. 
 
 You will need to **download** the ``HHTut.py`` example parameter file (`download here <https://raw.githubusercontent.com/Neurosim-lab/netpyne/master/examples/HHTut/HHTut.py>`_ - right click and "Save as" to same folder you are working on)
@@ -74,8 +74,8 @@ In the remainder of this tutorial we will see how to easily specify your own par
 
 We begin with an overview of the Python objects where you will define all your network parameters.
 
-Network parameters (Tutorial 2)
--------------------------------
+Tutorial 2: Network parameters
+------------------------------
 
 The ``netParams`` object includes all the information necessary to define your network. It is composed of the following 8 ordered dictionaries:
 
@@ -244,7 +244,7 @@ We will add a rule to randomly connect the sensory to the motor population with 
 
 
 Simulation configuration options
----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Above we defined all the parameters related to the network model. Here we will specify the parameters or configuration of the simulation itself (e.g. duration), which is independent of the network.
 
@@ -271,7 +271,7 @@ The complete list of simulation configuration options is available here: :ref:`s
 
 
 Network creation and simulation
------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Now that we have defined all the network parameters and simulation options, we are ready to actually create the network and run the simulation. To do this we use the ``createSimulateAnalyze`` function from the ``sim`` module, and pass as arguments the ``netParams`` and ``simConfig`` dicts we have just created::
 
@@ -309,8 +309,8 @@ You should get the raster plot and voltage trace figures shown below. Notice how
 Feel free to explore the effect of changing any of the model parameters, e.g. number of cells, background or S->M weights, cell geometry or biophysical properties, etc.
 
 
-Adding a compartment (dendrite) to cells (Tutorial 3)
--------------------------------------------------------
+Tutorial 3: Adding a compartment (dendrite) to cells
+----------------------------------------------------
 
 Here we extend the pyramidal cell type by adding a dendritic section with a passive mechanism. Note that for the ``dend`` section we included the ``topol`` dict defining how it connects to its parent ``soma`` section::
 
@@ -341,8 +341,8 @@ The full tutorial code for this example is available here: :download:`tut3.py <c
 If you run the network, you will observe the new dendritic compartment has the effect of reducing the firing rate.
 
 
-Using a simplified cell model (Izhikevich) (Tutorial 4)
---------------------------------------------------------------------
+Tutorial 4: Using a simplified cell model (Izhikevich)
+------------------------------------------------------
 
 When dealing with large simulations it is sometimes useful to use simpler cell models for some populations, in order to gain speed. Here we will replace the HH model with the simpler Izhikevich cell model only for cells in the sensory (``S``) population. 
 
@@ -378,8 +378,8 @@ The full tutorial code for this example is available here: :download:`tut4.py <c
 .. seealso:: NetPyNE also supports importing cells defined in other files (e.g. in hoc cell templates, or python classes). See :ref:`importing_cells` for details and examples.
 
 
-Position and distance based connectivity (Tutorial 5)
----------------------------------------------------------
+Tutorial 5: Position- and distance-based connectivity
+-----------------------------------------------------
 
 The following example demonstrates how to spatially separate populations, add inhibitory populations, and implement weights, probabilities of connection and delays that depend on cell positions or distances.
 
@@ -532,8 +532,8 @@ The full tutorial code for this example is available here: :download:`tut5.py <c
 
 
 
-Adding stimulation to  the network (Tutorial 6)
------------------------------------------------------
+Tutorial 6: Adding stimulation to the network
+---------------------------------------------
 
 Two dictionary structures are used to specify cell stimulation parameters: ``stimSourceParams`` to define the parameters of the sources of stimulation; and ``stimTargetParams`` to specify what cells will be applied what source of stimulation (mapping of sources to cells). See :ref:`stimulation` for details.
 
@@ -569,8 +569,8 @@ The full tutorial code for this example is available here: :download:`tut6.py <c
 	:align: center
 
 
-Modifying the instantiated network interactively (Tutorial 7)
---------------------------------------------------------------
+Tutorial 7: Modifying the instantiated network interactively
+------------------------------------------------------------
 
 This example is directed at the more experienced users who might want to interact directly with the NetPyNE generated structure containing the network model and NEURON objects. We will model a Hopfield-Brody network where cells are connected all-to-all and firing synchronize due to mutual inhibition (inhibition from other cells provides a reset, locking them together). The level of synchronization depends on the connection weights, which we will modify interactively.
 
@@ -740,8 +740,8 @@ The full tutorial code for this example is available here: :download:`tut7.py <c
 An alternative version of the code is available here: :download:`hopbrodnetpyne.py <code/hopbrodnetpyne.py>`.
 
 
-Running batch simulations (Tutorial 8)
---------------------------------------------
+Tutorial 8: Running batch simulations
+-------------------------------------
 
 Here we are going to illustrate how to run batch simulations using the simple network in Tutorial 2. By batch simulations we mean modifying some parameter values within a given range and automatically running simulations for all combinations of these parameter values (also known as grid parameter search).
 
@@ -892,10 +892,10 @@ Notice how the rate initially increases as a function of connection weight, but 
 .. seealso:: The full description of options available in the Batch class will be available soon in the :ref:`package_reference`.
 
 
-Recording and plotting LFPs (Tutorial 9)
---------------------------------------------
+Tutorial 9: Recording and plotting LFPs
+---------------------------------------
 
-Examples of how to record and analyze local field potentials (LFP) in single cells and networks are included in the \examples folder: `LFPrecording example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/LFPrecording>`_ . LFP recording also works with parallel simulations.
+Examples of how to record and analyze local field potentials (LFP) in single cells and networks are included in the \examples folder: `LFP recording example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/LFPrecording>`_ . LFP recording also works with parallel simulations.
 
 To record LFP just set the list of 3D locations of the LFP electrodes in the `simConfig` attribute `recordLFP` e.g. ``simConfig.recordLFP = e.g. [[50, 100, 50], [50, 200, 50]]`` (note the y coordinate represents depth, so will be represented as a negative value when plotted). The LFP signal in each electrode is obtained by summing the extracellular potential contributed by each segment of each neuron. Extracellular potentials are calculated using the "line source approximation" and assuming an Ohmic medium with conductivity sigma = 0.3 mS/mm. For more information on modeling LFPs see http://www.scholarpedia.org/article/Local_field_potential or https://doi.org/10.3389/fncom.2016.00065 .
 
@@ -916,8 +916,8 @@ The second example ( :download:`net_lfp.py <<../../examples/LFPrecording/net_lfp
 	:align: center
 
 
-Network with Reaction-Diffusion (RxD) (Tutorial 10)
----------------------------------------------------
+Tutorial 10: Network with Reaction-Diffusion (RxD)
+--------------------------------------------------
 
 NetPyNE's high-level specifications also supports `NEURON's reaction-diffusion (RxD) <https://www.neuron.yale.edu/neuron/static/docs/rxd/index.html>`_  components. RxD enables to specify the diffusion of molecules (\eg\ calcium, potassium or IP3) intracellularly, subcellularly (by including organelles such as endoplasmic reticulum and mitochondria), and extracellularly is the context of signaling and enzymatic processing -- \eg\ metabolism, phosphorylation, buffering, second messenger cascades.
 This helps to couple molecular-level chemophysiology to the classical electrophysiology at subcellular, cellular and network scales. 

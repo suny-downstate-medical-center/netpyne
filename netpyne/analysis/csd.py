@@ -15,6 +15,8 @@ from future import standard_library
 standard_library.install_aliases()
 import matplotlib 
 from matplotlib import pyplot as plt 
+from matplotlib import ticker as ticker
+import json
 ## imports for rdmat ## 
 import sys
 import os
@@ -165,20 +167,34 @@ def getAvgERP (dat, sampr, trigtimes, swindowms, ewindowms):
 ################################################
 ######### GET CSD VALUES FROM LFP DATA #########
 ################################################
-def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_empirical_data=None,sampr=None,timeRange=None,spacing_um=None,spacing_NHP=100.0,minf=0.05,maxf=300,norm=True,vaknin=False,getAllData=False):  # should spacing_um be None and vaknin be True? 
+#### NOTES, TO DO: 
+###### FIND A WAY TO WORK IN .json condition
+def getCSD (LFP_exists=False,LFP_input_data=None,LFP_input_file=None,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,sampr=None,dt=None,timeRange=None,spacing_um=None,spacing_NHP=100.0,minf=0.05,maxf=300,norm=True,vaknin=False,getAllData=False):  # should spacing_um be None and vaknin be True? 
   """ Extracts CSD values from simulated LFP data 
 
       Parameters
       ----------
-      empirical : bool
+      LFP_exists : bool
         True == LFP data used for CSD is empirical.
         False == LFP data used for CSD comes from simulation.
         **Default:**
         ``False``
 
+      LFP_input_data : list or numpy array 
+        LFP data provided by user   (mV).
+        ** CAN BE PROVIDED BY USER IF "LFP_exists" IS TRUE ** 
+        Format: list, where each element is a list containing LFP data for each electrode. 
+        **Default:**
+        ``None`` 
+
+      LFP_input_file : .json file entered as str #eventually: make this compatible with list of .json files) 
+        .json file from prior netpyne simulation
+        **Default:**
+        ``None`` 
+
       NHP : bool
         True == NHP data from A1 project being analyzed
-        False == empirical data from another source 
+        False == LFP data is from another source 
         **Default:**
         ``False`` 
 
@@ -192,28 +208,26 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
         **Default:**
         ``11*1e3``  <-- CHECK ON THIS 
 
-      LFP_empirical_data : list      
-        LFP data provided by user   (mV).
-        ** MUST BE PROVIDED BY USER IF LFP DATA IS EMPIRICAL ** 
-        Format: list, where each element is a list containing LFP data for each electrode. 
-        **Default:**
-        ``None`` 
-
       sampr : float
         Sampling rate for data recording (Hz).
-        ** MUST BE PROVIDED BY USER IF LFP DATA IS EMPIRICAL ** 
+        ** MUST BE PROVIDED BY USER IF LFP_exists IS TRUE ** 
         **Default:** 
         ``None`` uses 1./sim.cfg.recordStep if data is from sim 
 
+      dt : float
+        Time between recording points (ms). 
+        **Default:**
+          sim.config.recordStep if data is from sim
+
       timeRange : list [start, stop]  
         Time range to calculate CSD (ms). 
-        ** MUST BE PROVIDED BY USER IF LFP DATA IS EMPIRICAL ** 
+        ** MUST BE PROVIDED BY USER IF LFP_exists IS TRUE ** 
         **Default:** 
         ``None`` uses entire time range if data is from sim
 
       spacing_um : float
         Electrode's contact spacing in units of microns 
-        ** MUST BE PROVIDED BY USER IF LFP DATA IS EMPIRICAL (else default value of 100 microns is used) ** 
+        ** MUST BE PROVIDED BY USER IF LFP_exists IS TRUE (else default value of 100 microns is used) ** 
         **Default:** ``None``
 
       spacing_NHP : float
@@ -248,7 +262,7 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
 
   ############### CONDITION 1 : LFP DATA COMES FROM SIMULATION ###############
 
-  if empirical is False:   ### GET LFP DATA FROM SIMULATION
+  if LFP_exists is False:   ### GET LFP DATA FROM SIMULATION
     from .. import sim 
 
     ## SET DEFAULT ARGUMENT / PARAMETER VALUES 
@@ -257,55 +271,110 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
     
     dt = sim.cfg.recordStep                         # units: ms 
     tt = np.arange(timeRange[0], timeRange[1],dt)   # make array of time points 
-      #sim.allSimData['CSD']['sim']['timeRange'] = timeRange
-  
+
     if sampr is None:
       sampr = 1./sim.cfg.recordStep          # Sampling rate of data recording during the simulation 
-      #sim.allSimData['CSD']['sim']['sampr'] = sampr
+
 
     # Spacing between electrodes --> convert from micron to mm 
     if spacing_um is None:
       print('NOTE: using sim.cfg.recordLFP to determine spacing_um !!')
       spacing_um = sim.cfg.recordLFP[1][1] - sim.cfg.recordLFP[0][1]
-    #sim.allSimData['CSD']['sim']['spacing_um'] = spacing_um   # store spacing in units of microns
 
 
     ## Check if LFP was recorded during the simulation 
     sim_data_categories = sim.allSimData.keys()
-  
+
     if 'LFP' in sim_data_categories:
       lfp_data = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:] # from lfp.py, line 200; array splicing
-    
+
     elif 'LFP' not in sim_data:
       print('!! WARNING: NO LFP DATA !! Need to re-run simulation with cfg.recordLFP enabled')
-      # WHAT KIND OF ERROR GOES HERE? 
+
 
 
 
   ############### CONDITION 2 : ARBITRARY LFP DATA ############################
 
-  elif empirical is True and NHP is False:   ### GET LFP DATA AND CONFIRM EXISTENCE OF OTHER NECESSARY PARAMS FROM USER
-    if LFP_empirical_data is None: 
+  elif LFP_exists is True and NHP is False:   ### GET LFP DATA AND CONFIRM EXISTENCE OF OTHER NECESSARY PARAMS FROM USER
+    if LFP_input_data is None and LFP_input_file is None:
       print('MUST PROVIDE LFP DATA')
-    if timeRange is None:
-      print('MUST PROVIDE TIME RANGE in ms')
-    if sampr is None:
-      print('MUST PROVIDE SAMPLING RATE in Hz')
-    if spacing_um is None:
-      print('MUST PROVIDE SPACING BETWEEN ELECTRODES in MICRONS')
+      if timeRange is None:
+        print('MUST PROVIDE TIME RANGE in ms')
+      if sampr is None:
+        print('MUST PROVIDE SAMPLING RATE in Hz')
+      if dt is None:
+        print('MUST PROVIDE dt in ms')
+      if spacing_um is None:
+        print('MUST PROVIDE SPACING BETWEEN ELECTRODES in MICRONS')
 
-    
-    ## GET EMPIRICAL LFP DATA OVER THE SPECIFIED TIME RANGE
-    dt = (1.0 / sampr) * 1000                       # ensure dt is in units of ms 
-    tt = np.arange(timeRange[0],timeRange[1],dt)    # make array of time points 
-    
-    lfp_data = np.array(LFP_empirical_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]  # get lfp_data in timeRange specified 
+    ## THIS ONLY WORKS FOR 1 JSON FILE SO FAR, BUT EXPAND CAPABILITY TO INCLUDE LIST OF MULTIPLE FILES 
+    ## LOAD SIM DATA FROM JSON FILES
+    elif LFP_input_data is None and '.json' in LFP_input_file:
+      data = {}
+      with open(LFP_input_file) as file:
+        data['json_input_data'] = json.load(file)
 
+      ## FOR MULTIPLE FILES
+      #for x in LFP_input_file:
+        #with open(x) as file:
+          #data[x] = json.load(file)
+
+
+      ## EXTRACT LFP DATA 
+      #full_lfp_data = {}
+      for key in data.keys:
+        full_lfp_data = data[key]['simData']['LFP']  # only works in the 1 input file scenario; expand capability for multiple files             
+
+      ## GET CSD DATA AND RELEVANT PLOTTING PARAMS 
+      csd_data = {}
+      for i in data.keys():
+        csd_data[i] = {}        # e.g. csd['json_input_data'] = {}
+
+        if timeRange is None:
+          csd_data[i]['timeRange'] = [0, data[i]['simConfig']['duration']]
+          timeRange = csd_data[i]['timeRange']        # only works in the 1 input file scenario; expand capability for multiple files 
+        else:
+          csd_data[i]['timeRange'] = timeRange
+
+        if sampr is None:
+          csd_data[i]['sampr'] = 1./data[i]['simConfig']['recordStep']
+          sampr = csd_data[i]['sampr']
+        else:
+          csd_data[i]['sampr'] = sampr
+
+        if spacing_um is None:
+          csd_data[i]['spacing_um'] = data[i]['simConfig']['recordLFP'][1][1] - data[i]['simConfig']['recordLFP'][0][1]
+          spacing_um = csd_data[i]['spacing_um']
+        else:
+          csd_data[i]['spacing_um'] = spacing_um
+
+        if dt is None:
+          csd_data[i]['dt'] = data[i]['simConfig']['recordStep']
+          dt = csd_data[i]['dt']
+        else:
+          csd_data[i]['dt'] = dt
+
+
+
+      ## GET LFP DATA OVER THE SPECIFIED TIME RANGE
+      lfp_data = np.array(full_lfp_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]
+
+      ## MAKE ARRAY OF TIME POINTS ## USEFUL FOR GETALLDATA CONDITION
+      tt = np.arange(timeRange[0],timeRange[1],dt)
+
+
+    ## FOR LIST OF LFP DATA WITHOUT ANY .JSON INPUT FILE 
+    elif LFP_input_file is None and len(LFP_input_data) > 0: 
+      ## GET LFP DATA OVER THE SPECIFIED TIME RANGE
+      lfp_data = np.array(LFP_input_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]  # get lfp_data in timeRange specified 
+
+      ## MAKE ARRAY OF TIME POINTS
+      tt = np.arange(timeRange[0],timeRange[1],dt)
 
 
   ############### CONDITION 3 : NHP DATA #######################################
-  ### WORK ON THIS MORE 
-  elif empirical is True and NHP is True:   ### GET DATA FROM NHP .mat FILES 
+  elif LFP_exists is True and NHP is True:   ### GET DATA FROM NHP .mat FILES 
     [sampr,lfp_data,dt,tt] = rdmat(fn=NHP_fileName,samprds=NHP_samprds)  #sampr should equal NHP_samprds by the time rdmat is run
 
     ## SPACING BETWEEN ELECTRODE CONTACTS
@@ -349,9 +418,9 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
 
 
 
-  #############################################################
-   # Now lfp_data exists for either empirical or simulated data 
-  #############################################################
+  ##############################################################################
+   # Now lfp_data exists for either existing (e.g. empirical) or simulated data 
+  ##############################################################################
 
   # Convert spacing from microns to mm 
   spacing_mm = spacing_um/1000
@@ -360,7 +429,7 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
   datband = getbandpass(lfp_data,sampr,minf,maxf) 
 
   # Take CSD along smaller dimension
-  if datband.shape[0] > datband.shape[1]: 
+  if datband.shape[0] > datband.shape[1]:
     ax = 1
   else:
     ax = 0
@@ -378,7 +447,7 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
 
 
   # Add CSD and other param values to sim.allSimData for access outside of this function or script 
-  if empirical is False:
+  if LFP_exists is False:   ## FROM SIM 
     from .. import sim 
     sim.allSimData['CSD']['sim']['timeRange'] = timeRange
     sim.allSimData['CSD']['sim']['sampr'] = sampr
@@ -386,25 +455,25 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
     sim.allSimData['CSD']['sim']['CSD_data'] = CSD_data
 
 
-  elif empirical is True and NHP is False:
+  elif LFP_exists is True and NHP is False:  ## ARBITRARY LFP DATA 
     try:
       from .. import sim
       sim.allSimData['CSD']['emp']['timeRange'] = timeRange
       sim.allSimData['CSD']['emp']['sampr'] = sampr
       sim.allSimData['CSD']['emp']['spacing_um'] = spacing_um
-      sim.allSimData['CSD']['emp']['CSD_data'] = CSD_data    # STORE EMPIRICAL CSD DATA IN SIM IF RELEVANT
+      sim.allSimData['CSD']['emp']['CSD_data'] = CSD_data    # STORE CSD DATA IN SIM IF RELEVANT
     except: 
-      print('NOTE: No sim.allSimData construct available to store empirical CSD data')
+      print('NOTE: No sim.allSimData construct available to store CSD data')
 
 
 
-  elif empirical is True and NHP is True:
+  elif LFP_exists is True and NHP is True:  ## NHP DATA 
     try:
       from .. import sim
       sim.allSimData['CSD']['NHP']['timeRange'] = timeRange
       sim.allSimData['CSD']['NHP']['sampr'] = sampr
       sim.allSimData['CSD']['NHP']['spacing_um'] = spacing_um
-      sim.allSimData['CSD']['NHP']['CSD_data'] = CSD_data    # STORE EMPIRICAL CSD DATA IN SIM IF RELEVANT
+      sim.allSimData['CSD']['NHP']['CSD_data'] = CSD_data    # STORE CSD DATA IN SIM IF RELEVANT
     except: 
       print('NOTE: No sim.allSimData construct available to store NHP CSD data')
 
@@ -426,20 +495,47 @@ def getCSD (empirical=False,NHP=False,NHP_fileName=None,NHP_samprds=11*1e3,LFP_e
 ######### PLOTTING CSD #########
 ################################
 
-def plotCSD(empirical=False,timeRange=None,spacing_um=None,hlines=True,saveData=None, saveFig=None, showFig=True, LFP_overlay=True):
+def plotCSD(CSD_exists=True,CSD_data=None,NHP=False,lfp_input_data=None,LFP_overlay=True,timeRange=None,stim_start_time=None,spacing_um=None,ymax=None,dt=None,hlines=False,layer_lines=False,saveFig=True,showFig=True): # saveData=None
   """ Plots CSD values extracted from simulated LFP data 
       
       Parameters
       ----------
-      empirical : bool 
-        Indicates if data is coming from simulation or bench experiment
+      CSD_exists : bool
+        Indicates if you are inputting arbitrary CSD data 
+        **Default:**
+        ``True`` indicates that CSD data will be passed in from simulation or arbitrary input via CSD_data
+        ``False`` assumes that CSD data must be derived 
+
+      CSD_data : list or np array
+        Enter list or numpy array of CSD data
+        **Default:**
+        ``None`` 
+
+      NHP : bool 
+        Indicates if data is coming from bench experiment with NHP (A1)
         **Default:**
         ``False`` assumes data is coming from simulation 
+
+      lfp_input_data : list or np array
+        pre-existing LFP data for overlay
+        **Default:**
+        ``None``
+
+      LFP_overlay : bool
+        Option to include LFP data overlaid on CSD plot 
+        **Default:** ``True`` 
+
 
       timeRange : list [start, stop]
         Time range to plot.
         **Default:** 
         ``None`` plots entire time range
+      
+      stim_start_time : int or float 
+        Time when stimulus is applied (ms). 
+        **Default:**
+        ``None`` does not add anything to plot. 
+        Value adds a vertical dashed line to the plot, at time of stimulus onset. 
 
       spacing_um : float
         Electrode's contact spacing in units of microns 
@@ -448,20 +544,27 @@ def plotCSD(empirical=False,timeRange=None,spacing_um=None,hlines=True,saveData=
         If data is from simulation: spacing_um is extracted from sim.cfg.recordLFP
         IF data is empirical: spacing_um defaults to 100 microns unless otherwise specified
 
+      ymax : float
+        if CSD_exists = True; can manually enter this (microns)
+        **Default:**
+        ``None`` 
+
+      dt : float
+        simConfig.recordStep
+
       hlines : bool
         Option to include horizontal lines on plot to indicate height of electrode(s). 
         **Default:**
-        ``True`` 
+        ``False`` 
 
-      saveData : bool or str
-        Whether and where to save the data used to generate the plot. 
-        **Default:** ``False`` 
-        **Options:** ``True`` autosaves the data
-        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
-     
+      layer_lines : bool 
+        Indicates whether or not to plot horizontal lines over CSD plot at layer boundaries 
+        **Default:**
+        ``False`` 
+
      saveFig : bool or str
         Whether and where to save the figure.
-        **Default:** ``False``
+        **Default:** ``True``
         **Options:** ``True`` autosaves the figure,
         ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
     
@@ -469,16 +572,46 @@ def plotCSD(empirical=False,timeRange=None,spacing_um=None,hlines=True,saveData=
         Shows the figure if ``True``.
         **Default:** ``True``
 
-      LFP_overlay : bool
-        Option to include LFP data overlaid on CSD plot 
-        **Default:** ``True`` 
+      ### saveData : bool or str
+        Whether and where to save the data used to generate the plot. 
+        **Default:** ``False`` 
+        **Options:** ``True`` autosaves the data
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
+     
 
   """
 
   print('Plotting CSD... ')
   
-  ############### CONDITION 1 : DATA COMES FROM SIMULATION ###############
-  if empirical is False:
+  ############### CONDITION 0 : ARBITRARY CSD DATA ###############
+  if CSD_exists is True and len(CSD_data) > 0:     # arbitrary CSD data exists, and has been given.
+    if timeRange is None:
+      print('MUST PROVIDE TIME RANGE in ms')
+    else:
+      print('timeRange = ' + str(timeRange))
+    
+    if dt is None:
+      print('MUST PROVIDE dt in ms')
+    else:
+      print('dt = ' + str(dt)) # batch0['simConfig']['recordStep']
+
+    if spacing_um is None:
+      print('MUST PROVIDE SPACING BETWEEN ELECTRODES in MICRONS')
+    else:
+      print('spacing_um = ' + str(spacing_um))
+
+    if ymax is None:
+      print('MUST PROVIDE YMAX (MAX DEPTH) in MICRONS')
+    else:
+      print('ymax = ' + str(ymax))
+
+
+    tt = np.arange(timeRange[0], timeRange[1], dt)
+
+
+
+  ############## CONDITION 1 : DATA COMES FROM SIMULATION ###############
+  elif CSD_exists is True and CSD_data is None and NHP is False:   # CSD data exists, but is not provided; try retrieving from (ongoing) simulation. 
     print('sim data used for plotting')
     
     try: 
@@ -497,137 +630,83 @@ def plotCSD(empirical=False,timeRange=None,spacing_um=None,hlines=True,saveData=
       spacing_um = sim.allSimData['CSD']['sim']['spacing_um']   ## RETRIEVE SPACING BETWEEN ELECTRODE CONTACTS (in microns)
       spacing_mm = spacing_um/1000    # convert from microns to mm 
 
+      ymax = sim.cfg.recordLFP[-1][1] + spacing_um
 
 
+  # ############### CONDITION 2 : ARBITRARY INPUT DATA #####################
+  # elif CSD_exists is False  and empirical is True and NHP is False and :
+  #   print('Arbitrary input data used for plotting')
 
-  ############### CONDITION 2 : ARBITRARY INPUT DATA #####################
-  elif empirical is True and NHP is False:
-    print('Arbitrary input data used for plotting')
-
-    try: 
-      from .. import sim
-      if 'emp' in sim.allSimData['CSD'].keys():
-        print("Empirical CSD data stored in sim.allSimData['CSD']['emp']")
-      ## GET sim.allSimData['CSD']['emp']
+  #   try: 
+  #     from .. import sim
+  #     if 'emp' in sim.allSimData['CSD'].keys():
+  #       print("Empirical CSD data stored in sim.allSimData['CSD']['emp']")
+  #     ## GET sim.allSimData['CSD']['emp']
     
-    except:
-      print('No sim.allSimData construct. Acquiring params and CSD data... ')
-      [lfp_data, CSD_data, timeRange, sampr, spacing_um, dt, tt] = getCSD(empirical=True,NHP=False)# timeRange, sampr, spacing_um
+  #   except:
+  #     print('No sim.allSimData construct. Acquiring params and CSD data... ')
+  #     [lfp_data, CSD_data, timeRange, sampr, spacing_um, dt, tt] = getCSD(empirical=True,NHP=False)# timeRange, sampr, spacing_um
     
-    else:        # This block runs if 'try' statement executes without error
-      CSD_data = sim.allSimData['CSD']['emp']['CSD_data']   ## RETRIEVE CSD DATA (in mV/mm*2)
+  #   else:        # This block runs if 'try' statement executes without error
+  #     CSD_data = sim.allSimData['CSD']['emp']['CSD_data']   ## RETRIEVE CSD DATA (in mV/mm*2)
       
-      if timeRange is None:  ## RETRIEVE TIME RANGE (in ms), IF UNSPECIFIED IN ARGS
-        timeRange = sim.allSimData['CSD']['emp']['timeRange']
+  #     if timeRange is None:  ## RETRIEVE TIME RANGE (in ms), IF UNSPECIFIED IN ARGS
+  #       timeRange = sim.allSimData['CSD']['emp']['timeRange']
       
-      dt = sim.cfg.recordStep                                       # dt --> recording time step (ms)
-      tt = np.arange(timeRange[0],timeRange[1],dt)                  # tt --> time points 
+  #     dt = sim.cfg.recordStep                                       # dt --> recording time step (ms)
+  #     tt = np.arange(timeRange[0],timeRange[1],dt)                  # tt --> time points 
       
-      spacing_um = sim.allSimData['CSD']['emp']['spacing_um']   ## RETRIEVE SPACING BETWEEN ELECTRODE CONTACTS (in microns)
-      spacing_mm = spacing_um/1000    # convert from microns to mm 
+  #     spacing_um = sim.allSimData['CSD']['emp']['spacing_um']   ## RETRIEVE SPACING BETWEEN ELECTRODE CONTACTS (in microns)
+  #     spacing_mm = spacing_um/1000    # convert from microns to mm 
 
+    #   if spacing_um is None:
+      #   spacing_um = sim.cfg.recordLFP[1][1] - sim.cfg.recordLFP[0][1]
+      # spacing_mm = spacing_um/1000  # convert from microns to mm 
 
 
     # NEED AN IF STATEMENT TO CHECK IF THE DATA MADE IT INTO sim.allSimData['CSD']['emp']
     # BUT IF IT DOESN'T EXIST THERE, THEN: 
-    [lfp_data, CSD_data, timeRange, sampr, spacing_um, dt, tt] = getCSD(empirical=True,NHP=False)# MORE ARGS -- timeRange, sampr, spacing_um
+    #[lfp_data, CSD_data, timeRange, sampr, spacing_um, dt, tt] = getCSD(empirical=True,NHP=False)# MORE ARGS -- timeRange, sampr, spacing_um
 
 
   ############### CONDITION 3 : DATA COMES FROM NHP ######################
-  elif empirical is True and NHP is True: 
-    print('NHP data used for plotting')
+  # elif empirical is True and NHP is True and CSD_exists is False:   # or should CSD_exists be true? not sure -- not changing for now 
+  #   print('NHP data used for plotting')
+  #   ## ADD IN NHP LINES 
 
 
 
-  ################## OLD CODE <-- ANYTHING TO SALVAGE HERE? ############################################
-  # ##### RETRIEVE CSD DATA AND OTHER NECESSARY PARAM VALUES #####
-  # if empirical is False:
-  #   from .. import sim
-    
-  #   sim_data = sim.allSimData.keys()
-
-  #   dt = sim.cfg.recordStep
-
-  #   if spacing_um is None:
-  #     spacing_um = sim.cfg.recordLFP[1][1] - sim.cfg.recordLFP[0][1]
-  #   spacing_mm = spacing_um/1000  # convert from microns to mm 
-    
-
-  #   # EXTRACT CSD DATA FROM SIM DATA
-  #   if 'CSD' in sim_data:
-  #     CSD_data = sim.allSimData['CSD']     ## Should already be numpy array from getCSD()
-  #   elif 'CSD' not in sim_data:
-  #     print('NEED TO GET CSD VALUES FROM LFP DATA -- run sim.analysis.getCSD()')
-  #     # sim.analysis.getCSD()   # WHAT ABOUT ARGS? ANY NEEDED? 
-  #     # CSD_data = sim.allSimData['CSD']
 
 
-
-  #   ## Get the time range that we want CSD data from:
-  #   if timeRange is None:
-  #     # OPTION 1: Use same time range as used in getCSD()
-  #     if 'getCSD' in sim.cfg.analysis.keys() and 'timeRange' in sim.cfg.analysis['getCSD']:
-  #       timeRange = sim.cfg.analysis['getCSD']['timeRange']
-
-  #     # OPTION 2: Use same time range as LFP plotting
-  #     elif 'getCSD' not in sim.cfg.analysis.keys() and 'plotLFP' in sim.cfg.analysis.keys() and 'timeRange' in sim.cfg.analysis['plotLFP'].keys():
-  #         timeRange = sim.cfg.analysis['plotLFP']['timeRange']
-    
-  #     # OPTION 3: Use entire simulation time range
-  #     else:
-  #       timeRange = [0,sim.cfg.duration]
-
-
-
-  # ##### RETRIEVE CSD DATA AND OTHER NECESSARY PARAM VALUES ##### 
-  # elif empirical is True: 
-  #   try: 
-  #     from .. import sim
-  #     CSD_data = sim.allSimData['CSD_empirical']
-  #   except:
-  #     print('Empirical CSD data not stored in sim.allSimData -- run getCSD() on user-provided LFP data')
-
-  #   dt = 
-
+  ############### PLOTTING ######################
   ## INTERPOLATION ## 
   X = np.arange(timeRange[0], timeRange[1], dt)  # dt == sim.cfg.recordStep if data is from simulation 
   Y = np.arange(CSD_data.shape[0])
-  #Y = np.arange(0,CSD_data.shape[0],1)
   CSD_spline=scipy.interpolate.RectBivariateSpline(Y, X, CSD_data)
   Y_plot = np.linspace(0,CSD_data.shape[0],num=1000) 
   Z = CSD_spline(Y_plot, X)
 
 
 
-  ##### SET UP PLOTTING #####
-
   # (i) Set up axes 
-  ####### <-- ALREADY SET UP ABOVE FOR EMPIRICAL IS FALSE (SIM DATA)
-  # if spacing_um is None:
-  #   spacing_um = sim.cfg.recordLFP[1][1] - sim.cfg.recordLFP[0][1]
-  # spacing_mm = spacing_um/1000  # convert from microns to mm 
-
-  xmin = 0 
-  xmax = int(X[-1]) + 1  #int(sim.allSimData['t'][-1])     # why this index? and also, need to resolve ttavg <--
-  ymin = 1    # where does this come from? 
-  ymax = sim.cfg.recordLFP[-1][1] + spacing_um #(sim.cfg.recordLFP[-1][1])/1000 + spacing_mm #depth 
-  #ymax = sim.cfg.recordLFP[0][1] + spacing_um 
+  xmin = int(X[0])
+  xmax = int(X[-1]) + 1  #int(sim.allSimData['t'][-1])
+  ymin = 0
+  ## DEALT WITH ymax IN ALL CONDITIONS ABOVE #  ymax = sim.cfg.recordLFP[-1][1] + spacing_um #(sim.cfg.recordLFP[-1][1])/1000 + spacing_mm #depth 
   extent_xy = [xmin, xmax, ymax, ymin]
+
 
   # (ii) Set up figure 
   fig = plt.figure() #plt.figure(figsize=(10, 8)) #<-- quite large; for multiple subplots 
 
-  # (iii) Title
-  fig.suptitle('Current Source Density')
-
-  # (iv) Create plots w/ common axis labels and tick marks
+  # (iii) Create plots w/ common axis labels and tick marks
   axs = []
   if LFP_overlay is True:
-    numplots=2
-  else:
     numplots=1
+  else:
+    numplots=2   # SWITCHED, used to be above numplots = 2, and here numplots = 1
 
-  gs_outer = matplotlib.gridspec.GridSpec(2, 4, figure=fig, wspace=0.4, hspace=0.2, height_ratios = [20, 1])
+  gs_outer = matplotlib.gridspec.GridSpec(2, 2, figure=fig, wspace=0.4, hspace=0.2, height_ratios = [20, 1]) # GridSpec(2, 4, figure = ...)
   for i in range(numplots):
     axs.append(plt.Subplot(fig,gs_outer[i*2:i*2+2]))
     fig.add_subplot(axs[i])
@@ -635,34 +714,22 @@ def plotCSD(empirical=False,timeRange=None,spacing_um=None,hlines=True,saveData=
     axs[i].tick_params(axis='y', which='major', labelsize=8)
 
   # (iv) Set up title and y axis label and axis limits for CSD plot
-  spline=axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r')
-  axs[0].set_ylabel('Contact depth (um)')
-  axs[0].set_title('RectBivariateSpline',fontsize=12)
+  spline=axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r') # cmap = 'jet_r'
+  axs[0].set_ylabel('Contact depth (um)', fontsize = 12)
+  axs[0].set_title('CSD with LFP overlay',fontsize=14) #axs[0].set_title('RectBivariateSpline',fontsize=12)
   xmin = axs[0].get_xlim()[0]
   xmax = axs[0].get_xlim()[1]
   #ymin = axs[0].get_ylim()[0]
   #ymax = axs[0].get_ylim()[1]
 
-  ## Add horizontal lines at locations of each electrode
-  if hlines is True:
-    for i in range(len(sim.cfg.recordLFP)):
-      axs[0].hlines(sim.cfg.recordLFP[i][1], xmin, xmax, colors='black', linestyles='dashed')
-      #axs[0].vlines(sim.cfg.recordLFP[i][0], ymin, ymax, colors='black', linestyles='dashed')
 
-
-
-  ### LFP OVERLAY PLOTTING 
+  # grid for LFP plots
   if LFP_overlay is True:
-    axs[1].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r')
-    axs[1].set_title('LFP overlay',fontsize=12)
-
-
-    # grid for LFP plots
-    LFP_data = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+    LFP_data = np.array(lfp_input_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:] #np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
     nrow = LFP_data.shape[1] # LFP_data.shape[0] gives you number of recorded time points.... 
-    gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(nrow, 1, subplot_spec=gs_outer[2:4], wspace=0.0, hspace=0.0)
-    clr = 'gray'
-    lw=0.5
+    gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(nrow, 1, subplot_spec=gs_outer[0:2], wspace=0.0, hspace=0.0)  # subplot_spec=gs_outer[2:4]
+    clr = 'gray' 
+    lw=0.3
     subaxs = []
 
     # go down grid and add LFP from each channel
@@ -674,21 +741,46 @@ def plotCSD(empirical=False,timeRange=None,spacing_um=None,hlines=True,saveData=
       subaxs[chan].get_yaxis().set_visible(False)
       subaxs[chan].plot(X,LFP_data[:,chan],color=clr,linewidth=lw)
 
-  # ax_bottom = plt.subplot(gs_inner[1,1:3])
-  # fig.colorbar(spline,cax=ax_bottom,orientation='horizontal',use_gridspec=False)
-  # ax_bottom.set_xlabel(r'CSD (mV/mm$^2$)', fontsize=12)
+
+
+  ## ADD HORIZONTAL LINES AT LOCATIONS OF EACH ELECTRODE
+  if hlines is True:
+    for i in range(len(sim.cfg.recordLFP)):
+      axs[0].hlines(sim.cfg.recordLFP[i][1], xmin, xmax, colors='black', linestyles='dashed')
+
+
+  ## ADD HORIZONTAL LINES AT CORTICAL LAYER BOUNDARIES
+  A1_layer_bounds = {'I': 100, 'II': 160, 'III': 950, 'IV': 1250, 'VA': 1334, 'VB': 1550, 'VI': 2000} # "lower" bound for each layer
+  if layer_lines is True: 
+    for i in A1_layer_bounds.keys():
+      axs[0].hlines(A1_layer_bounds[i], xmin, xmax, colors='black', linewidth=1,linestyles='dotted') 
+
+    ## add labels for each layer -- would have to be adjusted by hand if changing layer bounds
+    fig.text(0.922,0.855,'I',color='black')
+    fig.text(0.92,0.825,'II',color='black')
+    fig.text(0.92,0.68,'III',color='black')
+    fig.text(0.92,0.5,'IV',color='black')
+    fig.text(0.92,0.44,'VA',color='black')
+    fig.text(0.92,0.39,'VB',color='black')
+    fig.text(0.92,0.29,'VI',color='black')
+
+
+  ## SET VERTICAL LINE AT STIMULUS ONSET
+  if type(stim_start_time) is int or type(stim_start_time) is float:
+    axs[0].vlines(stim_start_time,ymin,ymax,colors='red',linewidth=1,linestyles='dashed')
+
+
 
   # SAVE FIGURE
-  plt.savefig('csd_fig.png')
-   # DISPLAY FINAL FIGURE
-  plt.show()
+  if saveFig is True:
+    plt.savefig('csd_fig.svg')
+    plt.savefig('csd_fig.pdf')
+  
+  # DISPLAY FINAL FIGURE
+  if showFig is True:
+    plt.show()
+    #plt.close()
 
-
-
-
-# NOTE ON COLORS: 
-# # when drawing CSD make sure that negative values (depolarizing intracellular current) drawn in red,
-# # and positive values (hyperpolarizing intracellular current) drawn in blue
 
 
 

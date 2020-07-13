@@ -19,13 +19,12 @@ simConfig = specs.SimConfig()   # object of class SimConfig to store the simulat
 ###############################################################################
 
 # Population parameters
-netParams.popParams['PYR'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 200} # add dict with params for this pop 
+netParams.popParams['PYR'] = {'cellType': 'PYR', 'numCells': 200} # add dict with params for this pop 
 
 
 # Cell parameters
 ## PYR cell properties
-#cellRule = {'conds': {'cellModel': 'HH', 'cellType': 'PYR'},  'secs': {}}  # cell rule dict
-PYRcell = {'cellModel': 'HH', 'secs': {}} # cell rule dict
+PYRcell = {'secs': {}} # cell rule dict
 PYRcell['secs']['soma'] = {'geom': {}, 'mechs': {}} # soma params dict
 PYRcell['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0} # soma geometry
 PYRcell['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # soma hh mechanism

@@ -560,7 +560,7 @@ def saveInNode(gatherLFP=True, include=None, filename=None):
 #------------------------------------------------------------------------------
 # Save data in each node
 #------------------------------------------------------------------------------
-def saveSimDataInNode(filename=None):
+def saveSimDataInNode(filename=None, saveLFP=True, removeTraces=False):
     from .. import sim
     from ..specs import Dict, ODict    
 
@@ -586,10 +586,17 @@ def saveSimDataInNode(filename=None):
     simDataVecs = ['spkt','spkid','stims']+list(sim.cfg.recordTraces.keys())
     singleNodeVecs = ['t']
 
-    saveSimData =  {}
-    for k in list(sim.simData.keys()):  # initialize all keys of allSimData dict
-        saveSimData[k] =  {}
-    for key,val in sim.simData.items():  # update simData dics of dics of h.Vector
+    saveSimData = {}
+    
+    if saveLFP:
+        simData = sim.simData
+    else:
+        simData = {k: v for k, v in sim.simData.items() if k not in ['LFP']}
+        
+    for k in list(simData.keys()):  # initialize all keys of allSimData dict
+        saveSimData[k] = {}
+            
+    for key,val in simData.items():  # update simData dics of dics of h.Vector
             if key in simDataVecs+singleNodeVecs:          # simData dicts that contain Vectors
                 if isinstance(val,dict):
                     for cell,val2 in val.items():
@@ -606,6 +613,10 @@ def saveSimDataInNode(filename=None):
 
     dataSave['simData'] = saveSimData
 
+    if removeTraces:
+        for k in sim.cfg.recordTraces.keys():
+            del sim.simData[k]
+
     if getattr(sim.net.params, 'version', None): dataSave['netParams_version'] = sim.net.params.version
 
     if dataSave:
@@ -621,7 +632,7 @@ def saveSimDataInNode(filename=None):
             import pickle
             dataSave = utils.replaceDictODict(dataSave)
             print(('Saving output as %s ... ' % (filePath+str(sim.rank)+'.pkl')))
-            with open(filePath+str(sim.rank)+'.pkl', 'wb') as fileObj:
+            with open(filePath+'_node'+str(sim.rank)+'.pkl', 'wb') as fileObj:
                 pickle.dump(dataSave, fileObj)
             print('Finished saving!')
 
@@ -631,7 +642,6 @@ def saveSimDataInNode(filename=None):
             print(('Saving output as %s ... ' % (filePath+str(sim.rank)+'.json ')))
             #dataSave = utils.replaceDictODict(dataSave)  # not required since json saves as dict
             sim.saveJSON(filePath+ str(sim.rank) + '.json', dataSave)
-            print('Finished saving!')
             print('Finished saving!')
 
         # Save timing

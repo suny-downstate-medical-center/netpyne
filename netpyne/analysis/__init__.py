@@ -62,7 +62,11 @@ from .rxd import plotRxDConcentration
 
 
 # -------------------------------------------------------------------------------------------------------------------
-# Import HNN-related functions
+# Import interactive functions functions
 # -------------------------------------------------------------------------------------------------------------------
-from .interactive import iplotDipole, iplotDipoleSpectrogram, iplotDipolePSD, iplotRaster, iplotSpikeHist, \
-    iplotRatePSD, iplotTraces, iplotLFP, iplotConn, iplotRxDConcentration
+
+try:
+  from .interactive import iplotDipole, iplotDipoleSpectrogram, iplotDipolePSD, iplotRaster, iplotSpikeHist, iplotRatePSD, iplotTraces, iplotLFP, iplotConn, iplotRxDConcentration, iplot2Dnet, iplotSpikeStats
+except:
+    print('Warning: could not import interactive plotting functions; make sure the "bokeh" package is installed.')
+

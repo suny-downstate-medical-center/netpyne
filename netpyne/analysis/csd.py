@@ -325,8 +325,7 @@ def getCSD (LFP_exists=False,LFP_input_data=None,LFP_input_file=None,sampr=None,
 ################################
 ######### PLOTTING CSD #########
 ################################
-
-def plotCSD(CSD_exists=False,CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sampr=None,stim_start_time=None,aspacing_um=None,ymax=None,dt=None,hlines=False,layer_lines=False,saveFig=True,showFig=Trueå): # saveData=None
+def plotCSD(CSD_exists=False,CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sampr=None,stim_start_time=None,aspacing_um=None,ymax=None,dt=None,hlines=False,layer_lines=False,saveFig=True,showFig=True): # saveData=None
   """ Plots CSD values extracted from simulated LFP data 
       
       Parameters

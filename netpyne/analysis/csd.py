@@ -20,7 +20,6 @@ import json
 ## imports for rdmat ## 
 import sys
 import os
-#import h5py # THIS IS FOR NHP PRE-PROCESSING. COMMENT OUT FOR NOW. 
 from collections import OrderedDict  
 ## imports for downsample ## 
 import warnings 
@@ -69,97 +68,8 @@ def removemean (x, ax=1):
 
 
 ###### FUNCTIONS SPECIFIC TO NHP DATA ######
+############## REMOVED ###################
 
-# DOWNSAMPLE LFP FROM NHP DATA 
-def downsample (olddata,oldrate,newrate):  
-  ratio=oldrate/float(newrate) # Calculate ratio of sampling rates
-  newdata = decimate(olddata, int(ratio), ftype='fir',zero_phase=True)
-  return newdata    
-
-# EXTRACT DATA FROM NHP .mat FILE
-def rdmat (fn,samprds=0):  
-  fp = h5py.File(fn,'r') # open the .mat / HDF5 formatted data
-  sampr = fp['craw']['adrate'][0][0] # original sampling rate
-  print('fn:',fn,'sampr:',sampr,'samprds:',samprds)
-  dt = 1.0 / sampr # time-step in seconds
-  dat = fp['craw']['cnt'] # cnt record stores the electrophys data
-  npdat = np.zeros(dat.shape)
-  tmax = ( len(npdat) - 1.0 ) * dt # use original sampling rate for tmax - otherwise shifts phase
-  dat.read_direct(npdat) # read it into memory; note that this LFP data usually stored in microVolt
-  npdat *= 0.001 # convert microVolt to milliVolt here
-  fp.close()
-  if samprds > 0.0: # resample the LFPs
-    dsfctr = sampr/samprds
-    dt = 1.0 / samprds
-    siglen = max((npdat.shape[0],npdat.shape[1]))
-    nchan = min((npdat.shape[0],npdat.shape[1]))
-    npds = [] # zeros((int(siglen/float(dsfctr)),nchan))
-    # print dsfctr, dt, siglen, nchan, samprds, ceil(int(siglen / float(dsfctr))), npds.shape
-    for i in range(nchan): 
-      print('resampling channel', i)
-      npds.append(downsample(npdat[:,i], sampr, samprds))
-    npdat = np.array(npds)
-    npdat = npdat.T
-    sampr = samprds
-  tt = np.linspace(0,tmax,len(npdat)) # time in seconds
-  return sampr,npdat,dt,tt # npdat is LFP in units of milliVolt
-
-
-def getTriggerTimes (fn):
-  fp = h5py.File(fn,'r')
-  hdf5obj = fp['trig/anatrig']
-  x = np.array(fp[hdf5obj.name])
-  val = [y[0] for y in fp[x[0,0]].value]
-  fp.close()
-  return val  
-
-def ms2index (ms, sampr): return int(sampr*ms/1e3)
-
-def removeBadEpochs (dat, sampr, trigtimes, swindowms, ewindowms, sigmathresh):
-  nrow = dat.shape[0]
-  swindowidx = ms2index(swindowms,sampr) # could be negative
-  ewindowidx = ms2index(ewindowms,sampr)
-
-  # trigByChannel could be returned for removing different epochs on each channel
-  trigByChannel = [x for x in range(nrow)]
-  badEpochs = []
-  for chan in range(nrow): # go through channels
-    trigByChannel[chan] = []
-    for trigidx in trigtimes: # go through stimuli
-      sidx = max(0,trigidx+swindowidx)
-      eidx = min(dat.shape[1],trigidx+ewindowidx)
-      if not badEpoch(dat[chan, sidx:eidx], sigmathresh):
-        trigByChannel[chan].append(trigidx)
-      else:
-        badEpochs.append(trigidx)
-    print('Found %d bad epochs in channel %d. Range: [%.2f, %.2f]'%
-          (len(trigtimes) - len(trigByChannel[chan]), chan,
-           calNegThresh(dat[chan, sidx:eidx], sigmathresh),
-           calPosThresh(dat[chan, sidx:eidx], sigmathresh)))
-
-  # combine bad epochs into a single sorted list (without duplicates)
-  badEpochs = sort(list(set(badEpochs)))
-  print('%d bad epochs:'%len(badEpochs),[x for x in badEpochs])
-
-  # remove the associated trigger times before returning
-  trigtimes = np.delete(trigtimes,[trigtimes.index(x) for x in badEpochs])
-
-  return trigtimes
-
-# get the average ERP (dat should be either LFP or CSD)
-def getAvgERP (dat, sampr, trigtimes, swindowms, ewindowms):
-  nrow = dat.shape[0]
-  tt = np.linspace(swindowms, ewindowms,ms2index(ewindowms - swindowms,sampr))
-  swindowidx = ms2index(swindowms,sampr) # could be negative
-  ewindowidx = ms2index(ewindowms,sampr)
-  avgERP = np.zeros((nrow,len(tt)))
-  for chan in range(nrow): # go through channels
-    for trigidx in trigtimes: # go through stimuli
-      sidx = max(0,trigidx+swindowidx)
-      eidx = min(dat.shape[1],trigidx+ewindowidx)
-      avgERP[chan,:] += dat[chan, sidx:eidx]
-    avgERP[chan,:] /= float(len(trigtimes))
-  return tt,avgERP
 
 ##################################################################
 

@@ -150,6 +150,7 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
 
     print('Plotting interactive raster ...')
 
+    theme = None
     if 'theme' in kwargs:
         if kwargs['theme'] != 'default':
             if kwargs['theme'] == 'gui':
@@ -338,7 +339,7 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
     fig.add_layout(legend, 'right')
 
     plot_layout = layout([fig], sizing_mode='stretch_both')
-    html = file_html(plot_layout, CDN, title="Raster Plot")
+    html = file_html(plot_layout, CDN, title="Raster Plot", theme=theme)
 
     # save figure data
     if saveData:
@@ -378,7 +379,7 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False, 
     from bokeh.resources import CDN
     from bokeh.embed import file_html
     from bokeh.layouts import layout
-
+    theme = None
     if 'theme' in kwargs:
         if kwargs['theme'] != 'default':
             if kwargs['theme'] == 'gui':
@@ -471,7 +472,7 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False, 
     fig.legend.click_policy = "hide"
 
     plot_layout = layout(fig, sizing_mode='stretch_both')
-    html = file_html(plot_layout, CDN, title="Dipole Plot")
+    html = file_html(plot_layout, CDN, title="Dipole Plot", theme=theme)
 
     if showFig:
         show(fig)
@@ -809,6 +810,7 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
     
     print('Plotting interactive spike histogram...')
 
+    theme = None
     if 'theme' in kwargs:
         if kwargs['theme'] != 'default':
             if kwargs['theme'] == 'gui':
@@ -934,7 +936,7 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
 
     print(figs)
     plot_layout = gridplot(figs, ncols=1, merge_tools=False, sizing_mode='stretch_both')
-    html = file_html(plot_layout, CDN, title="Spike Histogram")
+    html = file_html(plot_layout, CDN, title="Spike Histogram", theme=theme)
 
     if showFig: show(plot_layout)
 
@@ -987,6 +989,7 @@ def iplotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, max
     
     print('Plotting interactive firing rate power spectral density (PSD) ...')
 
+    theme = None
     if 'theme' in kwargs:
         if kwargs['theme'] != 'default':
             if kwargs['theme'] == 'gui':
@@ -1093,7 +1096,7 @@ def iplotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, max
 
     plot_layout = layout(figs, sizing_mode='stretch_both')
 
-    html = file_html(plot_layout, CDN, title="PSD Rate Plot")
+    html = file_html(plot_layout, CDN, title="PSD Rate Plot", theme=theme)
 
     if showFig: show(plot_layout)
 
@@ -1146,6 +1149,7 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
     
     print('Plotting interactive recorded cell traces per', oneFigPer)
 
+    theme = None
     if 'theme' in kwargs:
         if kwargs['theme'] != 'default':
             if kwargs['theme'] == 'gui':
@@ -1303,11 +1307,11 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
         
         if overlay:
             plot_layout = layout(figObj, sizing_mode='stretch_both')
-            html = file_html(plot_layout, CDN, title=figLabel)
+            html = file_html(plot_layout, CDN, title=figLabel, theme=theme)
             overlay_text = '_overlay'
         else:
             plot_layout = column(*figObj, sizing_mode='stretch_both')
-            html = file_html(plot_layout, CDN, title=figLabel)
+            html = file_html(plot_layout, CDN, title=figLabel, theme=theme)
             overlay_text = ''
 
         if showFig: show(plot_layout)
@@ -1339,6 +1343,8 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
 
     print('Plotting interactive LFP ...')
 
+    html = None
+    theme = None
     if 'theme' in kwargs:
         if kwargs['theme'] != 'default':
             if kwargs['theme'] == 'gui':
@@ -1416,7 +1422,7 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
         figs['timeSeries'].legend.click_policy = "hide"
 
         plot_layout = layout(figs['timeSeries'], sizing_mode='stretch_both')
-        html = file_html(plot_layout, CDN, title="Time Series LFP Plot")
+        html = file_html(plot_layout, CDN, title="Time Series LFP Plot", theme=theme)
 
         if showFig: show(plot_layout)
 
@@ -1488,7 +1494,7 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
             figs['psd'].append(p)
 
         plot_layout = column(figs['psd'], sizing_mode='stretch_both')
-        html = file_html(plot_layout, CDN, title="LFP Power Spectral Density")
+        html = file_html(plot_layout, CDN, title="LFP Power Spectral Density", theme=theme)
 
         if showFig: show(plot_layout)
 
@@ -1589,7 +1595,7 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
                 figs['spectro'].append(p)
 
         plot_layout = column(figs['spectro'], sizing_mode='stretch_both')
-        html = file_html(plot_layout, CDN, title="LFP Power Spectral Density")
+        html = file_html(plot_layout, CDN, title="LFP Power Spectral Density", theme=theme)
 
         if showFig: show(plot_layout)
 
@@ -1602,7 +1608,7 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
             file.write(html)
             file.close()
 
-
+    return html
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive connectivity
@@ -1645,6 +1651,7 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
 
     print('Plotting interactive connectivity matrix...')
 
+    theme = None
     if 'theme' in kwargs:
         if kwargs['theme'] != 'default':
             if kwargs['theme'] == 'gui':
@@ -1774,7 +1781,7 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
         return None
 
     plot_layout = layout([fig], sizing_mode='stretch_both')
-    html = file_html(plot_layout, CDN, title='Connection ' + feature + ' matrix')
+    html = file_html(plot_layout, CDN, title='Connection ' + feature + ' matrix', theme=theme)
 
     #save figure data
     if saveData:
@@ -1888,6 +1895,7 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
 
     print('Plotting interactive 2D representation of network cell locations and connections...')
 
+    theme = None
     if 'theme' in kwargs:
         if kwargs['theme'] != 'default':
             if kwargs['theme'] == 'gui':
@@ -2017,7 +2025,7 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
     fig.add_layout(legend, 'right')
 
     plot_layout = layout([fig], sizing_mode='stretch_both') 
-    html = file_html(plot_layout, CDN, title="Raster Plot")   
+    html = file_html(plot_layout, CDN, title="Raster Plot", theme=theme)   
 
     # save figure data
     if saveData:
@@ -2059,7 +2067,7 @@ def iplotRxDConcentration(speciesLabel, regionLabel, plane='xy', saveFig=None, s
     from bokeh.models import ColorBar
 
     print('Plotting interactive RxD concentration ...')
-
+    theme = None
     if 'theme' in kwargs:
         if kwargs['theme'] != 'default':
             if kwargs['theme'] == 'gui':
@@ -2123,7 +2131,7 @@ def iplotRxDConcentration(speciesLabel, regionLabel, plane='xy', saveFig=None, s
     fig.add_layout(conc_colorbar, 'right')
 
     plot_layout = layout([fig], sizing_mode='scale_height')
-    html = file_html(plot_layout, CDN, title="RxD Concentration")
+    html = file_html(plot_layout, CDN, title="RxD Concentration", theme=theme)
 
     if showFig:
         show(plot_layout)
@@ -2174,8 +2182,9 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
     if timeRange is None:
         timeRange = [0, sim.cfg.duration]
 
+    theme = None
     for stat in stats:
-
+        
         if 'theme' in kwargs:
             if kwargs['theme'] != 'default':
                 if kwargs['theme'] == 'gui':
@@ -2378,7 +2387,7 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
             raise Exception('Only boxplot is currently supported in iplotSpikeStats.')
 
         plot_layout = layout([fig], sizing_mode='stretch_both')
-        html = file_html(plot_layout, CDN, title="Spike Statistics")
+        html = file_html(plot_layout, CDN, title="Spike Statistics", theme=theme)
 
         if showFig:
             show(plot_layout)

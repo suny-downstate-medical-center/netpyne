@@ -155,27 +155,54 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,timeRange
       print('No LFP input data, input file, or existing simulation. Cannot calculate CSD.')
     else:
       ## Check if LFP was recorded during the simulation 
-      sim_data_categories = sim.allSimData.keys()
+      print('getCSD() is using data from existing simulation.')
 
+
+    ## These lines technically assume that from .. import sim worked -- slight reorganization needed 
     if timeRange is None:
       try:
         timeRange = sim.cfg.analysis['plotLFP']['timeRange']
+        # This sets the timeRange equal to the timeRange used in plotLFP
       except:
+        print('No timeRange specified in plotLFP -- using entire sim duration as timeRange.')
         timeRange = [0,sim.cfg.duration]
-        print('Using entire sim duration as timeRange')
-
-
-    if 'LFP' in sim_data_categories and :
-      lfp_data = np.array(sim.allSimData['LFP'])#[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:] # from lfp.py, line 200; array splicing
-      # don't need to cut this down yet -- keep LFP at default calculated by plotLFP
-
-    elif 'LFP' not in sim_data:
-      print('!! WARNING: NO LFP DATA !! Need to re-run simulation with cfg.recordLFP enabled')
+        print('timeRange = ' + str(timeRange))
+      else:
+        print('timeRange specified in plotLFP.')
+        print('timeRange = ' + str(timeRange))
+    else:
+      print('Using timeRange from getCSD() arguments.')
+      print('timeRange = ' + str(timeRange)) # This is to verify that the timeRange being used is the timeRange specified in the arguments
 
 
     if dt is None:
       dt = sim.cfg.recordStep                         # units: ms 
+    print('dt = ' + str(dt))
+
     tt = np.arange(timeRange[0], timeRange[1],dt)   # make array of time points 
+    print('tt.size = ' + str(tt.size))
+
+
+    sim_data_categories = sim.allSimData.keys()
+    if 'LFP' in sim_data_categories:
+      list_lfp_data = sim.allSimData['LFP']
+      lfp_data = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+      print('lfp_data shape = ' + str(lfp_data.shape))
+      # array_lfp_data = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:] # from lfp.py, line 200; array splicing
+      # print('full_lfp_data.size = ' + str(full_lfp_data.size))
+      # if len(tt) == len(list_lfp_data):
+      #   lfp_data = array_lfp_data
+      # elif len(tt) < len(list_lfp_data):      #full_lfp_data.size:
+      #   lfp_data = full_lfp_data
+      #   print('DEBUGGING LINE: went with option 2 -- confirming.')
+      #   print('lfp_data.size = ' + str(lfp_data.size))
+      # elif len(tt) > len(list_lfp_data):        #full_lfp_data.size:
+      #   print('WARNING: More time points than number of lfp data points.')
+      #   lfp_data = full_lfp_data # MAY HAVE TO REWORK THIS 
+    elif 'LFP' not in sim_data_categories:
+      print('!! WARNING: NO LFP DATA !! Need to re-run simulation with cfg.recordLFP enabled')
+
+
 
     if sampr is None:
       sampr = 1./sim.cfg.recordStep          # Sampling rate of data recording during the simulation 
@@ -205,7 +232,7 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,timeRange
 
   ## EXPAND CAPABILITY TO INCLUDE LIST OF MULTIPLE FILES 
   ## LOAD SIM DATA FROM JSON FILE
-  elif LFP_input_data is None and '.json' in LFP_input_file:
+  elif '.json' in LFP_input_file:
     data = {}
     with open(LFP_input_file) as file:
       data['json_input_data'] = json.load(file)
@@ -227,8 +254,11 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,timeRange
       csd_data[i] = {}        # e.g. csd['json_input_data'] = {}
 
       if timeRange is None:
-        csd_data[i]['timeRange'] = [0, data[i]['simConfig']['duration']]
-        timeRange = csd_data[i]['timeRange']        # only works in the 1 input file scenario; expand capability for multiple files 
+        try:
+          csd_data[i]['timeRange'] = sim.cfg.analysis['plotLFP']['timeRange'] # USE LFP TIMERANGE BY DEFAULT
+        except:
+          csd_data[i]['timeRange'] = [0, data[i]['simConfig']['duration']] # USE WHOLE SIM DURATION IF NOT ACCESSIBLE
+        #timeRange = csd_data[i]['timeRange']        # only works in the 1 input file scenario; expand capability for multiple files 
       else:
         csd_data[i]['timeRange'] = timeRange
 
@@ -250,17 +280,15 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,timeRange
       else:
         csd_data[i]['dt'] = dt
 
-
-
     ## GET LFP DATA OVER THE SPECIFIED TIME RANGE
-    lfp_data = np.array(full_lfp_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]
+    lfp_data = np.array(full_lfp_data) #[int(timeRange[0]/dt):int(timeRange[1]/dt),:]
 
     ## MAKE ARRAY OF TIME POINTS ## USEFUL FOR GETALLDATA CONDITION
     tt = np.arange(timeRange[0],timeRange[1],dt)
 
 
   ## FOR LIST OF LFP DATA WITHOUT ANY .JSON INPUT FILE 
-  elif LFP_input_file is None and len(LFP_input_data) > 0: 
+  elif len(LFP_input_data) > 0:     # elif LFP_input_file is None and ...
     ## GET LFP DATA OVER THE SPECIFIED TIME RANGE
     lfp_data = np.array(LFP_input_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]  # get lfp_data in timeRange specified 
 
@@ -410,37 +438,49 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
 
   print('Plotting CSD... ')
   
-  ############### DEFAULT -- CONDITION 1 : GET CSD DATA USING getCSD() ###############
+  ############### DEFAULT -- CONDITION 1 : GET CSD DATA FROM SIM ###############
   if CSD_data is None:
-    # Get CSD data
-    try:
-      [LFP_input_data, CSD_data, timeRange, sampr, spacing_um, dt, tt] = getCSD(timeRange=timeRange,sampr=sampr,spacing_um=spacing_um,dt=dt,getAllData=True)
-    except: 
-      ('getCSD() error: unable to acquire CSD data.')
-
-
-  elif CSD_exists is True and CSD_data is None:   # CSD data exists, but is not provided; try retrieving from (ongoing) simulation. 
-    print('sim data used for plotting')
     
-    try: 
-      from .. import sim
-    except:
-      print('RUN SIMULATION TO ACQUIRE DATA')
-    else:
+    #print('sim data used for plotting')
+    getCSD(timeRange=timeRange,sampr=sampr,spacing_um=spacing_um,dt=dt,getAllData=True)
+
+    from .. import sim      ## put this in try except block? 
+
+    sim_data_categories = sim.allSimData.keys()
+    if 'CSD' in sim_data_categories:
+      print("Using CSD sim data from sim.allSimData['CSD']")
       CSD_data = sim.allSimData['CSD']['CSD_data']   ## RETRIEVE CSD DATA (in mV/mm*2)
-      
+
       if timeRange is None:  ## RETRIEVE TIME RANGE (in ms), IF UNSPECIFIED IN ARGS
         timeRange = sim.allSimData['CSD']['timeRange']
-      
+
       dt = sim.cfg.recordStep                                       # dt --> recording time step (ms)
       tt = np.arange(timeRange[0],timeRange[1],dt)                  # tt --> time points 
-      
+
       spacing_um = sim.allSimData['CSD']['spacing_um']   ## RETRIEVE SPACING BETWEEN ELECTRODE CONTACTS (in microns)
       spacing_mm = spacing_um/1000    # convert from microns to mm 
 
       ymax = sim.cfg.recordLFP[-1][1] + spacing_um
 
-      # Need to have CSD_data, timeRange, dt, tt, spacing_um, and ymax 
+      # Get LFP_data 
+      LFP_data = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+
+
+    elif 'CSD' not in sim_data_categories:
+      print('No CSD data to use in sim -- getCSD() did not work') #running getCSD to acquire CSD data')
+      # [LFP_data_getCSD, CSD_data_getCSD, timeRange_getCSD, sampr_getCSD, spacing_um_getCSD, dt_getCSD, tt_getCSD] = getCSD(timeRange=timeRange,sampr=sampr,spacing_um=spacing_um,dt=dt,getAllData=True)
+      # LFP_data = LFP_data_getCSD
+      # CSD_data = CSD_data_getCSD
+      # timeRange = timeRange_getCSD
+      # sampr = sampr_getCSD
+      # spacing_um = spacing_um_getCSD
+      # dt = dt_getCSD
+      # tt = tt_getCSD
+
+
+      # except:
+      #   ('getCSD() error: unable to acquire CSD data.')
+      # else:
 
 
   ############### CONDITION 2 : ARBITRARY CSD DATA ###############
@@ -495,10 +535,11 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
 
   # (iii) Create plots w/ common axis labels and tick marks
   axs = []
-  if LFP_overlay is True:
-    numplots=1
-  else:
-    numplots=2   # SWITCHED, used to be above numplots = 2, and here numplots = 1
+  # if LFP_overlay is True:
+  #   numplots=1
+  # else:
+  #   numplots=1   # SWITCHED, used to be above numplots = 2, and here numplots = 1
+  numplots = 1
 
   gs_outer = matplotlib.gridspec.GridSpec(2, 2, figure=fig, wspace=0.4, hspace=0.2, height_ratios = [20, 1]) # GridSpec(2, 4, figure = ...)
   for i in range(numplots):
@@ -519,7 +560,8 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
 
   # grid for LFP plots
   if LFP_overlay is True:
-    LFP_data = np.array(LFP_input_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:] #np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+    axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r')
+    # DEFINED ABOVE # LFP_data = np.array(LFP_input_data)#[int(timeRange[0]/dt):int(timeRange[1]/dt),:] #np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
     nrow = LFP_data.shape[1] # LFP_data.shape[0] gives you number of recorded time points.... 
     gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(nrow, 1, subplot_spec=gs_outer[0:2], wspace=0.0, hspace=0.0)  # subplot_spec=gs_outer[2:4]
     clr = 'gray' 
@@ -544,26 +586,26 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
 
 
   ## ADD HORIZONTAL LINES AT CORTICAL LAYER BOUNDARIES
-  A1_layer_bounds = {'I': 100, 'II': 160, 'III': 950, 'IV': 1250, 'VA': 1334, 'VB': 1550, 'VI': 2000} # "lower" bound for each layer
+  A1_layer_bounds = {'L1': 100, 'L2': 160, 'L3': 950, 'L4': 1250, 'L5A': 1334, 'L5B': 1550, 'L6': 2000} # "lower" bound for each layer
   if layer_lines is True: 
     for i in A1_layer_bounds.keys():
       axs[0].hlines(A1_layer_bounds[i], xmin, xmax, colors='black', linewidth=1,linestyles='dotted') 
 
     ## add labels for each layer -- would have to be adjusted by hand if changing layer bounds
-    fig.text(0.922,0.855,'I',color='black')
-    fig.text(0.92,0.825,'II',color='black')
-    fig.text(0.92,0.68,'III',color='black')
-    fig.text(0.92,0.5,'IV',color='black')
-    fig.text(0.92,0.44,'VA',color='black')
-    fig.text(0.92,0.39,'VB',color='black')
-    fig.text(0.92,0.29,'VI',color='black')
+    fig.text(0.922,0.855,'L1',color='black')
+    fig.text(0.92,0.825,'L2',color='black')
+    fig.text(0.92,0.68,'L3',color='black')
+    fig.text(0.92,0.5,'L4',color='black')
+    fig.text(0.92,0.44,'L5A',color='black')
+    fig.text(0.92,0.39,'L5B',color='black')
+    fig.text(0.92,0.29,'L6',color='black')
 
 
   ## SET VERTICAL LINE AT STIMULUS ONSET
   if type(stim_start_time) is int or type(stim_start_time) is float:
     axs[0].vlines(stim_start_time,ymin,ymax,colors='red',linewidth=1,linestyles='dashed')
 
-
+  #plt.show()
 
   # SAVE FIGURE
   if saveFig is True:

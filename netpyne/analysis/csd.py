@@ -77,7 +77,7 @@ def removemean (x, ax=1):
 ################################################
 ######### GET CSD VALUES FROM LFP DATA #########
 ################################################
-def getCSD (LFP_exists=False,LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,timeRange=None,spacing_um=None,minf=0.05,maxf=300,norm=True,vaknin=False,save_to_sim=False,getAllData=False):
+def getCSD (LFP_exists=False,LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,timeRange=None,spacing_um=None,minf=0.05,maxf=300,norm=True,vaknin=False,save_to_sim=True,getAllData=True):
   """ Extracts CSD values from simulated LFP data 
 
       Parameters
@@ -143,16 +143,16 @@ def getCSD (LFP_exists=False,LFP_input_data=None,LFP_input_file=None,sampr=None,
       save_to_sim : bool
         True will have getCSD attempt to store CSD values in sim.allSimData, if this exists.
         **Default**
-        ``False``
+        ``True``
 
       getAllData : bool
         True will have this function returns dt, tt, timeRange, sampr, spacing_um, lfp_data, and CSD_data.
         False will return only CSD_data. 
         **Default**
-        ``False``
+        ``True``
   """
 
-  ############### CONDITION 1 : LFP DATA COMES FROM SIMULATION ###############
+  ############### DEFAULT -- CONDITION 1 : LFP DATA COMES FROM SIMULATION ###############
 
   if LFP_exists is False:   ### GET LFP DATA FROM SIMULATION
     from .. import sim 
@@ -161,7 +161,8 @@ def getCSD (LFP_exists=False,LFP_input_data=None,LFP_input_file=None,sampr=None,
     if timeRange is None:                 # Specify the time range of relevant LFP data 
       timeRange = [0,sim.cfg.duration]    # This makes the timeRange equal to the entire sim duration
     
-    dt = sim.cfg.recordStep                         # units: ms 
+    if dt is None:
+      dt = sim.cfg.recordStep                         # units: ms 
     tt = np.arange(timeRange[0], timeRange[1],dt)   # make array of time points 
 
     if sampr is None:
@@ -325,16 +326,17 @@ def getCSD (LFP_exists=False,LFP_input_data=None,LFP_input_file=None,sampr=None,
 ######### PLOTTING CSD #########
 ################################
 
-def plotCSD(CSD_exists=True,CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,stim_start_time=None,spacing_um=None,ymax=None,dt=None,hlines=False,layer_lines=False,saveFig=True,showFig=True): # saveData=None
+def plotCSD(CSD_exists=False,CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,stim_start_time=None,spacing_um=None,ymax=None,dt=None,hlines=False,layer_lines=False,saveFig=True,showFig=True): # saveData=None
   """ Plots CSD values extracted from simulated LFP data 
       
       Parameters
       ----------
       CSD_exists : bool
         Indicates if you are inputting arbitrary CSD data 
+        ``True`` indicates that CSD data will be passed in as arbitrary input via CSD_data
+        ``False`` assumes that CSD data must be derived using getCSD()
         **Default:**
-        ``True`` indicates that CSD data will be passed in from simulation or arbitrary input via CSD_data
-        ``False`` assumes that CSD data must be derived 
+        ``False`` 
 
       CSD_data : list or np array
         Enter list or numpy array of CSD data
@@ -408,8 +410,29 @@ def plotCSD(CSD_exists=True,CSD_data=None,LFP_input_data=None,LFP_overlay=True,t
 
   print('Plotting CSD... ')
   
-  ############### CONDITION 1 : ARBITRARY CSD DATA ###############
-  if CSD_exists is True and len(CSD_data) > 0:     # arbitrary CSD data exists, and has been given.
+  ############### DEFAULT -- CONDITION 1 : GET CSD DATA USING getCSD() ###############
+  if CSD_exists is False:
+    # Get CSD data
+    try:
+      [LFP_input_data, CSD_data, timeRange_getCSD, sampr_getCSD, spacing_um_getCSD, dt_getCSD, tt] = getCSD()
+      if timeRange is None:
+        timeRange = timeRange_getCSD # This is to prevent 
+      
+      elif timeRange == timeRange_getCSD is False:
+        CSD_data = np.array(CSD_data[int(timeRange[0]/dt):int(timeRange[1]/dt),:])
+        LFP_input_data = np.array(LFP_input_data[int(timeRange[0]/dt):int(timeRange[1]/dt),:])
+      
+      if sampr is None:
+        sampr = sampr_getCSD
+      if spacing_um is None:
+        spacing_um = spacing_um_getCSD
+      if dt is None:
+        dt = dt_getCSD
+    except: 
+      ('getCSD() unable to acquire CSD data.')
+
+  ############### CONDITION 2 : ARBITRARY CSD DATA ###############
+  elif CSD_exists is True and len(CSD_data) > 0:     # arbitrary CSD data exists, and has been given.
     if timeRange is None:
       print('MUST PROVIDE TIME RANGE in ms')
     else:
@@ -460,12 +483,6 @@ def plotCSD(CSD_exists=True,CSD_data=None,LFP_input_data=None,LFP_overlay=True,t
 
       # Need to have CSD_data, timeRange, dt, tt, spacing_um, and ymax 
 
-  elif CSD_exists is False:
-    # Get CSD data
-    try:
-      [LFP_input_data, CSD_data, timeRange, sampr, spacing_um, dt, tt] = getCSD(getAllData=True)
-    except: 
-      ('RUN SIMULATION WITH getCSD() ENABLED')
 
 
   ############### PLOTTING ######################

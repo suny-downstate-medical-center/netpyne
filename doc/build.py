@@ -35,9 +35,9 @@ Here are the steps to release a new version of NetPyNE
     9e) Build the html files
 10) Update the version number in the Sphinx documentation (netpyne/doc/source/conf.py)
 11) Post the documentation
-    11a) ssh gkaue9v7ctjf@107.180.3.236 “rm -r ~/public_html”
+    11a) ssh gkaue9v7ctjf@107.180.3.236 "rm -r ~/public_html"
     11b) scp -r build gkaue9v7ctjf@107.180.3.236:///home/gkaue9v7ctjf/public_html
-    11c) ssh gkaue9v7ctjf@107.180.3.236 “cp -r ~/redirect_html/. ~/public_html/”
+    11c) ssh gkaue9v7ctjf@107.180.3.236 "cp -r ~/redirect_html/. ~/public_html/"
 12) Update PYPI (pip) with the latest release
     12a) cd netpyne
     12b) python setup.py bdist_wheel --universal

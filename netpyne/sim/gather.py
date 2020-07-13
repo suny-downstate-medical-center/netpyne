@@ -252,7 +252,7 @@ def gatherData(gatherLFP = True):
             if sim.cfg.printPopAvgRates and not sim.cfg.gatherOnlySimData:
 
                 trange = sim.cfg.printPopAvgRates if isinstance(sim.cfg.printPopAvgRates,list) else None
-                sim.allSimData['popRates'] = sim.analysis.popAvgRates(trange=trange)
+                sim.allSimData['popRates'] = sim.analysis.popAvgRates(tranges=trange)
 
             if 'plotfI' in sim.cfg.analysis:
                 times = sim.cfg.analysis['plotfI'].get('times', [0, sim.cfg.duration])
@@ -458,7 +458,7 @@ def fileGather(gatherLFP = True):
 
             if sim.cfg.printPopAvgRates and not sim.cfg.gatherOnlySimData:
                 trange = sim.cfg.printPopAvgRates if isinstance(sim.cfg.printPopAvgRates,list) else None
-                sim.allSimData['popRates'] = sim.analysis.popAvgRates(trange=trange)
+                sim.allSimData['popRates'] = sim.analysis.popAvgRates(tranges=trange)
             
             if 'plotfI' in sim.cfg.analysis:
                 times = get(sim.cfg.analysis['plotfI'], 'times', [0, sim.cfg.duration])

@@ -453,7 +453,7 @@ def plotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid
     if len(cellGids) > 0:
         gidColors = {cell['gid']: popColors[cell['tags']['pop']] for cell in cells}  # dict with color for each gid
         try:
-            sel, spkts,spkgids = getSpktSpkid(cellGids=[] if include == ['allCells'] else cellGids, timeRange=timeRange) # using [] is faster for all cells 
+            sel, spkts, spkgids = getSpktSpkid(cellGids=[] if include == ['allCells'] else cellGids, timeRange=timeRange) # using [] is faster for all cells
         except:
             import sys
             print((sys.exc_info()))
@@ -1350,9 +1350,9 @@ def plotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=Non
         # save figure
         if saveFig: 
             if isinstance(saveFig, basestring):
-                filename = saveFig + '_plot_spikeStat_' + graphType + '_' + stat + '.png'
+                filename = saveFig + '_spikeStat_' + graphType + '_' + stat + '.png'
             else:
-                filename = sim.cfg.filename + '_plot_spikeStat_' + graphType + '_' + stat + '.png'
+                filename = sim.cfg.filename + '_spikeStat_' + graphType + '_' + stat + '.png'
             plt.savefig(filename, dpi=dpi)
 
         # show fig 

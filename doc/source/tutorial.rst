@@ -79,9 +79,9 @@ Tutorial 2: Network parameters
 
 The ``netParams`` object includes all the information necessary to define your network. It is composed of the following 8 ordered dictionaries:
 
-* ``popParams`` - populations in the network and their parameters
-
 * ``cellParams`` - cell property rules and their associated parameters (e.g. cell geometry)
+
+* ``popParams`` - populations in the network and their parameters
 
 * ``synMechParams`` - synaptic mechanisms and their parameters
 
@@ -105,7 +105,7 @@ The ``netParams`` organization is consistent with the standard sequence of event
 
 * creates a ``Network`` object and adds inside a set of ``Population`` and ``Cell`` objects based on ``popParams``
 
-* sets the cell properties based on ``cellParams`` (checking which cells match the conditions of each rule) 
+* sets the cell properties based on ``cellParams``  
 
 * creates a set of connections based on ``connParams`` and ``subConnParams`` (checking which presynpatic and postsynaptic cells match the conn rule conditions), and using the synaptic parameters in ``synMechParams``.
 
@@ -124,10 +124,35 @@ We will now create a new model file (call it ``tut2.py``) where we will specify 
 	# Network parameters
 	netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
+Cell property rules
+^^^^^^^^^^^^^^^^^^^
+
+First, we need to define the properties of each cell type, by adding items to the ``cellParams`` dictionary. Each ``cellParams`` item includes a key (the cell type) and a value consisting of a dictionary with the following field:
+
+* ``secs`` - dictionary containing the properties of sections, e.g. geometry, mechanisms
+
+In our example we create a cell type we'll call ``PYR``, therefore applying to our two populations (``S`` and ``P``) currently composed of pyramidal cells. We specify that we want them to have a section labeled ``soma`` with a certain geometry, a Hodgkin-Huxley mechanism (``hh``)::
+
+	PYRcell = {'secs': {}}
+	PYRcell['secs']['soma'] = {'geom': {}, 'mechs': {}} 
+	PYRcell['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  # soma geometry
+	PYRcell['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+	netParams.cellParams['PYR'] = PYRcell
+
+
+Take a moment to examine the nested dictionary structure used to define the cell type. Notice the use of empty dictionaries (``{}``) and intermediate dictionaries (e.g. ``PYRcell``) to facilitate filling in the parameters. There are other equivalent methods to add this rule, such as::
+
+	netParams.cellParams['PYR'] = {	
+		'secs': {'soma':
+			{'geom': {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}, 
+			'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}}}}) 
+
+
+
 Populations
 ^^^^^^^^^^^^^^^^^^^^^^
 
-First, we need to create some populations for our network, by adding items to the ``popParams`` dictionary in ``netParams``. Each ``popParams`` item includes a key (population label) and a value consisting of a dictionary with the following population parameters (see :ref:`pop_params` for more details):
+Now we need to create some populations for our network, by adding items to the ``popParams`` dictionary in ``netParams``. Each ``popParams`` item includes a key (population label) and a value consisting of a dictionary with the following population parameters (see :ref:`pop_params` for more details):
 
 
 * ``cellType`` - an attribute/tag assigned to cells in this population, can later be used to set certain cell properties to cells with this tag.
@@ -136,7 +161,7 @@ First, we need to create some populations for our network, by adding items to th
 
 * ``cellModel`` - an attribute or tag that will be assigned to cells in this population, can later be used to set specific cell model implementation for cells with this tag. e.g. 'HH' (standard Hodkgin-Huxley type cell model) or 'Izhi2007b' (Izhikevich 2007 point neuron model). Cell models can be defined by the user or imported.
 
-We will start by creating 2 populations labeled ``S`` (sensory) and ``M`` (motor), with ``20`` cells each, of type ``PYR`` (pyramidal), and using ``HH`` cell model (standard compartmental Hodgkin-Huxley type cell).
+We will start by creating two populations labeled ``S`` (sensory) and ``M`` (motor), with 20 cells each, of type ``PYR`` (pyramidal), and using ``HH`` cell model (standard compartmental Hodgkin-Huxley type cell).
 
 ::
 
@@ -147,43 +172,7 @@ We will start by creating 2 populations labeled ``S`` (sensory) and ``M`` (motor
 During execution, this will tell NetPyNE to create 40 ``Cell`` objects, each of which will include the attributes or tags of its population, i.e. 'cellType': 'PYR', etc. These tags can later be used to define the properties of the cells, or connectivity rules.
 
 
-To get a better intuition of the data structure, you can ``print netParams.popParams`` to see all the populations parameters, or print ``print netParams.popParams['M']`` to see the parameters of population 'M'.
-
-Cell property rules
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Now we need to define the properties of each cell type, by adding items to the ``cellParams`` dictionary. Each ``cellParams`` item includes a key (cell rule label) and a value consisting of a dictionary with the following two fields:
-
-* ``conds`` - these arbitrary conditions need to be met by cells in order to apply them these cell properties. Usually defined specifying an attribute/tag of the cell and the required value e.g. 'cellType': 'PYR'
-
-* ``secs`` - dictionary containing the properties of sections, e.g. geometry, mechanisms
-
-The idea of conditional cell properties is that you can apply cell properties to subsets of neurons - e.g. only those neurons of a given cell type, and/or of a given population, and/or within a certain range of locations. 
-
-In our example we create a cell property rule that applies to all cells where the ``cellType`` = ``PYR``, therefore applying to our two populations (``S`` and ``P``) currently composed of pyramidal cells. We specify that we want them to have a section labeled ``soma`` with a certain geometry, a Hodgkin-Huxley mechanism (``hh``)::
-
-	cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}} 	# cell rule dict
-	cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}  													# soma params dict
-	cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  								# soma geometry
-	cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  	# soma hh mechanism
-	netParams.cellParams['PYRrule'] = cellRule  
-
-
-Take a moment to examine the nested dictionary structure used to define the cell property rule. Notice the use of empty dictionaries (``{}``) and intermediate dictionaries (e.g. ``cellRule``) to facilitate filling in the parameters. There are other equivalent methods to add this rule, such as::
-
-	netParams.cellParams['PYRrule'] = {		# cell rule label
-		'conds': {'cellType': 'PYR'},  	# properties will be applied to cells that match these conditions	
-		'secs': {'soma':					# sections 
-			{'geom': {'diam': 18.8, 'L': 18.8, 'Ra': 123.0},		# geometry 
-			'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}}}}) 	# mechanisms
-
-
-All methods are equally valid as long as the resulting structure looks like this (order of elements doesn't matter in dictionaries)::
-
-	>>> netParams.cellParams['PYRrule']
-	{'conds': {'cellType': 'PYR'},
- 	'secs': {'soma': {'geom': {'L': 18.8, 'Ra': 123.0, 'diam': 18.8},
-    	'mechs': {'hh': {'el': -70, 'gkbar': 0.036, 'gl': 0.003, 'gnabar': 0.12}}}}}
+To get a better intuition of the data structure, you can ``print(netParams.popParams)`` to see all the populations parameters, or print ``print(netParams.popParams['M'])`` to see the parameters of population 'M'.
 
 
 Synaptic mechanisms parameters
@@ -235,8 +224,8 @@ We will add a rule to randomly connect the sensory to the motor population with 
 
 	## Cell connectivity rules
 	netParams.connParams['S->M'] = { #  S -> M label
-		'preConds': {'pop': 'S'}, # conditions of presyn cells
-		'postConds': {'pop': 'M'}, # conditions of postsyn cells
+		'preConds': {'pop': 'S'}, 	# conditions of presyn cells
+		'postConds': {'pop': 'M'}, 	# conditions of postsyn cells
 		'probability': 0.5, 		# probability of connection
 		'weight': 0.01, 			# synaptic weight 
 		'delay': 5,					# transmission delay (ms) 
@@ -263,9 +252,9 @@ Below we include the options required to run a simulation of 1 second, with inte
 	simConfig.filename = 'model_output'  # Set file output name
 	simConfig.savePickle = False 		# Save params, network and sim output to pickle file
 
-	simConfig.analysis['plotRaster'] = True 			# Plot a raster
-	simConfig.analysis['plotTraces'] = {'include': [1]} 			# Plot recorded traces for this list of cells
-	simConfig.analysis['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
+	simConfig.analysis['plotRaster'] = {'saveFig': True}                  # Plot a raster
+	simConfig.analysis['plotTraces'] = {'include': [1], 'saveFig': True}  # Plot recorded traces for this list of cells
+	simConfig.analysis['plot2Dnet'] = {'saveFig': True}                   # plot 2D cell positions and connections
 
 The complete list of simulation configuration options is available here: :ref:`sim_config`.
 
@@ -285,7 +274,7 @@ To run the model we can use any of the methods previously described in :ref:`sim
 
 If mpi not installed::
 
-	nrniv -python tut2.py
+	python tut2.py
 
 If mpi working::
 

@@ -13,11 +13,11 @@ A good understanding of Python nested dictionaries and lists is recommended, sin
 
 .. _simple_example:
 
-Tutorial 1: Very simple and quick example
+Tutorial 1: Quick and easy example
 -----------------------------------------
-To start in an encouraging way, we will implement the simplest example possible consisting of just 3 lines! This will create a simple network (200 randomly connected cells), run a 1-second simulation, and plot the network raster plot and the voltage trace of a cell. 
+To start in an encouraging way, we will implement the simplest example possible consisting of just three lines! This will create a simple network (200 randomly connected cells), run a one-second simulation, and plot the network spiking raster plot and the voltage trace of a cell. 
 
-You will need to **download** the ``HHTut.py`` example parameter file (`download here <https://raw.githubusercontent.com/Neurosim-lab/netpyne/master/examples/HHTut/HHTut.py>`_ - right click and "Save as" to same folder you are working on)
+You will need to **download** the ``HHTut.py`` example parameter file (`download here <https://raw.githubusercontent.com/Neurosim-lab/netpyne/master/examples/HHTut/HHTut.py>`_ - right click and "Save as" to same folder you are working in).
 
 The code looks like this (available here :download:`tut1.py <code/tut1.py>`)::
 
@@ -30,17 +30,17 @@ The first line imports the ``HHTut`` module with the network and simulation para
 
 The second line imports the ``sim`` module from the ``netpyne`` package. The ``sim`` module provides functions to easily create and simulate networks based on these parameters.
 
-The third line calls the ``createSimulateAnalyze`` function, which runs a standard sequence of commands to create and simulate the network, and save and plot data. It requires the following 2 arguments:
+The third line calls the ``createSimulateAnalyze`` function, which runs a standard sequence of commands to create and simulate the network, and save and plot data. It requires the following two arguments:
 
 * ``netParams`` - an object of class NetParams to store network parameters (e.g. cell properties, populations, connectivity)
 
 * ``simConfig`` - an object of class SimConfig to store simulation options (e.g. duration, dt, recording and plotting options, etc.)
 
-In this case we are using a set of predefined parameters specified in the ``HHTut`` module (Hodgkin-Huxley network example). The ``HHTut`` module contains the 2 required objects: ``netParams`` and ``simConfig``. 
+In this case we are using a set of predefined parameters specified in the ``HHTut`` module (Hodgkin-Huxley network example). The ``HHTut`` module contains the two required objects: ``netParams`` and ``simConfig``. 
 
 To run the model just execute the `tut1.py` script. One way to do this is to run this shell command::
 
-	nrniv -python tut1.py
+	python tut1.py
 
 If you successfully installed MPI (e.g. OpenMPI) and NEURON with MPI support, you can simulate the model in parallel using multiple cores/processors by typing:: 
 
@@ -48,13 +48,13 @@ If you successfully installed MPI (e.g. OpenMPI) and NEURON with MPI support, yo
 
 where you would replace the `4` with the number of cores you want to use.
 
-If you want to avoid typing that long line every time, you can download this simple Unix shell script (:download:`runsim <code/runsim>`) and just type::
+If you want to avoid typing that long line every time, you can download this simple shell script (:download:`runsim <code/runsim>`) and just type::
 
 	./runsim 4 tut1.py
 
-.. note:: To use the script make sure you change its permissions so its executable (e.g. ``chmod +x runsim``) 
+.. note:: To use the script make sure you change its permissions so it is executable (e.g. ``chmod +x runsim``). 
 
-Whatever method you use, you should get a 2D representation of the cells and connections in the network, a raster plot (spikes as cell vs time) and the voltage trace of a single cell: 
+Whatever method you use, you should get a 2D representation of the cells and connections in the network, a raster plot (spikes as cell versus time) and the voltage trace of a single cell: 
 
 .. image:: figs/tut1_net.png
 	:width: 30%
@@ -68,7 +68,7 @@ Whatever method you use, you should get a 2D representation of the cells and con
 
 Congratulations! You have created and simulated a biological neuronal network in NEURON! 
 
-.. note:: In some systems the figures that pop up may be empty. This can be fixed by adding this line to the end of your tut1.py: ``import pylab; pylab.show()`` . In any case, the raster plot and the voltage trace figures will be correctly saved to disk as ``raster.png`` and ``traces.png``.
+.. note:: In some systems the figures that appear may be empty. This can be fixed by adding this line to the end of your tut1.py: ``import pylab; pylab.show()`` . In any case, the raster plot and the voltage trace figures will be correctly saved to disk as ``HHTut_raster.png`` and ``HHTut_traces.png``.
 
 In the remainder of this tutorial we will see how to easily specify your own parameters to create custom networks and simulations. For simplicity, the network parameters, simulation options and calls to functions (necessary to create the network, simulate it and plot the results) will all be included in a single file. For larger models it is recommended to keep model specification parameters and function calls in separate files (see `examples here <https://https://github.com/Neurosim-lab/netpyne/tree/master/examples>`_.)
 

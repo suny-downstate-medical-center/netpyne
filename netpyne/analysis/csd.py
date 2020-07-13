@@ -326,7 +326,7 @@ def getCSD (LFP_exists=False,LFP_input_data=None,LFP_input_file=None,sampr=None,
 ######### PLOTTING CSD #########
 ################################
 
-def plotCSD(CSD_exists=False,CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,stim_start_time=None,spacing_um=None,ymax=None,dt=None,hlines=False,layer_lines=False,saveFig=True,showFig=True): # saveData=None
+def plotCSD(CSD_exists=False,CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sampr=None,stim_start_time=None,aspacing_um=None,ymax=None,dt=None,hlines=False,layer_lines=False,saveFig=True,showFig=Trueå): # saveData=None
   """ Plots CSD values extracted from simulated LFP data 
       
       Parameters
@@ -357,6 +357,12 @@ def plotCSD(CSD_exists=False,CSD_data=None,LFP_input_data=None,LFP_overlay=True,
         Time range to plot.
         **Default:** 
         ``None`` plots entire time range
+
+      sampr : int or float
+        sampling rate (Hz.)
+        Needed for getCSD()
+        **Default:**
+        ``None`` 
       
       stim_start_time : int or float 
         Time when stimulus is applied (ms). 
@@ -414,22 +420,9 @@ def plotCSD(CSD_exists=False,CSD_data=None,LFP_input_data=None,LFP_overlay=True,
   if CSD_exists is False:
     # Get CSD data
     try:
-      [LFP_input_data, CSD_data, timeRange_getCSD, sampr_getCSD, spacing_um_getCSD, dt_getCSD, tt] = getCSD()
-      if timeRange is None:
-        timeRange = timeRange_getCSD # This is to prevent 
-      
-      elif timeRange == timeRange_getCSD is False:
-        CSD_data = np.array(CSD_data[int(timeRange[0]/dt):int(timeRange[1]/dt),:])
-        LFP_input_data = np.array(LFP_input_data[int(timeRange[0]/dt):int(timeRange[1]/dt),:])
-      
-      if sampr is None:
-        sampr = sampr_getCSD
-      if spacing_um is None:
-        spacing_um = spacing_um_getCSD
-      if dt is None:
-        dt = dt_getCSD
+      [LFP_input_data, CSD_data, timeRange, sampr, spacing_um, dt, tt] = getCSD(timeRange,sampr,spacing_um,dt)
     except: 
-      ('getCSD() unable to acquire CSD data.')
+      ('getCSD() error: unable to acquire CSD data.')
 
   ############### CONDITION 2 : ARBITRARY CSD DATA ###############
   elif CSD_exists is True and len(CSD_data) > 0:     # arbitrary CSD data exists, and has been given.

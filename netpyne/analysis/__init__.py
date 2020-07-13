@@ -64,7 +64,7 @@ from .rxd import plotRxDConcentration
 # -------------------------------------------------------------------------------------------------------------------
 # Import HNN-related functions
 # -------------------------------------------------------------------------------------------------------------------
-from .interactive import iplotDipole, iplotDipoleSpectrogram,  iplotDipolePSD, iplotRaster, iplotSpikeHist, iplotRatePSD, iplotTraces, iplotLFP, iplotConn
+#from .interactive import iplotDipole, iplotDipoleSpectrogram,  iplotDipolePSD, iplotRaster, iplotSpikeHist, iplotRatePSD, iplotTraces, iplotLFP, iplotConn
 
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -72,6 +72,6 @@ from .interactive import iplotDipole, iplotDipoleSpectrogram,  iplotDipolePSD, i
 # -------------------------------------------------------------------------------------------------------------------
 from .csd import getCSD, plotCSD
 
-from .interactive import iplotDipole, iplotDipoleSpectrogram, iplotDipolePSD, iplotRaster, iplotSpikeHist, \
-    iplotRatePSD, iplotTraces, iplotLFP, iplotConn
+#from .interactive import iplotDipole, iplotDipoleSpectrogram, iplotDipolePSD, iplotRaster, iplotSpikeHist, \
+    #iplotRatePSD, iplotTraces, iplotLFP, iplotConn
 

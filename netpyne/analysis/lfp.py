@@ -297,7 +297,7 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
             if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
-                filename = sim.cfg.filename+'_'+'lfp.png'
+                filename = sim.cfg.filename + '_LFP_timeseries.png'
             plt.savefig(filename, dpi=dpi)
 
     # PSD ----------------------------------
@@ -398,7 +398,7 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
             if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
-                filename = sim.cfg.filename + '_plot_lfp_psd.png'
+                filename = sim.cfg.filename + '_LFP_psd.png'
             plt.savefig(filename, dpi=dpi)
 
     # Spectrogram ------------------------------
@@ -406,7 +406,6 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
         import matplotlib.cm as cm
         numCols = 1 #np.round(len(electrodes) / maxPlots) + 1
         figs.append(plt.figure(figsize=(figSize[0]*numCols, figSize[1])))
-        #t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
         
         # Morlet wavelet transform method
         if transformMethod == 'morlet':
@@ -427,6 +426,7 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
 
             vmin = np.array([s.TFR for s in spec]).min()
             vmax = np.array([s.TFR for s in spec]).max()
+            
             for i,elec in enumerate(electrodes):
                 plt.subplot(np.ceil(len(electrodes) / numCols), numCols, i + 1)
                 T = timeRange
@@ -467,6 +467,7 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
 
             vmin = np.array(spec).min()
             vmax = np.array(spec).max()
+            
             for i,elec in enumerate(electrodes):
                 plt.subplot(np.ceil(len(electrodes)/numCols), numCols, i+1)
                 plt.pcolormesh(x_mesh, y_mesh, spec[i], cmap=cm.viridis, vmin=vmin, vmax=vmax)
@@ -492,7 +493,7 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
             if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
-                filename = sim.cfg.filename+'_'+'lfp_timefreq.png'
+                filename = sim.cfg.filename + '_LFP_timefreq.png'
             plt.savefig(filename, dpi=dpi)
 
     # locations ------------------------------

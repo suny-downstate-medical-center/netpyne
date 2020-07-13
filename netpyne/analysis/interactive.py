@@ -28,6 +28,8 @@ import pandas as pd
 
 from bokeh.themes import built_in_themes
 from bokeh.io import curdoc
+from bokeh.palettes import Viridis256
+from bokeh.models import HoverTool
 
 bokeh_theme = curdoc().theme
 
@@ -1325,8 +1327,8 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive LFP
 # -------------------------------------------------------------------------------------------------------------------
-@exception
-def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange=None, NFFT=256, noverlap=128, nperseg=256, maxFreq=100, smooth=0, separation=1.0, includeAxon=True, logx=False, logy=False, norm=False, overlay=False, filtFreq=False, filtOrder=3, detrend=False, colors=None, saveData=None, saveFig=None, showFig=False, **kwargs):
+#@exception
+def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram'], timeRange=None, NFFT=256, noverlap=128, nperseg=256, minFreq=1, maxFreq=100, stepFreq=1, smooth=0, separation=1.0, includeAxon=True, logx=False, logy=False, normSignal=False, normPSD=False, normSpec=False, overlay=False, filtFreq=False, filtOrder=3, detrend=False, transformMethod='morlet', colors=None, saveData=None, saveFig=None, showFig=False, **kwargs):
     
     from .. import sim
     from bokeh.plotting import figure, show
@@ -1369,7 +1371,7 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
     # time series plot
     # TODO add scalebar
     if 'timeSeries' in plots:
-        figs['timeSeries'] = figure(title="LFP Time Series Plot", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label="LFP electrode")
+        figs['timeSeries'] = figure(title="LFP Time Series Plot", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label="LFP electrode", toolbar_location="above")
         figs['timeSeries'].yaxis.major_tick_line_color = None
         figs['timeSeries'].yaxis.minor_tick_line_color = None
         figs['timeSeries'].yaxis.major_label_text_font_size = '0pt'
@@ -1389,13 +1391,10 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
             if elec == 'avg':
                 dplSum = np.mean(lfp, axis=1)
                 color = avg_color
-                lw=1.0
-                # figs['timeSeries'].line(t, -lfpPlot+(i*ydisp), line_color=color)
             elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
                 pass
                 lfpPlot = lfp[:, elec]
                 color = colors[i%len(colors)]
-                lw=1.0
 
             legend=str(elec)
             # if len(electrodes) > 1:
@@ -1415,17 +1414,18 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
         plot_layout = layout(figs['timeSeries'], sizing_mode='stretch_both')
         html = file_html(plot_layout, CDN, title="Time Series LFP Plot")
 
+        if showFig: show(plot_layout)
+
         if saveFig:
             if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
-                filename = sim.cfg.filename+'_'+'lfp_timeseries.png'
+                filename = sim.cfg.filename + '_iLFP_timeseries.html'
             file = open(filename, 'w')
             file.write(html)
             file.close()
 
     # PSD ----------------------------------
-    # TODO fix final layout of plots
     if 'PSD' in plots:
 
         figs['psd'] = []
@@ -1440,26 +1440,39 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
                 avg_color = 'white'
 
         for i,elec in enumerate(electrodes):
-            p = figure(title="Electrode {}".format(str(elec)), tools=TOOLS, x_axis_label="Frequency (Hz)", y_axis_label="db/Hz")
+            p = figure(title="Electrode {}".format(str(elec)), tools=TOOLS, x_axis_label="Frequency (Hz)", y_axis_label="db/Hz",toolbar_location="above")
 
             if elec == 'avg':
                 lfpPlot = np.mean(lfp, axis=1)
                 color = avg_color
-                lw=1.5
             elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
                 lfpPlot = lfp[:, elec]
                 color = colors[i%len(colors)]
-                lw=1.5
 
-            Fs = int(1000.0/sim.cfg.recordStep)
-            power = mlab.psd(lfpPlot, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning, noverlap=noverlap, pad_to=None, sides='default', scale_by_freq=None)
+            # Morlet wavelet transform method
+            if transformMethod == 'morlet':
+                from ..support.morlet import MorletSpec, index2ms
 
-            if smooth:
-                signal = _smooth1d(10*np.log10(power[0]), smooth)
-            else:
-                signal = 10*np.log10(power[0])
-            freqs = power[1]
+                Fs = int(1000.0/sim.cfg.recordStep)
+                morletSpec = MorletSpec(lfpPlot, Fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq)
+                freqs = F = morletSpec.f
+                spec = morletSpec.TFR
+                signal = np.mean(spec, 1)
+                ylabel = 'Power'
+            
+            # FFT transform method
+            elif transformMethod == 'fft':
+                
+                Fs = int(1000.0/sim.cfg.recordStep)
+                power = mlab.psd(lfpPlot, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning, noverlap=noverlap, pad_to=None, sides='default', scale_by_freq=None)
 
+                if smooth:
+                    signal = _smooth1d(10*np.log10(power[0]), smooth)
+                else:
+                    signal = 10*np.log10(power[0])
+                freqs = power[1]
+                ylabel = 'Power (dB/Hz)'
+            
             allFreqs.append(freqs)
             allSignal.append(signal)
 
@@ -1475,50 +1488,97 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
             if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
-                filename = sim.cfg.filename+'_'+'lfp_psd.png'
+                filename = sim.cfg.filename+'_iLFP_psd.html'
             file = open(filename, 'w')
             file.write(html)
             file.close()
 
-
     # Spectrogram ------------------------------
-    # TODO impprove the color mapper to be more detailed
     if 'spectrogram' in plots:
         import matplotlib.cm as cm
         from bokeh.transform import linear_cmap
         from bokeh.models import ColorBar
         from scipy import signal as spsig
 
-        # numCols = np.round(len(electrodes) / maxPlots) + 1
         figs['spectro'] = []
-        #t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
-
         logx_spec = []
 
-        for i,elec in enumerate(electrodes):
-            if elec == 'avg':
-                lfpPlot = np.mean(lfp, axis=1)
-            elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
-                lfpPlot = lfp[:, elec]
-            # creates spectrogram over a range of data
-            # from: http://joelyancey.com/lfp-python-practice/
-            fs = int(1000.0/sim.cfg.recordStep)
-            f, t_spec, x_spec = spsig.spectrogram(lfpPlot, fs=fs, window='hanning',
-                                                  detrend=mlab.detrend_none, nperseg=nperseg, noverlap=noverlap, nfft=NFFT,  mode='psd')
+        # Morlet wavelet transform method
+        if transformMethod == 'morlet':
+            from ..support.morlet import MorletSpec, index2ms
+
+            spec = []
+
+            for i,elec in enumerate(electrodes):
+                if elec == 'avg':
+                    lfpPlot = np.mean(lfp, axis=1)
+                elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
+                    lfpPlot = lfp[:, elec]
+                fs = int(1000.0/sim.cfg.recordStep)
+                t_spec = np.linspace(0, index2ms(len(lfpPlot), fs), len(lfpPlot))
+                spec.append(MorletSpec(lfpPlot, fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq))
+
+            f = np.array(range(minFreq, maxFreq+1, stepFreq))  
             x_mesh, y_mesh = np.meshgrid(t_spec*1000.0, f[f<maxFreq])
-            logx_spec.append(10*np.log10(x_spec[f<maxFreq]))
+            vmin = np.array([s.TFR for s in spec]).min()
+            vmax = np.array([s.TFR for s in spec]).max()
 
-        vmin = np.array(logx_spec).min()
-        vmax = np.array(logx_spec).max()
+            for i,elec in enumerate(electrodes):
+                
+                T = timeRange
+                F = spec[i].f
+                if normSpec:
+                    spec[i].TFR = spec[i].TFR / vmax
+                    S = spec[i].TFR
+                    vc = [0, 1]
+                else:
+                    S = spec[i].TFR
+                    vc = [vmin, vmax]
+                
+                p = figure(
+                    title="Electrode {}".format(str(elec)), 
+                    tools=TOOLS, 
+                    x_range=(0, timeRange[1]), 
+                    y_range=(0, maxFreq), 
+                    x_axis_label = "Time (ms)", 
+                    y_axis_label = "Frequency(Hz)", 
+                    toolbar_location="above", 
+                    #tooltips = [("Time", "$x"), ("Frequency", "$y"), ("Power", "@image")],
+                    )
 
-        for i,elec in enumerate(electrodes):
-            p = figure(title="Electrode {}".format(str(elec)), tools=TOOLS, x_range=(0, timeRange[1]), y_range=(0, maxFreq),
-                       x_axis_label = "Time (ms)", y_axis_label = "Frequency(Hz)")
-            mapper = linear_cmap(field_name='dB/Hz', palette='Spectral11', low=vmin, high=vmax)
-            color_bar = ColorBar(color_mapper=mapper['transform'], width=8, location=(0,0), label_standoff=7, major_tick_line_color=None)
-            p.image(image=[x_mesh, y_mesh, logx_spec[i]], x=0, y=0, color_mapper=mapper['transform'], dw=timeRange[1], dh=100)
-            p.add_layout(color_bar, 'right')
-            figs['spectro'].append(p)
+                mapper = linear_cmap(field_name='dB/Hz', palette=Viridis256, low=vmin, high=vmax)
+                color_bar = ColorBar(color_mapper=mapper['transform'], location=(0,0), label_standoff=15, title='Power')
+                
+                p.image(image=[x_mesh, y_mesh, S], x=0, y=0, color_mapper=mapper['transform'], dw=timeRange[1], dh=100)
+                p.add_layout(color_bar, 'right')
+                figs['spectro'].append(p)
+
+        # FFT transform method
+        elif transformMethod == 'fft':
+
+            for i,elec in enumerate(electrodes):
+                if elec == 'avg':
+                    lfpPlot = np.mean(lfp, axis=1)
+                elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
+                    lfpPlot = lfp[:, elec]
+                # creates spectrogram over a range of data
+                # from: http://joelyancey.com/lfp-python-practice/
+                fs = int(1000.0/sim.cfg.recordStep)
+                f, t_spec, x_spec = spsig.spectrogram(lfpPlot, fs=fs, window='hanning', detrend=mlab.detrend_none, nperseg=nperseg, noverlap=noverlap, nfft=NFFT,  mode='psd')
+                x_mesh, y_mesh = np.meshgrid(t_spec*1000.0, f[f<maxFreq])
+                logx_spec.append(10*np.log10(x_spec[f<maxFreq]))
+
+            vmin = np.array(logx_spec).min()
+            vmax = np.array(logx_spec).max()
+
+            for i,elec in enumerate(electrodes):
+                p = figure(title="Electrode {}".format(str(elec)), tools=TOOLS, x_range=(0, timeRange[1]), y_range=(0, maxFreq),
+                        x_axis_label = "Time (ms)", y_axis_label = "Frequency(Hz)")
+                mapper = linear_cmap(field_name='dB/Hz', palette=Viridis256, low=vmin, high=vmax)
+                color_bar = ColorBar(color_mapper=mapper['transform'], width=8, location=(0,0), label_standoff=7, major_tick_line_color=None)
+                p.image(image=[x_mesh, y_mesh, logx_spec[i]], x=0, y=0, color_mapper=mapper['transform'], dw=timeRange[1], dh=100)
+                p.add_layout(color_bar, 'right')
+                figs['spectro'].append(p)
 
         plot_layout = column(figs['spectro'], sizing_mode='stretch_both')
         html = file_html(plot_layout, CDN, title="LFP Power Spectral Density")
@@ -1529,12 +1589,11 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
             if isinstance(saveFig, str):
                 filename = saveFig
             else:
-                filename = sim.cfg.filename+'_'+'lfp_spectrogram.png'
+                filename = sim.cfg.filename + '_iLFP_timefreq.html'
             file = open(filename, 'w')
             file.write(html)
             file.close()
 
-    return html
 
 
 # -------------------------------------------------------------------------------------------------------------------

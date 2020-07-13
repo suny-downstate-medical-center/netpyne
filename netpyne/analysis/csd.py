@@ -469,7 +469,6 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
 
     elif 'CSD' not in sim_data_categories:
       print('No CSD data to use in sim -- getCSD() did not work') #running getCSD to acquire CSD data')
-      LFP_data = np.array(LFP_input_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]
 
   ############### CONDITION 2 : ARBITRARY CSD DATA ###############
   elif CSD_data is not None:     # arbitrary CSD data exists, and has been given.

@@ -232,7 +232,7 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,timeRange
 
   ## EXPAND CAPABILITY TO INCLUDE LIST OF MULTIPLE FILES 
   ## LOAD SIM DATA FROM JSON FILE
-  elif '.json' in LFP_input_file:
+  elif LFP_input_data is None and '.json' in LFP_input_file:
     data = {}
     with open(LFP_input_file) as file:
       data['json_input_data'] = json.load(file)
@@ -258,7 +258,8 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,timeRange
           csd_data[i]['timeRange'] = sim.cfg.analysis['plotLFP']['timeRange'] # USE LFP TIMERANGE BY DEFAULT
         except:
           csd_data[i]['timeRange'] = [0, data[i]['simConfig']['duration']] # USE WHOLE SIM DURATION IF NOT ACCESSIBLE
-        #timeRange = csd_data[i]['timeRange']        # only works in the 1 input file scenario; expand capability for multiple files 
+          print('timeRange not specified in plotLFP - using whole sim duration for timeRange')
+        timeRange = csd_data[i]['timeRange']        # only works in the 1 input file scenario; expand capability for multiple files 
       else:
         csd_data[i]['timeRange'] = timeRange
 
@@ -281,14 +282,14 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,timeRange
         csd_data[i]['dt'] = dt
 
     ## GET LFP DATA OVER THE SPECIFIED TIME RANGE
-    lfp_data = np.array(full_lfp_data) #[int(timeRange[0]/dt):int(timeRange[1]/dt),:]
+    lfp_data = np.array(full_lfp_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]
 
     ## MAKE ARRAY OF TIME POINTS ## USEFUL FOR GETALLDATA CONDITION
     tt = np.arange(timeRange[0],timeRange[1],dt)
 
 
   ## FOR LIST OF LFP DATA WITHOUT ANY .JSON INPUT FILE 
-  elif len(LFP_input_data) > 0:     # elif LFP_input_file is None and ...
+  elif len(LFP_input_data) > 0 and LFP_input_file is None:     # elif LFP_input_file is None and ...
     ## GET LFP DATA OVER THE SPECIFIED TIME RANGE
     lfp_data = np.array(LFP_input_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]  # get lfp_data in timeRange specified 
 
@@ -468,20 +469,7 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
 
     elif 'CSD' not in sim_data_categories:
       print('No CSD data to use in sim -- getCSD() did not work') #running getCSD to acquire CSD data')
-      # [LFP_data_getCSD, CSD_data_getCSD, timeRange_getCSD, sampr_getCSD, spacing_um_getCSD, dt_getCSD, tt_getCSD] = getCSD(timeRange=timeRange,sampr=sampr,spacing_um=spacing_um,dt=dt,getAllData=True)
-      # LFP_data = LFP_data_getCSD
-      # CSD_data = CSD_data_getCSD
-      # timeRange = timeRange_getCSD
-      # sampr = sampr_getCSD
-      # spacing_um = spacing_um_getCSD
-      # dt = dt_getCSD
-      # tt = tt_getCSD
-
-
-      # except:
-      #   ('getCSD() error: unable to acquire CSD data.')
-      # else:
-
+      LFP_data = np.array(LFP_input_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]
 
   ############### CONDITION 2 : ARBITRARY CSD DATA ###############
   elif CSD_data is not None:     # arbitrary CSD data exists, and has been given.
@@ -505,9 +493,9 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
     else:
       print('ymax = ' + str(ymax))
 
-
+    # NEED tt and LFP_data
     tt = np.arange(timeRange[0], timeRange[1], dt)
-
+    LFP_data = np.array(LFP_input_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]
     # Need to have CSD_data, timeRange, dt, spacing_um, ymax, and tt 
 
 

@@ -558,7 +558,7 @@ Below we add four typical NEURON sources of stimulation, each of a different typ
 	netParams.stimSourceParams['Input_4'] = {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 600, 'noise': 0.1}
 
 
-Now we can map or apply any of the above stimulation sources to any subset of cells in the network by adding items to the ``stimTargetParams`` dict. Note that we can use any of the cell tags (e.g. 'pop', 'cellType' or 'ynorm') to select what cells will be stimulated. Additionally, using the 'cellList' option, we can target a specific list of cells (using relative cell ids) within the subset of cells selected (e.g. first 15 cells of the 'S' population)::
+Now we can map or apply any of the above stimulation sources to any subset of cells in the network by adding items to the ``stimTargetParams`` dict. Note that we can use any of the cell tags (e.g. 'pop', 'cellType' or 'ynorm') to select which cells will be stimulated. Additionally, using the 'cellList' option, we can target a specific list of cells (using relative cell ids) within the subset of cells selected (e.g. first 15 cells of the 'S' population)::
 
 	netParams.stimTargetParams['Input_1->S'] = {'source': 'Input_1', 'sec':'soma', 'loc': 0.8, 'conds': {'pop':'S', 'cellList': range(15)}}
 	netParams.stimTargetParams['Input_2->S'] = {'source': 'Input_2', 'sec':'soma', 'loc': 0.5, 'conds': {'pop':'S', 'ynorm': [0,0.5]}}
@@ -573,11 +573,12 @@ Now we can map or apply any of the above stimulation sources to any subset of ce
 
 Running the above network with different types of stimulation should produce the following raster::
 
-The full tutorial code for this example is available here: :download:`tut6.py <code/tut6.py>`.
-
 .. image:: figs/tut6_raster.png
 	:width: 50%
 	:align: center
+
+
+The full tutorial code for this example is available here: :download:`tut6.py <code/tut6.py>`.
 
 
 Tutorial 7: Modifying the instantiated network interactively

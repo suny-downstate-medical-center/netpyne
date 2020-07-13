@@ -1327,7 +1327,7 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive LFP
 # -------------------------------------------------------------------------------------------------------------------
-#@exception
+@exception
 def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram'], timeRange=None, NFFT=256, noverlap=128, nperseg=256, minFreq=1, maxFreq=100, stepFreq=1, smooth=0, separation=1.0, includeAxon=True, logx=False, logy=False, normSignal=False, normPSD=False, normSpec=False, overlay=False, filtFreq=False, filtOrder=3, detrend=False, transformMethod='morlet', colors=None, saveData=None, saveFig=None, showFig=False, **kwargs):
     
     from .. import sim
@@ -1371,12 +1371,21 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
     # time series plot
     # TODO add scalebar
     if 'timeSeries' in plots:
-        figs['timeSeries'] = figure(title="LFP Time Series Plot", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label="LFP electrode", toolbar_location="above")
+        figs['timeSeries'] = figure(
+            title="LFP Time Series Plot", 
+            tools=TOOLS, 
+            x_axis_label="Time (ms)", 
+            y_axis_label="LFP electrode", 
+            toolbar_location="above")
         figs['timeSeries'].yaxis.major_tick_line_color = None
         figs['timeSeries'].yaxis.minor_tick_line_color = None
         figs['timeSeries'].yaxis.major_label_text_font_size = '0pt'
         figs['timeSeries'].yaxis.axis_line_color = None
         figs['timeSeries'].ygrid.visible = False
+
+        hover = HoverTool(tooltips=[('Time', '@x'), ('Value', '@y')], mode='vline')
+        figs['timeSeries'].add_tools(hover)
+        figs['timeSeries'].legend.click_policy="hide"
 
         ydisp = np.absolute(lfp).max() * separation
         offset = 1.0*ydisp
@@ -1397,11 +1406,6 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
                 color = colors[i%len(colors)]
 
             legend=str(elec)
-            # if len(electrodes) > 1:
-            #     legend=str(elec)
-            # else:
-            #     legend=None
-
             figs['timeSeries'].line(t, lfpPlot+(i*ydisp), color=color, name=str(elec), legend=legend)
 
         data['lfpPlot'] = lfpPlot
@@ -1442,6 +1446,10 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
         for i,elec in enumerate(electrodes):
             p = figure(title="Electrode {}".format(str(elec)), tools=TOOLS, x_axis_label="Frequency (Hz)", y_axis_label="db/Hz",toolbar_location="above")
 
+            hover = HoverTool(tooltips=[('Frequency', '@x'), ('Power', '@y')], mode='vline')
+            p.add_tools(hover)
+            p.legend.click_policy="hide"
+
             if elec == 'avg':
                 lfpPlot = np.mean(lfp, axis=1)
                 color = avg_color
@@ -1476,7 +1484,7 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
             allFreqs.append(freqs)
             allSignal.append(signal)
 
-            p.line(freqs[freqs<maxFreq], signal[freqs<maxFreq], color=color)
+            p.line(freqs[freqs<maxFreq], signal[freqs<maxFreq], color=color, line_width=3)
             figs['psd'].append(p)
 
         plot_layout = column(figs['psd'], sizing_mode='stretch_both')

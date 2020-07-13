@@ -77,7 +77,7 @@ def removemean (x, ax=1):
 ################################################
 ######### GET CSD VALUES FROM LFP DATA #########
 ################################################
-def getCSD (LFP_exists=False,LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,timeRange=None,spacing_um=None,minf=0.05,maxf=300,norm=True,vaknin=False,save_to_sim=True,getAllData=True):
+def getCSD (LFP_exists=False,LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,timeRange=None,spacing_um=None,minf=0.05,maxf=300,norm=True,vaknin=False,save_to_sim=True,getAllData=False):
   """ Extracts CSD values from simulated LFP data 
 
       Parameters
@@ -149,7 +149,7 @@ def getCSD (LFP_exists=False,LFP_input_data=None,LFP_input_file=None,sampr=None,
         True will have this function returns dt, tt, timeRange, sampr, spacing_um, lfp_data, and CSD_data.
         False will return only CSD_data. 
         **Default**
-        ``True``
+        ``False``
   """
 
   ############### DEFAULT -- CONDITION 1 : LFP DATA COMES FROM SIMULATION ###############
@@ -419,7 +419,7 @@ def plotCSD(CSD_exists=False,CSD_data=None,LFP_input_data=None,LFP_overlay=True,
   if CSD_exists is False:
     # Get CSD data
     try:
-      [LFP_input_data, CSD_data, timeRange, sampr, spacing_um, dt, tt] = getCSD(timeRange,sampr,spacing_um,dt)
+      [LFP_input_data, CSD_data, timeRange, sampr, spacing_um, dt, tt] = getCSD(timeRange=timeRange,sampr=sampr,spacing_um=spacing_um,dt=dt,getAllData=True)
     except: 
       ('getCSD() error: unable to acquire CSD data.')
 

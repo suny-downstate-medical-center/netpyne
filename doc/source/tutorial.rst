@@ -135,7 +135,7 @@ In our example we create a cell type we'll call ``PYR``, which we will use in bo
 
 	PYRcell = {'secs': {}}
 	PYRcell['secs']['soma'] = {'geom': {}, 'mechs': {}} 
-	PYRcell['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  # soma geometry
+	PYRcell['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
 	PYRcell['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
 	netParams.cellParams['PYR'] = PYRcell
 
@@ -224,12 +224,12 @@ We will add a rule to randomly connect the sensory to the motor population with 
 
 	## Cell connectivity rules
 	netParams.connParams['S->M'] = { #  S -> M label
-		'preConds': {'pop': 'S'}, 	# conditions of presyn cells
-		'postConds': {'pop': 'M'}, 	# conditions of postsyn cells
-		'probability': 0.5, 		# probability of connection
-		'weight': 0.01, 			# synaptic weight 
-		'delay': 5,					# transmission delay (ms) 
-		'synMech': 'exc'}   		# synaptic mechanism 
+		'preConds': {'pop': 'S'},   # conditions of presyn cells
+		'postConds': {'pop': 'M'},  # conditions of postsyn cells
+		'probability': 0.5,         # probability of connection
+		'weight': 0.01,             # synaptic weight 
+		'delay': 5,                 # transmission delay (ms) 
+		'synMech': 'exc'}           # synaptic mechanism 
 
 
 Simulation configuration options
@@ -242,15 +242,15 @@ The ``simConfig`` object can be used to customize options related to the simulat
 Below we include the options required to run a simulation of 1 second, with integration step of 0.025 ms, record the soma voltage at 0.1 ms intervals, save data (params, network and simulation output) to a pickle file called ``model_output``, plot a network raster, plot the voltage trace of cell with gid ``1``, and plot a 2D representation of the network::
 
 	# Simulation options
-	simConfig = specs.SimConfig()		# object of class SimConfig to store simulation configuration
+	simConfig = specs.SimConfig()       # object of class SimConfig to store simulation configuration
 
-	simConfig.duration = 1*1e3 			# Duration of the simulation, in ms
-	simConfig.dt = 0.025 				# Internal integration timestep to use
-	simConfig.verbose = False  			# Show detailed messages 
+	simConfig.duration = 1*1e3          # Duration of the simulation, in ms
+	simConfig.dt = 0.025                # Internal integration timestep to use
+	simConfig.verbose = False           # Show detailed messages 
 	simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-	simConfig.recordStep = 0.1 			# Step size in ms to save data (e.g. V traces, LFP, etc)
-	simConfig.filename = 'model_output'  # Set file output name
-	simConfig.savePickle = False 		# Save params, network and sim output to pickle file
+	simConfig.recordStep = 0.1          # Step size in ms to save data (e.g. V traces, LFP, etc)
+	simConfig.filename = 'tut2'         # Set file output name
+	simConfig.savePickle = False        # Save params, network and sim output to pickle file
 
 	simConfig.analysis['plotRaster'] = {'saveFig': True}                  # Plot a raster
 	simConfig.analysis['plotTraces'] = {'include': [1], 'saveFig': True}  # Plot recorded traces for this list of cells
@@ -340,28 +340,47 @@ When dealing with large simulations it is sometimes useful to use simpler cell m
 
 The first step is to download the Izhikevich cell NEURON NMODL file which contains the Izhi2007b point process mechanism: :download:`izhi2007b.mod <code/mod/izhi2007b.mod>`
 
-Next we need to compile this .mod file so its ready to use by NEURON::
+Next we need to compile this .mod file so its ready to use by NEURON.  Change to the directory where you downloaded the tutorial and execute the following command::
 
 	nrnivmodl
+
+
+Now we need to rename the HH cell type and create a new cell type for the Izhikevich cell::
+
+	## Cell property rules
+	PYR_HH = {'secs': {}}
+	PYR_HH['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                    # soma params dict
+	PYR_HH['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                               # soma geometry
+	PYR_HH['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanisms
+	PYR_HH['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}                                       # dend params dict
+	PYR_HH['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}                      # dend geometry
+	PYR_HH['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}                  # dend topology 
+	PYR_HH['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70}                                   # dend mechanisms
+	netParams.cellParams['PYR_HH'] = PYR_HH                                                               # add dict to list of cell parameters
+
+	PYR_Izhi = {'secs': {}}
+	PYR_Izhi['secs']['soma'] = {'geom': {}, 'pointps': {}}                        # soma params dict
+	PYR_Izhi['secs']['soma']['geom'] = {'diam': 10.0, 'L': 10.0, 'cm': 31.831}    # soma geometry
+	PYR_Izhi['secs']['soma']['pointps']['Izhi'] = {                               # soma Izhikevich properties
+		'mod':'Izhi2007b', 
+		'C':1, 
+		'k':0.7, 
+		'vr':-60, 
+		'vt':-40, 
+		'vpeak':35, 
+		'a':0.03, 
+		'b':-2, 
+		'c':-50, 
+		'd':100, 
+		'celltype':1} 
+	netParams.cellParams['PYR_Izhi'] = PYR_Izhi                                   # add dict to list of cell parameters
+
+Notice we have added a new field inside the ``soma`` called ``pointps``, which will include the point process mechanisms in the section. In this case we added the ``Izhi2007b`` point process and provided a dict with the Izhikevich cell parameters corresponding to the pyramidal regular spiking cell. Further details and other parameters for the Izhikevich cell model can be found `here. <https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948>`_
 
 Now we need to specify that we want to use the ``Izhi2007b`` ``cellModel`` for the ``S`` population::
 
 	netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'Izhi'} 
-
-And we need to create a new cell rule for the Izhikevich cell. But first we need to specify that the existing rule needs to apply only to 'HH' cell models::
-
-	cellRule = {'label': 'PYR_HH_rule', 'conds': {'cellType': 'PYR', 'cellModel': 'HH'},  'secs': {}} 	# cell rule dict
-
-Finally we can create the new rule for the Izhikevich cell model::
-
-	cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'Izhi'},  'secs': {}} 	# cell rule dict
-	cellRule['secs']['soma'] = {'geom': {}, 'pointps': {}}  											# soma params dict
-	cellRule['secs']['soma']['geom'] = {'diam': 10.0, 'L': 10.0, 'cm': 31.831}  									# soma geometry
-	cellRule['secs']['soma']['pointps']['Izhi'] = {'mod':'Izhi2007b', 'C':1, 'k':0.7, 
-		'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}  		# soma hh mechanisms
-	netParams.cellParams['PYR_Izhi_rule'] = cellRule  												# add dict to list of cell parameters
-
-Notice we have added a new field inside the ``soma`` called ``pointps``, which will include the point process mechanisms in the section. In this case we added the ``Izhi2007b`` point process and provided a dict with the Izhikevich cell parameters corresponding to the pyramidal regular spiking cell. Further details and other parameters for the Izhikevich cell model can be found here: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948 
+	netParams.popParams['M'] = {'cellType': 'PYR_HH', 'numCells': 20}
 
 Congratulations, now you have a hybrid model composed of HH and Izhikevich cells! You can also easily change the cell model used by existing or new populations. 
 

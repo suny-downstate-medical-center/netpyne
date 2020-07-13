@@ -586,7 +586,7 @@ Tutorial 7: Modifying the instantiated network interactively
 
 This example is directed at the more experienced users who might want to interact directly with the NetPyNE generated structure containing the network model and NEURON objects. We will model a Hopfield-Brody network where cells are connected all-to-all and firing synchronize due to mutual inhibition (inhibition from other cells provides a reset, locking them together). The level of synchronization depends on the connection weights, which we will modify interactively.
 
-We begin by creating a new file (``net6.py``) describing a simple network with one population (``hop``) of 50 cells and background input of 50 Hz (similar to the previous simple tutorial example ``tut2.py``). We create all-to-all inhibitory connections within the ``hop`` population, but set the weights to 0 initially:: 
+We begin by creating a new file (``tut7.py``) describing a simple network with one population (``hop``) of 50 cells and background input of 50 Hz (similar to the previous simple tutorial example ``tut2.py``). We create all-to-all inhibitory connections within the ``hop`` population, but set the weights to 0 initially:: 
 
 	from netpyne import specs
 
@@ -596,17 +596,17 @@ We begin by creating a new file (``net6.py``) describing a simple network with o
 
 	netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
-	# Population parameters
-	netParams.popParams['hop'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50} # add dict with params for this pop 
-
 	# Cell parameters
-
 	## PYR cell properties
-	cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}}
-	cellRule['secs']['soma'] = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
-	cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8}
-	cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-	netParams.cellParams['PYR'] = cellRule  # add dict to list of cell properties
+	secs = {}
+	secs['soma'] = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
+	secs['soma']['geom'] = {'diam': 18.8, 'L': 18.8}
+	secs['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
+	netParams.cellParams['PYR'] = {'secs': secs}  # add dict to list of cell properties
+
+	# Population parameters
+	netParams.popParams['hop'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}     # add dict with params for this pop 
+	#netParams.popParams['background'] = {'cellModel': 'NetStim', 'rate': 50, 'noise': 0.5}  # background inputs
 
 	# Synaptic mechanism parameters
 	netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}
@@ -616,10 +616,10 @@ We begin by creating a new file (``net6.py``) describing a simple network with o
 	netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 50, 'noise': 0.5}
 	netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'pop': 'hop'}, 'weight': 0.1, 'delay': 1, 'synMech': 'exc'}
 
-
 	# Connectivity parameters
 	netParams.connParams['hop->hop'] = {
-	    'preConds': {'pop': 'hop'}, 'postConds': {'pop': 'hop'},
+	    'preConds': {'pop': 'hop'}, 
+		'postConds': {'pop': 'hop'},
 	    'weight': 0.0,                      # weight of each connection
 	    'synMech': 'inh',                   # target inh synapse
 	    'delay': 5}       				    # delay 
@@ -633,17 +633,17 @@ We now add the standard simulation configuration options, and include the ``sync
 	simConfig = specs.SimConfig()  # object of class SimConfig to store simulation configuration
 
 	# Simulation options
-	simConfig.duration = 0.5*1e3 		# Duration of the simulation, in ms
-	simConfig.dt = 0.025 				# Internal integration timestep to use
-	simConfig.verbose = False  			# Show detailed messages 
+	simConfig.duration = 0.5*1e3        # Duration of the simulation, in ms
+	simConfig.dt = 0.025                # Internal integration timestep to use
+	simConfig.verbose = False           # Show detailed messages 
 	simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-	simConfig.recordStep = 1 			# Step size in ms to save data (e.g. V traces, LFP, etc)
-	simConfig.filename = 'model_output'  # Set file output name
-	simConfig.savePickle = False 		# Save params, network and sim output to pickle file
+	simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
+	simConfig.filename = 'model_output' # Set file output name
+	simConfig.savePickle = False        # Save params, network and sim output to pickle file
 
-	simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
-	simConfig.analysis['plotTraces'] = {'include': [1]}      # Plot recorded traces for this list of cells
-	simConfig.analysis['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
+	simConfig.analysis['plotRaster'] = {'syncLines': True, 'saveFig': True}      # Plot a raster
+	simConfig.analysis['plotTraces'] = {'include': [1], 'saveFig': True}         # Plot recorded traces for this list of cells
+	simConfig.analysis['plot2Dnet'] = {'saveFig': True}                          # plot 2D cell positions and connections
 
 
 Finally, we add the code to create the network and run the simulation, but for illustration purposes, we use the individual function calls for each step of the process (instead of the all-encompassing ``sim.createAndSimulate()`` function used before)::
@@ -654,17 +654,18 @@ Finally, we add the code to create the network and run the simulation, but for i
 	from netpyne import sim
 
 	# Create network and run simulation
-	sim.initialize(                       # create network object and set cfg and net params
-	    simConfig = simConfig,   # pass simulation config and network params as arguments
-	    netParams = netParams)   
-	sim.net.createPops()                      # instantiate network populations
-	sim.net.createCells()                     # instantiate network cells based on defined populations
-	sim.net.connectCells()                    # create connections between cells based on params
-	sim.setupRecording()                  # setup variables to record for each cell (spikes, V traces, etc)
-	sim.runSim()                          # run parallel Neuron simulation  
-	sim.gatherData()                      # gather spiking data and cell info from each node
-	sim.saveData()                        # save params, cell info and sim output to file (pickle,mat,txt,etc)
-	sim.analysis.plotData()                   # plot spike raster
+	sim.initialize(                     # create network object and set cfg and net params
+		simConfig = simConfig,          # pass simulation config and network params as arguments
+		netParams = netParams)   
+	sim.net.createPops()                # instantiate network populations
+	sim.net.createCells()               # instantiate network cells based on defined populations
+	sim.net.connectCells()              # create connections between cells based on params
+	sim.net.addStims()                  # add stimulation
+	sim.setupRecording()                # setup variables to record for each cell (spikes, V traces, etc)
+	sim.runSim()                        # run parallel Neuron simulation  
+	sim.gatherData()                    # gather spiking data and cell info from each node
+	sim.saveData()                      # save params, cell info and sim output to file (pickle,mat,txt,etc)
+	sim.analysis.plotData()             # plot spike raster
 
 
 If we run the above code, the resulting network 2D map shows the inhibitory connections in blue, although these don't yet have any effect since the weight is 0. The raster plot shows random firing driven by the 50 Hz background inputs, and a low sync measure of 0.26 (vertical red lines illustrate poor synchrony):
@@ -708,7 +709,7 @@ We can therefore call the ``sim.net.modifyConns()`` function to increase all the
 	sim.runSim()                          # run parallel Neuron simulation  
 	sim.gatherData()                      # gather spiking data and cell info from each node
 	sim.saveData()                        # save params, cell info and sim output to file (pickle,mat,txt,etc)
-	sim.analysis.plotData()                   # plot spike raster
+	sim.analysis.plotData()               # plot spike raster
 
 
 
@@ -748,8 +749,6 @@ The resulting plot shows decreased firing rate and increased synchrony due to th
 
 
 The full tutorial code for this example is available here: :download:`tut7.py <code/tut7.py>`.
-
-An alternative version of the code is available here: :download:`hopbrodnetpyne.py <code/hopbrodnetpyne.py>`.
 
 
 Tutorial 8: Running batch simulations

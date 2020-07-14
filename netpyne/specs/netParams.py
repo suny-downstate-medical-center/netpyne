@@ -342,14 +342,15 @@ class NetParams(object):
         if somaAtOrigin:
             somaSec = next((sec for sec in cellRule['secs'] if 'soma' in sec), None)
             if not somaSec or not 'pt3d' in cellRule['secs'][somaSec]['geom']:
-                print('Warning: cannot place soma at origin because soma does not exist or does not contain pt3d')
-                return
-            soma3d = cellRule['secs'][somaSec]['geom']['pt3d']
-            midpoint = int(len(soma3d)/2)
-            somaX, somaY, somaZ = soma3d[midpoint][0:3]
-            for sec in list(cellRule['secs'].values()):
-                for i,pt3d in enumerate(sec['geom']['pt3d']):
-                    sec['geom']['pt3d'][i] = (pt3d[0] - somaX, pt3d[1] - somaY, pt3d[2] - somaZ, pt3d[3])
+                if sim.cfg.verbose:
+                        print('Warning: cannot place soma at origin because soma does not exist or does not contain pt3d')
+            else:
+                soma3d = cellRule['secs'][somaSec]['geom']['pt3d']
+                midpoint = int(len(soma3d)/2)
+                somaX, somaY, somaZ = soma3d[midpoint][0:3]
+                for sec in list(cellRule['secs'].values()):
+                    for i,pt3d in enumerate(sec['geom']['pt3d']):
+                        sec['geom']['pt3d'][i] = (pt3d[0] - somaX, pt3d[1] - somaY, pt3d[2] - somaZ, pt3d[3])
 
         self.addCellParams(label, cellRule)
 

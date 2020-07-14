@@ -331,6 +331,7 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,timeRange
   if save_to_sim is True:   ## FROM SIM 
     try:
       from .. import sim 
+      sim.allSimData['CSD'] = {}
       sim.allSimData['CSD']['timeRange'] = timeRange       # ['CSD']['sim']
       sim.allSimData['CSD']['sampr'] = sampr
       sim.allSimData['CSD']['spacing_um'] = spacing_um 

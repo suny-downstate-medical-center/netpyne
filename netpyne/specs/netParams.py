@@ -330,7 +330,7 @@ class NetParams(object):
     #     return True
 
 
-    def importCellParams(self, label, fileName, cellName, conds={}, cellArgs=None, importSynMechs=False, somaAtOrigin=False, cellInstance=False):
+    def importCellParams(self, label, fileName, cellName, conds={}, cellArgs=None, importSynMechs=False, somaAtOrigin=True, cellInstance=False):
         if cellArgs is None: cellArgs = {}
         if not label:
             label = int(self._labelid)

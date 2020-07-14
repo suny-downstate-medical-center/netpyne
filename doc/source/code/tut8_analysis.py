@@ -125,7 +125,7 @@ def toPandas(params, data):
             colRename.append(colName)
         else: 
             colRename.append(col)
-    print(colRename)
+    #print(colRename)
     df.columns = colRename
 
     return df
@@ -160,7 +160,7 @@ def plot2DRate(dataFolder, batchLabel, params, data, par1, par2, val, valLabel, 
     for k in list(df.popRates[0].keys()): dfpop[k] = [r[k] for r in df.popRates] 
     #return dfpop
 
-    print(dfpop)
+    #print(dfpop)
     # if not valLabel: valLabel = val
     dfsubset = dfpop[[par1,par2,val]] 
         # dfgroup = dfsubset.groupby(by=[par1,par2])

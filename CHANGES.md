@@ -51,6 +51,8 @@
 
 **Documentation improvements**
 
+- Updated and tested online tutorials
+
 - Changed all triple single-quoted docstrings to triple double-quoted
 
 - Improved many docstrings

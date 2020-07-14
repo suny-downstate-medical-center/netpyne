@@ -320,13 +320,15 @@ Here we extend the pyramidal cell type by adding a dendritic section with a pass
 
 We can also update the connectivity rule to specify that the ``S`` cells should connect to the dendrite of ``M`` cells, by adding the dict entry ``'sec': 'dend'`` as follows::
 
-	netParams.connParams['S->M'] = {'preConds': {'pop': 'S'}, 'postConds': {'pop': 'M'},  #  S -> M
-		'probability': 0.5, 		# probability of connection
-		'weight': 0.01, 			# synaptic weight 
-		'delay': 5,					# transmission delay (ms) 
-		'sec': 'dend',				# section to connect to
-		'loc': 1.0,					# location of synapse
-		'synMech': 'exc'}   		# target synaptic mechanism
+	netParams.connParams['S->M'] = {  #  S -> M
+		'preConds': {'pop': 'S'},     # presynaptic conditions
+		'postConds': {'pop': 'M'},    # postsynaptic conditions
+		'probability': 0.5,           # probability of connection
+		'weight': 0.01,               # synaptic weight 
+		'delay': 5,                   # transmission delay (ms) 
+		'sec': 'dend',                # section to connect to
+		'loc': 1.0,                   # location of synapse
+		'synMech': 'exc'}             # target synaptic mechanism
 
 The full tutorial code for this example is available here: :download:`tut3.py <code/tut3.py>`.
 
@@ -399,12 +401,12 @@ We will build a cortical-like network with six populations (three excitatory and
 Since we want to distribute the cells spatially, the first thing we need to do is define the volume dimensions where cells will be placed. By convention we take the X and Z to be the horizontal or lateral dimensions, and Y to be the vertical dimension (representing cortical depth in this case). To define a cuboid with volume of 100x1000x100 um (i.e. horizontal spread of 100x100 um and cortical depth of 1000um) we can use the ``sizeX``, ``sizeY`` and ``sizeZ`` network parameters as follows::
 
 	# Network parameters
-	netParams = specs.NetParams()  # object of class NetParams to store the network parameters
+	netParams = specs.NetParams()     # object of class NetParams to store the network parameters
 
-	netParams.sizeX = 100 # x-dimension (horizontal length) size in um
-	netParams.sizeY = 1000 # y-dimension (vertical height or cortical depth) size in um
-	netParams.sizeZ = 100 # z-dimension (horizontal length) size in um
-	netParams.propVelocity = 100.0 # propagation velocity (um/ms)
+	netParams.sizeX = 100             # x-dimension (horizontal length) size in um
+	netParams.sizeY = 1000            # y-dimension (vertical height or cortical depth) size in um
+	netParams.sizeZ = 100             # z-dimension (horizontal length) size in um
+	netParams.propVelocity = 100.0    # propagation velocity (um/ms)
 	netParams.probLengthConst = 150.0 # length constant for conn probability (um)
 
 Note that we also added two parameters (``propVelocity`` and ``probLengthConst``) which we'll use later for the connectivity rules.
@@ -455,11 +457,11 @@ We can now add the standard simulation configuration options and the code to cre
 	simConfig = specs.SimConfig()        # object of class SimConfig to store simulation configuration
 
 	simConfig.duration = 1*1e3           # Duration of the simulation, in ms
-	simConfig.dt = 0.05                 # Internal integration timestep to use
+	simConfig.dt = 0.05                  # Internal integration timestep to use
 	simConfig.verbose = False            # Show detailed messages 
 	simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 	simConfig.recordStep = 1             # Step size in ms to save data (e.g. V traces, LFP, etc)
-	simConfig.filename = 'tut5'  # Set file output name
+	simConfig.filename = 'tut5'          # Set file output name
 	simConfig.savePickle = False         # Save params, network and sim output to pickle file
 
 	simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True, 'saveFig': True}         # Plot a raster
@@ -517,12 +519,13 @@ Finally, we add inhibitory connections which will project only onto excitatory c
 
 To make the probability of connection decay exponentially as a function of distance with a given length constant (``probLengthConst``), we can use the following distance-based expression: ``'probability': '0.4*exp(-dist_3D/probLengthConst)'``. The code for the inhibitory connectivity rule is therefore::
 
-	netParams.connParams['I->E'] = {
-	 'preConds': {'cellType': 'I'}, 'postConds': {'pop': ['E2','E4','E5']},  #  I -> E
-	  'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
-	  'weight': 0.001,                                      # synaptic weight 
-	  'delay': 'dist_3D/propVelocity',                      # transmission delay (ms) 
-	  'synMech': 'inh'}                                     # synaptic mechanism 
+	netParams.connParams['I->E'] = {                          # I -> E
+		'preConds': {'cellType': 'I'},                        # presynaptic conditions
+		'postConds': {'pop': ['E2','E4','E5']},               # postsynaptic conditions
+		'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
+		'weight': 0.001,                                      # synaptic weight 
+		'delay': 'dist_3D/propVelocity',                      # transmission delay (ms) 
+		'synMech': 'inh'}                                     # synaptic mechanism 
 
 Notice that the 2D network diagram now shows inhibitory connections in blue, and these are mostly local/lateral within layers, due to the distance-related probability restriction. These local inhibitory connections reduce the overall synchrony, introducing some richness into the temporal firing patterns of the network.
 
@@ -599,13 +602,13 @@ We begin by creating a new file (``tut7.py``) describing a simple network with o
 	# Cell parameters
 	## PYR cell properties
 	secs = {}
-	secs['soma'] = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
+	secs['soma'] = {'geom': {}, 'topol': {}, 'mechs': {}}
 	secs['soma']['geom'] = {'diam': 18.8, 'L': 18.8}
 	secs['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
 	netParams.cellParams['PYR'] = {'secs': secs}  # add dict to list of cell properties
 
 	# Population parameters
-	netParams.popParams['hop'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}     # add dict with params for this pop 
+	netParams.popParams['hop'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}      # add dict with params for this pop 
 	#netParams.popParams['background'] = {'cellModel': 'NetStim', 'rate': 50, 'noise': 0.5}  # background inputs
 
 	# Synaptic mechanism parameters
@@ -618,11 +621,11 @@ We begin by creating a new file (``tut7.py``) describing a simple network with o
 
 	# Connectivity parameters
 	netParams.connParams['hop->hop'] = {
-	    'preConds': {'pop': 'hop'}, 
-		'postConds': {'pop': 'hop'},
-	    'weight': 0.0,                      # weight of each connection
-	    'synMech': 'inh',                   # target inh synapse
-	    'delay': 5}       				    # delay 
+		'preConds': {'pop': 'hop'},         # presynaptic conditions
+		'postConds': {'pop': 'hop'},        # postsynaptic conditions
+		'weight': 0.0,                      # weight of each connection
+		'synMech': 'inh',                   # target inh synapse
+		'delay': 5}                         # delay 
 
 
 We now add the standard simulation configuration options, and include the ``syncLines`` option so that raster plots show vertical lines at each spike as an indication of synchrony::
@@ -780,15 +783,15 @@ Lets say we want to explore how the connection weight and the synaptic decay tim
 	... 
 
 	## Cell connectivity rules
-	netParams.connParams['S->M'] = { 	#  S -> M label
-		'preConds': {'pop': 'S'}, 	# conditions of presyn cells
-		'postConds': {'pop': 'M'}, # conditions of postsyn cells
-		'probability': 0.5, 			# probability of connection
-		'weight': cfg.connWeight, 		# synaptic weight
-		'delay': 5,						# transmission delay (ms)
-		'synMech': 'exc'}   			# synaptic mechanism
+	netParams.connParams['S->M'] = {    #  S -> M label
+		'preConds': {'pop': 'S'},       # conditions of presyn cells
+		'postConds': {'pop': 'M'},      # conditions of postsyn cells
+		'probability': 0.5,             # probability of connection
+		'weight': cfg.connWeight,       # synaptic weight
+		'delay': 5,                     # transmission delay (ms)
+		'synMech': 'exc'}               # synaptic mechanism
 
-Therefore, this also requires changing  ``tut8_netParams.py`` to import the ``cfg`` module so that these 2 variables are available. The code will first attempt to load the ``cfg`` module from ``__main__``, which refers to the parent module which was initially executed by the user, in this case, ``tut8_init.py``. As mentioned before, ``tut8_init.py`` is responsible for loading both ``netParams`` and ``cfg`` and running the simulation. If that fails, the code will load ``cfg`` directly from the ``tut8_cfg.py`` file. To implement this we will add the following lines at the beginning of ``tut8_netParams.py``::
+Therefore, this also requires changing  ``tut8_netParams.py`` to import the ``cfg`` module so that these two variables are available. The code will first attempt to load the ``cfg`` module from ``__main__``, which refers to the parent module which was initially executed by the user, in this case, ``tut8_init.py``. As mentioned before, ``tut8_init.py`` is responsible for loading both ``netParams`` and ``cfg`` and running the simulation. If that fails, the code will load ``cfg`` directly from the ``tut8_cfg.py`` file. To implement this we will add the following lines at the beginning of ``tut8_netParams.py``::
 
 	try:
 		from __main__ import cfg  # import SimConfig object with params from parent module
@@ -858,9 +861,9 @@ The ``tut8_batch.py`` should look like this::
 	if __name__ == '__main__':
 		batchTauWeight() 
 
-To run the batch simulations you will need to have MPI properly installed and NEURON configured to use MPI. Run the following command: ``mpiexec -np [num_cores] nrniv -python -mpi tut8_batch.py`` , where ``[num_cores]`` should be replaced with the number of processors you want to use. The minimum required is 2, since one will be used to schedule the jobs (master node); e.g. if you select 4 processors, one will be used to schedule jobs, and the other 3 will run NEURON simulations with different parameter combinations. 
+To run the batch simulations you will need to have MPI properly installed and NEURON configured to use MPI. Run the following command: ``mpiexec -np [num_cores] nrniv -python -mpi tut8_batch.py`` , where ``[num_cores]`` should be replaced with the number of processors you want to use. The minimum required is ``2``, since one will be used to schedule the jobs (master node); e.g. if you select 4 processors, one will be used to schedule jobs, and the other 3 will run NEURON simulations with different parameter combinations. 
 
-Once the simulations are completed you should have a new folder ``tut8_data`` with the following files:
+Once the simulations are complete you should have a new folder ``tut8_data`` with the following files:
 
 * **tauWeight_netParams.py**: a copy of the original netParams file used (``tut8_netParams.py``)
 
@@ -868,7 +871,7 @@ Once the simulations are completed you should have a new folder ``tut8_data`` wi
 
 * **tauWeight_batch.json**: a JSON file with the batch parameters and run option used.
 
-* For each combination of parameters (with x,y representing the indices of the parameter values):
+* For each combination of parameters (with x, y representing the indices of the parameter values):
 	
 	* **tauWeight_x_y_cfg.json**: JSON file with all the ``cfg`` variables copied from ``tut8_cfg.py`` but with the values of ``synMechTau2`` and ``connWeight`` for this specific combination of batch parameters.  
 
@@ -877,9 +880,11 @@ Once the simulations are completed you should have a new folder ``tut8_data`` wi
 	* **tauWeight_x_y_raster.png** and **tauWeight_x_y_traces.png**: output figures for this combination of parameters.
 
 
-To analyze the output data you can download :download:`tut8_analysis.py <code/tut8_analysis.py>`. This file has functions to read and plot a matrix showing the results from the batch simulation results. This file requires the `Pandas <http://pandas.pydata.org/>`_ and `Seaborn <https://seaborn.pydata.org/>`_ packages. IMPORTANT: The analysis functions (``tut8_analysis.py``) will be soon integrated into NetPyNE, and so we won't go into the details of the code.
+To analyze the output data you can download :download:`tut8_analysis.py <code/tut8_analysis.py>`. This file has functions to read and plot a matrix showing the results from the batch simulations. This file requires the `Pandas <http://pandas.pydata.org/>`_ and `Seaborn <https://seaborn.pydata.org/>`_ packages. 
 
-Running ``python tut8_analysis.py`` should produce a color plot showing the relation between the two parameter explored and the firing rate of the ``M`` populations:
+.. note:: The analysis functions in (``tut8_analysis.py``) will be soon integrated into NetPyNE, and so we won't go into the details of the code.
+
+Running ``python tut8_analysis.py`` should produce a color plot showing the relation between the two parameters explored and the firing rate of the ``M`` populations:
 
 .. image:: figs/tut8_analysis.png
 	:width: 50%

@@ -8,6 +8,11 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 # THIRD PARTY IMPORTS
 import numpy as np
 import scipy                                  # for plotCSD()
@@ -30,7 +35,7 @@ from scipy.signal import (cheb2ord, cheby2, convolve, get_window, iirfilter,
 ## LOCAL APPLICATION IMPORTS 
 from .filter import lowpass,bandpass
 #from .utils import exception, _saveFigData, _showFigure
-
+from .utils import _saveFigData 
 
 
 ############################################
@@ -596,10 +601,16 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
   #plt.show()
 
   # SAVE FIGURE
-  if saveFig is True:
-    plt.savefig('csd_fig.svg')
-    plt.savefig('csd_fig.pdf')
-  
+  if saveFig:
+    if isinstance(saveFig, basestring):
+      filename = saveFig
+    else:
+      filename = sim.cfg.filename + '_CSD.png'
+    try:
+      plt.savefig(filename)   #dpi
+    except:
+      plt.savefig('CSD_fig.png')
+
   # DISPLAY FINAL FIGURE
   if showFig is True:
     plt.show()

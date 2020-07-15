@@ -4,7 +4,7 @@ from netpyne import specs, sim
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
 
-## Cell property rules
+## Cell types
 PYR_HH = {'secs': {}}
 PYR_HH['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                    # soma params dict
 PYR_HH['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                               # soma geometry

@@ -292,8 +292,8 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
     fig = figure(
         title="Raster Plot", 
         tools=TOOLS, 
-        active_drag = 'pan', 
-        active_scroll = 'wheel_zoom',
+        active_drag = None, 
+        active_scroll = None,
         tooltips=[('Cell GID', '@y'), ('Spike time', '@x')],
         x_axis_label="Time (ms)", 
         y_axis_label=ylabelText,
@@ -1193,8 +1193,8 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
             if overlay:
                 figs['_gid_' + str(gid)] = figure(title = "Cell {}, Pop {}".format(gid, gidPops[gid]), 
                                                   tools = TOOLS, 
-                                                  active_drag = 'pan', 
-                                                  active_scroll = 'wheel_zoom',
+                                                  active_drag = None, 
+                                                  active_scroll = None,
                                                   x_axis_label="Time (ms)",
                                                   y_axis_label=y_axis_label
                                                   )
@@ -1224,8 +1224,8 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
                     else:
                         subfig = figure(title = "Cell {}, Pop {}".format(gid, gidPops[gid]), 
                                         tools = TOOLS, 
-                                        active_drag = 'pan', 
-                                        active_scroll = 'wheel_zoom',
+                                        active_drag = None, 
+                                        active_scroll = None,
                                         x_axis_label="Time (ms)",
                                         y_axis_label=y_axis_label
                                         )
@@ -1246,8 +1246,8 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
             if overlay:
                 figs['_trace_' + str(trace)] = figure(title = str(trace), 
                                                   tools = TOOLS, 
-                                                  active_drag = 'pan', 
-                                                  active_scroll = 'wheel_zoom',
+                                                  active_drag = None, 
+                                                  active_scroll = None,
                                                   x_axis_label="Time (ms)",
                                                   y_axis_label=y_axis_label
                                                   )
@@ -1277,8 +1277,8 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
                     else:
                         subfig = figure(title = str(trace), 
                                         tools = TOOLS, 
-                                        active_drag = 'pan', 
-                                        active_scroll = 'wheel_zoom',
+                                        active_drag = None, 
+                                        active_scroll = None,
                                         x_axis_label="Time (ms)",
                                         y_axis_label=y_axis_label
                                         )
@@ -1374,6 +1374,8 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
         figs['timeSeries'] = figure(
             title="LFP Time Series Plot", 
             tools=TOOLS, 
+            active_drag = None, 
+            active_scroll = None,
             x_axis_label="Time (ms)", 
             y_axis_label="LFP electrode", 
             toolbar_location="above")
@@ -1444,7 +1446,13 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
                 avg_color = 'white'
 
         for i,elec in enumerate(electrodes):
-            p = figure(title="Electrode {}".format(str(elec)), tools=TOOLS, x_axis_label="Frequency (Hz)", y_axis_label="db/Hz",toolbar_location="above")
+            p = figure(title="Electrode {}".format(str(elec)), 
+                tools=TOOLS, 
+                active_drag = None, 
+                active_scroll = None,
+                x_axis_label="Frequency (Hz)", 
+                y_axis_label="db/Hz",
+                toolbar_location="above")
 
             hover = HoverTool(tooltips=[('Frequency', '@x'), ('Power', '@y')], mode='vline')
             p.add_tools(hover)
@@ -1545,7 +1553,9 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
                 
                 p = figure(
                     title="Electrode {}".format(str(elec)), 
-                    tools=TOOLS, 
+                    tools=TOOLS,
+                    active_drag = None, 
+                    active_scroll = None, 
                     x_range=(0, timeRange[1]), 
                     y_range=(0, maxFreq), 
                     x_axis_label = "Time (ms)", 
@@ -1580,8 +1590,15 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
             vmax = np.array(logx_spec).max()
 
             for i,elec in enumerate(electrodes):
-                p = figure(title="Electrode {}".format(str(elec)), tools=TOOLS, x_range=(0, timeRange[1]), y_range=(0, maxFreq),
-                        x_axis_label = "Time (ms)", y_axis_label = "Frequency(Hz)")
+                p = figure(
+                    title="Electrode {}".format(str(elec)), 
+                    tools=TOOLS, 
+                    active_drag = None, 
+                    active_scroll = None,
+                    x_range=(0, timeRange[1]), 
+                    y_range=(0, maxFreq),
+                    x_axis_label = "Time (ms)", 
+                    y_axis_label = "Frequency(Hz)")
                 mapper = linear_cmap(field_name='dB/Hz', palette=Viridis256, low=vmin, high=vmax)
                 color_bar = ColorBar(color_mapper=mapper['transform'], width=8, location=(0,0), label_standoff=7, major_tick_line_color=None)
                 p.image(image=[x_mesh, y_mesh, logx_spec[i]], x=0, y=0, color_mapper=mapper['transform'], dw=timeRange[1], dh=100)
@@ -1702,8 +1719,8 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
             x_range=pandas_data.columns.values,
             y_range=np.flip(pandas_data.index.values),
             tools = 'hover,save,pan,box_zoom,reset,wheel_zoom',
-            active_drag = 'pan',
-            active_scroll = 'wheel_zoom',
+            active_drag = None,
+            active_scroll = None,
             tooltips=[('Pre', '@pre'), ('Post', '@post'), (feature, '@' + feature)],
             title='Connection ' + feature + ' matrix',
             toolbar_location='below',
@@ -1746,8 +1763,8 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
                 title='Connection ' + feature + ' stacked bar graph',
                 toolbar_location=None, 
                 tools='hover,save,pan,box_zoom,reset,wheel_zoom', 
-                active_drag='pan', 
-                active_scroll = 'wheel_zoom', 
+                active_drag= None, 
+                active_scroll = None, 
                 tooltips=[('Pre', '$name'), ('Post', '@post'), (feature, '@$name')],
                 )
 
@@ -1970,8 +1987,8 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
     fig = figure(
         title="2D Network representation", 
         tools=TOOLS, 
-        active_drag = 'pan', 
-        active_scroll = 'wheel_zoom',
+        active_drag = None, 
+        active_scroll = None,
         tooltips=[('y location', '@y'), ('x location', '@x')],
         x_axis_label="x (um)", 
         y_axis_label='y (um)',
@@ -2111,8 +2128,8 @@ def iplotRxDConcentration(speciesLabel, regionLabel, plane='xy', saveFig=None, s
         title = 'RxD: ' + species.name + ' concentration',
         toolbar_location = 'above', 
         tools = 'hover,save,pan,box_zoom,reset,wheel_zoom', 
-        active_drag = 'pan', 
-        active_scroll = 'wheel_zoom', 
+        active_drag = None, 
+        active_scroll = None, 
         tooltips = [("x", "$x"), ("y", "$y"), ("value", "@image")],
         match_aspect = True,
         x_axis_label = plane[0] + " location (um)", 
@@ -2309,8 +2326,8 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
                 title = 'Spike statistics: ' + xlabels[stat],
                 toolbar_location = 'above', 
                 tools = 'hover,save,pan,box_zoom,reset,wheel_zoom', 
-                active_drag = 'pan', 
-                active_scroll = 'wheel_zoom', 
+                active_drag = None, 
+                active_scroll = None, 
                 tooltips = [(stat, "$y")],
                 x_axis_label = 'Population', 
                 y_axis_label = xlabel,

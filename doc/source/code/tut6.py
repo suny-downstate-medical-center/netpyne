@@ -4,11 +4,11 @@ from netpyne import specs, sim
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
 ## Cell params
-secs = {}  	# sections dict
+secs = {}   # sections dict
 secs['soma'] = {'geom': {}, 'mechs': {}}                                                    # soma params dict
-secs['soma']['geom'] = {'diam': 18.8, 'L': 18.8}                                       		# soma geometry
+secs['soma']['geom'] = {'diam': 18.8, 'L': 18.8}                                            # soma geometry
 secs['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanism
-netParams.cellParams['PYR'] = {'secs': secs}                                                				# add dict to list of cell params
+netParams.cellParams['PYR'] = {'secs': secs}                                                # add dict to list of cell params
 
 ## Population parameters
 netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'} 
@@ -27,7 +27,7 @@ netParams.stimTargetParams['Input_1->S'] = {'source': 'Input_1', 'sec':'soma', '
 netParams.stimTargetParams['Input_2->S'] = {'source': 'Input_2', 'sec':'soma', 'loc': 0.5, 'conds': {'pop':'S', 'ynorm': [0,0.5]}}
 netParams.stimTargetParams['Input_3->M1'] = {'source': 'Input_3', 'sec':'soma', 'loc': 0.2, 'conds': {'pop':'M', 'cellList': [2,4,5,8,10,15,19]}}
 netParams.stimTargetParams['Input_4->PYR'] = {'source': 'Input_4', 'sec':'soma', 'loc': 0.5, 'weight': '0.1+normal(0.2,0.05)','delay': 1,
-                              				'conds': {'cellType':'PYR', 'ynorm': [0.6,1.0]}}
+                                            'conds': {'cellType':'PYR', 'ynorm': [0.6,1.0]}}
 
 
 # Simulation options
@@ -38,11 +38,11 @@ simConfig.dt = 0.025                # Internal integration timestep to use
 simConfig.verbose = False           # Show detailed messages 
 simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 simConfig.recordStep = 0.1          # Step size in ms to save data (eg. V traces, LFP, etc)
-simConfig.filename = 'model_output'  # Set file output name
+simConfig.filename = 'tut6'         # Set file output name
 simConfig.savePickle = False        # Save params, network and sim output to pickle file
 
-simConfig.analysis['plotRaster'] = {'saveFig': 'tut6_raster.png'}#True           # Plot a raster
-simConfig.analysis['plotTraces'] = {'include': [('S',0), ('M',0)]}           # Plot recorded traces for this list of cells
+simConfig.analysis['plotRaster'] = {'saveFig': True}                                 # Plot a raster
+simConfig.analysis['plotTraces'] = {'include': [('S',0), ('M',0)], 'saveFig': True}  # Plot recorded traces for this list of cells
 
 
 # Create network and run simulation

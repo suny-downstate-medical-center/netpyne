@@ -1,11 +1,3 @@
-"""
-params.py 
-
-netParams is a dict containing a set of network parameters using a standardized structure
-
-simConfig is a dict containing a set of simulation configurations using a standardized structure
-"""
-
 from netpyne import specs
 
 ###############################################################################
@@ -39,7 +31,8 @@ netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'pop': 'hop
  
 # Connectivity parameters
 netParams.connParams['hop->hop'] = {
-    'preConds': {'pop': 'hop'}, 'postConds': {'pop': 'hop'},
+    'preConds': {'pop': 'hop'}, 
+    'postConds': {'pop': 'hop'},
     'weight': 0.0,                      # weight of each connection
     'synMech': 'inh',                   # target inh synapse
     'delay': 5}                         # delay 
@@ -59,9 +52,9 @@ simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces
 simConfig.filename = 'model_output' # Set file output name
 simConfig.savePickle = False        # Save params, network and sim output to pickle file
 
-simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
-simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
-simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
+simConfig.analysis['plotRaster'] = {'syncLines': True, 'saveFig': True}      # Plot a raster
+simConfig.analysis['plotTraces'] = {'include': [1], 'saveFig': True}         # Plot recorded traces for this list of cells
+simConfig.analysis['plot2Dnet'] = {'saveFig': True}                          # plot 2D cell positions and connections
 
 
 ###############################################################################
@@ -94,7 +87,7 @@ sim.net.modifyConns({'conds': {'label': 'hop->hop'}, 'weight': 0.5})
 sim.runSim()                          # run parallel Neuron simulation  
 sim.gatherData()                      # gather spiking data and cell info from each node
 sim.saveData()                        # save params, cell info and sim output to file (pickle,mat,txt,etc)
-sim.analysis.plotData()                   # plot spike raster
+sim.analysis.plotData()               # plot spike raster
 
 # modify cells geometry
 sim.net.modifyCells({'conds': {'pop': 'hop'}, 
@@ -109,8 +102,4 @@ if __gui__:
 
 # check model output
 sim.checkOutput('tut7')
-
-
-
-
 

@@ -356,8 +356,8 @@ def getSpktSpkid(cellGids=[], timeRange=None, sim = None):
 _guiTheme = {
     "attrs": {
         "Figure" : {
-            "background_fill_color": "#20262B",
-            "border_fill_color": "#15191C",
+            "background_fill_color": "#434343", #"#20262B",
+            "border_fill_color": "#434343", #"#15191C",
             "outline_line_color": "#E0E0E0",
             "outline_line_alpha": 0.25
         },
@@ -398,8 +398,8 @@ _guiTheme = {
             "label_text_font_size": "1.025em",
 
             "border_line_alpha": 0,
-            "background_fill_alpha": 0.25,
-            "background_fill_color": "#20262B"
+            "background_fill_alpha": 0.5, #0.25,
+            "background_fill_color": "#434343", #"#20262B"
         },
 
         "ColorBar": {
@@ -412,7 +412,7 @@ _guiTheme = {
             "major_label_text_font": "Helvetica",
             "major_label_text_font_size": "1.025em",
 
-            "background_fill_color": "#15191C",
+            "background_fill_color": "#434343", #"#15191C",
             "major_tick_line_alpha": 0,
             "bar_line_alpha": 0
         },

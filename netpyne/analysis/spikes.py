@@ -1793,10 +1793,10 @@ def popAvgRates(tranges = None, show = True):
     
     spkidsList, spktsList = [], []
 
-    if not tranges:
+    if not isinstance(tranges, list):  # True or None
         tranges = [[0, sim.cfg.duration]]
 
-    elif isinstance(tranges, list):
+    if isinstance(tranges, list):
     
         # convert single time interval to list
         if not isinstance(tranges[0], (list, tuple)):

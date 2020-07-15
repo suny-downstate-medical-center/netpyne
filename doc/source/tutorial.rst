@@ -1,23 +1,23 @@
 .. _tutorial:
 
-Tutorial
+NetPyNE Tutorial
 =======================================
 
-This tutorial provides an overview of how to use the NetPyNE python package to create a simple network. 
+This tutorial provides an overview of how to use the NetPyNE Python package to create a simple simulation of a network of neurons. 
 
-Downloading and installation instructions here: :ref:`install`
+Downloading and installation instructions for NetPyNE can be found here: :ref:`install`
 
-A good understanding of python nested dictionaries and lists is recommended, since they are are used to specify the parameters. There are many good online Python courses available, e.g. http://www.codecademy.com/en/tracks/python or https://developers.google.com/edu/python/.
+A good understanding of Python nested dictionaries and lists is recommended, since they are are used to specify the parameters. There are many good online Python courses available, e.g. from `CodeAcademy <https://www.codecademy.com/catalog/language/python/>`_ or `Google <https://developers.google.com/edu/python/>`_.
 
 .. seealso:: For a comprehensive description of all the features available in NetPyNE see :ref:`package_reference`.
 
 .. _simple_example:
 
-Very simple and quick example (Tutorial 1)
-------------------------------------------
-To start in an encouraging way, we will implement the simplest example possible consisting of just 3 lines! This will create a simple network (200 randomly connected cells), run a 1-second simulation, and plot the network raster plot and the voltage trace of a cell. 
+Tutorial 1: Quick and easy example
+-----------------------------------------
+To start in an encouraging way, we will implement the simplest example possible consisting of just three lines! This will create a simple network (200 randomly connected cells), run a one-second simulation, and plot the network spiking raster plot and the voltage trace of a cell. 
 
-You will need to **download** the ``HHTut.py`` example parameter file (`download here <https://raw.githubusercontent.com/Neurosim-lab/netpyne/master/examples/HHTut/HHTut.py>`_ - right click and "Save as" to same folder you are working on)
+You will need to **download** the ``HHTut.py`` example parameter file (`download here <https://raw.githubusercontent.com/Neurosim-lab/netpyne/master/examples/HHTut/HHTut.py>`_ - right click and "Save as" to same folder you are working in).
 
 The code looks like this (available here :download:`tut1.py <code/tut1.py>`)::
 
@@ -30,17 +30,17 @@ The first line imports the ``HHTut`` module with the network and simulation para
 
 The second line imports the ``sim`` module from the ``netpyne`` package. The ``sim`` module provides functions to easily create and simulate networks based on these parameters.
 
-The third line calls the ``createSimulateAnalyze`` function, which runs a standard sequence of commands to create and simulate the network, and save and plot data. It requires the following 2 arguments:
+The third line calls the ``createSimulateAnalyze`` function, which runs a standard sequence of commands to create and simulate the network, and save and plot data. It requires the following two arguments:
 
 * ``netParams`` - an object of class NetParams to store network parameters (e.g. cell properties, populations, connectivity)
 
 * ``simConfig`` - an object of class SimConfig to store simulation options (e.g. duration, dt, recording and plotting options, etc.)
 
-In this case we are using a set of predefined parameters specified in the ``HHTut`` module (Hodgkin-Huxley network example). The ``HHTut`` module contains the 2 required objects: ``netParams`` and ``simConfig``. 
+In this case we are using a set of predefined parameters specified in the ``HHTut`` module (Hodgkin-Huxley network example). The ``HHTut`` module contains the two required objects: ``netParams`` and ``simConfig``. 
 
 To run the model just execute the `tut1.py` script. One way to do this is to run this shell command::
 
-	nrniv -python tut1.py
+	python tut1.py
 
 If you successfully installed MPI (e.g. OpenMPI) and NEURON with MPI support, you can simulate the model in parallel using multiple cores/processors by typing:: 
 
@@ -48,13 +48,13 @@ If you successfully installed MPI (e.g. OpenMPI) and NEURON with MPI support, yo
 
 where you would replace the `4` with the number of cores you want to use.
 
-If you want to avoid typing that long line every time, you can download this simple Unix shell script (:download:`runsim <code/runsim>`) and just type::
+If you want to avoid typing that long line every time, you can download this simple shell script (:download:`runsim <code/runsim>`) and just type::
 
 	./runsim 4 tut1.py
 
-.. note:: To use the script make sure you change its permissions so its executable (e.g. ``chmod +x runsim``) 
+.. note:: To use the script make sure you change its permissions so it is executable (e.g. ``chmod +x runsim``). 
 
-Whatever method you use, you should get a 2D representation of the cells and connections in the network, a raster plot (spikes as cell vs time) and the voltage trace of a single cell: 
+Whatever method you use, you should get a 2D representation of the cells and connections in the network, a raster plot (spikes as cell versus time) and the voltage trace of a single cell: 
 
 .. image:: figs/tut1_net.png
 	:width: 30%
@@ -68,20 +68,20 @@ Whatever method you use, you should get a 2D representation of the cells and con
 
 Congratulations! You have created and simulated a biological neuronal network in NEURON! 
 
-.. note:: In some systems the figures that pop up may be empty. This can be fixed by adding this line to the end of your tut1.py: ``import pylab; pylab.show()`` . In any case, the raster plot and the voltage trace figures will be correctly saved to disk as ``raster.png`` and ``traces.png``.
+.. note:: In some systems the figures that appear may be empty. This can be fixed by adding this line to the end of your tut1.py: ``import pylab; pylab.show()`` . In any case, the raster plot and the voltage trace figures will be correctly saved to disk as ``HHTut_raster.png`` and ``HHTut_traces.png``.
 
 In the remainder of this tutorial we will see how to easily specify your own parameters to create custom networks and simulations. For simplicity, the network parameters, simulation options and calls to functions (necessary to create the network, simulate it and plot the results) will all be included in a single file. For larger models it is recommended to keep model specification parameters and function calls in separate files (see `examples here <https://https://github.com/Neurosim-lab/netpyne/tree/master/examples>`_.)
 
 We begin with an overview of the Python objects where you will define all your network parameters.
 
-Network parameters (Tutorial 2)
--------------------------------
+Tutorial 2: Network parameters
+------------------------------
 
 The ``netParams`` object includes all the information necessary to define your network. It is composed of the following 8 ordered dictionaries:
 
-* ``popParams`` - populations in the network and their parameters
-
 * ``cellParams`` - cell property rules and their associated parameters (e.g. cell geometry)
+
+* ``popParams`` - populations in the network and their parameters
 
 * ``synMechParams`` - synaptic mechanisms and their parameters
 
@@ -105,7 +105,7 @@ The ``netParams`` organization is consistent with the standard sequence of event
 
 * creates a ``Network`` object and adds inside a set of ``Population`` and ``Cell`` objects based on ``popParams``
 
-* sets the cell properties based on ``cellParams`` (checking which cells match the conditions of each rule) 
+* sets the cell properties based on ``cellParams``  
 
 * creates a set of connections based on ``connParams`` and ``subConnParams`` (checking which presynpatic and postsynaptic cells match the conn rule conditions), and using the synaptic parameters in ``synMechParams``.
 
@@ -124,10 +124,35 @@ We will now create a new model file (call it ``tut2.py``) where we will specify 
 	# Network parameters
 	netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
-Populations
-^^^^^^^^^^^^^^^^^^^^^^
+Cell property rules
+^^^^^^^^^^^^^^^^^^^
 
-First, we need to create some populations for our network, by adding items to the ``popParams`` dictionary in ``netParams``. Each ``popParams`` item includes a key (population label) and a value consisting of a dictionary with the following population parameters (see :ref:`pop_params` for more details):
+First, we need to define the properties of each cell type, by adding items to the ``cellParams`` dictionary. Each ``cellParams`` item includes a key (the cell type) and a value consisting of a dictionary with the following field:
+
+* ``secs`` - dictionary containing the properties of sections, e.g. geometry, mechanisms
+
+In our example we create a cell type we'll call ``PYR``, which we will use in both our populations. We specify that we want them to have a section labeled ``soma`` with a certain geometry and a Hodgkin-Huxley mechanism (``hh``)::
+
+	PYRcell = {'secs': {}}
+	PYRcell['secs']['soma'] = {'geom': {}, 'mechs': {}} 
+	PYRcell['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                           # soma geometry
+	PYRcell['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+	netParams.cellParams['PYR'] = PYRcell
+
+
+Take a moment to examine the nested dictionary structure used to define the cell type. Notice the use of empty dictionaries (``{}``) and intermediate dictionaries (e.g. ``PYRcell``) to facilitate filling in the parameters. There are other equivalent methods to add this rule, such as::
+
+	netParams.cellParams['PYR'] = {	
+		'secs': {'soma':
+			{'geom': {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}, 
+			'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}}}}) 
+
+
+
+Populations
+^^^^^^^^^^^
+
+Now we need to create some populations for our network, by adding items to the ``popParams`` dictionary in ``netParams``. Each ``popParams`` item includes a key (population label) and a value consisting of a dictionary with the following population parameters (see :ref:`pop_params` for more details):
 
 
 * ``cellType`` - an attribute/tag assigned to cells in this population, can later be used to set certain cell properties to cells with this tag.
@@ -136,54 +161,18 @@ First, we need to create some populations for our network, by adding items to th
 
 * ``cellModel`` - an attribute or tag that will be assigned to cells in this population, can later be used to set specific cell model implementation for cells with this tag. e.g. 'HH' (standard Hodkgin-Huxley type cell model) or 'Izhi2007b' (Izhikevich 2007 point neuron model). Cell models can be defined by the user or imported.
 
-We will start by creating 2 populations labeled ``S`` (sensory) and ``M`` (motor), with ``20`` cells each, of type ``PYR`` (pyramidal), and using ``HH`` cell model (standard compartmental Hodgkin-Huxley type cell).
+We will start by creating two populations labeled ``S`` (sensory) and ``M`` (motor), with 20 cells each, of type ``PYR`` (pyramidal), and using ``HH`` cell model (standard compartmental Hodgkin-Huxley type cell).
 
 ::
 
 	## Population parameters
-	netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'} 
-	netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'} 
+	netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20}
+	netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20} 
 
 During execution, this will tell NetPyNE to create 40 ``Cell`` objects, each of which will include the attributes or tags of its population, i.e. 'cellType': 'PYR', etc. These tags can later be used to define the properties of the cells, or connectivity rules.
 
 
-To get a better intuition of the data structure, you can ``print netParams.popParams`` to see all the populations parameters, or print ``print netParams.popParams['M']`` to see the parameters of population 'M'.
-
-Cell property rules
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Now we need to define the properties of each cell type, by adding items to the ``cellParams`` dictionary. Each ``cellParams`` item includes a key (cell rule label) and a value consisting of a dictionary with the following two fields:
-
-* ``conds`` - these arbitrary conditions need to be met by cells in order to apply them these cell properties. Usually defined specifying an attribute/tag of the cell and the required value e.g. 'cellType': 'PYR'
-
-* ``secs`` - dictionary containing the properties of sections, e.g. geometry, mechanisms
-
-The idea of conditional cell properties is that you can apply cell properties to subsets of neurons - e.g. only those neurons of a given cell type, and/or of a given population, and/or within a certain range of locations. 
-
-In our example we create a cell property rule that applies to all cells where the ``cellType`` = ``PYR``, therefore applying to our two populations (``S`` and ``P``) currently composed of pyramidal cells. We specify that we want them to have a section labeled ``soma`` with a certain geometry, a Hodgkin-Huxley mechanism (``hh``)::
-
-	cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}} 	# cell rule dict
-	cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}  													# soma params dict
-	cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  								# soma geometry
-	cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  	# soma hh mechanism
-	netParams.cellParams['PYRrule'] = cellRule  
-
-
-Take a moment to examine the nested dictionary structure used to define the cell property rule. Notice the use of empty dictionaries (``{}``) and intermediate dictionaries (e.g. ``cellRule``) to facilitate filling in the parameters. There are other equivalent methods to add this rule, such as::
-
-	netParams.cellParams['PYRrule'] = {		# cell rule label
-		'conds': {'cellType': 'PYR'},  	# properties will be applied to cells that match these conditions	
-		'secs': {'soma':					# sections 
-			{'geom': {'diam': 18.8, 'L': 18.8, 'Ra': 123.0},		# geometry 
-			'mechs': {'hh': {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}}}}) 	# mechanisms
-
-
-All methods are equally valid as long as the resulting structure looks like this (order of elements doesn't matter in dictionaries)::
-
-	>>> netParams.cellParams['PYRrule']
-	{'conds': {'cellType': 'PYR'},
- 	'secs': {'soma': {'geom': {'L': 18.8, 'Ra': 123.0, 'diam': 18.8},
-    	'mechs': {'hh': {'el': -70, 'gkbar': 0.036, 'gl': 0.003, 'gnabar': 0.12}}}}}
+To get a better intuition of the data structure, you can ``print(netParams.popParams)`` to see all the populations parameters, or print ``print(netParams.popParams['M'])`` to see the parameters of population 'M'.
 
 
 Synaptic mechanisms parameters
@@ -202,7 +191,7 @@ Synaptic mechanisms will be added to cells as required during the connection pha
 
 
 Stimulation
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^
 
 Let's now add a some background stimulation to the cells using ``NetStim`` (NEURON's artificial spike generator). We will create a source of stimulation labeled ``bkg`` and we will specify we want a firing rate of ``100`` Hz and with a noise level of ``0.5``::
 
@@ -215,7 +204,7 @@ Next we will specify what cells will be targeted by this stimulation. In this ca
 
  
 Connectivity rules
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
 
 Finally, we need to specify how to connect the cells, by adding items (connectivity rules) to the ``connParams`` dictionary. Each ``connParams`` item includes a key (conn rule label), and a values  consisting of a dictionary with the following fields:
 
@@ -235,16 +224,16 @@ We will add a rule to randomly connect the sensory to the motor population with 
 
 	## Cell connectivity rules
 	netParams.connParams['S->M'] = { #  S -> M label
-		'preConds': {'pop': 'S'}, # conditions of presyn cells
-		'postConds': {'pop': 'M'}, # conditions of postsyn cells
-		'probability': 0.5, 		# probability of connection
-		'weight': 0.01, 			# synaptic weight 
-		'delay': 5,					# transmission delay (ms) 
-		'synMech': 'exc'}   		# synaptic mechanism 
+		'preConds': {'pop': 'S'},   # conditions of presyn cells
+		'postConds': {'pop': 'M'},  # conditions of postsyn cells
+		'probability': 0.5,         # probability of connection
+		'weight': 0.01,             # synaptic weight 
+		'delay': 5,                 # transmission delay (ms) 
+		'synMech': 'exc'}           # synaptic mechanism 
 
 
 Simulation configuration options
----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Above we defined all the parameters related to the network model. Here we will specify the parameters or configuration of the simulation itself (e.g. duration), which is independent of the network.
 
@@ -253,25 +242,25 @@ The ``simConfig`` object can be used to customize options related to the simulat
 Below we include the options required to run a simulation of 1 second, with integration step of 0.025 ms, record the soma voltage at 0.1 ms intervals, save data (params, network and simulation output) to a pickle file called ``model_output``, plot a network raster, plot the voltage trace of cell with gid ``1``, and plot a 2D representation of the network::
 
 	# Simulation options
-	simConfig = specs.SimConfig()		# object of class SimConfig to store simulation configuration
+	simConfig = specs.SimConfig()       # object of class SimConfig to store simulation configuration
 
-	simConfig.duration = 1*1e3 			# Duration of the simulation, in ms
-	simConfig.dt = 0.025 				# Internal integration timestep to use
-	simConfig.verbose = False  			# Show detailed messages 
+	simConfig.duration = 1*1e3          # Duration of the simulation, in ms
+	simConfig.dt = 0.025                # Internal integration timestep to use
+	simConfig.verbose = False           # Show detailed messages 
 	simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-	simConfig.recordStep = 0.1 			# Step size in ms to save data (e.g. V traces, LFP, etc)
-	simConfig.filename = 'model_output'  # Set file output name
-	simConfig.savePickle = False 		# Save params, network and sim output to pickle file
+	simConfig.recordStep = 0.1          # Step size in ms to save data (e.g. V traces, LFP, etc)
+	simConfig.filename = 'tut2'         # Set file output name
+	simConfig.savePickle = False        # Save params, network and sim output to pickle file
 
-	simConfig.analysis['plotRaster'] = True 			# Plot a raster
-	simConfig.analysis['plotTraces'] = {'include': [1]} 			# Plot recorded traces for this list of cells
-	simConfig.analysis['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
+	simConfig.analysis['plotRaster'] = {'saveFig': True}                  # Plot a raster
+	simConfig.analysis['plotTraces'] = {'include': [1], 'saveFig': True}  # Plot recorded traces for this list of cells
+	simConfig.analysis['plot2Dnet'] = {'saveFig': True}                   # plot 2D cell positions and connections
 
 The complete list of simulation configuration options is available here: :ref:`sim_config`.
 
 
 Network creation and simulation
------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Now that we have defined all the network parameters and simulation options, we are ready to actually create the network and run the simulation. To do this we use the ``createSimulateAnalyze`` function from the ``sim`` module, and pass as arguments the ``netParams`` and ``simConfig`` dicts we have just created::
 
@@ -285,7 +274,7 @@ To run the model we can use any of the methods previously described in :ref:`sim
 
 If mpi not installed::
 
-	nrniv -python tut2.py
+	python tut2.py
 
 If mpi working::
 
@@ -309,67 +298,91 @@ You should get the raster plot and voltage trace figures shown below. Notice how
 Feel free to explore the effect of changing any of the model parameters, e.g. number of cells, background or S->M weights, cell geometry or biophysical properties, etc.
 
 
-Adding a compartment (dendrite) to cells (Tutorial 3)
--------------------------------------------------------
+Tutorial 3: Adding a compartment (dendrite) to cells
+----------------------------------------------------
 
 Here we extend the pyramidal cell type by adding a dendritic section with a passive mechanism. Note that for the ``dend`` section we included the ``topol`` dict defining how it connects to its parent ``soma`` section::
 
 	## Cell property rules
-	cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}} 	# cell rule dict
-	cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}  											# soma params dict
-	cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  									# soma geometry
-	cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanisms
-	cellRule['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}  								# dend params dict
-	cellRule['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}							# dend geometry
-	cellRule['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}						# dend topology 
-	cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 										# dend mechanisms
-	netParams.cellParams['PYRrule'] = cellRule  												# add dict to list of cell parameters
+	PYRcell = {'secs': {}}
+
+	PYRcell['secs']['soma'] = {'geom': {}, 'mechs': {}}  
+	PYRcell['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  
+	PYRcell['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
+
+	PYRcell['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}} 
+	PYRcell['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1} 
+	PYRcell['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0} 
+	PYRcell['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 
+
+	netParams.cellParams['PYR'] = PYRcell
 
 
 We can also update the connectivity rule to specify that the ``S`` cells should connect to the dendrite of ``M`` cells, by adding the dict entry ``'sec': 'dend'`` as follows::
 
-	netParams.connParams['S->M'] = {'preConds': {'pop': 'S'}, 'postConds': {'pop': 'M'},  #  S -> M
-		'probability': 0.5, 		# probability of connection
-		'weight': 0.01, 			# synaptic weight 
-		'delay': 5,					# transmission delay (ms) 
-		'sec': 'dend',				# section to connect to
-		'loc': 1.0,				# location of synapse
-		'synMech': 'exc'}   		# target synaptic mechanism
+	netParams.connParams['S->M'] = {  #  S -> M
+		'preConds': {'pop': 'S'},     # presynaptic conditions
+		'postConds': {'pop': 'M'},    # postsynaptic conditions
+		'probability': 0.5,           # probability of connection
+		'weight': 0.01,               # synaptic weight 
+		'delay': 5,                   # transmission delay (ms) 
+		'sec': 'dend',                # section to connect to
+		'loc': 1.0,                   # location of synapse
+		'synMech': 'exc'}             # target synaptic mechanism
 
 The full tutorial code for this example is available here: :download:`tut3.py <code/tut3.py>`.
 
 If you run the network, you will observe the new dendritic compartment has the effect of reducing the firing rate.
 
 
-Using a simplified cell model (Izhikevich) (Tutorial 4)
---------------------------------------------------------------------
+Tutorial 4: Using a simplified cell model (Izhikevich)
+------------------------------------------------------
 
 When dealing with large simulations it is sometimes useful to use simpler cell models for some populations, in order to gain speed. Here we will replace the HH model with the simpler Izhikevich cell model only for cells in the sensory (``S``) population. 
 
 The first step is to download the Izhikevich cell NEURON NMODL file which contains the Izhi2007b point process mechanism: :download:`izhi2007b.mod <code/mod/izhi2007b.mod>`
 
-Next we need to compile this .mod file so its ready to use by NEURON::
+Next we need to compile this .mod file so its ready to use by NEURON.  Change to the directory where you downloaded the tutorial and mod file and execute the following command::
 
 	nrnivmodl
 
-Now we need to specify that we want to use the ``Izhi2007b`` ``cellModel`` for the ``S`` population::
 
-	netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'Izhi'} 
+Now we rename the HH cell type and create a new cell type for the Izhikevich cell::
 
-And we need to create a new cell rule for the Izhikevich cell. But first we need to specify that the existing rule needs to apply only to 'HH' cell models::
+	## Cell property rules
+	PYR_HH = {'secs': {}}
+	PYR_HH['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                    # soma params dict
+	PYR_HH['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                               # soma geometry
+	PYR_HH['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanisms
+	PYR_HH['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}                                       # dend params dict
+	PYR_HH['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}                      # dend geometry
+	PYR_HH['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}                  # dend topology 
+	PYR_HH['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70}                                   # dend mechanisms
+	netParams.cellParams['PYR_HH'] = PYR_HH                                                               # add dict to list of cell parameters
 
-	cellRule = {'label': 'PYR_HH_rule', 'conds': {'cellType': 'PYR', 'cellModel': 'HH'},  'secs': {}} 	# cell rule dict
+	PYR_Izhi = {'secs': {}}
+	PYR_Izhi['secs']['soma'] = {'geom': {}, 'pointps': {}}                        # soma params dict
+	PYR_Izhi['secs']['soma']['geom'] = {'diam': 10.0, 'L': 10.0, 'cm': 31.831}    # soma geometry
+	PYR_Izhi['secs']['soma']['pointps']['Izhi'] = {                               # soma Izhikevich properties
+		'mod':'Izhi2007b', 
+		'C':1, 
+		'k':0.7, 
+		'vr':-60, 
+		'vt':-40, 
+		'vpeak':35, 
+		'a':0.03, 
+		'b':-2, 
+		'c':-50, 
+		'd':100, 
+		'celltype':1} 
+	netParams.cellParams['PYR_Izhi'] = PYR_Izhi                                   # add dict to list of cell parameters
 
-Finally we can create the new rule for the Izhikevich cell model::
+Notice we have added a new field inside the ``soma`` called ``pointps``, which will include the point process mechanisms in the section. In this case we added the ``Izhi2007b`` point process and provided a dict with the Izhikevich cell parameters corresponding to the pyramidal regular spiking cell. Further details and other parameters for the Izhikevich cell model can be found `here. <https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948>`_
 
-	cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'Izhi'},  'secs': {}} 	# cell rule dict
-	cellRule['secs']['soma'] = {'geom': {}, 'pointps': {}}  											# soma params dict
-	cellRule['secs']['soma']['geom'] = {'diam': 10.0, 'L': 10.0, 'cm': 31.831}  									# soma geometry
-	cellRule['secs']['soma']['pointps']['Izhi'] = {'mod':'Izhi2007b', 'C':1, 'k':0.7, 
-		'vr':-60, 'vt':-40, 'vpeak':35, 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}  		# soma hh mechanisms
-	netParams.cellParams['PYR_Izhi_rule'] = cellRule  												# add dict to list of cell parameters
+Now we need to specify that we want to use the ``PYR_Izhi`` ``cellType`` for the ``S`` population::
 
-Notice we have added a new field inside the ``soma`` called ``pointps``, which will include the point process mechanisms in the section. In this case we added the ``Izhi2007b`` point process and provided a dict with the Izhikevich cell parameters corresponding to the pyramidal regular spiking cell. Further details and other parameters for the Izhikevich cell model can be found here: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948 
+	netParams.popParams['S'] = {'cellType': 'PYR_Izhi', 'numCells': 20} 
+	netParams.popParams['M'] = {'cellType': 'PYR_HH', 'numCells': 20}
 
 Congratulations, now you have a hybrid model composed of HH and Izhikevich cells! You can also easily change the cell model used by existing or new populations. 
 
@@ -378,51 +391,51 @@ The full tutorial code for this example is available here: :download:`tut4.py <c
 .. seealso:: NetPyNE also supports importing cells defined in other files (e.g. in hoc cell templates, or python classes). See :ref:`importing_cells` for details and examples.
 
 
-Position and distance based connectivity (Tutorial 5)
----------------------------------------------------------
+Tutorial 5: Position- and distance-based connectivity
+-----------------------------------------------------
 
-The following example demonstrates how to spatially separate populations, add inhibitory populations, and implement weights, probabilities of connection and delays that depend on cell positions or distances.
+The following example demonstrates how to spatially separate populations, add inhibitory populations, and implement weights, probabilities of connection, and delays that depend on cell positions or distances.
 
-We will build a cortical-like network with 6 populations (3 excitatory and 3 inhibitory) distributed in 3 layers: 2/3, 4 and 5. Create a new empty file called ``tut5.py`` and let's add the required code.   
+We will build a cortical-like network with six populations (three excitatory and three inhibitory) distributed in three layers: 2/3, 4 and 5. Create a new empty file called ``tut5.py`` and let's add the required code.   
 
-Since we want to distribute the cells spatially, the first thing we need to do is define the volume dimensions where cells will be placed. By convention we take the X and Z to be the horizontal or lateral dimensions, and Y to be the vertical dimension (representing cortical depth in this case.) To define a cuboid with volume of 100x1000x100 um (i.e. horizontal spread of 100x100 um and cortical depth of 1000um) we can use the ``sizeX``, ``sizeY`` and ``sizeZ`` network parameters as follows::
+Since we want to distribute the cells spatially, the first thing we need to do is define the volume dimensions where cells will be placed. By convention we take the X and Z to be the horizontal or lateral dimensions, and Y to be the vertical dimension (representing cortical depth in this case). To define a cuboid with volume of 100x1000x100 um (i.e. horizontal spread of 100x100 um and cortical depth of 1000um) we can use the ``sizeX``, ``sizeY`` and ``sizeZ`` network parameters as follows::
 
 	# Network parameters
-	netParams = specs.NetParams()  # object of class NetParams to store the network parameters
+	netParams = specs.NetParams()     # object of class NetParams to store the network parameters
 
-	netParams.sizeX = 100 # x-dimension (horizontal length) size in um
-	netParams.sizeY = 1000 # y-dimension (vertical height or cortical depth) size in um
-	netParams.sizeZ = 100 # z-dimension (horizontal length) size in um
-	netParams.propVelocity = 100.0 # propagation velocity (um/ms)
+	netParams.sizeX = 100             # x-dimension (horizontal length) size in um
+	netParams.sizeY = 1000            # y-dimension (vertical height or cortical depth) size in um
+	netParams.sizeZ = 100             # z-dimension (horizontal length) size in um
+	netParams.propVelocity = 100.0    # propagation velocity (um/ms)
 	netParams.probLengthConst = 150.0 # length constant for conn probability (um)
 
 Note that we also added two parameters (``propVelocity`` and ``probLengthConst``) which we'll use later for the connectivity rules.
 
-Next we can create our background input population and the 6 cortical populations labeled according to the cell type and layer e.g. 'E2' for excitatory cells in layer 2. We can define the cortical depth range of each population by using the ``yRange`` parameter, e.g. to place layer 2 cells between 100 and 300 um depth: ``'yRange': [100,300]``. This range can also be specified using normalized values, e.g. ``'yRange': [0.1,0.3]``. In the code below we provide examples of both methods for illustration::
-
-	## Population parameters
-	netParams.popParams['E2'] = {'cellType': 'E', 'numCells': 50, 'yRange': [100,300], 'cellModel': 'HH'}
-	netParams.popParams['I2'] = {'cellType': 'I', 'numCells': 50, 'yRange': [100,300], 'cellModel': 'HH'} 
-	netParams.popParams['E4'] = {'cellType': 'E', 'numCells': 50, 'yRange': [300,600], 'cellModel': 'HH'} 
-	netParams.popParams['I4'] = {'cellType': 'I', 'numCells': 50, 'yRange': [300,600], 'cellModel': 'HH'} 
-	netParams.popParams['E5'] = {'cellType': 'E', 'numCells': 50, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'} 
-	netParams.popParams['I5'] = {'cellType': 'I', 'numCells': 50, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'} 
-
-
 Next we define the cell properties of each type of cell ('E' for excitatory and 'I' for inhibitory). We have made minor random modifications of some cell parameters just to illustrate that different cell types can have different properties::
 	
 	## Cell property rules
-	cellRule = {'conds': {'cellType': 'E'},  'secs': {}}  # cell rule dict
-	cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                              # soma params dict
-	cellRule['secs']['soma']['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0}                   # soma geometry
-	cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.13, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanism
-	netParams.cellParams['Erule'] = cellRule                          # add dict to list of cell params
+	secs = {} # sections dict
+	secs['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+	secs['soma']['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0}                               # soma geometry
+	secs['soma']['mechs']['hh'] = {'gnabar': 0.13, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+	netParams.cellParams['E'] = {'secs': secs}                                              # add dict to list of cell params
 
-	cellRule = {'conds': {'cellType': 'I'},  'secs': {}}  # cell rule dict
-	cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                              # soma params dict
-	cellRule['secs']['soma']['geom'] = {'diam': 10.0, 'L': 9.0, 'Ra': 110.0}                  # soma geometry
-	cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.11, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanism
-	netParams.cellParams['Irule'] = cellRule                          # add dict to list of cell params
+	secs = {} # sections dict
+	secs['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+	secs['soma']['geom'] = {'diam': 10.0, 'L': 9.0, 'Ra': 110.0}                            # soma geometry
+	secs['soma']['mechs']['hh'] = {'gnabar': 0.11, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+	netParams.cellParams['I'] = {'secs': secs}                                              # add dict to list of cell params
+
+Next we can create our background input population and the six cortical populations labeled according to the cell type and layer e.g. 'E2' for excitatory cells in layer 2. We can define the cortical depth range of each population by using the ``yRange`` parameter, e.g. to place layer 2 cells between 100 and 300 um depth: ``'yRange': [100,300]``. This range can also be specified using normalized values, e.g. ``'yRange': [0.1,0.3]``. In the code below we provide examples of both methods for illustration::
+
+	## Population parameters
+	netParams.popParams['E2'] = {'cellType': 'E', 'numCells': 50, 'yRange': [100,300]}
+	netParams.popParams['I2'] = {'cellType': 'I', 'numCells': 50, 'yRange': [100,300]}
+	netParams.popParams['E4'] = {'cellType': 'E', 'numCells': 50, 'yRange': [300,600]}
+	netParams.popParams['I4'] = {'cellType': 'I', 'numCells': 50, 'yRange': [300,600]}
+	netParams.popParams['E5'] = {'cellType': 'E', 'numCells': 50, 'ynormRange': [0.6,1.0]}
+	netParams.popParams['I5'] = {'cellType': 'I', 'numCells': 50, 'ynormRange': [0.6,1.0]}
+
 
 As in previous examples we also add the parameters of the excitatory and inhibitory synaptic mechanisms, which will be added to cells when the connections are created::
 
@@ -431,7 +444,7 @@ As in previous examples we also add the parameters of the excitatory and inhibit
 	netParams.synMechParams['inh'] = {'mod': 'Exp2Syn', 'tau1': 0.6, 'tau2': 8.5, 'e': -75}  # GABA synaptic mechanism
 
 
-In terms of stimulation, we'll add background inputs to all cell in the network. The weight will be fixed to 0.01, but we'll make the delay come from a gaussian distribution with mean 5 ms and standard deviation 2, and have a minimum value of 1 ms. We can do this using string-based functions: ``'max(1, normal(5,2)'``. As detailed in section :ref:`function_string`, string-based functions allow you to define connectivity params using many Python mathematical operators and functions. The full code to add background stimulation looks like this::
+In terms of stimulation, we'll add background inputs to all cell in the network. The weight will be fixed to 0.01, but we'll make the delay come from a gaussian distribution with mean 5 ms and standard deviation 2, and have a minimum value of 1 ms. We can do this using string-based functions: ``'max(1, normal(5,2)'``. As detailed in section :ref:`function_string`, string-based functions allow you to define connectivity parameters using many Python mathematical operators and functions. The full code to add background stimulation looks like this::
 
 	# Stimulation parameters
 	netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 20, 'noise': 0.3}
@@ -444,22 +457,22 @@ We can now add the standard simulation configuration options and the code to cre
 	simConfig = specs.SimConfig()        # object of class SimConfig to store simulation configuration
 
 	simConfig.duration = 1*1e3           # Duration of the simulation, in ms
-	simConfig.dt = 0.05                 # Internal integration timestep to use
+	simConfig.dt = 0.05                  # Internal integration timestep to use
 	simConfig.verbose = False            # Show detailed messages 
 	simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 	simConfig.recordStep = 1             # Step size in ms to save data (e.g. V traces, LFP, etc)
-	simConfig.filename = 'model_output'  # Set file output name
+	simConfig.filename = 'tut5'          # Set file output name
 	simConfig.savePickle = False         # Save params, network and sim output to pickle file
 
-	simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True}      # Plot a raster
-	simConfig.analysis['plotTraces'] = {'include': [('E2',0), ('E4', 0), ('E5', 5)]}      # Plot recorded traces for this list of cells
-	simConfig.analysis['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
-	simConfig.analysis['plotConn'] = True           # plot connectivity matrix
+	simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True, 'saveFig': True}         # Plot a raster
+	simConfig.analysis['plotTraces'] = {'include': [('E2',0), ('E4', 0), ('E5', 5)], 'saveFig': True}  # Plot recorded traces for this list of cells
+	simConfig.analysis['plot2Dnet'] = {'saveFig': True}                                                # plot 2D cell positions and connections
+	simConfig.analysis['plotConn'] = {'saveFig': True}                                                 # plot connectivity matrix
 
 	# Create network and run simulation
 	sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
 	   
-If we run the model at this point we will see the cells are distributed into three layers as specified, and they all spike randomly with an average rate of 20Hz driven by background input:
+If we run the model at this point we will see the cells are distributed into three layers as specified, and they all spike randomly with an average rate of 20 Hz driven by background input:
 
 .. image:: figs/tut5_conn_1.png
 	:width: 17%
@@ -473,7 +486,7 @@ If we run the model at this point we will see the cells are distributed into thr
 .. image:: figs/tut5_traces_1.png
 	:width: 30%
 
-Let's now add excitatory connections with some spatial-dependent properties to illustrate NetPyNE capabilities. First, let's  specify that we want excitatory cells to target all cells within a cortical depth of 100 and 1000 um, with the following code: ``'postConds': {'y': [100,1000]}``. 
+Let's now add excitatory connections with some spatially-dependent properties to illustrate NetPyNE's capabilities. First, let's  specify that we want excitatory cells to target all cells within a cortical depth of 100 and 1000 um, with the following code: ``'postConds': {'y': [100,1000]}``. 
 
 Second, let's make the the connection weight be proportional to the cortical depth of the cell, i.e. postsynaptic cells in deeper layers will receive stronger connections than those in superficial layers. To do this we make use of the distance-related variables that NetPyNE makes available to use in string-based functions; in this case ``post_ynorm``, which represents the normalized y location of the postsynaptic cell. For a complete list of available variables see: :ref:`function_string`.
 
@@ -484,7 +497,7 @@ Finally, we can specify the delay based on the distance between the cells (``dis
 	  'probability': 0.1 ,                  # probability of connection
 	  'weight': '0.005*post_ynorm',         # synaptic weight 
 	  'delay': 'dist_3D/propVelocity',      # transmission delay (ms) 
-	  'synMech': 'exc'}                    # synaptic mechanism 
+	  'synMech': 'exc'}                     # synaptic mechanism 
 
 
 Running the model now shows excitatory connections in red, and how cells in the deeper layers (higher y values) exhibit lower rates and higher synchronization, due to increased weights leading to depolarization blockade. This difference is also visible in the voltage traces of layer 2 vs layer 5 cells:
@@ -504,14 +517,15 @@ Running the model now shows excitatory connections in red, and how cells in the 
 
 Finally, we add inhibitory connections which will project only onto excitatory cells, specified here using the ``pop`` attribute, for illustrative purposes (an equivalent rule would be: ``'postConds': {'cellType': 'E'}``). 
 
-To make the probability of connection decay exponential as a function of distance with a given length constant (``probLengthConst``), we can use the following distance-based expression: ``'probability': '0.4*exp(-dist_3D/probLengthConst)'``. The code for the inhibitory connectivity rule is therefore::
+To make the probability of connection decay exponentially as a function of distance with a given length constant (``probLengthConst``), we can use the following distance-based expression: ``'probability': '0.4*exp(-dist_3D/probLengthConst)'``. The code for the inhibitory connectivity rule is therefore::
 
-	netParams.connParams['I->E'] = {
-	 'preConds': {'cellType': 'I'}, 'postConds': {'pop': ['E2','E4','E5']},       #  I -> E
-	  'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
-	  'weight': 0.001,                                     # synaptic weight 
-	  'delay': 'dist_3D/propVelocity',                    # transmission delay (ms) 
-	  'synMech': 'inh'}                                  # synaptic mechanism 
+	netParams.connParams['I->E'] = {                          # I -> E
+		'preConds': {'cellType': 'I'},                        # presynaptic conditions
+		'postConds': {'pop': ['E2','E4','E5']},               # postsynaptic conditions
+		'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
+		'weight': 0.001,                                      # synaptic weight 
+		'delay': 'dist_3D/propVelocity',                      # transmission delay (ms) 
+		'synMech': 'inh'}                                     # synaptic mechanism 
 
 Notice that the 2D network diagram now shows inhibitory connections in blue, and these are mostly local/lateral within layers, due to the distance-related probability restriction. These local inhibitory connections reduce the overall synchrony, introducing some richness into the temporal firing patterns of the network.
 
@@ -532,8 +546,8 @@ The full tutorial code for this example is available here: :download:`tut5.py <c
 
 
 
-Adding stimulation to  the network (Tutorial 6)
------------------------------------------------------
+Tutorial 6: Adding stimulation to the network
+---------------------------------------------
 
 Two dictionary structures are used to specify cell stimulation parameters: ``stimSourceParams`` to define the parameters of the sources of stimulation; and ``stimTargetParams`` to specify what cells will be applied what source of stimulation (mapping of sources to cells). See :ref:`stimulation` for details.
 
@@ -547,7 +561,7 @@ Below we add four typical NEURON sources of stimulation, each of a different typ
 	netParams.stimSourceParams['Input_4'] = {'type': 'NetStim', 'interval': 'uniform(20,100)', 'number': 1000, 'start': 600, 'noise': 0.1}
 
 
-Now we can map or apply any of the above stimulation sources to any subset of cells in the network by adding items to the ``stimTargetParams`` dict. Note that we can use any of the cell tags (e.g. 'pop', 'cellType' or 'ynorm') to select what cells will be stimulated. Additionally, using the 'cellList' option, we can target a specific list of cells (using relative cell ids) within the subset of cells selected (e.g. first 15 cells of the 'S' population)::
+Now we can map or apply any of the above stimulation sources to any subset of cells in the network by adding items to the ``stimTargetParams`` dict. Note that we can use any of the cell tags (e.g. 'pop', 'cellType' or 'ynorm') to select which cells will be stimulated. Additionally, using the 'cellList' option, we can target a specific list of cells (using relative cell ids) within the subset of cells selected (e.g. first 15 cells of the 'S' population)::
 
 	netParams.stimTargetParams['Input_1->S'] = {'source': 'Input_1', 'sec':'soma', 'loc': 0.8, 'conds': {'pop':'S', 'cellList': range(15)}}
 	netParams.stimTargetParams['Input_2->S'] = {'source': 'Input_2', 'sec':'soma', 'loc': 0.5, 'conds': {'pop':'S', 'ynorm': [0,0.5]}}
@@ -560,21 +574,21 @@ Now we can map or apply any of the above stimulation sources to any subset of ce
 .. note:: NetStims can be added both using the above method (as stims), or by creating a population with ``'cellModel': 'NetStim'`` and adding the appropriate connections.
 
 
-Running the above network with different types of stimulation should produce the following raster::
-
-The full tutorial code for this example is available here: :download:`tut6.py <code/tut6.py>`.
+Running the above network with different types of stimulation should produce the following raster:
 
 .. image:: figs/tut6_raster.png
 	:width: 50%
 	:align: center
 
+The full tutorial code for this example is available here: :download:`tut6.py <code/tut6.py>`.
 
-Modifying the instantiated network interactively (Tutorial 7)
---------------------------------------------------------------
+
+Tutorial 7: Modifying the instantiated network interactively
+------------------------------------------------------------
 
 This example is directed at the more experienced users who might want to interact directly with the NetPyNE generated structure containing the network model and NEURON objects. We will model a Hopfield-Brody network where cells are connected all-to-all and firing synchronize due to mutual inhibition (inhibition from other cells provides a reset, locking them together). The level of synchronization depends on the connection weights, which we will modify interactively.
 
-We begin by creating a new file (``net6.py``) describing a simple network with one population (``hop``) of 50 cells and background input of 50 Hz (similar to the previous simple tutorial example ``tut2.py``). We create all-to-all inhibitory connections within the ``hop`` population, but set the weights to 0 initially:: 
+We begin by creating a new file (``tut7.py``) describing a simple network with one population (``hop``) of 50 cells and background input of 50 Hz (similar to the previous simple tutorial example ``tut2.py``). We create all-to-all inhibitory connections within the ``hop`` population, but set the weights to 0 initially:: 
 
 	from netpyne import specs
 
@@ -584,17 +598,17 @@ We begin by creating a new file (``net6.py``) describing a simple network with o
 
 	netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
-	# Population parameters
-	netParams.popParams['hop'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50} # add dict with params for this pop 
-
 	# Cell parameters
-
 	## PYR cell properties
-	cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}}
-	cellRule['secs']['soma'] = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
-	cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8}
-	cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-	netParams.cellParams['PYR'] = cellRule  # add dict to list of cell properties
+	secs = {}
+	secs['soma'] = {'geom': {}, 'topol': {}, 'mechs': {}}
+	secs['soma']['geom'] = {'diam': 18.8, 'L': 18.8}
+	secs['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
+	netParams.cellParams['PYR'] = {'secs': secs}  # add dict to list of cell properties
+
+	# Population parameters
+	netParams.popParams['hop'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}      # add dict with params for this pop 
+	#netParams.popParams['background'] = {'cellModel': 'NetStim', 'rate': 50, 'noise': 0.5}  # background inputs
 
 	# Synaptic mechanism parameters
 	netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}
@@ -604,13 +618,13 @@ We begin by creating a new file (``net6.py``) describing a simple network with o
 	netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 50, 'noise': 0.5}
 	netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'pop': 'hop'}, 'weight': 0.1, 'delay': 1, 'synMech': 'exc'}
 
-
 	# Connectivity parameters
 	netParams.connParams['hop->hop'] = {
-	    'preConds': {'pop': 'hop'}, 'postConds': {'pop': 'hop'},
-	    'weight': 0.0,                      # weight of each connection
-	    'synMech': 'inh',                   # target inh synapse
-	    'delay': 5}       				    # delay 
+		'preConds': {'pop': 'hop'},         # presynaptic conditions
+		'postConds': {'pop': 'hop'},        # postsynaptic conditions
+		'weight': 0.0,                      # weight of each connection
+		'synMech': 'inh',                   # target inh synapse
+		'delay': 5}                         # delay 
 
 
 We now add the standard simulation configuration options, and include the ``syncLines`` option so that raster plots show vertical lines at each spike as an indication of synchrony::
@@ -621,17 +635,17 @@ We now add the standard simulation configuration options, and include the ``sync
 	simConfig = specs.SimConfig()  # object of class SimConfig to store simulation configuration
 
 	# Simulation options
-	simConfig.duration = 0.5*1e3 		# Duration of the simulation, in ms
-	simConfig.dt = 0.025 				# Internal integration timestep to use
-	simConfig.verbose = False  			# Show detailed messages 
+	simConfig.duration = 0.5*1e3        # Duration of the simulation, in ms
+	simConfig.dt = 0.025                # Internal integration timestep to use
+	simConfig.verbose = False           # Show detailed messages 
 	simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
-	simConfig.recordStep = 1 			# Step size in ms to save data (e.g. V traces, LFP, etc)
-	simConfig.filename = 'model_output'  # Set file output name
-	simConfig.savePickle = False 		# Save params, network and sim output to pickle file
+	simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces, LFP, etc)
+	simConfig.filename = 'model_output' # Set file output name
+	simConfig.savePickle = False        # Save params, network and sim output to pickle file
 
-	simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
-	simConfig.analysis['plotTraces'] = {'include': [1]}      # Plot recorded traces for this list of cells
-	simConfig.analysis['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
+	simConfig.analysis['plotRaster'] = {'syncLines': True, 'saveFig': True}      # Plot a raster
+	simConfig.analysis['plotTraces'] = {'include': [1], 'saveFig': True}         # Plot recorded traces for this list of cells
+	simConfig.analysis['plot2Dnet'] = {'saveFig': True}                          # plot 2D cell positions and connections
 
 
 Finally, we add the code to create the network and run the simulation, but for illustration purposes, we use the individual function calls for each step of the process (instead of the all-encompassing ``sim.createAndSimulate()`` function used before)::
@@ -642,17 +656,18 @@ Finally, we add the code to create the network and run the simulation, but for i
 	from netpyne import sim
 
 	# Create network and run simulation
-	sim.initialize(                       # create network object and set cfg and net params
-	    simConfig = simConfig,   # pass simulation config and network params as arguments
-	    netParams = netParams)   
-	sim.net.createPops()                      # instantiate network populations
-	sim.net.createCells()                     # instantiate network cells based on defined populations
-	sim.net.connectCells()                    # create connections between cells based on params
-	sim.setupRecording()                  # setup variables to record for each cell (spikes, V traces, etc)
-	sim.runSim()                          # run parallel Neuron simulation  
-	sim.gatherData()                      # gather spiking data and cell info from each node
-	sim.saveData()                        # save params, cell info and sim output to file (pickle,mat,txt,etc)
-	sim.analysis.plotData()                   # plot spike raster
+	sim.initialize(                     # create network object and set cfg and net params
+		simConfig = simConfig,          # pass simulation config and network params as arguments
+		netParams = netParams)   
+	sim.net.createPops()                # instantiate network populations
+	sim.net.createCells()               # instantiate network cells based on defined populations
+	sim.net.connectCells()              # create connections between cells based on params
+	sim.net.addStims()                  # add stimulation
+	sim.setupRecording()                # setup variables to record for each cell (spikes, V traces, etc)
+	sim.runSim()                        # run parallel Neuron simulation  
+	sim.gatherData()                    # gather spiking data and cell info from each node
+	sim.saveData()                      # save params, cell info and sim output to file (pickle,mat,txt,etc)
+	sim.analysis.plotData()             # plot spike raster
 
 
 If we run the above code, the resulting network 2D map shows the inhibitory connections in blue, although these don't yet have any effect since the weight is 0. The raster plot shows random firing driven by the 50 Hz background inputs, and a low sync measure of 0.26 (vertical red lines illustrate poor synchrony):
@@ -696,7 +711,7 @@ We can therefore call the ``sim.net.modifyConns()`` function to increase all the
 	sim.runSim()                          # run parallel Neuron simulation  
 	sim.gatherData()                      # gather spiking data and cell info from each node
 	sim.saveData()                        # save params, cell info and sim output to file (pickle,mat,txt,etc)
-	sim.analysis.plotData()                   # plot spike raster
+	sim.analysis.plotData()               # plot spike raster
 
 
 
@@ -737,29 +752,27 @@ The resulting plot shows decreased firing rate and increased synchrony due to th
 
 The full tutorial code for this example is available here: :download:`tut7.py <code/tut7.py>`.
 
-An alternative version of the code is available here: :download:`hopbrodnetpyne.py <code/hopbrodnetpyne.py>`.
 
-
-Running batch simulations (Tutorial 8)
---------------------------------------------
+Tutorial 8: Running batch simulations
+-------------------------------------
 
 Here we are going to illustrate how to run batch simulations using the simple network in Tutorial 2. By batch simulations we mean modifying some parameter values within a given range and automatically running simulations for all combinations of these parameter values (also known as grid parameter search).
 
-The first thing we need to do is break up the tut2.py code into three different files -- although not needed for such small models, this will be very helpful for more complex and large models. The file organization should be as follows (click on filename to download):
+The first thing we need to do is break up the tut2.py code into three different files -- although not needed for such small models, this will be very helpful for more larger, more complex models. The file organization should be as follows (click on filename to download):
 
 * :download:`tut8_netParams.py <code/tut8_netParams.py>` : Defines the network model (netParams object). Includes "fixed" parameter values of cells, synapses, connections, stimulation, etc. Changes to this file should only be made for relatively stable improvements of the model. Parameter values that will be varied systematically to explore or tune the model should be included here by referencing the appropiate variable in the simulation configuration (cfg) module. Only a single netParams file is required for each batch of simulations.
 
 * :download:`tut8_cfg.py <code/tut8_cfg.py>` : Simulation configuration (simConfig object). Includes parameter values for each simulation run such as duration, dt, recording parameters etc. Also includes the model parameters that are being varied to explore or tune the network. When running a batch, NetPyNE will automatically create one cfg file for each parameter configuration (using this one as a starting point).
 
-* :download:`tut8_init.py <code/tut8_init.py>` : Sequence of commands to run a single simulation. Can be executed via 'python init.py'. When running a batch, NetPyNE will call init.py multiple times, pass a different cfg file for each of the parameter configurations explored. 
+* :download:`tut8_init.py <code/tut8_init.py>` : Sequence of commands to run a single simulation. Can be executed via 'python init.py'. When running a batch, NetPyNE will call init.py multiple times and pass a different cfg file for each of the parameter configurations explored. 
 
 We will also need to add a new file to control the batch simulation:
 
-* :download:`tut8_batch.py <code/tut8_batch.py>` : Defines the parameters and parameter values to be explored in a batch of simulations, the run configuration -- e.g. whether to use MPI+Bulletin Board (for multicore machines) or SLURM/PBS Torque (for HPCs) --, and the command to run the batch.
+* :download:`tut8_batch.py <code/tut8_batch.py>` : Defines the parameters and parameter values to be explored in a batch of simulations, the run configuration (e.g. whether to use MPI+Bulletin Board (for multicore machines) or SLURM/PBS Torque (for HPCs)), and the command to run the batch.
 
 In summary, **netParams.py** for fixed (network) parameters, **cfg.py** for variable (simulation) parameters, **init.py** to run a simulation, and **batch.py** to run a batch of simulations exploring combinations of parameter values.
 
-Lets say we want to explore how the connection weight and the synaptic decay time constant affect the firing rate of the motor population. The first step would be to modify ``tut8_netParams.py`` so these parameters are variable, i.e. change in each simulation. Therefore, we will change them from having fixed values (e.g. 5.0 and 0.01) to depending on a variable from simConfig: ``cfg.synMechTau2`` and ``cfg.connWeight`` (note that for simplicity we renamed ``simConfig`` to ``cfg``)::
+Lets say we want to explore how the connection weight and the synaptic decay time constant affect the firing rate of the motor population. The first step would be to modify ``tut8_netParams.py`` so these parameters are variable, i.e. different in each simulation. Therefore, we will change them from having fixed values (e.g. 5.0 and 0.01) to depending on a variable from simConfig: ``cfg.synMechTau2`` and ``cfg.connWeight`` (note that for simplicity we renamed ``simConfig`` to ``cfg``)::
 
 	... 
 	
@@ -769,15 +782,15 @@ Lets say we want to explore how the connection weight and the synaptic decay tim
 	... 
 
 	## Cell connectivity rules
-	netParams.connParams['S->M'] = { 	#  S -> M label
-		'preConds': {'pop': 'S'}, 	# conditions of presyn cells
-		'postConds': {'pop': 'M'}, # conditions of postsyn cells
-		'probability': 0.5, 			# probability of connection
-		'weight': cfg.connWeight, 		# synaptic weight
-		'delay': 5,						# transmission delay (ms)
-		'synMech': 'exc'}   			# synaptic mechanism
+	netParams.connParams['S->M'] = {    #  S -> M label
+		'preConds': {'pop': 'S'},       # conditions of presyn cells
+		'postConds': {'pop': 'M'},      # conditions of postsyn cells
+		'probability': 0.5,             # probability of connection
+		'weight': cfg.connWeight,       # synaptic weight
+		'delay': 5,                     # transmission delay (ms)
+		'synMech': 'exc'}               # synaptic mechanism
 
-Therefore, this also requires changing  ``tut8_netParams.py`` to import the ``cfg`` module so that these 2 variables are available. The code will first attempt to load the ``cfg`` module from ``__main__``, which refers to the parent module which was initially executed by the user, in this case, ``tut8_init.py``. As mentioned before, ``tut8_init.py`` is responsible for loading both ``netParams`` and ``cfg`` and running the simulation. If that fails, the code will load ``cfg`` directly from the ``tut8_cfg.py`` file. To implement this we will add the following lines at the beginning of ``tut8_netParams.py``::
+Therefore, this also requires changing  ``tut8_netParams.py`` to import the ``cfg`` module so that these two variables are available. The code will first attempt to load the ``cfg`` module from ``__main__``, which refers to the parent module which was initially executed by the user, in this case, ``tut8_init.py``. As mentioned before, ``tut8_init.py`` is responsible for loading both ``netParams`` and ``cfg`` and running the simulation. If that fails, the code will load ``cfg`` directly from the ``tut8_cfg.py`` file. To implement this we will add the following lines at the beginning of ``tut8_netParams.py``::
 
 	try:
 		from __main__ import cfg  # import SimConfig object with params from parent module
@@ -847,9 +860,9 @@ The ``tut8_batch.py`` should look like this::
 	if __name__ == '__main__':
 		batchTauWeight() 
 
-To run the batch simulations you will need to have MPI properly installed and NEURON configured to use MPI. Run the following command: ``mpiexec -np [num_cores] nrniv -python -mpi batch.py`` , where ``[num_cores]`` should be replaced with the number of processors you want to use. The minimum required is 2, since one will be uses to schedule the jobs (master node); e.g. if you select 4 processors, one will be used to schedule jobs, and the other 3 will run NEURON simulations with different parameter combinations. 
+To run the batch simulations you will need to have MPI properly installed and NEURON configured to use MPI. Run the following command: ``mpiexec -np [num_cores] nrniv -python -mpi tut8_batch.py`` , where ``[num_cores]`` should be replaced with the number of processors you want to use. The minimum required is ``2``, since one will be used to schedule the jobs (master node); e.g. if you select 4 processors, one will be used to schedule jobs, and the other 3 will run NEURON simulations with different parameter combinations. 
 
-Once the simulations are completed you should have a new folder ``tut8_data`` with the following files:
+Once the simulations are complete you should have a new folder ``tut8_data`` with the following files:
 
 * **tauWeight_netParams.py**: a copy of the original netParams file used (``tut8_netParams.py``)
 
@@ -857,7 +870,7 @@ Once the simulations are completed you should have a new folder ``tut8_data`` wi
 
 * **tauWeight_batch.json**: a JSON file with the batch parameters and run option used.
 
-* For each combination of parameters (with x,y representing the indices of the parameter values):
+* For each combination of parameters (with x, y representing the indices of the parameter values):
 	
 	* **tauWeight_x_y_cfg.json**: JSON file with all the ``cfg`` variables copied from ``tut8_cfg.py`` but with the values of ``synMechTau2`` and ``connWeight`` for this specific combination of batch parameters.  
 
@@ -866,9 +879,11 @@ Once the simulations are completed you should have a new folder ``tut8_data`` wi
 	* **tauWeight_x_y_raster.png** and **tauWeight_x_y_traces.png**: output figures for this combination of parameters.
 
 
-To analyze the output data you can download :download:`tut8_analysis.py <code/tut8_analysis.py>`. This file has functions to read and plot a matrix showing the results from the batch simulation results. This file requires the `Pandas <http://pandas.pydata.org/>`_ and `Seaborn <https://seaborn.pydata.org/>`_ packages. IMPORTANT: The analysis functions (``tut8_analysis.py``) will be soon integrated into NetPyNE, and so we won't go into the details of the code.
+To analyze the output data you can download :download:`tut8_analysis.py <code/tut8_analysis.py>`. This file has functions to read and plot a matrix showing the results from the batch simulations. This file requires the `Pandas <http://pandas.pydata.org/>`_ and `Seaborn <https://seaborn.pydata.org/>`_ packages. 
 
-Running ``python tut8_analysis.py`` should produce a color plot showing the relation between the two parameter explored and the firing rate of the ``M`` populations:
+.. note:: The analysis functions in (``tut8_analysis.py``) will be soon integrated into NetPyNE, and so we won't go into the details of the code.
+
+Running ``python tut8_analysis.py`` should produce a color plot showing the relation between the two parameters explored and the firing rate of the ``M`` populations:
 
 .. image:: figs/tut8_analysis.png
 	:width: 50%
@@ -892,12 +907,12 @@ Notice how the rate initially increases as a function of connection weight, but 
 .. seealso:: The full description of options available in the Batch class will be available soon in the :ref:`package_reference`.
 
 
-Recording and plotting LFPs (Tutorial 9)
---------------------------------------------
+Tutorial 9: Recording and plotting LFPs
+---------------------------------------
 
-Examples of how to record and analyze local field potentials (LFP) in single cells and networks are included in the \examples folder: `LFPrecording example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/LFPrecording>`_ . LFP recording also works with parallel simulations.
+Examples of how to record and analyze local field potentials (LFP) in single cells and networks are included in the \examples folder: `LFP recording example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/LFPrecording>`_ . LFP recording also works with parallel simulations.
 
-To record LFP just set the list of 3D locations of the LFP electrodes in the `simConfig` attribute `recordLFP` e.g. ``simConfig.recordLFP = e.g. [[50, 100, 50], [50, 200, 50]]`` (note the y coordinate represents depth, so will be represented as a negative value when plotted). The LFP signal in each electrode is obtained by summing the extracellular potential contributed by each segment of each neuron. Extracellular potentials are calculated using the "line source approximation" and assuming an Ohmic medium with conductivity sigma = 0.3 mS/mm. For more information on modeling LFPs see http://www.scholarpedia.org/article/Local_field_potential or https://doi.org/10.3389/fncom.2016.00065 .
+To record LFP just set the list of 3D locations of the LFP electrodes in the `simConfig` attribute `recordLFP` e.g. ``simConfig.recordLFP = e.g. [[50, 100, 50], [50, 200, 50]]`` (note the y coordinate represents depth, so will be represented as a negative value when plotted). The LFP signal in each electrode is obtained by summing the extracellular potential contributed by each segment of each neuron. Extracellular potentials are calculated using the "line source approximation" and assuming an Ohmic medium with conductivity sigma = 0.3 mS/mm. For more information on modeling LFPs see `Scholarpedia <http://www.scholarpedia.org/article/Local_field_potential>`_ or `this article <https://doi.org/10.3389/fncom.2016.00065>`_ .
 
 The recorded LFP signal will be stored in ``sim.allSimData['LFP']`` as a 2D list of size timeSteps * numElectrodes e.g. `sim.allSimData['LFP'][10][2]`` corresponds to the LFP value of electrode 2 at time step 10. It is possible to record the LFP signal generated by each individual cell by setting ``simConfig.saveLFPCells = True`` -- this will be stored in ``sim.allSimData['LFPCells']`` as a 3D list with size cells * timeSteps * numElectrodes. 
 
@@ -916,8 +931,8 @@ The second example ( :download:`net_lfp.py <<../../examples/LFPrecording/net_lfp
 	:align: center
 
 
-Network with Reaction-Diffusion (RxD) (Tutorial 10)
----------------------------------------------------
+Tutorial 10: Network with Reaction-Diffusion (RxD)
+--------------------------------------------------
 
 NetPyNE's high-level specifications also supports `NEURON's reaction-diffusion (RxD) <https://www.neuron.yale.edu/neuron/static/docs/rxd/index.html>`_  components. RxD enables to specify the diffusion of molecules (\eg\ calcium, potassium or IP3) intracellularly, subcellularly (by including organelles such as endoplasmic reticulum and mitochondria), and extracellularly is the context of signaling and enzymatic processing -- \eg\ metabolism, phosphorylation, buffering, second messenger cascades.
 This helps to couple molecular-level chemophysiology to the classical electrophysiology at subcellular, cellular and network scales. 

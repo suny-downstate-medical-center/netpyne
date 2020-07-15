@@ -66,13 +66,6 @@ The organization of ``netParams`` is consistent with the standard sequence of ev
 * adds stimulation to the cells based on ``stimSourceParams`` and ``stimTargetParams``
 
 
-The image below illustrates this process:
-
-.. image:: figs/process.png
-	:width: 50%
-	:align: center
-
-
 Additionally, ``netParams`` contains the following customizable single-valued attributes (e.g. ``netParams.sizeX = 100``):
 
 * **scale**: Scale factor multiplier for number of cells (default: 1)

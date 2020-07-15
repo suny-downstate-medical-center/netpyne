@@ -2,6 +2,8 @@
 
 **New features**
 
+- Added optimization using Optuna (optuna.org)
+
 - Simplified cellParams to use dict key as 'cellType' and make 'conds' optional
 
 - Added netParams method addCellParamsTemplate() to create predefined cell templates 

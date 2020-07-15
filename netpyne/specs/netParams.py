@@ -342,8 +342,8 @@ class NetParams(object):
         if somaAtOrigin:
             somaSec = next((sec for sec in cellRule['secs'] if 'soma' in sec), None)
             if not somaSec or not 'pt3d' in cellRule['secs'][somaSec]['geom']:
-                if sim.cfg.verbose:
-                        print('Warning: cannot place soma at origin because soma does not exist or does not contain pt3d')
+                pass
+                #print('Warning: cannot place soma at origin because soma does not exist or does not contain pt3d')
             else:
                 soma3d = cellRule['secs'][somaSec]['geom']['pt3d']
                 midpoint = int(len(soma3d)/2)

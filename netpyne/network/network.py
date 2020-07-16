@@ -38,6 +38,8 @@ class Network(object):
 
         self.pops = ODict()  # list to store populations ('Pop' objects)
         self.cells = [] # list to store cells ('Cell' objects)
+        self.cells_dpls = {} # dict with vectors of dipole over time for each cell
+        self.cells_dpl = {} # dict with vectors of dipole at one time for each cell
 
         self.gid2lid = {} # Empty dict for storing GID -> local index (key = gid; value = local id) -- ~x6 faster than .index() 
         self.lastGid = 0  # keep track of last cell gid 

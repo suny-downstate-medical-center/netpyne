@@ -38,8 +38,7 @@ from ..specs import Dict
 #
 ###############################################################################
 
-# --- Temporarily copied from HNN code; improve so doesn't use h globals ---  
-# global variables for dipole calculation, should be node-independent 
+# --- Temporarily copied from HNN code ---
 
 class CompartCell (Cell):
     """
@@ -66,9 +65,6 @@ class CompartCell (Cell):
     def create (self):
         from .. import sim
                 
-        if sim.cfg.recordDipoles:
-            h("dp_total_L2 = 0."); h("dp_total_L5 = 0.") # put here since these variables used in cells
-
         # generate random rotation angle for each cell
         if sim.net.params.rotateCellsRandomly:
             if isinstance(sim.net.params.rotateCellsRandomly, list):
@@ -262,7 +258,7 @@ class CompartCell (Cell):
         return L
 
     # insert dipole in section
-    def __dipoleInsert(self, secName, sec):
+    def __dipoleInsert(self, secName, sec, cell_dpl_ref):
 
         # insert dipole mech (dipole.mod)
         try:
@@ -282,10 +278,7 @@ class CompartCell (Cell):
         dpp.ri = h.ri(1, sec=sec['hObj'])
         # sets pointers in dipole mod file to the correct locations -- h.setpointer(ref, ptr, obj)
         h.setpointer(sec['hObj'](0.99)._ref_v, 'pv', dpp)
-        if self.tags['cellType'].startswith('L2'):
-            h.setpointer(h._ref_dp_total_L2, 'Qtotal', dpp)
-        elif self.tags['cellType'].startswith('L5'):
-            h.setpointer(h._ref_dp_total_L5, 'Qtotal', dpp)
+        h.setpointer(cell_dpl_ref, 'Qtotal', dpp)
 
         # gives INTERNAL segments of the section, non-endpoints
         # creating this because need multiple values simultaneously
@@ -307,11 +300,7 @@ class CompartCell (Cell):
             else:
                 h.setpointer(sec['hObj'](0)._ref_v, 'pv', sec['hObj'](loc[i]).dipole)
             # set aggregate pointers
-            h.setpointer(dpp._ref_Qsum, 'Qsum', sec['hObj'](loc[i]).dipole)
-            if self.tags['cellType'].startswith('L2'):
-                h.setpointer(h._ref_dp_total_L2, 'Qtotal', sec['hObj'](loc[i]).dipole)
-            elif self.tags['cellType'].startswith('L5'):
-                h.setpointer(h._ref_dp_total_L5, 'Qtotal', sec['hObj'](loc[i]).dipole)
+            h.setpointer(cell_dpl_ref, 'Qtotal', sec['hObj'](loc[i]).dipole)
             # add ztan values
             sec['hObj'](loc[i]).dipole.ztan = y_diff[i]
         # set the pp dipole's ztan value to the last value from y_diff
@@ -437,10 +426,15 @@ class CompartCell (Cell):
 
         # add dipoles
         if sim.cfg.recordDipoles:
+            #  Vectors can't be stored in Cell class because it gets pickled
+            sim.net.cells_dpl[self.gid] = h.Vector(1)  # create a simple hoc object to store the dipole value for this cell
+            cells_dpl_ref = sim.net.cells_dpl[self.gid]._ref_x[0]
+            sim.net.cells_dpls[self.gid] = h.Vector().record(cells_dpl_ref)  # set up recording of current value
+
             for sectName,sectParams in prop['secs'].items():
                 sec = self.secs[sectName]
                 if 'mechs' in sectParams and 'dipole' in sectParams['mechs']:
-                    self.__dipoleInsert(sectName, sec)  # add dipole mechanisms to each section
+                    self.__dipoleInsert(sectName, sec, cells_dpl_ref)  # add dipole mechanisms to each section
 
         # Print message about error inserting mechanisms
         if mechInsertError:

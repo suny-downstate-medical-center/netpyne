@@ -28,6 +28,7 @@ Table of Contents
    tutorial
    reference
    advanced
+   package_index
 
 
 

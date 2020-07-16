@@ -2,8 +2,6 @@
 batch.py 
 
 Batch simulation for M1 model using NetPyNE
-
-Contributors: salvadordura@gmail.com
 """
 
 from netpyne.batch import Batch

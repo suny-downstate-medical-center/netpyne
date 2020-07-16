@@ -3,9 +3,8 @@
 network.py 
 
 Defines Network class which contains cell objects and network-realated methods
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
@@ -16,12 +15,12 @@ standard_library.install_aliases()
 from ..specs import ODict
 from neuron import h  # import NEURON
 
-class Network (object):
+class Network(object):
 
     # -----------------------------------------------------------------------------
     # initialize variables
     # -----------------------------------------------------------------------------
-    def __init__ (self, params = None):
+    def __init__(self, params = None):
         self.params = params
 
         # params that can be expressed using string-based functions in connections
@@ -50,13 +49,13 @@ class Network (object):
     # -----------------------------------------------------------------------------
     # Set network params
     # -----------------------------------------------------------------------------
-    def setParams (self, params):
+    def setParams(self, params):
         self.params = params
 
     # -----------------------------------------------------------------------------
     # Instantiate network populations (objects of class 'Pop')
     # -----------------------------------------------------------------------------
-    def createPops (self):
+    def createPops(self):
         from .. import sim
 
         for popLabel, popParam in self.params.popParams.items(): # for each set of population paramseters 
@@ -67,7 +66,7 @@ class Network (object):
     # -----------------------------------------------------------------------------
     # Create Cells
     # -----------------------------------------------------------------------------
-    def createCells (self):
+    def createCells(self):
         from .. import sim
 
         sim.pc.barrier()

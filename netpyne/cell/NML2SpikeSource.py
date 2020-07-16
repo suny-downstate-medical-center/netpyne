@@ -2,9 +2,8 @@
 cell/NML2SpikeSource.py 
 
 Contains pointCell class 
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
@@ -23,10 +22,10 @@ from ..specs import Dict
 ###############################################################################
 
 class NML2SpikeSource (CompartCell):
-    ''' Class for NeuroML2 spiking neuron models: based on CompartCell,
-        but the NetCon connects to the mechanism on the one section whose NET_RECEIVE
-        block will emit events
-    '''
+    """
+    Class for NeuroML2 spiking neuron models: based on CompartCell,
+    but the NetCon connects to the mechanism on the one section whose NET_RECEIVE block will emit events
+    """
         
     def associateGid (self, threshold = 10.0):
         from .. import sim

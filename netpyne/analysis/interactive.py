@@ -1,9 +1,5 @@
 """
-analysis/interactive.py
-
-Functions to plot and analyze RxD-related results
-
-Contributors: salvadordura@gmail.com, joe.w.graham@gmail.com
+Functions to produce interactive plots
 """
 
 from __future__ import unicode_literals
@@ -15,43 +11,133 @@ from future import standard_library
 standard_library.install_aliases()
 from netpyne import __gui__
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 if __gui__:
     import matplotlib.pyplot as plt
     from matplotlib import mlab
     from matplotlib_scalebar import scalebar
 from numbers import Number
-from .utils import colorList, exception, getSpktSpkid, _showFigure, _saveFigData, getCellsInclude, syncMeasure, _smooth1d
+from .utils import colorList, exception, getSpktSpkid, _showFigure, _saveFigData, getCellsInclude, syncMeasure, _smooth1d, _guiTheme
 
 import numpy as np
 import pandas as pd
+
+from bokeh.themes import built_in_themes
+from bokeh.io import curdoc
+from bokeh.palettes import Viridis256
+from bokeh.models import HoverTool
+
+bokeh_theme = curdoc().theme
+
+
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive raster
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid', orderInverse=False, labels='legend', popRates=False, spikeHist=False, spikeHistBin=5, syncLines=False, marker='circle', markerSize=3, popColors=None, figSize=(10,8), saveData=None, saveFig=None, showFig=False):
+def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid', orderInverse=False, popRates=False, spikeHist=False, spikeHistBin=5, syncLines=False, marker='circle', markerSize=3, popColors=None, saveData=None, saveFig=None, showFig=False, **kwargs):
+    """Creates an interactive html raster plot of network cells using Bokeh.
 
-    '''
-    Raster plot of network cells
-        - include (['all',|'allCells',|'allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to include (default: 'allCells')
-        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
-        - maxSpikes (int): maximum number of spikes that will be plotted  (default: 1e8)
-        - orderBy ('gid'|'y'|'ynorm'|...): Unique numeric cell property to order y-axis by, e.g. 'gid', 'ynorm', 'y' (default: 'gid')
-        - orderInverse (True|False): Invert the y-axis order (default: False)
-        - popRates = (True|False): Include population rates (default: False)
-        - spikeHist (True|False): overlay line over raster showing spike histogram (spikes/bin) (default: False)
-        - spikeHistBin (int): Size of bin in ms to use for histogram (default: 5)
-        - syncLines (True|False): calculate synchorny measure and plot vertical lines for each spike to evidence synchrony (default: False)
-        - marker ('circle'|'cross'|'dash'|'triangel'| etc..): Mark type used for each spike
-        - popColors (odict): Dictionary with color (value: three item list with float between 0 and 1 for RGB) used for each population (key) (default: None)
-        - figSize ((width, height)): Size of figure (default: (10,8))
-        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;
-            if set to True uses filename from simConfig (default: None)
-        - saveFig (None|True|'fileName'): File name where to save the figure (default: None)
-            if set to True uses filename from simConfig (default: None)
-        - showFig (True|False): Whether to show the figure or not (default: True)
-        - Returns figure handle
-    '''
+    Parameters
+    ----------
+    include : list
+        Cells to include in the plot.
+        **Default:** 
+        ``['allCells']`` plots all cells
+        **Options:** 
+        ``['all']`` plots all cells and stimulations, 
+        ``['allNetStims']`` plots just stimulations, 
+        ``['popName1']`` plots a single population, 
+        ``['popName1', 'popName2']`` plots multiple populations, 
+        ``[120]`` plots a single cell, 
+        ``[120, 130]`` plots multiple cells, 
+        ``[('popName1', 56)]`` plots a cell from a specific population, 
+        ``[('popName1', [0, 1]), ('popName2', [4, 5, 6])]``, plots cells from multiple populations
+
+    timeRange : list [start, stop]
+        Time range to plot.
+        **Default:** 
+        ``None`` plots entire time range
+
+    maxSpikes : int
+        Maximum number of spikes to be plotted.
+        **Default:** ``1e8``
+
+    orderBy : str
+        Unique numeric cell property by which to order the y-axis.
+        **Default:** ``'gid'`` orders by cell ID
+        **Options:**
+        ``'y'`` orders by cell y-location,
+        ``'ynorm'`` orders by cell normalized y-location
+
+    orderInverse : bool
+        Inverts the y-axis order if ``True``.
+        **Default:** ``False`` 
+    
+    popRates : bool
+        Include population firing rates on plot if ``True``.
+        **Default:** ``False``
+    
+    spikeHist : bool
+        Include spike histogram (spikes/bin) on plot if ``True``. 
+        **Default:** ``False``
+    
+    spikeHistBin : int
+        Size of bin in ms to use for spike histogram. 
+        **Default:** ``5`` 
+    
+    syncLines : bool
+        Calculate synchrony measure and plot vertical lines for each spike to evidence synchrony if ``True``.
+        **Default:** ``False``
+    
+    marker : str
+        `Bokeh marker <https://docs.bokeh.org/en/latest/docs/gallery/markers.html>`_ for each spike.
+        **Default:** ``'circle'``
+    
+    markerSize : int
+        Size of Bokeh marker for each spike.
+        **Default:** ``3`` 
+    
+    popColors : dict
+        Dictionary with custom color (value) used for each population (key).
+        **Default:** ``None`` uses standard colors
+    
+    saveData : bool or str
+        Whether and where to save the data used to generate the plot. 
+        **Default:** ``False`` 
+        **Options:** ``True`` autosaves the data,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
+    
+    saveFig : bool or str
+        Whether and where to save the figure.
+        **Default:** ``False``
+        **Options:** ``True`` autosaves the figure,
+        ``'/path/filename.html'`` saves to a custom path and filename, only valid file extension is ``'.html'``
+    
+    showFig : bool
+        Shows the figure if ``True``.
+        **Default:** ``True``
+
+    Returns
+    -------
+    (str, dict)
+        A tuple consisting of a string containing the html for the figure and a dictionary containing the plot data.
+
+    See Also
+    --------
+    plotRaster :
+    iplotSpikeHist : 
+    plotSpikeHist :
+
+    Examples
+    --------
+    >>> import netpyne, netpyne.examples.example
+    >>> out = netpyne.analysis.iplotRaster()
+    """    
 
     from .. import sim
     from bokeh.plotting import figure, show
@@ -64,9 +150,21 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
 
     print('Plotting interactive raster ...')
 
+    if 'theme' in kwargs:
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
+
     TOOLS = 'hover,save,pan,box_zoom,reset,wheel_zoom',
 
-    colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    if not 'palette' in kwargs:
+        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    else:
+        colors = kwargs['palette']
 
     popColorDict = None
     if popColors is not None:
@@ -101,7 +199,7 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
     if len(cellGids) > 0:
         gidColors = {cell['gid']: popColorDict[cell['tags']['pop']] for cell in cells}  # dict with color for each gid
         try:
-            sel, spkts,spkgids = getSpktSpkid(cellGids=cellGids, timeRange=timeRange, allCells=(include == ['allCells']))
+            sel, spkts, spkgids = getSpktSpkid(cellGids=[] if include == ['allCells'] else cellGids, timeRange=timeRange)
         except:
             import sys
             print((sys.exc_info()))
@@ -149,10 +247,10 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
         return None
 
     # Time Range
-    if timeRange == [0,sim.cfg.duration]:
+    if timeRange == [0, sim.cfg.duration]:
         pass
     elif timeRange is None:
-        timeRange = [0,sim.cfg.duration]
+        timeRange = [0, sim.cfg.duration]
     else:
         sel = sel.query('spkt >= @timeRange[0] and spkt <= @timeRange[1]')
 
@@ -176,7 +274,7 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
     if popRates:
         avgRates = {}
         tsecs = (timeRange[1]-timeRange[0])/1e3
-        for i,(pop, popNum) in enumerate(zip(popLabels, popNumCells)):
+        for i, (pop, popNum) in enumerate(zip(popLabels, popNumCells)):
             if numCells > 0 and pop != 'NetStims':
                 if numCellSpks == 0:
                     avgRates[pop] = 0
@@ -194,8 +292,8 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
     fig = figure(
         title="Raster Plot", 
         tools=TOOLS, 
-        active_drag = 'pan', 
-        active_scroll = 'wheel_zoom',
+        active_drag = None, 
+        active_scroll = None,
         tooltips=[('Cell GID', '@y'), ('Spike time', '@x')],
         x_axis_label="Time (ms)", 
         y_axis_label=ylabelText,
@@ -226,7 +324,7 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
         else:
             label = name
 
-        s = fig.scatter(group['spkt'], group['spkind'], color=group['spkgidColor'], marker=marker, size=markerSize, legend_label=label)
+        fig.scatter(group['spkt'], group['spkind'], color=group['spkgidColor'], marker=marker, size=markerSize, legend_label=label)
         #legendItems.append((label, [s]))
 
     if spikeHist:
@@ -261,23 +359,34 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
 
     if showFig: show(plot_layout)
 
-    return html
+    return html, {'include': include, 'spkts': spkts, 'spkinds': sel['spkind'].tolist(), 'timeRange': timeRange}
 
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive dipole
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False):
-    '''
+def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False, **kwargs):
+    """
+    iplotDipole
     expData: experimental data; a dict with ['x'] and ['y'] 1-d vectors (either lists or np.arrays) of same length
     showFig: show output figure in web browser (default: None)
-    '''
+    """
+
     from .. import sim
     from bokeh.plotting import figure, show
     from bokeh.resources import CDN
     from bokeh.embed import file_html
     from bokeh.layouts import layout
+
+    if 'theme' in kwargs:
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
@@ -374,11 +483,12 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False):
 ## Plot interactive dipole Spectrogram
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1, maxFreq = 80, stepFreq = 1, norm = True, showFig=False):
-    '''
+def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1, maxFreq = 80, stepFreq = 1, norm = True, showFig=False, **kwargs):
+    """
+    iplotDipoleSpectrogram
     expData: experimental data; a dict with ['x'] and ['y'] 1-d vectors (either lists or np.arrays) of same length
     showFig: show output figure in web browser (default: None)
-    '''
+    """
     from .. import sim
     from bokeh.plotting import figure, show
     from bokeh.models import BasicTicker, ColorBar, ColumnDataSource, LinearColorMapper, PrintfTickFormatter
@@ -386,6 +496,14 @@ def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minF
     from bokeh.embed import file_html
     from bokeh.layouts import layout
 
+    if 'theme' in kwargs:
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
 
     # renormalize the dipole and save
     def baseline_renormalize():
@@ -523,17 +641,27 @@ def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minF
 ## Plot interactive dipole Spectrogram
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1, maxFreq = 80, stepFreq = 1, norm = True, showFig=False):
-    '''
+def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1, maxFreq = 80, stepFreq = 1, norm = True, showFig=False, **kwargs):
+    """
+    iplotDipolePSD
     expData: experimental data; a dict with ['x'] and ['y'] 1-d vectors (either lists or np.arrays) of same length
     showFig: show output figure in web browser (default: None)
-    '''
+    """
+
     from .. import sim
     from bokeh.plotting import figure, show
     from bokeh.resources import CDN
     from bokeh.embed import file_html
     from bokeh.layouts import layout
 
+    if 'theme' in kwargs:
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
 
     # renormalize the dipole and save
     def baseline_renormalize():
@@ -650,12 +778,10 @@ def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1,
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive Spike Histogram
-## ISSUES: Y scale, add colors to be effective
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRange = None, binSize = 5, overlay=True, yaxis = 'rate',
-    popColors=[], norm=False, smooth=None, filtFreq=False, filtOrder=3, saveData = None, saveFig = None, showFig = False):
-    '''
+def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRange = None, binSize = 5, overlay=True, yaxis = 'rate', popColors=[], norm=False, smooth=None, filtFreq=False, filtOrder=3, saveData = None, saveFig = None, showFig = False, **kwargs):
+    """
     Plot spike histogram
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include.
             Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
@@ -671,7 +797,7 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
             if set to True uses filename from simConfig (default: None)
         - showFig (True|False): Whether to show the figure or not (default: True)
         - Returns figure handle
-    '''
+    """
         
     from .. import sim
     from bokeh.plotting import figure, show
@@ -683,9 +809,21 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
     
     print('Plotting interactive spike histogram...')
 
+    if 'theme' in kwargs:
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
+
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
-    colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    if not 'palette' in kwargs:
+        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    else:
+        colors = kwargs['palette']
             
     popColorDict=popColors.copy()
     if popColorDict:
@@ -713,7 +851,7 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
             
     figs=[]
     if overlay:
-        figs.append(figure(title="Spike Historgram", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label=yaxisLabel, toolbar_location='above'))
+        figs.append(figure(title="Spike Histogram", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label=yaxisLabel, toolbar_location='above'))
         fig = figs[0]
         legendItems = []  
       
@@ -796,7 +934,7 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
 
     print(figs)
     plot_layout = gridplot(figs, ncols=1, merge_tools=False, sizing_mode='stretch_both')
-    html = file_html(plot_layout, CDN, title="Spike Historgram")
+    html = file_html(plot_layout, CDN, title="Spike Histogram")
 
     if showFig: show(plot_layout)
 
@@ -815,9 +953,8 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
 ## Plot interactive Rate PSD
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 5, maxFreq = 100, NFFT = 256, noverlap = 128, smooth = 0, overlay=True, ylim = None,
-                 popColors = {}, figSize=(1000, 400), saveData = None, saveFig = None, showFig = False):
-    ''' 
+def iplotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, maxFreq=100, NFFT=256, noverlap=128, smooth=0, overlay=True, ylim=None, popColors={}, saveData=None, saveFig=None, showFig=False, **kwargs):
+    """ 
     Plot firing rate power spectral density (PSD)
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
             Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
@@ -838,7 +975,7 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         - showFig (True|False): Whether to show the figure or not (default: True)
 
         - Returns figure handle
-    '''
+    """
     
     from .. import sim
     from bokeh.plotting import figure, show
@@ -850,11 +987,23 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
     
     print('Plotting interactive firing rate power spectral density (PSD) ...')
 
+    if 'theme' in kwargs:
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
+
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
-    colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    if not 'palette' in kwargs:
+        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    else:
+        colors = kwargs['palette']
 
-    popColorDict=popColors.copy()
+    popColorDict = popColors.copy()
     if popColorDict:
         for pop, color in popColorDict.items():
             popColorDict[pop] = RGB(*[round(f * 255) for f in color])
@@ -866,17 +1015,16 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 
     # time range
     if timeRange is None:
-        timeRange = [0,sim.cfg.duration]
+        timeRange = [0, sim.cfg.duration]
 
     histData = []
 
     allPower, allSignal, allFreqs = [], [], []
     legendItems = []
     
-    
-    figs=[]
+    figs = []
     if overlay:
-        figs.append(figure(title="PSD Rate Plot", tools=TOOLS, x_axis_label="Frequncy (Hz)", y_axis_label="Power Spectral Density (db/Hz)", toolbar_location='above'))
+        figs.append(figure(title="PSD Rate Plot", tools=TOOLS, x_axis_label="Frequency (Hz)", y_axis_label="Power Spectral Density (db/Hz)", toolbar_location='above'))
         fig = figs[0]
         legendItems = []  
 
@@ -887,7 +1035,6 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
             fig = figs[iplot]
             
         cells, cellGids, netStimLabels = getCellsInclude([subset])
-        numNetStims = 0
 
         # Select cells to include
         if len(cellGids) > 0:
@@ -897,7 +1044,6 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
                 spkinds,spkts = [],[]
         else:
             spkinds,spkts = [],[]
-
 
         # Add NetStim spikes
         spkts, spkinds = list(spkts), list(spkinds)
@@ -945,7 +1091,8 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         legend.click_policy = 'hide'
         fig.add_layout(legend)
 
-    plot_layout = layout(figs, ncols=1, plot_width=figSize[0], figHeight=figSize[1], sizing_mode='stretch_both')
+    plot_layout = layout(figs, sizing_mode='stretch_both')
+
     html = file_html(plot_layout, CDN, title="PSD Rate Plot")
 
     if showFig: show(plot_layout)
@@ -954,7 +1101,7 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
         if isinstance(saveFig, str):
             filename = saveFig
         else:
-            filename = sim.cfg.filename+'_'+'ipsd.html'
+            filename = sim.cfg.filename + '_ipsd.html'
         file = open(filename, 'w')
         file.write(html)
         file.close()
@@ -965,8 +1112,8 @@ def iplotRatePSD(include = ['allCells', 'eachPop'], timeRange = None, binSize = 
 ## Plot interactive Traces
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', rerun=False, colors=None, ylim=None, axis='on', fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True, ylabel=None, linkAxes=False):
-    ''' 
+def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', rerun=False, colors=None, ylim=None, axis='on', fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True, ylabel=None, linkAxes=False, **kwargs):
+    """
     Plot recorded traces
         - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of cells for which to plot 
             the recorded traces (default: [])
@@ -986,7 +1133,7 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
         - showFig (True|False): Whether to show the figure or not (default: True)
 
         - Returns figure handles
-    '''
+    """
     
     from .. import sim
     from bokeh.plotting import figure, show
@@ -999,8 +1146,21 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
     
     print('Plotting interactive recorded cell traces per', oneFigPer)
 
+    if 'theme' in kwargs:
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
+
     TOOLS = 'save,pan,box_zoom,reset,wheel_zoom'
-    colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    
+    if not 'palette' in kwargs:
+        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    else:
+        colors = kwargs['palette']
 
     if include is None:  # if none, record from whatever was recorded
         if 'plotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['plotTraces']:
@@ -1033,8 +1193,8 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
             if overlay:
                 figs['_gid_' + str(gid)] = figure(title = "Cell {}, Pop {}".format(gid, gidPops[gid]), 
                                                   tools = TOOLS, 
-                                                  active_drag = 'pan', 
-                                                  active_scroll = 'wheel_zoom',
+                                                  active_drag = None, 
+                                                  active_scroll = None,
                                                   x_axis_label="Time (ms)",
                                                   y_axis_label=y_axis_label
                                                   )
@@ -1064,8 +1224,8 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
                     else:
                         subfig = figure(title = "Cell {}, Pop {}".format(gid, gidPops[gid]), 
                                         tools = TOOLS, 
-                                        active_drag = 'pan', 
-                                        active_scroll = 'wheel_zoom',
+                                        active_drag = None, 
+                                        active_scroll = None,
                                         x_axis_label="Time (ms)",
                                         y_axis_label=y_axis_label
                                         )
@@ -1086,8 +1246,8 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
             if overlay:
                 figs['_trace_' + str(trace)] = figure(title = str(trace), 
                                                   tools = TOOLS, 
-                                                  active_drag = 'pan', 
-                                                  active_scroll = 'wheel_zoom',
+                                                  active_drag = None, 
+                                                  active_scroll = None,
                                                   x_axis_label="Time (ms)",
                                                   y_axis_label=y_axis_label
                                                   )
@@ -1117,8 +1277,8 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
                     else:
                         subfig = figure(title = str(trace), 
                                         tools = TOOLS, 
-                                        active_drag = 'pan', 
-                                        active_scroll = 'wheel_zoom',
+                                        active_drag = None, 
+                                        active_scroll = None,
                                         x_axis_label="Time (ms)",
                                         y_axis_label=y_axis_label
                                         )
@@ -1140,7 +1300,7 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
                     
                     
     for figLabel, figObj in figs.items():
-
+        
         if overlay:
             plot_layout = layout(figObj, sizing_mode='stretch_both')
             html = file_html(plot_layout, CDN, title=figLabel)
@@ -1168,8 +1328,8 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
 ## Plot interactive LFP
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectrogram', 'locations'], timeRange = None, NFFT = 256, noverlap = 128,
-             nperseg = 256, maxFreq = 100, smooth = 0, separation = 1.0, includeAxon=True, logx=False, logy=False, norm=False, dpi = 200, overlay=False, filtFreq = False, filtOrder=3, detrend=False, colors = None, saveData = None, saveFig = None, showFig = False):
+def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram'], timeRange=None, NFFT=256, noverlap=128, nperseg=256, minFreq=1, maxFreq=100, stepFreq=1, smooth=0, separation=1.0, includeAxon=True, logx=False, logy=False, normSignal=False, normPSD=False, normSpec=False, overlay=False, filtFreq=False, filtOrder=3, detrend=False, transformMethod='morlet', colors=None, saveData=None, saveFig=None, showFig=False, **kwargs):
+    
     from .. import sim
     from bokeh.plotting import figure, show
     from bokeh.resources import CDN
@@ -1179,15 +1339,26 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
 
     print('Plotting interactive LFP ...')
 
+    if 'theme' in kwargs:
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
+
+    if not 'palette' in kwargs:
+        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] 
+    else:
+        colors = kwargs['palette']
+
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
     if timeRange is None:
         timeRange = [0,sim.cfg.duration]
 
     lfp = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
-
-    if not colors:
-        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
 
     # electrode selection
     if 'all' in electrodes:
@@ -1200,35 +1371,43 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
     # time series plot
     # TODO add scalebar
     if 'timeSeries' in plots:
-        figs['timeSeries'] = figure(title="LFP Time Series Plot", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label="LFP electrode")
+        figs['timeSeries'] = figure(
+            title="LFP Time Series Plot", 
+            tools=TOOLS, 
+            active_drag = None, 
+            active_scroll = None,
+            x_axis_label="Time (ms)", 
+            y_axis_label="LFP electrode", 
+            toolbar_location="above")
         figs['timeSeries'].yaxis.major_tick_line_color = None
         figs['timeSeries'].yaxis.minor_tick_line_color = None
         figs['timeSeries'].yaxis.major_label_text_font_size = '0pt'
         figs['timeSeries'].yaxis.axis_line_color = None
         figs['timeSeries'].ygrid.visible = False
 
+        hover = HoverTool(tooltips=[('Time', '@x'), ('Value', '@y')], mode='vline')
+        figs['timeSeries'].add_tools(hover)
+        figs['timeSeries'].legend.click_policy="hide"
+
         ydisp = np.absolute(lfp).max() * separation
         offset = 1.0*ydisp
         t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
 
+        avg_color = 'black'
+        if 'theme' in kwargs:
+            if kwargs['theme'] == 'gui' or 'dark' in kwargs['theme']:
+                avg_color = 'white'
+
         for i,elec in enumerate(electrodes[::-1]):
             if elec == 'avg':
                 dplSum = np.mean(lfp, axis=1)
-                color = 'black'
-                lw=1.0
-                # figs['timeSeries'].line(t, -lfpPlot+(i*ydisp), line_color=color)
+                color = avg_color
             elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
                 pass
                 lfpPlot = lfp[:, elec]
                 color = colors[i%len(colors)]
-                lw=1.0
 
             legend=str(elec)
-            # if len(electrodes) > 1:
-            #     legend=str(elec)
-            # else:
-            #     legend=None
-
             figs['timeSeries'].line(t, lfpPlot+(i*ydisp), color=color, name=str(elec), legend=legend)
 
         data['lfpPlot'] = lfpPlot
@@ -1241,17 +1420,18 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         plot_layout = layout(figs['timeSeries'], sizing_mode='stretch_both')
         html = file_html(plot_layout, CDN, title="Time Series LFP Plot")
 
+        if showFig: show(plot_layout)
+
         if saveFig:
             if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
-                filename = sim.cfg.filename+'_'+'lfp_timeseries.png'
+                filename = sim.cfg.filename + '_iLFP_timeseries.html'
             file = open(filename, 'w')
             file.write(html)
             file.close()
 
     # PSD ----------------------------------
-    # TODO fix final layout of plots
     if 'PSD' in plots:
 
         figs['psd'] = []
@@ -1260,115 +1440,193 @@ def iplotLFP(electrodes = ['avg', 'all'], plots = ['timeSeries', 'PSD', 'spectro
         data['allFreqs'] = allFreqs
         data['allSignal'] = allSignal
 
+        avg_color = 'black'
+        if 'theme' in kwargs:
+            if kwargs['theme'] == 'gui' or 'dark' in kwargs['theme']:
+                avg_color = 'white'
+
         for i,elec in enumerate(electrodes):
-            p = figure(title="Electrode {}".format(str(elec)), tools=TOOLS, x_axis_label="Frequency (Hz)", y_axis_label="db/Hz")
+            p = figure(title="Electrode {}".format(str(elec)), 
+                tools=TOOLS, 
+                active_drag = None, 
+                active_scroll = None,
+                x_axis_label="Frequency (Hz)", 
+                y_axis_label="db/Hz",
+                toolbar_location="above")
+
+            hover = HoverTool(tooltips=[('Frequency', '@x'), ('Power', '@y')], mode='vline')
+            p.add_tools(hover)
+            p.legend.click_policy="hide"
 
             if elec == 'avg':
                 lfpPlot = np.mean(lfp, axis=1)
-                color = 'black'
-                lw=1.5
+                color = avg_color
             elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
                 lfpPlot = lfp[:, elec]
                 color = colors[i%len(colors)]
-                lw=1.5
 
-            Fs = int(1000.0/sim.cfg.recordStep)
-            power = mlab.psd(lfpPlot, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning,
-                             noverlap=noverlap, pad_to=None, sides='default', scale_by_freq=None)
+            # Morlet wavelet transform method
+            if transformMethod == 'morlet':
+                from ..support.morlet import MorletSpec, index2ms
 
-            if smooth:
-                signal = _smooth1d(10*np.log10(power[0]), smooth)
-            else:
-                signal = 10*np.log10(power[0])
-            freqs = power[1]
+                Fs = int(1000.0/sim.cfg.recordStep)
+                morletSpec = MorletSpec(lfpPlot, Fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq)
+                freqs = F = morletSpec.f
+                spec = morletSpec.TFR
+                signal = np.mean(spec, 1)
+                ylabel = 'Power'
+            
+            # FFT transform method
+            elif transformMethod == 'fft':
+                
+                Fs = int(1000.0/sim.cfg.recordStep)
+                power = mlab.psd(lfpPlot, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning, noverlap=noverlap, pad_to=None, sides='default', scale_by_freq=None)
 
+                if smooth:
+                    signal = _smooth1d(10*np.log10(power[0]), smooth)
+                else:
+                    signal = 10*np.log10(power[0])
+                freqs = power[1]
+                ylabel = 'Power (dB/Hz)'
+            
             allFreqs.append(freqs)
             allSignal.append(signal)
 
-            p.line(freqs[freqs<maxFreq], signal[freqs<maxFreq], color=color)
+            p.line(freqs[freqs<maxFreq], signal[freqs<maxFreq], color=color, line_width=3)
             figs['psd'].append(p)
 
-        # format plot
-
-        plot_layout = column(figs['psd'] )
+        plot_layout = column(figs['psd'], sizing_mode='stretch_both')
         html = file_html(plot_layout, CDN, title="LFP Power Spectral Density")
 
-        show(plot_layout)
-
+        if showFig: show(plot_layout)
 
         if saveFig:
             if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
-                filename = sim.cfg.filename+'_'+'lfp_psd.png'
+                filename = sim.cfg.filename+'_iLFP_psd.html'
             file = open(filename, 'w')
             file.write(html)
             file.close()
 
-
     # Spectrogram ------------------------------
-    # TODO impprove the color mapper to be more detailed
     if 'spectrogram' in plots:
         import matplotlib.cm as cm
         from bokeh.transform import linear_cmap
         from bokeh.models import ColorBar
         from scipy import signal as spsig
 
-        # numCols = np.round(len(electrodes) / maxPlots) + 1
         figs['spectro'] = []
-        #t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
-
         logx_spec = []
 
-        for i,elec in enumerate(electrodes):
-            if elec == 'avg':
-                lfpPlot = np.mean(lfp, axis=1)
-            elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
-                lfpPlot = lfp[:, elec]
-            # creates spectrogram over a range of data
-            # from: http://joelyancey.com/lfp-python-practice/
-            fs = int(1000.0/sim.cfg.recordStep)
-            f, t_spec, x_spec = spsig.spectrogram(lfpPlot, fs=fs, window='hanning',
-                                                  detrend=mlab.detrend_none, nperseg=nperseg, noverlap=noverlap, nfft=NFFT,  mode='psd')
+        # Morlet wavelet transform method
+        if transformMethod == 'morlet':
+            from ..support.morlet import MorletSpec, index2ms
+
+            spec = []
+
+            for i,elec in enumerate(electrodes):
+                if elec == 'avg':
+                    lfpPlot = np.mean(lfp, axis=1)
+                elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
+                    lfpPlot = lfp[:, elec]
+                fs = int(1000.0/sim.cfg.recordStep)
+                t_spec = np.linspace(0, index2ms(len(lfpPlot), fs), len(lfpPlot))
+                spec.append(MorletSpec(lfpPlot, fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq))
+
+            f = np.array(range(minFreq, maxFreq+1, stepFreq))  
             x_mesh, y_mesh = np.meshgrid(t_spec*1000.0, f[f<maxFreq])
-            logx_spec.append(10*np.log10(x_spec[f<maxFreq]))
+            vmin = np.array([s.TFR for s in spec]).min()
+            vmax = np.array([s.TFR for s in spec]).max()
 
-        vmin = np.array(logx_spec).min()
-        vmax = np.array(logx_spec).max()
+            for i,elec in enumerate(electrodes):
+                
+                T = timeRange
+                F = spec[i].f
+                if normSpec:
+                    spec[i].TFR = spec[i].TFR / vmax
+                    S = spec[i].TFR
+                    vc = [0, 1]
+                else:
+                    S = spec[i].TFR
+                    vc = [vmin, vmax]
+                
+                p = figure(
+                    title="Electrode {}".format(str(elec)), 
+                    tools=TOOLS,
+                    active_drag = None, 
+                    active_scroll = None, 
+                    x_range=(0, timeRange[1]), 
+                    y_range=(0, maxFreq), 
+                    x_axis_label = "Time (ms)", 
+                    y_axis_label = "Frequency(Hz)", 
+                    toolbar_location="above", 
+                    #tooltips = [("Time", "$x"), ("Frequency", "$y"), ("Power", "@image")],
+                    )
 
-        for i,elec in enumerate(electrodes):
-            p = figure(title="Electrode {}".format(str(elec)), tools=TOOLS, x_range=(0, timeRange[1]), y_range=(0, maxFreq),
-                       x_axis_label = "Time (ms)", y_axis_label = "Frequency(Hz)")
-            mapper = linear_cmap (field_name='dB/Hz', palette='Spectral11', low=vmin, high=vmax)
-            color_bar = ColorBar(color_mapper=mapper['transform'], width=8, location=(0,0), label_standoff=7, major_tick_line_color=None)
-            p.image(image=[x_mesh, y_mesh, logx_spec[i]], x=0, y=0, color_mapper=mapper['transform'], dw=timeRange[1], dh=100)
-            p.add_layout(color_bar, 'right')
-            figs['spectro'].append(p)
+                mapper = linear_cmap(field_name='dB/Hz', palette=Viridis256, low=vmin, high=vmax)
+                color_bar = ColorBar(color_mapper=mapper['transform'], location=(0,0), label_standoff=15, title='Power')
+                
+                p.image(image=[x_mesh, y_mesh, S], x=0, y=0, color_mapper=mapper['transform'], dw=timeRange[1], dh=100)
+                p.add_layout(color_bar, 'right')
+                figs['spectro'].append(p)
 
+        # FFT transform method
+        elif transformMethod == 'fft':
 
-        plot_layout = column(figs['spectro'] )
+            for i,elec in enumerate(electrodes):
+                if elec == 'avg':
+                    lfpPlot = np.mean(lfp, axis=1)
+                elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
+                    lfpPlot = lfp[:, elec]
+                # creates spectrogram over a range of data
+                # from: http://joelyancey.com/lfp-python-practice/
+                fs = int(1000.0/sim.cfg.recordStep)
+                f, t_spec, x_spec = spsig.spectrogram(lfpPlot, fs=fs, window='hanning', detrend=mlab.detrend_none, nperseg=nperseg, noverlap=noverlap, nfft=NFFT,  mode='psd')
+                x_mesh, y_mesh = np.meshgrid(t_spec*1000.0, f[f<maxFreq])
+                logx_spec.append(10*np.log10(x_spec[f<maxFreq]))
+
+            vmin = np.array(logx_spec).min()
+            vmax = np.array(logx_spec).max()
+
+            for i,elec in enumerate(electrodes):
+                p = figure(
+                    title="Electrode {}".format(str(elec)), 
+                    tools=TOOLS, 
+                    active_drag = None, 
+                    active_scroll = None,
+                    x_range=(0, timeRange[1]), 
+                    y_range=(0, maxFreq),
+                    x_axis_label = "Time (ms)", 
+                    y_axis_label = "Frequency(Hz)")
+                mapper = linear_cmap(field_name='dB/Hz', palette=Viridis256, low=vmin, high=vmax)
+                color_bar = ColorBar(color_mapper=mapper['transform'], width=8, location=(0,0), label_standoff=7, major_tick_line_color=None)
+                p.image(image=[x_mesh, y_mesh, logx_spec[i]], x=0, y=0, color_mapper=mapper['transform'], dw=timeRange[1], dh=100)
+                p.add_layout(color_bar, 'right')
+                figs['spectro'].append(p)
+
+        plot_layout = column(figs['spectro'], sizing_mode='stretch_both')
         html = file_html(plot_layout, CDN, title="LFP Power Spectral Density")
 
-        show(plot_layout)
+        if showFig: show(plot_layout)
 
         if saveFig:
             if isinstance(saveFig, str):
                 filename = saveFig
             else:
-                filename = sim.cfg.filename+'_'+'lfp_spectrogram.png'
+                filename = sim.cfg.filename + '_iLFP_timefreq.html'
             file = open(filename, 'w')
             file.write(html)
             file.close()
 
-    return html
 
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive connectivity
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotConn(includePre=['all'], includePost=['all'], feature='strength', orderBy='gid', figSize=(10,10), groupBy='pop', groupByIntervalPre=None, groupByIntervalPost=None, removeWeightNorm=False, graphType='matrix', synOrConn='syn', synMech=None, connsFile=None, tagsFile=None, clim=None, fontSize=12, saveData=None, saveFig=None, showFig=False): 
-    ''' 
+def iplotConn(includePre=['all'], includePost=['all'], feature='strength', orderBy='gid', figSize=(10,10), groupBy='pop', groupByIntervalPre=None, groupByIntervalPost=None, removeWeightNorm=False, graphType='matrix', synOrConn='syn', synMech=None, connsFile=None, tagsFile=None, clim=None, fontSize=12, saveData=None, saveFig=None, showFig=False, **kwargs): 
+    """
     Plot network connectivity
         - includePre (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
         - includePost (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
@@ -1388,7 +1646,7 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
         - showFig (True|False): Whether to show the figure or not (default: True)
 
         - Returns figure handles
-    '''
+    """
     
     from netpyne import sim
     from netpyne.analysis import network
@@ -1403,6 +1661,15 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
     from bokeh.colors import RGB
 
     print('Plotting interactive connectivity matrix...')
+
+    if 'theme' in kwargs:
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
 
     if connsFile and tagsFile:
         connMatrix, pre, post = network._plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile, removeWeightNorm)
@@ -1452,8 +1719,8 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
             x_range=pandas_data.columns.values,
             y_range=np.flip(pandas_data.index.values),
             tools = 'hover,save,pan,box_zoom,reset,wheel_zoom',
-            active_drag = 'pan',
-            active_scroll = 'wheel_zoom',
+            active_drag = None,
+            active_scroll = None,
             tooltips=[('Pre', '@pre'), ('Post', '@post'), (feature, '@' + feature)],
             title='Connection ' + feature + ' matrix',
             toolbar_location='below',
@@ -1483,7 +1750,8 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
         if groupBy == 'pop':
             
             popsPre, popsPost = pre, post
-            colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+            #colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+            colors = colorList
             bar_colors = colors[0:len(popsPre)]
 
             data = {'post' : popsPost}
@@ -1495,8 +1763,8 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
                 title='Connection ' + feature + ' stacked bar graph',
                 toolbar_location=None, 
                 tools='hover,save,pan,box_zoom,reset,wheel_zoom', 
-                active_drag='pan', 
-                active_scroll = 'wheel_zoom', 
+                active_drag= None, 
+                active_scroll = None, 
                 tooltips=[('Pre', '$name'), ('Post', '@post'), (feature, '@$name')],
                 )
 
@@ -1544,5 +1812,601 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
 
     # show fig 
     if showFig: show(fig)
+
+    return html
+
+
+# -------------------------------------------------------------------------------------------------------------------
+## Plot 2D representation of network cell positions and connections
+# -------------------------------------------------------------------------------------------------------------------
+@exception
+def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, tagsFile=None, figSize=(12,12), fontSize=12, saveData=None, saveFig=None, showFig=True, **kwargs): 
+    """Plots 2D representation of network cell positions and connections.
+
+    Parameters
+    ----------
+    include : list
+        List of presynaptic cells to include. 
+        **Default:** ``['allCells']``
+        **Options:** 
+        ``['all']`` plots all cells and stimulations, 
+        ``['allNetStims']`` plots just stimulations, 
+        ``['popName1']`` plots a single population, 
+        ``['popName1', 'popName2']`` plots multiple populations, 
+        ``[120]`` plots a single cell, 
+        ``[120, 130]`` plots multiple cells, 
+        ``[('popName1', 56)]`` plots a cell from a specific population, 
+        ``[('popName1', [0, 1]), ('popName2', [4, 5, 6])]``, plots cells from multiple populations
+        
+    view : str
+        Perspective of view.
+        **Default:** ``'xy'`` front view,
+        **Options:** ``'xz'`` top-down view
+    
+    showConns : bool
+        Whether to show connections or not.
+        **Default:** ``True``
+    
+    popColors : dict
+        Dictionary with custom color (value) used for each population (key).
+        **Default:** ``None`` uses standard colors
+    
+    tagsFile : str
+        Path to a saved tags file to use in connectivity plot.
+        **Default:** ``None``
+    
+    figSize : list [width, height]
+        Size of figure in inches.
+        **Default:** ``(12, 12)`` 
+    
+    fontSize : int
+        Font size on figure.
+        **Default:** ``12`` 
+
+    saveData : bool or str
+        Whether and where to save the data used to generate the plot. 
+        **Default:** ``False`` 
+        **Options:** ``True`` autosaves the data,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
+    
+    saveFig : bool or str
+        Whether and where to save the figure.
+        **Default:** ``False``
+        **Options:** ``True`` autosaves the figure,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
+    
+    showFig : bool
+        Shows the figure if ``True``.
+        **Default:** ``True``
+
+    Returns
+    -------
+    (fig, dict)
+        A tuple consisting of the matplotlib figure handle and a dictionary containing the plot data.
+
+    See Also
+    --------
+    iplot2Dnet :
+
+    Examples
+    --------
+    >>> import netpyne, netpyne.examples.example
+    >>> out = netpyne.analysis.plot2Dnet()
+    """
+
+    from .. import sim
+    from bokeh.plotting import figure, show
+    from bokeh.resources import CDN
+    from bokeh.embed import file_html
+    from bokeh.layouts import layout
+    from bokeh.models import Legend
+    from bokeh.colors import RGB
+    from bokeh.models.annotations import Title
+
+    print('Plotting interactive 2D representation of network cell locations and connections...')
+
+    if 'theme' in kwargs:
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
+
+    TOOLS = 'hover,save,pan,box_zoom,reset,wheel_zoom',
+
+    if not 'palette' in kwargs:
+        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    else:
+        colors = kwargs['palette']
+
+    # front view
+    if view == 'xy':
+        ycoord = 'y'
+    elif view == 'xz':
+        ycoord = 'z'
+
+    if tagsFile:
+        print('Loading tags file...')
+        import json
+        with open(tagsFile, 'r') as fileObj: tagsTmp = json.load(fileObj)['tags']
+        tagsFormat = tagsTmp.pop('format', [])
+        tags = {int(k): v for k,v in tagsTmp.items()} # find method to load json with int keys?
+        del tagsTmp
+
+        # set indices of fields to read compact format (no keys)
+        missing = []
+        popIndex = tagsFormat.index('pop') if 'pop' in tagsFormat else missing.append('pop')
+        xIndex = tagsFormat.index('x') if 'x' in tagsFormat else missing.append('x')
+        yIndex = tagsFormat.index('y') if 'y' in tagsFormat else missing.append('y')
+        zIndex = tagsFormat.index('z') if 'z' in tagsFormat else missing.append('z')
+        if len(missing) > 0:
+            print("Missing:")
+            print(missing)
+            return None, None, None 
+
+        # find pre and post cells
+        if tags:
+            cellGids = getCellsIncludeTags(include, tags, tagsFormat)
+            popLabels = list(set([tags[gid][popIndex] for gid in cellGids]))
+            
+            # pop and cell colors
+            popColorsTmp = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
+            if popColors: popColorsTmp.update(popColors)
+            popColors = popColorsTmp
+            cellColors = [popColors[tags[gid][popIndex]] for gid in cellGids]
+            
+            # cell locations
+            posX = [tags[gid][xIndex] for gid in cellGids]  # get all x positions
+            if ycoord == 'y':
+                posY = [tags[gid][yIndex] for gid in cellGids]  # get all y positions
+            elif ycoord == 'z':
+                posY = [tags[gid][zIndex] for gid in cellGids]  # get all y positions
+        else:
+            print('Error loading tags from file') 
+            return None
+
+    else:
+        cells, cellGids, _ = getCellsInclude(include)           
+        selectedPops = [cell['tags']['pop'] for cell in cells]
+        popLabels = [pop for pop in sim.net.allPops if pop in selectedPops] # preserves original ordering
+        
+        # pop and cell colors
+        popColorsTmp = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
+        if popColors: popColorsTmp.update(popColors)
+        popColors = popColorsTmp
+        cellColors = ['#%02x%02x%02x' % tuple([int(col * 255) for col in popColors[cell['tags']['pop']]]) for cell in cells]
+
+
+        # cell locations
+        posX = [cell['tags']['x'] for cell in cells]  # get all x positions
+        posY = [cell['tags'][ycoord] for cell in cells]  # get all y positions
+    
+
+    fig = figure(
+        title="2D Network representation", 
+        tools=TOOLS, 
+        active_drag = None, 
+        active_scroll = None,
+        tooltips=[('y location', '@y'), ('x location', '@x')],
+        x_axis_label="x (um)", 
+        y_axis_label='y (um)',
+        x_range=[min(posX)-0.05*max(posX),1.05*max(posX)], 
+        y_range=[1.05*max(posY), min(posY)-0.05*max(posY)], 
+        toolbar_location='above')
+
+    if 'radius' in kwargs:
+        radius = kwargs['radius']
+    else:
+        radius = 1.0
+
+    fig.scatter(posX, posY, radius=radius, fill_color=cellColors, line_color=None)  # plot cell soma positions
+    
+ 
+    posXpre, posYpre = [], []
+    posXpost, posYpost = [], []
+    if showConns and not tagsFile:
+        for postCell in cells:
+            for con in postCell['conns']:  # plot connections between cells
+                if not isinstance(con['preGid'], basestring) and con['preGid'] in cellGids:
+                    posXpre,posYpre = next(((cell['tags']['x'],cell['tags'][ycoord]) for cell in cells if cell['gid']==con['preGid']), None)  
+                    posXpost, posYpost = postCell['tags']['x'], postCell['tags'][ycoord]
+                    if kwargs.get('theme', '') == 'gui':
+                        color = 'yellow'
+                    else:
+                        color='red'
+                    if con['synMech'] in ['inh', 'GABA', 'GABAA', 'GABAB']:
+                        if kwargs.get('theme', '') == 'gui':
+                            color = 'lightcyan'
+                        else:
+                            color = 'blue'
+                    width = 0.1 #50*con['weight']
+                    fig.line([posXpre, posXpost], [posYpre, posYpost], color=color, line_width=width) # plot line from pre to post
+    
+    fontsiz = fontSize
+
+    for popLabel in popLabels:
+        fig.line(0,0,color=tuple([int(x*255) for x in popColors[popLabel]]), legend_label=popLabel)
+
+    legend = Legend(location=(10,0))
+    legend.click_policy='hide'
+    fig.add_layout(legend, 'right')
+
+    plot_layout = layout([fig], sizing_mode='stretch_both') 
+    html = file_html(plot_layout, CDN, title="Raster Plot")   
+
+    # save figure data
+    if saveData:
+        figData = {'posX': posX, 'posY': posY, 'posX': cellColors, 'posXpre': posXpre, 'posXpost': posXpost, 'posYpre': posYpre, 'posYpost': posYpost,
+         'include': include, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+    
+        _saveFigData(figData, saveData, '2Dnet')
+ 
+    # save figure
+    if saveFig: 
+        if isinstance(saveFig, str):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename+'_iplot_2Dnet_'+groupBy+'_'+feature+'_'+graphType+'.html'
+        file = open(filename, 'w')
+        file.write(html)
+        file.close()
+
+    # show fig 
+    if showFig: show(fig)
+
+    return html, {'include': include, 'posX': posX, 'posY': posY, 'posXpre': posXpre, 'posXpost': posXpost, 'posYpre': posYpre, 'posYpost': posYpost}
+
+
+
+# -------------------------------------------------------------------------------------------------------------------
+## Plot interactive RxD concentration
+# -------------------------------------------------------------------------------------------------------------------
+@exception
+def iplotRxDConcentration(speciesLabel, regionLabel, plane='xy', saveFig=None, showFig=True, **kwargs):
+        
+    from .. import sim
+    from bokeh.plotting import figure, show
+    from bokeh.resources import CDN
+    from bokeh.embed import file_html
+    from bokeh.layouts import layout, column, row
+    from bokeh.colors import RGB
+    from bokeh.transform import linear_cmap
+    from bokeh.models import ColorBar
+
+    print('Plotting interactive RxD concentration ...')
+
+    if 'theme' in kwargs:
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
+
+    if not 'palette' in kwargs:
+        from bokeh.palettes import Viridis256
+        colors = Viridis256
+        #colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] 
+    else:
+        colors = kwargs['palette']
+
+    TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
+
+    species = sim.net.rxd['species'][speciesLabel]['hObj']
+    region = sim.net.rxd['regions'][regionLabel]['hObj']
+    plane2mean = {'xz': 1, 'xy': 2}
+
+    data = species[region].states3d[:].mean(plane2mean[plane]).T
+    data = np.flipud(data) # This does not flip the axis values, should improve
+    dh, dw = np.shape(data)
+
+    low = np.nanmin(data)
+    high = np.nanmax(data)
+    if low == high:
+        low = low - 0.1 * low
+        high = high + 0.1 * high
+
+    conc_colormapper = linear_cmap(
+        field_name = '[' + species.name + '] (mM)',
+        palette = colors,
+        low = low,
+        high = high,
+        nan_color = 'white',
+        )
+
+    conc_colorbar = ColorBar(
+        color_mapper = conc_colormapper['transform'], 
+        label_standoff = 12,
+        title_standoff = 12,
+        )
+    conc_colorbar.title = '[' + species.name + '] (mM)'
+  
+    fig = figure(
+        title = 'RxD: ' + species.name + ' concentration',
+        toolbar_location = 'above', 
+        tools = 'hover,save,pan,box_zoom,reset,wheel_zoom', 
+        active_drag = None, 
+        active_scroll = None, 
+        tooltips = [("x", "$x"), ("y", "$y"), ("value", "@image")],
+        match_aspect = True,
+        x_axis_label = plane[0] + " location (um)", 
+        y_axis_label = plane[1] + " location (um)",
+        )
+
+    fig.image(image=[data], x=0, y=0, dw=dw, dh=dh, color_mapper=conc_colormapper['transform'], level="image")
+    fig.add_layout(conc_colorbar, 'right')
+
+    plot_layout = layout([fig], sizing_mode='scale_height')
+    html = file_html(plot_layout, CDN, title="RxD Concentration")
+
+    if showFig:
+        show(plot_layout)
+
+    if saveFig:
+        if isinstance(saveFig, str):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename + '_RxD_concentration.html'
+        outfile = open(filename, 'w')
+        outfile.write(html)
+        outfile.close()
+
+    return html, data
+
+
+
+# -------------------------------------------------------------------------------------------------------------------
+## Plot interactive spike statistics
+# -------------------------------------------------------------------------------------------------------------------
+@exception
+def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=None, graphType='boxplot', stats=['rate', 'isicv'], bins=50, histlogy=False, histlogx=False, histmin=0.0, density=False, includeRate0=False, legendLabels=None, normfit=False, histShading=True, xlim=None, popColors={}, saveData=None, saveFig=None, showFig=True, **kwargs):
+        
+    from .. import sim
+    from bokeh.plotting import figure, show
+    from bokeh.resources import CDN
+    from bokeh.embed import file_html
+    from bokeh.layouts import layout, column, row
+    from bokeh.colors import RGB
+    from bokeh.transform import linear_cmap
+    from bokeh.transform import factor_cmap
+    from bokeh.models import ColorBar
+    from bokeh.palettes import Spectral6
+    from bokeh.models.mappers import CategoricalColorMapper
+
+    print('Plotting interactive spike statistics ...')
+
+    TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
+
+    xlabels = {'rate': 'Rate (Hz)', 'isicv': 'Irregularity (ISI CV)', 'sync':  'Synchrony', 'pairsync': 'Pairwise synchrony'}
+
+    # Replace 'eachPop' with list of pops
+    if 'eachPop' in include: 
+        include.remove('eachPop')
+        for pop in sim.net.allPops: include.append(pop)
+
+    # time range
+    if timeRange is None:
+        timeRange = [0, sim.cfg.duration]
+
+    for stat in stats:
+
+        if 'theme' in kwargs:
+            if kwargs['theme'] != 'default':
+                if kwargs['theme'] == 'gui':
+                    from bokeh.themes import Theme
+                    theme = Theme(json=_guiTheme)
+                else:
+                    theme = kwargs['theme']
+                curdoc().theme = theme
+            else:
+                curdoc().theme = bokeh_theme
+        else:
+            curdoc().theme = bokeh_theme
+
+        if not 'palette' in kwargs:
+            colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] 
+        else:
+            colors = kwargs['palette']
+        
+        xlabel = xlabels[stat]
+        statData = []
+        gidsData = []
+        ynormsData = []
+
+        # Calculate data for each entry in include
+        for iplot,subset in enumerate(include):
+
+            if stat in statDataIn:
+                statData = statDataIn[stat]['statData']
+                gidsData = statDataIn[stat].get('gidsData', [])
+                ynormsData = statDataIn[stat].get('ynormsData', [])
+
+            else:
+                cells, cellGids, netStimLabels = getCellsInclude([subset])
+                numNetStims = 0
+
+                # Select cells to include
+                if len(cellGids) > 0:
+                    try:
+                        spkinds,spkts = list(zip(*[(spkgid,spkt) for spkgid,spkt in 
+                            zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]))
+                    except:
+                        spkinds,spkts = [],[]
+                else: 
+                    spkinds,spkts = [],[]
+
+                # Add NetStim spikes
+                spkts, spkinds = list(spkts), list(spkinds)
+                numNetStims = 0
+                if 'stims' in sim.allSimData:
+                    for netStimLabel in netStimLabels:
+                        netStimSpks = [spk for cell,stims in sim.allSimData['stims'].items() \
+                        for stimLabel,stimSpks in stims.items() 
+                            for spk in stimSpks if stimLabel == netStimLabel]
+                        if len(netStimSpks) > 0:
+                            lastInd = max(spkinds) if len(spkinds)>0 else 0
+                            spktsNew = netStimSpks 
+                            spkindsNew = [lastInd+1+i for i in range(len(netStimSpks))]
+                            spkts.extend(spktsNew)
+                            spkinds.extend(spkindsNew)
+                            numNetStims += 1
+                try:
+                    spkts,spkinds = list(zip(*[(spkt, spkind) for spkt, spkind in zip(spkts, spkinds) 
+                        if timeRange[0] <= spkt <= timeRange[1]]))
+                except:
+                    pass
+
+                # rate stats
+                if stat == 'rate':
+                    toRate = 1e3/(timeRange[1]-timeRange[0])
+                    if includeRate0:
+                        rates = [spkinds.count(gid)*toRate for gid in cellGids] \
+                            if len(spkinds)>0 else [0]*len(cellGids) #cellGids] #set(spkinds)] 
+                    else:
+                        rates = [spkinds.count(gid)*toRate for gid in set(spkinds)] \
+                            if len(spkinds)>0 else [0] #cellGids] #set(spkinds)] 
+                    statData.append(rates)
+
+                # Inter-spike interval (ISI) coefficient of variation (CV) stats
+                elif stat == 'isicv':
+                    import numpy as np
+                    spkmat = [[spkt for spkind,spkt in zip(spkinds,spkts) if spkind==gid] 
+                        for gid in set(spkinds)]
+                    isimat = [[t - s for s, t in zip(spks, spks[1:])] for spks in spkmat if len(spks)>10]
+                    isicv = [np.std(x) / np.mean(x) if len(x)>0 else 0 for x in isimat] # if len(x)>0] 
+                    statData.append(isicv) 
+
+                # synchrony
+                elif stat in ['sync', 'pairsync']:
+                    try: 
+                        import pyspike  
+                    except:
+                        print("Error: plotSpikeStats() requires the PySpike python package \
+                            to calculate synchrony (try: pip install pyspike)")
+                        return 0
+                    
+                    spkmat = [pyspike.SpikeTrain([spkt for spkind,spkt in zip(spkinds,spkts) 
+                        if spkind==gid], timeRange) for gid in set(spkinds)]
+                    if stat == 'sync':
+                        # (SPIKE-Sync measure)' # see http://www.scholarpedia.org/article/Measures_of_spike_train_synchrony
+                        syncMat = [pyspike.spike_sync(spkmat)]
+                        #graphType = 'bar'
+                    elif stat == 'pairsync':
+                        # (SPIKE-Sync measure)' # see http://www.scholarpedia.org/article/Measures_of_spike_train_synchrony
+                        syncMat = np.mean(pyspike.spike_sync_matrix(spkmat), 0)
+                        
+                    statData.append(syncMat)
+
+        # boxplot
+        if graphType == 'boxplot':
+            
+            line_width = 2
+            line_color = 'black'
+            if 'theme' in kwargs:
+                if kwargs['theme'] == 'gui' or 'dark' in kwargs['theme']:
+                    line_color = 'lightgray'
+            
+            labels = legendLabels if legendLabels else include
+            data_lists = statData[::-1]
+            data_lists.reverse()
+            box_colors = colors[0:len(labels)]
+
+            if include[0] == 'allCells':
+                del box_colors[-1]
+                box_colors.insert(0, ('darkslategray')) 
+
+            data = {}
+            for label, data_list in zip(labels, data_lists):
+                data[label] = data_list
+
+            fig = figure(
+                title = 'Spike statistics: ' + xlabels[stat],
+                toolbar_location = 'above', 
+                tools = 'hover,save,pan,box_zoom,reset,wheel_zoom', 
+                active_drag = None, 
+                active_scroll = None, 
+                tooltips = [(stat, "$y")],
+                x_axis_label = 'Population', 
+                y_axis_label = xlabel,
+                x_range = labels
+            )
+
+            fig.xgrid.visible = False
+
+            df = pd.DataFrame(dict([ (k,pd.Series(v)) for k,v in data.items() ]))
+
+            q1 = df.quantile(q=0.25)
+            q2 = df.quantile(q=0.5)
+            q3 = df.quantile(q=0.75)
+            iqr = q3 - q1
+            upper = q3 + 1.5 * iqr
+            lower = q1 - 1.5 * iqr
+            qmin = df.quantile(q=0.00)
+            qmax = df.quantile(q=1.00)
+            qmean = df.mean()
+
+            out_highs = df[df > upper]
+            out_lows  = df[df < lower]
+
+            # outliers
+            for index, label in enumerate(labels):
+                out_x = []
+                out_y = []
+                out_high = out_highs[label].dropna() 
+                if not out_high.empty:
+                    upper[label] = df[df < upper][label].max()
+                    for val in out_high:
+                        out_x.append(label)
+                        out_y.append(val)
+                else:
+                    upper[label] = qmax[label]
+                out_low = out_lows[label].dropna() 
+                if not out_low.empty:
+                    lower[label] = df[df > lower][label].min()
+                    for val in out_low:
+                        out_x.append(label)
+                        out_y.append(val)
+                else:
+                    lower[label] = qmin[label]
+                if out_x:
+                    fig.circle_x(out_x, out_y, size=10, fill_color=box_colors[index], fill_alpha=0.8, line_color=line_color)
+
+            # stems
+            fig.segment(labels, upper, labels, q3, line_color=line_color, line_width=line_width)
+            fig.segment(labels, lower, labels, q1, line_color=line_color, line_width=line_width)
+
+            # boxes
+            fig.vbar(labels, 0.7, q2, q3, line_color=line_color, line_width=line_width, fill_color=box_colors)
+            fig.vbar(labels, 0.7, q1, q2, line_color=line_color, line_width=line_width, fill_color=box_colors)
+
+            # whiskers (almost-0 height rects simpler than segments)
+            fig.rect(labels, lower, 20, 1, width_units='screen', height_units='screen', line_color=line_color, line_width=line_width)
+            fig.rect(labels, upper, 20, 1, width_units='screen', height_units='screen', line_color=line_color, line_width=line_width)
+
+            # means
+            fig.circle_cross(labels, qmean, size=10, fill_color='white', fill_alpha=0.5, line_color='black')
+
+            
+
+        else:
+            raise Exception('Only boxplot is currently supported in iplotSpikeStats.')
+
+        plot_layout = layout([fig], sizing_mode='stretch_both')
+        html = file_html(plot_layout, CDN, title="Spike Statistics")
+
+        if showFig:
+            show(plot_layout)
+
+        if saveFig:
+            if isinstance(saveFig, str):
+                filename = saveFig
+            else:
+                filename = sim.cfg.filename + '_spike_' + stat + '.html'
+            outfile = open(filename, 'w')
+            outfile.write(html)
+            outfile.close()
 
     return html

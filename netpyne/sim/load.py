@@ -2,9 +2,8 @@
 sim/load.py
 
 Functions related to loading
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
@@ -35,7 +34,7 @@ from . import setup
 #------------------------------------------------------------------------------
 # Load data from file
 #------------------------------------------------------------------------------
-def _loadFile (filename):
+def _loadFile(filename):
     from .. import sim
     import os
 
@@ -139,7 +138,7 @@ def _loadFile (filename):
 #------------------------------------------------------------------------------
 # Load simulation config from file
 #------------------------------------------------------------------------------
-def loadSimCfg (filename, data=None, setLoaded=True):
+def loadSimCfg(filename, data=None, setLoaded=True):
     if not data: 
         data = _loadFile(filename)
     print('Loading simConfig...')
@@ -156,7 +155,7 @@ def loadSimCfg (filename, data=None, setLoaded=True):
 #------------------------------------------------------------------------------
 # Load netParams from cell
 #------------------------------------------------------------------------------
-def loadNetParams (filename, data=None, setLoaded=True):
+def loadNetParams(filename, data=None, setLoaded=True):
     if not data: data = _loadFile(filename)
     print('Loading netParams...')
     if 'net' in data and 'params' in data['net']:
@@ -173,7 +172,7 @@ def loadNetParams (filename, data=None, setLoaded=True):
 #------------------------------------------------------------------------------
 # Load cells and pops from file and create NEURON objs
 #------------------------------------------------------------------------------
-def loadNet (filename, data=None, instantiate=True, compactConnFormat=False):
+def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
     from .. import sim
 
     if not data: data = _loadFile(filename)
@@ -255,7 +254,7 @@ def loadNet (filename, data=None, instantiate=True, compactConnFormat=False):
 #------------------------------------------------------------------------------
 # Load netParams from cell
 #------------------------------------------------------------------------------
-def loadSimData (filename, data=None):
+def loadSimData(filename, data=None):
     from .. import sim
 
     if not data: data = _loadFile(filename)
@@ -271,7 +270,7 @@ def loadSimData (filename, data=None):
 #------------------------------------------------------------------------------
 # Load all data in file
 #------------------------------------------------------------------------------
-def loadAll (filename, data=None, instantiate=True, createNEURONObj=True):
+def loadAll(filename, data=None, instantiate=True, createNEURONObj=True):
     from .. import sim 
 
     if not data: data = _loadFile(filename)

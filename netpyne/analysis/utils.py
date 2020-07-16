@@ -1,10 +1,7 @@
 """
-analysis/utils.py
-
 Helper functions to plot and analyse results
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
@@ -170,8 +167,10 @@ def _smooth1d(x,window_len=11,window='hanning'):
 # -------------------------------------------------------------------------------------------------------------------
 ## Get subset of cells and netstims indicated by include list
 # -------------------------------------------------------------------------------------------------------------------
-def getCellsInclude(include):
-    from .. import sim
+def getCellsInclude(include, sim = None):
+
+    if not sim:
+        from .. import sim
 
     allCells = sim.net.allCells
     allNetStimLabels = list(sim.net.params.stimSourceParams.keys())
@@ -290,7 +289,7 @@ def getCellsIncludeTags(include, tags, tagsFormat=None):
 # -------------------------------------------------------------------------------------------------------------------
 ## Synchrony measure
 # -------------------------------------------------------------------------------------------------------------------
-def syncMeasure ():
+def syncMeasure():
     from .. import sim
 
     t0=-1 
@@ -318,9 +317,14 @@ def invertDictMapping(d):
 # -------------------------------------------------------------------------------------------------------------------
 ## Get subset of spkt, spkid based on a timeRange and cellGids list; ~10x speedup over list iterate
 # -------------------------------------------------------------------------------------------------------------------
-def getSpktSpkid(cellGids=[], timeRange=None, allCells=False):
-    '''return spike ids and times; with allCells=True just need to identify slice of time so can omit cellGids'''
-    from .. import sim
+def getSpktSpkid(cellGids=[], timeRange=None, sim = None):
+    """
+    return spike ids and times; with allCells=True just need to identify slice of time so can omit cellGids
+    """
+
+    if not sim:
+        from .. import sim
+    
     import pandas as pd
     
     try: # Pandas 0.24 and later
@@ -334,10 +338,89 @@ def getSpktSpkid(cellGids=[], timeRange=None, allCells=False):
         min, max = [int(df['spkt'].searchsorted(timeRange[i])) for i in range(2)] # binary search faster than query
     else: # timeRange None or empty list means all times
         min, max = 0, len(df)
-    if len(cellGids)==0 or allCells: # get all by either using flag or giving empty list -- can get rid of the flag
+    if len(cellGids)==0:
         sel = df[min:max]
     else:
         sel = df[min:max].query('spkid in @cellGids')
     return sel, sel['spkt'].tolist(), sel['spkid'].tolist() # will want to return sel as well for further sorting
 
 
+# -------------------------------------------------------------------------------------------------------------------
+## Default NetPyNE Bokeh theme -- based on dark_minimal
+# -------------------------------------------------------------------------------------------------------------------
+
+# Note: The Bokeh plotting APIs defaults override some theme properties. Namely: fill_alpha, 
+# fill_color, line_alpha, line_color, text_alpha and text_color. Those properties should 
+# therefore be set explicitly when using the plotting API.
+
+_guiTheme = {
+    "attrs": {
+        "Figure" : {
+            "background_fill_color": "#434343", #"#20262B",
+            "border_fill_color": "#434343", #"#15191C",
+            "outline_line_color": "#E0E0E0",
+            "outline_line_alpha": 0.25
+        },
+
+        "Grid": {
+            "grid_line_color": "#E0E0E0",
+            "grid_line_alpha": 0.25
+        },
+
+        "Axis": {
+            "major_tick_line_alpha": 0,
+            "major_tick_line_color": "#E0E0E0",
+
+            "minor_tick_line_alpha": 0,
+            "minor_tick_line_color": "#E0E0E0",
+
+            "axis_line_alpha": 0,
+            "axis_line_color": "#E0E0E0",
+
+            "major_label_text_color": "#E0E0E0",
+            "major_label_text_font": "Helvetica",
+            "major_label_text_font_size": "1.025em",
+
+            "axis_label_standoff": 10,
+            "axis_label_text_color": "#E0E0E0",
+            "axis_label_text_font": "Helvetica",
+            "axis_label_text_font_size": "1.25em",
+            "axis_label_text_font_style": "normal"
+        },
+
+        "Legend": {
+            "spacing": 8,
+            "glyph_width": 15,
+
+            "label_standoff": 8,
+            "label_text_color": "#E0E0E0",
+            "label_text_font": "Helvetica",
+            "label_text_font_size": "1.025em",
+
+            "border_line_alpha": 0,
+            "background_fill_alpha": 0.5, #0.25,
+            "background_fill_color": "#434343", #"#20262B"
+        },
+
+        "ColorBar": {
+            "title_text_color": "#E0E0E0",
+            "title_text_font": "Helvetica",
+            "title_text_font_size": "1.025em",
+            "title_text_font_style": "normal",
+
+            "major_label_text_color": "#E0E0E0",
+            "major_label_text_font": "Helvetica",
+            "major_label_text_font_size": "1.025em",
+
+            "background_fill_color": "#434343", #"#15191C",
+            "major_tick_line_alpha": 0,
+            "bar_line_alpha": 0
+        },
+
+        "Title": {
+            "text_color": "#E0E0E0",
+            "text_font": "Helvetica",
+            "text_font_size": "1.15em"
+        }
+    }
+}

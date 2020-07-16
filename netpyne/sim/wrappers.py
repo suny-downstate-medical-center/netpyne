@@ -3,9 +3,8 @@
 simFunc.py 
 
 Contains wrapper functions to create, load, simulate, analyze etc the network
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
@@ -16,8 +15,12 @@ from __future__ import absolute_import
 #------------------------------------------------------------------------------
 from future import standard_library
 standard_library.install_aliases()
-def create (netParams=None, simConfig=None, output=False):
-    ''' Sequence of commands to create network '''
+def create(netParams=None, simConfig=None, output=False):
+    """
+    create
+    Sequence of commands to create network
+    """
+
     from .. import sim
     import __main__ as top
     if not netParams: netParams = top.netParams
@@ -37,8 +40,12 @@ def create (netParams=None, simConfig=None, output=False):
 #------------------------------------------------------------------------------
 # Wrapper to simulate network
 #------------------------------------------------------------------------------
-def simulate ():
-    ''' Sequence of commands to simulate network '''
+def simulate():
+    """
+    simulate
+    Sequence of commands to simulate network
+    """
+
     from .. import sim
     sim.runSim()         
     sim.gatherData()                  # gather spiking data and cell info from each node
@@ -46,18 +53,26 @@ def simulate ():
 #------------------------------------------------------------------------------
 # Wrapper to simulate network
 #------------------------------------------------------------------------------
-def intervalSimulate (interval):
-    ''' Sequence of commands to simulate network '''
+def intervalSimulate(interval):
+    """
+    intervalSimulate
+    Sequence of commands to simulate network
+    """
+
     from .. import sim
     sim.runSimWithIntervalFunc(interval, sim.intervalSave)                      # run parallel Neuron simulation  
     #this gather is justa merging of files
     sim.fileGather()                  # gather spiking data and cell info from saved file
     
 #------------------------------------------------------------------------------
-# Wrapper to simulate network
+# Wrapper to analyze network
 #------------------------------------------------------------------------------
-def analyze ():
-    ''' Sequence of commands to simulate network '''
+def analyze():
+    """
+    analyze
+    Sequence of commands to analyze network
+    """
+
     from .. import sim
     sim.saveData()                      # run parallel Neuron simulation  
     sim.analysis.plotData()                  # gather spiking data and cell info from each node
@@ -66,8 +81,12 @@ def analyze ():
 #------------------------------------------------------------------------------
 # Wrapper to create, simulate, and analyse network
 #------------------------------------------------------------------------------
-def createSimulate (netParams=None, simConfig=None, output=False):
-    ''' Sequence of commands create, simulate and analyse network '''
+def createSimulate(netParams=None, simConfig=None, output=False):
+    """
+    createSimulate
+    Sequence of commands create, simulate and analyse network
+    """
+
     from .. import sim
     (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
     sim.simulate() 
@@ -78,8 +97,12 @@ def createSimulate (netParams=None, simConfig=None, output=False):
 #------------------------------------------------------------------------------
 # Wrapper to create, simulate, and analyse network
 #------------------------------------------------------------------------------
-def createSimulateAnalyze (netParams=None, simConfig=None, output=False):
-    ''' Sequence of commands create, simulate and analyse network '''
+def createSimulateAnalyze(netParams=None, simConfig=None, output=False):
+    """
+    createSimulateAnalyze
+    Sequence of commands create, simulate and analyse network
+    """
+    
     from .. import sim
     (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
     sim.simulate() 
@@ -89,8 +112,12 @@ def createSimulateAnalyze (netParams=None, simConfig=None, output=False):
 #------------------------------------------------------------------------------
 # Wrapper to create, simulate, and analyse network, while saving to master in intervals
 #------------------------------------------------------------------------------
-def intervalCreateSimulateAnalyze (netParams=None, simConfig=None, output=False, interval=None):
-    ''' Sequence of commands create, simulate and analyse network '''
+def intervalCreateSimulateAnalyze(netParams=None, simConfig=None, output=False, interval=None):
+    """
+    intervalCreateSimulateAnalyze
+    Sequence of commands create, simulate and analyse network
+    """
+
     import os
     from .. import sim
     (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
@@ -113,8 +140,12 @@ def intervalCreateSimulateAnalyze (netParams=None, simConfig=None, output=False,
 #------------------------------------------------------------------------------
 # Wrapper to load all, ready for simulation
 #------------------------------------------------------------------------------
-def load (filename, simConfig=None, output=False, instantiate=True, createNEURONObj=True):
-    ''' Sequence of commands load, simulate and analyse network '''
+def load(filename, simConfig=None, output=False, instantiate=True, createNEURONObj=True):
+    """
+    load
+    Sequence of commands load, simulate and analyse network
+    """
+
     from .. import sim
     sim.initialize()  # create network object and set cfg and net params
     sim.cfg.createNEURONObj = createNEURONObj
@@ -138,7 +169,7 @@ def load (filename, simConfig=None, output=False, instantiate=True, createNEURON
 #------------------------------------------------------------------------------
 # Wrapper to load net and simulate
 #------------------------------------------------------------------------------
-def loadSimulate (filename, simConfig=None, output=False):
+def loadSimulate(filename, simConfig=None, output=False):
     from .. import sim
     sim.load(filename, simConfig)
     sim.simulate()
@@ -149,7 +180,7 @@ def loadSimulate (filename, simConfig=None, output=False):
 #------------------------------------------------------------------------------
 # Wrapper to load net and simulate
 #------------------------------------------------------------------------------
-def loadSimulateAnalyze (filename, simConfig=None, output=False):
+def loadSimulateAnalyze(filename, simConfig=None, output=False):
     from .. import sim
     sim.load(filename, simConfig)
     sim.simulate()
@@ -161,8 +192,12 @@ def loadSimulateAnalyze (filename, simConfig=None, output=False):
 #------------------------------------------------------------------------------
 # Wrapper to create and export network to NeuroML2
 #------------------------------------------------------------------------------
-def createExportNeuroML2 (netParams=None, simConfig=None, reference=None, connections=True, stimulations=True, output=False, format='xml'):
-    ''' Sequence of commands to create and export network to NeuroML2 '''
+def createExportNeuroML2(netParams=None, simConfig=None, reference=None, connections=True, stimulations=True, output=False, format='xml'):
+    """
+    createExportNeuroML2
+    Sequence of commands to create and export network to NeuroML2
+    """
+
     from .. import sim
     import __main__ as top
     if not netParams: netParams = top.netParams

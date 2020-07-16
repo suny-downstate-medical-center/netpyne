@@ -4,7 +4,7 @@ About NetPyNE
 What is NetPyNE?
 ----------------
 
-NetPyNE (**Net**\ works using **Py**\ thon and **NE**\ URON) is a Python package to facilitate the development, simulation, parallelization, and analysis of biological neuronal networks using the NEURON simulator.
+NetPyNE (**Net**\ works using **Py**\ thon and **NE**\ URON) is a Python package to facilitate the development, simulation, parallelization, analysis, and optimization of biological neuronal networks using the NEURON simulator.
 
 Although NEURON already enables multiscale simulations ranging from the molecular to the network level, using NEURON for network simulations requires substantial programming, and often requires parallel simulations. NetPyNE greatly facilitates the development and parallel simulation of biological neuronal networks in NEURON for students and experimentalists. NetPyNE is also intended for experienced modelers, providing powerful features to incorporate complex anatomical and physiological data into models.
 
@@ -12,13 +12,13 @@ For a more detailed overview of NetPyNE see:
 
 - Our `NetPyNE article <https://elifesciences.org/articles/44494>`_ in the journal `eLife <https://elifesciences.org/>`_
 
-- Our `NetPyNE presentation slides <http://it.neurosim.downstate.edu/salvadord/netpyne.pdf>`_ from the Computational Neuroscience conference `CNS*2017 <https://www.cnsorg.org/cns-2017>`_
+- Our `NetPyNE presentation slides <http://it.neurosim.downstate.edu/salvadord/netpyne.pdf>`_ from `CNS*2017 <https://www.cnsorg.org/cns-2017>`_
 
 |
 
 .. image:: figs/schematic.png
-	:width: 90%	
-	:align: center
+    :width: 90%	
+    :align: center
 
 Major Features
 --------------
@@ -28,51 +28,59 @@ Major Features
 * **Specifications are provided in a simple, standardized, declarative Python-based format**
 
 * **Can easily define:**
-	* *Populations*: cell type and model, number of neurons or density, spatial extent, ...
-	* *Cell properties*: morphology, biophysics, implementation, ...
-	* *Synaptic mechanisms*: time constants, reversal potential, implementation, ...
-	* *Stimulation*: spike generators, current clamps, spatiotemporal properties, ...
-	* *Connectivity rules*: conditions of pre- and post-synaptic cells, different functions, ...
-	* *Simulation configuration*: duration, saving and analysis, graphical output, ... 
-	* *Reaction-diffusion (RxD)*: species, regions, reactions, ... 
+
+    * *Populations*: cell type and model, number of neurons or density, spatial extent, ...
+    * *Cell properties*: morphology, biophysics, implementation, ...
+    * *Synaptic mechanisms*: time constants, reversal potential, implementation, ...
+    * *Stimulation*: spike generators, current clamps, spatiotemporal properties, ...
+    * *Connectivity rules*: conditions of pre- and post-synaptic cells, different functions, ...
+    * *Simulation configuration*: duration, saving and analysis, graphical output, ... 
+    * *Reaction-diffusion (RxD)*: species, regions, reactions, ... 
 
 * **Cell properties highlights:**
-	* Import existing HOC and Python defined cell models into NetPyNE format
-	* Readily change model implementation *e.g.,* from Hodgkin-Huxley multicompartment to Izhikevich point neuron
-	* Combine multiple cell models into hybrid networks for efficient large-scale networks
+
+    * Import existing HOC and Python defined cell models into NetPyNE format
+    * Readily change model implementation *e.g.,* from Hodgkin-Huxley multicompartment to Izhikevich point neuron
+    * Combine multiple cell models into hybrid networks for efficient large-scale networks
 
 * **Connectivity rules highlights:**
-	* Flexible connectivity rules based on pre- and post-synaptic cell properties (*e.g.,* cell type or location) 
-	* Connectivity functions available: all-to-all, probabilistic, convergent, divergent, and explicit list  
-	* Can specify parameters (*e.g.,* weight, probability or delay) as a function of pre/post-synaptic spatial properties, *e.g.,* delays or probability that depend on distance between cells or cortical depth
-	* Can specify subcellular distribution of synapses along the dendrites, and will be automatically adapted to the morphology of each model neuron. 
-	* Can easily add learning mechanisms to synapses, including STDP and reinforcement learning
+
+    * Flexible connectivity rules based on pre- and post-synaptic cell properties (*e.g.,* cell type or location) 
+    * Connectivity functions available: all-to-all, probabilistic, convergent, divergent, and explicit list  
+    * Can specify parameters (*e.g.,* weight, probability or delay) as a function of pre/post-synaptic spatial properties, *e.g.,* delays or probability that depend on distance between cells or cortical depth
+    * Can specify subcellular distribution of synapses along the dendrites, and will be automatically adapted to the morphology of each model neuron. 
+    * Can easily add learning mechanisms to synapses, including STDP and reinforcement learning
 
 * **Generates NEURON network instance ready for MPI parallel simulation**
-	* Takes care of cell distribution 
-	* Handles gathering of data
+
+    * Takes care of cell distribution 
+    * Handles gathering of data
 
 * **Analysis and plotting of network and simulation output:**
-	* Raster plot of all cells or populations
-	* Spike histogram of all cells, populations, or single cells
-	* Intrinsic cell variable plots (voltages, currents, conductances) 
-	* Local field potential (LFP) calculation and plots (time-resolved and power spectra)
-	* Connectivity matrix at cell or population level (weights, number of connections, efficiency, probability, ...)
-	* 2D representation of network cell locations and connections
- 	* 3D shape plot with option to include color-coded variables (e.g., number of synapses) 
- 	* Normalized transfer entropy and spectral Granger Causality
+
+    * Raster plot of all cells or populations
+    * Spike histogram of all cells, populations, or single cells
+    * Intrinsic cell variable plots (voltages, currents, conductances) 
+    * Local field potential (LFP) calculation and plots (time-resolved and power spectra)
+    * Connectivity matrix at cell or population level (weights, number of connections, efficiency, probability, ...)
+    * 2D representation of network cell locations and connections
+    * 3D shape plot with option to include color-coded variables (e.g., number of synapses) 
+    * Normalized transfer entropy and spectral Granger Causality
 
 * **Facilitates data sharing:** 
-	* Can save/load high-level specs, network instance, simulation configuration, and simulation results.
-	* Multiple formats supported: pickle, Matlab, JSON, CSV, HDF5
-	* Can export/import to/from NeuroML and SONATA, standardized formats for neural models
+
+    * Can save/load high-level specs, network instance, simulation configuration, and simulation results.
+    * Multiple formats supported: pickle, Matlab, JSON, CSV, HDF5
+    * Can export/import to/from NeuroML and SONATA, standardized formats for neural models
 
 * **Batch simulations:**
-	* Easy specification of parameters and range of values to explore in batch simulations
-	* Pre-defined, configurable setups to automatically submit jobs in multicore machines (bulletin board) or supercomputers (SLURM or PBS Torque)
-	* Analysis and visualization of multidimensional batch simulation results
+
+    * Easy specification of parameters and range of values to explore in batch simulations
+    * Pre-defined, configurable setups to automatically submit jobs in multicore machines (bulletin board) or supercomputers (SLURM or PBS Torque)
+    * Analysis and visualization of multidimensional batch simulation results
 
 * **Current usage:**
+
     * Used to develop models of many different brain regions and phenomena. See [full list of models](www.netpyne.org/models)
     * Integrated with the `Human Neocortical Neurosolver <https://hnn.brown.edu/>`_ to add flexibility to its cortical model 
     * Used by `Open Source Brain <www.opensourcebrain.org>`_ to run parallel simulation of NeuroML-based NEURON models
@@ -81,7 +89,7 @@ Major Features
 Questions, suggestions and contributions
 -----------------------------------------
 
-NetPyNE is open source and available at https://github.com/Neurosim-lab/netpyne .
+NetPyNE is open source and available at https://github.com/Neurosim-lab/netpyne 
 
 For questions or suggestions please use the `Google NetPyNE Q&A forum <https://groups.google.com/forum/#!forum/netpyne-forum>`_ , the `NEURON NetPyNE forum <https://www.neuron.yale.edu/phpBB/viewforum.php?f=45>`_  or add an `Issue to GitHub <https://github.com/Neurosim-lab/netpyne/issues>`_. 
 
@@ -128,7 +136,7 @@ About NetPyNE
 Make use of and/or cite NetPyNE
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- *Amsalem, O., Eyal, G., Rogozinski, N., Gevaert, M., Kumbhar, P., Schürmann, F. and Segev, I., **An efficient analytical reduction of detailed nonlinear neuron models.** `Nature Communications, 11(1), pp.1-13 <https://www.nature.com/articles/s41467-019-13932-6>`_. *2020*
+- Amsalem, O., Eyal, G., Rogozinski, N., Gevaert, M., Kumbhar, P., Schürmann, F. and Segev, I., **An efficient analytical reduction of detailed nonlinear neuron models.** `Nature Communications, 11(1), pp.1-13 <https://www.nature.com/articles/s41467-019-13932-6>`_. *2020*
 
 - Billeh, Y.N., Cai, B., Gratiy, S.L., Dai, K., Iyer, R., Gouwens, N.W., Abbasi-Asl, R., Jia, X., Siegle, J.H., Olsen, S.R. and Koch, C.,. **Systematic integration of structural and functional data into multi-scale models of mouse primary visual cortex.** `Neuron (In Press) NEURON-D-19-01027 <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3416643>`_. *2020*
 
@@ -171,9 +179,9 @@ Courses
 Future
 ^^^^^^^^^^^^
 
-- June 2020: Building and simulating brain circuit models on Google Cloud, Google Office, NYC (To be confirmed)
+- June 2020: Building and simulating brain circuit models on Google Cloud, Google Office, NYC (delayed)
 
-- July 2020: [CNS*2020](https://www.cnsorg.org/cns-2020) Tutorial on Multiscale Modeling using NEURON and NetPyNE, Melbourne, Australia
+- July 2020: `[CNS*2020] <https://www.cnsorg.org/cns-2020>`_ Tutorial on Multiscale Modeling using NEURON and NetPyNE, Melbourne, Australia
 
 Past
 ^^^^^^^^^

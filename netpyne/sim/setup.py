@@ -2,9 +2,8 @@
 sim/setup.py
 
 Functions related to the simulation set up
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
@@ -29,7 +28,7 @@ except:
 #------------------------------------------------------------------------------
 # initialize variables and MPI
 #------------------------------------------------------------------------------
-def initialize (netParams = None, simConfig = None, net = None):
+def initialize(netParams = None, simConfig = None, net = None):
     from .. import sim
 
     if netParams is None: netParams = {} # If not specified, initialize as empty dict
@@ -85,7 +84,7 @@ def initialize (netParams = None, simConfig = None, net = None):
 #------------------------------------------------------------------------------
 # Set network object to use in simulation
 #------------------------------------------------------------------------------
-def setNet (net):
+def setNet(net):
     from .. import sim
     sim.net = net
 
@@ -93,7 +92,7 @@ def setNet (net):
 #------------------------------------------------------------------------------
 # Set network params to use in simulation
 #------------------------------------------------------------------------------
-def setNetParams (params):
+def setNetParams(params):
     from .. import sim
 
     if params and isinstance(params, specs.NetParams):
@@ -109,7 +108,7 @@ def setNetParams (params):
 #------------------------------------------------------------------------------
 # Set simulation config
 #------------------------------------------------------------------------------
-def setSimCfg (cfg):
+def setSimCfg(cfg):
     from .. import sim
 
     if cfg and isinstance(cfg, specs.SimConfig):
@@ -128,7 +127,7 @@ def setSimCfg (cfg):
 #------------------------------------------------------------------------------
 # Create parallel context
 #------------------------------------------------------------------------------
-def createParallelContext ():
+def createParallelContext():
     from .. import sim
 
     sim.pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
@@ -143,7 +142,7 @@ def createParallelContext ():
 #------------------------------------------------------------------------------
 # Read simConfig and netParams from command line arguments
 #------------------------------------------------------------------------------
-def readCmdLineArgs (simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
+def readCmdLineArgs(simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
     from .. import sim
     import imp, importlib, types
     import __main__
@@ -238,7 +237,7 @@ def setupRecordLFP():
 #------------------------------------------------------------------------------
 # Setup Recording
 #------------------------------------------------------------------------------
-def setupRecording ():
+def setupRecording():
     from .. import sim
 
     sim.timing('start', 'setrecordTime')
@@ -260,6 +259,7 @@ def setupRecording ():
                 if item in netStimLabels:
                     sim.cfg.recordStim = True
                     break
+    
 
     if 'plotSpikeHist' in sim.cfg.analysis:
         if sim.cfg.analysis['plotSpikeHist']==True:
@@ -286,6 +286,8 @@ def setupRecording ():
         # get list of cells from argument of plotTraces function
         if 'plotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['plotTraces']:
             cellsPlot = utils.getCellsList(sim.cfg.analysis['plotTraces']['include'])
+        elif 'iplotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['iplotTraces']:
+            cellsPlot = utils.getCellsList(sim.cfg.analysis['iplotTraces']['include'])
         else:
             cellsPlot = []
 
@@ -339,7 +341,7 @@ def setupRecording ():
 #------------------------------------------------------------------------------
 # Get cells list for recording based on set of conditions
 #------------------------------------------------------------------------------
-def setGlobals ():
+def setGlobals():
     from .. import sim
 
     hParams = sim.cfg.hParams

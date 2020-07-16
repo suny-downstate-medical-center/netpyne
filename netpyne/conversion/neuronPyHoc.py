@@ -2,9 +2,8 @@
 conversion/neuron.py 
 
 Functions to import cells, synapses and networks from NEURON
-
-Contributors: salvador dura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
@@ -23,7 +22,7 @@ import importlib
 
 #h.load_file("stdrun.hoc") 
 
-def getSecName (sec, dirCellSecNames = None):
+def getSecName(sec, dirCellSecNames = None):
     if dirCellSecNames is None: dirCellSecNames = {}
 
     if '>.' in sec.name():
@@ -43,7 +42,7 @@ def getSecName (sec, dirCellSecNames = None):
         secName = dirCellSecNames[secName]
     return secName
 
-def importCellParams (fileName, labels, values, key = None):
+def importCellParams(fileName, labels, values, key = None):
     params = {}
     if fileName.endswith('.py'):
         try:
@@ -69,7 +68,7 @@ def importCellParams (fileName, labels, values, key = None):
     return params
 
 
-def mechVarList ():
+def mechVarList():
     msname = h.ref('')
     varList = {}
     for i, mechtype in enumerate(['mechs','pointps']):
@@ -102,7 +101,7 @@ def mechVarList ():
 #     return glob
 
 
-def getGlobals (mechNames, origGlob={}):
+def getGlobals(mechNames, origGlob={}):
     includeGlobs = ['celsius', 'v_init', 'clamp_resist']
     endings = tuple(['_' + name for name in mechNames])
     glob = {}
@@ -118,7 +117,7 @@ def getGlobals (mechNames, origGlob={}):
     return glob
 
 
-def setGlobals (glob):
+def setGlobals(glob):
     for k,v in glob.items():
         try:
             setattr(h, k, v)
@@ -134,7 +133,7 @@ def setGlobals (glob):
     #             print k
 
 
-def _equal_dicts (d1, d2, ignore_keys):
+def _equal_dicts(d1, d2, ignore_keys):
     ignored = set(ignore_keys)
     for k1, v1 in d1.items():
         if k1 not in ignored and (k1 not in d2 or d2[k1] != v1):
@@ -159,15 +158,20 @@ def _delete_module(modname):
         except:
             pass
 
-def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
+def importCell(fileName, cellName, cellArgs = None, cellInstance = False):
+    """
+    importCell
+    Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)
+    """
+    
     h.initnrn()
+    
     varList = mechVarList()  # list of properties for all density mechanisms and point processes
     origGlob = getGlobals(list(varList['mechs'].keys())+list(varList['pointps'].keys()))
     origGlob['v_init'] = -65  # add by hand since won't be set unless load h.load_file('stdrun')
 
     if cellArgs is None: cellArgs = [] # Define as empty list if not otherwise defined
 
-    ''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
     if fileName.endswith('.hoc') or fileName.endswith('.tem'):
         h.load_file(fileName)
         if not cellInstance:
@@ -220,10 +224,14 @@ def importCell (fileName, cellName, cellArgs = None, cellInstance = False):
     return secDic, secListDic, synMechs, globs
 
 
-def importCellsFromNet (netParams, fileName, labelList, condsList, cellNamesList, importSynMechs):
+def importCellsFromNet(netParams, fileName, labelList, condsList, cellNamesList, importSynMechs):
+    """
+    importCellsFromNet
+    Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)
+    """
+    
     h.initnrn()
     
-    ''' Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)'''
     if fileName.endswith('.hoc') or fileName.endswith('.tem'):
         print('Importing from .hoc network not yet supported')
         return
@@ -281,7 +289,7 @@ def getCellParams(cell, varList={}, origGlob={}):
 
     # create dict with hname of each element in dir(cell)
     dirCellHnames = {}  
-    for dirCellName in dirCell:
+    for dirCellName in [d for d in dirCell if not d.startswith('__')]:  # avoid attributes starting with '__'
         dirCellObject = getattr(cell, dirCellName)
         if isinstance(dirCellObject, list):
             for i, dirCellObjectItem in enumerate(dirCellObject):

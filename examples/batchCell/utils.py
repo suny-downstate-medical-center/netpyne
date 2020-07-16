@@ -2,8 +2,6 @@
 utils.py 
 
 General functions to analyse simulation data
-
-Contributors: salvadordura@gmail.com
 """
 import json
 import pickle

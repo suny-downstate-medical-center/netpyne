@@ -3,9 +3,8 @@
 network/rxd.py 
 
 Network class methods to add RxD  
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
@@ -22,12 +21,15 @@ except NameError:
 from future import standard_library
 standard_library.install_aliases()
 import copy
-
+try:
+    from neuron.crxd import rxdmath 
+except:
+    print('Warning: Could not import rxdmath module')
 
 # -----------------------------------------------------------------------------
 # Add RxD
 # -----------------------------------------------------------------------------
-def addRxD (self):
+def addRxD(self):
     from .. import sim
 
     if len(self.params.rxdParams):
@@ -291,7 +293,7 @@ def _addReactions(self, params, multicompartment=False):
     reactionDictKey = 'multicompartmentReactions' if multicompartment else 'reactions'
 
     for label, param in params.items():
-        dynamicVars = {'sim': sim}
+        dynamicVars = {'sim': sim, 'rxdmath': rxdmath}
         # reactant
         if 'reactant' not in param:
             print('  Error creating %s %s: "reactant" parameter was missing'%(reactionStr,label))
@@ -371,7 +373,7 @@ def _addRates(self, params):
     from .. import sim
 
     for label, param in params.items():
-        dynamicVars = {'sim': sim}
+        dynamicVars = {'sim': sim, 'rxdmath': rxdmath}
         # species
         if 'species' not in param:
             print('  Error creating Rate %s: "species" parameter was missing'%(label))

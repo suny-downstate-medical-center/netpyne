@@ -2,9 +2,8 @@
 cell/cell.py 
 
 Contains generic Cell class
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
@@ -33,7 +32,9 @@ from ..specs import Dict
 ###############################################################################
 
 class Cell (object):
-    ''' Generic class for neuron models '''
+    """
+    Generic class for neuron models
+    """
     
     def __init__ (self, gid, tags):
         from .. import sim
@@ -101,7 +102,7 @@ class Cell (object):
             currenttime = currenttime+isi+variation*(rand()-0.5)
         
         # Create single pulse
-        npts = pulselength*width/timeres
+        npts = int(pulselength*width/timeres)
         x = (r_[0:npts]-npts/2+1)*timeres
         if stimshape=='gaussian': 
             pulse = exp(-2*(2*x/width-1)**2) # Offset by 2 standard deviations from start
@@ -116,7 +117,7 @@ class Cell (object):
         events = zeros((allpts))
         events[array(array(output)/timeres,dtype=int)] = 1
         fulloutput = convolve(events,pulse,mode='full')*weight # Calculate the convolved input signal, scaled by rate
-        fulloutput = fulloutput[npts/2-1:-npts/2]   # Slices out where the convolved pulse train extends before and after sequence of allpts.
+        fulloutput = fulloutput[int(npts/2-1):int(-npts/2)]   # Slices out where the convolved pulse train extends before and after sequence of allpts.
         fulltime = (r_[0:allpts]*timeres+start)*1e3 # Create time vector and convert to ms
         
         fulltime = hstack((0,fulltime,fulltime[-1]+timeres*1e3)) # Create "bookends" so always starts and finishes at zero
@@ -197,8 +198,15 @@ class Cell (object):
                             ptr = getattr(getattr(self.secs[params['sec']]['hObj'](params['loc']), params['mech']), '_ref_'+params['var'])
                         elif 'synMech' in params:  # eg. soma(0.5).AMPA._ref_g
                             sec = self.secs[params['sec']]
-                            synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech'] and synMech['loc']==params['loc']), None)
-                            ptr = getattr(synMech['hObj'], '_ref_'+params['var'])
+                            synMechList = [synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech'] and synMech['loc']==params['loc']] # make list with this label/loc
+                            if len(synMechList) > 0:
+                                if 'index' in params and index<len(synMechList):
+                                    synMech = synMechList[params['index']]
+                                else:
+                                    synMech = synMechList[0] # 0th one which would have been returned by next()
+                                ptr = getattr(synMech['hObj'], '_ref_'+params['var'])
+                            else:
+                                ptr = None
                         else:  # eg. soma(0.5)._ref_v
                             ptr = getattr(self.secs[params['sec']]['hObj'](params['loc']), '_ref_'+params['var'])
                     elif 'synMech' in params:  # special case where want to record from multiple synMechs
@@ -287,7 +295,10 @@ class Cell (object):
 
 
     def __getstate__ (self): 
-        ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
+        """
+        Removes non-picklable h objects so can be pickled and sent via py_alltoall
+        """
+        
         from .. import sim
 
         odict = self.__dict__.copy() # copy the dict since we change it

@@ -1,10 +1,7 @@
 """
-analysis/spikes.py
-
 Functions to plot and analyze traces-related results
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
@@ -30,33 +27,108 @@ from .utils import colorList, _showFigure, _saveFigData, exception, getCellsIncl
 ## Plot recorded cell traces (V, i, g, etc.)
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = 'cell', rerun = False, colors = None, ylim = None, axis='on', fontSize=12,
-                figSize = (10,8), saveData = None, saveFig = None, showFig = True, title = None): 
-    ''' 
-    Plot recorded traces
-        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of cells for which to plot 
-            the recorded traces (default: [])
-        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
-        - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: False)
-        - oneFigPer ('cell'|'trace'): Whether to plot one figure per cell (showing multiple traces) 
-            or per trace (showing multiple cells) (default: 'cell')
-        - rerun (True|False): rerun simulation so new set of cells gets recorded (default: False)
-        - colors (list): List of normalized RGB colors to use for traces
-        - ylim (list): Y-axis limits
-        - axis ('on'|'off'): Whether to show axis or not; if not, then a scalebar is included (default: 'on')
-        - figSize ((width, height)): Size of figure (default: (10,8))
-        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
-            if set to True uses filename from simConfig (default: None)
-        - saveFig (None|True|'fileName'): File name where to save the figure;
-            if set to True uses filename from simConfig (default: None)
-        - showFig (True|False): Whether to show the figure or not (default: True)
-        - title (None|'figure title'): Set the whole figure title, work only in OneFigPerCell (default: None)
-        - Returns figure handles
-    '''
+def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, title=None, overlay=False, colors=None, ylim=None, axis=True, scaleBarLoc=1, figSize = (10,8), fontSize=12, saveData=None, saveFig=None, showFig=True):
+    """Creates plots of recorded traces.
+
+    Parameters
+    ----------
+    include : list
+        Populations and cells to include in the plot.
+        **Default:** 
+        ``['eachPop', 'allCells']`` plots histogram for each population and overall average
+        **Options:** 
+        ``['all']`` plots all cells and stimulations, 
+        ``['allNetStims']`` plots just stimulations, 
+        ``['popName1']`` plots a single population, 
+        ``['popName1', 'popName2']`` plots multiple populations, 
+        ``[120]`` plots a single cell, 
+        ``[120, 130]`` plots multiple cells, 
+        ``[('popName1', 56)]`` plots a cell from a specific population, 
+        ``[('popName1', [0, 1]), ('popName2', [4, 5, 6])]``, plots cells from multiple populations
+
+    timeRange : list [start, stop]
+        Time range to plot.
+        **Default:** 
+        ``None`` plots entire time range
+
+    oneFigPer : str
+        Whether to plot one figure per cell (showing multiple traces) or per trace (showing multiple cells).
+        **Default:** ``'cell'`` 
+        **Options:** ``'trace'``
+
+    rerun : bool
+        Rerun simulation so a new set of cells gets recorded.
+        **Default:** ``False`` 
+    
+    title : str
+        Set the whole figure title, works only with ``oneFigPer='cell'``.
+        **Default:** ``None``
+
+    overlay : bool
+        Whether to overlay plots or use subplots.
+        **Default:** ``True`` overlays plots.
+
+    colors : list
+        List of normalized RGB colors to use for traces.
+        **Default:** ``None`` uses standard colors
+
+    ylim : list [min, max]
+        Sets the y limits of the plot.
+        **Default:** ``None``
+
+    axis : bool
+        Whether to show axis or not; if not, then a scalebar is included.
+        **Default:** ``True``
+
+    scaleBarLoc : int
+        Sets the location of the scale bar (added when axis=False).
+        **Default:** ``1``
+        **Options:** 
+        ``1``  upper right, ``2`` upper left, ``3`` lower left, ``4`` lower right, ``5`` right, ``6`` center left, ``7`` center right, ``8`` lower center, ``9`` upper center, ``10`` center
+
+    figSize : list [width, height]
+        Size of figure in inches.
+        **Default:** ``(10, 8)`` 
+    
+    fontSize : int
+        Font size on figure.
+        **Default:** ``12`` 
+    
+    saveData : bool or str
+        Whether and where to save the data used to generate the plot. 
+        **Default:** ``False`` 
+        **Options:** ``True`` autosaves the data,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
+    
+    saveFig : bool or str
+        Whether and where to save the figure.
+        **Default:** ``False``
+        **Options:** ``True`` autosaves the figure,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
+    
+    showFig : bool
+        Shows the figure if ``True``.
+        **Default:** ``True``
+
+    Returns
+    -------
+    (fig, dict)
+        A tuple consisting of the matplotlib figure handle and a dictionary containing the plot data.
+
+    See Also
+    --------
+    iplotTraces :
+
+    Examples
+    --------
+    >>> import netpyne, netpyne.examples.example
+    >>> out = netpyne.analysis.plotTraces()
+    """
+    
     from .. import sim
     from ..support.scalebar import add_scalebar
 
-    print('Plotting recorded cell traces ...',oneFigPer)
+    print('Plotting recorded cell traces ...', oneFigPer)
 
     if include is None:  # if none, record from whatever was recorded
         if 'plotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['plotTraces']:
@@ -96,6 +168,15 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
     # set font size
     plt.rcParams.update({'font.size': fontSize})
     fontsiz = fontSize
+
+    # add scale bar
+    def addScaleBar(timeRange=timeRange, loc=scaleBarLoc):
+        ax = plt.gca()
+        sizex =  (timeRange[1]-timeRange[0])/20.0
+        #yl = plt.ylim()
+        #plt.ylim(yl[0]-0.2*(yl[1]-yl[0]), yl[1])
+        add_scalebar(ax, hidex=False, hidey=True, matchx=False, matchy=True, sizex=sizex, sizey=None, unitsx='ms', unitsy='mV', scalex=1, scaley=1, loc=loc, pad=-1, borderpad=0.5, sep=4, prop=None, barcolor="black", barwidth=3)
+        plt.axis(axis)
 
     # Plot one fig per trace for given cell list
     def plotFigPerTrace(subGids):
@@ -161,21 +242,19 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                     if ylim: plt.ylim(ylim)
                     plt.title('%s '%(trace))
                     
-            if axis == 'off':  # if no axis, add scalebar
-                ax = plt.gca()
-                sizex =  (timeRange[1]-timeRange[0])/20.0
-                # yl = plt.ylim()
-                # plt.ylim(yl[0]-0.2*(yl[1]-yl[0]), yl[1])
-                add_scalebar(ax, hidex=False, hidey=True, matchx=False, matchy=True, sizex=sizex, sizey=None, 
-                    unitsx='ms', unitsy='mV', scalex=1, scaley=1, loc=1, pad=-1, borderpad=0.5, sep=4, prop=None, barcolor="black", barwidth=3)   
-                plt.axis(axis) 
+                    if not overlay:
+                        if not axis or axis=='off':  # if no axis, add scalebar
+                            addScaleBar()
 
-            if overlay and len(subGids) < 20:
-                #maxLabelLen = 10
-                #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen)) 
-                #plt.legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
-                plt.legend()  # PUT BACK!!!!!!
-                pass
+            if overlay: 
+                if not axis or axis=='off':  # if no axis, add scalebar
+                    addScaleBar()
+                if len(subGids) < 20:
+                    #maxLabelLen = 10
+                    #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen)) 
+                    #plt.legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
+                    plt.legend()  # PUT BACK!!!!!!
+
 
 
     # Plot one fig per cell
@@ -231,20 +310,16 @@ def plotTraces (include = None, timeRange = None, overlay = False, oneFigPer = '
                     plt.xlim(timeRange)
                     if ylim: plt.ylim(ylim)
                     if itrace==0: plt.title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                    if not overlay:
+                        if not axis or axis=='off':  # if no axis, add scalebar
+                            addScaleBar()       
                     
             if overlay: 
+                if not axis or axis=='off':  # if no axis, add scalebar
+                    addScaleBar() 
                 #maxLabelLen = 10
                 #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))
-                plt.legend()#fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
-
-            if axis == 'off':  # if no axis, add scalebar
-                ax = plt.gca()
-                sizex = timeRange[1]-timeRange[0]/20
-                yl = plt.ylim()
-                plt.ylim(yl[0]-0.2*(yl[1]-yl[0]), yl[1])  # leave space for scalebar?
-                add_scalebar(ax, hidex=False, hidey=True, matchx=False, matchy=True,  sizex=sizex, sizey=None, 
-                    unitsx='ms', unitsy='mV', scalex=1, scaley=1, loc=4, pad=10, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)   
-                plt.axis(axis)                 
+                plt.legend() #fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
 
             if title:
                 figs['_gid_'+str(gid)].suptitle(cell['tags'][title])
@@ -363,4 +438,3 @@ def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='a
     if showFig: _showFigure()
 
     return fig, {'peaks': peaks}
-

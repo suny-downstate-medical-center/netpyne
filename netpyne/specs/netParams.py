@@ -2,9 +2,8 @@
 specs/netParams.py
 
 NetParams class includes high-level network parameters and methods
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
@@ -30,7 +29,7 @@ from .. import conversion
 # PopParams class
 # ----------------------------------------------------------------------------
 
-class PopParams (ODict):
+class PopParams(ODict):
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -53,7 +52,7 @@ class PopParams (ODict):
 # CellParams class
 # ----------------------------------------------------------------------------
     
-class CellParams (ODict):
+class CellParams(ODict):
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -83,7 +82,7 @@ class CellParams (ODict):
 # ConnParams class
 # ----------------------------------------------------------------------------
 
-class ConnParams (ODict):
+class ConnParams(ODict):
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -102,7 +101,7 @@ class ConnParams (ODict):
 # SynMechParams class
 # ----------------------------------------------------------------------------
 
-class SynMechParams (ODict):
+class SynMechParams(ODict):
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -121,7 +120,7 @@ class SynMechParams (ODict):
 # SubConnParams class
 # ----------------------------------------------------------------------------
 
-class SubConnParams (ODict):
+class SubConnParams(ODict):
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -140,7 +139,7 @@ class SubConnParams (ODict):
 # StimSourceParams class
 # ----------------------------------------------------------------------------
 
-class StimSourceParams (ODict):
+class StimSourceParams(ODict):
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -159,7 +158,7 @@ class StimSourceParams (ODict):
 # StimTargetParams class
 # ----------------------------------------------------------------------------
 
-class StimTargetParams (ODict):
+class StimTargetParams(ODict):
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -178,7 +177,7 @@ class StimTargetParams (ODict):
 # RxD class
 # ----------------------------------------------------------------------------
 
-class RxDParams (ODict):
+class RxDParams(ODict):
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -196,7 +195,7 @@ class RxDParams (ODict):
 # NETWORK PARAMETERS CLASS
 # ----------------------------------------------------------------------------
 
-class NetParams (object):
+class NetParams(object):
 
     def __init__(self, netParamsDict=None):
         self._labelid = 0
@@ -331,7 +330,7 @@ class NetParams (object):
     #     return True
 
 
-    def importCellParams(self, label, conds, fileName, cellName, cellArgs=None, importSynMechs=False, somaAtOrigin=False, cellInstance=False):
+    def importCellParams(self, label, fileName, cellName, conds={}, cellArgs=None, importSynMechs=False, somaAtOrigin=True, cellInstance=False):
         if cellArgs is None: cellArgs = {}
         if not label:
             label = int(self._labelid)
@@ -343,14 +342,15 @@ class NetParams (object):
         if somaAtOrigin:
             somaSec = next((sec for sec in cellRule['secs'] if 'soma' in sec), None)
             if not somaSec or not 'pt3d' in cellRule['secs'][somaSec]['geom']:
-                print('Warning: cannot place soma at origin because soma does not exist or does not contain pt3d')
-                return
-            soma3d = cellRule['secs'][somaSec]['geom']['pt3d']
-            midpoint = int(len(soma3d)/2)
-            somaX, somaY, somaZ = soma3d[midpoint][0:3]
-            for sec in list(cellRule['secs'].values()):
-                for i,pt3d in enumerate(sec['geom']['pt3d']):
-                    sec['geom']['pt3d'][i] = (pt3d[0] - somaX, pt3d[1] - somaY, pt3d[2] - somaZ, pt3d[3])
+                pass
+                #print('Warning: cannot place soma at origin because soma does not exist or does not contain pt3d')
+            else:
+                soma3d = cellRule['secs'][somaSec]['geom']['pt3d']
+                midpoint = int(len(soma3d)/2)
+                somaX, somaY, somaZ = soma3d[midpoint][0:3]
+                for sec in list(cellRule['secs'].values()):
+                    for i,pt3d in enumerate(sec['geom']['pt3d']):
+                        sec['geom']['pt3d'][i] = (pt3d[0] - somaX, pt3d[1] - somaY, pt3d[2] - somaZ, pt3d[3])
 
         self.addCellParams(label, cellRule)
 
@@ -453,6 +453,28 @@ class NetParams (object):
                 cellRule['secs'][sec]['weightNorm'] = wnorm  # add weight normalization factors for each section
 
 
+    def addCellParamsTemplate(self, label, conds={}, template=None):
+        if label in self.cellParams:
+            print('CellParams key %s already exists...' % (label))
+        secs = {}
+        
+        if template == 'Simple_HH':
+            secs['soma'] = {'geom': {}, 'mechs': {}}
+            secs['soma']['geom'] = {'diam': 20, 'L': 20, 'Ra': 100.0, 'cm': 1}  	 									
+            secs['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.0003, 'el': -54.3}
+
+        elif template == 'BallStick_HH':
+            secs['soma'] = {'geom': {}, 'mechs': {}}
+            secs['soma']['geom'] = {'diam': 12, 'L': 12, 'Ra': 100.0, 'cm': 1}  	 									
+            secs['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.0003, 'el': -54.3} 		
+
+            secs['dend'] = {'geom': {}, 'mechs': {}}
+            secs['dend']['geom'] = {'diam': 1.0, 'L': 200.0, 'Ra': 100.0, 'cm': 1}
+            secs['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}										
+            secs['dend']['mechs']['pas'] = {'g': 0.001, 'e': -70} 		 	
+
+        self.cellParams[label] = ({'conds': conds, 'secs': secs})
+
     def saveCellParamsRule(self, label, fileName):
         import pickle, json, os
 
@@ -488,7 +510,11 @@ class NetParams (object):
         
         self.cellParams[label] = cellRule
 
+    def loadCellParams(self, label, fileName):
+        return self.loadCellParamsRule(label, fileName)
 
+    def saveCellParams(self, label, fileName):
+        return self.saveCellParamsRule(label, fileName)
     def todict(self):
         from ..sim import replaceDictODict
         return replaceDictODict(self.__dict__)

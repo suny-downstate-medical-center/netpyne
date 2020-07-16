@@ -1,3 +1,99 @@
+# Version 0.9.7
+
+**New features**
+
+- Added optimization using Optuna (optuna.org)
+
+- Simplified cellParams to use dict key as 'cellType' and make 'conds' optional
+
+- Added netParams method addCellParamsTemplate() to create predefined cell templates 
+
+- Calculation of population avg rates now accepts multiple time intervals
+
+- Optional index argument to record from synMech
+
+- Added scale bar location option to plotTraces scalebar
+
+- Added evolutionary optimization for cell
+
+- Added support for reading pkl files in evol batches
+
+- Added plotfI func to netpyne
+
+- Added calculation of fI to gather.py
+
+- Added module imports to netpyne import
+
+- Added adaptive stochastic descent (ASD) 
+
+- Added ability to set theme and palette for iplots
+
+- Added netParams method addCellParamsTemplate() to create predefined cell templates
+
+- Added sizing-mode to iplots
+
+- Added Bokeh to NetPyNE requirements
+
+- Added theme for gui to analysis/utils, iplots can now use custom theme
+
+- Added t variable to plotLFP output data
+
+- Cleaned up plotRxD, added saving, added plot options, scalebar
+
+- Added interactive plot: iplotRxDConcentration
+
+- Added interactive plot: iplot2Dnet
+
+- Added interactive plot: iplotRatePSD
+
+- Added interactive plot: iplotSpikeStats
+
+- Cleaned up iplotLFP and improved color-handling with themes
+
+
+**Documentation improvements**
+
+- Updated and tested online tutorials
+
+- Changed all triple single-quoted docstrings to triple double-quoted
+
+- Improved many docstrings
+
+- Created a complete package index (http://netpyne.org/package_index.html) which is automatically generated from the human-readable docstrings in the codebase
+
+- Documented the process to release a new version and automated the html building process
+
+- Removed old unused Makefile for docs
+
+
+**Bug fixes** 
+
+- Fixed bug importing cells (avoid reading __docstring__)
+
+- Fixed bug when recording LFP with recordStep <1.0ms
+
+- Fixed net_lfp.py example
+
+- Fixed bug in plotSpikeStats
+
+- Fixed bug in plotSpikeHist
+
+- Fixed bugs in plotTraces scalebar
+
+- Fixed travis test issues
+
+- Fixed tut3 travis issue
+
+- Fixed bug in spikes.py
+
+- Fixed bug in plotRaster
+
+- Fix minor bug in iplotRaster()
+
+- Fixed problems with NeuroML
+
+
+
 # Version 0.9.6
 
 - Added useful hover information to iplots

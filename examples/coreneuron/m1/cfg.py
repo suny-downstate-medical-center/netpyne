@@ -108,6 +108,8 @@ cfg.axonRa = 0.005
 cfg.gpas = 0.5  # multiplicative factor for pas g in PT cells
 cfg.epas = 0.9  # multiplicative factor for pas e in PT cells
 
+cfg.reduced3DGeom = True
+
 #------------------------------------------------------------------------------
 # Synapses
 #------------------------------------------------------------------------------

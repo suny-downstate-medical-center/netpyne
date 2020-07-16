@@ -18,17 +18,37 @@ import pickle
 # --------------------------------------------------------------------------------------------- #
 # MAIN SCRIPT
 # --------------------------------------------------------------------------------------------- #
-
-density = {}
+import csv 
 
 ## cell types
 cellTypes = ['IT', 'PT', 'CT', 'PV', 'SOM']
 
+## layers
+layers = [[0.1, 0.29], [0.29, 0.37], [0.37, 0.47], [0.47, 0.8], [0.8, 1.0]]
+
+density = {}
+
+
 # ------------------------------------------------------------------------------------------------------------------
 # 1) Use neuron density profile from Tsai09 (mouse M1)
 # Avg for L2/3, L5A, L5B, L6 from fig 10a
+# L4 = avg (L2/3 and L5A) = 
 # ------------------------------------------------------------------------------------------------------------------
-density['Tsai09'] = [114858, 105269, 84396, 122616, 148408]
+datafile = '../../data/cellDensity/Tsai09_10a.csv'
+tsaiDens = []
+with open(datafile, 'r') as f:
+	reader = csv.reader(f)
+	for row in reader:
+		tsaiDens.append((float(row[0]), float(row[1])))
+ 
+density['Tsai09'] = [round(mean([tsaiDens[i][1] for i in range(len(tsaiDens)) if layer[0] < tsaiDens[i][0] <= layer[1]])*1e5) 
+					for layer in layers] 
+
+
+
+
+#L4dens = (density['Tsai09'][0]+density['Tsai09'][1])/2
+#print L4dens 
 
 # ------------------------------------------------------------------------------------------------------------------
 # 2) E/I ratio from Lefort09 (mouse S1) 
@@ -40,6 +60,12 @@ ratioEI['Lefort09'] = [(0.193+0.11)/2, 0.09, 0.21, 0.21, 0.10]
 density[('M1','E')] = [round(density['Tsai09'][i]) * (1-ratioEI['Lefort09'][i]) for i in range(len(density['Tsai09']))] 
 density[('M1','I')] = [round(density['Tsai09'][i]) * ratioEI['Lefort09'][i] for i in range(len(density['Tsai09']))] 
 
+# density for I L2/3+4 (weighted avg)
+l234 = layers[1][1] - layers[0][0]
+l23 = layers[0][1] - layers[0][0]
+l4 = layers[1][1]  - layers[1][0]
+l234Dens = density[('M1','I')][0]*(l23/l234) + density[('M1','I')][1]*(l4/l234)
+density[('M1', 'I')].append(l234Dens)
 
 # ------------------------------------------------------------------------------------------------------------------
 # 3) PV/SOM ratio from Katz 2011 (mouse M1) - PV:SOM = 6180:2600 (L5B), 2640:1820 (L6), ~2:1
@@ -66,20 +92,21 @@ relDensityI[('Wall16','PV')] =  [ratioI[('Wall16','PV')][i]/layerWidth[i] for i 
 # L5B PV = 6180, SOM = 2600 (~70-30%)
 # L6  PV = 2640, SOM = 1820 (~60-40%)
 
-print(density)
-print(relDensityI)
 
-with open('popColors.pkl', 'r') as fileObj: popColors = pickle.load(fileObj)['popColors']  # load popColors
+
+
+with open('popColors.pkl', 'rb') as fileObj: popColors = pickle.load(fileObj)['popColors']  # load popColors
 
 # plot pies
 plotPies = 1
 if plotPies:
 	layers={}
-	layers['2'] = {'IT': 1766, 'SOM': 104, 'PV':211}
-	layers['4'] = {'IT': 1766, 'SOM': 45, 'PV':92}
-	layers['5A'] = {'IT': 636, 'SOM': 44, 'PV':90}
-	layers['5B'] = {'IT': 1155, 'PT': 1155, 'SOM': 202, 'PV':411}
-	layers['6'] = {'IT': 1465, 'CT': 1465, 'SOM': 107, 'PV':218}
+
+	layers['2/3'] = {'IT': 1730+2, 'SOM': 127*l23/l234, 'PV': 257*l23/l234} # adapt IT so pie chart % sum 100
+	layers['4'] = {'IT': 767, 'SOM': 127*l4/l234, 'PV': 257*l4/l234}
+	layers['5A'] = {'IT': 644, 'SOM': 56, 'PV':113}
+	layers['5B'] = {'IT': 1435, 'PT': 1435, 'SOM': 251-20, 'PV': 511} # adapt SOM so pie chart % sum 100
+	layers['6'] = {'IT': 1236, 'CT': 1236, 'SOM': 90, 'PV': 184}
 	
 	for layer,pops in layers.items():
 		# make a square figure and axes
@@ -87,9 +114,10 @@ if plotPies:
 		ax = axes([0.1, 0.1, 0.8, 0.8])
 
 		# The slices will be ordered and plotted counter-clockwise.
-		labels = list(pops.keys())
-		tot = float(sum(pops.values()))
-		fracs = [float(pop)/tot for pop in list(pops.values())]
+		labels = pops.keys()
+		tot = float(sum(list(pops.values())))
+		fracs = [round(float(pop)/tot*100) for pop in pops.values()]
+		fracs_full = [float(pop)/tot*100 for pop in pops.values()]
 		#explode=(0, 0.05, 0, 0)
 		# if layer=='6':
 		# 	colors = [ 'gold', 'purple', 'red', 'green']
@@ -105,7 +133,7 @@ if plotPies:
 		
 		pie(fracs, labels=labels, autopct='%1.0f%%', pctdistance=0.8, labeldistance=1.1, shadow=True, startangle=0, colors=colors)
 		title('Layer '+str(layer))
-		savefig('../../data/cellDensity/layer_'+str(layer)+'_frac.png')
+		savefig('../../data/cellDensity/layer_'+str(layer.replace('/',''))+'_frac.png')
 		show()
 
 
@@ -123,7 +151,7 @@ with open('popColors.pkl', 'wb') as fileObj:
 
 
 # save matrices
-savePickle = 0
+savePickle = 1
 saveMat = 0
 
 data = {'density': density}
@@ -134,4 +162,3 @@ if savePickle:
 
 if saveMat:
     savemat('conn.mat', data)
-

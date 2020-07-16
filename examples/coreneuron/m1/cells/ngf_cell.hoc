@@ -1,0 +1,53 @@
+begintemplate ngfcell
+public soma
+
+
+create soma
+
+
+proc init() {
+	soma {
+		Ra = 100 //14
+		nseg = 1
+		cm = 0.5 //1.8
+
+		insert ch_Navngf
+		gmax_ch_Navngf=3.7860265 		//gNasoma
+		ena = 90 //55 
+		
+		insert ch_Kdrfastngf
+		gmax_ch_Kdrfastngf=0.15514516 	//kdrf 
+
+		ek = -90
+
+		insert ch_leak
+		gmax_ch_leak = 8.470825e-05 	//gleak
+		e_ch_leak = -60
+
+		insert ch_KvAngf 				// Proximal A-type potassium 
+		gmax_ch_KvAngf = 0.00015 		// 5.2203905e-06 //gKvA
+		
+		insert ch_CavN  				// HAV-N- Ca channel //  T-type calcium
+		gmax_ch_CavN = 0.0008 			//0.00058169587 //gCavN 
+		
+		insert ch_CavL 					//  L-type calcium
+		gmax_ch_CavL= 0.005 			// 0.056108352 //gCavL
+
+		insert iconc_Ca
+		catau_iconc_Ca = 10
+		caiinf_iconc_Ca = 5.e-6
+		
+		insert ch_KCaS 					//  Small potassium channel: calcium gated
+		gmax_ch_KCaS= 0.000002 			// 4.5152237e-07 //gKCaS
+		
+		insert ch_KvCaB 				// Big potassium channel: voltage & ca2+ gated 
+		gmax_ch_KvCaB = 0.0000002 		// 1.0235317e-06 //gKvCaB
+	
+	} 
+
+}
+
+
+
+
+endtemplate ngfcell

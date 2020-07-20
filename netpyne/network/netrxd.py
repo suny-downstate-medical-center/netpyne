@@ -492,9 +492,14 @@ def _replaceRxDStr(self, origStr, constants=True, regions=True, species=True):
     if species and 'species' in self.rxd:
         for speciesLabel in self.rxd['species']:
             mapping[speciesLabel] = 'sim.net.rxd["species"]["%s"]["hObj"]'%(speciesLabel)
+
     if species and 'states' in self.rxd:
         for statesLabel in self.rxd['states']:
             mapping[statesLabel] = 'sim.net.rxd["states"]["%s"]["hObj"]'%(statesLabel)
+
+    if parameters and 'parameters' in self.rxd:
+        for paramLabel in self.rxd['parameters']:
+            mapping[paramLabel] = 'sim.net.rxd["parameters"]["%s"]["hObj"]' % (paramLabel)
 
     # Place longer ones first to keep shorter substrings from matching where the longer ones should take place
     substrs = sorted(mapping, key=len, reverse=True)

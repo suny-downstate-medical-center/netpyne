@@ -313,7 +313,7 @@ def _addParameters(self, params):
 
             # create final function dynamically from string
             importStr = ' from neuron import crxd as rxd \n from netpyne import sim'
-            afterDefStr = 'sim.net.rxd["parameters"]["%s"]["initalFunc"] = value' % (label)
+            afterDefStr = 'sim.net.rxd["parameters"]["%s"]["initialFunc"] = value' % (label)
             funcStr = 'def value (node): \n%s \n return %s \n%s' % (importStr, funcStr, afterDefStr) # convert to lambda function
             try:
                 exec(funcStr, {'rxd': rxd}, {'sim': sim})        

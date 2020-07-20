@@ -64,6 +64,8 @@ def addRxD (self):
             self._addStates(rxdParams['states'])
         if 'reactions' in rxdParams:
             self._addReactions(rxdParams['reactions'])
+        if 'parameters' in rxdParams:
+            self._addParameters(rxdParams['parameters'])
         if 'multicompartmentReactions' in rxdParams:
             self._addReactions(rxdParams['multicompartmentReactions'], multicompartment=True)
         if 'rates' in rxdParams:
@@ -258,7 +260,7 @@ def _addStates(self, params):
         
         # initial
         if 'initial' not in param:
-            param['initial'] == None
+            param['initial'] == None ## looks like a typo
         if isinstance(param['initial'], basestring):  # string-based func
             funcStr = self._replaceRxDStr(param['initial'], constants=True, regions=True, species=False)
 
@@ -280,6 +282,54 @@ def _addStates(self, params):
                                                     initial=initial)
         print('  Created State %s'%(label))
 
+# -----------------------------------------------------------------------------
+# Add RxD parameters
+# -----------------------------------------------------------------------------
+def _addParameters(self, params):
+    from .. import sim
+
+    for label, param in params.items():
+        # regions
+        if 'regions' not in param:
+            print('  Error creating State %s: "regions" parameter was missing'%(label))
+            continue
+        if not isinstance(param['regions'], list):
+            param['regions'] = [param['regions']]
+        try:
+            nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions']]
+        except:
+           print('  Error creating State %s: could not find regions %s'%(label, param['regions']))
+
+        if 'name' not in param:
+            param['name'] = None
+        
+        if 'charge' not in param:
+            param['charge'] = 0
+
+        if 'value' not in param:
+            param['value'] = 0
+        if isinstance(param['value'], basestring):
+            funcStr = self._replaceRxDStr(param['value'], constants=True, regions=True, species=True)
+
+            # create final function dynamically from string
+            importStr = ' from neuron import crxd as rxd \n from netpyne import sim'
+            afterDefStr = 'sim.net.rxd["parameters"]["%s"]["valueFunc"] = value' % (label)
+            funcStr = 'def value (node): \n%s \n return %s \n%s' % (importStr, funcStr, afterDefStr) # convert to lambda function
+            try:
+                exec(funcStr, {'rxd': rxd}, {'sim': sim})        
+                value = sim.net.rxd["parameters"][label]["initialFunc"]
+            except:
+                print('  Error creating State %s: cannot evaluate "initial" expression -- "%s"'%(label, param['initial']))
+                continue
+        else:
+            value = param['value']
+        
+        # call rxd method to create Region
+        self.rxd['parameters'][label]['hObj'] = rxd.Parameter(regions=nrnRegions, 
+                                                    value=value,
+                                                    charge=param['charge'],
+                                                    name=param['name'])
+        print('  Created Parameter %s'%(label))
 
 # -----------------------------------------------------------------------------
 # Add RxD reactions

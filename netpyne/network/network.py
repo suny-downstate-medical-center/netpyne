@@ -109,7 +109,7 @@ class Network (object):
     # Import rxd methods
     # -----------------------------------------------------------------------------
     from .netrxd import addRxD, _addRegions, _addExtracellularRegion, _addSpecies,  \
-        _addStates,  _addReactions, _addRates, _replaceRxDStr
+        _addStates,  _addReactions, _addRates, _replaceRxDStr, _addParameters
 
     # -----------------------------------------------------------------------------
     # Import shape methods

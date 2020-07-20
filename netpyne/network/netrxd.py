@@ -313,13 +313,13 @@ def _addParameters(self, params):
 
             # create final function dynamically from string
             importStr = ' from neuron import crxd as rxd \n from netpyne import sim'
-            afterDefStr = 'sim.net.rxd["parameters"]["%s"]["valueFunc"] = value' % (label)
+            afterDefStr = 'sim.net.rxd["parameters"]["%s"]["initalFunc"] = value' % (label)
             funcStr = 'def value (node): \n%s \n return %s \n%s' % (importStr, funcStr, afterDefStr) # convert to lambda function
             try:
                 exec(funcStr, {'rxd': rxd}, {'sim': sim})        
                 value = sim.net.rxd["parameters"][label]["initialFunc"]
             except:
-                print('  Error creating State %s: cannot evaluate "initial" expression -- "%s"'%(label, param['initial']))
+                print('  Error creating Parameter %s: cannot evaluate "value" expression -- "%s"'%(label, param['value']))
                 continue
         else:
             value = param['value']

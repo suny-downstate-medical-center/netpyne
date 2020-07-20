@@ -471,7 +471,7 @@ def _addRates(self, params):
 # -----------------------------------------------------------------------------
 # Replace RxD param strings with expression
 # -----------------------------------------------------------------------------
-def _replaceRxDStr(self, origStr, constants=True, regions=True, species=True):
+def _replaceRxDStr(self, origStr, constants=True, regions=True, species=True, parameters=True):
     import re
     replacedStr = str(origStr)
     

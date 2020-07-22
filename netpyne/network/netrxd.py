@@ -27,7 +27,7 @@ import copy
 # -----------------------------------------------------------------------------
 # Add RxD
 # -----------------------------------------------------------------------------
-def addRxD (self):
+def addRxD (self, nthreads=None):
     from .. import sim
 
     if len(self.params.rxdParams):
@@ -35,6 +35,9 @@ def addRxD (self):
             global rxd
             from neuron import crxd as rxd 
             sim.net.rxd = {'species': {}, 'regions': {}}  # dictionary for rxd  
+            if nthreads:
+                rxd.nthread(nthreads)
+                print('Using %d threads for RxD' % (nthreads))
         except:
             print('cRxD module not available')
             return -1

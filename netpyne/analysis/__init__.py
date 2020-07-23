@@ -1,5 +1,5 @@
 """
-Package for/to <short description of `netpyne.analysis`>
+Package for analysis and plotting
 
 """
 

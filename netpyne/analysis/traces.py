@@ -352,11 +352,11 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
         if isinstance(saveFig, basestring):
             filename = saveFig
         else:
-            filename = sim.cfg.filename+'_'+'traces.png'
+            filename = sim.cfg.filename + '_traces.png'
         if len(figs) > 1:
             for figLabel, figObj in figs.items():
                 plt.figure(figObj.number)
-                plt.savefig(filename[:-4]+figLabel+filename[-4:])
+                plt.savefig(filename[:-4] + '_' + figLabel + '_' + filename[-4:])
         else:
             plt.savefig(filename)
 

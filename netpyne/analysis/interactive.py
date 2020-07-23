@@ -352,7 +352,7 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
         if isinstance(saveFig, str):
             filename = saveFig
         else:
-            filename = sim.cfg.filename + '_iplot_raster.html'
+            filename = sim.cfg.filename + '_iraster_' + orderBy + '.html'
         file = open(filename, 'w')
         file.write(html)
         file.close()
@@ -1316,7 +1316,7 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
             if isinstance(saveFig, str):
                 filename = saveFig
             else:
-                filename = sim.cfg.filename + '_iplot_traces' + figLabel + overlay_text + '.html'
+                filename = sim.cfg.filename + '_itraces' + figLabel + overlay_text + '.html'
             file = open(filename, 'w')
             file.write(html)
             file.close()
@@ -1805,7 +1805,7 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
         if isinstance(saveFig, str):
             filename = saveFig
         else:
-            filename = sim.cfg.filename+'_iplot_conn_'+groupBy+'_'+feature+'_'+graphType+'.html'
+            filename = sim.cfg.filename+'_iconn_' + groupBy + '_' + feature + '_' + graphType + '_' + orderBy + '.html'
         file = open(filename, 'w')
         file.write(html)
         file.close()
@@ -1992,9 +1992,12 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
         tooltips=[('y location', '@y'), ('x location', '@x')],
         x_axis_label="x (um)", 
         y_axis_label='y (um)',
-        x_range=[min(posX)-0.05*max(posX),1.05*max(posX)], 
-        y_range=[1.05*max(posY), min(posY)-0.05*max(posY)], 
-        toolbar_location='above')
+        #x_range=[min(posX)-0.05*max(posX),1.05*max(posX)], 
+        #y_range=[1.05*max(posY), min(posY)-0.05*max(posY)], 
+        toolbar_location='above',
+        match_aspect = True,
+        #aspect_scale = 0.001,
+        )
 
     if 'radius' in kwargs:
         radius = kwargs['radius']
@@ -2027,14 +2030,15 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
     fontsiz = fontSize
 
     for popLabel in popLabels:
-        fig.line(0,0,color=tuple([int(x*255) for x in popColors[popLabel]]), legend_label=popLabel)
+        #fig.line(0,0,color=tuple([int(x*255) for x in popColors[popLabel]]), legend_label=popLabel)
+        fig.circle(0,0,color=tuple([int(x*255) for x in popColors[popLabel]]), legend_label=popLabel, line_width=0, radius=0)
 
     legend = Legend(location=(10,0))
     legend.click_policy='hide'
     fig.add_layout(legend, 'right')
 
-    plot_layout = layout([fig], sizing_mode='stretch_both') 
-    html = file_html(plot_layout, CDN, title="Raster Plot")   
+    plot_layout = layout([fig], sizing_mode='scale_height') #sizing_mode='stretch_both') 
+    html = file_html(plot_layout, CDN, title="2D Net Plot")   
 
     # save figure data
     if saveData:
@@ -2048,7 +2052,7 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
         if isinstance(saveFig, str):
             filename = saveFig
         else:
-            filename = sim.cfg.filename+'_iplot_2Dnet_'+groupBy+'_'+feature+'_'+graphType+'.html'
+            filename = sim.cfg.filename+'_i2Dnet_.html'
         file = open(filename, 'w')
         file.write(html)
         file.close()

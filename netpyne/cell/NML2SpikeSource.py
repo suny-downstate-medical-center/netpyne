@@ -1,7 +1,6 @@
 """
-cell/NML2SpikeSource.py 
+Module for/to <short description of `netpyne.cell.NML2SpikeSource`>
 
-Contains pointCell class 
 """
 
 from __future__ import unicode_literals
@@ -23,9 +22,9 @@ from ..specs import Dict
 
 class NML2SpikeSource (CompartCell):
     """
-    Class for NeuroML2 spiking neuron models: based on CompartCell,
-    but the NetCon connects to the mechanism on the one section whose NET_RECEIVE block will emit events
-    """
+    Class for/to <short description of `netpyne.cell.NML2SpikeSource.NML2SpikeSource`>
+
+"""
         
     def associateGid (self, threshold = 10.0):
         from .. import sim

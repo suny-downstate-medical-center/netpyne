@@ -1,7 +1,6 @@
 """
-batch/utils.py 
+Module for/to <short description of `netpyne.batch.utils`>
 
-Helper functions to set up and run batch simulations
 """
 from __future__ import unicode_literals
 from __future__ import print_function
@@ -17,6 +16,19 @@ import numpy as np
 # function to create a folder if it does not exist
 # -------------------------------------------------------------------------------
 def createFolder(folder):
+    """
+    Function for/to <short description of `netpyne.batch.utils.createFolder`>
+
+    Parameters
+    ----------
+    folder : <type>
+        <Short description of folder>
+        **Default:** *required*
+
+
+    """
+
+
     import os
                 
     if not os.path.exists(folder):
@@ -32,8 +44,15 @@ def createFolder(folder):
 
 def bashTemplate(template):
     """
-    return the bash commands required by template for batch simulation
-    """
+    Function for/to <short description of `netpyne.batch.utils.bashTemplate`>
+
+    Parameters
+    ----------
+    template : <type>
+        <Short description of template>
+        **Default:** *required*
+
+"""
     
     if template=='mpi_direct':
         return """#!/bin/bash 
@@ -74,8 +93,26 @@ echo $PBS_O_WORKDIR
         """
 
 def cp(obj, verbose=True, die=True):
-    ''' Shortcut to perform a shallow copy operation 
-    from https://github.com/sciris/sciris/blob/develop/sciris/sc_utils.py'''
+    '''
+    Function for/to <short description of `netpyne.batch.utils.cp`>
+
+    Parameters
+    ----------
+    obj : <type>
+        <Short description of obj>
+        **Default:** *required*
+
+    verbose : bool
+        <Short description of verbose>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    die : bool
+        <Short description of die>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+'''
     try:
         output = copy.copy(obj)
     except Exception as E:
@@ -86,8 +123,26 @@ def cp(obj, verbose=True, die=True):
     return output
 
 def dcp(obj, verbose=True, die=False):
-    ''' Shortcut to perform a deep copy operation 
-        from https://github.com/sciris/sciris/blob/develop/sciris/sc_utils.py '''
+    '''
+    Function for/to <short description of `netpyne.batch.utils.dcp`>
+
+    Parameters
+    ----------
+    obj : <type>
+        <Short description of obj>
+        **Default:** *required*
+
+    verbose : bool
+        <Short description of verbose>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    die : bool
+        <Short description of die>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+'''
     import copy
 
     try:
@@ -103,13 +158,35 @@ def dcp(obj, verbose=True, die=False):
 
 def sigfig(X, sigfigs=5, SI=False, sep=False, keepints=False):
     '''
-    Return a string representation of variable x with sigfigs number of significant figures --
-    copied from asd.py.
-    If SI=True,  then will return e.g. 32433 as 32.433K
-    If sep=True, then will return e.g. 32433 as 32,433
+    Function for/to <short description of `netpyne.batch.utils.sigfig`>
 
-    from https://github.com/sciris/sciris/blob/develop/sciris/sc_utils.py
-    '''
+    Parameters
+    ----------
+    X : <type>
+        <Short description of X>
+        **Default:** *required*
+
+    sigfigs : int
+        <Short description of sigfigs>
+        **Default:** ``5``
+        **Options:** ``<option>`` <description of option>
+ 
+    SI : bool
+        <Short description of SI>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    sep : bool
+        <Short description of sep>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    keepints : bool
+        <Short description of keepints>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+'''
     output = []
 
     try:

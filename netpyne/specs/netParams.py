@@ -1,7 +1,6 @@
 """
-specs/netParams.py
+Module for/to <short description of `netpyne.specs.netParams`>
 
-NetParams class includes high-level network parameters and methods
 """
 
 from __future__ import print_function
@@ -30,6 +29,13 @@ from .. import conversion
 # ----------------------------------------------------------------------------
 
 class PopParams(ODict):
+    """
+    Class for/to <short description of `netpyne.specs.netParams.PopParams`>
+
+
+    """
+
+
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -53,6 +59,13 @@ class PopParams(ODict):
 # ----------------------------------------------------------------------------
     
 class CellParams(ODict):
+    """
+    Class for/to <short description of `netpyne.specs.netParams.CellParams`>
+
+
+    """
+
+
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -83,6 +96,13 @@ class CellParams(ODict):
 # ----------------------------------------------------------------------------
 
 class ConnParams(ODict):
+    """
+    Class for/to <short description of `netpyne.specs.netParams.ConnParams`>
+
+
+    """
+
+
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -102,6 +122,13 @@ class ConnParams(ODict):
 # ----------------------------------------------------------------------------
 
 class SynMechParams(ODict):
+    """
+    Class for/to <short description of `netpyne.specs.netParams.SynMechParams`>
+
+
+    """
+
+
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -121,6 +148,13 @@ class SynMechParams(ODict):
 # ----------------------------------------------------------------------------
 
 class SubConnParams(ODict):
+    """
+    Class for/to <short description of `netpyne.specs.netParams.SubConnParams`>
+
+
+    """
+
+
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -140,6 +174,13 @@ class SubConnParams(ODict):
 # ----------------------------------------------------------------------------
 
 class StimSourceParams(ODict):
+    """
+    Class for/to <short description of `netpyne.specs.netParams.StimSourceParams`>
+
+
+    """
+
+
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -159,6 +200,13 @@ class StimSourceParams(ODict):
 # ----------------------------------------------------------------------------
 
 class StimTargetParams(ODict):
+    """
+    Class for/to <short description of `netpyne.specs.netParams.StimTargetParams`>
+
+
+    """
+
+
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -178,6 +226,13 @@ class StimTargetParams(ODict):
 # ----------------------------------------------------------------------------
 
 class RxDParams(ODict):
+    """
+    Class for/to <short description of `netpyne.specs.netParams.RxDParams`>
+
+
+    """
+
+
     def setParam(self, label, param, value):
         if label in self: 
             d = self[label]
@@ -196,6 +251,13 @@ class RxDParams(ODict):
 # ----------------------------------------------------------------------------
 
 class NetParams(object):
+    """
+    Class for/to <short description of `netpyne.specs.netParams.NetParams`>
+
+
+    """
+
+
 
     def __init__(self, netParamsDict=None):
         self._labelid = 0

@@ -1,5 +1,6 @@
 """
-Functions for dealing with network models
+Package for/to <short description of `netpyne.network`>
+
 """
 
 from __future__ import unicode_literals

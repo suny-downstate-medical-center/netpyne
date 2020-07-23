@@ -1,5 +1,6 @@
 """
-Functions for dealing with cell models
+Package for/to <short description of `netpyne.cell`>
+
 """
 
 from __future__ import unicode_literals

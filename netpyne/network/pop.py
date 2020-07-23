@@ -1,8 +1,7 @@
 
 """
-pop.py 
+Module for/to <short description of `netpyne.network.pop`>
 
-Contains Population related classes 
 """
 
 from __future__ import print_function
@@ -31,8 +30,9 @@ from neuron import h # Import NEURON
 
 class Pop (object):
     """
-    Python class to instantiate the network population
-    """
+    Class for/to <short description of `netpyne.network.pop.Pop`>
+
+"""
     
     def __init__(self, label, tags):
         self.tags = tags # list of tags/attributes of population (eg. numCells, cellModel,...)

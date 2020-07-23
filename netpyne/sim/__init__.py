@@ -1,8 +1,6 @@
 """
-Functions for handling simulations
+Package for/to <short description of `netpyne.sim`>
 
-Contains all the model shared variables and modules.
-It is imported as "sim" from all other file,  so that any variable or module can be referenced from any module using sim.varName
 """
 
 from __future__ import unicode_literals

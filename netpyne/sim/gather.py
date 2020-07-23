@@ -1,7 +1,6 @@
 """
-sim/gather.py
+Module for/to <short description of `netpyne.sim.gather`>
 
-Functions related to gathering data from nodes after the simulation
 """
 
 from __future__ import print_function
@@ -20,6 +19,20 @@ from ..specs import Dict, ODict
 # Gather data from nodes
 #------------------------------------------------------------------------------
 def gatherData(gatherLFP = True):
+    """
+    Function for/to <short description of `netpyne.sim.gather.gatherData`>
+
+    Parameters
+    ----------
+    gatherLFP : bool
+        <Short description of gatherLFP>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
     from .. import sim
         
     sim.timing('start', 'gatherTime')
@@ -298,6 +311,20 @@ def gatherData(gatherLFP = True):
 #  Gathers simData from filess
 #------------------------------------------------------------------------------
 def fileGather(gatherLFP = True):
+    """
+    Function for/to <short description of `netpyne.sim.gather.fileGather`>
+
+    Parameters
+    ----------
+    gatherLFP : bool
+        <Short description of gatherLFP>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
     import os, pickle
     from .. import sim
     

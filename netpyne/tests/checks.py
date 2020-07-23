@@ -1,3 +1,8 @@
+"""
+Module for/to <short description of `netpyne.tests.checks`>
+
+"""
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
@@ -8,8 +13,20 @@ from future import standard_library
 standard_library.install_aliases()
 def checkOutput(modelName, verbose=False):
 	"""
-	Compare output of models with expected results
-	"""
+    Function for/to <short description of `netpyne.tests.checks.checkOutput`>
+
+    Parameters
+    ----------
+    modelName : <type>
+        <Short description of modelName>
+        **Default:** *required*
+
+    verbose : bool
+        <Short description of verbose>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+"""
 
 	from .. import  sim
 	if sim.rank == 0:

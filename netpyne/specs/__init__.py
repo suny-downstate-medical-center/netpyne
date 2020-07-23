@@ -1,5 +1,6 @@
 """
-Set of classes to define high-level model specifications
+Package for/to <short description of `netpyne.specs`>
+
 """
 
 from __future__ import unicode_literals

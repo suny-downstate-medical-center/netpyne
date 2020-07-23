@@ -1,5 +1,6 @@
 """
-Functions for dealing with metadata
+Package for/to <short description of `netpyne.metadata`>
+
 """
 
 from __future__ import unicode_literals

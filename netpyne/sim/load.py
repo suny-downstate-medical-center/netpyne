@@ -1,7 +1,6 @@
 """
-sim/load.py
+Module for/to <short description of `netpyne.sim.load`>
 
-Functions related to loading
 """
 
 from __future__ import print_function
@@ -139,6 +138,29 @@ def _loadFile(filename):
 # Load simulation config from file
 #------------------------------------------------------------------------------
 def loadSimCfg(filename, data=None, setLoaded=True):
+    """
+    Function for/to <short description of `netpyne.sim.load.loadSimCfg`>
+
+    Parameters
+    ----------
+    filename : <type>
+        <Short description of filename>
+        **Default:** *required*
+
+    data : <``None``?>
+        <Short description of data>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    setLoaded : bool
+        <Short description of setLoaded>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
     if not data: 
         data = _loadFile(filename)
     print('Loading simConfig...')
@@ -156,6 +178,29 @@ def loadSimCfg(filename, data=None, setLoaded=True):
 # Load netParams from cell
 #------------------------------------------------------------------------------
 def loadNetParams(filename, data=None, setLoaded=True):
+    """
+    Function for/to <short description of `netpyne.sim.load.loadNetParams`>
+
+    Parameters
+    ----------
+    filename : <type>
+        <Short description of filename>
+        **Default:** *required*
+
+    data : <``None``?>
+        <Short description of data>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    setLoaded : bool
+        <Short description of setLoaded>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
     if not data: data = _loadFile(filename)
     print('Loading netParams...')
     if 'net' in data and 'params' in data['net']:
@@ -173,6 +218,34 @@ def loadNetParams(filename, data=None, setLoaded=True):
 # Load cells and pops from file and create NEURON objs
 #------------------------------------------------------------------------------
 def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
+    """
+    Function for/to <short description of `netpyne.sim.load.loadNet`>
+
+    Parameters
+    ----------
+    filename : <type>
+        <Short description of filename>
+        **Default:** *required*
+
+    data : <``None``?>
+        <Short description of data>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    instantiate : bool
+        <Short description of instantiate>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    compactConnFormat : bool
+        <Short description of compactConnFormat>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
     from .. import sim
 
     if not data: data = _loadFile(filename)
@@ -255,6 +328,24 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
 # Load netParams from cell
 #------------------------------------------------------------------------------
 def loadSimData(filename, data=None):
+    """
+    Function for/to <short description of `netpyne.sim.load.loadSimData`>
+
+    Parameters
+    ----------
+    filename : <type>
+        <Short description of filename>
+        **Default:** *required*
+
+    data : <``None``?>
+        <Short description of data>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
     from .. import sim
 
     if not data: data = _loadFile(filename)
@@ -271,6 +362,34 @@ def loadSimData(filename, data=None):
 # Load all data in file
 #------------------------------------------------------------------------------
 def loadAll(filename, data=None, instantiate=True, createNEURONObj=True):
+    """
+    Function for/to <short description of `netpyne.sim.load.loadAll`>
+
+    Parameters
+    ----------
+    filename : <type>
+        <Short description of filename>
+        **Default:** *required*
+
+    data : <``None``?>
+        <Short description of data>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    instantiate : bool
+        <Short description of instantiate>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    createNEURONObj : bool
+        <Short description of createNEURONObj>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
     from .. import sim 
 
     if not data: data = _loadFile(filename)
@@ -290,6 +409,23 @@ def loadAll(filename, data=None, instantiate=True, createNEURONObj=True):
 # Convert compact (list-based) to long (dict-based) conn format
 #------------------------------------------------------------------------------
 def compactToLongConnFormat(cells, connFormat):
+    """
+    Function for/to <short description of `netpyne.sim.load.compactToLongConnFormat`>
+
+    Parameters
+    ----------
+    cells : <type>
+        <Short description of cells>
+        **Default:** *required*
+
+    connFormat : <type>
+        <Short description of connFormat>
+        **Default:** *required*
+
+
+    """
+
+
     
     formatIndices = {key: connFormat.index(key) for key in connFormat}
     try:
@@ -306,6 +442,19 @@ def compactToLongConnFormat(cells, connFormat):
 # load HDF5 (conns for now)
 #------------------------------------------------------------------------------
 def loadHDF5(filename):
+    """
+    Function for/to <short description of `netpyne.sim.load.loadHDF5`>
+
+    Parameters
+    ----------
+    filename : <type>
+        <Short description of filename>
+        **Default:** *required*
+
+
+    """
+
+
     from .. import sim
     import h5py
 
@@ -325,6 +474,59 @@ def loadHDF5(filename):
 # Load cell tags and conns using ijson (faster!) 
 #------------------------------------------------------------------------------
 def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, loadConns=True, tagFormat=None, connFormat=None, saveTags=None, saveConns=None):
+    """
+    Function for/to <short description of `netpyne.sim.load.ijsonLoad`>
+
+    Parameters
+    ----------
+    filename : <type>
+        <Short description of filename>
+        **Default:** *required*
+
+    tagsGidRange : <``None``?>
+        <Short description of tagsGidRange>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    connsGidRange : <``None``?>
+        <Short description of connsGidRange>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    loadTags : bool
+        <Short description of loadTags>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    loadConns : bool
+        <Short description of loadConns>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    tagFormat : <``None``?>
+        <Short description of tagFormat>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    connFormat : <``None``?>
+        <Short description of connFormat>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    saveTags : <``None``?>
+        <Short description of saveTags>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    saveConns : <``None``?>
+        <Short description of saveConns>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
     # requires: 1) pip install ijson, 2) brew install yajl
     from .. import sim
     import ijson.backends.yajl2_cffi as ijson

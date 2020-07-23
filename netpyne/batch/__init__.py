@@ -1,5 +1,6 @@
 """
-Functions for running batches of simulations
+Package for/to <short description of `netpyne.batch`>
+
 """
 
 from __future__ import unicode_literals

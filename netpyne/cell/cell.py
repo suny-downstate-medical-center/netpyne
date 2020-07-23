@@ -1,7 +1,6 @@
 """
-cell/cell.py 
+Module for/to <short description of `netpyne.cell.cell`>
 
-Contains generic Cell class
 """
 
 from __future__ import division
@@ -33,8 +32,9 @@ from ..specs import Dict
 
 class Cell (object):
     """
-    Generic class for neuron models
-    """
+    Class for/to <short description of `netpyne.cell.cell.Cell`>
+
+"""
     
     def __init__ (self, gid, tags):
         from .. import sim

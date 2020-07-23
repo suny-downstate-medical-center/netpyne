@@ -1,7 +1,6 @@
 """
-conversion/excel.py 
+Module for/to <short description of `netpyne.conversion.excel`>
 
-Functions to import from Excel
 """
 
 from __future__ import print_function
@@ -17,8 +16,19 @@ from future import standard_library
 standard_library.install_aliases()
 def importConnFromExcel (fileName, sheetName):
     """
-    Import connectivity rules from Excel sheet
-    """
+    Function for/to <short description of `netpyne.conversion.excel.importConnFromExcel`>
+
+    Parameters
+    ----------
+    fileName : <type>
+        <Short description of fileName>
+        **Default:** *required*
+
+    sheetName : <type>
+        <Short description of sheetName>
+        **Default:** *required*
+
+"""
     
     import openpyxl as xl
 

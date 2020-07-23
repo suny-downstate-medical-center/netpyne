@@ -1,9 +1,6 @@
 """
-batch/evol.py 
+Module for/to <short description of `netpyne.batch.asd_parallel`>
 
-Code for adaptive stochastic descent optimizaiton method (Kerr et al. 2018; PLoS ONE)
-
-Contributors: salvadordura@gmail.com
 """
 
 from __future__ import print_function
@@ -56,57 +53,128 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
     abstol=1e-6, reltol=1e-3, stalliters=None, stoppingfunc=None, randseed=None, 
     label=None, maxFitness=None, verbose=2, **kwargs):
     """
-    Optimization using adaptive stochastic descent (ASD).
-    
-    output = asd(func,x0) starts at x0 and attempts to find a 
-    local minimizer x of the function func. func accepts input x and returns a scalar 
-    function value evaluated  at x. x0 can be a scalar, list, or Numpy array of 
-    any size. 
-    
-    asd() has the following options that can be set using keyword arguments. Their
-    names and default values are as follows:
-      stepsize       0.1     Initial step size as a fraction of each parameter
-      sinc           2       Step size learning rate (increase)
-      sdec           2       Step size learning rate (decrease)
-      pinc           2       Parameter selection learning rate (increase)
-      pdec           2       Parameter selection learning rate (decrease)
-      pinitial       None    Set initial parameter selection probabilities
-      sinitial       None    Set initial step sizes; if empty, calculated from stepsize instead
-      xmin           None    Min value allowed for each parameter  
-      xmax           None    Max value allowed for each parameter 
-      maxiters       1000    Maximum number of iterations (1 iteration = 1 function evaluation)
-      maxtime        3600    Maximum time allowed, in seconds
-      abstol         1e-6    Minimum absolute change in objective function
-      reltol         1e-3    Minimum relative change in objective function
-      stalliters     10*n    Number of iterations over which to calculate TolFun (n = number of parameters)
-      stoppingfunc   None    External method that can be used to stop the calculation from the outside.
-      randseed       None    The random seed to use
-      verbose        2       How much information to print during the run
-      label          None    A label to use to annotate the output
-     
-    asd() returns a dict
-    with the following items:
-        x          -- The parameter set that minimizes the objective function
-        fval       -- The value of the objective function at the final iteration
-        exitreason -- Why the algorithm terminated;
-        details    -- A objdict with additional output: fvals, the value of the objective
-                      function at each iteration; xvals, the parameter values at each iteration;
-                      probabilities, the probability of each step; and stepsizes, the size of each
-                      step for each parameter.
-  
-    Example:
-        import numpy as np
-        import sciris as sc
-        result = sc.asd(np.linalg.norm, [1, 2, 3])
-        print(result.x)
+    Function for/to <short description of `netpyne.batch.asd_parallel.asd`>
 
-    Please use the following citation for this method:
-        CC Kerr, S Dura-Bernal, TG Smolinski, GL Chadderdon, DP Wilson (2018). 
-        Optimization by adaptive stochastic descent. 
-        PloS ONE 13 (3), e0192944.
-    
-    Version: 2019jul08
-    """
+    Parameters
+    ----------
+    function : <type>
+        <Short description of function>
+        **Default:** *required*
+
+    xPop : <type>
+        <Short description of xPop>
+        **Default:** *required*
+
+    saveFile : <``None``?>
+        <Short description of saveFile>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    args : <``None``?>
+        <Short description of args>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    stepsize : float
+        <Short description of stepsize>
+        **Default:** ``0.1``
+        **Options:** ``<option>`` <description of option>
+ 
+    sinc : int
+        <Short description of sinc>
+        **Default:** ``2``
+        **Options:** ``<option>`` <description of option>
+ 
+    sdec : int
+        <Short description of sdec>
+        **Default:** ``2``
+        **Options:** ``<option>`` <description of option>
+ 
+    pinc : int
+        <Short description of pinc>
+        **Default:** ``2``
+        **Options:** ``<option>`` <description of option>
+ 
+    pdec : int
+        <Short description of pdec>
+        **Default:** ``2``
+        **Options:** ``<option>`` <description of option>
+ 
+    pinitial : <``None``?>
+        <Short description of pinitial>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    sinitial : <``None``?>
+        <Short description of sinitial>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    xmin : <``None``?>
+        <Short description of xmin>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    xmax : <``None``?>
+        <Short description of xmax>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    maxiters : <``None``?>
+        <Short description of maxiters>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    maxtime : <``None``?>
+        <Short description of maxtime>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    abstol : float
+        <Short description of abstol>
+        **Default:** ``1e-06``
+        **Options:** ``<option>`` <description of option>
+ 
+    reltol : float
+        <Short description of reltol>
+        **Default:** ``0.001``
+        **Options:** ``<option>`` <description of option>
+ 
+    stalliters : <``None``?>
+        <Short description of stalliters>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    stoppingfunc : <``None``?>
+        <Short description of stoppingfunc>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    randseed : <``None``?>
+        <Short description of randseed>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    label : <``None``?>
+        <Short description of label>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    maxFitness : <``None``?>
+        <Short description of maxFitness>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    verbose : int
+        <Short description of verbose>
+        **Default:** ``2``
+        **Options:** ``<option>`` <description of option>
+ 
+    kwargs : <type>
+        <Short description of kwargs>
+        **Default:** *required*
+
+"""
     if randseed is not None:
         nr.seed(int(randseed)) # Don't reset it if not supplied
         if verbose >= 3: print('ASD: Launching with random seed is %i; sample: %f' % (randseed, nr.random()))
@@ -343,6 +411,31 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
 
 # func needs to be outside of class
 def runASDJob(script, cfgSavePath, netParamsSavePath, simDataPath):
+    """
+    Function for/to <short description of `netpyne.batch.asd_parallel.runASDJob`>
+
+    Parameters
+    ----------
+    script : <type>
+        <Short description of script>
+        **Default:** *required*
+
+    cfgSavePath : <type>
+        <Short description of cfgSavePath>
+        **Default:** *required*
+
+    netParamsSavePath : <type>
+        <Short description of netParamsSavePath>
+        **Default:** *required*
+
+    simDataPath : <type>
+        <Short description of simDataPath>
+        **Default:** *required*
+
+
+    """
+
+
     import os
     print('\nJob in rank id: ',pc.id())
     command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath)
@@ -356,6 +449,23 @@ def runASDJob(script, cfgSavePath, netParamsSavePath, simDataPath):
 
 
 def asdOptim(self, pc):
+    """
+    Function for/to <short description of `netpyne.batch.asd_parallel.asdOptim`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+    pc : <type>
+        <Short description of pc>
+        **Default:** *required*
+
+
+    """
+
+
     import sys
 
     # -------------------------------------------------------------------------------

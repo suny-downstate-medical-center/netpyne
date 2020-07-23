@@ -1,8 +1,7 @@
 
 """
-network/rxd.py 
+Module for/to <short description of `netpyne.network.netrxd`>
 
-Network class methods to add RxD  
 """
 
 from __future__ import print_function
@@ -30,6 +29,19 @@ except:
 # Add RxD
 # -----------------------------------------------------------------------------
 def addRxD(self):
+    """
+    Function for/to <short description of `netpyne.network.netrxd.addRxD`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+
+    """
+
+
     from .. import sim
 
     if len(self.params.rxdParams):

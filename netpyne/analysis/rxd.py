@@ -1,5 +1,6 @@
 """
-Functions to plot and analyze reaction/diffusion-related results
+Module for/to <short description of `netpyne.analysis.rxd`>
+
 """
 
 from __future__ import unicode_literals
@@ -26,6 +27,58 @@ from .utils import exception, _showFigure, _saveFigData
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def plotRxDConcentration(speciesLabel, regionLabel, plane='xy', figSize=(5,10), fontSize=10, scalebar=False, title=True, showFig=True, saveFig=True):
+    """
+    Function for/to <short description of `netpyne.analysis.rxd.plotRxDConcentration`>
+
+    Parameters
+    ----------
+    speciesLabel : <type>
+        <Short description of speciesLabel>
+        **Default:** *required*
+
+    regionLabel : <type>
+        <Short description of regionLabel>
+        **Default:** *required*
+
+    plane : str
+        <Short description of plane>
+        **Default:** ``'xy'``
+        **Options:** ``<option>`` <description of option>
+ 
+    figSize : tuple
+        <Short description of figSize>
+        **Default:** ``(5, 10)``
+        **Options:** ``<option>`` <description of option>
+ 
+    fontSize : int
+        <Short description of fontSize>
+        **Default:** ``10``
+        **Options:** ``<option>`` <description of option>
+ 
+    scalebar : bool
+        <Short description of scalebar>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    title : bool
+        <Short description of title>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    showFig : bool
+        <Short description of showFig>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    saveFig : bool
+        <Short description of saveFig>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
     
     from .. import sim
     

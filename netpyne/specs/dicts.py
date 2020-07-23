@@ -1,9 +1,6 @@
 """
-specs/dict.py
-Contains Dict and ODict classes
+Module for/to <short description of `netpyne.specs.dicts`>
 
-Reproduce dict and OrderedDict behavior but add support to use object-like dot notation
-e.g. cell.secs.soma.geom.diam
 """
 
 from __future__ import unicode_literals
@@ -23,6 +20,13 @@ from collections import OrderedDict
 # ----------------------------------------------------------------------------
 
 class Dict(dict):
+    """
+    Class for/to <short description of `netpyne.specs.dicts.Dict`>
+
+
+    """
+
+
 
     __slots__ = []
 
@@ -146,6 +150,13 @@ class Dict(dict):
 # ----------------------------------------------------------------------------
 
 class ODict(OrderedDict):
+    """
+    Class for/to <short description of `netpyne.specs.dicts.ODict`>
+
+
+    """
+
+
 
     __slots__ = []
 

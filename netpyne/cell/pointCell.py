@@ -1,7 +1,6 @@
 """
-cell/pointCell.py 
+Module for/to <short description of `netpyne.cell.pointCell`>
 
-Contains pointCell class 
 """
 
 from __future__ import print_function
@@ -30,8 +29,9 @@ from ..specs import Dict
 
 class PointCell (Cell):
     """
-    Point Neuron that doesn't use v from Section eg. NetStim, IntFire1, 
-    """
+    Class for/to <short description of `netpyne.cell.pointCell.PointCell`>
+
+"""
     
     def __init__ (self, gid, tags, create=True, associateGid=True):
         from .. import sim

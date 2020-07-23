@@ -1,5 +1,6 @@
 """
-Functions for coverting to other formats
+Package for/to <short description of `netpyne.conversion`>
+
 """
 
 from __future__ import unicode_literals

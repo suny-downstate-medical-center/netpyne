@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.analysis.network`>
+Module for analyzing and plotting connectivity-related results
 
 """
 

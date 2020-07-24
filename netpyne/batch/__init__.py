@@ -1,5 +1,5 @@
 """
-Package for/to <short description of `netpyne.batch`>
+Package for handling batches of simulations
 
 """
 

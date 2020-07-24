@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.sim.run`>
+Module for running simulations
 
 """
 

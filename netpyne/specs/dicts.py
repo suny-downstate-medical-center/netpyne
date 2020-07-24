@@ -1,5 +1,7 @@
 """
-Module for/to <short description of `netpyne.specs.dicts`>
+Module containing Dict and ODict classes
+
+These classes reproduce normal Dict and ODict behavior, but add support for object-like dot notation (e.g. cell.secs.soma.geom)
 
 """
 

@@ -1,6 +1,6 @@
 
 """
-Module for/to <short description of `netpyne.sim.wrappers`>
+Module containing wrappers to create, load, simulate, analyze networks
 
 """
 

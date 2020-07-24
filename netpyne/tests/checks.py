@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.tests.checks`>
+Module for checking the output of tests
 
 """
 

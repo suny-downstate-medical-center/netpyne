@@ -1,5 +1,5 @@
 """
-Package for/to <short description of `netpyne.metadata`>
+Package dealing with metadata
 
 """
 

@@ -1,5 +1,5 @@
 """
-Package for/to <short description of `netpyne.cell`>
+Package for dealing with cell models
 
 """
 

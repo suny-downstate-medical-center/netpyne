@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.batch.asd_parallel`>
+Module for adaptive stochastic descent optimization
 
 """
 

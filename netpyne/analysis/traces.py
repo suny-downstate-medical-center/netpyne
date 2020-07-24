@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.analysis.traces`>
+Module for analysis and plotting of traces-related results
 
 """
 

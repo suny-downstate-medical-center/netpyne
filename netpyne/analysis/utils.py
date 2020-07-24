@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.analysis.utils`>
+Module for utilities to help analyze and plot results
 
 """
 

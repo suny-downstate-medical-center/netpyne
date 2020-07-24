@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.analysis.lfp`>
+Module for analyzing and plotting LFP-related results
 
 """
 

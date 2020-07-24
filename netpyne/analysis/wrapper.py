@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.analysis.wrapper`>
+Module with wrapper function to call analysis functions specified in simConfig
 
 """
 

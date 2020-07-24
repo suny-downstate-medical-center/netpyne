@@ -1,5 +1,5 @@
 """
-Package for/to <short description of `netpyne.conversion`>
+Package for conversion from/to other formats
 
 """
 

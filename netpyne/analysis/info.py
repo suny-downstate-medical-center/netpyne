@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.analysis.info`>
+Module for analyzing and plotting information theory results
 
 """
 

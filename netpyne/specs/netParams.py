@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.specs.netParams`>
+Module containing classes for high-level network parameters and methods
 
 """
 

@@ -1,5 +1,5 @@
 """
-Package for/to <short description of `netpyne.specs`>
+Package of classes to define high-level model specifications
 
 """
 

@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.analysis.interactive`>
+Module for production of interactive plots
 
 """
 

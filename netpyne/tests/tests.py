@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.tests.tests`>
+Module for testing code
 
 """
 

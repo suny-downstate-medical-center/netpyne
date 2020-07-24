@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.analysis.rxd`>
+Module for plotting and analysis of reaction/diffusion-related results
 
 """
 

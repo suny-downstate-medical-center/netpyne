@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.analysis.spikes`>
+Module for anaysis and plotting of spiking-related results
 
 """
 

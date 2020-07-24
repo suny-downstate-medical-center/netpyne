@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.specs.simConfig`>
+Module containing SimConfig class including simulation configuration and methods 
 
 """
 

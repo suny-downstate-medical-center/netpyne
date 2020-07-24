@@ -1,5 +1,5 @@
 """
-Package for/to <short description of `netpyne.network`>
+Package for dealing with network models
 
 """
 

@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.conversion.neuronPyHoc`>
+Module for importing cells, synapses, and networks from NEURON
 
 """
 

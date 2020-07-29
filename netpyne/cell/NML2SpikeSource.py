@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.cell.NML2SpikeSource`>
+Module containing NeuroML2 spike source class
 
 """
 
@@ -24,7 +24,7 @@ class NML2SpikeSource (CompartCell):
     """
     Class for/to <short description of `netpyne.cell.NML2SpikeSource.NML2SpikeSource`>
 
-"""
+    """
         
     def associateGid (self, threshold = 10.0):
         from .. import sim

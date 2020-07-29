@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.cell.NML2Cell`>
+Module containing a NeuroML2 cell class
 
 """
 
@@ -27,7 +27,7 @@ class NML2Cell (CompartCell):
     """
     Class for/to <short description of `netpyne.cell.NML2Cell.NML2Cell`>
 
-"""
+    """
     
     ''' Might this be useful to show better name for cell when psection() called?
     def __str__():

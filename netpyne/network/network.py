@@ -1,6 +1,6 @@
 
 """
-Module for/to <short description of `netpyne.network.network`>
+Module defining Network class and methods
 
 """
 

@@ -1,6 +1,6 @@
 
 """
-Module for/to <short description of `netpyne.network.subconn`>
+Module for distributing synapses at the subcellular level in networks
 
 """
 

@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.batch.grid`>
+Module for grid search parameter optimization and exploration 
 
 """
 

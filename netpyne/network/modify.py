@@ -1,6 +1,6 @@
 
 """
-Module for/to <short description of `netpyne.network.modify`>
+Module for modifying the network model instance
 
 """
 

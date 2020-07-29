@@ -1,5 +1,5 @@
 """
-Module for adaptive stochastic descent optimization
+Module for Optuna hyperparameter optimization (optuna.org)
 
 """
 

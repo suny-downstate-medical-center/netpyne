@@ -1,5 +1,5 @@
 """
-Short description of `netpyne.conversion.neuromlFormat`
+Module for importing and exporting NeuroML
 
 """
 

@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.cell.pointCell`>
+Module containing a point cell class
 
 """
 
@@ -31,7 +31,7 @@ class PointCell (Cell):
     """
     Class for/to <short description of `netpyne.cell.pointCell.PointCell`>
 
-"""
+    """
     
     def __init__ (self, gid, tags, create=True, associateGid=True):
         from .. import sim

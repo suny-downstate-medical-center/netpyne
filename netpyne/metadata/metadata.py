@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.metadata.metadata`>
+Module containing NetPyNE metadata
 
 """
 

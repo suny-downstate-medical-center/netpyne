@@ -1,6 +1,6 @@
 
 """
-Module for/to <short description of `netpyne.network.netrxd`>
+Module for adding reaction-diffusion to network models
 
 """
 

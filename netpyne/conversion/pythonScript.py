@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.conversion.pythonScript`>
+Module for exporting models as Python scripts
 
 """
 

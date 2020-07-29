@@ -1,6 +1,6 @@
 
 """
-Module for/to <short description of `netpyne.network.shape`>
+Module to handle cell morphology in networks
 
 """
 

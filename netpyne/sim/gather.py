@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.sim.gather`>
+Module for gathering data from nodes after a simulation
 
 """
 

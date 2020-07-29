@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.batch.batch`>
+Module for setting up and running batch simulations
 
 """
 

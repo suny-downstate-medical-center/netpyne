@@ -1,7 +1,8 @@
 """
-Module for/to <short description of `netpyne.batch.utils`>
+Module with helper functions to set up and run batch simulations
 
 """
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division

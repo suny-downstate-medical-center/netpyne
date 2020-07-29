@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.cell.compartCell`>
+Module containing a compartmental cell class
 
 """
 
@@ -43,7 +43,7 @@ class CompartCell (Cell):
     """
     Class for/to <short description of `netpyne.cell.compartCell.CompartCell`>
 
-"""
+    """
     
     def __init__ (self, gid, tags, create=True, associateGid=True):
         super(CompartCell, self).__init__(gid, tags)

@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.cell.cell`>
+Module containing a generic cell class
 
 """
 
@@ -34,7 +34,7 @@ class Cell (object):
     """
     Class for/to <short description of `netpyne.cell.cell.Cell`>
 
-"""
+    """
     
     def __init__ (self, gid, tags):
         from .. import sim

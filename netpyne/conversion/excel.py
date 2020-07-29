@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.conversion.excel`>
+Module for importing from Excel
 
 """
 
@@ -28,7 +28,7 @@ def importConnFromExcel (fileName, sheetName):
         <Short description of sheetName>
         **Default:** *required*
 
-"""
+    """
     
     import openpyxl as xl
 

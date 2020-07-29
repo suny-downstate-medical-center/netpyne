@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.batch.optuna_parallel`>
+Module for adaptive stochastic descent optimization
 
 """
 

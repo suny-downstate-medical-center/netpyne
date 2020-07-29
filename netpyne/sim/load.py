@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.sim.load`>
+Module for loading of data and simulations
 
 """
 

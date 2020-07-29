@@ -1,6 +1,6 @@
 
 """
-Module for/to <short description of `netpyne.network.pop`>
+Module defining Population class and methods
 
 """
 

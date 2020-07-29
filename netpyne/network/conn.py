@@ -1,6 +1,6 @@
 
 """
-Module for/to <short description of `netpyne.network.conn`>
+Module for creating network connections
 
 """
 

@@ -1,6 +1,6 @@
 
 """
-Module for/to <short description of `netpyne.network.stim`>
+Module for adding stimulations to networks
 
 """
 

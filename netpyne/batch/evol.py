@@ -1,5 +1,5 @@
 """
-Module for/to <short description of `netpyne.batch.evol`>
+Module for evolutionary parameter optimization
 
 """
 

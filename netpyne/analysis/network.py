@@ -232,7 +232,7 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
                                 weightNorm = cell['secs'][sec]['weightNorm'][segIndex]
                                 weightMatrix[popIndsPre[prePopLabel], popIndsPost[cell['tags']['pop']]] += conn[weightIndex] / weightNorm
                             except:
-                                pass
+                                import IPython; IPython.embed()
                         else:
                             weightMatrix[popIndsPre[prePopLabel], popIndsPost[cell['tags']['pop']]] += conn[weightIndex]
 
@@ -547,7 +547,7 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot connectivity
 # -------------------------------------------------------------------------------------------------------------------
-@exception
+#@exception
 def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderBy='gid', groupBy='pop', groupByIntervalPre=None, groupByIntervalPost=None, graphType='matrix', removeWeightNorm=False, synOrConn='syn', synMech=None, connsFile=None, tagsFile=None, clim=None, figSize=(8,8), fontSize=12, saveData=None, saveFig=None, showFig=True):
     """Plots network connectivity.
 

@@ -1,3 +1,7 @@
+# Version 0.9.8
+
+- analysis.plotLFP can now be applied to external data
+
 # Version 0.9.7
 
 **New features**

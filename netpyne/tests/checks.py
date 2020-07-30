@@ -1,3 +1,8 @@
+"""
+Module for checking the output of tests
+
+"""
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
@@ -6,99 +11,112 @@ from __future__ import absolute_import
 
 from future import standard_library
 standard_library.install_aliases()
+
 def checkOutput(modelName, verbose=False):
-	"""
-	Compare output of models with expected results
-	"""
+    """
+    Function for/to <short description of `netpyne.tests.checks.checkOutput`>
 
-	from .. import  sim
-	if sim.rank == 0:
-		expectedAll = {'numSyns': {}, 'numSpikes': {}}
+    Parameters
+    ----------
+    modelName : <type>
+        <Short description of modelName>
+        **Default:** *required*
 
-		# tut2 expected output 
-		expectedAll['numSyns']['tut2'] = 280
-		expectedAll['numSpikes']['tut2'] = 931
+    verbose : bool
+        <Short description of verbose>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    """
 
-		# tut3 expected output 
-		expectedAll['numSyns']['tut3'] = 243
-		expectedAll['numSpikes']['tut3'] = 560
+    from .. import  sim
+    if sim.rank == 0:
+        expectedAll = {'numSyns': {}, 'numSpikes': {}}
 
-		# tut4 expected output 
-		expectedAll['numSyns']['tut4'] = 73
-		expectedAll['numSpikes']['tut4'] = 1197
+        # tut2 expected output 
+        expectedAll['numSyns']['tut2'] = 280
+        expectedAll['numSpikes']['tut2'] = 931
 
-		# tut5 expected output 
-		expectedAll['numSyns']['tut5'] = 7096
-		expectedAll['numSpikes']['tut5'] = 4879
+        # tut3 expected output 
+        expectedAll['numSyns']['tut3'] = 243
+        expectedAll['numSpikes']['tut3'] = 560
 
-		# tut6 expected output 
-		expectedAll['numSyns']['tut6'] = 16
-		expectedAll['numSpikes']['tut6'] = 134
+        # tut4 expected output 
+        expectedAll['numSyns']['tut4'] = 73
+        expectedAll['numSpikes']['tut4'] = 1197
 
-		# tut7 expected output 
-		expectedAll['numSyns']['tut7'] = 2500
-		expectedAll['numSpikes']['tut7'] = 332
+        # tut5 expected output 
+        expectedAll['numSyns']['tut5'] = 7096
+        expectedAll['numSpikes']['tut5'] = 4879
 
-		# tut_import expected output 
-		expectedAll['numSyns']['tut_import'] = 365
-		expectedAll['numSpikes']['tut_import'] = 3023  # check Traub cell mismatch
+        # tut6 expected output 
+        expectedAll['numSyns']['tut6'] = 16
+        expectedAll['numSpikes']['tut6'] = 134
 
-		# HHTut expected output 
-		expectedAll['numSyns']['HHTut'] = 1823
-		expectedAll['numSpikes']['HHTut'] = 2052
+        # tut7 expected output 
+        expectedAll['numSyns']['tut7'] = 2500
+        expectedAll['numSpikes']['tut7'] = 332
 
-		# HybridTut expected output 
-		expectedAll['numSyns']['HybridTut'] = 356
-		expectedAll['numSpikes']['HybridTut'] = 2561
+        # tut_import expected output 
+        expectedAll['numSyns']['tut_import'] = 365
+        expectedAll['numSpikes']['tut_import'] = 3023  # check Traub cell mismatch
 
-		# M1 expected output 
-		expectedAll['numSyns']['M1'] = 4887
-		expectedAll['numSpikes']['M1'] = 76135
+        # HHTut expected output 
+        expectedAll['numSyns']['HHTut'] = 1823
+        expectedAll['numSpikes']['HHTut'] = 2052
 
-		# M1 detailed expected output 
-		expectedAll['numSyns']['M1detailed'] = 49152
-		expectedAll['numSpikes']['M1detailed'] = 2873
+        # HybridTut expected output 
+        expectedAll['numSyns']['HybridTut'] = 356
+        expectedAll['numSpikes']['HybridTut'] = 2561
 
-		# PTcell expected output 
-		expectedAll['numSyns']['PTcell'] = 1
-		expectedAll['numSpikes']['PTcell'] = 4
+        # M1 expected output 
+        expectedAll['numSyns']['M1'] = 4887
+        expectedAll['numSpikes']['M1'] = 76135
 
-		# cell_lfp expected output 
-		expectedAll['numSyns']['cell_lfp'] = 1
-		expectedAll['numSpikes']['cell_lfp'] = 1
+        # M1 detailed expected output 
+        expectedAll['numSyns']['M1detailed'] = 49152
+        expectedAll['numSpikes']['M1detailed'] = 2873
 
-		# saving expected output 
-		expectedAll['numSyns']['saving'] = 1538
-		expectedAll['numSpikes']['saving'] = 3699
+        # PTcell expected output 
+        expectedAll['numSyns']['PTcell'] = 1
+        expectedAll['numSpikes']['PTcell'] = 4
 
-		# compare all features
-		for feature, expected in expectedAll.items():
-			# numCells
-			if feature == 'numCells':
-				for pop in expected:
-					try:				
-						actual = len(sim.net.allPops[pop]['cellGids'])
-						assert expected[modelName][pop] == actual
-					except:
-						print(('\nMismatch: model %s population %s %s is %s but expected value is %s' %(modelName, pop, feature, actual, expected[modelName][pop])))
-						raise
+        # cell_lfp expected output 
+        expectedAll['numSyns']['cell_lfp'] = 1
+        expectedAll['numSpikes']['cell_lfp'] = 1
 
-			# numConns
-			if feature == 'numSyns':
-				try:				
-					actual = sim.totalSynapses
-					assert expected[modelName] == actual
-				except:
-					print(('\nMismatch: model %s %s is %s but expected value is %s' %(modelName, feature, actual, expected[modelName])))
-					raise
+        # saving expected output 
+        expectedAll['numSyns']['saving'] = 1538
+        expectedAll['numSpikes']['saving'] = 3699
 
-			# numSpikes
-			if feature == 'numSpikes':
-				try:				
-					actual = sim.totalSpikes
-					assert expected[modelName] == actual
-				except:
-					print(('\nMismatch: model %s %s is %s but expected value is %s' %(modelName, feature, actual, expected[modelName])))
-					raise
+        # compare all features
+        for feature, expected in expectedAll.items():
+            # numCells
+            if feature == 'numCells':
+                for pop in expected:
+                    try:				
+                        actual = len(sim.net.allPops[pop]['cellGids'])
+                        assert expected[modelName][pop] == actual
+                    except:
+                        print(('\nMismatch: model %s population %s %s is %s but expected value is %s' %(modelName, pop, feature, actual, expected[modelName][pop])))
+                        raise
 
-		return True
+            # numConns
+            if feature == 'numSyns':
+                try:				
+                    actual = sim.totalSynapses
+                    assert expected[modelName] == actual
+                except:
+                    print(('\nMismatch: model %s %s is %s but expected value is %s' %(modelName, feature, actual, expected[modelName])))
+                    raise
+
+            # numSpikes
+            if feature == 'numSpikes':
+                try:				
+                    actual = sim.totalSpikes
+                    assert expected[modelName] == actual
+                except:
+                    print(('\nMismatch: model %s %s is %s but expected value is %s' %(modelName, feature, actual, expected[modelName])))
+                    raise
+
+        return True

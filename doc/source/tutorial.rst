@@ -79,7 +79,7 @@ Tutorial 2: Network parameters
 
 The ``netParams`` object includes all the information necessary to define your network. It is composed of the following 8 ordered dictionaries:
 
-* ``cellParams`` - cell property rules and their associated parameters (e.g. cell geometry)
+* ``cellParams`` - cell types and their associated parameters (e.g. cell geometry)
 
 * ``popParams`` - populations in the network and their parameters
 
@@ -124,8 +124,8 @@ We will now create a new model file (call it ``tut2.py``) where we will specify 
 	# Network parameters
 	netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
-Cell property rules
-^^^^^^^^^^^^^^^^^^^
+Cell types
+^^^^^^^^^^
 
 First, we need to define the properties of each cell type, by adding items to the ``cellParams`` dictionary. Each ``cellParams`` item includes a key (the cell type) and a value consisting of a dictionary with the following field:
 
@@ -303,7 +303,7 @@ Tutorial 3: Adding a compartment (dendrite) to cells
 
 Here we extend the pyramidal cell type by adding a dendritic section with a passive mechanism. Note that for the ``dend`` section we included the ``topol`` dict defining how it connects to its parent ``soma`` section::
 
-	## Cell property rules
+	## Cell types
 	PYRcell = {'secs': {}}
 
 	PYRcell['secs']['soma'] = {'geom': {}, 'mechs': {}}  
@@ -349,7 +349,7 @@ Next we need to compile this .mod file so its ready to use by NEURON.  Change to
 
 Now we rename the HH cell type and create a new cell type for the Izhikevich cell::
 
-	## Cell property rules
+	## Cell types
 	PYR_HH = {'secs': {}}
 	PYR_HH['secs']['soma'] = {'geom': {}, 'mechs': {}}                                                    # soma params dict
 	PYR_HH['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                               # soma geometry
@@ -413,7 +413,7 @@ Note that we also added two parameters (``propVelocity`` and ``probLengthConst``
 
 Next we define the cell properties of each type of cell ('E' for excitatory and 'I' for inhibitory). We have made minor random modifications of some cell parameters just to illustrate that different cell types can have different properties::
 	
-	## Cell property rules
+	## Cell types
 	secs = {} # sections dict
 	secs['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
 	secs['soma']['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0}                               # soma geometry

@@ -9,7 +9,7 @@ netParams.sizeZ = 100              # z-dimension (horizontal length) size in um
 netParams.propVelocity = 100.0     # propagation velocity (um/ms)
 netParams.probLengthConst = 150.0  # length constant for conn probability (um)
 
-## Cell property rules
+## Cell types
 secs = {} # sections dict
 secs['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
 secs['soma']['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0}                               # soma geometry

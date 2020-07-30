@@ -631,7 +631,7 @@ def plotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid
         if isinstance(saveFig, basestring):
             filename = saveFig
         else:
-            filename = sim.cfg.filename + '_raster.png'
+            filename = sim.cfg.filename + '_raster_' + orderBy + '.png'
         plt.savefig(filename, dpi=dpi)
 
     # show fig

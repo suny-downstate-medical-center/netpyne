@@ -99,7 +99,9 @@ def preRun():
 #------------------------------------------------------------------------------
 # Run Simulation
 #------------------------------------------------------------------------------
-def runSim():
+
+def runSim(skipPreRun=False):
+  
     from .. import sim
 
     sim.pc.barrier()
@@ -110,8 +112,10 @@ def runSim():
         except:
             if sim.cfg.verbose: 'Error Failed to use local dt.'
     sim.pc.barrier()
-    sim.timing('start', 'runTime') 
-    preRun()
+    sim.timing('start', 'runTime')
+
+    if not skipPreRun:
+        preRun()
     
     h.finitialize(float(sim.cfg.hParams['v_init']))
 

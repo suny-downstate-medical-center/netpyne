@@ -200,7 +200,7 @@ class Cell (object):
                             sec = self.secs[params['sec']]
                             synMechList = [synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech'] and synMech['loc']==params['loc']] # make list with this label/loc
                             if len(synMechList) > 0:
-                                if 'index' in params and index<len(synMechList):
+                                if 'index' in params and params['index']<len(synMechList):
                                     synMech = synMechList[params['index']]
                                 else:
                                     synMech = synMechList[0] # 0th one which would have been returned by next()

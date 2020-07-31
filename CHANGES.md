@@ -1,6 +1,13 @@
 # Version 0.9.8
 
+**New features**
+
 - analysis.plotLFP can now be applied to external data
+
+**Bug fixes**
+
+- Fixed bug when using index with recordTraces
+
 
 # Version 0.9.7
 

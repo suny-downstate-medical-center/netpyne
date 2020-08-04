@@ -57,7 +57,7 @@ install:
     - make --silent -j4
     - make --silent install -j4
     - cd src/nrnpython
-    - python setup.py install
+    - pip install .
     - export PATH=$PATH:$NEURON_HOME/x86_64/bin
     - export PYTHONPATH=$PYTHONPATH:$TRAVIS_BUILD_DIR:$NEURON_HOME/lib/python/
 

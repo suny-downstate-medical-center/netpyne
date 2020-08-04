@@ -18,13 +18,3 @@ elif not display or len(display) == 0:  # if no display env available (e.g. clus
     import matplotlib
     matplotlib.use('Agg')
 
-from netpyne import analysis
-from netpyne import batch
-from netpyne import cell
-from netpyne import conversion
-from netpyne import metadata
-from netpyne import network
-from netpyne import sim
-from netpyne import specs
-from netpyne import support
-from netpyne import tests

@@ -47,6 +47,7 @@ python:
 install:
     - cd ..
     # - pip install numpy matplotlib scipy pandas future tables bokeh # specified in setup.py
+    - if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then pip install bokeh==1.4.0; fi
     - pip install pyneuroml # This will install libNeuroML also
     - git clone --branch 7.6.2 https://github.com/neuronsimulator/nrn
     - cd nrn
@@ -57,7 +58,7 @@ install:
     - make --silent -j4
     - make --silent install -j4
     - cd src/nrnpython
-    - pip install .
+    - python setup.py install
     - export PATH=$PATH:$NEURON_HOME/x86_64/bin
     - export PYTHONPATH=$PYTHONPATH:$TRAVIS_BUILD_DIR:$NEURON_HOME/lib/python/
 

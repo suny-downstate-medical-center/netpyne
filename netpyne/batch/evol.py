@@ -27,6 +27,7 @@ except NameError:
 
 import imp
 import json
+import pickle
 import logging
 import datetime
 import os
@@ -236,6 +237,12 @@ def evolOptim(self, pc):
                     if os.path.isfile(jobNamePath+'.json'):
                         with open('%s.json'% (jobNamePath)) as file:
                             simData = json.load(file)['simData']
+                        fitness[candidate_index] = fitnessFunc(simData, **fitnessFuncArgs)
+                        jobs_completed += 1
+                        print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
+                    elif os.path.isfile(jobNamePath+'.pkl'):
+                        with open('%s.pkl'% (jobNamePath), 'rb') as file:
+                            simData = pickle.load(file)['simData']
                         fitness[candidate_index] = fitnessFunc(simData, **fitnessFuncArgs)
                         jobs_completed += 1
                         print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))

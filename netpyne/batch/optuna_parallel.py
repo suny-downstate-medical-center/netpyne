@@ -266,6 +266,12 @@ def optunaOptim(self, pc):
                         fitness[candidate_index] = fitnessFunc(simData, **fitnessFuncArgs)
                         jobs_completed += 1
                         print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
+                    elif os.path.isfile(jobNamePath+'.pkl'):
+                        with open('%s.pkl'% (jobNamePath), 'rb') as file:
+                            simData = pickle.load(file)['simData']
+                        fitness[candidate_index] = fitnessFunc(simData, **fitnessFuncArgs)
+                        jobs_completed += 1
+                        print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
                 except Exception as e:
                     err = "There was an exception evaluating candidate %d:"%(candidate_index)
                     print(("%s \n %s"%(err,e)))

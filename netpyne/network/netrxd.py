@@ -263,7 +263,7 @@ def _addStates(self, params):
         
         # initial
         if 'initial' not in param:
-            param['initial'] == None ## looks like a typo
+            param['initial'] = None ## looks like a typo
         if isinstance(param['initial'], basestring):  # string-based func
             funcStr = self._replaceRxDStr(param['initial'], constants=True, regions=True, species=False)
 

@@ -4,6 +4,10 @@
 
 - analysis.plotLFP can now be applied to external data
 
+- Evolutionary and Optuna optimization can now read results from .pkl files
+
+- Enabled recording of stimulus variables (e.g. SEClamp i)
+
 **Bug fixes**
 
 - Fixed bug when using index with recordTraces

@@ -156,7 +156,10 @@ def evolOptim(self, pc):
                 # ----------------------------------------------------------------------
                 # MPI job commnand
                 # ----------------------------------------------------------------------
-                command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
+                if mpiCommand.startswith('python'):
+                    command = '%s %s simConfig=%s netParams=%s ' % (mpiCommand, script, cfgSavePath, netParamsSavePath)
+                else:
+                    command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
                 
                 # ----------------------------------------------------------------------
                 # run on local machine with <nodes*coresPerNode> cores

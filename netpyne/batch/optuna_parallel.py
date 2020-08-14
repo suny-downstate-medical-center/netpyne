@@ -59,10 +59,10 @@ pc = h.ParallelContext() # use bulletin board master/slave
 # -------------------------------------------------------------------------------
 
 # func needs to be outside of class
-def runJob(script, cfgSavePath, netParamsSavePath, simDataPath):
+def runJob(nrnCommand, script, cfgSavePath, netParamsSavePath, simDataPath):
     import os
     print('\nJob in rank id: ',pc.id())
-    command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath)
+    command = '%s %s simConfig=%s netParams=%s' % (nrnCommand, script, cfgSavePath, netParamsSavePath)
     print(command)
 
     with open(simDataPath+'.run', 'w') as outf, open(simDataPath+'.err', 'w') as errf:
@@ -102,6 +102,7 @@ def optunaOptim(self, pc):
         nodes = args.get('nodes', 1)
         coresPerNode = args.get('coresPerNode', 1)
         mpiCommand = args.get('mpiCommand', 'mpiexec')
+        nrnCommand = args.get('nrnCommand', 'nrniv')
         numproc = nodes*coresPerNode
         
         # slurm setup
@@ -166,17 +167,17 @@ def optunaOptim(self, pc):
             # ----------------------------------------------------------------------
             # MPI master-slaves
             # ----------------------------------------------------------------------
-            pc.submit(runJob, script, cfgSavePath, netParamsSavePath, jobPath)
+            pc.submit(runJob, nrnCommand, script, cfgSavePath, netParamsSavePath, jobPath)
             print('-'*80)
 
         else:
             # ----------------------------------------------------------------------
             # MPI job commnand
             # ----------------------------------------------------------------------
-            if mpiCommand.startswith('python'):
-                command = '%s %s simConfig=%s netParams=%s ' % (mpiCommand, script, cfgSavePath, netParamsSavePath)
+            if mpiCommand == '':
+                command = '%s %s simConfig=%s netParams=%s ' % (nrnCommand, script, cfgSavePath, netParamsSavePath)
             else:
-                command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
+                command = '%s -np %d %s -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, nrnCommand, numproc, script, cfgSavePath, netParamsSavePath)
             
             # ----------------------------------------------------------------------
             # run on local machine with <nodes*coresPerNode> cores

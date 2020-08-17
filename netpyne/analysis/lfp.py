@@ -257,6 +257,9 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], inputLFP=None, plots=['ti
                 color = colors[i%len(colors)]
                 lw = 1.0
 
+            if len(t) < len(lfpPlot):
+                lfpPlot = lfpPlot[:len(t)]
+
             plt.plot(t[0:len(lfpPlot)], -lfpPlot+(i*ydisp), color=color, linewidth=lw)
             if len(electrodes) > 1:
                 plt.text(timeRange[0]-0.07*(timeRange[1]-timeRange[0]), (i*ydisp), elec, color=color, ha='center', va='top', fontsize=fontSize, fontweight='bold')

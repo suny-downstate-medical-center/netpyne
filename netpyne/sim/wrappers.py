@@ -140,7 +140,8 @@ def intervalCreateSimulateAnalyze(netParams=None, simConfig=None, output=False, 
 #------------------------------------------------------------------------------
 # Wrapper to load all, ready for simulation
 #------------------------------------------------------------------------------
-def load(filename, simConfig=None, output=False, instantiate=True, createNEURONObj=True):
+def load(filename, simConfig=None, output=False, instantiate=True, instantiateCells=True, instantiateConns=True, instantiateStims=True,
+        instantiateRxD=True,createNEURONObj=True):
     """
     load
     Sequence of commands load, simulate and analyse network
@@ -152,11 +153,15 @@ def load(filename, simConfig=None, output=False, instantiate=True, createNEURONO
     sim.loadAll(filename, instantiate=instantiate, createNEURONObj=createNEURONObj)
     if simConfig: sim.setSimCfg(simConfig)  # set after to replace potentially loaded cfg
     if len(sim.net.cells) == 0 and instantiate:
-        pops = sim.net.createPops()                  # instantiate network populations
-        cells = sim.net.createCells()                 # instantiate network cells based on defined populations
-        conns = sim.net.connectCells()                # create connections between cells based on params
-        stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
-        rxd = sim.net.addRxD()                    # add reaction-diffusion (RxD)
+        pops = sim.net.createPops()  # instantiate network populations
+        if instantiateCells:
+            cells = sim.net.createCells()                 # instantiate network cells based on defined populations
+        if instantiateConns:
+            conns = sim.net.connectCells()                # create connections between cells based on params
+        if instantiateStims:
+            stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
+        if instantiateRxD:
+            rxd = sim.net.addRxD()                    # add reaction-diffusion (RxD)
 
     simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
 

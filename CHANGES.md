@@ -8,6 +8,8 @@
 
 - Enabled recording of stimulus variables (e.g. SEClamp i)
 
+- Added options in load func to avoid instantiating cells, conns, stims and/or rxd 
+
 **Bug fixes**
 
 - Fixed bug when using index with recordTraces

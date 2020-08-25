@@ -1841,11 +1841,75 @@ def popAvgRates(tranges = None, show = True):
 
 
 #------------------------------------------------------------------------------
+# Calculate f-I curve and analyze features
+#------------------------------------------------------------------------------
+@exception
+def calculatefI():
+
+    from .. import sim
+    
+    #print('calculating fI')
+
+    times = sim.cfg.analysis['plotfI'].get('times', [0, sim.cfg.duration])
+    dur = sim.cfg.analysis['plotfI'].get('dur', sim.cfg.duration)
+    onset = sim.cfg.analysis['plotfI'].get('calculateOnset', False)
+    durSteady = sim.cfg.analysis['plotfI'].get('durSteady', None)
+
+    sim.allSimData['fI'] = [len([spkt for spkt in sim.allSimData['spkt']
+                    if t <= spkt < t + dur]) / (dur / 1000.0) for t in times]  
+
+    if onset: # rate based on inter-spike interval of 1st 2 spikes 
+        sim.allSimData['fI_onset'] = []
+        for t in times:
+            allSpks = [spkt for spkt in sim.allSimData['spkt'] if t <= spkt < t + dur]
+            if len(allSpks) >= 2:
+                sim.allSimData['fI_onset'].append(1000.0 / (allSpks[1] - allSpks[0]))
+            else:
+                sim.allSimData['fI_onset'].append(0.0)
+    
+    if durSteady: # rate based on the last 'dur' ms
+        sim.allSimData['fI_steady'] = [len([spkt for spkt in sim.allSimData['spkt']
+                    if t + dur - durSteady <= spkt < t + dur]) / (durSteady / 1000.0) for t in times] 
+
+    # calculate features of fI curve
+    calculateFeatures = sim.cfg.analysis['plotfI']['calculateFeatures']
+    threshold = sim.net.params.defaultThreshold
+    v = sim.allSimData['V_soma']['cell_0']
+    dt = sim.cfg.recordStep
+
+    # calculate latency to 1st spike peak
+    if 'latencyPeak1' in calculateFeatures:
+        # find peaks
+        sim.allSimData['fI_latencyPeak1'] = []
+        for time in times:
+            v1 = v[time:time + dur]
+            vpeak = np.max(v1)
+            if vpeak > threshold:
+                tpeak = np.argmax(v1)
+                sim.allSimData['fI_latencyPeak1'].append(abs(tpeak - time)*dt)
+            else:
+                sim.allSimData['fI_latencyPeak1'].append(-1.)
+
+    # calculate interspike  to 1st spike peak
+    if 'ISIPeak1' in calculateFeatures:
+        
+        pass
+
+    # calculate interspike  to 1st spike peak
+    if 'ampSpike1' in calculateFeatures: 
+        pass
+
+    # calculate interspike  to 1st spike peak
+    if 'ampSpike2' in calculateFeatures: 
+        pass
+
+#------------------------------------------------------------------------------
 # Calculate and plot f-I curve
 #------------------------------------------------------------------------------
 @exception
-def plotfI(amps, times, dur, targetRates=[], calculateOnset=False, targetRatesOnset=[], durSteady=None, targetRatesSteady=[], saveFig=None, showFig=True):
-    from .. import sim
+def plotfI(amps, times, dur, targetRates=[], calculateOnset=False, targetRatesOnset=[], durSteady=None, targetRatesSteady=[],
+           calculateFeatures=[], saveFig=None, showFig=True):
+    from .. import sim 
 
     outData = {}
     
@@ -1893,4 +1957,5 @@ def plotfI(amps, times, dur, targetRates=[], calculateOnset=False, targetRatesOn
     if showFig: _showFigure()
 
     return fig, outData
+
 

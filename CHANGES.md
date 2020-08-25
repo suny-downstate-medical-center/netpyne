@@ -10,6 +10,8 @@
 
 - Added options in load func to avoid instantiating cells, conns, stims and/or rxd 
 
+- Analysis and plotting of rate vs current (f-I) curve for single cell tuning
+
 **Bug fixes**
 
 - Fixed bug when using index with recordTraces

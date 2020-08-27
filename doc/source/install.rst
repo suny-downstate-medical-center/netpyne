@@ -51,7 +51,7 @@ This version can also be used by developers interested in extending the package.
 
 .. _install_gui:
 
-Use web-based online version of NetPyNE GUI (alpha version)
+Use a browser-based online version of NetPyNE GUI (beta version)
 ------------------------------------------------------
 
 The NetPyNE GUI is available online at: `www.netpyne.org/gui <http://www.netpyne.org/gui>`_. There is a maximum number of simultaneous users for this online version, so if you can't log in, please try again later. 

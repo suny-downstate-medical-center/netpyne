@@ -1,9 +1,6 @@
 About NetPyNE
 =======================================
 
-What is NetPyNE?
-----------------
-
 NetPyNE (**Net**\ works using **Py**\ thon and **NE**\ URON) is a Python package to facilitate the development, simulation, parallelization, analysis, and optimization of biological neuronal networks using the NEURON simulator.
 
 Although NEURON already enables multiscale simulations ranging from the molecular to the network level, using NEURON for network simulations requires substantial programming, and often requires parallel simulations. NetPyNE greatly facilitates the development and parallel simulation of biological neuronal networks in NEURON for students and experimentalists. NetPyNE is also intended for experienced modelers, providing powerful features to incorporate complex anatomical and physiological data into models.
@@ -12,13 +9,15 @@ For a more detailed overview of NetPyNE see:
 
 - Our `NetPyNE article <https://elifesciences.org/articles/44494>`_ in the journal `eLife <https://elifesciences.org/>`_
 
-- Our `NetPyNE presentation slides <http://it.neurosim.downstate.edu/salvadord/netpyne.pdf>`_ from `CNS*2017 <https://www.cnsorg.org/cns-2017>`_
+- Our `NetPyNE tutorial <https://yale.zoom.us/rec/play/tMAkcrr8-jo3HNCU4wSDUaR8W427LaKs1HAW_aUPzkmzUSJRO1WnY7cXZep77NjtCLWqwFVD6Ya8aNTL?continueMode=true&_x_zm_rtaid=J63YcHJGT9CUEjhkklHizQ.1598553844678.e87215956b2d8a50ef33ec4d6479b3b2&_x_zm_rhtaid=388>`_ from `CNS*2020 <https://www.cnsorg.org/cns-2020>`_ (presentation slides `here <http://bit.ly/cns20-netpyne>`_)
 
 |
 
 .. image:: figs/schematic.png
-    :width: 90%	
+    :width: 95%	
     :align: center
+
+|
 
 Major Features
 --------------
@@ -86,14 +85,14 @@ Major Features
     * Used by `Open Source Brain <www.opensourcebrain.org>`_ to run parallel simulation of NeuroML-based NEURON models
     * Available to run simulations on XSEDE supercomputers via the `Neuroscience Gateway <www.nsgportal.org>`_
 
-Questions, suggestions and contributions
+Questions, suggestions, and contributions
 -----------------------------------------
 
-NetPyNE is open source and available at https://github.com/Neurosim-lab/netpyne 
+NetPyNE is open-source and available at `github.com/Neurosim-lab/netpyne <https://github.com/Neurosim-lab/netpyne>`_.
 
-For questions or suggestions please use the `Google NetPyNE Q&A forum <https://groups.google.com/forum/#!forum/netpyne-forum>`_ , the `NEURON NetPyNE forum <https://www.neuron.yale.edu/phpBB/viewforum.php?f=45>`_  or add an `Issue to GitHub <https://github.com/Neurosim-lab/netpyne/issues>`_. 
+For questions or suggestions please use the `NetPyNE forum <https://groups.google.com/forum/#!forum/netpyne-forum>`_ , the `NEURON+NetPyNE forum <https://www.neuron.yale.edu/phpBB/viewforum.php?f=45>`_  or `submit an issue to GitHub <https://github.com/Neurosim-lab/netpyne/issues>`_. 
 
-For contributions (which are more than welcome!) please fork the repository and make a Pull Request with your changes. See our contributors guide for more details: `Contributors Guide <https://github.com/Neurosim-lab/netpyne/blob/development/CONTRIBUTING.md>`_.
+Contributions are gladly welcomed!  Please fork the repository and make a Pull Request with your changes.  See our `Contributors Guide <https://github.com/Neurosim-lab/netpyne/blob/development/CONTRIBUTING.md>`_ for more details.
 
 For further information please contact: salvadordura@gmail.com.
 
@@ -109,7 +108,7 @@ We as members, contributors, and leaders pledge to make participation in our com
 
 We pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community.
 
-Please read the `full Code of Conduct <https://github.com/Neurosim-lab/netpyne/blob/development/CODE_OF_CONDUCT.md>`_.
+Please read the full `Code of Conduct <https://github.com/Neurosim-lab/netpyne/blob/development/CODE_OF_CONDUCT.md>`_.
 
 
 Publications
@@ -181,10 +180,10 @@ Future
 
 - June 2020: Building and simulating brain circuit models on Google Cloud, Google Office, NYC (delayed)
 
-- July 2020: `[CNS*2020] <https://www.cnsorg.org/cns-2020>`_ Tutorial on Multiscale Modeling using NEURON and NetPyNE, Melbourne, Australia
 
 Past
 ^^^^^^^^^
+- July 2020: `CNS*2020 <https://www.cnsorg.org/cns-2020>`_ Building mechanistic multiscale models: from molecules to networks using NEURON and NetPyNE, online conference
 
 - January 2020: VIII Latin American School on Computational Neuroscience (LASCON), Institute of Mathematics and Statistics, University of Sao Paulo, Brazil
 
@@ -247,7 +246,7 @@ Membership in the steering committee is a personal membership. Affiliations are 
 Project roadmap
 ---------------------
 
-The project roadmap for the following five years (2019-2023) includes four large categories: quality control, development of new features, GUI extension, and dissemination and community engagement. The main targets for each category, and the estimated period
+The five-year project roadmap (2019-2023) includes four large categories: quality control, development of new features, GUI extension, and dissemination and community engagement. The main targets for each category, and the estimated period
 
 - **Quality control**: robustness, reliability and reproducibility
 

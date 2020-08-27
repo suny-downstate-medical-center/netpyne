@@ -11,7 +11,7 @@ pip install autodocsumm
 
 
 Here are the steps to release a new version of NetPyNE
-(step 9 is completed by this file):
+(step 10 is completed by executing this file):
 
 1) Go through Pull Requests and merge acceptable ones into Development
 2) Ensure all tests pass after the last commit

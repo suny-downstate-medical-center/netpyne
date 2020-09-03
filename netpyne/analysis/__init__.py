@@ -1,5 +1,6 @@
 """
-Functions for analysis and plotting
+Package for analysis and plotting
+
 """
 
 from __future__ import unicode_literals

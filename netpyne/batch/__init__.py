@@ -1,5 +1,6 @@
 """
-Functions for running batches of simulations
+Package for handling batches of simulations
+
 """
 
 from __future__ import unicode_literals

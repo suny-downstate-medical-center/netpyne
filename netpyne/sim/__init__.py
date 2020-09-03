@@ -1,8 +1,8 @@
 """
-Functions for handling simulations
+Package for handling simulations
 
-Contains all the model shared variables and modules.
-It is imported as "sim" from all other file,  so that any variable or module can be referenced from any module using sim.varName
+Contains all the model shared variables and modules.  It is imported as "sim" from all other files, so any variable or module can be referenced from any module using `sim.varName`.
+
 """
 
 from __future__ import unicode_literals

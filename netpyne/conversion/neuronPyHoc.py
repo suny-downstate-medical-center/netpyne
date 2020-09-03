@@ -1,7 +1,6 @@
 """
-conversion/neuron.py 
+Module for importing cells, synapses, and networks from NEURON
 
-Functions to import cells, synapses and networks from NEURON
 """
 
 from __future__ import print_function
@@ -23,6 +22,24 @@ import importlib
 #h.load_file("stdrun.hoc") 
 
 def getSecName(sec, dirCellSecNames = None):
+    """
+    Function for/to <short description of `netpyne.conversion.neuronPyHoc.getSecName`>
+
+    Parameters
+    ----------
+    sec : <type>
+        <Short description of sec>
+        **Default:** *required*
+
+    dirCellSecNames : <``None``?>
+        <Short description of dirCellSecNames>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
     if dirCellSecNames is None: dirCellSecNames = {}
 
     if '>.' in sec.name():
@@ -43,6 +60,32 @@ def getSecName(sec, dirCellSecNames = None):
     return secName
 
 def importCellParams(fileName, labels, values, key = None):
+    """
+    Function for/to <short description of `netpyne.conversion.neuronPyHoc.importCellParams`>
+
+    Parameters
+    ----------
+    fileName : <type>
+        <Short description of fileName>
+        **Default:** *required*
+
+    labels : <type>
+        <Short description of labels>
+        **Default:** *required*
+
+    values : <type>
+        <Short description of values>
+        **Default:** *required*
+
+    key : <``None``?>
+        <Short description of key>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
     params = {}
     if fileName.endswith('.py'):
         try:
@@ -69,6 +112,13 @@ def importCellParams(fileName, labels, values, key = None):
 
 
 def mechVarList():
+    """
+    Function for/to <short description of `netpyne.conversion.neuronPyHoc.mechVarList`>
+
+
+    """
+
+
     msname = h.ref('')
     varList = {}
     for i, mechtype in enumerate(['mechs','pointps']):
@@ -102,6 +152,24 @@ def mechVarList():
 
 
 def getGlobals(mechNames, origGlob={}):
+    """
+    Function for/to <short description of `netpyne.conversion.neuronPyHoc.getGlobals`>
+
+    Parameters
+    ----------
+    mechNames : <type>
+        <Short description of mechNames>
+        **Default:** *required*
+
+    origGlob : dict
+        <Short description of origGlob>
+        **Default:** ``{}``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
     includeGlobs = ['celsius', 'v_init', 'clamp_resist']
     endings = tuple(['_' + name for name in mechNames])
     glob = {}
@@ -118,6 +186,19 @@ def getGlobals(mechNames, origGlob={}):
 
 
 def setGlobals(glob):
+    """
+    Function for/to <short description of `netpyne.conversion.neuronPyHoc.setGlobals`>
+
+    Parameters
+    ----------
+    glob : <type>
+        <Short description of glob>
+        **Default:** *required*
+
+
+    """
+
+
     for k,v in glob.items():
         try:
             setattr(h, k, v)
@@ -160,9 +241,29 @@ def _delete_module(modname):
 
 def importCell(fileName, cellName, cellArgs = None, cellInstance = False):
     """
-    importCell
-    Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)
-    """
+    Function for/to <short description of `netpyne.conversion.neuronPyHoc.importCell`>
+
+    Parameters
+    ----------
+    fileName : <type>
+        <Short description of fileName>
+        **Default:** *required*
+
+    cellName : <type>
+        <Short description of cellName>
+        **Default:** *required*
+
+    cellArgs : <``None``?>
+        <Short description of cellArgs>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    cellInstance : bool
+        <Short description of cellInstance>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+"""
     
     h.initnrn()
     
@@ -226,9 +327,35 @@ def importCell(fileName, cellName, cellArgs = None, cellInstance = False):
 
 def importCellsFromNet(netParams, fileName, labelList, condsList, cellNamesList, importSynMechs):
     """
-    importCellsFromNet
-    Import cell from HOC template or python file into framework format (dict of sections, with geom, topol, mechs, syns)
-    """
+    Function for/to <short description of `netpyne.conversion.neuronPyHoc.importCellsFromNet`>
+
+    Parameters
+    ----------
+    netParams : <type>
+        <Short description of netParams>
+        **Default:** *required*
+
+    fileName : <type>
+        <Short description of fileName>
+        **Default:** *required*
+
+    labelList : <type>
+        <Short description of labelList>
+        **Default:** *required*
+
+    condsList : <type>
+        <Short description of condsList>
+        **Default:** *required*
+
+    cellNamesList : <type>
+        <Short description of cellNamesList>
+        **Default:** *required*
+
+    importSynMechs : <type>
+        <Short description of importSynMechs>
+        **Default:** *required*
+
+"""
     
     h.initnrn()
     
@@ -274,6 +401,29 @@ def importCellsFromNet(netParams, fileName, labelList, condsList, cellNamesList,
 
 
 def getCellParams(cell, varList={}, origGlob={}):
+    """
+    Function for/to <short description of `netpyne.conversion.neuronPyHoc.getCellParams`>
+
+    Parameters
+    ----------
+    cell : <type>
+        <Short description of cell>
+        **Default:** *required*
+
+    varList : dict
+        <Short description of varList>
+        **Default:** ``{}``
+        **Options:** ``<option>`` <description of option>
+ 
+    origGlob : dict
+        <Short description of origGlob>
+        **Default:** ``{}``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
     dirCell = dir(cell)
 
     if 'all_sec' in dirCell:

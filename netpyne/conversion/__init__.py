@@ -1,5 +1,6 @@
 """
-Functions for coverting to other formats
+Package for conversion from/to other formats
+
 """
 
 from __future__ import unicode_literals

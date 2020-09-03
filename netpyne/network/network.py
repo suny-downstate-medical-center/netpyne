@@ -1,8 +1,7 @@
 
 """
-network.py 
+Module defining Network class and methods
 
-Defines Network class which contains cell objects and network-realated methods
 """
 
 from __future__ import print_function
@@ -16,6 +15,13 @@ from ..specs import ODict
 from neuron import h  # import NEURON
 
 class Network(object):
+    """
+    Class for/to <short description of `netpyne.network.network.Network`>
+
+
+    """
+
+
 
     # -----------------------------------------------------------------------------
     # initialize variables

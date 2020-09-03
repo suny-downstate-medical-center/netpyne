@@ -1,8 +1,7 @@
 
 """
-stim.py 
+Module for adding stimulations to networks
 
-Methods to create stims in the network
 """
 
 from __future__ import print_function
@@ -23,6 +22,19 @@ except NameError:
 #  Add stims
 # -----------------------------------------------------------------------------
 def addStims(self):
+    """
+    Function for/to <short description of `netpyne.network.stim.addStims`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+
+    """
+
+
     from .. import sim
 
     sim.timing('start', 'stimsTime')

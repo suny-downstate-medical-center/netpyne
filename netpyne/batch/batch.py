@@ -1,7 +1,6 @@
 """
-batch/batch.py 
+Module for setting up and running batch simulations
 
-Class to setup and run batch simulations
 """
 
 from __future__ import print_function
@@ -57,6 +56,19 @@ if pc.id()==0: pc.master_works_on_jobs(0)
 # function to convert tuples to strings (avoids erro when saving/loading)
 # -------------------------------------------------------------------------------
 def tupleToStr(obj):
+    """
+    Function for/to <short description of `netpyne.batch.batch.tupleToStr`>
+
+    Parameters
+    ----------
+    obj : <type>
+        <Short description of obj>
+        **Default:** *required*
+
+
+    """
+
+
     #print '\nbefore:', obj
     if type(obj) == list:
         for item in obj:
@@ -76,6 +88,13 @@ def tupleToStr(obj):
 # Batch class
 # -------------------------------------------------------------------------------
 class Batch(object):
+    """
+    Class for/to <short description of `netpyne.batch.batch.Batch`>
+
+
+    """
+
+
 
     def __init__(self, cfgFile='cfg.py', netParamsFile='netParams.py', params=None, groupedParams=None, initCfg={}, seed=None):
         self.batchLabel = 'batch_'+str(datetime.date.today())

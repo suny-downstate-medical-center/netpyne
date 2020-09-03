@@ -1,7 +1,6 @@
 """
-sim/save.py
+Module related to saving
 
-Functions related to saving 
 """
 
 from __future__ import print_function
@@ -31,6 +30,23 @@ from . import utils
 # Save JSON (Python 2/3 compatible)
 #------------------------------------------------------------------------------
 def saveJSON(fileName, data):
+    """
+    Function for/to <short description of `netpyne.sim.save.saveJSON`>
+
+    Parameters
+    ----------
+    fileName : <type>
+        <Short description of fileName>
+        **Default:** *required*
+
+    data : <type>
+        <Short description of data>
+        **Default:** *required*
+
+
+    """
+
+
     import json, io
     from .utils import NpSerializer
 
@@ -46,6 +62,25 @@ def saveJSON(fileName, data):
 # Save data
 #------------------------------------------------------------------------------
 def saveData(include = None, filename = None):
+    """
+    Function for/to <short description of `netpyne.sim.save.saveData`>
+
+    Parameters
+    ----------
+    include : <``None``?>
+        <Short description of include>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    filename : <``None``?>
+        <Short description of filename>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
     from .. import sim
 
     if sim.rank == 0 and not getattr(sim.net, 'allCells', None): needGather = True
@@ -208,6 +243,13 @@ def saveData(include = None, filename = None):
 # Save distributed data using HDF5 (only conns for now)
 #------------------------------------------------------------------------------
 def distributedSaveHDF5():
+    """
+    Function for/to <short description of `netpyne.sim.save.distributedSaveHDF5`>
+
+
+    """
+
+
     from .. import sim
     import h5py
 
@@ -228,6 +270,13 @@ def distributedSaveHDF5():
 # Convert connections in long dict format to compact list format 
 #------------------------------------------------------------------------------
 def compactConnFormat():
+    """
+    Function for/to <short description of `netpyne.sim.save.compactConnFormat`>
+
+
+    """
+
+
     from .. import sim
 
     if type(sim.cfg.compactConnFormat) is not list:
@@ -247,6 +296,19 @@ def compactConnFormat():
 # Gathers data in master and saves it mid run
 #------------------------------------------------------------------------------
 def intervalSave(t):
+    """
+    Function for/to <short description of `netpyne.sim.save.intervalSave`>
+
+    Parameters
+    ----------
+    t : <type>
+        <Short description of t>
+        **Default:** *required*
+
+
+    """
+
+
     from .. import sim
     from ..specs import Dict
     import pickle, os
@@ -346,6 +408,30 @@ def intervalSave(t):
 # Save data in each node
 #------------------------------------------------------------------------------
 def saveInNode(gatherLFP=True, include=None, filename=None):
+    """
+    Function for/to <short description of `netpyne.sim.save.saveInNode`>
+
+    Parameters
+    ----------
+    gatherLFP : bool
+        <Short description of gatherLFP>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    include : <``None``?>
+        <Short description of include>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    filename : <``None``?>
+        <Short description of filename>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
     from .. import sim
     from ..specs import Dict, ODict    
 
@@ -561,6 +647,30 @@ def saveInNode(gatherLFP=True, include=None, filename=None):
 # Save data in each node
 #------------------------------------------------------------------------------
 def saveSimDataInNode(filename=None, saveLFP=True, removeTraces=False):
+    """
+    Function for/to <short description of `netpyne.sim.save.saveSimDataInNode`>
+
+    Parameters
+    ----------
+    filename : <``None``?>
+        <Short description of filename>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    saveLFP : bool
+        <Short description of saveLFP>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    removeTraces : bool
+        <Short description of removeTraces>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
     from .. import sim
     from ..specs import Dict, ODict    
 

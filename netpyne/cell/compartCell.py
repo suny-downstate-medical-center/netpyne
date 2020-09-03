@@ -1,7 +1,6 @@
 """
-cell/compartCell.py 
+Module containing a compartmental cell class
 
-Contains compartCell class 
 """
 
 from __future__ import division
@@ -42,7 +41,8 @@ from ..specs import Dict
 
 class CompartCell (Cell):
     """
-    Class for section-based neuron models
+    Class for/to <short description of `netpyne.cell.compartCell.CompartCell`>
+
     """
     
     def __init__ (self, gid, tags, create=True, associateGid=True):

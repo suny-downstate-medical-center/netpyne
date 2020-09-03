@@ -1,5 +1,6 @@
 """
-Helper functions to plot and analyse results
+Module for utilities to help analyze and plot results
+
 """
 
 from __future__ import print_function
@@ -50,8 +51,15 @@ elif colorListType == 'graded' and __gui__:
 # -------------------------------------------------------------------------------------------------------------------
 def exception(function):
     """
-    A decorator that wraps the passed in function and prints exception should one occur
-    """
+    Function for/to <short description of `netpyne.analysis.utils.exception`>
+
+    Parameters
+    ----------
+    function : <type>
+        <Short description of function>
+        **Default:** *required*
+
+"""
     @functools.wraps(function)
     def wrapper(*args, **kwargs):
         try:
@@ -168,6 +176,24 @@ def _smooth1d(x,window_len=11,window='hanning'):
 ## Get subset of cells and netstims indicated by include list
 # -------------------------------------------------------------------------------------------------------------------
 def getCellsInclude(include, sim = None):
+    """
+    Function for/to <short description of `netpyne.analysis.utils.getCellsInclude`>
+
+    Parameters
+    ----------
+    include : <type>
+        <Short description of include>
+        **Default:** *required*
+
+    sim : <``None``?>
+        <Short description of sim>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
 
     if not sim:
         from .. import sim
@@ -234,6 +260,28 @@ def getCellsInclude(include, sim = None):
 ## Get subset of cells and netstims indicated by include list
 # -------------------------------------------------------------------------------------------------------------------
 def getCellsIncludeTags(include, tags, tagsFormat=None):
+    """
+    Function for/to <short description of `netpyne.analysis.utils.getCellsIncludeTags`>
+
+    Parameters
+    ----------
+    include : <type>
+        <Short description of include>
+        **Default:** *required*
+
+    tags : <type>
+        <Short description of tags>
+        **Default:** *required*
+
+    tagsFormat : <``None``?>
+        <Short description of tagsFormat>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
     allCells = tags.copy()
     cellGids = []
 
@@ -290,6 +338,13 @@ def getCellsIncludeTags(include, tags, tagsFormat=None):
 ## Synchrony measure
 # -------------------------------------------------------------------------------------------------------------------
 def syncMeasure():
+    """
+    Function for/to <short description of `netpyne.analysis.utils.syncMeasure`>
+
+
+    """
+
+
     from .. import sim
 
     t0=-1 
@@ -306,7 +361,16 @@ def syncMeasure():
 ## Invert mapping of dict
 # -------------------------------------------------------------------------------------------------------------------
 def invertDictMapping(d):
-    """ Invert mapping of dictionary (i.e. map values to list of keys) """
+    """
+    Function for/to <short description of `netpyne.analysis.utils.invertDictMapping`>
+
+    Parameters
+    ----------
+    d : <type>
+        <Short description of d>
+        **Default:** *required*
+
+"""
     inv_map = {}
     for k, v in d.items():
         inv_map[v] = inv_map.get(v, [])
@@ -319,8 +383,26 @@ def invertDictMapping(d):
 # -------------------------------------------------------------------------------------------------------------------
 def getSpktSpkid(cellGids=[], timeRange=None, sim = None):
     """
-    return spike ids and times; with allCells=True just need to identify slice of time so can omit cellGids
-    """
+    Function for/to <short description of `netpyne.analysis.utils.getSpktSpkid`>
+
+    Parameters
+    ----------
+    cellGids : list
+        <Short description of cellGids>
+        **Default:** ``[]``
+        **Options:** ``<option>`` <description of option>
+ 
+    timeRange : <``None``?>
+        <Short description of timeRange>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    sim : <``None``?>
+        <Short description of sim>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+"""
 
     if not sim:
         from .. import sim

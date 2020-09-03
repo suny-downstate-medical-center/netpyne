@@ -1,5 +1,6 @@
 """
-Functions to produce interactive plots
+Module for production of interactive plots
+
 """
 
 from __future__ import unicode_literals
@@ -40,7 +41,8 @@ bokeh_theme = curdoc().theme
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid', orderInverse=False, popRates=False, spikeHist=False, spikeHistBin=5, syncLines=False, marker='circle', markerSize=3, popColors=None, saveData=None, saveFig=None, showFig=False, **kwargs):
-    """Creates an interactive html raster plot of network cells using Bokeh.
+    """
+    Function for/to <short description of `netpyne.analysis.interactive.iplotRaster`>
 
     Parameters
     ----------
@@ -62,11 +64,13 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
         Time range to plot.
         **Default:** 
         ``None`` plots entire time range
-
+        **Options:** ``<option>`` <description of option>
+ 
     maxSpikes : int
         Maximum number of spikes to be plotted.
         **Default:** ``1e8``
-
+        **Options:** ``<option>`` <description of option>
+ 
     orderBy : str
         Unique numeric cell property by which to order the y-axis.
         **Default:** ``'gid'`` orders by cell ID
@@ -76,68 +80,70 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
 
     orderInverse : bool
         Inverts the y-axis order if ``True``.
-        **Default:** ``False`` 
-    
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
     popRates : bool
         Include population firing rates on plot if ``True``.
         **Default:** ``False``
-    
+        **Options:** ``<option>`` <description of option>
+ 
     spikeHist : bool
         Include spike histogram (spikes/bin) on plot if ``True``. 
         **Default:** ``False``
-    
+        **Options:** ``<option>`` <description of option>
+ 
     spikeHistBin : int
         Size of bin in ms to use for spike histogram. 
-        **Default:** ``5`` 
-    
+        **Default:** ``5``
+        **Options:** ``<option>`` <description of option>
+ 
     syncLines : bool
         Calculate synchrony measure and plot vertical lines for each spike to evidence synchrony if ``True``.
         **Default:** ``False``
-    
+        **Options:** ``<option>`` <description of option>
+ 
     marker : str
         `Bokeh marker <https://docs.bokeh.org/en/latest/docs/gallery/markers.html>`_ for each spike.
         **Default:** ``'circle'``
-    
+        **Options:** ``<option>`` <description of option>
+ 
     markerSize : int
         Size of Bokeh marker for each spike.
-        **Default:** ``3`` 
-    
+        **Default:** ``3``
+        **Options:** ``<option>`` <description of option>
+ 
     popColors : dict
         Dictionary with custom color (value) used for each population (key).
         **Default:** ``None`` uses standard colors
-    
+        **Options:** ``<option>`` <description of option>
+ 
     saveData : bool or str
         Whether and where to save the data used to generate the plot. 
         **Default:** ``False`` 
         **Options:** ``True`` autosaves the data,
         ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
-    
+
     saveFig : bool or str
         Whether and where to save the figure.
         **Default:** ``False``
         **Options:** ``True`` autosaves the figure,
         ``'/path/filename.html'`` saves to a custom path and filename, only valid file extension is ``'.html'``
-    
+
     showFig : bool
         Shows the figure if ``True``.
         **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    kwargs : <type>
+        <Short description of kwargs>
+        **Default:** *required*
 
     Returns
     -------
-    (str, dict)
-        A tuple consisting of a string containing the html for the figure and a dictionary containing the plot data.
 
-    See Also
-    --------
-    plotRaster :
-    iplotSpikeHist : 
-    plotSpikeHist :
 
-    Examples
-    --------
-    >>> import netpyne, netpyne.examples.example
-    >>> out = netpyne.analysis.iplotRaster()
-    """    
+"""    
 
     from .. import sim
     from bokeh.plotting import figure, show
@@ -368,10 +374,25 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
 @exception
 def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False, **kwargs):
     """
-    iplotDipole
-    expData: experimental data; a dict with ['x'] and ['y'] 1-d vectors (either lists or np.arrays) of same length
-    showFig: show output figure in web browser (default: None)
-    """
+    Function for/to <short description of `netpyne.analysis.interactive.iplotDipole`>
+
+    Parameters
+    ----------
+    expData : dict
+        <Short description of expData>
+        **Default:** ``{'label': 'Experiment', 'x': [], 'y': []}``
+        **Options:** ``<option>`` <description of option>
+ 
+    showFig : bool
+        <Short description of showFig>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    kwargs : <type>
+        <Short description of kwargs>
+        **Default:** *required*
+
+"""
 
     from .. import sim
     from bokeh.plotting import figure, show
@@ -485,10 +506,45 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False, 
 @exception
 def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1, maxFreq = 80, stepFreq = 1, norm = True, showFig=False, **kwargs):
     """
-    iplotDipoleSpectrogram
-    expData: experimental data; a dict with ['x'] and ['y'] 1-d vectors (either lists or np.arrays) of same length
-    showFig: show output figure in web browser (default: None)
-    """
+    Function for/to <short description of `netpyne.analysis.interactive.iplotDipoleSpectrogram`>
+
+    Parameters
+    ----------
+    expData : dict
+        <Short description of expData>
+        **Default:** ``{'label': 'Experiment', 'x': [], 'y': []}``
+        **Options:** ``<option>`` <description of option>
+ 
+    minFreq : int
+        <Short description of minFreq>
+        **Default:** ``1``
+        **Options:** ``<option>`` <description of option>
+ 
+    maxFreq : int
+        <Short description of maxFreq>
+        **Default:** ``80``
+        **Options:** ``<option>`` <description of option>
+ 
+    stepFreq : int
+        <Short description of stepFreq>
+        **Default:** ``1``
+        **Options:** ``<option>`` <description of option>
+ 
+    norm : bool
+        <Short description of norm>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    showFig : bool
+        <Short description of showFig>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    kwargs : <type>
+        <Short description of kwargs>
+        **Default:** *required*
+
+"""
     from .. import sim
     from bokeh.plotting import figure, show
     from bokeh.models import BasicTicker, ColorBar, ColumnDataSource, LinearColorMapper, PrintfTickFormatter
@@ -643,10 +699,45 @@ def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minF
 @exception
 def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1, maxFreq = 80, stepFreq = 1, norm = True, showFig=False, **kwargs):
     """
-    iplotDipolePSD
-    expData: experimental data; a dict with ['x'] and ['y'] 1-d vectors (either lists or np.arrays) of same length
-    showFig: show output figure in web browser (default: None)
-    """
+    Function for/to <short description of `netpyne.analysis.interactive.iplotDipolePSD`>
+
+    Parameters
+    ----------
+    expData : dict
+        <Short description of expData>
+        **Default:** ``{'label': 'Experiment', 'x': [], 'y': []}``
+        **Options:** ``<option>`` <description of option>
+ 
+    minFreq : int
+        <Short description of minFreq>
+        **Default:** ``1``
+        **Options:** ``<option>`` <description of option>
+ 
+    maxFreq : int
+        <Short description of maxFreq>
+        **Default:** ``80``
+        **Options:** ``<option>`` <description of option>
+ 
+    stepFreq : int
+        <Short description of stepFreq>
+        **Default:** ``1``
+        **Options:** ``<option>`` <description of option>
+ 
+    norm : bool
+        <Short description of norm>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    showFig : bool
+        <Short description of showFig>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    kwargs : <type>
+        <Short description of kwargs>
+        **Default:** *required*
+
+"""
 
     from .. import sim
     from bokeh.plotting import figure, show
@@ -782,22 +873,85 @@ def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1,
 @exception
 def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRange = None, binSize = 5, overlay=True, yaxis = 'rate', popColors=[], norm=False, smooth=None, filtFreq=False, filtOrder=3, saveData = None, saveFig = None, showFig = False, **kwargs):
     """
-    Plot spike histogram
-        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include.
-            Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
-        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
-        - binSize (int): Size in ms of each bin (default: 5)
-        - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
-        - yaxis ('rate'|'count'): Units of y axis (firing rate in Hz, or spike count) (default: 'rate')
-        - popColors (dict): Dictionary with color (value) used for each population (key) (default: None)
-        - figSize ((width, height)): Size of figure (default: (10,8))
-        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;
-            if set to True uses filename from simConfig (default: None)
-        - saveFig (None|True|'fileName'): File name where to save the figure;
-            if set to True uses filename from simConfig (default: None)
-        - showFig (True|False): Whether to show the figure or not (default: True)
-        - Returns figure handle
-    """
+    Function for/to <short description of `netpyne.analysis.interactive.iplotSpikeHist`>
+
+    Parameters
+    ----------
+    include : list
+        <Short description of include>
+        **Default:** ``['allCells', 'eachPop']``
+        **Options:** ``<option>`` <description of option>
+ 
+    legendLabels : list
+        <Short description of legendLabels>
+        **Default:** ``[]``
+        **Options:** ``<option>`` <description of option>
+ 
+    timeRange : <``None``?>
+        <Short description of timeRange>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    binSize : int
+        <Short description of binSize>
+        **Default:** ``5``
+        **Options:** ``<option>`` <description of option>
+ 
+    overlay : bool
+        <Short description of overlay>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    yaxis : str
+        <Short description of yaxis>
+        **Default:** ``'rate'``
+        **Options:** ``<option>`` <description of option>
+ 
+    popColors : list
+        <Short description of popColors>
+        **Default:** ``[]``
+        **Options:** ``<option>`` <description of option>
+ 
+    norm : bool
+        <Short description of norm>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    smooth : <``None``?>
+        <Short description of smooth>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    filtFreq : bool
+        <Short description of filtFreq>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    filtOrder : int
+        <Short description of filtOrder>
+        **Default:** ``3``
+        **Options:** ``<option>`` <description of option>
+ 
+    saveData : <``None``?>
+        <Short description of saveData>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    saveFig : <``None``?>
+        <Short description of saveFig>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    showFig : bool
+        <Short description of showFig>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    kwargs : <type>
+        <Short description of kwargs>
+        **Default:** *required*
+
+"""
         
     from .. import sim
     from bokeh.plotting import figure, show
@@ -954,28 +1108,81 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, maxFreq=100, NFFT=256, noverlap=128, smooth=0, overlay=True, ylim=None, popColors={}, saveData=None, saveFig=None, showFig=False, **kwargs):
-    """ 
-    Plot firing rate power spectral density (PSD)
-        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of data series to include. 
-            Note: one line per item, not grouped (default: ['allCells', 'eachPop'])
-        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
-        - binSize (int): Size in ms of spike bins (default: 5)
-        - maxFreq (float): Maximum frequency to show in plot (default: 100)
-        - NFFT (float): The number of data points used in each block for the FFT (power of 2) (default: 256)
-        - smooth (int): Window size for smoothing; no smoothing if 0 (default: 0)
-        - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: True)
-        - graphType ('line'|'bar'): Type of graph to use (line graph or bar plot) (default: 'line')
-        - yaxis ('rate'|'count'): Units of y axis (firing rate in Hz, or spike count) (default: 'rate')
-        - popColors (dict): Dictionary with color (value) used for each population (key) (default: None)
-        - figSize ((width, height)): Size of figure (default: (10,8))
-        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure;
-            if set to True uses filename from simConfig (default: None)
-        - saveFig (None|True|'fileName'): File name where to save the figure;
-            if set to True uses filename from simConfig (default: None)
-        - showFig (True|False): Whether to show the figure or not (default: True)
-
-        - Returns figure handle
     """
+    Function for/to <short description of `netpyne.analysis.interactive.iplotRatePSD`>
+
+    Parameters
+    ----------
+    include : list
+        <Short description of include>
+        **Default:** ``['allCells', 'eachPop']``
+        **Options:** ``<option>`` <description of option>
+ 
+    timeRange : <``None``?>
+        <Short description of timeRange>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    binSize : int
+        <Short description of binSize>
+        **Default:** ``5``
+        **Options:** ``<option>`` <description of option>
+ 
+    maxFreq : int
+        <Short description of maxFreq>
+        **Default:** ``100``
+        **Options:** ``<option>`` <description of option>
+ 
+    NFFT : int
+        <Short description of NFFT>
+        **Default:** ``256``
+        **Options:** ``<option>`` <description of option>
+ 
+    noverlap : int
+        <Short description of noverlap>
+        **Default:** ``128``
+        **Options:** ``<option>`` <description of option>
+ 
+    smooth : int
+        <Short description of smooth>
+        **Default:** ``0``
+        **Options:** ``<option>`` <description of option>
+ 
+    overlay : bool
+        <Short description of overlay>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    ylim : <``None``?>
+        <Short description of ylim>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    popColors : dict
+        <Short description of popColors>
+        **Default:** ``{}``
+        **Options:** ``<option>`` <description of option>
+ 
+    saveData : <``None``?>
+        <Short description of saveData>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    saveFig : <``None``?>
+        <Short description of saveFig>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    showFig : bool
+        <Short description of showFig>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    kwargs : <type>
+        <Short description of kwargs>
+        **Default:** *required*
+
+"""
     
     from .. import sim
     from bokeh.plotting import figure, show
@@ -1114,26 +1321,90 @@ def iplotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, max
 @exception
 def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', rerun=False, colors=None, ylim=None, axis='on', fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True, ylabel=None, linkAxes=False, **kwargs):
     """
-    Plot recorded traces
-        - include (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): List of cells for which to plot 
-            the recorded traces (default: [])
-        - timeRange ([start:stop]): Time range of spikes shown; if None shows all (default: None)
-        - overlay (True|False): Whether to overlay the data lines or plot in separate subplots (default: False)
-        - oneFigPer ('cell'|'trace'): Whether to plot one figure per cell (showing multiple traces) 
-            or per trace (showing multiple cells) (default: 'cell')
-        - rerun (True|False): rerun simulation so new set of cells gets recorded (default: False)
-        - colors (list): List of normalized RGB colors to use for traces
-        - ylim (list): Y-axis limits
-        - axis ('on'|'off'): Whether to show axis or not; if not, then a scalebar is included (default: 'on')
-        - figSize ((width, height)): Size of figure (default: (10,8))
-        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
-            if set to True uses filename from simConfig (default: None)
-        - saveFig (None|True|'fileName'): File name where to save the figure;
-            if set to True uses filename from simConfig (default: None)
-        - showFig (True|False): Whether to show the figure or not (default: True)
+    Function for/to <short description of `netpyne.analysis.interactive.iplotTraces`>
 
-        - Returns figure handles
-    """
+    Parameters
+    ----------
+    include : <``None``?>
+        <Short description of include>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    timeRange : <``None``?>
+        <Short description of timeRange>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    overlay : bool
+        <Short description of overlay>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    oneFigPer : str
+        <Short description of oneFigPer>
+        **Default:** ``'cell'``
+        **Options:** ``<option>`` <description of option>
+ 
+    rerun : bool
+        <Short description of rerun>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    colors : <``None``?>
+        <Short description of colors>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    ylim : <``None``?>
+        <Short description of ylim>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    axis : str
+        <Short description of axis>
+        **Default:** ``'on'``
+        **Options:** ``<option>`` <description of option>
+ 
+    fontSize : int
+        <Short description of fontSize>
+        **Default:** ``12``
+        **Options:** ``<option>`` <description of option>
+ 
+    figSize : tuple
+        <Short description of figSize>
+        **Default:** ``(10, 8)``
+        **Options:** ``<option>`` <description of option>
+ 
+    saveData : <``None``?>
+        <Short description of saveData>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    saveFig : <``None``?>
+        <Short description of saveFig>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    showFig : bool
+        <Short description of showFig>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    ylabel : <``None``?>
+        <Short description of ylabel>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    linkAxes : bool
+        <Short description of linkAxes>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    kwargs : <type>
+        <Short description of kwargs>
+        **Default:** *required*
+
+"""
     
     from .. import sim
     from bokeh.plotting import figure, show
@@ -1329,6 +1600,149 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram'], timeRange=None, NFFT=256, noverlap=128, nperseg=256, minFreq=1, maxFreq=100, stepFreq=1, smooth=0, separation=1.0, includeAxon=True, logx=False, logy=False, normSignal=False, normPSD=False, normSpec=False, overlay=False, filtFreq=False, filtOrder=3, detrend=False, transformMethod='morlet', colors=None, saveData=None, saveFig=None, showFig=False, **kwargs):
+    """
+    Function for/to <short description of `netpyne.analysis.interactive.iplotLFP`>
+
+    Parameters
+    ----------
+    electrodes : list
+        <Short description of electrodes>
+        **Default:** ``['avg', 'all']``
+        **Options:** ``<option>`` <description of option>
+ 
+    plots : list
+        <Short description of plots>
+        **Default:** ``['timeSeries', 'PSD', 'spectrogram']``
+        **Options:** ``<option>`` <description of option>
+ 
+    timeRange : <``None``?>
+        <Short description of timeRange>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    NFFT : int
+        <Short description of NFFT>
+        **Default:** ``256``
+        **Options:** ``<option>`` <description of option>
+ 
+    noverlap : int
+        <Short description of noverlap>
+        **Default:** ``128``
+        **Options:** ``<option>`` <description of option>
+ 
+    nperseg : int
+        <Short description of nperseg>
+        **Default:** ``256``
+        **Options:** ``<option>`` <description of option>
+ 
+    minFreq : int
+        <Short description of minFreq>
+        **Default:** ``1``
+        **Options:** ``<option>`` <description of option>
+ 
+    maxFreq : int
+        <Short description of maxFreq>
+        **Default:** ``100``
+        **Options:** ``<option>`` <description of option>
+ 
+    stepFreq : int
+        <Short description of stepFreq>
+        **Default:** ``1``
+        **Options:** ``<option>`` <description of option>
+ 
+    smooth : int
+        <Short description of smooth>
+        **Default:** ``0``
+        **Options:** ``<option>`` <description of option>
+ 
+    separation : float
+        <Short description of separation>
+        **Default:** ``1.0``
+        **Options:** ``<option>`` <description of option>
+ 
+    includeAxon : bool
+        <Short description of includeAxon>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    logx : bool
+        <Short description of logx>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    logy : bool
+        <Short description of logy>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    normSignal : bool
+        <Short description of normSignal>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    normPSD : bool
+        <Short description of normPSD>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    normSpec : bool
+        <Short description of normSpec>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    overlay : bool
+        <Short description of overlay>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    filtFreq : bool
+        <Short description of filtFreq>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    filtOrder : int
+        <Short description of filtOrder>
+        **Default:** ``3``
+        **Options:** ``<option>`` <description of option>
+ 
+    detrend : bool
+        <Short description of detrend>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    transformMethod : str
+        <Short description of transformMethod>
+        **Default:** ``'morlet'``
+        **Options:** ``<option>`` <description of option>
+ 
+    colors : <``None``?>
+        <Short description of colors>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    saveData : <``None``?>
+        <Short description of saveData>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    saveFig : <``None``?>
+        <Short description of saveFig>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    showFig : bool
+        <Short description of showFig>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    kwargs : <type>
+        <Short description of kwargs>
+        **Default:** *required*
+
+
+    """
+
+
     
     from .. import sim
     from bokeh.plotting import figure, show
@@ -1627,26 +2041,110 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
 @exception
 def iplotConn(includePre=['all'], includePost=['all'], feature='strength', orderBy='gid', figSize=(10,10), groupBy='pop', groupByIntervalPre=None, groupByIntervalPost=None, removeWeightNorm=False, graphType='matrix', synOrConn='syn', synMech=None, connsFile=None, tagsFile=None, clim=None, fontSize=12, saveData=None, saveFig=None, showFig=False, **kwargs): 
     """
-    Plot network connectivity
-        - includePre (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
-        - includePost (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Cells to show (default: ['all'])
-        - feature ('weight'|'delay'|'numConns'|'probability'|'strength'|'convergence'|'divergence'): Feature to show in connectivity matrix; 
-            the only features applicable to groupBy='cell' are 'weight', 'delay' and 'numConns';  'strength' = weight * probability (default: 'strength')
-        - groupBy ('pop'|'cell'|'y'|: Show matrix for individual cells, populations, or by other numeric tag such as 'y' (default: 'pop')
-        - groupByInterval (int or float): Interval of groupBy feature to group cells by in conn matrix, e.g. 100 to group by cortical depth in steps of 100 um   (default: None)
-        - orderBy ('gid'|'y'|'ynorm'|...): Unique numeric cell property to order x and y axes by, e.g. 'gid', 'ynorm', 'y' (requires groupBy='cells') (default: 'gid')
-        - graphType ('matrix','bar','pie'): Type of graph to represent data (default: 'matrix')
-        - synOrConn ('syn'|'conn'): Use synapses or connections; note 1 connection can have multiple synapses (default: 'syn')
-        - figSize ((width, height)): Size of figure (default: (10,10))
-        - synMech (['AMPA', 'GABAA',...]): Show results only for these syn mechs (default: None)
-        - saveData (None|True|'fileName'): File name where to save the final data used to generate the figure; 
-            if set to True uses filename from simConfig (default: None)
-        - saveFig (None|True|'fileName'): File name where to save the figure; 
-            if set to True uses filename from simConfig (default: None)
-        - showFig (True|False): Whether to show the figure or not (default: True)
+    Function for/to <short description of `netpyne.analysis.interactive.iplotConn`>
 
-        - Returns figure handles
-    """
+    Parameters
+    ----------
+    includePre : list
+        <Short description of includePre>
+        **Default:** ``['all']``
+        **Options:** ``<option>`` <description of option>
+ 
+    includePost : list
+        <Short description of includePost>
+        **Default:** ``['all']``
+        **Options:** ``<option>`` <description of option>
+ 
+    feature : str
+        <Short description of feature>
+        **Default:** ``'strength'``
+        **Options:** ``<option>`` <description of option>
+ 
+    orderBy : str
+        <Short description of orderBy>
+        **Default:** ``'gid'``
+        **Options:** ``<option>`` <description of option>
+ 
+    figSize : tuple
+        <Short description of figSize>
+        **Default:** ``(10, 10)``
+        **Options:** ``<option>`` <description of option>
+ 
+    groupBy : str
+        <Short description of groupBy>
+        **Default:** ``'pop'``
+        **Options:** ``<option>`` <description of option>
+ 
+    groupByIntervalPre : <``None``?>
+        <Short description of groupByIntervalPre>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    groupByIntervalPost : <``None``?>
+        <Short description of groupByIntervalPost>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    removeWeightNorm : bool
+        <Short description of removeWeightNorm>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    graphType : str
+        <Short description of graphType>
+        **Default:** ``'matrix'``
+        **Options:** ``<option>`` <description of option>
+ 
+    synOrConn : str
+        <Short description of synOrConn>
+        **Default:** ``'syn'``
+        **Options:** ``<option>`` <description of option>
+ 
+    synMech : <``None``?>
+        <Short description of synMech>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    connsFile : <``None``?>
+        <Short description of connsFile>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    tagsFile : <``None``?>
+        <Short description of tagsFile>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    clim : <``None``?>
+        <Short description of clim>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    fontSize : int
+        <Short description of fontSize>
+        **Default:** ``12``
+        **Options:** ``<option>`` <description of option>
+ 
+    saveData : <``None``?>
+        <Short description of saveData>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    saveFig : <``None``?>
+        <Short description of saveFig>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    showFig : bool
+        <Short description of showFig>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    kwargs : <type>
+        <Short description of kwargs>
+        **Default:** *required*
+
+"""
     
     from netpyne import sim
     from netpyne.analysis import network
@@ -1821,7 +2319,8 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, tagsFile=None, figSize=(12,12), fontSize=12, saveData=None, saveFig=None, showFig=True, **kwargs): 
-    """Plots 2D representation of network cell positions and connections.
+    """
+    Function for/to <short description of `netpyne.analysis.interactive.iplot2Dnet`>
 
     Parameters
     ----------
@@ -1837,62 +2336,63 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
         ``[120, 130]`` plots multiple cells, 
         ``[('popName1', 56)]`` plots a cell from a specific population, 
         ``[('popName1', [0, 1]), ('popName2', [4, 5, 6])]``, plots cells from multiple populations
-        
+
     view : str
         Perspective of view.
         **Default:** ``'xy'`` front view,
         **Options:** ``'xz'`` top-down view
-    
+
     showConns : bool
         Whether to show connections or not.
         **Default:** ``True``
-    
+        **Options:** ``<option>`` <description of option>
+ 
     popColors : dict
         Dictionary with custom color (value) used for each population (key).
         **Default:** ``None`` uses standard colors
-    
+        **Options:** ``<option>`` <description of option>
+ 
     tagsFile : str
         Path to a saved tags file to use in connectivity plot.
         **Default:** ``None``
-    
+        **Options:** ``<option>`` <description of option>
+ 
     figSize : list [width, height]
         Size of figure in inches.
-        **Default:** ``(12, 12)`` 
-    
+        **Default:** ``(12, 12)``
+        **Options:** ``<option>`` <description of option>
+ 
     fontSize : int
         Font size on figure.
-        **Default:** ``12`` 
-
+        **Default:** ``12``
+        **Options:** ``<option>`` <description of option>
+ 
     saveData : bool or str
         Whether and where to save the data used to generate the plot. 
         **Default:** ``False`` 
         **Options:** ``True`` autosaves the data,
         ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
-    
+
     saveFig : bool or str
         Whether and where to save the figure.
         **Default:** ``False``
         **Options:** ``True`` autosaves the figure,
         ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
-    
+
     showFig : bool
         Shows the figure if ``True``.
         **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    kwargs : <type>
+        <Short description of kwargs>
+        **Default:** *required*
 
     Returns
     -------
-    (fig, dict)
-        A tuple consisting of the matplotlib figure handle and a dictionary containing the plot data.
 
-    See Also
-    --------
-    iplot2Dnet :
 
-    Examples
-    --------
-    >>> import netpyne, netpyne.examples.example
-    >>> out = netpyne.analysis.plot2Dnet()
-    """
+"""
 
     from .. import sim
     from bokeh.plotting import figure, show
@@ -2069,6 +2569,42 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotRxDConcentration(speciesLabel, regionLabel, plane='xy', saveFig=None, showFig=True, **kwargs):
+    """
+    Function for/to <short description of `netpyne.analysis.interactive.iplotRxDConcentration`>
+
+    Parameters
+    ----------
+    speciesLabel : <type>
+        <Short description of speciesLabel>
+        **Default:** *required*
+
+    regionLabel : <type>
+        <Short description of regionLabel>
+        **Default:** *required*
+
+    plane : str
+        <Short description of plane>
+        **Default:** ``'xy'``
+        **Options:** ``<option>`` <description of option>
+ 
+    saveFig : <``None``?>
+        <Short description of saveFig>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    showFig : bool
+        <Short description of showFig>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    kwargs : <type>
+        <Short description of kwargs>
+        **Default:** *required*
+
+
+    """
+
+
         
     from .. import sim
     from bokeh.plotting import figure, show
@@ -2167,6 +2703,114 @@ def iplotRxDConcentration(speciesLabel, regionLabel, plane='xy', saveFig=None, s
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=None, graphType='boxplot', stats=['rate', 'isicv'], bins=50, histlogy=False, histlogx=False, histmin=0.0, density=False, includeRate0=False, legendLabels=None, normfit=False, histShading=True, xlim=None, popColors={}, saveData=None, saveFig=None, showFig=True, **kwargs):
+    """
+    Function for/to <short description of `netpyne.analysis.interactive.iplotSpikeStats`>
+
+    Parameters
+    ----------
+    include : list
+        <Short description of include>
+        **Default:** ``['eachPop', 'allCells']``
+        **Options:** ``<option>`` <description of option>
+ 
+    statDataIn : dict
+        <Short description of statDataIn>
+        **Default:** ``{}``
+        **Options:** ``<option>`` <description of option>
+ 
+    timeRange : <``None``?>
+        <Short description of timeRange>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    graphType : str
+        <Short description of graphType>
+        **Default:** ``'boxplot'``
+        **Options:** ``<option>`` <description of option>
+ 
+    stats : list
+        <Short description of stats>
+        **Default:** ``['rate', 'isicv']``
+        **Options:** ``<option>`` <description of option>
+ 
+    bins : int
+        <Short description of bins>
+        **Default:** ``50``
+        **Options:** ``<option>`` <description of option>
+ 
+    histlogy : bool
+        <Short description of histlogy>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    histlogx : bool
+        <Short description of histlogx>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    histmin : float
+        <Short description of histmin>
+        **Default:** ``0.0``
+        **Options:** ``<option>`` <description of option>
+ 
+    density : bool
+        <Short description of density>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    includeRate0 : bool
+        <Short description of includeRate0>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    legendLabels : <``None``?>
+        <Short description of legendLabels>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    normfit : bool
+        <Short description of normfit>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    histShading : bool
+        <Short description of histShading>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    xlim : <``None``?>
+        <Short description of xlim>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    popColors : dict
+        <Short description of popColors>
+        **Default:** ``{}``
+        **Options:** ``<option>`` <description of option>
+ 
+    saveData : <``None``?>
+        <Short description of saveData>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    saveFig : <``None``?>
+        <Short description of saveFig>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    showFig : bool
+        <Short description of showFig>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    kwargs : <type>
+        <Short description of kwargs>
+        **Default:** *required*
+
+
+    """
+
+
         
     from .. import sim
     from bokeh.plotting import figure, show

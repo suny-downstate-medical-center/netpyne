@@ -1,9 +1,6 @@
 """
-batch/evol.py 
+Module for evolutionary parameter optimization
 
-Code for evolutionary parameter optimization
-
-Contributors: salvadordura@gmail.com
 """
 
 from __future__ import print_function
@@ -52,6 +49,29 @@ pc = h.ParallelContext() # use bulletin board master/slave
 
 # func needs to be outside of class
 def runEvolJob(nrnCommand, script, cfgSavePath, netParamsSavePath, simDataPath):
+    """
+    Function for/to <short description of `netpyne.batch.evol.runEvolJob`>
+
+    Parameters
+    ----------
+    script : <type>
+        <Short description of script>
+        **Default:** *required*
+
+    cfgSavePath : <type>
+        <Short description of cfgSavePath>
+        **Default:** *required*
+
+    netParamsSavePath : <type>
+        <Short description of netParamsSavePath>
+        **Default:** *required*
+
+    simDataPath : <type>
+        <Short description of simDataPath>
+        **Default:** *required*
+
+
+    """
     import os
     print('\nJob in rank id: ',pc.id())
         
@@ -66,6 +86,23 @@ def runEvolJob(nrnCommand, script, cfgSavePath, netParamsSavePath, simDataPath):
 
 
 def evolOptim(self, pc):
+    """
+    Function for/to <short description of `netpyne.batch.evol.evolOptim`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+    pc : <type>
+        <Short description of pc>
+        **Default:** *required*
+
+
+    """
+
+
     import sys
     import inspyred.ec as EC
 

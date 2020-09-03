@@ -1848,7 +1848,7 @@ def calculatefI():
 
     from .. import sim
     
-    #print('calculating fI')
+    print('Calculating f-I features...')
 
     times = sim.cfg.analysis['plotfI'].get('times', [0, sim.cfg.duration])
     dur = sim.cfg.analysis['plotfI'].get('dur', sim.cfg.duration)
@@ -1876,32 +1876,45 @@ def calculatefI():
     threshold = sim.net.params.defaultThreshold
     v = sim.allSimData['V_soma']['cell_0']
     dt = sim.cfg.recordStep
+    minDistance = 10  # number of samples required between spike peaks 
+    RMP = v[int(times[0] - 1.0/dt)] # right before 1st current injection
 
-    # calculate latency to 1st spike peak
+    from scipy.signal import find_peaks
+    peakTimes = []
+    peakHeights = []
+    for time in times:
+        ptimes, properties = find_peaks(v[int(time/dt):int((time + dur) / dt)], height=threshold, distance=minDistance) 
+        peakTimes.append(ptimes)
+        peakHeights.append(properties['peak_heights'])
+
+    # calculate latency to 1st spike peak (ms)
     if 'latencyPeak1' in calculateFeatures:
-        # find peaks
         sim.allSimData['fI_latencyPeak1'] = []
-        for time in times:
-            v1 = v[time:time + dur]
-            vpeak = np.max(v1)
-            if vpeak > threshold:
-                tpeak = np.argmax(v1)
-                sim.allSimData['fI_latencyPeak1'].append(abs(tpeak - time)*dt)
-            else:
-                sim.allSimData['fI_latencyPeak1'].append(-1.)
+        for i in range(len(times)):
+            value = peakTimes[i][0]*dt if len(peakTimes[i]) > 0 else -1
+            sim.allSimData['fI_latencyPeak1'].append(value)
 
-    # calculate interspike  to 1st spike peak
+    # calculate interspike  to 1st spike peak (ms)
     if 'ISIPeak1' in calculateFeatures:
-        
-        pass
+        sim.allSimData['fI_ISIPeak1'] = []
+        for i in range(len(times)):
+            value = (peakTimes[i][1] - peakTimes[i][0]) * dt if len(peakTimes[i]) > 1 else - 1
+            sim.allSimData['fI_ISIPeak1'].append(value)
 
-    # calculate interspike  to 1st spike peak
+    # calculate 1st spike amplitude (mV)
     if 'ampSpike1' in calculateFeatures: 
-        pass
-
-    # calculate interspike  to 1st spike peak
+        sim.allSimData['fI_ampSpike1'] = []
+        for i in range(len(times)):
+            value = peakHeights[i][0] - RMP if len(peakTimes[i]) > 0 else threshold - 1
+            sim.allSimData['fI_ampSpike1'].append(value)
+            
+    # calculate 2nd spike amplitude (mV)
     if 'ampSpike2' in calculateFeatures: 
-        pass
+        sim.allSimData['fI_ampSpike2'] = []
+        for i in range(len(times)):
+            value = peakHeights[i][1] - RMP if len(peakTimes[i]) > 1 else threshold - 1
+            sim.allSimData['fI_ampSpike2'].append(value)
+
 
 #------------------------------------------------------------------------------
 # Calculate and plot f-I curve

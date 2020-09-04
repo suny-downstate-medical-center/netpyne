@@ -88,9 +88,15 @@ def plotRxDConcentration(speciesLabel, regionLabel, plane='xy', figSize=(5,10), 
     species = sim.net.rxd['species'][speciesLabel]['hObj']
     region = sim.net.rxd['regions'][regionLabel]['hObj']
     plane2mean = {'xz': 1, 'xy': 2}
+
+    extent = []
+    extent.append(sim.net.rxd['regions'][regionLabel][plane[0] + 'lo'])
+    extent.append(sim.net.rxd['regions'][regionLabel][plane[0] + 'hi'])
+    extent.append(sim.net.rxd['regions'][regionLabel][plane[1] + 'lo'])
+    extent.append(sim.net.rxd['regions'][regionLabel][plane[1] + 'hi'])
     
     fig = plt.figure(figsize=figSize)
-    plt.imshow(species[region].states3d[:].mean(plane2mean[plane]).T, interpolation='nearest', origin='upper')  #  extent=k[extracellular].extent('xy')
+    plt.imshow(species[region].states3d[:].mean(plane2mean[plane]).T, interpolation='nearest', origin='upper', extent=extent)
     
     ax = plt.gca()
     if scalebar:

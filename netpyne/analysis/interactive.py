@@ -2641,7 +2641,15 @@ def iplotRxDConcentration(speciesLabel, regionLabel, plane='xy', saveFig=None, s
 
     data = species[region].states3d[:].mean(plane2mean[plane]).T
     data = np.flipud(data) # This does not flip the axis values, should improve
-    dh, dw = np.shape(data)
+
+    extent = []
+    extent.append(sim.net.rxd['regions'][regionLabel][plane[0] + 'lo'])
+    extent.append(sim.net.rxd['regions'][regionLabel][plane[0] + 'hi'])
+    extent.append(sim.net.rxd['regions'][regionLabel][plane[1] + 'lo'])
+    extent.append(sim.net.rxd['regions'][regionLabel][plane[1] + 'hi'])
+
+    dw = extent[1] - extent[0]
+    dh = extent[3] - extent[2]
 
     low = np.nanmin(data)
     high = np.nanmax(data)
@@ -2676,7 +2684,7 @@ def iplotRxDConcentration(speciesLabel, regionLabel, plane='xy', saveFig=None, s
         y_axis_label = plane[1] + " location (um)",
         )
 
-    fig.image(image=[data], x=0, y=0, dw=dw, dh=dh, color_mapper=conc_colormapper['transform'], level="image")
+    fig.image(image=[data], x=extent[0], y=extent[2], dw=dw, dh=dh, color_mapper=conc_colormapper['transform'], level="image")
     fig.add_layout(conc_colorbar, 'right')
 
     plot_layout = layout([fig], sizing_mode='scale_height')

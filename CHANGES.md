@@ -16,6 +16,8 @@
 
 - Fixed bug when using index with recordTraces
 
+- Fixed axes values in plotRxDConcentration and iplotRxDConcentration
+
 
 # Version 0.9.7
 

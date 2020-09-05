@@ -2126,7 +2126,8 @@ def calculatefI():
 # Calculate and plot f-I curve
 #------------------------------------------------------------------------------
 @exception
-def plotfI(amps, times, dur, targetRates=[], calculateOnset=False, targetRatesOnset=[], durSteady=None, targetRatesSteady=[], saveFig=None, showFig=True):
+def plotfI(amps, times, dur, targetRates=[], calculateOnset=False, targetRatesOnset=[], durSteady=None, targetRatesSteady=[],
+            calcualateFeatures=[], saveFig=None, showFig=True):
     """
     Function to plot frequency-current (fI) relationship
 

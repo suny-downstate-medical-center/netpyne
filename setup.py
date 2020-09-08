@@ -12,9 +12,16 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
     
-#import netpyne
-#version = netpyne.__version__
-version = '0.9.7'
+
+# Get the version from the init file
+version = None
+with open(os.path.join('netpyne', '__init__.py'), 'r') as fid:
+    for line in (line.strip() for line in fid):
+        if line.startswith('__version__'):
+            version = line.split('=')[1].strip().strip('\'')
+            break
+if version is None:
+    raise RuntimeError('Could not determine version')
 
 import sys
 if 'upload_via_twine' in sys.argv:

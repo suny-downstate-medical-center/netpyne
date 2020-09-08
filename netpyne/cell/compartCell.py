@@ -37,7 +37,9 @@ from ..specs import Dict
 #
 ###############################################################################
 
-# --- Temporarily copied from HNN code ---
+# --- Temporarily copied from HNN code; improve so doesn't use h globals ---  
+# global variables for dipole calculation, should be node-independent 
+h("dp_total_L2 = 0."); h("dp_total_L5 = 0.") # put here since these variables used in cells
 
 class CompartCell (Cell):
     """
@@ -257,6 +259,66 @@ class CompartCell (Cell):
             L = -L
         return L
 
+
+
+    # insert dipole in section 
+    # Note: temporarily using this old version of the function until new one below is debugged
+    def __dipoleInsert(self, secName, sec):
+        # insert dipole mech (dipole.mod)
+        try:
+            sec['hObj'].insert('dipole')
+        except:
+            print('Error inserting dipole mechanism')
+            return -1
+
+        # insert Dipole point process (dipole_pp.mod)
+        try: 
+            sec['hDipole_pp'] = h.Dipole(1.0, sec = sec['hObj'])
+        except:
+            print('Error inserting Dipole point process')
+            return -1
+        dpp = sec['hDipole_pp']
+        # assign internal resistance values to dipole point process (dpp)
+        dpp.ri = h.ri(1, sec=sec['hObj'])
+        # sets pointers in dipole mod file to the correct locations -- h.setpointer(ref, ptr, obj)
+        h.setpointer(sec['hObj'](0.99)._ref_v, 'pv', dpp)
+        if self.tags['cellType'].startswith('L2'):
+            h.setpointer(h._ref_dp_total_L2, 'Qtotal', dpp)
+        elif self.tags['cellType'].startswith('L5'):
+            h.setpointer(h._ref_dp_total_L5, 'Qtotal', dpp)
+
+        # gives INTERNAL segments of the section, non-endpoints
+        # creating this because need multiple values simultaneously
+        loc = np.array([seg.x for seg in sec['hObj']])
+        # these are the positions, including 0 but not L
+        pos = np.array([seg.x for seg in sec['hObj'].allseg()])
+        # diff in yvals, scaled against the pos np.array. y_long as in longitudinal
+        y_scale = (self.__dipoleGetSecLength(secName) * sec['hObj'].L) * pos
+        # y_long = (h.y3d(1, sec=sect) - h.y3d(0, sec=sect)) * pos
+        # diff values calculate length between successive section points
+        y_diff = np.diff(y_scale)
+        for i in range(len(loc)):
+            # assign the ri value to the dipole
+            sec['hObj'](loc[i]).dipole.ri = h.ri(loc[i], sec=sec['hObj'])
+            # range variable 'dipole'
+            # set pointers to previous segment's voltage, with boundary condition
+            if i > 0:
+                h.setpointer(sec['hObj'](loc[i-1])._ref_v, 'pv', sec['hObj'](loc[i]).dipole)
+            else:
+                h.setpointer(sec['hObj'](0)._ref_v, 'pv', sec['hObj'](loc[i]).dipole)
+            # set aggregate pointers
+            h.setpointer(dpp._ref_Qsum, 'Qsum', sec['hObj'](loc[i]).dipole)
+            if self.tags['cellType'].startswith('L2'):
+                h.setpointer(h._ref_dp_total_L2, 'Qtotal', sec['hObj'](loc[i]).dipole)
+            elif self.tags['cellType'].startswith('L5'):
+                h.setpointer(h._ref_dp_total_L5, 'Qtotal', sec['hObj'](loc[i]).dipole)
+            # add ztan values
+            sec['hObj'](loc[i]).dipole.ztan = y_diff[i]
+        # set the pp dipole's ztan value to the last value from y_diff
+        dpp.ztan = y_diff[-1]
+
+
+    '''
     # insert dipole in section
     def __dipoleInsert(self, secName, sec, cell_dpl_ref):
 
@@ -305,7 +367,7 @@ class CompartCell (Cell):
             sec['hObj'](loc[i]).dipole.ztan = y_diff[i]
         # set the pp dipole's ztan value to the last value from y_diff
         dpp.ztan = y_diff[-1]
-
+    '''
 
 
     def createNEURONObj (self, prop):
@@ -426,15 +488,19 @@ class CompartCell (Cell):
 
         # add dipoles
         if sim.cfg.recordDipoles:
+            '''
+            # Note: removed temporarily until new dipole code version is debugged
+            #  
             #  Vectors can't be stored in Cell class because it gets pickled
             sim.net.cells_dpl[self.gid] = h.Vector(1)  # create a simple hoc object to store the dipole value for this cell
             cells_dpl_ref = sim.net.cells_dpl[self.gid]._ref_x[0]
             sim.net.cells_dpls[self.gid] = h.Vector().record(cells_dpl_ref)  # set up recording of current value
+            '''
 
             for sectName,sectParams in prop['secs'].items():
                 sec = self.secs[sectName]
                 if 'mechs' in sectParams and 'dipole' in sectParams['mechs']:
-                    self.__dipoleInsert(sectName, sec, cells_dpl_ref)  # add dipole mechanisms to each section
+                    self.__dipoleInsert(sectName, sec) #, cells_dpl_ref)  # add dipole mechanisms to each section
 
         # Print message about error inserting mechanisms
         if mechInsertError:

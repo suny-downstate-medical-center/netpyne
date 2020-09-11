@@ -2246,8 +2246,8 @@ def plotfI(amps, times, dur, target={}, calculateOnset=False, targetRatesOnset=[
         plt.plot(amps, fI_latencyPeak1, label='Model', linewidth=2, marker='o')
         if 'latencyPeak1' in target:
             plt.plot(amps, target['latencyPeak1'], label = 'Experiment', linestyle = 'dotted', marker='o')
-        plt.xlabel('ms')
-        plt.ylabel('Rate (Hz)')
+        plt.ylabel('ms')
+        plt.xlabel('Current amplitude (nA)')
         plt.title('latencyPeak1')
         plt.legend()
         outData['fI_latencyPeak1'] = fI_latencyPeak1
@@ -2267,8 +2267,8 @@ def plotfI(amps, times, dur, target={}, calculateOnset=False, targetRatesOnset=[
         plt.plot(amps, fI_ISIPeak1, label='Model', linewidth=2, marker='o')
         if 'ISIPeak1' in target:
             plt.plot(amps, target['ISIPeak1'], label = 'Experiment', linestyle = 'dotted', marker='o')
-        plt.xlabel('ms')
-        plt.ylabel('Rate (Hz)')
+        plt.ylabel('ms')
+        plt.xlabel('Current amplitude (nA)')
         plt.title('ISIPeak1')
         plt.legend()
         outData['fI_ISIPeak1'] = fI_ISIPeak1
@@ -2288,8 +2288,8 @@ def plotfI(amps, times, dur, target={}, calculateOnset=False, targetRatesOnset=[
         plt.plot(amps, fI_ampSpike1, label='Model', linewidth=2, marker='o')
         if 'ampSpike1' in target:
             plt.plot(amps, target['ampSpike1'], label = 'Experiment', linestyle = 'dotted', marker='o')
-        plt.xlabel('mV')
-        plt.ylabel('Rate (Hz)')
+        plt.ylabel('mV')
+        plt.xlabel('Current amplitude (nA)')
         plt.title('ampSpike1')
         plt.legend()
         outData['fI_ampSpike1'] = fI_ampSpike1
@@ -2309,8 +2309,8 @@ def plotfI(amps, times, dur, target={}, calculateOnset=False, targetRatesOnset=[
         plt.plot(amps, fI_ampSpike2, label='Model', linewidth=2, marker='o')
         if 'ampSpike2' in target:
             plt.plot(amps, target['ampSpike2'], label = 'Experiment', linestyle = 'dotted', marker='o')
-        plt.xlabel('mV')
-        plt.ylabel('Rate (Hz)')
+        plt.ylabel('mV')
+        plt.xlabel('Current amplitude (nA)')
         plt.title('ampSpike2')
         plt.legend()
         outData['fI_ampSpike2'] = fI_ampSpike2

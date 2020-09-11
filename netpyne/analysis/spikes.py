@@ -2126,7 +2126,7 @@ def calculatefI():
 # Calculate and plot f-I curve
 #------------------------------------------------------------------------------
 @exception
-def plotfI(amps, times, dur, targetRates=[], calculateOnset=False, targetRatesOnset=[], durSteady=None, targetRatesSteady=[],
+def plotfI(amps, times, dur, target={}, calculateOnset=False, targetRatesOnset=[], durSteady=None, targetRatesSteady=[],
             calculateFeatures=[], saveFig=None, showFig=True):
     """
     Function to plot frequency-current (fI) relationship
@@ -2196,13 +2196,14 @@ def plotfI(amps, times, dur, targetRates=[], calculateOnset=False, targetRatesOn
 
     outData = {}
     
+    # rates
     fig = plt.figure(figsize=(10, 6))
         
     if not 'fI_steady' in sim.allSimData:
         fI = sim.allSimData['fI']
         plt.plot(amps, fI, label='Model', linewidth=2, marker='o')
-        if targetRates:
-            plt.plot(amps, targetRates, label = 'Experiment', linestyle = 'dotted', marker='o')
+        if 'rates' in target:
+            plt.plot(amps, target['rates'], label = 'Experiment', linestyle = 'dotted', marker='o')
         plt.xlabel('Current amplitude (nA)')
         plt.ylabel('Rate (Hz)')
         plt.legend()
@@ -2211,8 +2212,8 @@ def plotfI(amps, times, dur, targetRates=[], calculateOnset=False, targetRatesOn
     if 'fI_onset' in sim.allSimData:
         fI_onset = sim.allSimData['fI_onset']
         plt.plot(amps, fI_onset, label='Model (onset)', linewidth=2, marker='o')
-        if targetRatesOnset:
-            plt.plot(amps, targetRatesOnset, label = 'Experiment (onset)', linestyle = 'dotted', marker='o')
+        if 'ratesOnset' in target:
+            plt.plot(amps, target['ratesOnset'], label = 'Experiment (onset)', linestyle = 'dotted', marker='o')
         plt.xlabel('Current amplitude (nA)')
         plt.ylabel('Rate (Hz)')
         plt.legend()
@@ -2221,12 +2222,14 @@ def plotfI(amps, times, dur, targetRates=[], calculateOnset=False, targetRatesOn
     if 'fI_steady' in sim.allSimData:
         fI_steady = sim.allSimData['fI_steady']
         plt.plot(amps, fI_steady, label='Model (steady)', linewidth=2, marker='o')
-        if targetRatesSteady:
-            plt.plot(amps, targetRatesSteady, label = 'Experiment (steady)', linestyle = 'dotted', marker='o')
+        if 'ratesSteady' in target:
+            plt.plot(amps, target['ratesSteady'], label = 'Experiment (steady)', linestyle = 'dotted', marker='o')
         plt.xlabel('Current amplitude (nA)')
         plt.ylabel('Rate (Hz)')
         plt.legend()
         outData['fI_steady'] = fI_steady
+
+    plt.title('f-I curve')
 
     # save figure
     if saveFig: 
@@ -2235,6 +2238,90 @@ def plotfI(amps, times, dur, targetRates=[], calculateOnset=False, targetRatesOn
         else:
             filename = sim.cfg.filename+'_'+'fI.png'
         plt.savefig(filename)
+
+    # latencyPeak1
+    if 'fI_latencyPeak1' in sim.allSimData:
+        fig = plt.figure(figsize=(10, 6))
+        fI_latencyPeak1 = sim.allSimData['fI_latencyPeak1']
+        plt.plot(amps, fI_latencyPeak1, label='Model', linewidth=2, marker='o')
+        if 'latencyPeak1' in target:
+            plt.plot(amps, target['latencyPeak1'], label = 'Experiment', linestyle = 'dotted', marker='o')
+        plt.xlabel('ms')
+        plt.ylabel('Rate (Hz)')
+        plt.title('latencyPeak1')
+        plt.legend()
+        outData['fI_latencyPeak1'] = fI_latencyPeak1
+
+        # save figure
+        if saveFig: 
+            if isinstance(saveFig, basestring):
+                filename = saveFig
+            else:
+                filename = sim.cfg.filename+'_'+'fI_latencyPeak1.png'
+            plt.savefig(filename)
+
+    # ISIPeak1
+    if 'fI_ISIPeak1' in sim.allSimData:
+        fig = plt.figure(figsize=(10, 6))
+        fI_ISIPeak1 = sim.allSimData['fI_ISIPeak1']
+        plt.plot(amps, fI_ISIPeak1, label='Model', linewidth=2, marker='o')
+        if 'ISIPeak1' in target:
+            plt.plot(amps, target['ISIPeak1'], label = 'Experiment', linestyle = 'dotted', marker='o')
+        plt.xlabel('ms')
+        plt.ylabel('Rate (Hz)')
+        plt.title('ISIPeak1')
+        plt.legend()
+        outData['fI_ISIPeak1'] = fI_ISIPeak1
+
+        # save figure
+        if saveFig: 
+            if isinstance(saveFig, basestring):
+                filename = saveFig
+            else:
+                filename = sim.cfg.filename+'_'+'fI_ISIPeak1.png'
+            plt.savefig(filename)
+
+    # ampSpike1
+    if 'fI_ampSpike1' in sim.allSimData:
+        fig = plt.figure(figsize=(10, 6))
+        fI_ampSpike1 = sim.allSimData['fI_ampSpike1']
+        plt.plot(amps, fI_ampSpike1, label='Model', linewidth=2, marker='o')
+        if 'ampSpike1' in target:
+            plt.plot(amps, target['ampSpike1'], label = 'Experiment', linestyle = 'dotted', marker='o')
+        plt.xlabel('mV')
+        plt.ylabel('Rate (Hz)')
+        plt.title('ampSpike1')
+        plt.legend()
+        outData['fI_ampSpike1'] = fI_ampSpike1
+
+        # save figure
+        if saveFig: 
+            if isinstance(saveFig, basestring):
+                filename = saveFig
+            else:
+                filename = sim.cfg.filename+'_'+'fI_ampSpike1.png'
+            plt.savefig(filename)
+
+    # ampSpike2
+    if 'fI_ampSpike2' in sim.allSimData:
+        fig = plt.figure(figsize=(10, 6))
+        fI_ampSpike2 = sim.allSimData['fI_ampSpike2']
+        plt.plot(amps, fI_ampSpike2, label='Model', linewidth=2, marker='o')
+        if 'ampSpike2' in target:
+            plt.plot(amps, target['ampSpike2'], label = 'Experiment', linestyle = 'dotted', marker='o')
+        plt.xlabel('mV')
+        plt.ylabel('Rate (Hz)')
+        plt.title('ampSpike2')
+        plt.legend()
+        outData['fI_ampSpike2'] = fI_ampSpike2
+
+        # save figure
+        if saveFig: 
+            if isinstance(saveFig, basestring):
+                filename = saveFig
+            else:
+                filename = sim.cfg.filename+'_'+'fI_ampSpike2.png'
+            plt.savefig(filename)
 
     # show fig 
     if showFig: _showFigure()

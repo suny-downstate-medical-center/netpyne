@@ -184,6 +184,8 @@ class PointCell (Cell):
                     spkTimes = createEvokedPattern(self.params['spikePattern'], rand) 
                 elif patternType == 'poisson':
                     from .inputs import createPoissonPattern
+                    if self.params['spikePattern']['stop'] == -1:
+                        self.params['spikePattern']['stop'] = sim.cfg.duration
                     spkTimes = createPoissonPattern(self.params['spikePattern'], rand)                    
                 elif patternType == 'gauss':
                     from .inputs import createGaussPattern

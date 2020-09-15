@@ -39,7 +39,7 @@ from ..specs import Dict
 
 # --- Temporarily copied from HNN code; improve so doesn't use h globals ---  
 # global variables for dipole calculation, should be node-independent 
-h("dp_total_L2 = 0."); h("dp_total_L5 = 0.") # put here since these variables used in cells
+# h("dp_total_L2 = 0."); h("dp_total_L5 = 0.") # put here since these variables used in cells
 
 class CompartCell (Cell):
     """
@@ -260,10 +260,10 @@ class CompartCell (Cell):
         return L
 
 
-
+    '''
     # insert dipole in section 
     # Note: temporarily using this old version of the function until new one below is debugged
-    def __dipoleInsert(self, secName, sec):
+    def __dipoleInsert(self, secName, sec, unused):
         # insert dipole mech (dipole.mod)
         try:
             sec['hObj'].insert('dipole')
@@ -312,13 +312,13 @@ class CompartCell (Cell):
                 h.setpointer(h._ref_dp_total_L2, 'Qtotal', sec['hObj'](loc[i]).dipole)
             elif self.tags['cellType'].startswith('L5'):
                 h.setpointer(h._ref_dp_total_L5, 'Qtotal', sec['hObj'](loc[i]).dipole)
-            # add ztan values
+            #add ztan values
             sec['hObj'](loc[i]).dipole.ztan = y_diff[i]
         # set the pp dipole's ztan value to the last value from y_diff
         dpp.ztan = y_diff[-1]
-
-
     '''
+
+    
     # insert dipole in section
     def __dipoleInsert(self, secName, sec, cell_dpl_ref):
 
@@ -340,6 +340,7 @@ class CompartCell (Cell):
         dpp.ri = h.ri(1, sec=sec['hObj'])
         # sets pointers in dipole mod file to the correct locations -- h.setpointer(ref, ptr, obj)
         h.setpointer(sec['hObj'](0.99)._ref_v, 'pv', dpp)
+        
         h.setpointer(cell_dpl_ref, 'Qtotal', dpp)
 
         # gives INTERNAL segments of the section, non-endpoints
@@ -361,13 +362,16 @@ class CompartCell (Cell):
                 h.setpointer(sec['hObj'](loc[i-1])._ref_v, 'pv', sec['hObj'](loc[i]).dipole)
             else:
                 h.setpointer(sec['hObj'](0)._ref_v, 'pv', sec['hObj'](loc[i]).dipole)
+            
             # set aggregate pointers
+            h.setpointer(dpp._ref_Qsum, 'Qsum', sec['hObj'](loc[i]).dipole)
             h.setpointer(cell_dpl_ref, 'Qtotal', sec['hObj'](loc[i]).dipole)
+            
             # add ztan values
             sec['hObj'](loc[i]).dipole.ztan = y_diff[i]
         # set the pp dipole's ztan value to the last value from y_diff
         dpp.ztan = y_diff[-1]
-    '''
+    
 
 
     def createNEURONObj (self, prop):
@@ -405,7 +409,8 @@ class CompartCell (Cell):
 
             # add distributed mechanisms 
             if 'mechs' in sectParams:
-                for mechName,mechParams in sectParams['mechs'].items(): 
+                mechsInclude = {k: v for k,v in sectParams['mechs'].items() if k not in excludeMechs}
+                for mechName, mechParams in mechsInclude.items(): 
                     if mechName not in sec['mechs']: 
                         sec['mechs'][mechName] = Dict()
                     try:
@@ -488,19 +493,16 @@ class CompartCell (Cell):
 
         # add dipoles
         if sim.cfg.recordDipoles:
-            '''
-            # Note: removed temporarily until new dipole code version is debugged
-            #  
+            
             #  Vectors can't be stored in Cell class because it gets pickled
             sim.net.cells_dpl[self.gid] = h.Vector(1)  # create a simple hoc object to store the dipole value for this cell
             cells_dpl_ref = sim.net.cells_dpl[self.gid]._ref_x[0]
             sim.net.cells_dpls[self.gid] = h.Vector().record(cells_dpl_ref)  # set up recording of current value
-            '''
-
+            
             for sectName,sectParams in prop['secs'].items():
                 sec = self.secs[sectName]
                 if 'mechs' in sectParams and 'dipole' in sectParams['mechs']:
-                    self.__dipoleInsert(sectName, sec) #, cells_dpl_ref)  # add dipole mechanisms to each section
+                    self.__dipoleInsert(sectName, sec, cells_dpl_ref)  # add dipole mechanisms to each section
 
         # Print message about error inserting mechanisms
         if mechInsertError:

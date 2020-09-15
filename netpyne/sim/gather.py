@@ -70,9 +70,9 @@ def gatherData(gatherLFP = True):
             except:
                 pass
     simDataVecs = ['spkt', 'spkid', 'stims'] + list(sim.cfg.recordTraces.keys())
-    # if sim.cfg.recordDipoles:
-    #     _aggregateDipoles()
-    #     simDataVecs.append('dipole')
+    if sim.cfg.recordDipoles:
+        _aggregateDipoles()
+        simDataVecs.append('dipole')
 
     singleNodeVecs = ['t']
     if sim.nhosts > 1:  # only gather if >1 nodes
@@ -94,9 +94,9 @@ def gatherData(gatherLFP = True):
                 for k in list(gather[0]['simData'].keys()):  # initialize all keys of allSimData dict
                     if gatherLFP and k == 'LFP':
                         sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
-                    # elif sim.cfg.recordDipoles and k == 'dipole':
-                    #     sim.allSimData[k]['L2'] = np.zeros(len(gather[0]['simData']['dipole']['L2']))
-                    #     sim.allSimData[k]['L5'] = np.zeros(len(gather[0]['simData']['dipole']['L5']))
+                    elif sim.cfg.recordDipoles and k == 'dipole':
+                        for dk in sim.cfg.recordDipoles:
+                            sim.allSimData[k][dk] = np.zeros(len(gather[0]['simData']['dipole'][dk]))
                     else:
                         sim.allSimData[k] = {}
 
@@ -113,8 +113,8 @@ def gatherData(gatherLFP = True):
                                         sim.allSimData[key].update(Dict({key2:Dict()}))
                                         for stim,val3 in val2.items():
                                             sim.allSimData[key][key2].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
-                                    # elif key == 'dipole':
-                                    #     sim.allSimData[key][key2] = np.add(sim.allSimData[key][key2],val2.as_numpy()) # add together dipole values from each node
+                                    elif key == 'dipole':
+                                        sim.allSimData[key][key2] = np.add(sim.allSimData[key][key2],val2.as_numpy()) # add together dipole values from each node
                                     else:
                                         sim.allSimData[key].update({key2:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                             else:
@@ -155,9 +155,9 @@ def gatherData(gatherLFP = True):
                 for k in list(gather[0]['simData'].keys()):  # initialize all keys of allSimData dict
                     if gatherLFP and k == 'LFP':
                         sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
-                    # elif sim.cfg.recordDipoles and k == 'dipole':
-                    #     sim.allSimData[k]['L2'] = np.zeros(len(gather[0]['simData']['dipole']['L2']))
-                    #     sim.allSimData[k]['L5'] = np.zeros(len(gather[0]['simData']['dipole']['L5']))
+                    elif sim.cfg.recordDipoles and k == 'dipole':
+                        for dk in sim.cfg.recordDipoles:
+                            sim.allSimData[k][dk] = np.zeros(len(gather[0]['simData']['dipole'][dk]))
                     else:
                         sim.allSimData[k] = {}
 
@@ -178,8 +178,8 @@ def gatherData(gatherLFP = True):
                                         sim.allSimData[key].update(Dict({key2:Dict()}))
                                         for stim,val3 in val2.items():
                                             sim.allSimData[key][key2].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
-                                    # elif key == 'dipole':
-                                    #     sim.allSimData[key][key2] = np.add(sim.allSimData[key][key2],val2.as_numpy()) # add together dipole values from each node
+                                    elif key == 'dipole':
+                                        sim.allSimData[key][key2] = np.add(sim.allSimData[key][key2],val2.as_numpy()) # add together dipole values from each node
                                     else:
                                         sim.allSimData[key].update({key2:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                             else:
@@ -590,9 +590,15 @@ def _gatherCells():
 def _aggregateDipoles ():
     from .. import sim
 
-    dipole_cells = [c for c in sim.net.cells if type(c) is sim.CompartCell]
-    for cell in dipole_cells:
-        if cell.tags['cellType'] == 'L2Pyr':
-            sim.simData['dipole']['L2'].add(sim.net.cells_dpls[cell.gid])
-        if cell.tags['cellType'] == 'L5Pyr':
-            sim.simData['dipole']['L5'].add(sim.net.cells_dpls[cell.gid])
+    if not hasattr(sim.net, 'compartCells'):
+        sim.net.compartCells = [c for c in sim.net.cells if type(c) is sim.CompartCell]
+
+    for cell in sim.net.compartCells:
+        for k, v in sim.cfg.recordDipoles:
+            if cell.tags['pop'] in v:
+                sim.simData['dipole'][k].add(sim.net.cells_dpls[cell.gid])
+
+        # if cell.tags['cellType'] == 'L2Pyr':
+        #     sim.simData['dipole']['L2'].add(sim.net.cells_dpls[cell.gid])
+        # if cell.tags['cellType'] == 'L5Pyr':
+        #     sim.simData['dipole']['L5'].add(sim.net.cells_dpls[cell.gid])

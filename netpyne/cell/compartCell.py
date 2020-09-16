@@ -336,26 +336,32 @@ class CompartCell (Cell):
             print('Error inserting Dipole point process')
             return -1
         dpp = sec['hDipole_pp']
+        
         # assign internal resistance values to dipole point process (dpp)
         dpp.ri = h.ri(1, sec=sec['hObj'])
+        
         # sets pointers in dipole mod file to the correct locations -- h.setpointer(ref, ptr, obj)
         h.setpointer(sec['hObj'](0.99)._ref_v, 'pv', dpp)
-        
         h.setpointer(cell_dpl_ref, 'Qtotal', dpp)
 
         # gives INTERNAL segments of the section, non-endpoints
         # creating this because need multiple values simultaneously
         loc = np.array([seg.x for seg in sec['hObj']])
+        
         # these are the positions, including 0 but not L
         pos = np.array([seg.x for seg in sec['hObj'].allseg()])
+        
         # diff in yvals, scaled against the pos np.array. y_long as in longitudinal
         y_scale = (self.__dipoleGetSecLength(secName) * sec['hObj'].L) * pos
+        
         # y_long = (h.y3d(1, sec=sect) - h.y3d(0, sec=sect)) * pos
         # diff values calculate length between successive section points
         y_diff = np.diff(y_scale)
+        
         for i in range(len(loc)):
             # assign the ri value to the dipole
             sec['hObj'](loc[i]).dipole.ri = h.ri(loc[i], sec=sec['hObj'])
+            
             # range variable 'dipole'
             # set pointers to previous segment's voltage, with boundary condition
             if i > 0:
@@ -369,6 +375,7 @@ class CompartCell (Cell):
             
             # add ztan values
             sec['hObj'](loc[i]).dipole.ztan = y_diff[i]
+            
         # set the pp dipole's ztan value to the last value from y_diff
         dpp.ztan = y_diff[-1]
     

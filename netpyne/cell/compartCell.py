@@ -39,7 +39,7 @@ from ..specs import Dict
 
 # --- Temporarily copied from HNN code; improve so doesn't use h globals ---  
 # global variables for dipole calculation, should be node-independent 
-# h("dp_total_L2 = 0."); h("dp_total_L5 = 0.") # put here since these variables used in cells
+h("dp_total_L2 = 0."); h("dp_total_L5 = 0.") # put here since these variables used in cells
 
 class CompartCell (Cell):
     """
@@ -342,7 +342,9 @@ class CompartCell (Cell):
         
         # sets pointers in dipole mod file to the correct locations -- h.setpointer(ref, ptr, obj)
         h.setpointer(sec['hObj'](0.99)._ref_v, 'pv', dpp)
-        h.setpointer(cell_dpl_ref, 'Qtotal', dpp)
+        #h.setpointer(cell_dpl_ref, 'Qtotal', dpp)
+        h.setpointer(h._ref_dp_total_L2, 'Qtotal', dpp)
+        
 
         # gives INTERNAL segments of the section, non-endpoints
         # creating this because need multiple values simultaneously
@@ -371,7 +373,8 @@ class CompartCell (Cell):
             
             # set aggregate pointers
             h.setpointer(dpp._ref_Qsum, 'Qsum', sec['hObj'](loc[i]).dipole)
-            h.setpointer(cell_dpl_ref, 'Qtotal', sec['hObj'](loc[i]).dipole)
+            #h.setpointer(cell_dpl_ref, 'Qtotal', sec['hObj'](loc[i]).dipole)
+            h.setpointer(h._ref_dp_total_L2, 'Qtotal', sec['hObj'](loc[i]).dipole)
             
             # add ztan values
             sec['hObj'](loc[i]).dipole.ztan = y_diff[i]

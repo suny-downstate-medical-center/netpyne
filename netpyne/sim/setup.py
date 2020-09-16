@@ -426,12 +426,6 @@ def setupRecording():
     if sim.cfg.recordLFP:
         setupRecordLFP()
 
-    # try to record dipoles
-    if sim.cfg.recordDipoles:
-        recordStep = 0.1 if sim.cfg.recordStep == 'adaptive' else sim.cfg.recordStep
-        dp_rec_L2 = h.Vector(sim.cfg.duration/recordStep+1)
-        dp_rec_L5 = h.Vector(sim.cfg.duration/recordStep+1)
-        sim.simData['dipole'] = {'L2': dp_rec_L2, 'L5': dp_rec_L5}  
     
     sim.timing('stop', 'setrecordTime')
 

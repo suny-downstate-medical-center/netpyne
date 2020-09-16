@@ -69,7 +69,7 @@ def gatherData(gatherLFP = True):
                 del pop._morphSegCoords
             except:
                 pass
-    simDataVecs = ['spkt', 'spkid', 'stims'] + list(sim.cfg.recordTraces.keys())
+    simDataVecs = ['spkt', 'spkid', 'stims', 'dipole'] + list(sim.cfg.recordTraces.keys())
     if sim.cfg.recordDipoles:
         _aggregateDipoles()
         simDataVecs.append('dipole')
@@ -113,8 +113,8 @@ def gatherData(gatherLFP = True):
                                         sim.allSimData[key].update(Dict({key2:Dict()}))
                                         for stim,val3 in val2.items():
                                             sim.allSimData[key][key2].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
-                                    elif key == 'dipole':
-                                        sim.allSimData[key][key2] = np.add(sim.allSimData[key][key2],val2.as_numpy()) # add together dipole values from each node
+                                    #elif key == 'dipole':
+                                    #    sim.allSimData[key][key2] = np.add(sim.allSimData[key][key2],val2.as_numpy()) # add together dipole values from each node
                                     else:
                                         sim.allSimData[key].update({key2:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                             else:
@@ -124,7 +124,6 @@ def gatherData(gatherLFP = True):
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
     
-                
                 if len(sim.allSimData['spkt']) > 0:
                     sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
                     sim.allSimData['spkt'], sim.allSimData['spkid'] = list(sim.allSimData['spkt']), list(sim.allSimData['spkid'])
@@ -178,8 +177,8 @@ def gatherData(gatherLFP = True):
                                         sim.allSimData[key].update(Dict({key2:Dict()}))
                                         for stim,val3 in val2.items():
                                             sim.allSimData[key][key2].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
-                                    elif key == 'dipole':
-                                        sim.allSimData[key][key2] = np.add(sim.allSimData[key][key2],val2.as_numpy()) # add together dipole values from each node
+                                    #elif key == 'dipole':
+                                    #    sim.allSimData[key][key2] = np.add(sim.allSimData[key][key2],val2.as_numpy()) # add together dipole values from each node
                                     else:
                                         sim.allSimData[key].update({key2:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                             else:
@@ -593,12 +592,11 @@ def _aggregateDipoles ():
     if not hasattr(sim.net, 'compartCells'):
         sim.net.compartCells = [c for c in sim.net.cells if type(c) is sim.CompartCell]
 
-    for cell in sim.net.compartCells:
-        for k, v in sim.cfg.recordDipoles:
-            if cell.tags['pop'] in v:
-                sim.simData['dipole'][k].add(sim.net.cells_dpls[cell.gid])
+    for k in sim.cfg.recordDipoles:
+        sim.simData['dipole'][k] = sim.h.Vector((sim.cfg.duration/sim.cfg.recordStep)+1)
 
-        # if cell.tags['cellType'] == 'L2Pyr':
-        #     sim.simData['dipole']['L2'].add(sim.net.cells_dpls[cell.gid])
-        # if cell.tags['cellType'] == 'L5Pyr':
-        #     sim.simData['dipole']['L5'].add(sim.net.cells_dpls[cell.gid])
+    for cell in sim.net.compartCells:
+        for k, v in sim.cfg.recordDipoles.items():
+            if cell.tags['pop'] in v:
+                sim.simData['dipole'][k].add(cell.dipole['hRec'])
+

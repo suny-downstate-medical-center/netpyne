@@ -399,6 +399,7 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False, 
     from bokeh.resources import CDN
     from bokeh.embed import file_html
     from bokeh.layouts import layout
+    from bokeh.colors import RGB
 
     if 'theme' in kwargs:
         if kwargs['theme'] != 'default':
@@ -413,49 +414,56 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False, 
 
     fig = figure(title="Dipole Plot", tools=TOOLS, toolbar_location='above', x_axis_label="Time (ms)", y_axis_label='Dipole (nAM x 3000)')
 
+    if not 'palette' in kwargs:
+        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+    else:
+        colors = kwargs['palette']
 
     # renormalize the dipole and save
     def baseline_renormalize():
-        # N_pyr cells in grid. This is PER LAYER
-        N_pyr = sim.cfg.N_pyr_x * sim.cfg.N_pyr_y
-        # dipole offset calculation: increasing number of pyr cells (L2 and L5, simultaneously)
-        # with no inputs resulted in an aggregate dipole over the interval [50., 1000.] ms that
-        # eventually plateaus at -48 fAm. The range over this interval is something like 3 fAm
-        # so the resultant correction is here, per dipole
-        # dpl_offset = N_pyr * 50.207
-        dpl_offset = {
-            # these values will be subtracted
-            'L2': N_pyr * 0.0443,
-            'L5': N_pyr * -49.0502
-            # 'L5': N_pyr * -48.3642,
-            # will be calculated next, this is a placeholder
-            # 'agg': None,
-        }
 
-        # L2 dipole offset can be roughly baseline shifted over the entire range of t
-        dpl = {'L2': np.array(sim.simData['dipole']['L2']),
-               'L5': np.array(sim.simData['dipole']['L5'])}
-        dpl['L2'] -= dpl_offset['L2']
-
-        # L5 dipole offset should be different for interval [50., 500.] and then it can be offset
-        # slope (m) and intercept (b) params for L5 dipole offset
-        # uncorrected for N_cells
-        # these values were fit over the range [37., 750.)
-        m = 3.4770508e-3
-        b = -51.231085
-        # these values were fit over the range [750., 5000]
-        t1 = 750.
-        m1 = 1.01e-4
-        b1 = -48.412078
-
+        dpl = {k: np.array(v) for k, v in sim.allSimData['dipole'].items()}
         t = sim.simData['t']
 
-        # piecewise normalization
-        dpl['L5'][t <= 37.] -= dpl_offset['L5']
-        dpl['L5'][(t > 37.) & (t < t1)] -= N_pyr * (m * t[(t > 37.) & (t < t1)] + b)
-        dpl['L5'][t >= t1] -= N_pyr * (m1 * t[t >= t1] + b1)
+        # ad hoc postprocessing of dipole signal in orig HNN model L2 and L5
+        if 'L2' in dpl and 'L5' in dpl:
+            # N_pyr cells in grid. This is PER LAYER
+            N_pyr = sim.cfg.N_pyr_x * sim.cfg.N_pyr_y
+            # dipole offset calculation: increasing number of pyr cells (L2 and L5, simultaneously)
+            # with no inputs resulted in an aggregate dipole over the interval [50., 1000.] ms that
+            # eventually plateaus at -48 fAm. The range over this interval is something like 3 fAm
+            # so the resultant correction is here, per dipole
+            # dpl_offset = N_pyr * 50.207
+            dpl_offset = {
+                # these values will be subtracted
+                'L2': N_pyr * 0.0443,
+                'L5': N_pyr * -49.0502
+                # 'L5': N_pyr * -48.3642,
+                # will be calculated next, this is a placeholder
+                # 'agg': None,
+            }
+
+            # L2 dipole offset can be roughly baseline shifted over the entire range of t
+            dpl['L2'] -= dpl_offset['L2']
+
+            # L5 dipole offset should be different for interval [50., 500.] and then it can be offset
+            # slope (m) and intercept (b) params for L5 dipole offset
+            # uncorrected for N_cells
+            # these values were fit over the range [37., 750.)
+            m = 3.4770508e-3
+            b = -51.231085
+            # these values were fit over the range [750., 5000]
+            t1 = 750.
+            m1 = 1.01e-4
+            b1 = -48.412078
+
+            # piecewise normalization
+            dpl['L5'][t <= 37.] -= dpl_offset['L5']
+            dpl['L5'][(t > 37.) & (t < t1)] -= N_pyr * (m * t[(t > 37.) & (t < t1)] + b)
+            dpl['L5'][t >= t1] -= N_pyr * (m1 * t[t >= t1] + b1)
+
         # recalculate the aggregate dipole based on the baseline normalized ones
-        dpl['agg'] = dpl['L2'] + dpl['L5']
+        dpl['Aggregate'] = np.sum(list(dpl.values()), axis=0)
 
         return dpl
 
@@ -484,9 +492,8 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False, 
     fig.line(expData['x'], expData['y'], color='black', legend=expData['label'])
 
     # plot recorded dipole data
-    fig.line(sim.simData['t'], dpl['L2'], color='green', legend="L2Pyr", line_width=2.0)
-    fig.line(sim.simData['t'], dpl['L5'], color='red', legend="L5Pyr", line_width=2.0)
-    fig.line(sim.simData['t'], dpl['L2']+dpl['L5'], color='blue', legend="Aggregate", line_width=2.0)
+    for i,(k,v) in enumerate(dpl.items()):
+        fig.line(sim.simData['t'], v, legend=k, color=colors[i], line_width=2.0)
 
     fig.legend.location = "top_right"
     fig.legend.click_policy = "hide"

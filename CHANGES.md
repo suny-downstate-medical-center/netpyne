@@ -12,6 +12,8 @@
 
 - Analysis and plotting of rate vs current (f-I) curve for single cell tuning
 
+- Recording and plotting of current dipoles in arbitrary subset of populations
+
 **Bug fixes**
 
 - Fixed bug when using index with recordTraces

@@ -1,10 +1,8 @@
 """
-specs/simConfig.py
+Module containing SimConfig class including simulation configuration and methods 
 
-SimConfig class includes simulation configuration parameters and methods
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
@@ -28,7 +26,14 @@ from .dicts import Dict, ODict
 # SIMULATION CONFIGURATION CLASS
 # ----------------------------------------------------------------------------
 
-class SimConfig (object):
+class SimConfig(object):
+    """
+    Class for/to <short description of `netpyne.specs.simConfig.SimConfig`>
+
+
+    """
+
+
 
     def __init__(self, simConfigDict = None):
         # Simulation parameters
@@ -52,6 +57,7 @@ class SimConfig (object):
         self.invertedYCoord = True  # Make y-axis coordinate negative so they represent depth when visualized (0 at the top)
         self.allowSelfConns = False  # allow connections from a cell to itself
         self.allowConnsWithWeight0 = True  # allow connections with weight 0
+        self.oneSynPerNetcon = True  # create one individual synapse object for each Netcon (if False, same synpase can be shared)
         self.saveCellSecs = True  # save all the sections info for each cell (False reduces time+space; available in netParams; prevents re-simulation)
         self.saveCellConns = True  # save all the conns info for each cell (False reduces time+space; prevents re-simulation)
         self.timing = True  # show timing of each process

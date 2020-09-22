@@ -1,11 +1,9 @@
 
 """
-stim.py 
+Module for adding stimulations to networks
 
-Methods to create stims in the network
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
@@ -23,7 +21,20 @@ except NameError:
 # -----------------------------------------------------------------------------
 #  Add stims
 # -----------------------------------------------------------------------------
-def addStims (self):
+def addStims(self):
+    """
+    Function for/to <short description of `netpyne.network.stim.addStims`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+
+    """
+
+
     from .. import sim
 
     sim.timing('start', 'stimsTime')
@@ -115,7 +126,7 @@ def addStims (self):
 # -----------------------------------------------------------------------------
 # Set parameters and add stim
 # -----------------------------------------------------------------------------
-def _addCellStim (self, stimParam, postCell):
+def _addCellStim(self, stimParam, postCell):
 
     # convert synMech param to list (if not already)
     if not isinstance(stimParam.get('synMech'), list):
@@ -149,7 +160,7 @@ def _addCellStim (self, stimParam, postCell):
 # -----------------------------------------------------------------------------
 # Convert stim param string to function
 # -----------------------------------------------------------------------------
-def _stimStrToFunc (self, postCellsTags, sourceParams, targetParams):
+def _stimStrToFunc(self, postCellsTags, sourceParams, targetParams):
 
     # list of params that have a function passed in as a string
     #params = sourceParams+targetParams

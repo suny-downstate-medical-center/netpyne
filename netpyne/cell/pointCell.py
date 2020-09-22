@@ -1,10 +1,8 @@
 """
-cell/pointCell.py 
+Module containing a point cell class
 
-Contains pointCell class 
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
@@ -30,9 +28,10 @@ from ..specs import Dict
 ###############################################################################
 
 class PointCell (Cell):
-    '''
-    Point Neuron that doesn't use v from Section eg. NetStim, IntFire1, 
-    '''
+    """
+    Class for/to <short description of `netpyne.cell.pointCell.PointCell`>
+
+    """
     
     def __init__ (self, gid, tags, create=True, associateGid=True):
         from .. import sim
@@ -66,20 +65,25 @@ class PointCell (Cell):
             return 
 
         # if rate is list with 2 items generate random value from uniform 
-        
-        #from IPython import embed; embed()
-
         if 'rate' in self.params and isinstance(self.params['rate'], list) and len(self.params['rate']) == 2:
             rand = h.Random()
             rand.Random123(sim.hashStr('point_rate'), self.gid, sim.cfg.seeds['stim']) # initialize randomizer 
             self.params['rate'] = rand.uniform(self.params['rate'][0], self.params['rate'][1])
  
+
+        # if rates is list with 2 items generate time-depenedent rates using vector.play()
+        if 'rates' in self.params and isinstance(self.params['rates'], list) and len(self.params['rates']) == 2:
+                interval = [1000.0/r if r>0.0 else 1e10 for r in self.params['rates'][0]]
+                self.hVectorIntervals = h.Vector(interval)
+                self.hVectorTimes = h.Vector(self.params['rates'][1])
+                self.hVectorIntervals.play(self.hPointp._ref_interval, self.hVectorTimes)  # set continuous = True?
+
         # set pointp params - for PointCells these are stored in self.params
         params = {k: v for k,v in self.params.items()}
         for paramName, paramValue in params.items():
             try:
                 if paramName == 'rate':
-                    self.params['interval'] = 1000.0/paramValue
+                    self.params['interval'] = 1000.0 / paramValue
                     setattr(self.hPointp, 'interval', self.params['interval'])
                 else:
                     setattr(self.hPointp, paramName, paramValue)
@@ -180,6 +184,8 @@ class PointCell (Cell):
                     spkTimes = createEvokedPattern(self.params['spikePattern'], rand) 
                 elif patternType == 'poisson':
                     from .inputs import createPoissonPattern
+                    if self.params['spikePattern']['stop'] == -1:
+                        self.params['spikePattern']['stop'] = sim.cfg.duration
                     spkTimes = createPoissonPattern(self.params['spikePattern'], rand)                    
                 elif patternType == 'gauss':
                     from .inputs import createGaussPattern
@@ -217,6 +223,12 @@ class PointCell (Cell):
             if 'pulses' in self.params:
                 for ipulse, pulse in enumerate(self.params['pulses']):
                     
+                    # if rate is list with 2 items generate random value from uniform 
+                    if 'rate' in pulse and isinstance(pulse['rate'], list) and len(pulse['rate']) == 2:
+                        rand = h.Random()
+                        rand.Random123(sim.hashStr('point_rate_pulse'+str(ipulse)), self.gid, sim.cfg.seeds['stim']) # initialize randomizer 
+                        pulse['rate'] = rand.uniform(pulse['rate'][0], pulse['rate'][1])
+
                     # check interval or rate params
                     if 'interval' in pulse:
                         interval = pulse['interval'] 
@@ -418,10 +430,12 @@ class PointCell (Cell):
 
     def __getattr__(self, name):
         def wrapper(*args, **kwargs):
+            from .. import sim
             try: 
                 name(*args,**kwargs)
             except:
-                print("Error: Function '%s' not yet implemented for Point Neurons" % name)
+                if sim.cfg.verbose:
+                    print("Error: Function '%s' not yet implemented for Point Neurons" % name)
         return wrapper
 
     # def modify (self):

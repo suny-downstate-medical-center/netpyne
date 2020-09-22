@@ -4,8 +4,6 @@ params.py
 netParams is a dict containing a set of network parameters using a standardized structure
 
 simConfig is a dict containing a set of simulation configurations using a standardized structure
-
-Contributors: salvadordura@gmail.com
 """
 
 from netpyne import specs
@@ -30,7 +28,7 @@ simConfig.seeds = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (conn
 simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
 simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
 simConfig.verbose = 0 # Whether to write diagnostic information on events 
-
+simConfig.oneSynPerNetcon = False
 
 # Recording 
 simConfig.recordCells = []  # list of cells to record from 

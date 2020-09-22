@@ -46,7 +46,7 @@ sim.maxPrate = 100
 sim.nMuscles = 4 # number of muscles
 motorGids = [gid for gid,tags in allCellTags.items() if tags['pop'] == 'EM']
 cellsPerMuscle = len(motorGids) / sim.nMuscles
-sim.motorCmdCellRange = [motorGids[i:i+cellsPerMuscle] for i in range(0, len(motorGids), cellsPerMuscle)]  # cell gids of motor output to each muscle
+sim.motorCmdCellRange = [motorGids[i:i+int(cellsPerMuscle)] for i in range(0, int(len(motorGids)), int(cellsPerMuscle))]  # cell gids of motor output to each muscle
 sim.cmdmaxrate = 120  # value to normalize motor command num spikes
 sim.cmdtimewin = 50  # window to sum spikes of motor commands
 sim.antagInh = 1  # inhibition from antagonic muscle

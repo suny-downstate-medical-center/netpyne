@@ -1,11 +1,9 @@
 
 """
-pop.py 
+Module defining Population class and methods
 
-Contains Population related classes 
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
@@ -31,7 +29,10 @@ from neuron import h # Import NEURON
 ###############################################################################
 
 class Pop (object):
-    ''' Python class to instantiate the network population '''
+    """
+    Class for/to <short description of `netpyne.network.pop.Pop`>
+
+"""
     
     def __init__(self, label, tags):
         self.tags = tags # list of tags/attributes of population (eg. numCells, cellModel,...)
@@ -42,7 +43,10 @@ class Pop (object):
 
 
     def _distributeCells(self, numCellsPop):
-        ''' distribute cells across compute nodes using round-robin'''
+        """
+        Distribute cells across compute nodes using round-robin
+        """
+
         from .. import sim
             
         hostCells = {}
@@ -62,7 +66,10 @@ class Pop (object):
 
 
     def createCells(self):
-        '''Function to instantiate Cell objects based on the characteristics of this population'''
+        """
+        Function to instantiate Cell objects based on the characteristics of this population
+        """
+
         # add individual cells
         if 'cellsList' in self.tags:
             cells = self.createCellsList()
@@ -89,7 +96,10 @@ class Pop (object):
 
 
     def createCellsFixedNum (self):
-        ''' Create population cells based on fixed number of cells'''
+        """
+        Create population cells based on fixed number of cells
+        """
+
         from .. import sim
 
         cells = []
@@ -148,7 +158,17 @@ class Pop (object):
                     except:
                         pass
                 else:
-                    cellTags['params']['spkTimes'] = self.tags['spkTimes'] # 1D list (same for all)
+                    cellTags['params']['spkTimes'] = self.tags['spkTimes']  # 1D list (same for all)
+            
+            if 'dynamicRates' in self.tags:  # if NetStim, copy rates array to params
+                if 'rates' in self.tags['dynamicRates'] and 'times' in self.tags['dynamicRates']:
+                    if isinstance(self.tags['dynamicRates']['rates'][0], list):
+                        try:
+                            cellTags['params']['rates'] = [self.tags['dynamicRates']['rates'][i], self.tags['dynamicRates']['times']]  # 2D list
+                        except:
+                            pass
+                    else:
+                        cellTags['params']['rates'] = [self.tags['dynamicRates']['rates'], self.tags['dynamicRates']['times']] # 1D list (same for all)
             cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
 
             if sim.cfg.verbose: print(('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, sim.net.params.scale * self.tags['numCells']-1, gid, self.tags['pop'], sim.rank)))
@@ -157,7 +177,10 @@ class Pop (object):
 
                 
     def createCellsDensity (self):
-        ''' Create population cells based on density'''
+        """
+        Create population cells based on density
+        """
+
         from .. import sim
 
         cells = []
@@ -273,7 +296,10 @@ class Pop (object):
 
 
     def createCellsList (self):
-        ''' Create population cells based on list of individual cells'''
+        """
+        Create population cells based on list of individual cells
+        """
+
         from .. import sim
         
         cells = []
@@ -302,7 +328,10 @@ class Pop (object):
 
 
     def createCellsGrid (self):
-        ''' Create population cells based on fixed number of cells'''
+        """
+        Create population cells based on fixed number of cells
+        """
+
         from .. import sim
 
         cells = []
@@ -349,7 +378,10 @@ class Pop (object):
 
 
     def _setCellClass (self):
-        ''' Set cell class (CompartCell, PointCell, etc)'''
+        """
+        Set cell class (CompartCell, PointCell, etc)
+        """
+
         from .. import sim
         
         # Check whether it's a NeuroML2 based cell
@@ -366,13 +398,13 @@ class Pop (object):
                     tmp = getattr(h, self.tags['cellModel'])
                     self.cellModelClass = sim.PointCell
                     excludeTags = ['pop', 'cellModel', 'cellType', 'numCells', 'density', 'cellsList',
-                                'xRange', 'yRange', 'zRange', 'xnormRange', 'ynormRange', 'znormRange', 'vref', 'spkTimes']
+                                'xRange', 'yRange', 'zRange', 'xnormRange', 'ynormRange', 'znormRange', 'vref', 'spkTimes', 'dynamicRates']
                     params = {k: v for k,v in self.tags.items() if k not in excludeTags}
                     self.tags['params'] = params
                     for k in self.tags['params']: self.tags.pop(k)
                     sim.net.params.popTagsCopiedToCells.append('params')
             except:
-                if getattr(self.tags, 'cellModel', None) in ['NetStim', 'VecStim', 'IntFire1', 'IntFire2', 'IntFire4']:
+                if getattr(self.tags, 'cellModel', None) in ['NetStim', 'DynamicNetStim', 'VecStim', 'IntFire1', 'IntFire2', 'IntFire4']:
                     print('Warning: could not find %s point process mechanism required for population %s' % (self.tags['cellModel'], self.tags['pop']))
                 self.cellModelClass = sim.CompartCell  # otherwise assume has sections and some cellParam rules apply to it; use CompartCell
 
@@ -448,9 +480,11 @@ class Pop (object):
 
 
     def __getstate__ (self): 
+        """Removes non-picklable h objects so can be pickled and sent via py_alltoall
+        """
+
         from .. import sim
-        
-        ''' Removes non-picklable h objects so can be pickled and sent via py_alltoall'''
+
         odict = self.__dict__.copy() # copy the dict since we change it
         odict = sim.replaceFuncObj(odict)  # replace h objects with None so can be pickled
         #odict['cellModelClass'] = str(odict['cellModelClass'])

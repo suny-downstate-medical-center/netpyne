@@ -1,10 +1,8 @@
 """
-sim/setup.py
+Module for setting up simulations
 
-Functions related to the simulation set up
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
@@ -21,11 +19,39 @@ from neuron import h # Import NEURON
 from .. import specs
 from ..specs import Dict, ODict
 from . import utils
+try:
+    from datetime import datetime
+except:
+    pass
 
 #------------------------------------------------------------------------------
 # initialize variables and MPI
 #------------------------------------------------------------------------------
-def initialize (netParams = None, simConfig = None, net = None):
+def initialize(netParams = None, simConfig = None, net = None):
+    """
+    Function for/to <short description of `netpyne.sim.setup.initialize`>
+
+    Parameters
+    ----------
+    netParams : <``None``?>
+        <Short description of netParams>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    simConfig : <``None``?>
+        <Short description of simConfig>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    net : <``None``?>
+        <Short description of net>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
     from .. import sim
 
     if netParams is None: netParams = {} # If not specified, initialize as empty dict
@@ -49,7 +75,11 @@ def initialize (netParams = None, simConfig = None, net = None):
 
     sim.setSimCfg(simConfig)  # set simulation configuration
 
-    if sim.rank==0:
+    if sim.rank == 0:
+        try:
+            print('\nStart time: ', datetime.now())
+        except:
+            pass
         sim.timing('start', 'initialTime')
         sim.timing('start', 'totalTime')
 
@@ -77,7 +107,20 @@ def initialize (netParams = None, simConfig = None, net = None):
 #------------------------------------------------------------------------------
 # Set network object to use in simulation
 #------------------------------------------------------------------------------
-def setNet (net):
+def setNet(net):
+    """
+    Function for/to <short description of `netpyne.sim.setup.setNet`>
+
+    Parameters
+    ----------
+    net : <type>
+        <Short description of net>
+        **Default:** *required*
+
+
+    """
+
+
     from .. import sim
     sim.net = net
 
@@ -85,7 +128,20 @@ def setNet (net):
 #------------------------------------------------------------------------------
 # Set network params to use in simulation
 #------------------------------------------------------------------------------
-def setNetParams (params):
+def setNetParams(params):
+    """
+    Function for/to <short description of `netpyne.sim.setup.setNetParams`>
+
+    Parameters
+    ----------
+    params : <type>
+        <Short description of params>
+        **Default:** *required*
+
+
+    """
+
+
     from .. import sim
 
     if params and isinstance(params, specs.NetParams):
@@ -101,7 +157,20 @@ def setNetParams (params):
 #------------------------------------------------------------------------------
 # Set simulation config
 #------------------------------------------------------------------------------
-def setSimCfg (cfg):
+def setSimCfg(cfg):
+    """
+    Function for/to <short description of `netpyne.sim.setup.setSimCfg`>
+
+    Parameters
+    ----------
+    cfg : <type>
+        <Short description of cfg>
+        **Default:** *required*
+
+
+    """
+
+
     from .. import sim
 
     if cfg and isinstance(cfg, specs.SimConfig):
@@ -120,7 +189,14 @@ def setSimCfg (cfg):
 #------------------------------------------------------------------------------
 # Create parallel context
 #------------------------------------------------------------------------------
-def createParallelContext ():
+def createParallelContext():
+    """
+    Function for/to <short description of `netpyne.sim.setup.createParallelContext`>
+
+
+    """
+
+
     from .. import sim
 
     sim.pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
@@ -135,7 +211,24 @@ def createParallelContext ():
 #------------------------------------------------------------------------------
 # Read simConfig and netParams from command line arguments
 #------------------------------------------------------------------------------
-def readCmdLineArgs (simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
+def readCmdLineArgs(simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
+    """
+    Function for/to <short description of `netpyne.sim.setup.readCmdLineArgs`>
+
+    Parameters
+    ----------
+    simConfigDefault : str
+        <Short description of simConfigDefault>
+        **Options:** ``<option>`` <description of option>
+ 
+    netParamsDefault : str
+        <Short description of netParamsDefault>
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
     from .. import sim
     import imp, importlib, types
     import __main__
@@ -202,6 +295,13 @@ def readCmdLineArgs (simConfigDefault='cfg.py', netParamsDefault='netParams.py')
 # Setup LFP Recording
 #------------------------------------------------------------------------------
 def setupRecordLFP():
+    """
+    Function for/to <short description of `netpyne.sim.setup.setupRecordLFP`>
+
+
+    """
+
+
     from .. import sim
     from netpyne.support.recxelectrode import RecXElectrode
     
@@ -230,7 +330,14 @@ def setupRecordLFP():
 #------------------------------------------------------------------------------
 # Setup Recording
 #------------------------------------------------------------------------------
-def setupRecording ():
+def setupRecording():
+    """
+    Function for/to <short description of `netpyne.sim.setup.setupRecording`>
+
+
+    """
+
+
     from .. import sim
 
     sim.timing('start', 'setrecordTime')
@@ -252,6 +359,7 @@ def setupRecording ():
                 if item in netStimLabels:
                     sim.cfg.recordStim = True
                     break
+    
 
     if 'plotSpikeHist' in sim.cfg.analysis:
         if sim.cfg.analysis['plotSpikeHist']==True:
@@ -278,6 +386,8 @@ def setupRecording ():
         # get list of cells from argument of plotTraces function
         if 'plotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['plotTraces']:
             cellsPlot = utils.getCellsList(sim.cfg.analysis['plotTraces']['include'])
+        elif 'iplotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['iplotTraces']:
+            cellsPlot = utils.getCellsList(sim.cfg.analysis['iplotTraces']['include'])
         else:
             cellsPlot = []
 
@@ -316,14 +426,6 @@ def setupRecording ():
     if sim.cfg.recordLFP:
         setupRecordLFP()
 
-    # try to record dipoles
-    
-    if sim.cfg.recordDipoles:
-        dp_rec_L2 = h.Vector()
-        dp_rec_L5 = h.Vector()
-        dp_rec_L2.record(h._ref_dp_total_L2) # L2 dipole recording
-        dp_rec_L5.record(h._ref_dp_total_L5)  # L5 dipole recording
-        sim.simData['dipole'] = {'L2': dp_rec_L2, 'L5': dp_rec_L5}  
     
     sim.timing('stop', 'setrecordTime')
 
@@ -333,7 +435,14 @@ def setupRecording ():
 #------------------------------------------------------------------------------
 # Get cells list for recording based on set of conditions
 #------------------------------------------------------------------------------
-def setGlobals ():
+def setGlobals():
+    """
+    Function for/to <short description of `netpyne.sim.setup.setGlobals`>
+
+
+    """
+
+
     from .. import sim
 
     hParams = sim.cfg.hParams

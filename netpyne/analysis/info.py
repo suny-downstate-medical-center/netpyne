@@ -1,10 +1,8 @@
 """
-analysis/info.py
+Module for analyzing and plotting information theory results
 
-Functions to plot and analyze information theory-related results
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
@@ -30,19 +28,60 @@ from .utils import exception, _saveFigData, _showFigure, getCellsInclude
 ## Calculate normalized transfer entropy
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def nTE(cells1 = [], cells2 = [], spks1 = None, spks2 = None, timeRange = None, binSize = 20, numShuffle = 30):
-    ''' 
-    Calculate normalized transfer entropy
-        - cells1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells from which to obtain spike train 1 (default: [])
-        - cells2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells from which to obtain spike train 1 (default: [])
-        - spks1 (list): Spike train 1; list of spike times; if omitted then obtains spikes from cells1 (default: None)
-        - spks2 (list): Spike train 2; list of spike times; if omitted then obtains spikes from cells2 (default: None)
-        - timeRange ([min, max]): Range of time to calculate nTE in ms (default: [0,cfg.duration])
-        - binSize (int): Bin size used to convert spike times into histogram 
-        - numShuffle (int): Number of times to shuffle spike train 1 to calculate TEshuffled; note: nTE = (TE - TEShuffled)/H(X2F|X2P)
+def nTE(cells1=[], cells2=[], spks1=None, spks2=None, timeRange=None, binSize=20, numShuffle=30):
+    """
+    Function for/to <short description of `netpyne.analysis.info.nTE`>
 
-        - Returns nTE (float): normalized transfer entropy 
-    '''
+    Parameters
+    ----------
+    cells1 : list
+        Subset of cells from which to obtain spike train 1.
+        **Default:** ``[]``
+        **Options:** 
+        ``['all']`` plots all cells and stimulations, 
+        ``['allNetStims']`` plots just stimulations, 
+        ``['popName1']`` plots a single population, 
+        ``['popName1', 'popName2']`` plots multiple populations, 
+        ``[120]`` plots a single cell, 
+        ``[120, 130]`` plots multiple cells, 
+        ``[('popName1', 56)]`` plots a cell from a specific population, 
+        ``[('popName1', [0, 1]), ('popName2', [4, 5, 6])]``, plots cells from multiple populations
+
+    cells2 : list
+        Subset of cells from which to obtain spike train 2.
+        **Default:** ``[]``
+        **Options:** same as for `cells1`
+
+    spks1 : list 
+        Spike train 1; list of spike times; if omitted then obtains spikes from cells1.
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    spks2 : list 
+        Spike train 2; list of spike times; if omitted then obtains spikes from cells2.
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    timeRange : list [min, max] 
+        Range of time to calculate nTE in ms.
+        **Default:** ``None`` uses the entire simulation time range
+        **Options:** ``<option>`` <description of option>
+ 
+    binSize : int
+        Bin size used to convert spike times into histogram.
+        **Default:** ``20``
+        **Options:** ``<option>`` <description of option>
+ 
+    numShuffle : int 
+        Number of times to shuffle spike train 1 to calculate TEshuffled; note: nTE = (TE - TEShuffled)/H(X2F|X2P).
+        **Default:** ``30``
+        **Options:** ``<option>`` <description of option>
+ 
+    Returns
+    -------
+
+
+"""
 
     from neuron import h
     import netpyne
@@ -140,32 +179,92 @@ def nTE(cells1 = [], cells2 = [], spks1 = None, spks2 = None, timeRange = None, 
 ## Calculate granger causality
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def granger(cells1=[], cells2=[], spks1=None, spks2=None, label1='spkTrain1', label2='spkTrain2', timeRange=None, binSize=5, testGranger=False,
-    plotFig = True, saveData = None, saveFig = None, showFig = True):
-    ''' 
-    Calculate and optionally plot Granger Causality 
-        - cells1 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells from which to obtain spike train 1 (default: [])
-        - cells2 (['all',|'allCells','allNetStims',|,120,|,'E1'|,('L2', 56)|,('L5',[4,5,6])]): Subset of cells from which to obtain spike train 2 (default: [])
-        - spks1 (list): Spike train 1; list of spike times; if omitted then obtains spikes from cells1 (default: None)
-        - spks2 (list): Spike train 2; list of spike times; if omitted then obtains spikes from cells2 (default: None)
-        - label1 (string): Label for spike train 1 to use in plot
-        - label2 (string): Label for spike train 2 to use in plot
-        - timeRange ([min, max]): Range of time to calculate nTE in ms (default: [0,cfg.duration])
-        - binSize (int): Bin size used to convert spike times into histogram 
-        - plotFig (True|False): Whether to plot a figure showing Granger Causality Fx2y and Fy2x
-        - saveData (None|'fileName'): File name where to save the final data used to generate the figure (default: None)
-        - saveFig (None|'fileName'): File name where to save the figure;
-            if set to True uses filename from simConfig (default: None)(default: None)
-        - showFig (True|False): Whether to show the figure or not;
-            if set to True uses filename from simConfig (default: None)
+def granger(cells1=[], cells2=[], spks1=None, spks2=None, label1='spkTrain1', label2='spkTrain2', timeRange=None, binSize=5, testGranger=False, plotFig=True, saveData=None, saveFig=None, showFig=True):
+    """
+    Function for/to <short description of `netpyne.analysis.info.granger`>
 
-        - Returns 
-            F: list of freqs
-            Fx2y: causality measure from x to y 
-            Fy2x: causality from y to x 
-            Fxy: instantaneous causality between x and y 
-            fig: Figure handle 
-    '''
+    Parameters
+    ----------
+    cells1 : list
+        Subset of cells from which to obtain spike train 1.
+        **Default:** ``[]``
+        **Options:** 
+        ``['all']`` plots all cells and stimulations, 
+        ``['allNetStims']`` plots just stimulations, 
+        ``['popName1']`` plots a single population, 
+        ``['popName1', 'popName2']`` plots multiple populations, 
+        ``[120]`` plots a single cell, 
+        ``[120, 130]`` plots multiple cells, 
+        ``[('popName1', 56)]`` plots a cell from a specific population, 
+        ``[('popName1', [0, 1]), ('popName2', [4, 5, 6])]``, plots cells from multiple populations
+
+    cells2 : list
+        Subset of cells from which to obtain spike train 2.
+        **Default:** ``[]``
+        **Options:** same as for `cells1`
+
+    spks1 : list 
+        Spike train 1; list of spike times; if omitted then obtains spikes from cells1.
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    spks2 : list 
+        Spike train 2; list of spike times; if omitted then obtains spikes from cells2.
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    label1 : str
+        Label for spike train 1 to use in plot.
+        **Default:** ``'spkTrain1'``
+        **Options:** ``<option>`` <description of option>
+ 
+    label2 : str
+        Label for spike train 2 to use in plot.
+        **Default:** ``'spkTrain2'``
+        **Options:** ``<option>`` <description of option>
+ 
+    timeRange : list [min, max] 
+        Range of time to calculate nTE in ms.
+        **Default:** ``None`` uses the entire simulation time range
+        **Options:** ``<option>`` <description of option>
+ 
+    binSize : int
+        Bin size used to convert spike times into histogram.
+        **Default:** ``20``
+        **Options:** ``<option>`` <description of option>
+ 
+    testGranger : bool
+        Whether to test the Granger calculation.
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    plotFig : bool
+        Whether to plot a figure showing Granger Causality Fx2y and Fy2x
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    saveData : bool or str
+        Whether and where to save the data used to generate the plot. 
+        **Default:** ``False`` 
+        **Options:** ``True`` autosaves the data,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
+
+    saveFig : bool or str
+        Whether and where to save the figure.
+        **Default:** ``False``
+        **Options:** ``True`` autosaves the figure,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
+
+    showFig : bool
+        Shows the figure if ``True``.
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    Returns
+    -------
+
+
+"""
     
     from .. import sim
     import numpy as np
@@ -238,8 +337,7 @@ def granger(cells1=[], cells2=[], spks1=None, spks2=None, label1='spkTrain1', la
     histoCount2 = histo2[0] 
 
     fs = int(1000/binSize)
-    F,pp,cohe,Fx2y,Fy2x,Fxy = pwcausalr(np.array([histoCount1, histoCount2]), 1, len(histoCount1), 10, fs, int(fs/2))
-
+    F, pp, cohe, Fx2y, Fy2x, Fxy = pwcausalr(np.array([histoCount1, histoCount2]), 1, len(histoCount1), 10, fs, int(fs/2))
 
     # check reliability
     if testGranger:
@@ -306,7 +404,7 @@ def granger(cells1=[], cells2=[], spks1=None, spks2=None, label1='spkTrain1', la
             if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
-                filename = sim.cfg.filename+'_'+'2Dnet.png'
+                filename = sim.cfg.filename+'_granger.png'
             plt.savefig(filename)
 
         # show fig 

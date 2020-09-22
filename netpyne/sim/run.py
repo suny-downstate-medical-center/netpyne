@@ -1,10 +1,8 @@
 """
-sim/run.py
+Module for running simulations
 
-Functions related to running the simulation
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
@@ -24,7 +22,14 @@ from . import utils
 #------------------------------------------------------------------------------
 # Commands required just before running simulation
 #------------------------------------------------------------------------------
-def preRun ():
+def preRun():
+    """
+    Function for/to <short description of `netpyne.sim.run.preRun`>
+
+
+    """
+
+
     from .. import sim
 
 
@@ -55,8 +60,8 @@ def preRun ():
     # handler for printing out time during simulation run
     if sim.rank == 0 and sim.cfg.printRunTime:
         def printRunTime():
-            for i in range(int(sim.cfg.printRunTime*1000.0), int(sim.cfg.duration), int(sim.cfg.printRunTime*1000.0)):
-                sim.cvode.event(i, 'print ' + str(i/1000.0) + ',"s"')
+            print('%.1fs' % (h.t/1000.0))   
+            sim.cvode.event(h.t + int(sim.cfg.printRunTime*1000.0), sim.printRunTime)
 
         sim.printRunTime = printRunTime
         sim.fih.append(h.FInitializeHandler(1, sim.printRunTime))
@@ -90,16 +95,33 @@ def preRun ():
     # handler for recording LFP
     if sim.cfg.recordLFP:
         def recordLFPHandler():
-            for i in np.arange(sim.cfg.recordStep, sim.cfg.duration+sim.cfg.recordStep, sim.cfg.recordStep):
-                sim.cvode.event(i, sim.calculateLFP)
+            sim.cvode.event(h.t + float(sim.cfg.recordStep), sim.calculateLFP)
+            sim.cvode.event(h.t + float(sim.cfg.recordStep), recordLFPHandler)
 
         sim.recordLFPHandler = recordLFPHandler
         sim.fih.append(h.FInitializeHandler(0, sim.recordLFPHandler))  # initialize imemb
 
+
 #------------------------------------------------------------------------------
 # Run Simulation
 #------------------------------------------------------------------------------
-def runSim ():
+
+def runSim(skipPreRun=False):
+    """
+    Function for/to <short description of `netpyne.sim.run.runSim`>
+
+    Parameters
+    ----------
+    skipPreRun : bool
+        <Short description of skipPreRun>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
+  
     from .. import sim
 
     sim.pc.barrier()
@@ -110,8 +132,10 @@ def runSim ():
         except:
             if sim.cfg.verbose: 'Error Failed to use local dt.'
     sim.pc.barrier()
-    sim.timing('start', 'runTime') 
-    preRun()
+    sim.timing('start', 'runTime')
+
+    if not skipPreRun:
+        preRun()
     
     h.finitialize(float(sim.cfg.hParams['v_init']))
 
@@ -128,7 +152,24 @@ def runSim ():
 #------------------------------------------------------------------------------
 # Run Simulation
 #------------------------------------------------------------------------------
-def runSimWithIntervalFunc (interval, func):
+def runSimWithIntervalFunc(interval, func):
+    """
+    Function for/to <short description of `netpyne.sim.run.runSimWithIntervalFunc`>
+
+    Parameters
+    ----------
+    interval : <type>
+        <Short description of interval>
+        **Default:** *required*
+
+    func : <type>
+        <Short description of func>
+        **Default:** *required*
+
+
+    """
+
+
     from .. import sim
     sim.pc.barrier()
     sim.timing('start', 'runTime')
@@ -152,8 +193,15 @@ def runSimWithIntervalFunc (interval, func):
 # Calculate LFP (fucntion called at every time step)      
 #------------------------------------------------------------------------------
 def calculateLFP():
-    from .. import sim    
+    """
+    Function for/to <short description of `netpyne.sim.run.calculateLFP`>
 
+
+    """
+
+
+    from .. import sim
+    
     # Set pointers to i_membrane in each cell (required form LFP calc )        
     for cell in sim.net.compartCells:
         cell.setImembPtr()
@@ -169,13 +217,29 @@ def calculateLFP():
         if sim.cfg.saveLFPCells: 
             sim.simData['LFPCells'][gid][saveStep - 1,:] = ecp  # contribution of individual cells (stored optionally)
         
-        sim.simData['LFP'][saveStep-1, :] += ecp  # sum of all cells
+        sim.simData['LFP'][saveStep - 1,:] += ecp  # sum of all cells
+        
+    
 
     
 #------------------------------------------------------------------------------
 # Calculate and print load balance
 #------------------------------------------------------------------------------
-def loadBalance ():
+def loadBalance(printNodeTimes = False):
+    """
+    Function for/to <short description of `netpyne.sim.run.loadBalance`>
+
+    Parameters
+    ----------
+    printNodeTimes : bool
+        <Short description of printNodeTimes>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
     from .. import sim
 
     computation_time = sim.pc.step_time()
@@ -184,7 +248,9 @@ def loadBalance ():
     avg_comp_time = sim.pc.allreduce(computation_time, 1)/sim.nhosts
     load_balance = avg_comp_time/max_comp_time
 
-    print('node:',sim.rank,' comp_time:',computation_time)
+    if printNodeTimes:
+        print('node:',sim.rank,' comp_time:',computation_time)
+    
     if sim.rank==0:
         print('max_comp_time:', max_comp_time)
         print('min_comp_time:', min_comp_time)

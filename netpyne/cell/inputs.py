@@ -1,11 +1,9 @@
-
 """
 inputs.py 
 
 Methods to create patterned spike inputs
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
@@ -23,7 +21,8 @@ from neuron import h
 import numpy as np
 
 def createRhythmicPattern(params, rand):
-    ''' creates the ongoing external inputs (rhythmic)
+    """
+    Creates the ongoing external inputs (rhythmic)
     input params:
     - start: time of first spike. if -1, uniform distribution between startMin and startMax (ms)
     - startMin: minimum values of uniform distribution for start time (ms)
@@ -35,7 +34,8 @@ def createRhythmicPattern(params, rand):
     - eventsPerCycle: spikes/burst per cycle; should be either 1 or 2
     - repeats: number of times to repeat input pattern (equivalent to number of inputs) 
     - stop: maximum time for last spike of pattern (ms)
-    '''
+    """
+
     # start is always defined
     start = params['start']
     # If start is -1, randomize start time of inputs
@@ -105,13 +105,14 @@ def createRhythmicPattern(params, rand):
     return np.array(t_input)
 
 def createEvokedPattern(params, rand, inc = 0):
-    ''' creates the ongoing external inputs (rhythmic)
+    """
+    creates the ongoing external inputs (rhythmic)
     input params:
     - start: time of first spike. if -1, uniform distribution between startMin and startMax (ms)
     - inc: increase in time of first spike; from cfg.inc_evinput (ms)
     - startStd: standard deviation of start (ms)
     - numspikes: total number of spikes to generate 
-    '''
+    """
 
     # assign the params
     mu = params['start'] + inc
@@ -134,16 +135,17 @@ def createEvokedPattern(params, rand, inc = 0):
 
 
 def createPoissonPattern(params, rand):
-    ''' creates external Poisson inputs
+    """
+    creates external Poisson inputs
     input params:
-    - start: time of first spike. if -1, uniform distribution between startMin and startMax (ms)
-    - interval: increase in time of first spike; from cfg.inc_evinput (ms)
+    - start: time of first spike (ms)
+    - stop: stop time; if -1 the full duration (ms)
     - frequency: standard deviation of start (ms)
-    '''
+    """
 
     # new external pois designation
     t0 = params['start'] # self.p_ext['t_interval'][0]
-    T = params['interval'] #self.p_ext['t_interval'][1]
+    T = params['stop'] #self.p_ext['t_interval'][1]
     lamtha = params['frequency'] # self.p_ext[self.celltype][3] # index 3 is frequency (lamtha)
     # values MUST be sorted for VecStim()!
     # start the initial value
@@ -161,11 +163,13 @@ def createPoissonPattern(params, rand):
 
 
 def createGaussPattern(params, rand):
-    ''' creates Gaussian inputs
+    """
+    Creates Gaussian inputs
     input params:
     - mu: Gaussian mean  
     - sigma: Gaussian variance
-    '''
+    """
+    
     # set params
     mu = params['mu']
     sigma = params['sigma']

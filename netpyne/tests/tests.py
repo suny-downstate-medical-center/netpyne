@@ -1,10 +1,8 @@
 """
-test_validate.py
+Module for testing code
 
-Testing code for Validation class
-
-Contributors: mitra.siddhartha@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
@@ -97,6 +95,13 @@ TEST_TYPE_VALID_STIM = "Valid stim"
 TEST_TYPE_VALID_ANALYSIS = " Valid analysis"
 TEST_TYPE_VALID_HPARAMS = "hParams test"
 class TestTypeObj(object):
+    """
+    Class for/to <short description of `netpyne.tests.tests.TestTypeObj`>
+
+
+    """
+
+
 
     def __init__(self):
 
@@ -1462,6 +1467,13 @@ class TestTypeObj(object):
 
 # Tests that are defined for each set of parameters
 class TestObj(object):
+    """
+    Class for/to <short description of `netpyne.tests.tests.TestObj`>
+
+
+    """
+
+
 
     def __init__(self):
 
@@ -1490,6 +1502,13 @@ class TestObj(object):
 
 # Tests that are defined for each set of parameters
 class ErrorMessageObj(object):
+    """
+    Class for/to <short description of `netpyne.tests.tests.ErrorMessageObj`>
+
+
+    """
+
+
 
     def __init__(self):
 
@@ -1501,6 +1520,13 @@ class ErrorMessageObj(object):
         return str(self.messageText)
 
 class SimTestObj(object):
+    """
+    Class for/to <short description of `netpyne.tests.tests.SimTestObj`>
+
+
+    """
+
+
 
     def __init__(self, verboseFlag = False):
 

@@ -140,7 +140,7 @@ def optunaOptim(self, pc):
         nodes = args.get('nodes', 1)
         coresPerNode = args.get('coresPerNode', 1)
         mpiCommand = args.get('mpiCommand', 'mpiexec')
-        nrnCommand = args.get('nrnCommand', 'nrniv')
+        nrnCommand = args.get('nrnCommand', 'nrniv -python -mpi')
         numproc = nodes*coresPerNode
         
         # slurm setup
@@ -215,7 +215,7 @@ def optunaOptim(self, pc):
             if mpiCommand == '':
                 command = '%s %s simConfig=%s netParams=%s ' % (nrnCommand, script, cfgSavePath, netParamsSavePath)
             else:
-                command = '%s -np %d %s -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc,  nrnCommand, script, cfgSavePath, netParamsSavePath)
+                command = '%s -np %d %s %s simConfig=%s netParams=%s ' % (mpiCommand, numproc,  nrnCommand, script, cfgSavePath, netParamsSavePath)
             
             # ----------------------------------------------------------------------
             # run on local machine with <nodes*coresPerNode> cores

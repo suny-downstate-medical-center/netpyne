@@ -21,6 +21,10 @@ if '-nogui' in sys.argv:
 
 # import NEURON module
 from neuron import h
+try:
+    h.nrnmpi_init()
+pass:
+    pass
 
 #------------------------------------------------------------------------------
 # Import simulation-related functions from this subpackage (/sim)

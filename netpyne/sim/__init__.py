@@ -23,7 +23,7 @@ if '-nogui' in sys.argv:
 from neuron import h
 try:
     h.nrnmpi_init()
-pass:
+except:
     pass
 
 #------------------------------------------------------------------------------

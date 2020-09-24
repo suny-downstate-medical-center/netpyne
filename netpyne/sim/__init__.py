@@ -21,10 +21,15 @@ if '-nogui' in sys.argv:
 
 # import NEURON module
 from neuron import h
+
+'''
+# Initialize MPI - removed since sometimes get error; 
+# I believe if using a version < 7.8 
 try:
     h.nrnmpi_init()
 except:
     pass
+'''
 
 #------------------------------------------------------------------------------
 # Import simulation-related functions from this subpackage (/sim)

@@ -156,7 +156,12 @@ def saveData(include = None, filename = None):
             if sim.cfg.savePickle:
                 import pickle
                 dataSave = utils.replaceDictODict(dataSave)
-                print(('Saving output as %s ... ' % (filePath+'.pkl')))
+                print(('Saving output as %s ... ' % (filePath + '.pkl')))
+                
+            
+                import IPython; IPython.embed()
+
+
                 with open(filePath+'.pkl', 'wb') as fileObj:
                     pickle.dump(dataSave, fileObj)
                 print('Finished saving!')
@@ -563,7 +568,7 @@ def saveInNode(gatherLFP=True, include=None, filename=None):
         if sim.cfg.savePickle:
             import pickle
             dataSave = utils.replaceDictODict(dataSave)
-            print(('Saving output as %s ... ' % (filePath+'.pkl')))
+            print(('Saving output as %s ... ' % (filePath + '.pkl')))
             with open(filePath+'.pkl', 'wb') as fileObj:
                 pickle.dump(dataSave, fileObj)
             print('Finished saving!')

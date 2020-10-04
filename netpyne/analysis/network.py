@@ -148,7 +148,9 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
                             
                     countMatrix[cellIndsPre[conn[preGidIndex]], cellIndsPost[cell['gid']]] += 1
 
-        if feature in ['weight', 'delay']: connMatrix = connMatrix / countMatrix 
+        if feature in ['weight', 'delay']:
+            if logplot == True: connMatrix = np.log10(connMatrix / countMatrix)
+            else: connMatrix = connMatrix / countMatrix
         elif feature in ['numConns']: connMatrix = countMatrix 
 
         pre, post = cellsPre, cellsPost 
@@ -345,8 +347,11 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
     # normalize by number of postsyn cells
     if groupBy != 'cell':
         if feature == 'weight': 
-            connMatrix = weightMatrix / countMatrix  # avg weight per conn
-            connMatrix = np.nan_to_num(connMatrix, nan=0)  # if the count is 0 we get NaNs, but the weight is 0
+            if logplot == True:
+                connMatrix = np.log10(weightMatrix / countMatrix)  # avg log weight per conn
+            else:
+                connMatrix = weightMatrix / countMatrix  # avg weight per conn
+                connMatrix = np.nan_to_num(connMatrix, nan=0)  # if the count is 0 we get NaNs, but the weight is 0
         elif feature == 'delay': 
             connMatrix = delayMatrix / countMatrix
             connMatrix = np.nan_to_num(connMatrix, nan=0)  # if the count is 0 we get NaNs, but the delay is 0
@@ -355,7 +360,8 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
         elif feature in ['probability', 'strength']:
             connMatrix = countMatrix / maxConnMatrix  # probability
             if feature == 'strength':
-                connMatrix = connMatrix * weightMatrix  # strength
+                if logplot == True: connMatrix = np.log10(connMatrix * weightMatrix)  # log strength
+                else: connMatrix = connMatrix * weightMatrix  # strength
         elif feature == 'convergence':
             connMatrix = countMatrix / maxPostConnMatrix
         elif feature == 'divergence':
@@ -370,7 +376,7 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
 ## Support function for plotConn() - calculate conn using data from files with short format (no keys)
 # -------------------------------------------------------------------------------------------------------------------
 
-def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile,removeWeightNorm):
+def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile,removeWeightNorm, logplot):
     
     from .. import sim
     import json
@@ -525,8 +531,11 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
 
     if groupBy != 'cell':
         if feature == 'weight': 
-            connMatrix = weightMatrix / countMatrix  # avg weight per conn (fix to remove divide by zero warning)
-            connMatrix = np.nan_to_num(connMatrix, nan=0)  # if the count is 0 we get NaNs, but the weight is 0 
+            if logplot == True:
+                connMatrix = np.log10(weightMatrix / countMatrix)  # avg log weight per conn
+            else:
+                connMatrix = weightMatrix / countMatrix  # avg weight per conn (fix to remove divide by zero warning)
+                connMatrix = np.nan_to_num(connMatrix, nan=0)  # if the count is 0 we get NaNs, but the weight is 0 
         elif feature == 'delay': 
             connMatrix = delayMatrix / countMatrix
             connMatrix = np.nan_to_num(connMatrix, nan=0)  # if the count is 0 we get NaNs, but the delay is 0
@@ -535,7 +544,8 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
         elif feature in ['probability', 'strength']:
             connMatrix = countMatrix / maxConnMatrix  # probability
             if feature == 'strength':
-                connMatrix = connMatrix * weightMatrix  # strength
+                if logplot == True: connMatrix = np.log10(connMatrix * weightMatrix) # log strength
+                else: connMatrix = connMatrix * weightMatrix  # strength
         elif feature == 'convergence':
             connMatrix = countMatrix / maxPostConnMatrix
         elif feature == 'divergence':
@@ -549,7 +559,7 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
 ## Plot connectivity
 # -------------------------------------------------------------------------------------------------------------------
 #@exception
-def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderBy='gid', groupBy='pop', groupByIntervalPre=None, groupByIntervalPost=None, graphType='matrix', removeWeightNorm=False, synOrConn='syn', synMech=None, connsFile=None, tagsFile=None, clim=None, figSize=(8,8), fontSize=12, saveData=None, saveFig=None, showFig=True):
+def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderBy='gid', groupBy='pop', groupByIntervalPre=None, groupByIntervalPost=None, graphType='matrix', removeWeightNorm=False, synOrConn='syn', synMech=None, connsFile=None, tagsFile=None, clim=None, figSize=(8,8), fontSize=12, saveData=None, saveFig=None, showFig=True, logplot=None):
     """
     Function for/to <short description of `netpyne.analysis.network.plotConn`>
 
@@ -677,9 +687,9 @@ def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderB
     print('Plotting connectivity matrix...')
 
     if connsFile and tagsFile:
-        connMatrix, pre, post = _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile, removeWeightNorm)
+        connMatrix, pre, post = _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile, removeWeightNorm, logplot)
     else:
-        connMatrix, pre, post = _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, removeWeightNorm)
+        connMatrix, pre, post = _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, removeWeightNorm, logplot)
 
     if connMatrix is None:
         print("  Error calculating connMatrix in plotConn()")

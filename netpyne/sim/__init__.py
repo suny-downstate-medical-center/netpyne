@@ -40,7 +40,7 @@ from .setup import initialize, setNet, setNetParams, setSimCfg, createParallelCo
 from .run import preRun, runSim, runSimWithIntervalFunc, loadBalance, calculateLFP
 
 # import gather functions
-from .gather import gatherData, _gatherAllCellTags, _gatherAllCellConnPreGids, _gatherCells, fileGather
+from .gather import gatherData, _gatherAllCellTags, _gatherAllCellConnPreGids, _gatherCells, fileGather, mergeFiles
 
 # import saving functions
 from .save import saveJSON, saveData, distributedSaveHDF5, compactConnFormat, intervalSave, saveSimDataInNode, saveInNode
@@ -55,7 +55,6 @@ from .utils import cellByGid, getCellsList, timing, version, gitChangeset, hashS
 # import utils functions to manipulate objects
 from .utils import copyReplaceItemObj, copyRemoveItemObj, replaceFuncObj, replaceDictODict, \
 	rename, clearObj, clearAll
-
 
 # import wrapper functions
 from .wrappers import create, simulate, intervalSimulate, analyze, createSimulate, \

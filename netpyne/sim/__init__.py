@@ -23,10 +23,10 @@ if '-nogui' in sys.argv:
 from neuron import h
 
 # Initialize MPI try:
-try:
-    h.nrnmpi_init()
-except:
-    pass
+# try:
+#     h.nrnmpi_init()
+# except:
+#     pass
 
 #------------------------------------------------------------------------------
 # Import simulation-related functions from this subpackage (/sim)

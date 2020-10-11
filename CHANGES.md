@@ -14,6 +14,8 @@
 
 - Recording and plotting of current dipoles in arbitrary subset of populations
 
+-  Added h.nrnmpi_init() at initialization so can run mpi sims via python instead of nrniv -mpi
+
 **Bug fixes**
 
 - Fixed bug when using index with recordTraces

@@ -140,7 +140,7 @@ def optunaOptim(self, pc):
         nodes = args.get('nodes', 1)
         coresPerNode = args.get('coresPerNode', 1)
         mpiCommand = args.get('mpiCommand', 'mpiexec')
-        nrnCommand = args.get('nrnCommand', 'nrniv')
+        nrnCommand = args.get('nrnCommand', 'nrniv -python -mpi')
         numproc = nodes*coresPerNode
         
         # slurm setup
@@ -215,7 +215,7 @@ def optunaOptim(self, pc):
             if mpiCommand == '':
                 command = '%s %s simConfig=%s netParams=%s ' % (nrnCommand, script, cfgSavePath, netParamsSavePath)
             else:
-                command = '%s -np %d %s -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc,  nrnCommand, script, cfgSavePath, netParamsSavePath)
+                command = '%s -np %d %s %s simConfig=%s netParams=%s ' % (mpiCommand, numproc,  nrnCommand, script, cfgSavePath, netParamsSavePath)
             
             # ----------------------------------------------------------------------
             # run on local machine with <nodes*coresPerNode> cores
@@ -432,7 +432,6 @@ def optunaOptim(self, pc):
     sleep(rank) # each process wiats a different time to avoid saturating sqlite database
     study = optuna.create_study(study_name=self.batchLabel, storage='sqlite:///%s/%s_storage.db' % (self.saveFolder, self.batchLabel),
                                 load_if_exists=True, direction=args['direction'])
-    study._storage = study._storage._backend  # avoid using chaed storage
     try:
         study.optimize(lambda trial: objective(trial, args), n_trials=args['maxiters'], timeout=args['maxtime'])
     except Exception as e:

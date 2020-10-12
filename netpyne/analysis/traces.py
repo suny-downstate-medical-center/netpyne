@@ -311,7 +311,9 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
                     plt.xlabel('Time (ms)', fontsize=fontsiz)
                     plt.ylabel(trace, fontsize=fontsiz)
                     plt.xlim(timeRange)
-                    if ylim: plt.ylim(ylim)
+                    if ylim:
+                        if ylim[itrace]:
+                            plt.ylim(ylim[itrace])
                     if itrace==0: plt.title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
                     if not overlay:
                         if not axis or axis=='off':  # if no axis, add scalebar

@@ -1,0 +1,5 @@
+{
+    "NetPyNE_loader_version":  "0.1",
+    "mod_folder": "mod",
+    "python_loader": "np.py"
+}

@@ -1,0 +1,172 @@
+{"netpyne_version": "0.7.9",    
+"netParams": {
+    "cellParams": {
+        "PYR": {
+            "conds": {
+                "cellModel": "HH",
+                "cellType": "PYR"
+            },
+            "secs": {
+                "soma": {
+                    "geom": {
+                        "L": 18.8,
+                        "Ra": 123.0,
+                        "diam": 18.8
+                    },
+                    "mechs": {
+                        "hh": {
+                            "el": -70,
+                            "gkbar": 0.036,
+                            "gl": 0.003,
+                            "gnabar": 0.12
+                        }
+                    },
+                    "vinit": -71
+                }
+            }
+        }
+    },
+    "connParams": {
+        "PYR->PYR": {
+            "convergence": "uniform(1,15)",
+            "delay": "0.2+normal(13.0,1.4)",
+            "postConds": {
+                "pop": "PYR"
+            },
+            "preConds": {
+                "pop": "PYR"
+            },
+            "threshold": 10,
+            "weight": 0.002
+        }
+    },
+    "correctBorder": false,
+    "defaultDelay": 1,
+    "defaultThreshold": 10,
+    "defaultWeight": 1,
+    "defineCellShapes": false,
+    "popParams": {
+        "PYR": {
+            "cellModel": "HH",
+            "cellType": "PYR",
+            "numCells": 200,
+            "pop": "PYR"
+        }
+    },
+    "popTagsCopiedToCells": [
+        "cellModel",
+        "cellType"
+    ],
+    "propVelocity": 500.0,
+    "rotateCellsRandomly": false,
+    "scale": 1,
+    "scaleConnWeight": 1,
+    "scaleConnWeightModels": false,
+    "scaleConnWeightNetStims": 1,
+    "shape": "cuboid",
+    "sizeX": 100,
+    "sizeY": 100,
+    "sizeZ": 100,
+    "stimSourceParams": {
+        "bkg": {
+            "noise": 0.5,
+            "rate": 10,
+            "start": 1,
+            "type": "NetStim"
+        }
+    },
+    "stimTargetParams": {
+        "bkg->PYR1": {
+            "conds": {
+                "pop": "PYR"
+            },
+            "delay": "uniform(1,5)",
+            "loc": null,
+            "sec": null,
+            "source": "bkg",
+            "weight": 0.1
+        }
+    },
+    "subConnParams": {},
+    "synMechParams": {
+        "AMPA": {
+            "e": 0,
+            "mod": "Exp2Syn",
+            "tau1": 0.1,
+            "tau2": 1.0
+        }
+    }
+},
+
+"simConfig": {
+    "addSynMechs": true,
+    "analysis": {},
+    "backupCfgFile": [],
+    "cache_efficient": false,
+    "checkErrors": false,
+    "checkErrorsVerbose": false,
+    "compactConnFormat": false,
+    "connRandomSecFromList": true,
+    "createNEURONObj": 1,
+    "createPyStruct": 1,
+    "cvode_active": false,
+    "cvode_atol": 0.001,
+    "dt": 0.025,
+    "duration": 1000.0,
+    "enableRxD": false,
+    "filename": "HHTut",
+    "gatherOnlySimData": false,
+    "hParams": {
+        "celsius": 6.3,
+        "clamp_resist": 0.001,
+        "v_init": -65.0
+    },
+    "includeParamsLabel": true,
+    "printPopAvgRates": false,
+    "printRunTime": false,
+    "printSynsAfterRule": false,
+    "rand123GlobalIndex": null,
+    "recordCells": [],
+    "recordCellsSpikes": -1,
+    "recordLFP": [],
+    "recordStep": 0.1,
+    "recordStim": true,
+    "recordTime": true,
+    "recordTraces": {
+        "Vsoma": {
+            "loc": 0.5,
+            "sec": "soma",
+            "var": "v"
+        }
+    },
+    "saveCSV": false,
+    "saveCellConns": true,
+    "saveCellSecs": true,
+    "saveDat": false,
+    "saveDataInclude": [
+        "netParams",
+        "netCells",
+        "netPops",
+        "simConfig",
+        "simData"
+    ],
+    "saveDpk": false,
+    "saveFileStep": 1000,
+    "saveFolder": "",
+    "saveHDF5": false,
+    "saveJson": true,
+    "saveLFPCells": false,
+    "saveMat": false,
+    "savePickle": false,
+    "saveTiming": false,
+    "seeds": {
+        "conn": 1,
+        "loc": 1,
+        "stim": 1
+    },
+    "simLabel": "",
+    "timestampFilename": false,
+    "timing": true,
+    "tstop": 1000.0,
+    "verbose": false
+}}

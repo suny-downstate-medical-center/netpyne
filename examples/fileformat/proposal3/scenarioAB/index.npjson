@@ -19,9 +19,9 @@ The loader function will be part of netpyne:
 from netpyne import specs
 
 # Scenario A
-netParams, simConfig = specs.import(index='model/index.npjson', method='python')    # optional argument: ,save_to_json=True)
+netParams, simConfig = specs.load(index='index.npjson', method='python')    # optional argument: save_to_json=True
 
 # Scenario B
-netParams, simConfig = specs.import(index='model/index.npjson', method='json')  
+netParams, simConfig = specs.load(index='index.npjson', method='json')  
 
 '''

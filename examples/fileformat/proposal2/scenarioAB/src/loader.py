@@ -8,8 +8,8 @@
     return 2 dict like objects
 '''
 def load_netpyne():
-    from src.netParams import netParams
-    from src.cfg import cfg
+    from netParams import netParams
+    from cfg import cfg
 
     return netParams, cfg
 

@@ -1,5 +1,5 @@
 {
     "NetPyNE_loader_version":  "0.1",
     "mod_folder": "mod",
-    "JSON_serialization": "params/params_v1.json"
+    "params_serialization": "params/params_v1.json"
 }

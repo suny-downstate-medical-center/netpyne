@@ -19,7 +19,8 @@ from numbers import Number
 from neuron import h
 import importlib
 
-#h.load_file("stdrun.hoc")
+h.load_file('stdlib.hoc')
+h.load_file('import3d.hoc')
 
 def getSecName(sec, dirCellSecNames = None):
     """
@@ -311,7 +312,7 @@ def importCell(fileName, cellName, cellArgs = None, cellInstance = False):
         swcSecs = h.Import3d_GUI(swcData, 0)
         swcSecs.instantiate(cellMorph)
     else:
-        print("File name should be either .hoc or .py file")
+        print("File type should be either .hoc or .py or .swc")
         return
 
     # extract netpyne parameters

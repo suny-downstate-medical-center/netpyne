@@ -1,0 +1,27 @@
+{
+    "mod_folder": "mod",
+    "python_run": "src/init.py",
+
+    "netParams_python": "src/netParams.py",
+    "netParams_json": "params/params_v1.json",
+    "netParams_variable": "netParams",    
+
+    "simConfig_python": "src/cfg.py",
+    "simConfig_json": "params/params_v1.json",
+    "simConfig_variable": "cfg"
+}
+
+
+
+''' 
+The loader function will be part of netpyne:
+
+from netpyne import specs
+
+# Scenario A
+netParams, simConfig = specs.import(index='model/index.npjson', method='python')    # optional argument: ,save_to_json=True)
+
+# Scenario B
+netParams, simConfig = specs.import(index='model/index.npjson', method='json')  
+
+'''

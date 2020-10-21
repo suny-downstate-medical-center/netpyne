@@ -445,7 +445,10 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
             from ..support.morlet import MorletSpec, index2ms
 
             spec = []
-            
+            freqList = None
+            if logy:
+                freqList = np.logspace(np.log10(minFreq), np.log10(maxFreq), int((maxFreq-minFreq)/stepFreq)) 
+
             for i,elec in enumerate(electrodes):
                 if elec == 'avg':
                     lfpPlot = np.mean(lfp, axis=1)
@@ -453,9 +456,9 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
                     lfpPlot = lfp[:, elec]
                 fs = int(1000.0 / sim.cfg.recordStep)
                 t_spec = np.linspace(0, index2ms(len(lfpPlot), fs), len(lfpPlot))
-                spec.append(MorletSpec(lfpPlot, fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq))
+                spec.append(MorletSpec(lfpPlot, fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq, lfreq=freqList))                
                 
-            f = np.array(range(minFreq, maxFreq+1, stepFreq))  # only used as output for user
+            f = freqList if freqList is not None else np.array(range(minFreq, maxFreq+1, stepFreq))   # only used as output for user
 
             vmin = np.array([s.TFR for s in spec]).min()
             vmax = np.array([s.TFR for s in spec]).max()

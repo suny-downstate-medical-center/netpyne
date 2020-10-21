@@ -14,7 +14,7 @@
 
 - Recording and plotting of current dipoles in arbitrary subset of populations
 
--  Added h.nrnmpi_init() at initialization so can run mpi sims via python instead of nrniv -mpi
+- Added option to plot LFP spectrogram with log y-axis 
 
 **Bug fixes**
 

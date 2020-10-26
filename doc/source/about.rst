@@ -135,7 +135,7 @@ About NetPyNE
 Make use of NetPyNE
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- Metzner C, Mäki-Marttunen T, Karni G, McMahon-Cole H, Steuber V.  **The Effect of Alterations of Schizophrenia-Associated Genes on Gamma Band Oscillations.** *bioRxiv* `https://doi.org/10.1101/2020.09.28.316737`_. *2020*
+- Metzner C, Mäki-Marttunen T, Karni G, McMahon-Cole H, Steuber V.  **The Effect of Alterations of Schizophrenia-Associated Genes on Gamma Band Oscillations.** `bioRxiv 2020.09.28.316737 <https://doi.org/10.1101/2020.09.28.316737>`_. *2020*
 
 - Gao P, Graham J,  Zhou W, Jang J, Angulo S, Dura-Bernal S, Hines ML, Lytton WW, and Antic S  **Local Glutamate-Mediated Dendritic Plateau Potentials Change the State of the Cortical Pyramidal Neuron.** *Journal of Neurophysiology (In Press). 2020*
 

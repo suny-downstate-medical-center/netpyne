@@ -32,13 +32,13 @@ except ImportError:
     from neuron import h
     pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
     if False and int(pc.id()) == 0:  # only print for master node
-        print('Note: NeuroML import failed; import/export functions for NeuroML will not be available. \n  To install the pyNeuroML & libNeuroML Python packages visit: https://www.neuroml.org/getneuroml')
+        print('Warning: NeuroML import failed; import/export functions for NeuroML will not be available. \n  To install the pyNeuroML & libNeuroML Python packages visit: https://www.neuroml.org/getneuroml')
     neuromlExists = False
 
 import pprint; pp = pprint.PrettyPrinter(depth=6)
 import math
 from collections import OrderedDict
-from .. import specs
+from .. import sim, specs
 
 ###############################################################################
 ### Get connection centric network representation as used in NeuroML2
@@ -1580,4 +1580,5 @@ try:
     
     
 except:
-    print(' Warning: An Exception occurred when loading NeuroML ...')
+    if sim.cfg.verbose:
+        print(' Warning: An Exception occurred when loading NeuroML ...')

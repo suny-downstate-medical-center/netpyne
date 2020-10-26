@@ -411,8 +411,9 @@ class NetParams(object):
                 midpoint = int(len(soma3d)/2)
                 somaX, somaY, somaZ = soma3d[midpoint][0:3]
                 for sec in list(cellRule['secs'].values()):
-                    for i,pt3d in enumerate(sec['geom']['pt3d']):
-                        sec['geom']['pt3d'][i] = (pt3d[0] - somaX, pt3d[1] - somaY, pt3d[2] - somaZ, pt3d[3])
+                    if 'pt3d' in sec['geom']:
+                        for i,pt3d in enumerate(sec['geom']['pt3d']):
+                            sec['geom']['pt3d'][i] = (pt3d[0] - somaX, pt3d[1] - somaY, pt3d[2] - somaZ, pt3d[3])
 
         self.addCellParams(label, cellRule)
 

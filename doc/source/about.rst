@@ -139,15 +139,17 @@ Make use of NetPyNE
 
 - Gao P, Graham J,  Zhou W, Jang J, Angulo S, Dura-Bernal S, Hines ML, Lytton WW, and Antic S  **Local Glutamate-Mediated Dendritic Plateau Potentials Change the State of the Cortical Pyramidal Neuron.** *Journal of Neurophysiology (In Press). 2020*
 
-- Griffith EY, Dura-Bernal S, Barczak A, O’connell MN, Mcginnis TM, Lytton WW, Lakatos P, Neymotin SA. **Data-driven model of auditory thalamocortical system rhythms. Society for Neuroscience (SfN),** *2019*.
-
-- Doherty DW, Dura-Bernal S, Lytton WW. **Computer models of mouse area M1 show avalanches for full model and subcircuits defined by layer or cell type.** *Society for Neuroscience (SfN), 2019*.
+- Dura-Bernal S, Griffith EY, Barczak A, O’Connell MN, McGinnis T, Anwar H, Lytton WW, Lakatos p, Neymotin SA. **Biophysically-detailed multiscale model of macaque auditory thalamocortical circuits reproduces physiological oscillations.** *Computational Neurosience (CNS), 2020.* 
 
 - Sivagnanam S, Gorman W, Doherty D, Neymotin S, Hovhannisyan H, Fang S, Lytton W, Dura-Bernal S **Simulating large-scale models of brain neuronal circuits using Google Cloud Platform**. *Practice and Experience in Advanced Research Computing, PEARC2020. 2020*
 
 - Neymotin, S.A., Daniels, D.S., Caldwell, B., McDougal, R.A., Carnevale, N.T., Jas, M., Moore, C.I., Hines, M.L., Hamalainen, M. and Jones, S.R., **Human Neocortical Neurosolver (HNN), a new software tool for interpreting the cellular and network origin of human MEG/EEG data.** `eLife, 9, p.e51214. <https://elifesciences.org/articles/51214>`_ *2020*
 
 - Lytton WW, Sherif MA, Dura-Bernal S, Neymotin S. **Multiscale modeling of a “mental” disease.** *Virtual Physiological Human Conference, VHP2020. 2020*
+
+- Griffith EY, Dura-Bernal S, Barczak A, O’connell MN, Mcginnis TM, Lytton WW, Lakatos P, Neymotin SA. **Data-driven model of auditory thalamocortical system rhythms.** *Society for Neuroscience (SfN). *2019*.
+
+- Doherty DW, Dura-Bernal S, Lytton WW. **Computer models of mouse area M1 show avalanches for full model and subcircuits defined by layer or cell type.** *Society for Neuroscience (SfN), 2019*.
 
 - Dura-Bernal S, Neymotin SA, Suter BA, Shepherd GMG, Lytton WW. **Multiscale dynamics and information flow in a data-driven model of the primary motor cortex microcircuit.** `bioRxiv 201707 <https://www.biorxiv.org/content/10.1101/201707v3>`_ , *2019.*
 

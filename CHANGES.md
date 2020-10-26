@@ -16,11 +16,18 @@
 
 - Added option to plot LFP spectrogram with log y-axis 
 
+- Added option to plot the log of connectivity in plotConn
+
+
 **Bug fixes**
 
 - Fixed bug when using index with recordTraces
 
 - Fixed axes values in plotRxDConcentration and iplotRxDConcentration
+
+- Added links to necessary mod files in the importing cell models tutorial
+
+- Added aux_fun.inc to doc/source/code/mod as it's needed for some examples
 
 
 # Version 0.9.7

@@ -46,7 +46,9 @@ from .asd_parallel import asdOptim
 try:
     from .optuna_parallel import optunaOptim
 except:
-    print('Warning: Could not import "optuna" package...')
+    pass
+    # print('Warning: Could not import "optuna" package...')
+
 
 pc = h.ParallelContext() # use bulletin board master/slave
 if pc.id()==0: pc.master_works_on_jobs(0) 

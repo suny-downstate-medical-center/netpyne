@@ -38,7 +38,7 @@ except ImportError:
 import pprint; pp = pprint.PrettyPrinter(depth=6)
 import math
 from collections import OrderedDict
-from .. import sim, specs
+from .. import specs
 
 ###############################################################################
 ### Get connection centric network representation as used in NeuroML2
@@ -1580,5 +1580,5 @@ try:
     
     
 except:
-    if sim.cfg.verbose:
-        print(' Warning: An Exception occurred when loading NeuroML ...')
+    pass
+    #print(' Warning: An Exception occurred when loading NeuroML ...')

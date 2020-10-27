@@ -193,7 +193,9 @@ def gitChangeset(show=True):
         os.chdir(netpynePath)
         if show: os.system('git log -1')
         # get changeset (need to remove initial tag+num and ending '\n')
-        changeset = subprocess.check_output(["git", "describe"]).split('-')[2][1:-1]
+        #changeset = subprocess.check_output(["git", "describe"]).split('-')[2][1:-1]
+        changeset = subprocess.check_output(["git", "describe"], stderr=subprocess.DEVNULL).spli
+   ...: t('-')[2][1:-1]
     except: 
         changeset = ''
 

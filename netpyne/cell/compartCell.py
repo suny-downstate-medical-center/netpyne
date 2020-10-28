@@ -74,7 +74,7 @@ class CompartCell (Cell):
             rand.Random123(self.gid)
             self.randRotationAngle = rand.uniform(0, 6.2832)  # 0 to 2pi
 
-        
+        # apply cell rules
         for propLabel, prop in sim.net.params.cellParams.items():  # for each set of cell properties
             conditionsMet = 1
             if 'conds' in prop and len(prop['conds']) > 0:
@@ -93,6 +93,7 @@ class CompartCell (Cell):
                         break
             elif self.tags['cellType'] != propLabel:  # simplified method for defining cell params (when no 'conds')
                 conditionsMet = False
+                
             if conditionsMet:  # if all conditions are met, set values for this cell
                 if sim.cfg.includeParamsLabel:
                     if 'label' not in self.tags:

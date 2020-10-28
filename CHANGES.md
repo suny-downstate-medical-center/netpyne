@@ -31,6 +31,7 @@
 
 - Blocked terminal output from Git when no repository is found (i.e. with pip install netpyne)
 
+- Avoid adding section-based weightNorm values to point neurons (was affecting tut_import.py)
 
 # Version 0.9.7
 

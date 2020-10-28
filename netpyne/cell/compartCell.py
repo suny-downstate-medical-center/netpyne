@@ -93,6 +93,7 @@ class CompartCell (Cell):
                         break
             elif self.tags['cellType'] != propLabel:  # simplified method for defining cell params (when no 'conds')
                 conditionsMet = False
+                
             if conditionsMet:  # if all conditions are met, set values for this cell
                 if sim.cfg.includeParamsLabel:
                     if 'label' not in self.tags:

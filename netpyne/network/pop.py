@@ -160,7 +160,6 @@ class Pop (object):
                         pass
                 else:
                     cellTags['params']['spkTimes'] = self.tags['spkTimes']  # 1D list (same for all)
-            
             if self.tags.get('diversity', False): # if pop has cell diversity
                 cellTags['fraction'] = float(i)/float(numCells)
             

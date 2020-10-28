@@ -29,6 +29,8 @@
 
 - Added aux_fun.inc to doc/source/code/mod as it's needed for some examples
 
+- Blocked terminal output from Git when no repository is found (i.e. with pip install netpyne)
+
 
 # Version 0.9.7
 

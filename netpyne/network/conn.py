@@ -1,11 +1,9 @@
 
 """
-network/conn.py 
+Module for creating network connections
 
-Network class methods to create connections 
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
@@ -30,7 +28,20 @@ from numpy import array, sin, cos, tan, exp, sqrt, mean, inf, dstack, unravel_in
 # -----------------------------------------------------------------------------
 # Connect Cells
 # -----------------------------------------------------------------------------
-def connectCells (self):
+def connectCells(self):
+    """
+    Function for/to <short description of `netpyne.network.conn.connectCells`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+
+    """
+
+
     from .. import sim
 
     # Instantiate network connections based on the connectivity rules defined in params
@@ -133,7 +144,6 @@ def connectCells (self):
 
 
 
-
 # -----------------------------------------------------------------------------
 # Find pre and post cells matching conditions
 # -----------------------------------------------------------------------------
@@ -170,7 +180,7 @@ def _findPrePostCellsCondition(self, allCellTags, preConds, postConds):
 # -----------------------------------------------------------------------------
 # Convert connection param string to function
 # -----------------------------------------------------------------------------
-def _connStrToFunc (self, preCellsTags, postCellsTags, connParam):
+def _connStrToFunc(self, preCellsTags, postCellsTags, connParam):
     # list of params that have a function passed in as a string
     paramsStrFunc = [param for param in self.connStringFuncParams+['probability', 'convergence', 'divergence'] if param in connParam and isinstance(connParam[param], basestring)]  
 
@@ -307,10 +317,32 @@ def _disynapticBiasProb2(self, probMatrix, allRands, bias, prePreGids, postPreGi
 # -----------------------------------------------------------------------------
 # Full connectivity
 # -----------------------------------------------------------------------------
-def fullConn (self, preCellsTags, postCellsTags, connParam):
+def fullConn(self, preCellsTags, postCellsTags, connParam):
+    """
+    Function for/to <short description of `netpyne.network.conn.fullConn`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+    preCellsTags : <type>
+        <Short description of preCellsTags>
+        **Default:** *required*
+
+    postCellsTags : <type>
+        <Short description of postCellsTags>
+        **Default:** *required*
+
+    connParam : <type>
+        <Short description of connParam>
+        **Default:** *required*
+
+"""
+
     from .. import sim
 
-    ''' Generates connections between all pre and post-syn cells '''
     if sim.cfg.verbose: print('Generating set of all-to-all connections (rule: %s) ...' % (connParam['label']))
 
     # get list of params that have a lambda function
@@ -318,9 +350,8 @@ def fullConn (self, preCellsTags, postCellsTags, connParam):
 
     for paramStrFunc in paramsStrFunc:
         # replace lambda function (with args as dict of lambda funcs) with list of values
-        connParam[paramStrFunc[:-4]+'List'] = {(preGid,postGid): connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()})  
-            for preGid,preCellTags in preCellsTags.items() for postGid,postCellTags in postCellsTags.items()}
-    
+        connParam[paramStrFunc[:-4]+'List'] = {(preGid,postGid): connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()}) for preGid, preCellTags in preCellsTags.items() for postGid, postCellTags in postCellsTags.items()}
+        
     for postCellGid in postCellsTags:  # for each postsyn cell
         if postCellGid in self.gid2lid:  # check if postsyn is in this node's list of gids
             for preCellGid, preCellTags in preCellsTags.items():  # for each presyn cell
@@ -331,6 +362,27 @@ def fullConn (self, preCellsTags, postCellsTags, connParam):
 # Generate random values for all pre and post cells (to use in prob conn)
 # -----------------------------------------------------------------------------
 def generateRandsPrePost(self, pre, post):
+    """
+    Function for/to <short description of `netpyne.network.conn.generateRandsPrePost`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+    pre : <type>
+        <Short description of pre>
+        **Default:** *required*
+
+    post : <type>
+        <Short description of post>
+        **Default:** *required*
+
+
+    """
+
+
     from .. import sim
 
     sortedPre = sorted(pre)
@@ -353,10 +405,32 @@ def generateRandsPrePost(self, pre, post):
 # -----------------------------------------------------------------------------
 # Probabilistic connectivity 
 # -----------------------------------------------------------------------------
-def probConn (self, preCellsTags, postCellsTags, connParam):
+def probConn(self, preCellsTags, postCellsTags, connParam):
+    """
+    Function for/to <short description of `netpyne.network.conn.probConn`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+    preCellsTags : <type>
+        <Short description of preCellsTags>
+        **Default:** *required*
+
+    postCellsTags : <type>
+        <Short description of postCellsTags>
+        **Default:** *required*
+
+    connParam : <type>
+        <Short description of connParam>
+        **Default:** *required*
+
+"""
+
     from .. import sim
 
-    ''' Generates connections between all pre and post-syn cells based on probability values'''
     if sim.cfg.verbose: print('Generating set of probabilistic connections (rule: %s) ...' % (connParam['label']))
 
     allRands = self.generateRandsPrePost(preCellsTags, postCellsTags)
@@ -389,6 +463,8 @@ def probConn (self, preCellsTags, postCellsTags, connParam):
 
     # standard probabilistic conenctions   
     else:
+        # print('rank %d'%(sim.rank))
+        # print(connParam)
         # calculate the conn preGids of the each pre and post cell
         # for postCellGid,postCellTags in sorted(postCellsTags.items()):  # for each postsyn cell
         for postCellGid,postCellTags in postCellsTags.items():  # for each postsyn cell  # for each postsyn cell
@@ -408,6 +484,35 @@ def probConn (self, preCellsTags, postCellsTags, connParam):
 # Generate random unique integers 
 # -----------------------------------------------------------------------------
 def randUniqueInt(self, r, N, vmin, vmax):
+    """
+    Function for/to <short description of `netpyne.network.conn.randUniqueInt`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+    r : <type>
+        <Short description of r>
+        **Default:** *required*
+
+    N : <type>
+        <Short description of N>
+        **Default:** *required*
+
+    vmin : <type>
+        <Short description of vmin>
+        **Default:** *required*
+
+    vmax : <type>
+        <Short description of vmax>
+        **Default:** *required*
+
+
+    """
+
+
     r.discunif(vmin,vmax)
     out = []
     while len(out)<N:
@@ -419,10 +524,32 @@ def randUniqueInt(self, r, N, vmin, vmax):
 # -----------------------------------------------------------------------------
 # Convergent connectivity 
 # -----------------------------------------------------------------------------
-def convConn (self, preCellsTags, postCellsTags, connParam):
+def convConn(self, preCellsTags, postCellsTags, connParam):
+    """
+    Function for/to <short description of `netpyne.network.conn.convConn`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+    preCellsTags : <type>
+        <Short description of preCellsTags>
+        **Default:** *required*
+
+    postCellsTags : <type>
+        <Short description of postCellsTags>
+        **Default:** *required*
+
+    connParam : <type>
+        <Short description of connParam>
+        **Default:** *required*
+
+"""
+
     from .. import sim
 
-    ''' Generates connections between all pre and post-syn cells based on probability values'''
     if sim.cfg.verbose: print('Generating set of convergent connections (rule: %s) ...' % (connParam['label']))
            
     # get list of params that have a lambda function
@@ -466,10 +593,32 @@ def convConn (self, preCellsTags, postCellsTags, connParam):
 # -----------------------------------------------------------------------------
 # Divergent connectivity 
 # -----------------------------------------------------------------------------
-def divConn (self, preCellsTags, postCellsTags, connParam):
+def divConn(self, preCellsTags, postCellsTags, connParam):
+    """
+    Function for/to <short description of `netpyne.network.conn.divConn`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+    preCellsTags : <type>
+        <Short description of preCellsTags>
+        **Default:** *required*
+
+    postCellsTags : <type>
+        <Short description of postCellsTags>
+        **Default:** *required*
+
+    connParam : <type>
+        <Short description of connParam>
+        **Default:** *required*
+
+"""
+
     from .. import sim
 
-    ''' Generates connections between all pre and post-syn cells based on probability values'''
     if sim.cfg.verbose: print('Generating set of divergent connections (rule: %s) ...' % (connParam['label']))
      
     # get list of params that have a lambda function
@@ -511,10 +660,32 @@ def divConn (self, preCellsTags, postCellsTags, connParam):
 # -----------------------------------------------------------------------------
 # From list connectivity 
 # -----------------------------------------------------------------------------
-def fromListConn (self, preCellsTags, postCellsTags, connParam):
+def fromListConn(self, preCellsTags, postCellsTags, connParam):
+    """
+    Function for/to <short description of `netpyne.network.conn.fromListConn`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+    preCellsTags : <type>
+        <Short description of preCellsTags>
+        **Default:** *required*
+
+    postCellsTags : <type>
+        <Short description of postCellsTags>
+        **Default:** *required*
+
+    connParam : <type>
+        <Short description of connParam>
+        **Default:** *required*
+
+"""
+
     from .. import sim
 
-    ''' Generates connections between all pre and post-syn cells based list of relative cell ids'''
     if sim.cfg.verbose: print('Generating set of connections from list (rule: %s) ...' % (connParam['label']))
 
     orderedPreGids = sorted(preCellsTags)
@@ -552,7 +723,7 @@ def fromListConn (self, preCellsTags, postCellsTags, connParam):
 # -----------------------------------------------------------------------------
 # Set parameters and create connection
 # -----------------------------------------------------------------------------
-def _addCellConn (self, connParam, preCellGid, postCellGid):
+def _addCellConn(self, connParam, preCellGid, postCellGid):
     from .. import sim
 
     # set final param values
@@ -564,6 +735,7 @@ def _addCellConn (self, connParam, preCellGid, postCellGid):
     # and then selecting a value from list based of pre- and post- gid -- that way only seed once at beginning in connectCells()
     # Howeve, not clear if faster in all cases since need to generate values for len(pre)*len(post), whereas here only a subset
     randSeeded = False
+        
     for param in paramStrFunc:
         if param+'List' in connParam:
             finalParam[param] = connParam[param+'List'][preCellGid,postCellGid]
@@ -605,7 +777,9 @@ def _addCellConn (self, connParam, preCellGid, postCellGid):
         # if 'threshold' in connParam: params['threshold'] = connParam.get('threshold')  # deprecated, use threshold in preSyn cell sec
         if 'shape' in connParam: params['shape'] = connParam.get('shape')    
         if 'plast' in connParam: params['plast'] = connParam.get('plast')    
-        if 'gapJunction' in connParam: params['gapJunction'] = connParam.get('gapJunction')
+        if 'gapJunction' in connParam:
+            params['gapJunction'] = connParam.get('gapJunction')
+            params['preLoc'] = connParam.get('preLoc')
 
         if sim.cfg.includeParamsLabel: params['label'] = connParam.get('label')
         

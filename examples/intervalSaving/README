@@ -1,0 +1,14 @@
+# M1NetworkModel
+## Description
+This example is based on the multiscale model of mouse primary motor cortex (M1) example.
+In the init.py function it shows code on how to use the interval saving function this includes adding some flags to cfg.py.
+
+Developed using NetPyNE (www.neurosimlab.org/netpyne)
+
+## Setup and execution
+
+This example is meant to be use withe the M1detailed exampled temporarily replace the init and cfg files in that example and run as normal
+
+Requires NEURON with Python and MPI support. 
+
+

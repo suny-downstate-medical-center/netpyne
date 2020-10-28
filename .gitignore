@@ -1,3 +1,5 @@
+/doc/source/*.rst
+
 /examples/sandbox/LEMS_sandbox.xml
 /examples/M1/LEMS_M1.xml
 
@@ -48,3 +50,4 @@ umac
 /examples/M1/*.png
 /examples/M1/*.pov
 /examples/HHTut/temp.json
+.vscode

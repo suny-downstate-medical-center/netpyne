@@ -1,11 +1,9 @@
 
 """
-network/rxd.py 
+Module for adding reaction-diffusion to network models
 
-Network class methods to add RxD  
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
@@ -22,12 +20,28 @@ except NameError:
 from future import standard_library
 standard_library.install_aliases()
 import copy
-
+try:
+    from neuron.crxd import rxdmath 
+except:
+    print('Warning: Could not import rxdmath module')
 
 # -----------------------------------------------------------------------------
 # Add RxD
 # -----------------------------------------------------------------------------
-def addRxD (self):
+def addRxD(self):
+    """
+    Function for/to <short description of `netpyne.network.netrxd.addRxD`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+
+    """
+
+
     from .. import sim
 
     if len(self.params.rxdParams):
@@ -140,12 +154,13 @@ def _addRegions(self, params):
                         nrnSecs.append(sec['hObj'])
 
         # call rxd method to create Region
-        self.rxd['regions'][label]['hObj'] = rxd.Region(secs=nrnSecs, 
-                                                nrn_region=param['nrn_region'], 
-                                                geometry=geometry, 
-                                                dimension=param['dimension'], 
-                                                dx=param['dx'], 
-                                                name=label)
+        if nrnSecs: self.rxd['regions'][label]['hObj'] = rxd.Region(secs=nrnSecs, 
+                                                                   nrn_region=param['nrn_region'], 
+                                                                   geometry=geometry, 
+                                                                   dimension=param['dimension'], 
+                                                                   dx=param['dx'], 
+                                                                   name=label)
+        else: self.rxd['regions'][label]['hObj'] = None
         print('  Created Region %s'%(label))
 
 
@@ -193,7 +208,8 @@ def _addSpecies(self, params):
         if not isinstance(param['regions'], list):
             param['regions'] = [param['regions']]
         try:
-            nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions']]
+            nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions'] if self.rxd['regions'][region]['hObj'] != None]
+
         except:
            print('  Error creating Species %s: could not find regions %s'%(label, param['regions']))
         
@@ -229,12 +245,13 @@ def _addSpecies(self, params):
             param['atolscale'] = 1
 
         # call rxd method to create Region
-        self.rxd['species'][label]['hObj'] = rxd.Species(regions=nrnRegions, 
-                                                d=param['d'], 
-                                                charge=param['charge'], 
-                                                initial=initial, 
-                                                atolscale=param['atolscale'], 
-                                                name=label)
+        if nrnRegions: self.rxd['species'][label]['hObj'] = rxd.Species(regions=nrnRegions, 
+                                                                       d=param['d'], 
+                                                                       charge=param['charge'], 
+                                                                       initial=initial, 
+                                                                       atolscale=param['atolscale'], 
+                                                                       name=label)
+        else: self.rxd['species'][label]['hObj'] = None
         print('  Created Species %s'%(label))
 
 
@@ -252,7 +269,7 @@ def _addStates(self, params):
         if not isinstance(param['regions'], list):
             param['regions'] = [param['regions']]
         try:
-            nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions']]
+            nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions'] if self.rxd['regions'][region]['hObj'] != None]
         except:
            print('  Error creating State %s: could not find regions %s'%(label, param['regions']))
         
@@ -276,8 +293,9 @@ def _addStates(self, params):
             initial = param['initial']
         
         # call rxd method to create Region
-        self.rxd['states'][label]['hObj'] = rxd.State(regions=nrnRegions, 
-                                                    initial=initial)
+        if nrnRegions: self.rxd['states'][label]['hObj'] = rxd.State(regions=nrnRegions, 
+                                                                    initial=initial)
+        else: self.rxd['states'][label]['hObj'] = None
         print('  Created State %s'%(label))
 
 
@@ -291,13 +309,16 @@ def _addReactions(self, params, multicompartment=False):
     reactionDictKey = 'multicompartmentReactions' if multicompartment else 'reactions'
 
     for label, param in params.items():
-        dynamicVars = {'sim': sim}
+        dynamicVars = {'sim': sim, 'rxdmath': rxdmath}
         # reactant
         if 'reactant' not in param:
             print('  Error creating %s %s: "reactant" parameter was missing'%(reactionStr,label))
             continue
         reactantStr = self._replaceRxDStr(param['reactant'])
-        exec('reactant = ' + reactantStr, dynamicVars)
+        try:
+            exec('reactant = ' + reactantStr, dynamicVars)
+        except TypeError:
+            continue 
         if 'reactant' not in dynamicVars: dynamicVars['reactant']  # fix for python 2
 
         # product
@@ -336,7 +357,7 @@ def _addReactions(self, params, multicompartment=False):
         elif not isinstance(param['regions'], list):
             param['regions'] = [param['regions']]
             try:
-                nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions']]
+                nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions'] if self.rxd['regions'][region]['hObj'] != None]
             except:
                print('  Error creating %s %s: could not find regions %s'%(reactionStr, label, param['regions']))
 
@@ -351,6 +372,9 @@ def _addReactions(self, params, multicompartment=False):
         # custom_dynamics
         if 'custom_dynamics' not in param:
             param['custom_dynamics'] = False
+        if 'membrane_flux' not in param:
+            param['membrane_flux'] = False 
+
 
         #import IPython; IPython.embed()
 
@@ -360,6 +384,7 @@ def _addReactions(self, params, multicompartment=False):
                                                                             rate_b=dynamicVars['rate_b'] if 'rate_b' in dynamicVars else rate_b, 
                                                                             regions=nrnRegions, 
                                                                             custom_dynamics=param['custom_dynamics'],
+                                                                            membrane_flux=param['membrane_flux'],
                                                                             membrane=nrnMembraneRegion)
 
         print('  Created %s %s'%(reactionStr, label))
@@ -371,7 +396,7 @@ def _addRates(self, params):
     from .. import sim
 
     for label, param in params.items():
-        dynamicVars = {'sim': sim}
+        dynamicVars = {'sim': sim, 'rxdmath': rxdmath}
         # species
         if 'species' not in param:
             print('  Error creating Rate %s: "species" parameter was missing'%(label))

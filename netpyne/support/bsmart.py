@@ -37,12 +37,16 @@ for i in range(freq+1): # Loop over frequencies
 In either case (pwcausalr or spectrum_AR), the smoothness of the spectra is determined by the
 polynomial order p. Larger values of p give less-smooth spectra.
 
-Version: 2011feb11 by Cliff Kerr (cliffk@neurosim.downstate.edu)
+Version: 2019jun17 by Cliff Kerr (cliff@thekerrlab.com)
 """
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import absolute_import
+import numpy as np
+from builtins import range
+from future import standard_library
+standard_library.install_aliases()
 
 # ARMORF -- AR parameter estimation via LWR method modified by Morf. 
 #
@@ -64,9 +68,7 @@ from __future__ import absolute_import
 #        S. Haykin, Nonlinear Methods of Spectral Analysis, 2nd Ed. 
 #              Springer-Verlag, 1983, Chapter 2 
 
-from builtins import range
-from future import standard_library
-standard_library.install_aliases()
+
 def timefreq(x,fs=200):
     """
     TIMEFREQ
@@ -75,15 +77,12 @@ def timefreq(x,fs=200):
     total number of points, the maximum frequency, the minimum (or change in)
     frequency, and the vector of frequency points F.
     
-    Version: 2011may04
+    Version: 2019jun17
     """
-    from numpy import size, shape, arange, append
-    
-    maxfreq=float(fs)/2.0 # Maximum frequency
-    minfreq=float(fs)/float(size(x,0)) # Minimum and delta frequency -- simply the inverse of the length of the recording in seconds
-    F=arange(minfreq,maxfreq+minfreq,minfreq) # Create frequencies evenly spaced from 0:minfreq:maxfreq
-    F=append(0,F) # Add zero-frequency component
-    
+    maxfreq = float(fs)/2.0 # Maximum frequency
+    minfreq = float(fs)/float(np.size(x,0)) # Minimum and delta frequency -- simply the inverse of the length of the recording in seconds
+    F = np.arange(minfreq,maxfreq+minfreq,minfreq) # Create frequencies evenly spaced from 0:minfreq:maxfreq
+    F = np.append(0,F) # Add zero-frequency component
     return F
 
 
@@ -95,30 +94,29 @@ def ckchol(M):
     positive-definite; else it returns the identity matrix. It was written
     to handle the "matrix must be positive definite" error in linalg.cholesky.
     
-    Version: 2011may03
+    Version: 2019jun17
     """
-    from numpy import linalg, matrix, eye, size
-
     try: # First, try the Cholesky decomposition
-        output=linalg.cholesky(M)
+        output=np.linalg.cholesky(M)
     except: # If not, just return garbage
         print('WARNING: Cholesky failed, so returning (invalid) identity matrix!')    
-        output=matrix(eye(size(M,0)))
-    
+        output=np.matrix(np.eye(np.size(M,0)))
     return output
     
 
 
 def armorf(x,ntrls,npts,p):
-    from scipy import shape, array, matrix, zeros, disp, concatenate, eye, dstack
-    from numpy import linalg # for inverse and Cholesky factorization;
-    import numpy as np
-    inv=linalg.inv; # Make name consistent with Matlab
+    inv = np.linalg.inv; # Make name consistent with Matlab
     
     # Initialization 
-    x=matrix(x)
-    [L,N]=shape(x);      # L is the number of channels, N is the npts*ntrls 
-    R0=R0f=R0b=pf=pb=pfb=ap=bp=En=matrix(zeros((L,L,1)));    # covariance matrix at 0, 
+    x=np.matrix(x)
+    [L,N]=np.shape(x);      # L is the number of channels, N is the npts*ntrls 
+    pf  = np.matrix(np.zeros((L,L,1)))
+    pb  = np.matrix(np.zeros((L,L,1)))
+    pfb = np.matrix(np.zeros((L,L,1)))
+    ap  = np.matrix(np.zeros((L,L,1)))
+    bp  = np.matrix(np.zeros((L,L,1)))
+    En  = np.matrix(np.zeros((L,L,1)))
         
     # calculate the covariance matrix? 
     for i in range(ntrls):
@@ -141,49 +139,50 @@ def armorf(x,ntrls,npts,p):
     # Initial output variables
     tmp=[]
     for i in range(L): tmp.append([]) # In Matlab, coeff=[], and anything can be appended to that.
-    coeff = matrix(tmp);#  Coefficient matrices of the AR model 
-    kr = matrix(tmp);  # reflection coefficients 
-    aparr=array(ap) # Convert AP matrix to an array, so it can be dstacked
-    bparr=array(bp)
+    coeff = np.matrix(tmp);#  Coefficient matrices of the AR model 
+    kr = np.matrix(tmp);  # reflection coefficients 
+    aparr = np.array(ap) # Convert AP matrix to an array, so it can be dstacked
+    bparr = np.array(bp)
     
     for m in range(p): 
       # Calculate the next order reflection (parcor) coefficient 
       ck = inv((ckchol(pf).T).H)*pfb*inv(ckchol(pb).T);  
-      kr=concatenate((kr,ck),1); 
+      kr=np.concatenate((kr,ck),1); 
       # Update the forward and backward prediction errors 
-      ef = eye(L)- ck*ck.H; 
-      eb = eye(L)- ck.H*ck; 
+      ef = np.eye(L)- ck*ck.H; 
+      eb = np.eye(L)- ck.H*ck; 
         
       # Update the prediction error 
       En = En*(ckchol(ef).T).H;
-      E = (ef+eb)/2;
+#      E = (ef+eb)/2;
 
       # Update the coefficients of the forward and backward prediction errors 
-      Z=zeros((L,L)) # Make it easier to define this
-      aparr=dstack((aparr,Z))
-      bparr=dstack((bparr,Z))
+      Z = np.zeros((L,L)) # Make it easier to define this
+      aparr = np.dstack((aparr,Z))
+      bparr = np.dstack((bparr,Z))
       pf = pb = pfb = Z
       # Do some variable juggling to handle Python's array/matrix limitations
-      a=b=zeros((L,L,0))
+      a = np.zeros((L,L,0))
+      b = np.zeros((L,L,0))
 
       for i in range(m+2):  
-          tmpap1=matrix(aparr[:,:,i]) # Need to convert back to matrix to perform operations
-          tmpbp1=matrix(bparr[:,:,i])
-          tmpap2=matrix(aparr[:,:,m+1-i])
-          tmpbp2=matrix(bparr[:,:,m+1-i])
+          tmpap1 = np.matrix(aparr[:,:,i]) # Need to convert back to matrix to perform operations
+          tmpbp1 = np.matrix(bparr[:,:,i])
+          tmpap2 = np.matrix(aparr[:,:,m+1-i])
+          tmpbp2 = np.matrix(bparr[:,:,m+1-i])
           tmpa = inv((ckchol(ef).T).H)*(tmpap1-ck*tmpbp2); 
           tmpb = inv((ckchol(eb).T).H)*(tmpbp1-ck.H*tmpap2); 
-          a=dstack((a,array(tmpa)))
-          b=dstack((b,array(tmpb)))
+          a = np.dstack((a,np.array(tmpa)))
+          b = np.dstack((b,np.array(tmpb)))
 
       for k in range(ntrls):
-          efp = zeros((L,npts-m-2)); 
-          ebp = zeros((L,npts-m-2)); 
+          efp = np.zeros((L,npts-m-2)); 
+          ebp = np.zeros((L,npts-m-2)); 
           for i in range(m+2): 
               k1=m+2-i+k*npts; 
               k2=npts-i+k*npts; 
-              efp = efp+matrix(a[:,:,i])*matrix(x[:,k1:k2]); 
-              ebp = ebp+matrix(b[:,:,m+1-i])*matrix(x[:,k1-1:k2-1]); 
+              efp = efp+np.matrix(a[:,:,i])*np.matrix(x[:,k1:k2]); 
+              ebp = ebp+np.matrix(b[:,:,m+1-i])*np.matrix(x[:,k1-1:k2-1]); 
           pf = pf + efp*efp.H; 
           pb = pb + ebp*ebp.H; 
           pfb = pfb + efp*ebp.H; 
@@ -192,22 +191,19 @@ def armorf(x,ntrls,npts,p):
       bparr = b; 
     
     for j in range(p):
-       coeff = concatenate((coeff,inv(matrix(a[:,:,0]))*matrix(a[:,:,j+1])),1); 
+       coeff = np.concatenate((coeff,inv(np.matrix(a[:,:,0]))*np.matrix(a[:,:,j+1])),1); 
 
     return coeff, En*En.H, kr
     
 
 #Port of spectrum_AR.m
-# Version: 2010jan18
-
+# Version: 2019jun17
 def spectrum_AR(A,Z,M,f,fs): # Get the spectrum in one specific frequency-f
-    from scipy import eye, size, exp, pi, real, disp
-    from numpy import linalg; inv=linalg.inv
-    N = size(Z,0); H = eye(N,N); # identity matrix
+    N = np.size(Z,0); H = np.eye(N,N); # identity matrix
     for m in range(M):
-        H = H + A[:,m*N:(m+1)*N]*exp(-1j*(m+1)*2*pi*f/fs);   # Multiply f in the exponent by sampling interval (=1/fs). See Richard Shiavi
+        H = H + A[:,m*N:(m+1)*N]*np.exp(-1j*(m+1)*2*np.pi*f/fs);   # Multiply f in the exponent by sampling interval (=1/fs). See Richard Shiavi
         
-    H = inv(H);
+    H = np.linalg.inv(H);
     S = H*Z*H.H/fs;
     
     return S,H
@@ -222,8 +218,7 @@ def spectrum_AR(A,Z,M,f,fs): # Get the spectrum in one specific frequency-f
 #      If the time series have one ralization and are stationary long, just let Nr=1, Nl=length(x) 
 #   porder is the order of AR model 
 #   fs is sampling frequency 
-#   freq is a vector of frequencies of interest, usually freq=0:fs/2 
-#       CK: WRONG!! freq must be a scalar, else the for loop doesn't work.
+#   freq is a scalar (CK: for pwcausal, it was a vector of frequencies of interest, usually freq=0:fs/2)
 # 
 #   Fx2y is the causality measure from x to y 
 #   Fy2x is causality from y to x 
@@ -231,53 +226,47 @@ def spectrum_AR(A,Z,M,f,fs): # Get the spectrum in one specific frequency-f
 #        the order of Fx2y/Fy2x is 1 to 2:L, 2 to 3:L,....,L-1 to L.  That is, 
 #        1st column: 1&2; 2nd: 1&3; ...; (L-1)th: 1&L; ...; (L(L-1))th: (L-1)&L. 
 
-# revised Jan. 2006 by Yonghong Chen 
+# revised Jan. 2006 by Yonghong Chen; refactored 2019jun17 by Cliff Kerr
 # Note: remove the ensemble mean before using this code 
 
 def pwcausalr(x,Nr,Nl,porder,fs,freq=0): # Note: freq determines whether the frequency points are calculated or chosen
-    from pylab import size, shape, real, log, conj, zeros, arange, disp, array
-    from numpy import linalg; det=linalg.det
-    import numpy as np # Just for "sum"; can't remember what's wrong with pylab's sum
-    [L,N] = shape(x); #L is the number of channels, N is the total points in every channel 
-     
-    if freq==0: F=timefreq(x[0,:],fs) # Define the frequency points
-    else: F=array(list(range(0,freq+1))) # Or just pick them
-    npts=size(F,0)
+    [L,N] = np.shape(x); #L is the number of channels, N is the total points in every channel 
+    if freq==0: 
+        F = timefreq(x[0,:], fs) # Define the frequency points
+    else: 
+        F = np.array(list(range(0, int(freq+1)))) # Or just pick them
+    npts = np.size(F,0)
+    
     # Initialize arrays
-    maxindex=np.sum(arange(1,L))
-    pp=zeros((L,npts))
-    # Had these all defined on one line, and stupidly they STAY linked!!
-    cohe=zeros((maxindex,npts))
-    Fy2x=zeros((maxindex,npts))
-    Fx2y=zeros((maxindex,npts))
-    Fxy=zeros((maxindex,npts))
-    index = 0;
-
-    for i in range(1,L):
-        for j in range(i+1,L+1):
-            y=zeros((2,N)) # Initialize y
-            index = index + 1; 
-            y[0,:] = x[i-1,:]; 
-            y[1,:] = x[j-1,:];   
-            A2,Z2,tmp = armorf(y,Nr,Nl,porder); #fitting a model on every possible pair 
-            eyx = Z2[1,1] - Z2[0,1]**2/Z2[0,0]; #corrected covariance 
-            exy = Z2[0,0] - Z2[1,0]**2/Z2[1,1]; 
-            f_ind = 0; 
-            for f in F:
-                f_ind = f_ind + 1; 
-                S2,H2 = spectrum_AR(A2,Z2,porder,f,fs); 
-                pp[i-1,f_ind-1] = abs(S2[0,0]*2);      # revised 
-                if (i==L-1) & (j==L):
-                    pp[j-1,f_ind-1] = abs(S2[1,1]*2);  # revised 
-                cohe[index-1,f_ind-1] = real(abs(S2[0,1])**2 / S2[0,0]/S2[1,1]);   
-                Fy2x[index-1,f_ind-1] = log(abs(S2[0,0])/abs(S2[0,0]-(H2[0,1]*eyx*conj(H2[0,1]))/fs)); #Geweke's original measure 
-                Fx2y[index-1,f_ind-1] = log(abs(S2[1,1])/abs(S2[1,1]-(H2[1,0]*exy*conj(H2[1,0]))/fs)); 
-                Fxy[index-1,f_ind-1] = log(abs(S2[0,0]-(H2[0,1]*eyx*conj(H2[0,1]))/fs)*abs(S2[1,1]-(H2[1,0]*exy*conj(H2[1,0]))/fs)/abs(det(S2))); 
-                
+    maxindex = np.arange(L).sum()
+    pp = np.zeros((L,npts))
+    cohe = np.zeros((maxindex,npts))
+    Fy2x = np.zeros((maxindex,npts))
+    Fx2y = np.zeros((maxindex,npts))
+    Fxy  = np.zeros((maxindex,npts))
+    
+    index = -1
+    for i in range(L-1):
+        for j in range(i+1,L):
+            y = np.zeros((2,N)) # Initialize y
+            index += 1;
+            y[0,:] = x[i,:]
+            y[1,:] = x[j,:]   
+            A2,Z2,tmp = armorf(y,Nr,Nl,porder) #fitting a model on every possible pair 
+            
+            eyx = Z2[1,1] - Z2[0,1]**2/Z2[0,0] #corrected covariance 
+            exy = Z2[0,0] - Z2[1,0]**2/Z2[1,1] 
+            for f_ind,f in enumerate(F):
+                S2,H2 = spectrum_AR(A2,Z2,porder,f,fs) 
+                pp[i,f_ind] = abs(S2[0,0]*2)      # revised 
+                if (i==L-2) and (j==L-1):
+                    pp[j,f_ind] = abs(S2[1,1]*2)  # revised 
+                cohe[index, f_ind] = np.real(abs(S2[0,1])**2 / S2[0,0]/S2[1,1])   
+                Fy2x[index, f_ind] = np.log(abs(S2[0,0])/abs(S2[0,0]-(H2[0,1]*eyx*np.conj(H2[0,1]))/fs)) #Geweke's original measure 
+                Fx2y[index, f_ind] = np.log(abs(S2[1,1])/abs(S2[1,1]-(H2[1,0]*exy*np.conj(H2[1,0]))/fs)) 
+                Fxy[index, f_ind]  = np.log(abs(S2[0,0]-(H2[0,1]*eyx*np.conj(H2[0,1]))/fs)*abs(S2[1,1]-(H2[1,0]*exy*np.conj(H2[1,0]))/fs)/abs(np.linalg.det(S2))) 
+    
     return F,pp,cohe,Fx2y,Fy2x,Fxy
-
-
-
 
 
 
@@ -303,15 +292,14 @@ def granger(vec1,vec2,order=10,rate=200,maxfreq=0):
         rate is the sampling rate, in Hz
         maxfreq is the maximum frequency to be returned, in Hz
     
-    Version: 2011jul18
+    Version: 2019jun17
     """
-    from .bsmart import timefreq, pwcausalr
-    from scipy import array, size
+    if maxfreq==0: 
+        F = timefreq(vec1,rate) # Define the frequency points
+    else: 
+        F = np.array(list(range(0,maxfreq+1))) # Or just pick them
+    npts = np.size(F,0)
     
-    if maxfreq==0: F=timefreq(vec1,rate) # Define the frequency points
-    else: F=array(list(range(0,maxfreq+1))) # Or just pick them
-    npts=size(F,0)
-    
-    data=array([vec1,vec2])
-    F,pp,cohe,Fx2y,Fy2x,Fxy=pwcausalr(data,1,npts,order,rate,maxfreq)
+    data = np.array([vec1,vec2])
+    F,pp,cohe,Fx2y,Fy2x,Fxy = pwcausalr(data,1,npts,order,rate,maxfreq)
     return F,pp[0,:],cohe[0,:],Fx2y[0,:],Fy2x[0,:],Fxy[0,:]

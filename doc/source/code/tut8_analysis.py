@@ -2,8 +2,6 @@
 analysis.py 
 
 Functions to read and plot figures from the batch simulation results. 
-
-Contributors: salvadordura@gmail.com
 """
 
 import json
@@ -16,6 +14,8 @@ from pylab import *
 from itertools import product
 from pprint import pprint
 from netpyne import specs
+from collections import OrderedDict
+
 
 
 #--------------------------------------------------------------------
@@ -27,7 +27,7 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
         print('\nLoading single file with all data...')
         filename = '%s/%s/%s_allData.json' % (dataFolder, batchLabel, batchLabel)
         with open(filename, 'r') as fileObj:
-            dataLoad = json.load(fileObj, object_pairs_hook=specs.OrderedDict)
+            dataLoad = json.load(fileObj, object_pairs_hook=OrderedDict)
         params = dataLoad['params']
         data = dataLoad['data']
         return params, data
@@ -69,7 +69,7 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
                 outFile = b['saveFolder']+'/'+simLabel+'.json'
                 try:
                     with open(outFile, 'r') as fileObj:
-                        output = json.load(fileObj, object_pairs_hook=specs.OrderedDict)
+                        output = json.load(fileObj, object_pairs_hook=OrderedDict)
                     # save output file in data dict
                     data[iCombStr] = {}  
                     data[iCombStr]['paramValues'] = pComb  # store param values
@@ -125,7 +125,7 @@ def toPandas(params, data):
             colRename.append(colName)
         else: 
             colRename.append(col)
-    print(colRename)
+    #print(colRename)
     df.columns = colRename
 
     return df
@@ -160,7 +160,7 @@ def plot2DRate(dataFolder, batchLabel, params, data, par1, par2, val, valLabel, 
     for k in list(df.popRates[0].keys()): dfpop[k] = [r[k] for r in df.popRates] 
     #return dfpop
 
-    print(dfpop)
+    #print(dfpop)
     # if not valLabel: valLabel = val
     dfsubset = dfpop[[par1,par2,val]] 
         # dfgroup = dfsubset.groupby(by=[par1,par2])
@@ -196,7 +196,7 @@ def plot2DRate(dataFolder, batchLabel, params, data, par1, par2, val, valLabel, 
 # Function to read batch data and plot figure
 #--------------------------------------------------------------------
 def readPlot():
-    dataFolder = 'tut8_data/'
+    dataFolder = 'tauWeight_data/'
     batchLabel = 'tauWeight'
     
     params, data = readBatchData(dataFolder, batchLabel, loadAll=0, saveAll=1, vars=None, maxCombs=None) 

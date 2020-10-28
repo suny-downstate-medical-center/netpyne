@@ -1,3 +1,8 @@
+"""
+Module containing NetPyNE metadata
+
+"""
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
@@ -734,7 +739,8 @@ metadata = {
                         "label": "Number of individual synaptic contacts per connection",
                         "help": "Number of individual synaptic contacts (synapses) per cell-to-cell connection (connection). Can be defined as a function (see Functions as strings). If omitted, defaults to 1.",
                         "suggestions": "",
-                        "hintText": ""
+                        "hintText": "",
+                        "default": 1
                     },
                     "weight": {
                         "label": "Weight of synaptic connection",
@@ -1291,7 +1297,8 @@ metadata = {
                 "label": "Traces to record from cells",
                 "help": "Dict of traces to record (default: {} ; example: {'V_soma': {'sec':'soma','loc':0.5,'var':'v'} }).",
                 "suggestions": "",
-                "type": "dict(dict())"
+                "type": "dict(dict)",
+                "default": "{\"V_soma\": {\"sec\": \"soma\", \"loc\": 0.5, \"var\": \"v\"}}"
             },
             "saveCSV": {
                 "label": "Save as CSV",

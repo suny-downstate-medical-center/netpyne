@@ -4,8 +4,6 @@ params.py
 Example of saving different network components to file
 
 netParams is an object containing a set of network parameters using a standardized structure
-
-Contributors: salvadordura@gmail.com
 """
 
 from netpyne import specs

@@ -46,7 +46,7 @@ python:
 
 install:
     - cd ..
-    - pip install numpy matplotlib scipy pandas future tables
+    - pip install numpy matplotlib scipy pandas future tables bokeh
     - pip install pyneuroml # This will install libNeuroML also
     - git clone --branch 7.6.2 https://github.com/neuronsimulator/nrn
     - cd nrn
@@ -73,12 +73,12 @@ script:
     # HHTut example
     - cd ../../../examples/HHTut
     - python HHTut_run.py -nogui
-    - python HHTut_export.py -nogui
+    - python HHTut_export.py -nogui 
     # HybridTut example
     - cd ../HybridTut
     - $NEURON_HOME/x86_64/bin/nrnivmodl .
     - python HybridTut_run.py -nogui
-    - python HybridTut_export.py -nogui
+     - python HybridTut_export.py -nogui 
     # M1 example
     - cd ../M1
     - $NEURON_HOME/x86_64/bin/nrnivmodl .
@@ -105,8 +105,7 @@ script:
     # NeuroML import example
     - cd ../NeuroMLImport/
     - $NEURON_HOME/x86_64/bin/nrnivmodl .
-    - python SimpleNet_import.py -nogui
-
+    - python SimpleNet_import.py -nogui  
     - cd ../..
 
 notifications: 

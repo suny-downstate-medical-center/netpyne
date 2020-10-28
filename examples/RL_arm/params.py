@@ -4,8 +4,6 @@ netparams.py
 netParams is a dict containing a set of network parameters using a standardized structure
 
 simConfig is a dict containing a set of simulation configurations using a standardized structure
-
-Contributors: salvadordura@gmail.com
 """
 
 from netpyne import specs
@@ -298,7 +296,7 @@ simConfig.verbose = True # show detailed messages
 # Recording 
 simConfig.recordCells = ['all']  # list of cells to record from 
 simConfig.recordTraces = {}
-# 'V':{'sec':'soma','loc':0.5,'var':'v'}, 
+# {'V':{'sec':'soma','loc':0.5,'var':'v'}, 
 #     'u':{'sec':'soma', 'pointp':'Izhi', 'var':'u'}, 
 #     'I':{'sec':'soma', 'pointp':'Izhi', 'var':'i'}, 
 #     'NMDA_g': {'sec':'soma', 'loc':0.5, 'synMech':'NMDA', 'var':'g'},

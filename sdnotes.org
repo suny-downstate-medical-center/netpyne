@@ -7665,13 +7665,14 @@ def genLFP (lrec,lx,ly,lz,elx,ely,elz):
 - create PR from development to master (via https://github.com/Neurosim-lab/netpyne)
 - make sure no conflicts and Travis tests pass 
 - merge PR
-- bnp (to build documentation)
-- npr (to release on pip)
+- "bnp" alias (to build documentation)
+- "npr" alias(to release on pip)
 - Announce new release:
--- in github: https://github.com/Neurosim-lab/netpyne/releases
--- in NEURON forum: https://www.neuron.yale.edu/phpBB/viewtopic.php?f=45&t=3685&sid=9c380fe3a835babd47148c81ae71343e
--- in Google group: https://groups.google.com/forum/#!forum/netpyne-mailing
--- in Slack 
+-- on github: https://github.com/Neurosim-lab/netpyne/releases
+-- on NEURON forum: https://www.neuron.yale.edu/phpBB/viewtopic.php?f=45&t=3685&sid=9c380fe3a835babd47148c81ae71343e
+-- on Google group: https://groups.google.com/forum/#!forum/netpyne-mailing
+-- on Slack #netpyne
+-- on Twitter (salvador account; create netpyne account?)
 
 * Netpyne Models/Users
 ** Github examples folder

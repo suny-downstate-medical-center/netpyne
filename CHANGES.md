@@ -1,10 +1,264 @@
+# Version 0.9.8
+
+**New features**
+
+- analysis.plotLFP can now be applied to external data
+
+- Evolutionary and Optuna optimization can now read results from .pkl files
+
+- Enabled recording of stimulus variables (e.g. SEClamp i)
+
+- Added options in load func to avoid instantiating cells, conns, stims and/or rxd 
+
+- Analysis and plotting of rate vs current (f-I) curve for single cell tuning
+
+- Recording and plotting of current dipoles in arbitrary subset of populations
+
+- Added option to plot LFP spectrogram with log y-axis 
+
+- Added option to plot the log of connectivity in plotConn
+
+
+**Bug fixes**
+
+- Fixed bug when using index with recordTraces
+
+- Fixed axes values in plotRxDConcentration and iplotRxDConcentration
+
+- Added links to necessary mod files in the importing cell models tutorial
+
+- Added aux_fun.inc to doc/source/code/mod as it's needed for some examples
+
+- Blocked terminal output from Git when no repository is found (i.e. with pip install netpyne)
+
+- Avoid adding section-based weightNorm values to point neurons (was affecting tut_import.py)
+
+# Version 0.9.7
+
+**New features**
+
+- Added optimization using Optuna (optuna.org)
+
+- Simplified cellParams to use dict key as 'cellType' and make 'conds' optional
+
+- Added netParams method addCellParamsTemplate() to create predefined cell templates 
+
+- Calculation of population avg rates now accepts multiple time intervals
+
+- Optional index argument to record from synMech
+
+- Added scale bar location option to plotTraces scalebar
+
+- Added evolutionary optimization for cell
+
+- Added support for reading pkl files in evol batches
+
+- Added plotfI func to netpyne
+
+- Added calculation of fI to gather.py
+
+- Added module imports to netpyne import
+
+- Added adaptive stochastic descent (ASD) 
+
+- Added ability to set theme and palette for iplots
+
+- Added netParams method addCellParamsTemplate() to create predefined cell templates
+
+- Added sizing-mode to iplots
+
+- Added Bokeh to NetPyNE requirements
+
+- Added theme for gui to analysis/utils, iplots can now use custom theme
+
+- Added t variable to plotLFP output data
+
+- Cleaned up plotRxD, added saving, added plot options, scalebar
+
+- Added interactive plot: iplotRxDConcentration
+
+- Added interactive plot: iplot2Dnet
+
+- Added interactive plot: iplotRatePSD
+
+- Added interactive plot: iplotSpikeStats
+
+- Cleaned up iplotLFP and improved color-handling with themes
+
+
+**Documentation improvements**
+
+- Updated and tested online tutorials
+
+- Changed all triple single-quoted docstrings to triple double-quoted
+
+- Improved many docstrings
+
+- Created a complete package index (http://netpyne.org/package_index.html) which is automatically generated from the human-readable docstrings in the codebase
+
+- Documented the process to release a new version and automated the html building process
+
+- Removed old unused Makefile for docs
+
+
+**Bug fixes** 
+
+- Fixed bug importing cells (avoid reading __docstring__)
+
+- Fixed bug when recording LFP with recordStep <1.0ms
+
+- Fixed net_lfp.py example
+
+- Fixed bug in plotSpikeStats
+
+- Fixed bug in plotSpikeHist
+
+- Fixed bugs in plotTraces scalebar
+
+- Fixed travis test issues
+
+- Fixed tut3 travis issue
+
+- Fixed bug in spikes.py
+
+- Fixed bug in plotRaster
+
+- Fix minor bug in iplotRaster()
+
+- Fixed problems with NeuroML
+
+
+
+# Version 0.9.6
+
+- Added useful hover information to iplots
+
+- Improvements to iplotTraces
+
+- Added interactive plot for connectivity (iplotConn)
+
+- Added 'dynamicRates' option for NetStim populations
+
+- Added option to have a uniform distribution of rates for Vecstim pulses
+
+- Added function for distributed saving at intervals
+
+- Added issue templates for GitHub
+
+- Overhaul of contribution guide (CONTRIBUTING.md)
+
+- Improved documentation
+
+- Fixed bugs and improved exception handling in plotConn 
+
+- Fixed loadSave V1 example model
+
+- Fixed bug calculating popRates when no spikes
+
+- Fixed bug in _distributeSynsUniformly()
+
+- Fixed bug in saveCellParamsRule()
+
+- Fixed bug in batch.py: initCfg params were not being updated for evol optim
+
+- Fixed bug in subconn.py: missing initialization of newWeightNorm 
+
+- Fixed bug in run.py: print run time with 2 significant figures
+
+- Fixed output stat filenames of evolutionary optim: .cvs to .csv 
+
+- Fixed bug in interval saving
+
+- Fixed bug in spikes.py in plotSpikeStats
+
+
+# Version 0.9.5
+
+- Print start and end date/time
+
+- Avoid removing batch folder so can rerun and complete batch simulations
+
+- Added loadBalance option to print individual node computer times
+
+- Initialize hoc events recursivley to reduce event queue overhead
+
+- Added plotRateSpectrogram analysis function 
+
+- Added option to save at intervals 
+
+- Fixed bug: wrong indentation for initializing fixedInterval in batch.py
+
+- Fixed bug in _distributeSynsUniformly function
+
+- Fixed bug in subConnParams grouped synapses
+
+- Fixed bug in analysis.granger figure save name
+
+- Fixed bug in printRunTime function
+
+
+# Version 0.9.4
+
+- Added option to avoid creating connections with weight=0
+
+- Made recording of dipoles optional with attribute cfg.recordDipoles
+
+- Rotated conn matrix x-axis labels so can fit large matrices 
+
+- Added 'removeWeightNorm' argument to plotConn() function
+
+- Added cfg option 'oneSynPerNetcon' to conn rules to create one synapse object per Netcon
+
+- Added first version of Contributors Guide
+
+- Fixed file write permissions for evol optim batches
+
+- Fixed bug calculating normally distributed rhythmic inputs - was using variance instead of std
+
+- Fixed bug in iplotDipole when smoothing window size = 0
+
+- Fixed bug in plotSpikeStats pop order
+
+- Fixed bug is plots with scalebars
+
+- Fixed bug in grid lines of plotConn
+
+- Fixed bug in subConnParams by sorting conns to ensure reproducibility on different number of cores
+
+- Fixed bug so uses 'Agg' backend if no display env variable e.g. in clusters
+
+
+# Version 0.9.3.1
+
+- Replaced deprecated imp module with importlib
+
+- Fix to cellsGrid cell locations with normRange
+
+
 # Version 0.9.3
 
 - Improved conversion from SONATA format, including 300 biophys cell example
 
 - Added saveCellConns, pt3dRelativeToCellLocation and invertedYCoord cfg options
 
+- Added lineWidth as argument of plotRatePSD() and plotLFP()
+
+- Modified plotLFP and plotRatePSD to use Morlet wavelet for PSD calculation
+
+- Added lineWidth argument to some raster and LFP plots
+
+- Added shuffling test to granger causality functions
+
 - Fixed bug plotting traces with one fig per trace
+
+- Fixed bug in granger functions - required conversion to int 
+
+- Fixed bug in plotShape when cells sections not available
+
+- Return meaningful cell info via 'repr' and 'str' for pointCell, compartCell
+
+- Fixed spelling typos in documentation
+
 
 # Version 0.9.2
 
@@ -15,6 +269,8 @@
 - Fixed replicability issue across different number of cores when using 'connList' connectivity rules
 
 - Improved speed performance of 'connList' connectivity rules
+
+- Added option cfg.distributeSynsUniformly to locate synapses at uniformly across section list; if false, place one syn per section in section list 
 
 - Updated RxD calcium buffering example
 
@@ -45,9 +301,11 @@
 
 - Removed deprecated hold function from plotConn
 
+
 # Version 0.9.1.2
 
 - Set 'pandas==0.23.4' to avoid error 
+
 
 # Version 0.9.1.1
 

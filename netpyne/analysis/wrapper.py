@@ -1,10 +1,8 @@
 """
-analysis/wrapper.py
+Module with wrapper function to call analysis functions specified in simConfig
 
-Wrapper function to call analysis functions specified in simConfig
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
@@ -14,10 +12,21 @@ from future import standard_library
 standard_library.install_aliases()
 from netpyne import __gui__
 
+try:
+    from datetime import datetime 
+except:
+    pass
 # -------------------------------------------------------------------------------------------------------------------
 ## Wrapper to run analysis functions in simConfig
 # -------------------------------------------------------------------------------------------------------------------
-def plotData ():
+def plotData():
+    """
+    Function for/to <short description of `netpyne.analysis.wrapper.plotData`>
+
+
+    """
+
+
     from .. import sim
 
     ## Plotting
@@ -41,3 +50,8 @@ def plotData ():
             sumTime = sum([t for k,t in sim.timingData.items() if k not in ['totalTime']])
             if sim.timingData['totalTime'] <= 1.2*sumTime:  # Print total time (only if makes sense)
                 print(('\nTotal time = %0.2f s' % sim.timingData['totalTime']))
+            
+        try:
+            print('\nEnd time: ', datetime.now())
+        except:
+            pass

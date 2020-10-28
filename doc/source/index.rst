@@ -3,31 +3,38 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to NetPyNE's documentation!
-=======================================
+Welcome to the NetPyNE homepage!
+================================
 
-NetPyNE is a python package to facilitate the development, parallel simulation and analysis of biological neuronal networks using the NEURON simulator. For more details see our `eLife paper <https://elifesciences.org/articles/44494>`_.
+NetPyNE is an open-source Python package to facilitate the development, simulation, parallelization, analysis, and optimization of biological neuronal networks using the NEURON simulator.  The NetPyNE source code is available on `GitHub <https://github.com/Neurosim-lab/netpyne>`_.
 
-We have also released an alpha version of the NetPyNE GUI -- `see the GUI video <https://www.youtube.com/watch?v=Hck_bLKm7v8>`_ and `GUI wiki page <https://github.com/Neurosim-lab/NetPyNE-UI/wiki>`_! 
+To make NetPyNE more accessible, we have released a (beta version) graphical user interface (GUI).  The GUI is freely available at `www.netpyne.org/gui <http://www.netpyne.org/gui>`_ with documentation `here <https://github.com/Neurosim-lab/NetPyNE-UI/wiki>`_.
 
-Join our `NetPyNE mailing list <https://groups.google.com/forum/#!forum/netpyne-mailing>`_ to receive updates on version releases and other major announcements.
+For a detailed overview of NetPyNE, including an interactive tutorial utilizing the GUI, please see our `CNS*2020 <https://www.cnsorg.org/cns-2020>`_
+tutorial: **Building mechanistic multiscale models: from molecules to networks using NEURON and NetPyNE**.  The complete video is available `here <https://yale.zoom.us/rec/play/tMAkcrr8-jo3HNCU4wSDUaR8W427LaKs1HAW_aUPzkmzUSJRO1WnY7cXZep77NjtCLWqwFVD6Ya8aNTL?continueMode=true&_x_zm_rtaid=J63YcHJGT9CUEjhkklHizQ.1598553844678.e87215956b2d8a50ef33ec4d6479b3b2&_x_zm_rhtaid=388>`_ and slides are available `here <http://bit.ly/cns20-netpyne>`_.
 
+Join our `NetPyNE mailing list <https://groups.google.com/forum/#!forum/netpyne-mailing>`_ to receive updates on version releases and other major announcements.  Get your questions answered and participate in the NetPyNE community at the `NetPyNE forum <https://groups.google.com/forum/#!forum/netpyne-forum>`_ or the `NEURON+NetPyNE forum <https://www.neuron.yale.edu/phpBB/viewforum.php?f=45>`_.
+
+|
 
 .. image:: figs/netpyne_gui.png
-   :width: 90% 
+   :width: 95% 
    :align: center
+
+|
 
 Table of Contents
 ------------------
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
    
-   overview
+   about
    install
    tutorial
    reference
    advanced
+   package_index
 
 
 

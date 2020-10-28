@@ -2,9 +2,6 @@
 init.py
 
 Initial script to import, simulate and plot raster of SONATA example 300_cells
-
-
-Contributors: salvadordura@gmail.com
 """
 
 from netpyne import sim

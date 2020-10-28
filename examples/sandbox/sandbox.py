@@ -1,103 +1,68 @@
+
 from netpyne import specs, sim
+
+import numpy
 
 # Network parameters
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
-netParams.sizeX = 200 # x-dimension (horizontal length) size in um
-netParams.sizeY = 1000 # y-dimension (vertical height or cortical depth) size in um
-netParams.sizeZ = 20 # z-dimension (horizontal length) size in um
-netParams.propVelocity = 100.0 # propagation velocity (um/ms)
-netParams.probLengthConst = 150.0 # length constant for conn probability (um)
 
 ## Population parameters
-netParams.popParams['I1'] = {'cellType': 'PYR', 'numCells': 100, 'cellModel': 'HH_simple'}
-netParams.popParams['I1a'] = {'cellType': 'PYR', 'numCells': 50, 'cellModel': 'HH_simple'}
-
-netParams.popParams['I2'] = {'cellType': 'PYR', 'numCells': 500, 'cellModel': 'HH_simple'}
-#netParams.popParams['I3'] = {'cellType': 'PYR', 'numCells': 4, 'cellModel': 'HH_simple'}
-
-netParams.popParams['input1a'] = {'numCells': 500, 'cellModel': 'NetStim', 'rate': 20, 'noise': 0.75}
-netParams.popParams['input'] = {'numCells': 500, 'cellModel': 'NetStim', 'rate': 40, 'noise': 1.0}
-#netParams.popParams['input2'] = {'numCells': 50, 'cellModel': 'NetStim', 'rate': 20, 'noise': 0.75}
+netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 10, 'cellModel': 'HH'}
+netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 10, 'cellModel': 'HH'}
 
 
 ## Cell property rules
-cellRule = {'conds': { 'cellType': 'PYR'},  'secs': {}}   # cell rule dict
-cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                              # soma params dict
-cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}                   # soma geometry
-cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanism
-cellRule['secs']['soma']['vinit'] = -71
-netParams.cellParams['PYR'] = cellRule                          # add dict to list of cell params
+cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}} 	# cell rule dict
+cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}  														# soma params dict
+cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  									# soma geometry
+cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  		# soma hh mechanism
+netParams.cellParams['PYRrule'] = cellRule  												# add dict to list of cell params
+
+## Synaptic mechanism parameters
+netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0}  # excitatory synaptic mechanism
+
+# # Stimulation parameters
+# netParams.stimSourceParams['bkg'] = {'type': 'VecStim', 'noise': 0.5, 'spkTimes': [20,50]}
+# netParams.stimTargetParams['bkg->PYR'] = {'source': 'bkg', 'conds': {'cellType': 'PYR'}, 'weight': 0.1, 'delay': 5, 'synMech': 'exc'}
+
+## Cell connectivity rules
+netParams.connParams['S->M'] = { 	#  S -> M label
+	'preConds': {'pop': 'S'}, 	# conditions of presyn cells
+	'postConds': {'pop': 'M'}, # conditions of postsyn cells
+	'probability': 1, 			# probability of connection
+	'weight': 0.01, 				# synaptic weight
+	'delay': 5,						# transmission delay (ms)
+	'synMech': 'exc'}   			# synaptic mechanism
 
 
-# ## Synaptic mechanism parameters
-netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.8, 'tau2': 5.3, 'e': 0}  # NMDA synaptic mechanism
-#netParams.synMechParams['inh'] = {'mod': 'Exp2Syn', 'tau1': 0.6, 'tau2': 8.5, 'e': -75}  # GABA synaptic mechanism
+# Simulation options
+simConfig = specs.SimConfig()		# object of class SimConfig to store simulation configuration
 
-import numpy as np
-auxConn=np.array([range(0,10),range(0,10)])
+simConfig.duration = 0.5*1e3 			# Duration of the simulation, in ms
+simConfig.dt = 0.025 				# Internal integration timestep to use
+simConfig.verbose = False  			# Show detailed messages
+simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
+simConfig.recordStep = 0.1 			# Step size in ms to save data (eg. V traces, LFP, etc)
+simConfig.filename = 'model_output'  # Set file output name
+simConfig.savePickle = True 		# Save params, network and sim output to pickle file
+simConfig.saveJson = False 	
+simConfig.includeParamsLabel = False
 
-netParams.connParams['input->I'] = {
-  'preConds': {'pop': ['input']}, 
-  'postConds': {'cellType': ['PYR']},  #  E -> all (100-1000 um)
-  'connList': auxConn.T,                  # probability of connection
-  'weight': ' normal(0, 4)',         # synaptic wight 
-  'delay': 1,      # transmission delay (ms) 
-  'synMech': 'exc',
-  'sec': 'soma'}                     # synaptic mechanism 
+simConfig.saveDataInclude = ['simData', 'simConfig', 'netParams']#, 'net']
+simConfig.saveCellSecs = 1 #False
+simConfig.saveCellConns = 1
+# simConfig.recordLFP = [[150, y, 150] for y in [600, 800, 1000]] # only L5 (Zagha) [[150, y, 150] for y in range(200,1300,100)]
 
-
-netParams.connParams['I->I'] = {
-  'preConds': {'pop': ['I2']}, 
-  'postConds': {'cellType': ['PYR']},  #  E -> all (100-1000 um)
-  'probability': 0.5,                  # probability of connection
-  'weight': 0.5,         # synaptic wight 
-  'delay': 1,      # transmission delay (ms) 
-  'synMech': 'exc',
-  'sec': 'soma'}                     # synaptic mechanism 
+simConfig.analysis['plotRaster'] = True 			# Plot a raster
+simConfig.analysis['plotTraces'] = {'include': [0]} 			# Plot recorded traces for this list of cells
+#simConfig.analysis['plot2Dnet'] = True           # plot 2D visualization of cell positions and connections
+#simConfig.analysis['plotLFP'] = True
+#simConfig.printPopAvgRates =  [[250,500], [500,750], [750,1000]]
 
 
-# Simulation configuration
-simConfig = specs.SimConfig()        # object of class SimConfig to store simulation configuration
-simConfig.duration = 1.0*1e3           # Duration of the simulation, in ms
-simConfig.dt = 0.1                # Internal integration timestep to use
-simConfig.verbose = 0           # Show detailed messages 
-simConfig.recordStep = 0.1             # Step size in ms to save data (eg. V traces, LFP, etc)
-simConfig.filename = 'net_lfp'   # Set file output name
-simConfig.printSynsAfterRule = True
-simConfig.recordTraces ={'V': {'sec': 'soma', 'loc': 0.5, 'var':'v'}}
-simConfig.saveJson=1
 
-#simConfig.recordCellsSpikes = ['I2', 'input']
-
-
-lfp=0
-if lfp:
-  #simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'plots': ['timeSeries'], 'NFFT': 256*2, 'noverlap': 128*2, 'nperseg': 132*2, 'saveFig': True} 
-  simConfig.recordLFP = [[10,10,10]]
-
-simConfig.analysis['plotRaster'] = {'popRates':1, 'orderBy': ['pop','y'], 'labels':'overlay', 'orderInverse': 0, 'saveFig':True, 'figSize': (9,3)}      # Plot a raster
-#simConfig.analysis['plotTraces'] ={'include':[0]}
-#simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'NFFT': 256*20, 'noverlap': 128*20, 'nperseg': 132*20, 'saveFig': True} 
-#simConfig.analysis['plotSpikeStats'] = {'include': ['E2', 'E4', ['E2', 'E4']] , 'stats': ['rate'], 'graphType': 'histogram', 'figSize': (10,6)}
-
-# Create network and run simulation
-#sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
-
-sim.initialize(
-    simConfig = simConfig,  
-    netParams = netParams)          # create network object and set cfg and net params
-sim.net.createPops()                    # instantiate network populations
-sim.net.createCells()                   # instantiate network cells based on defined populations
-sim.net.addStims()              # add network stimulation
-sim.net.connectCells()                  # create connections between cells based on params
-sim.setupRecording()                    # setup variables to record for each cell (spikes, V traces, etc)
-sim.runSim()                            # run parallel Neuron simulation  
-# #sim.distributedSaveHDF5()
-sim.gatherData()                        # gather spiking data and cell info from each node
-# sim.saveData()                          # save params, cell info and sim output to file (pickle,mat,txt,etc)#
-sim.analysis.plotData()               # plot spike raster etc
-
-#conns, connFormat = sim.loadHDF5(sim.cfg.filename+'.h5')
-#print len(conns)
-#print sim.timingData
+sim.create(netParams, simConfig)
+#sim.net.cells[0].conns[0]['hObj'].event(100)
+sim.simulate()
+sim.analyze()

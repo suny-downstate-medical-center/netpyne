@@ -1,13 +1,3 @@
-"""
-params.py 
-
-netParams is a dict containing a set of network parameters using a standardized structure
-
-simConfig is a dict containing a set of simulation configurations using a standardized structure
-
-Contributors: salvadordura@gmail.com
-"""
-
 from netpyne import specs
 
 ###############################################################################
@@ -16,18 +6,18 @@ from netpyne import specs
 
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
+
+# Cell parameters
+## PYR cell properties
+secs = {}
+secs['soma'] = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
+secs['soma']['geom'] = {'diam': 18.8, 'L': 18.8}
+secs['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
+netParams.cellParams['PYR'] = {'secs': secs}  # add dict to list of cell properties
+
 # Population parameters
 netParams.popParams['hop'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}     # add dict with params for this pop 
 #netParams.popParams['background'] = {'cellModel': 'NetStim', 'rate': 50, 'noise': 0.5}  # background inputs
-
-# Cell parameters
-
-## PYR cell properties
-cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}}
-cellRule['secs']['soma'] = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
-cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8}
-cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-netParams.cellParams['PYR'] = cellRule  # add dict to list of cell properties
 
 # Synaptic mechanism parameters
 netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}
@@ -41,7 +31,8 @@ netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'pop': 'hop
  
 # Connectivity parameters
 netParams.connParams['hop->hop'] = {
-    'preConds': {'pop': 'hop'}, 'postConds': {'pop': 'hop'},
+    'preConds': {'pop': 'hop'}, 
+    'postConds': {'pop': 'hop'},
     'weight': 0.0,                      # weight of each connection
     'synMech': 'inh',                   # target inh synapse
     'delay': 5}                         # delay 
@@ -61,9 +52,9 @@ simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces
 simConfig.filename = 'model_output' # Set file output name
 simConfig.savePickle = False        # Save params, network and sim output to pickle file
 
-simConfig.analysis['plotRaster'] = {'syncLines': True}      # Plot a raster
-simConfig.analysis['plotTraces'] = {'include': [1]}         # Plot recorded traces for this list of cells
-simConfig.analysis['plot2Dnet'] = True                      # plot 2D visualization of cell positions and connections
+simConfig.analysis['plotRaster'] = {'syncLines': True, 'saveFig': True}      # Plot a raster
+simConfig.analysis['plotTraces'] = {'include': [1], 'saveFig': True}         # Plot recorded traces for this list of cells
+simConfig.analysis['plot2Dnet'] = {'saveFig': True}                          # plot 2D cell positions and connections
 
 
 ###############################################################################
@@ -96,7 +87,7 @@ sim.net.modifyConns({'conds': {'label': 'hop->hop'}, 'weight': 0.5})
 sim.runSim()                          # run parallel Neuron simulation  
 sim.gatherData()                      # gather spiking data and cell info from each node
 sim.saveData()                        # save params, cell info and sim output to file (pickle,mat,txt,etc)
-sim.analysis.plotData()                   # plot spike raster
+sim.analysis.plotData()               # plot spike raster
 
 # modify cells geometry
 sim.net.modifyCells({'conds': {'pop': 'hop'}, 
@@ -111,8 +102,4 @@ if __gui__:
 
 # check model output
 sim.checkOutput('tut7')
-
-
-
-
 

@@ -138,7 +138,9 @@ Friesen model
 :download:`AMPA.mod <code/mod/AMPA.mod>`,
 :download:`NMDA.mod <code/mod/NMDA.mod>`,
 :download:`OFThpo.mod <code/mod/OFThpo.mod>`,
-:download:`OFThresh.mod <code/mod/OFThresh.mod>`
+:download:`OFThresh.mod <code/mod/OFThresh.mod>`,
+:download:`netcon.inc <code/netcon.inc>`,
+:download:`ofc.inc <code/mod/ofc.inc>`
 
 *NetPyNE Code:* ::
 
@@ -399,7 +401,7 @@ where:
 |                                        | fitness than the offspring           |
 +----------------------------------------+--------------------------------------+
 | ec.terminators.evaluation\_termination | terminator runs based on the number  |
-|                                        | of evaluations that have occured     |
+|                                        | of evaluations that have occurred    |
 +----------------------------------------+--------------------------------------+
 | ec.observers.stats\_observer           | indicates how many of the generated  |
 |                                        | individuals (parameter sets) will be |
@@ -506,7 +508,7 @@ value sets for the very first iteration, and evaluator being the fitness
 function that will be used to evaluate each model for how close it is to
 the target. In this example, the generator is a fairly straightforward
 function which creates an initial set of parameter values (i.e.
-[probability, weight, delay] ) by drawing from a parametrized uniform
+[probability, weight, delay] ) by drawing from a parameterized uniform
 distribution:
 
 .. code-block:: python

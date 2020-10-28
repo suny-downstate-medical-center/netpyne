@@ -1,10 +1,8 @@
 """
-conversion/pythonScript.py 
+Module for exporting models as Python scripts
 
-Contains functions to export a model as a python script   
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
@@ -14,6 +12,27 @@ from builtins import open
 from future import standard_library
 standard_library.install_aliases()
 def createPythonScript(fname, netParams, simConfig):
+    """
+    Function for/to <short description of `netpyne.conversion.pythonScript.createPythonScript`>
+
+    Parameters
+    ----------
+    fname : <type>
+        <Short description of fname>
+        **Default:** *required*
+
+    netParams : <type>
+        <Short description of netParams>
+        **Default:** *required*
+
+    simConfig : <type>
+        <Short description of simConfig>
+        **Default:** *required*
+
+
+    """
+
+
     import sys
     import json
     from netpyne import specs

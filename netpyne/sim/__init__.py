@@ -1,11 +1,10 @@
 """
-sim.py
+Package for handling simulations
 
-Contains all the model shared variables and modules.
-It is imported as "sim" from all other file,  so that any variable or module can be referenced from any module using sim.varName
+Contains all the model shared variables and modules.  It is imported as "sim" from all other files, so any variable or module can be referenced from any module using `sim.varName`.
 
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
@@ -23,6 +22,12 @@ if '-nogui' in sys.argv:
 # import NEURON module
 from neuron import h
 
+# Initialize MPI try:
+# try:
+#     h.nrnmpi_init()
+# except:
+#     pass
+
 #------------------------------------------------------------------------------
 # Import simulation-related functions from this subpackage (/sim)
 #------------------------------------------------------------------------------
@@ -35,10 +40,10 @@ from .setup import initialize, setNet, setNetParams, setSimCfg, createParallelCo
 from .run import preRun, runSim, runSimWithIntervalFunc, loadBalance, calculateLFP
 
 # import gather functions
-from .gather import gatherData, _gatherAllCellTags, _gatherAllCellConnPreGids, _gatherCells, fileGather
+from .gather import gatherData, _gatherAllCellTags, _gatherAllCellConnPreGids, _gatherCells, fileGather, mergeFiles
 
 # import saving functions
-from .save import saveJSON, saveData, distributedSaveHDF5, compactConnFormat, intervalSave, saveInNode
+from .save import saveJSON, saveData, distributedSaveHDF5, compactConnFormat, intervalSave, saveSimDataInNode, saveInNode
 
 # import loading functions
 from .load import loadSimCfg, loadNetParams, loadNet, loadSimData, loadAll, loadHDF5, ijsonLoad
@@ -50,7 +55,6 @@ from .utils import cellByGid, getCellsList, timing, version, gitChangeset, hashS
 # import utils functions to manipulate objects
 from .utils import copyReplaceItemObj, copyRemoveItemObj, replaceFuncObj, replaceDictODict, \
 	rename, clearObj, clearAll
-
 
 # import wrapper functions
 from .wrappers import create, simulate, intervalSimulate, analyze, createSimulate, \

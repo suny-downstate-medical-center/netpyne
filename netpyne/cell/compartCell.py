@@ -1,10 +1,8 @@
 """
-cell/compartCell.py 
+Module containing a compartmental cell class
 
-Contains compartCell class 
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
@@ -39,12 +37,12 @@ from ..specs import Dict
 #
 ###############################################################################
 
-# --- Temporarily copied from HNN code; improve so doesn't use h globals ---  
-# global variables for dipole calculation, should be node-independent 
-h("dp_total_L2 = 0."); h("dp_total_L5 = 0.") # put here since these variables used in cells
 
 class CompartCell (Cell):
-    ''' Class for section-based neuron models '''
+    """
+    Class for/to <short description of `netpyne.cell.compartCell.CompartCell`>
+
+    """
     
     def __init__ (self, gid, tags, create=True, associateGid=True):
         super(CompartCell, self).__init__(gid, tags)
@@ -52,11 +50,20 @@ class CompartCell (Cell):
         self.secLists = Dict()  # dict of sectionLists
 
         if create: self.create()  # create cell 
-        if associateGid: self.associateGid() # register cell for this node
+        if associateGid: self.associateGid()  # register cell for this node
+
+    def __str__ (self):
+        try:
+            gid, cty, cmo = self.gid, self.tags['cellType'], self.tags['cellModel'] # only use if these exist
+            return 'compartCell_%s_%s_%d'%(cty, cmo, gid)
+        except: return 'compartCell%d'%self.gid
+
+    def __repr__ (self):
+        return self.__str__()
 
     def create (self):
         from .. import sim
-
+                
         # generate random rotation angle for each cell
         if sim.net.params.rotateCellsRandomly:
             if isinstance(sim.net.params.rotateCellsRandomly, list):
@@ -68,38 +75,41 @@ class CompartCell (Cell):
             self.randRotationAngle = rand.uniform(0, 6.2832)  # 0 to 2pi
 
         # apply cell rules
-        for cellRuleLabel, cellRule in sim.net.params.cellParams.items():  # for each set of cell properties
+        for propLabel, prop in sim.net.params.cellParams.items():  # for each set of cell properties
             conditionsMet = 1
-            for (condKey,condVal) in cellRule['conds'].items():  # check if all conditions are met
-                if isinstance(condVal, list): 
-                    if isinstance(condVal[0], Number):
-                        if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
-                            conditionsMet = 0
-                            break
-                    elif isinstance(condVal[0], basestring):
-                        if self.tags.get(condKey) not in condVal:
-                            conditionsMet = 0
-                            break 
-                elif self.tags.get(condKey) != condVal: 
-                    conditionsMet = 0
-                    break
+            if 'conds' in prop and len(prop['conds']) > 0:
+                for (condKey,condVal) in prop['conds'].items():  # check if all conditions are met
+                    if isinstance(condVal, list): 
+                        if isinstance(condVal[0], Number):
+                            if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
+                                conditionsMet = 0
+                                break
+                        elif isinstance(condVal[0], basestring):
+                            if self.tags.get(condKey) not in condVal:
+                                conditionsMet = 0
+                                break 
+                    elif self.tags.get(condKey) != condVal: 
+                        conditionsMet = 0
+                        break
+            elif self.tags['cellType'] != propLabel:  # simplified method for defining cell params (when no 'conds')
+                conditionsMet = False
             if conditionsMet:  # if all conditions are met, set values for this cell
                 if sim.cfg.includeParamsLabel:
                     if 'label' not in self.tags:
-                        self.tags['label'] = [cellRuleLabel] # create list of property sets
+                        self.tags['label'] = [propLabel] # create list of property sets
                     else:
-                        self.tags['label'].append(cellRuleLabel)  # add label of cell property set to list of property sets for this cell
+                        self.tags['label'].append(propLabel)  # add label of cell property set to list of property sets for this cell
                 if sim.cfg.createPyStruct:
-                    self.createPyStruct(cellRule)
+                    self.createPyStruct(prop)
                 if sim.cfg.createNEURONObj:
-                    self.createNEURONObj(cellRule)  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
+                    self.createNEURONObj(prop)  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
 
 
-    def modify (self, cellRule):
+    def modify (self, prop):
         from .. import sim
 
         conditionsMet = 1
-        for (condKey,condVal) in cellRule['conds'].items():  # check if all conditions are met
+        for (condKey,condVal) in prop['conds'].items():  # check if all conditions are met
             if condKey=='label':
                 if condVal not in self.tags['label']:
                     conditionsMet = 0
@@ -119,16 +129,16 @@ class CompartCell (Cell):
 
         if conditionsMet:  # if all conditions are met, set values for this cell
             if sim.cfg.createPyStruct:
-                self.createPyStruct(cellRule)
+                self.createPyStruct(prop)
             if sim.cfg.createNEURONObj:
-                self.createNEURONObj(cellRule)  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
+                self.createNEURONObj(prop)  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
 
 
-    def createPyStruct (self, cellRule):
+    def createPyStruct (self, prop):
         from .. import sim
 
         # set params for all sections
-        for sectName,sectParams in cellRule['secs'].items(): 
+        for sectName,sectParams in prop['secs'].items(): 
             # create section
             if sectName not in self.secs:
                 self.secs[sectName] = Dict()  # create section dict
@@ -220,8 +230,8 @@ class CompartCell (Cell):
                 sec['threshold'] = sectParams['threshold']
 
         # add sectionLists
-        if 'secLists' in cellRule:
-            self.secLists.update(cellRule['secLists'])  # diction of section lists
+        if 'secLists' in prop:
+            self.secLists.update(prop['secLists'])  # diction of section lists
 
 
     def initV (self): 
@@ -246,8 +256,11 @@ class CompartCell (Cell):
             L = -L
         return L
 
+
+    
     # insert dipole in section
     def __dipoleInsert(self, secName, sec):
+
         # insert dipole mech (dipole.mod)
         try:
             sec['hObj'].insert('dipole')
@@ -262,55 +275,60 @@ class CompartCell (Cell):
             print('Error inserting Dipole point process')
             return -1
         dpp = sec['hDipole_pp']
+        
         # assign internal resistance values to dipole point process (dpp)
         dpp.ri = h.ri(1, sec=sec['hObj'])
+        
         # sets pointers in dipole mod file to the correct locations -- h.setpointer(ref, ptr, obj)
         h.setpointer(sec['hObj'](0.99)._ref_v, 'pv', dpp)
-        if self.tags['cellType'].startswith('L2'):
-            h.setpointer(h._ref_dp_total_L2, 'Qtotal', dpp)
-        elif self.tags['cellType'].startswith('L5'):
-            h.setpointer(h._ref_dp_total_L5, 'Qtotal', dpp)
+        h.setpointer(self.dipole['hRef']._ref_x[0], 'Qtotal', dpp)
+        
 
         # gives INTERNAL segments of the section, non-endpoints
         # creating this because need multiple values simultaneously
         loc = np.array([seg.x for seg in sec['hObj']])
+        
         # these are the positions, including 0 but not L
         pos = np.array([seg.x for seg in sec['hObj'].allseg()])
+        
         # diff in yvals, scaled against the pos np.array. y_long as in longitudinal
         y_scale = (self.__dipoleGetSecLength(secName) * sec['hObj'].L) * pos
+        
         # y_long = (h.y3d(1, sec=sect) - h.y3d(0, sec=sect)) * pos
         # diff values calculate length between successive section points
         y_diff = np.diff(y_scale)
+        
         for i in range(len(loc)):
             # assign the ri value to the dipole
             sec['hObj'](loc[i]).dipole.ri = h.ri(loc[i], sec=sec['hObj'])
+            
             # range variable 'dipole'
             # set pointers to previous segment's voltage, with boundary condition
             if i > 0:
                 h.setpointer(sec['hObj'](loc[i-1])._ref_v, 'pv', sec['hObj'](loc[i]).dipole)
             else:
                 h.setpointer(sec['hObj'](0)._ref_v, 'pv', sec['hObj'](loc[i]).dipole)
+            
             # set aggregate pointers
             h.setpointer(dpp._ref_Qsum, 'Qsum', sec['hObj'](loc[i]).dipole)
-            if self.tags['cellType'].startswith('L2'):
-                h.setpointer(h._ref_dp_total_L2, 'Qtotal', sec['hObj'](loc[i]).dipole)
-            elif self.tags['cellType'].startswith('L5'):
-                h.setpointer(h._ref_dp_total_L5, 'Qtotal', sec['hObj'](loc[i]).dipole)
+            h.setpointer(self.dipole['hRef']._ref_x[0], 'Qtotal', sec['hObj'](loc[i]).dipole)
+            
             # add ztan values
             sec['hObj'](loc[i]).dipole.ztan = y_diff[i]
+            
         # set the pp dipole's ztan value to the last value from y_diff
         dpp.ztan = y_diff[-1]
+    
 
 
-
-    def createNEURONObj (self, cellRule):
+    def createNEURONObj (self, prop):
         from .. import sim
 
         excludeMechs = ['dipole']  # dipole is special case 
         mechInsertError = False  # flag to print error inserting mechanisms
 
         # set params for all sections
-        for sectName,sectParams in cellRule['secs'].items(): 
+        for sectName,sectParams in prop['secs'].items(): 
             # create section
             if sectName not in self.secs:
                 self.secs[sectName] = Dict()  # create sect dict if doesn't exist
@@ -338,7 +356,8 @@ class CompartCell (Cell):
 
             # add distributed mechanisms 
             if 'mechs' in sectParams:
-                for mechName,mechParams in sectParams['mechs'].items(): 
+                mechsInclude = {k: v for k,v in sectParams['mechs'].items() if k not in excludeMechs}
+                for mechName, mechParams in mechsInclude.items(): 
                     if mechName not in sec['mechs']: 
                         sec['mechs'][mechName] = Dict()
                     try:
@@ -413,17 +432,24 @@ class CompartCell (Cell):
                         setattr(sec['pointps'][pointpName]['hObj'], pointpParamName, pointpParamValue)
                             
         # set topology 
-        for sectName,sectParams in cellRule['secs'].items():  # iterate sects again for topology (ensures all exist)
+        for sectName,sectParams in prop['secs'].items():  # iterate sects again for topology (ensures all exist)
             sec = self.secs[sectName]  # pointer to section # pointer to child sec
             if 'topol' in sectParams:
                 if sectParams['topol']:
                     sec['hObj'].connect(self.secs[sectParams['topol']['parentSec']]['hObj'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
 
         # add dipoles
-        for sectName,sectParams in cellRule['secs'].items():
-            sec = self.secs[sectName]
-            if 'mechs' in sectParams and 'dipole' in sectParams['mechs']:
-               self.__dipoleInsert(sectName, sec)  # add dipole mechanisms to each section
+        if sim.cfg.recordDipoles:
+            
+            # create a 1-element Vector to store the dipole value for this cell and record from this Vector 
+            self.dipole = {'hRef': h.Vector(1)}#_ref_[0]} #h._ref_dpl_ref}  #h.Vector(1)            
+            self.dipole['hRec'] = h.Vector((sim.cfg.duration / sim.cfg.recordStep) + 1)
+            self.dipole['hRec'].record(self.dipole['hRef']._ref_x[0])
+
+            for sectName,sectParams in prop['secs'].items():
+                sec = self.secs[sectName]
+                if 'mechs' in sectParams and 'dipole' in sectParams['mechs']:
+                    self.__dipoleInsert(sectName, sec)  # add dipole mechanisms to each section
 
         # Print message about error inserting mechanisms
         if mechInsertError:
@@ -473,9 +499,12 @@ class CompartCell (Cell):
         # assumes python structure exists
         for conn in self.conns:
             # set postsyn target
-            synMech = next((synMech for synMech in self.secs[conn['sec']]['synMechs'] if synMech['label']==conn['synMech'] and synMech['loc']==conn['loc']), None)
-
-            if not synMech: 
+            if sim.cfg.oneSynPerNetcon:
+                synMech = None
+            else: 
+                synMech = next((synMech for synMech in self.secs[conn['sec']]['synMechs'] if synMech['label'] == conn['synMech'] and synMech['loc'] == conn['loc']), None)
+            
+            if not synMech:
                 synMech = self.addSynMech(conn['synMech'], conn['sec'], conn['loc'])
                 #continue  # go to next conn
 
@@ -547,8 +576,11 @@ class CompartCell (Cell):
 
         if synMechParams and sec:  # if both the synMech and the section exist
             if sim.cfg.createPyStruct and sim.cfg.addSynMechs:
-                synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==synLabel and synMech['loc']==loc), None)
-                if not synMech:  # if synMech not in section, then create
+                if sim.cfg.oneSynPerNetcon:
+                    synMech = None
+                else:
+                    synMech = next((synMech for synMech in sec['synMechs'] if synMech['label']==synLabel and synMech['loc']==loc), None)
+                if not synMech:  # if synMech not in section, or need multiple synMech per section, then create
                     synMech = Dict({'label': synLabel, 'loc': loc})
                     for paramName, paramValue in synMechParams.items():
                         synMech[paramName] = paramValue
@@ -644,19 +676,21 @@ class CompartCell (Cell):
         if params.get('weight') is None: params['weight'] = sim.net.params.defaultWeight # if no weight, set default
         if params.get('delay') is None: params['delay'] = sim.net.params.defaultDelay # if no delay, set default
         if params.get('loc') is None: params['loc'] = 0.5 # if no loc, set default
-        if params.get('synsPerConn') is None: params['synsPerConn'] = 1 # if no synsPerConn, set default
-
-        # Warning if self connections
-        if params['preGid'] == self.gid:
-            if sim.cfg.allowSelfConns:
-                if sim.cfg.verbose: print('  Warning: created self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
-            else:
-                if sim.cfg.verbose: print('  Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
-                return  # if self-connection return
+        if params.get('synsPerConn') is None: params['synsPerConn'] = 1  # if no synsPerConn, set default
 
         # Get list of section labels
         secLabels = self._setConnSections(params)
         if secLabels == -1: return  # if no section available exit func 
+
+        # Warning or error if self connections
+        if params['preGid'] == self.gid:
+            # Only allow self connections if option selected by user  
+            # !!!! AD HOC RULE FOR HNN!!! -  or 'soma' in secLabels and not self.tags['cellType'] == 'L5Basket' (removed)
+            if sim.cfg.allowSelfConns: 
+                if sim.cfg.verbose: print('  Warning: creating self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
+            else:
+                if sim.cfg.verbose: print('  Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
+                return  # if self-connection return
 
         # Weight
         weights = self._setConnWeights(params, netStimParams, secLabels)
@@ -681,11 +715,13 @@ class CompartCell (Cell):
             for i,(sec,loc) in enumerate(zip(synMechSecs, synMechLocs)):
                 if 'weightNorm' in self.secs[sec] and isinstance(self.secs[sec]['weightNorm'], list): 
                     nseg = self.secs[sec]['geom']['nseg']
-                    weights[i] = weights[i] * self.secs[sec]['weightNorm'][int(round(loc*nseg))-1] 
+                    weights[i] = weights[i] * self.secs[sec]['weightNorm'][int(round(loc*nseg))-1]
 
         # Create connections
         for i in range(params['synsPerConn']):
-            
+            if not sim.cfg.allowConnsWithWeight0 and weights[i] == 0.0:
+                continue
+
             if netStimParams:
                     netstim = self.addNetStim(netStimParams)
 
@@ -1100,7 +1136,7 @@ class CompartCell (Cell):
                 if 'vref' in pointpParams:  # if includes vref param means doesn't use Section v or synaptic mechanisms
                     pointp = pointpName
                     if 'synList' in pointpParams:
-                        if params.get('synMech') in pointpParams['synList']: 
+                        if params.get('synMech') in pointpParams['synList']:
                             if isinstance(params.get('synMech'), list):
                                 weightIndex = [pointpParams['synList'].index(synMech) for synMech in params.get('synMech')]
                             else:
@@ -1139,8 +1175,25 @@ class CompartCell (Cell):
                 else:
                     synMechLocs = [i*(1.0/synsPerConn)+1.0/synsPerConn/2 for i in range(synsPerConn)]
             else:  # if multiple sections, distribute syns
-                synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
-        else:
+                if sim.cfg.distributeSynsUniformly:
+                    synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
+                else:
+                    if synsPerConn == len(secLabels):  # have list of secs that matches num syns 
+                        synMechSecs = secLabels
+                        if isinstance(params['loc'], list):  
+                            if len(params['loc']) == synsPerConn:  # list of locs matches num syns
+                                synMechLocs = params['loc']
+                            else:  # list of locs does not match num syns
+                                print("Error: The length of the list of locations does not match synsPerConn (with cfg.distributeSynsUniformly = False")
+                                return
+                        else: # single loc
+                            synMechLocs = [params['loc']] * synsPerConn
+                    else:
+                            print("Error: The length of the list of sections does not match synsPerConn (with cfg.distributeSynsUniformly = False")
+                            return            
+                
+        else:  # if 1 synapse
+            # by default place on 1st section of list and location available 
             synMechSecs = secLabels
             synMechLocs = params['loc'] if isinstance(params['loc'], list) else [params['loc']] 
 
@@ -1154,9 +1207,8 @@ class CompartCell (Cell):
                 if len(synMechLocs)>1: 
                     synMechLocs[pos], synMechLocs[0] = synMechLocs[0], synMechLocs[pos]
 
-        # add synaptic mechanism to section based on synMechSecs and synMechLocs (if already exists won't be added)
+        # add synaptic mechanism to section based on synMechSecs and synMechLocs (if already exists won't be added unless nonLinear set to True)
         synMechs = [self.addSynMech(synLabel=params['synMech'], secLabel=synMechSecs[i], loc=synMechLocs[i]) for i in range(synsPerConn)] 
-
         return synMechs, synMechSecs, synMechLocs
 
 
@@ -1164,17 +1216,17 @@ class CompartCell (Cell):
         from .. import sim
 
         from numpy import cumsum
-
-        if 'L' in self.secs[secList[0]]['geom']:
-            secLengths = [self.secs[s]['geom']['L'] for s in secList]
-        elif getattr(self.secs[secList[0]]['hObj'], 'L', None):
-            secLengths = [self.secs[s]['hObj'].L for s in secList]
-        else:
-            secLengths = [1.0 for s in secList]
-            if sim.cfg.verbose: 
-                print(('  Section lengths not available to distribute synapses in cell %d'%self.gid))
-            
         try:
+            if 'L' in self.secs[secList[0]]['geom']:
+                secLengths = [self.secs[s]['geom']['L'] for s in secList]
+            elif getattr(self.secs[secList[0]]['hObj'], 'L', None):
+                secLengths = [self.secs[s]['hObj'].L for s in secList]
+            else:
+                secLengths = [1.0 for s in secList]
+                if sim.cfg.verbose: 
+                    print(('  Section lengths not available to distribute synapses in cell %d'%self.gid))
+
+            secLengths = [x for x in secLengths if isinstance(x, Number)]
             totLength = sum(secLengths)
             cumLengths = list(cumsum(secLengths))
             absLocs = [i*(totLength/numSyns)+totLength/numSyns/2 for i in range(numSyns)]
@@ -1211,8 +1263,11 @@ class CompartCell (Cell):
 
 
     def getSomaPos(self):
-        ''' Get soma position;
-        Used to calculate seg coords for LFP calc (one per population cell; assumes same morphology)'''
+        """
+        Get soma position;
+        Used to calculate seg coords for LFP calc (one per population cell; assumes same morphology)
+        """
+
         n3dsoma = 0
         r3dsoma = np.zeros(3)
         for sec in [sec for secName, sec in self.secs.items() if 'soma' in secName]:
@@ -1233,7 +1288,10 @@ class CompartCell (Cell):
         return r3dsoma
     
     def calcAbsSegCoords(self):
-        ''' Calculate absolute seg coords by translating the relative seg coords -- used for LFP calc'''
+        """
+        Calculate absolute seg coords by translating the relative seg coords -- used for LFP calc
+        """
+        
         from .. import sim
 
         p3dsoma = self.getSomaPos()
@@ -1252,7 +1310,10 @@ class CompartCell (Cell):
         for sec in list(self.secs.values()):
             hSec = sec['hObj']
             for iseg, seg in enumerate(hSec):
-                self.imembPtr.pset(jseg, seg._ref_i_membrane_)  # notice the underscore at the end (in nA)
+                try:
+                    self.imembPtr.pset(jseg, seg._ref_i_membrane_)  # notice the underscore at the end (in nA)
+                except:
+                    '  Error setting Vector to point to i_membrane_'
                 jseg += 1
                 
 

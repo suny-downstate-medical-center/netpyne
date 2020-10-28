@@ -1,10 +1,8 @@
 """
-analysis/__init__.py
+Package for analysis and plotting
 
-Functions to plot and analyse results
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
@@ -36,7 +34,8 @@ from .network import plotConn, _plotConnCalculateFromSim, _plotConnCalculateFrom
 # -------------------------------------------------------------------------------------------------------------------
 # Import spike-related functions
 # -------------------------------------------------------------------------------------------------------------------
-from .spikes import calculateRate, plotRates, plotSyncs, plotRaster, plotSpikeHist, plotSpikeStats, plotRatePSD, popAvgRates
+from .spikes import calculateRate, plotRates, plotSyncs, plotRaster, plotSpikeHist, plotSpikeStats, \
+    plotRatePSD, plotRateSpectrogram, popAvgRates, plotfI, calculatefI
 
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -61,3 +60,14 @@ from .info import nTE, granger
 # Import RxD-related functions
 # -------------------------------------------------------------------------------------------------------------------
 from .rxd import plotRxDConcentration
+
+
+# -------------------------------------------------------------------------------------------------------------------
+# Import interactive functions functions
+# -------------------------------------------------------------------------------------------------------------------
+
+try:
+  from .interactive import iplotDipole, iplotDipoleSpectrogram, iplotDipolePSD, iplotRaster, iplotSpikeHist, iplotRatePSD, iplotTraces, iplotLFP, iplotConn, iplotRxDConcentration, iplot2Dnet, iplotSpikeStats
+except:
+    print('Warning: could not import interactive plotting functions; make sure the "bokeh" package is installed.')
+

@@ -3,9 +3,8 @@
 test_validate.py
 
 Testing code for Validation class
-
-Contributors: mitra.sidddhartha@gmail.com
 """
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
@@ -18,8 +17,10 @@ from .tests import *
 import netpyne.specs as specs
 
 class ParamsObj(object):
-
-        """Set of possible parameters"""
+        """
+        ParamsObj Class
+        Set of possible parameters
+        """
 
         def __init__ (self):
 
@@ -27,8 +28,10 @@ class ParamsObj(object):
             self.netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
 class RunNetPyneTests(object):
-
-        """Set of possible parameters"""
+        """
+        RunNetPyneTests Class
+        Set of possible parameters
+        """
 
         def __init__ (self):
             self.paramsMap = {}

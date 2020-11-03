@@ -345,7 +345,8 @@ class PointCell (Cell):
 
         # Weight
         weights = self._setConnWeights(params, netStimParams)
-        weightIndex = 0  # set default weight matrix index   
+        if params.get('weightIndex') is None: params['weightIndex'] = 0 # set default weight matrix index   
+        weightIndex = params.get('weightIndex') # note that loop below will overwrite the weights value in weights[i]
 
         # Delays
         if isinstance(params['delay'],list):
@@ -383,7 +384,7 @@ class PointCell (Cell):
                 else:
                     netcon = sim.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
                 
-                netcon.weight[weightIndex] = weights[i]  # set Netcon weight
+                netcon.weight[weightIndex] = weights[i]  # set Netcon weight - note that this gets over-written in loop
                 netcon.delay = delays[i]  # set Netcon delay
                 #netcon.threshold = threshold # set Netcon threshold
                 self.conns[-1]['hObj'] = netcon  # add netcon object to dict in conns list

@@ -1175,11 +1175,12 @@ class CompartCell (Cell):
                         synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
                 else:
                     synMechLocs = [i*(1.0/synsPerConn)+1.0/synsPerConn/2 for i in range(synsPerConn)]
-            else:  # if multiple sections, distribute syns
+            else:  
+                # if multiple sections, distribute syns uniformly
                 if sim.cfg.distributeSynsUniformly:
                     synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
                 else:
-                    if synsPerConn == len(secLabels):  # have list of secs that matches num syns 
+                    if not sim.cfg.connRandomSecFromList and synsPerConn == len(secLabels):  # have list of secs that matches num syns 
                         synMechSecs = secLabels
                         if isinstance(params['loc'], list):  
                             if len(params['loc']) == synsPerConn:  # list of locs matches num syns
@@ -1190,8 +1191,28 @@ class CompartCell (Cell):
                         else: # single loc
                             synMechLocs = [params['loc']] * synsPerConn
                     else:
-                            print("Error: The length of the list of sections does not match synsPerConn (with cfg.distributeSynsUniformly = False")
-                            return            
+                        synMechSecs = secLabels
+                        synMechLocs = params['loc'] if isinstance(params['loc'], list) else [params['loc']] 
+
+                        # randomize the section to connect to and move it to beginning of list
+                        if sim.cfg.connRandomSecFromList and len(synMechSecs) >= synsPerConn:
+                            if len(synMechLocs) == 1: synMechLocs = [params['loc']] * synsPerConn
+                            rand = h.Random()
+                            preGid = params['preGid'] if isinstance(params['preGid'], int) else 0
+                            rand.Random123(sim.hashStr('connSynMechsSecs'), self.gid, preGid) # initialize randomizer 
+
+                            randSecPos = sim.net.randUniqueInt(rand, synsPerConn, 0, len(synMechSecs)-1)
+                            synMechSecs = [synMechSecs[i] for i in randSecPos]
+
+                            if isinstance(params['loc'], list): 
+                                randLocPos = sim.net.randUniqueInt(rand, synsPerConn, 0, len(synMechLocs)-1)
+                                synMechLocs = [synMechLocs[i] for i in randLocPos]
+                            else:
+                                randLoc = rand.uniform(0, 1)
+                                synMechLocs = [rand.uniform(0, 1) for i in range(synsPerConn)]
+                        else:
+                                print("\nError: The length of the list of sections needs to be greater or equal to the synsPerConn (with cfg.connRandomSecFromList = True")
+                                return
                 
         else:  # if 1 synapse
             # by default place on 1st section of list and location available 

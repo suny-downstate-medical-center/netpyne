@@ -119,7 +119,7 @@ def connectCells(self):
         self.subcellularConn(allCellTags, allPopTags)
         sim.cfg.createNEURONObj = origCreateNEURONObj # set to original value
         sim.cfg.addSynMechs = origAddSynMechs # set to original value
-        cellsUpdate = [c for c in sim.net.cells if c.tags['cellModel'] not in ['NetStim', 'VecStim']]
+        cellsUpdate = [c for c in sim.net.cells if c.tags.get('cellModel', None) not in ['NetStim', 'VecStim']]
         if sim.cfg.createNEURONObj:
             for cell in cellsUpdate:
                 # Add synMechs, stim and conn NEURON objects

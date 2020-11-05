@@ -18,6 +18,8 @@
 
 - Added option to plot the log of connectivity in plotConn
 
+- Enabled random distribution of multiple synapses with synsPerConn>1 and connRandomSecFromList=True 
+
 
 **Bug fixes**
 

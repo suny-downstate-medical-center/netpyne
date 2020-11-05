@@ -7,43 +7,23 @@ netParams = specs.NetParams()  # object of class NetParams to store the network 
 ## Population parameters
 numCells = 2
 netParams.popParams['IT5B'] = {'numCells': numCells, 'cellType': 'IT', 'cellModel': 'HH', }
-netParams.popParams['bkg'] = {'numCells': numCells, 'cellModel': 'NetStim',  'rate': 15, 'noise': 1.0, 'start': 0, }
 
 ## Cell property rules
 netParams.loadCellParamsRule(label='IT5B_reduced', fileName='IT5B_reduced_cellParams.pkl')
 netParams.cellParams['IT5B_reduced']['conds'] = {'cellType': 'IT'}
 
-
 ## Synaptic mechanism parameters
 netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # excitatory synaptic mechanism
 
 
-# netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.0}
-# netParams.stimTargetParams['bg1'] = {'source': 'bkg', 
-# 									'conds': {'cellType': 'IT'}, 
-# 									'weight': 0.1, 
-# 									'delay': 5, 
-# 									'sec': ['soma', 'Adend1', 'Adend2', 'Adend3', 'Bdend'],
-# 									'synsPerConn': 3}
-
-
-conn1to1 = np.array([range(numCells), range(numCells)]).T
-
-netParams.connParams['bkg->IT'] = {'preConds': {'pop': 'bkg'}, 
-									'postConds': {'pop': 'IT5B'}, 
+netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.0}
+netParams.stimTargetParams['bg1'] = {'source': 'bkg', 
+									'conds': {'pop': 'IT5B'}, 
 									'weight': 0.1, 
 									'delay': 5, 
-									'synMech': 'AMPA',
-									'connList': conn1to1,
 									'sec': ['soma', 'Adend1', 'Adend2', 'Adend3', 'Bdend'],
-									'synsPerConn': 5}
+									'synsPerConn': 3}
 
-
-# netParams.subConnParams['bkg->E'] = {
-# 	'preConds': {'pop': 'bkg'}, 
-# 	'postConds': {'pop': 'IT5B'},  
-# 	'sec': ['soma', 'Adend1', 'Adend2', 'Adend3', 'Bdend'],
-# 	'density':  {'type': '1Dmap', 'gridX': None, 'gridY': range(0, -50*20, -50), 'gridValues': [1./20]*20}}  
 
 # Simulation options
 simConfig = specs.SimConfig()		# object of class SimConfig to store simulation configuration

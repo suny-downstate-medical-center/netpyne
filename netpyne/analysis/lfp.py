@@ -476,7 +476,10 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
                     vc = [vmin, vmax]
 
                 plt.imshow(S, extent=(np.amin(T), np.amax(T), np.amin(F), np.amax(F)), origin='lower', interpolation='None', aspect='auto', vmin=vc[0], vmax=vc[1], cmap=plt.get_cmap('viridis'))
-                plt.colorbar(label='Power')
+                if normSpec:
+                    plt.colorbar(label='Normalized power')
+                else:
+                    plt.colorbar(label='Power')
                 plt.ylabel('Hz')
                 plt.tight_layout()                
                 if len(electrodes) > 1:

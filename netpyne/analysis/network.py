@@ -1211,7 +1211,7 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
         shapeax.elev=90 # 90 
         shapeax.azim=-90 # -90
         shapeax.dist=dist*shapeax.dist
-        plt.axis('equal')
+        plt.axis('auto')
         cmap = plt.cm.viridis #plt.cm.jet  #plt.cm.rainbow #plt.cm.jet #YlOrBr_r
         morph.shapeplot(h,shapeax, sections=secs, cvals=cvals, cmap=cmap)
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)

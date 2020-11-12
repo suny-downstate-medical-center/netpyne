@@ -296,8 +296,6 @@ def subcellularConn(self, allCellTags, allPopTags):
                         conn['sec'] = newSec
                         conn['loc'] = newLoc
 
-                        print(newSec, newLoc)
-
                         # find grouped conns 
                         if subConnParam.get('groupSynMechs', None) \
                             and len(subConnParam['groupSynMechs']) > 1 \

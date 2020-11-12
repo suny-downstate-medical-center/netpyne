@@ -36,6 +36,7 @@ else:
         version = version,  # update this in netpyne/__init__.py; makes it accessible to python scripts too...
         description = 'A Python package to develop, simulate and analyse biological neuronal networks in NEURON.',
         long_description = long_description,
+        long_description_content_type = 'text/markdown',
 
         # python_requires='>=2.7, >=3.6', # removed since makes py2 install fail with universal wheel
         

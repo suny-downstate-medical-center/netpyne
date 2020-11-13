@@ -34,7 +34,7 @@ from .utils import _saveFigData, _showFigure
 ## Support function for plotConn() - calculate conn using data from sim object
 # -------------------------------------------------------------------------------------------------------------------
 
-def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, removeWeightNorm, logPlot):
+def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, removeWeightNorm, logPlot=False):
 
     from .. import sim
 
@@ -380,7 +380,7 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
 ## Support function for plotConn() - calculate conn using data from files with short format (no keys)
 # -------------------------------------------------------------------------------------------------------------------
 
-def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile,removeWeightNorm, logPlot):
+def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile,removeWeightNorm, logPlot=False):
     
     from .. import sim
     import json

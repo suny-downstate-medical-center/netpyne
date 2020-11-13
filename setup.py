@@ -12,8 +12,16 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
     
-import netpyne
-version = netpyne.__version__
+
+# Get the version from the init file
+version = None
+with open(path.join('netpyne', '__init__.py'), 'r') as fid:
+    for line in (line.strip() for line in fid):
+        if line.startswith('__version__'):
+            version = line.split('=')[1].strip().strip('\'')
+            break
+if version is None:
+    raise RuntimeError('Could not determine version')
 
 import sys
 if 'upload_via_twine' in sys.argv:
@@ -28,6 +36,7 @@ else:
         version = version,  # update this in netpyne/__init__.py; makes it accessible to python scripts too...
         description = 'A Python package to develop, simulate and analyse biological neuronal networks in NEURON.',
         long_description = long_description,
+        long_description_content_type = 'text/markdown',
 
         # python_requires='>=2.7, >=3.6', # removed since makes py2 install fail with universal wheel
         
@@ -76,7 +85,7 @@ else:
         # your project is installed. For an analysis of "install_requires" vs pip's
         # requirements files see:
         # https://packaging.python.org/en/latest/requirements.html
-        install_requires=['numpy', 'scipy', 'matplotlib>2.2,<=2.2.4', 'matplotlib-scalebar', 'future', 'pandas==0.23.4', 'bokeh==2.1.1'],
+        install_requires=['numpy', 'scipy', 'matplotlib', 'matplotlib-scalebar', 'future', 'pandas', 'bokeh'],
 
      # List additional groups of dependencies here (e.g. development
         # dependencies). You can install these using the following syntax,

@@ -1,8 +1,7 @@
 
 """
-network/subconn.py 
+Module for distributing synapses at the subcellular level in networks
 
-Methods to distribute synapses at the subcellular level (e.g. dendritic) in the network
 """
 
 from __future__ import print_function
@@ -25,6 +24,27 @@ from neuron import h
 # Calculate distance between 2 segments
 # -----------------------------------------------------------------------------
 def fromtodistance(self, origin_segment, to_segment):
+    """
+    Function for/to <short description of `netpyne.network.subconn.fromtodistance`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+    origin_segment : <type>
+        <Short description of origin_segment>
+        **Default:** *required*
+
+    to_segment : <type>
+        <Short description of to_segment>
+        **Default:** *required*
+
+
+    """
+
+
     h.distance(0, origin_segment.x, sec=origin_segment.sec)
     return h.distance(to_segment.x, sec=to_segment.sec)
 
@@ -110,6 +130,27 @@ def _interpolateSegmentSigma(self, cell, secList, gridX, gridY, gridSigma):
 # Subcellular connectivity (distribution of synapses)
 # -----------------------------------------------------------------------------
 def subcellularConn(self, allCellTags, allPopTags):
+    """
+    Function for/to <short description of `netpyne.network.subconn.subcellularConn`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+    allCellTags : <type>
+        <Short description of allCellTags>
+        **Default:** *required*
+
+    allPopTags : <type>
+        <Short description of allPopTags>
+        **Default:** *required*
+
+
+    """
+
+
     from .. import sim
 
     sim.timing('start', 'subConnectTime')

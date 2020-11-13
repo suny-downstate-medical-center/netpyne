@@ -1,9 +1,6 @@
 """
-batch/grid.py 
+Module for grid search parameter optimization and exploration 
 
-Code for grid search parameter optimization/exploration
-
-Contributors: salvadordura@gmail.com
 """
 
 from __future__ import print_function
@@ -52,6 +49,27 @@ pc = h.ParallelContext() # use bulletin board master/slave
         
 # func needs to be outside of class
 def runJob(script, cfgSavePath, netParamsSavePath):
+    """
+    Function for/to <short description of `netpyne.batch.grid.runJob`>
+
+    Parameters
+    ----------
+    script : <type>
+        <Short description of script>
+        **Default:** *required*
+
+    cfgSavePath : <type>
+        <Short description of cfgSavePath>
+        **Default:** *required*
+
+    netParamsSavePath : <type>
+        <Short description of netParamsSavePath>
+        **Default:** *required*
+
+
+    """
+
+
     print('\nJob in rank id: ',pc.id())
     command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath) 
     print(command+'\n')
@@ -64,6 +82,23 @@ def runJob(script, cfgSavePath, netParamsSavePath):
 # Grid Search optimization
 # -------------------------------------------------------------------------------
 def gridSearch(self, pc):
+    """
+    Function for/to <short description of `netpyne.batch.grid.gridSearch`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+    pc : <type>
+        <Short description of pc>
+        **Default:** *required*
+
+
+    """
+
+
 
     createFolder(self.saveFolder)
     

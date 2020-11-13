@@ -1,8 +1,7 @@
 
 """
-network.py 
+Module defining Network class and methods
 
-Defines Network class which contains cell objects and network-realated methods
 """
 
 from __future__ import print_function
@@ -16,6 +15,13 @@ from ..specs import ODict
 from neuron import h  # import NEURON
 
 class Network(object):
+    """
+    Class for/to <short description of `netpyne.network.network.Network`>
+
+
+    """
+
+
 
     # -----------------------------------------------------------------------------
     # initialize variables
@@ -38,6 +44,8 @@ class Network(object):
 
         self.pops = ODict()  # list to store populations ('Pop' objects)
         self.cells = [] # list to store cells ('Cell' objects)
+        self.cells_dpls = {} # dict with vectors of dipole over time for each cell
+        self.cells_dpl = {} # dict with vectors of dipole at one time for each cell
 
         self.gid2lid = {} # Empty dict for storing GID -> local index (key = gid; value = local id) -- ~x6 faster than .index() 
         self.lastGid = 0  # keep track of last cell gid 
@@ -70,7 +78,9 @@ class Network(object):
         sim.pc.barrier()
         sim.timing('start', 'createTime')
         if sim.rank==0: 
-            print(("\nCreating network of %i cell populations on %i hosts..." % (len(self.pops), sim.nhosts))) 
+            print(("\nCreating network of %i cell populations on %i hosts..." % (len(self.pops), sim.nhosts)))
+                
+        self._setDiversityRanges()  # update fractions for rules 
         
         for ipop in list(self.pops.values()): # For each pop instantiate the network cells (objects of class 'Cell')
             newCells = ipop.createCells() # create cells for this pop using Pop method
@@ -86,6 +96,31 @@ class Network(object):
         if sim.rank == 0 and sim.cfg.timing: print(('  Done; cell creation time = %0.2f s.' % sim.timingData['createTime']))
 
         return self.cells
+
+    # -----------------------------------------------------------------------------
+    # Set fraction of cells for populations with cell diversity
+    # -----------------------------------------------------------------------------
+    def _setDiversityRanges(self):
+        from .. import sim
+
+        condFracs = {}
+        for cellRule in sim.net.params.cellParams.values():
+            if 'diversityFraction' in cellRule:
+                divFrac = cellRule['diversityFraction']
+                cellType = cellRule['conds'].get('cellType', None)
+                cellModel = cellRule['conds'].get('CellModel', None)
+                pop = cellRule['conds'].get('pop', None)
+
+                if (cellType, cellModel, pop) in condFracs:
+                    startFrac = float(condFracs[(cellType, cellModel, pop)])
+                    endFrac = startFrac + divFrac
+                    cellRule['conds']['fraction'] = [startFrac, endFrac] 
+                    condFracs[(cellType, cellModel, pop)] = endFrac
+                else:
+                    startFrac = 0
+                    endFrac = startFrac + divFrac
+                    cellRule['conds']['fraction'] = [startFrac, endFrac]
+                    condFracs[(cellType, cellModel, pop)] = endFrac 
 
     # -----------------------------------------------------------------------------
     # Import stim methods

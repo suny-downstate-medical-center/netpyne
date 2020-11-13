@@ -1,8 +1,7 @@
 
 """
-pop.py 
+Module defining Population class and methods
 
-Contains Population related classes 
 """
 
 from __future__ import print_function
@@ -31,8 +30,9 @@ from neuron import h # Import NEURON
 
 class Pop (object):
     """
-    Python class to instantiate the network population
-    """
+    Class for/to <short description of `netpyne.network.pop.Pop`>
+
+"""
     
     def __init__(self, label, tags):
         self.tags = tags # list of tags/attributes of population (eg. numCells, cellModel,...)
@@ -140,7 +140,8 @@ class Pop (object):
                 maxv = self.tags[coord+'normRange'][1] 
                 randLocs[:,icoord] = randLocs[:,icoord] * (maxv-minv) + minv
 
-        for i in self._distributeCells(int(sim.net.params.scale * self.tags['numCells']))[sim.rank]:
+        numCells = int(sim.net.params.scale * self.tags['numCells'])
+        for i in self._distributeCells(numCells)[sim.rank]:
             gid = sim.net.lastGid+i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
             cellTags = {k: v for (k, v) in self.tags.items() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
@@ -159,6 +160,8 @@ class Pop (object):
                         pass
                 else:
                     cellTags['params']['spkTimes'] = self.tags['spkTimes']  # 1D list (same for all)
+            if self.tags.get('diversity', False): # if pop has cell diversity
+                cellTags['fraction'] = float(i)/float(numCells)
             
             if 'dynamicRates' in self.tags:  # if NetStim, copy rates array to params
                 if 'rates' in self.tags['dynamicRates'] and 'times' in self.tags['dynamicRates']:

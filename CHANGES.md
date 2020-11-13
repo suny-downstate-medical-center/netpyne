@@ -1,3 +1,40 @@
+# Version 0.9.8
+
+**New features**
+
+- analysis.plotLFP can now be applied to external data
+
+- Evolutionary and Optuna optimization can now read results from .pkl files
+
+- Enabled recording of stimulus variables (e.g. SEClamp i)
+
+- Added options in load func to avoid instantiating cells, conns, stims and/or rxd 
+
+- Analysis and plotting of rate vs current (f-I) curve for single cell tuning
+
+- Recording and plotting of current dipoles in arbitrary subset of populations
+
+- Added option to plot LFP spectrogram with log y-axis 
+
+- Added option to plot the log of connectivity in plotConn
+
+- Enabled random distribution of multiple synapses with synsPerConn>1 and connRandomSecFromList=True 
+
+
+**Bug fixes**
+
+- Fixed bug when using index with recordTraces
+
+- Fixed axes values in plotRxDConcentration and iplotRxDConcentration
+
+- Added links to necessary mod files in the importing cell models tutorial
+
+- Added aux_fun.inc to doc/source/code/mod as it's needed for some examples
+
+- Blocked terminal output from Git when no repository is found (i.e. with pip install netpyne)
+
+- Avoid adding section-based weightNorm values to point neurons (was affecting tut_import.py)
+
 # Version 0.9.7
 
 **New features**

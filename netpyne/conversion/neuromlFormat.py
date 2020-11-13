@@ -1,7 +1,6 @@
 """
-conversion/neuromlFormat.py 
+Module for importing and exporting NeuroML
 
-Contains functions related to neuroml conversion (import from and export to) 
 """
 
 from __future__ import print_function
@@ -33,7 +32,7 @@ except ImportError:
     from neuron import h
     pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
     if False and int(pc.id()) == 0:  # only print for master node
-        print('Note: NeuroML import failed; import/export functions for NeuroML will not be available. \n  To install the pyNeuroML & libNeuroML Python packages visit: https://www.neuroml.org/getneuroml')
+        print('Warning: NeuroML import failed; import/export functions for NeuroML will not be available. \n  To install the pyNeuroML & libNeuroML Python packages visit: https://www.neuroml.org/getneuroml')
     neuromlExists = False
 
 import pprint; pp = pprint.PrettyPrinter(depth=6)
@@ -129,6 +128,23 @@ def _convertStimulationRepresentation(net,gids_vs_pop_indices, nml_doc):
 #  Heaviside function, required for expressions in <inhomogeneousValue>
 #
 def H(x):
+    """
+    Short description of `netpyne.conversion.neuromlFormat.H`
+
+    Parameters
+    ----------
+    x : 
+        Short description of x
+
+        **Default:** ``Required``
+
+        **Options:** 
+
+ 
+
+    """
+
+
     if x == 0:
         return 0.5
 
@@ -220,6 +236,55 @@ hh_nml2_chans = """
 ### Export generated structure of network to NeuroML 2 
 ###############################################################################         
 def exportNeuroML2(reference, connections=True, stimulations=True, format='xml', default_cell_radius=5):
+    """
+    Short description of `netpyne.conversion.neuromlFormat.exportNeuroML2`
+
+    Parameters
+    ----------
+    reference : 
+        Short description of reference
+
+        **Default:** ``Required``
+
+        **Options:** 
+
+ 
+    connections : bool
+        Short description of connections
+
+        **Default:** ``True``
+
+        **Options:** 
+
+ 
+    stimulations : bool
+        Short description of stimulations
+
+        **Default:** ``True``
+
+        **Options:** 
+
+ 
+    format : str
+        Short description of format
+
+        **Default:** ``'xml'``
+
+        **Options:** 
+
+ 
+    default_cell_radius : int
+        Short description of default_cell_radius
+
+        **Default:** ``5``
+
+        **Options:** 
+
+ 
+
+    """
+
+
 
     from .. import sim
 
@@ -676,6 +741,13 @@ try:
     from neuroml.hdf5.DefaultNetworkHandler import DefaultNetworkHandler
 
     class NetPyNEBuilder(DefaultNetworkHandler):
+        """
+        Short description of `netpyne.conversion.neuromlFormat.NetPyNEBuilder`
+
+
+        """
+
+
 
         cellParams = OrderedDict()
         popParams = OrderedDict()
@@ -1311,6 +1383,47 @@ try:
     # Import network from NeuroML2
     ###############################################################################
     def importNeuroML2(fileName, simConfig, simulate=True, analyze=True):
+        """
+        Short description of `netpyne.conversion.neuromlFormat.importNeuroML2`
+
+        Parameters
+        ----------
+        fileName : 
+            Short description of fileName
+
+            **Default:** ``Required``
+
+            **Options:** 
+
+    
+        simConfig : 
+            Short description of simConfig
+
+            **Default:** ``Required``
+
+            **Options:** 
+
+    
+        simulate : bool
+            Short description of simulate
+
+            **Default:** ``True``
+
+            **Options:** 
+
+    
+        analyze : bool
+            Short description of analyze
+
+            **Default:** ``True``
+
+            **Options:** 
+
+    
+
+        """
+
+
 
         from .. import sim
 
@@ -1467,4 +1580,5 @@ try:
     
     
 except:
-    print(' Warning: An Exception occurred when loading NeuroML ...')
+    pass
+    #print(' Warning: An Exception occurred when loading NeuroML ...')

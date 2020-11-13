@@ -1,9 +1,6 @@
 """
-batch/evol.py 
+Module for Optuna hyperparameter optimization (optuna.org)
 
-Code for adaptive stochastic descent optimizaiton method (Kerr et al. 2018; PLoS ONE)
-
-Contributors: salvadordura@gmail.com
 """
 
 from __future__ import print_function
@@ -59,10 +56,34 @@ pc = h.ParallelContext() # use bulletin board master/slave
 # -------------------------------------------------------------------------------
 
 # func needs to be outside of class
-def runJob(script, cfgSavePath, netParamsSavePath, simDataPath):
+def runJob(nrnCommand, script, cfgSavePath, netParamsSavePath, simDataPath):
+    """
+    Function for/to <short description of `netpyne.batch.optuna_parallel.runJob`>
+
+    Parameters
+    ----------
+    script : <type>
+        <Short description of script>
+        **Default:** *required*
+
+    cfgSavePath : <type>
+        <Short description of cfgSavePath>
+        **Default:** *required*
+
+    netParamsSavePath : <type>
+        <Short description of netParamsSavePath>
+        **Default:** *required*
+
+    simDataPath : <type>
+        <Short description of simDataPath>
+        **Default:** *required*
+
+
+    """
+
     import os
     print('\nJob in rank id: ',pc.id())
-    command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath)
+    command = '%s %s simConfig=%s netParams=%s' % (nrnCommand, script, cfgSavePath, netParamsSavePath)
     print(command)
 
     with open(simDataPath+'.run', 'w') as outf, open(simDataPath+'.err', 'w') as errf:
@@ -73,6 +94,23 @@ def runJob(script, cfgSavePath, netParamsSavePath, simDataPath):
 
 
 def optunaOptim(self, pc):
+    """
+    Function for/to <short description of `netpyne.batch.optuna_parallel.optunaOptim`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+    pc : <type>
+        <Short description of pc>
+        **Default:** *required*
+
+
+    """
+
+
     import sys
 
     # -------------------------------------------------------------------------------
@@ -101,7 +139,8 @@ def optunaOptim(self, pc):
         # mpi command setup
         nodes = args.get('nodes', 1)
         coresPerNode = args.get('coresPerNode', 1)
-        mpiCommand = args.get('mpiCommand', 'ibrun')
+        mpiCommand = args.get('mpiCommand', 'mpiexec')
+        nrnCommand = args.get('nrnCommand', 'nrniv -python -mpi')
         numproc = nodes*coresPerNode
         
         # slurm setup
@@ -166,14 +205,17 @@ def optunaOptim(self, pc):
             # ----------------------------------------------------------------------
             # MPI master-slaves
             # ----------------------------------------------------------------------
-            pc.submit(runJob, script, cfgSavePath, netParamsSavePath, jobPath)
+            pc.submit(runJob, nrnCommand, script, cfgSavePath, netParamsSavePath, jobPath)
             print('-'*80)
 
         else:
             # ----------------------------------------------------------------------
             # MPI job commnand
             # ----------------------------------------------------------------------
-            command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
+            if mpiCommand == '':
+                command = '%s %s simConfig=%s netParams=%s ' % (nrnCommand, script, cfgSavePath, netParamsSavePath)
+            else:
+                command = '%s -np %d %s %s simConfig=%s netParams=%s ' % (mpiCommand, numproc,  nrnCommand, script, cfgSavePath, netParamsSavePath)
             
             # ----------------------------------------------------------------------
             # run on local machine with <nodes*coresPerNode> cores
@@ -263,6 +305,12 @@ def optunaOptim(self, pc):
                     if os.path.isfile(jobNamePath+'.json'):
                         with open('%s.json'% (jobNamePath)) as file:
                             simData = json.load(file)['simData']
+                        fitness[candidate_index] = fitnessFunc(simData, **fitnessFuncArgs)
+                        jobs_completed += 1
+                        print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
+                    elif os.path.isfile(jobNamePath+'.pkl'):
+                        with open('%s.pkl'% (jobNamePath), 'rb') as file:
+                            simData = pickle.load(file)['simData']
                         fitness[candidate_index] = fitnessFunc(simData, **fitnessFuncArgs)
                         jobs_completed += 1
                         print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
@@ -384,7 +432,6 @@ def optunaOptim(self, pc):
     sleep(rank) # each process wiats a different time to avoid saturating sqlite database
     study = optuna.create_study(study_name=self.batchLabel, storage='sqlite:///%s/%s_storage.db' % (self.saveFolder, self.batchLabel),
                                 load_if_exists=True, direction=args['direction'])
-    study._storage = study._storage._backend  # avoid using chaed storage
     try:
         study.optimize(lambda trial: objective(trial, args), n_trials=args['maxiters'], timeout=args['maxtime'])
     except Exception as e:

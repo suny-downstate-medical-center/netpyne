@@ -1,5 +1,6 @@
 """
-Wrapper function to call analysis functions specified in simConfig
+Module with wrapper function to call analysis functions specified in simConfig
+
 """
 
 from __future__ import print_function
@@ -19,6 +20,13 @@ except:
 ## Wrapper to run analysis functions in simConfig
 # -------------------------------------------------------------------------------------------------------------------
 def plotData():
+    """
+    Function for/to <short description of `netpyne.analysis.wrapper.plotData`>
+
+
+    """
+
+
     from .. import sim
 
     ## Plotting

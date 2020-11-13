@@ -1,5 +1,6 @@
 """
-Functions to plot and analyze traces-related results
+Module for analysis and plotting of traces-related results
+
 """
 
 from __future__ import print_function
@@ -28,7 +29,8 @@ from .utils import colorList, _showFigure, _saveFigData, exception, getCellsIncl
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, title=None, overlay=False, colors=None, ylim=None, axis=True, scaleBarLoc=1, figSize = (10,8), fontSize=12, saveData=None, saveFig=None, showFig=True):
-    """Creates plots of recorded traces.
+    """
+    Function for/to <short description of `netpyne.analysis.traces.plotTraces`>
 
     Parameters
     ----------
@@ -50,7 +52,8 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
         Time range to plot.
         **Default:** 
         ``None`` plots entire time range
-
+        **Options:** ``<option>`` <description of option>
+ 
     oneFigPer : str
         Whether to plot one figure per cell (showing multiple traces) or per trace (showing multiple cells).
         **Default:** ``'cell'`` 
@@ -58,28 +61,34 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
 
     rerun : bool
         Rerun simulation so a new set of cells gets recorded.
-        **Default:** ``False`` 
-    
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
     title : str
         Set the whole figure title, works only with ``oneFigPer='cell'``.
         **Default:** ``None``
-
+        **Options:** ``<option>`` <description of option>
+ 
     overlay : bool
         Whether to overlay plots or use subplots.
         **Default:** ``True`` overlays plots.
-
+        **Options:** ``<option>`` <description of option>
+ 
     colors : list
         List of normalized RGB colors to use for traces.
         **Default:** ``None`` uses standard colors
-
+        **Options:** ``<option>`` <description of option>
+ 
     ylim : list [min, max]
         Sets the y limits of the plot.
         **Default:** ``None``
-
+        **Options:** ``<option>`` <description of option>
+ 
     axis : bool
         Whether to show axis or not; if not, then a scalebar is included.
         **Default:** ``True``
-
+        **Options:** ``<option>`` <description of option>
+ 
     scaleBarLoc : int
         Sets the location of the scale bar (added when axis=False).
         **Default:** ``1``
@@ -88,42 +97,36 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
 
     figSize : list [width, height]
         Size of figure in inches.
-        **Default:** ``(10, 8)`` 
-    
+        **Default:** ``(10, 8)``
+        **Options:** ``<option>`` <description of option>
+ 
     fontSize : int
         Font size on figure.
-        **Default:** ``12`` 
-    
+        **Default:** ``12``
+        **Options:** ``<option>`` <description of option>
+ 
     saveData : bool or str
         Whether and where to save the data used to generate the plot. 
         **Default:** ``False`` 
         **Options:** ``True`` autosaves the data,
         ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
-    
+
     saveFig : bool or str
         Whether and where to save the figure.
         **Default:** ``False``
         **Options:** ``True`` autosaves the figure,
         ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
-    
+
     showFig : bool
         Shows the figure if ``True``.
         **Default:** ``True``
-
+        **Options:** ``<option>`` <description of option>
+ 
     Returns
     -------
-    (fig, dict)
-        A tuple consisting of the matplotlib figure handle and a dictionary containing the plot data.
 
-    See Also
-    --------
-    iplotTraces :
 
-    Examples
-    --------
-    >>> import netpyne, netpyne.examples.example
-    >>> out = netpyne.analysis.plotTraces()
-    """
+"""
     
     from .. import sim
     from ..support.scalebar import add_scalebar
@@ -352,11 +355,11 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
         if isinstance(saveFig, basestring):
             filename = saveFig
         else:
-            filename = sim.cfg.filename+'_'+'traces.png'
+            filename = sim.cfg.filename + '_traces.png'
         if len(figs) > 1:
             for figLabel, figObj in figs.items():
                 plt.figure(figObj.number)
-                plt.savefig(filename[:-4]+figLabel+filename[-4:])
+                plt.savefig(filename[:-4] + '_' + figLabel + '_' + filename[-4:])
         else:
             plt.savefig(filename)
 
@@ -370,6 +373,60 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='absolute', polarity='exc', saveFig=False, showFig=True):
+    """
+    Function for/to <short description of `netpyne.analysis.traces.plotEPSPAmp`>
+
+    Parameters
+    ----------
+    include : <``None``?>
+        <Short description of include>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    trace : <``None``?>
+        <Short description of trace>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    start : int
+        <Short description of start>
+        **Default:** ``0``
+        **Options:** ``<option>`` <description of option>
+ 
+    interval : int
+        <Short description of interval>
+        **Default:** ``50``
+        **Options:** ``<option>`` <description of option>
+ 
+    number : int
+        <Short description of number>
+        **Default:** ``2``
+        **Options:** ``<option>`` <description of option>
+ 
+    amp : str
+        <Short description of amp>
+        **Default:** ``'absolute'``
+        **Options:** ``<option>`` <description of option>
+ 
+    polarity : str
+        <Short description of polarity>
+        **Default:** ``'exc'``
+        **Options:** ``<option>`` <description of option>
+ 
+    saveFig : bool
+        <Short description of saveFig>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    showFig : bool
+        <Short description of showFig>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
 
     from .. import sim
 

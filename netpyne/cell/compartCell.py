@@ -1,7 +1,6 @@
 """
-cell/compartCell.py 
+Module containing a compartmental cell class
 
-Contains compartCell class 
 """
 
 from __future__ import division
@@ -38,12 +37,11 @@ from ..specs import Dict
 #
 ###############################################################################
 
-# --- Temporarily copied from HNN code; improve so doesn't use h globals ---  
-# global variables for dipole calculation, should be node-independent 
 
 class CompartCell (Cell):
     """
-    Class for section-based neuron models
+    Class for/to <short description of `netpyne.cell.compartCell.CompartCell`>
+
     """
     
     def __init__ (self, gid, tags, create=True, associateGid=True):
@@ -66,9 +64,6 @@ class CompartCell (Cell):
     def create (self):
         from .. import sim
                 
-        if sim.cfg.recordDipoles:
-            h("dp_total_L2 = 0."); h("dp_total_L5 = 0.") # put here since these variables used in cells
-
         # generate random rotation angle for each cell
         if sim.net.params.rotateCellsRandomly:
             if isinstance(sim.net.params.rotateCellsRandomly, list):
@@ -79,7 +74,7 @@ class CompartCell (Cell):
             rand.Random123(self.gid)
             self.randRotationAngle = rand.uniform(0, 6.2832)  # 0 to 2pi
 
-        
+        # apply cell rules
         for propLabel, prop in sim.net.params.cellParams.items():  # for each set of cell properties
             conditionsMet = 1
             if 'conds' in prop and len(prop['conds']) > 0:
@@ -98,6 +93,7 @@ class CompartCell (Cell):
                         break
             elif self.tags['cellType'] != propLabel:  # simplified method for defining cell params (when no 'conds')
                 conditionsMet = False
+                
             if conditionsMet:  # if all conditions are met, set values for this cell
                 if sim.cfg.includeParamsLabel:
                     if 'label' not in self.tags:
@@ -261,6 +257,8 @@ class CompartCell (Cell):
             L = -L
         return L
 
+
+    
     # insert dipole in section
     def __dipoleInsert(self, secName, sec):
 
@@ -278,45 +276,50 @@ class CompartCell (Cell):
             print('Error inserting Dipole point process')
             return -1
         dpp = sec['hDipole_pp']
+        
         # assign internal resistance values to dipole point process (dpp)
         dpp.ri = h.ri(1, sec=sec['hObj'])
+        
         # sets pointers in dipole mod file to the correct locations -- h.setpointer(ref, ptr, obj)
         h.setpointer(sec['hObj'](0.99)._ref_v, 'pv', dpp)
-        if self.tags['cellType'].startswith('L2'):
-            h.setpointer(h._ref_dp_total_L2, 'Qtotal', dpp)
-        elif self.tags['cellType'].startswith('L5'):
-            h.setpointer(h._ref_dp_total_L5, 'Qtotal', dpp)
+        h.setpointer(self.dipole['hRef']._ref_x[0], 'Qtotal', dpp)
+        
 
         # gives INTERNAL segments of the section, non-endpoints
         # creating this because need multiple values simultaneously
         loc = np.array([seg.x for seg in sec['hObj']])
+        
         # these are the positions, including 0 but not L
         pos = np.array([seg.x for seg in sec['hObj'].allseg()])
+        
         # diff in yvals, scaled against the pos np.array. y_long as in longitudinal
         y_scale = (self.__dipoleGetSecLength(secName) * sec['hObj'].L) * pos
+        
         # y_long = (h.y3d(1, sec=sect) - h.y3d(0, sec=sect)) * pos
         # diff values calculate length between successive section points
         y_diff = np.diff(y_scale)
+        
         for i in range(len(loc)):
             # assign the ri value to the dipole
             sec['hObj'](loc[i]).dipole.ri = h.ri(loc[i], sec=sec['hObj'])
+            
             # range variable 'dipole'
             # set pointers to previous segment's voltage, with boundary condition
             if i > 0:
                 h.setpointer(sec['hObj'](loc[i-1])._ref_v, 'pv', sec['hObj'](loc[i]).dipole)
             else:
                 h.setpointer(sec['hObj'](0)._ref_v, 'pv', sec['hObj'](loc[i]).dipole)
+            
             # set aggregate pointers
             h.setpointer(dpp._ref_Qsum, 'Qsum', sec['hObj'](loc[i]).dipole)
-            if self.tags['cellType'].startswith('L2'):
-                h.setpointer(h._ref_dp_total_L2, 'Qtotal', sec['hObj'](loc[i]).dipole)
-            elif self.tags['cellType'].startswith('L5'):
-                h.setpointer(h._ref_dp_total_L5, 'Qtotal', sec['hObj'](loc[i]).dipole)
+            h.setpointer(self.dipole['hRef']._ref_x[0], 'Qtotal', sec['hObj'](loc[i]).dipole)
+            
             # add ztan values
             sec['hObj'](loc[i]).dipole.ztan = y_diff[i]
+            
         # set the pp dipole's ztan value to the last value from y_diff
         dpp.ztan = y_diff[-1]
-
+    
 
 
     def createNEURONObj (self, prop):
@@ -354,7 +357,8 @@ class CompartCell (Cell):
 
             # add distributed mechanisms 
             if 'mechs' in sectParams:
-                for mechName,mechParams in sectParams['mechs'].items(): 
+                mechsInclude = {k: v for k,v in sectParams['mechs'].items() if k not in excludeMechs}
+                for mechName, mechParams in mechsInclude.items(): 
                     if mechName not in sec['mechs']: 
                         sec['mechs'][mechName] = Dict()
                     try:
@@ -437,6 +441,12 @@ class CompartCell (Cell):
 
         # add dipoles
         if sim.cfg.recordDipoles:
+            
+            # create a 1-element Vector to store the dipole value for this cell and record from this Vector 
+            self.dipole = {'hRef': h.Vector(1)}#_ref_[0]} #h._ref_dpl_ref}  #h.Vector(1)            
+            self.dipole['hRec'] = h.Vector((sim.cfg.duration / sim.cfg.recordStep) + 1)
+            self.dipole['hRec'].record(self.dipole['hRef']._ref_x[0])
+
             for sectName,sectParams in prop['secs'].items():
                 sec = self.secs[sectName]
                 if 'mechs' in sectParams and 'dipole' in sectParams['mechs']:
@@ -702,11 +712,11 @@ class CompartCell (Cell):
             synMechs, synMechSecs, synMechLocs = self._setConnSynMechs(params, secLabels)
             if synMechs == -1: return
 
-        # Adapt weight based on section weightNorm (normalization based on section location)
-        for i,(sec,loc) in enumerate(zip(synMechSecs, synMechLocs)):
-            if 'weightNorm' in self.secs[sec] and isinstance(self.secs[sec]['weightNorm'], list): 
-                nseg = self.secs[sec]['geom']['nseg']
-                weights[i] = weights[i] * self.secs[sec]['weightNorm'][int(round(loc*nseg))-1]
+            # Adapt weight based on section weightNorm (normalization based on section location)
+            for i,(sec,loc) in enumerate(zip(synMechSecs, synMechLocs)):
+                if 'weightNorm' in self.secs[sec] and isinstance(self.secs[sec]['weightNorm'], list): 
+                    nseg = self.secs[sec]['geom']['nseg']
+                    weights[i] = weights[i] * self.secs[sec]['weightNorm'][int(round(loc*nseg))-1]
 
         # Create connections
         for i in range(params['synsPerConn']):
@@ -1165,11 +1175,12 @@ class CompartCell (Cell):
                         synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
                 else:
                     synMechLocs = [i*(1.0/synsPerConn)+1.0/synsPerConn/2 for i in range(synsPerConn)]
-            else:  # if multiple sections, distribute syns
+            else:  
+                # if multiple sections, distribute syns uniformly
                 if sim.cfg.distributeSynsUniformly:
                     synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
                 else:
-                    if synsPerConn == len(secLabels):  # have list of secs that matches num syns 
+                    if not sim.cfg.connRandomSecFromList and synsPerConn == len(secLabels):  # have list of secs that matches num syns 
                         synMechSecs = secLabels
                         if isinstance(params['loc'], list):  
                             if len(params['loc']) == synsPerConn:  # list of locs matches num syns
@@ -1180,8 +1191,28 @@ class CompartCell (Cell):
                         else: # single loc
                             synMechLocs = [params['loc']] * synsPerConn
                     else:
-                            print("Error: The length of the list of sections does not match synsPerConn (with cfg.distributeSynsUniformly = False")
-                            return            
+                        synMechSecs = secLabels
+                        synMechLocs = params['loc'] if isinstance(params['loc'], list) else [params['loc']] 
+
+                        # randomize the section to connect to and move it to beginning of list
+                        if sim.cfg.connRandomSecFromList and len(synMechSecs) >= synsPerConn:
+                            if len(synMechLocs) == 1: synMechLocs = [params['loc']] * synsPerConn
+                            rand = h.Random()
+                            preGid = params['preGid'] if isinstance(params['preGid'], int) else 0
+                            rand.Random123(sim.hashStr('connSynMechsSecs'), self.gid, preGid) # initialize randomizer 
+
+                            randSecPos = sim.net.randUniqueInt(rand, synsPerConn, 0, len(synMechSecs)-1)
+                            synMechSecs = [synMechSecs[i] for i in randSecPos]
+
+                            if isinstance(params['loc'], list): 
+                                randLocPos = sim.net.randUniqueInt(rand, synsPerConn, 0, len(synMechLocs)-1)
+                                synMechLocs = [synMechLocs[i] for i in randLocPos]
+                            else:
+                                randLoc = rand.uniform(0, 1)
+                                synMechLocs = [rand.uniform(0, 1) for i in range(synsPerConn)]
+                        else:
+                                print("\nError: The length of the list of sections needs to be greater or equal to the synsPerConn (with cfg.connRandomSecFromList = True")
+                                return
                 
         else:  # if 1 synapse
             # by default place on 1st section of list and location available 

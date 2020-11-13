@@ -1,5 +1,6 @@
 """
-Functions to plot and analyze connectivity-related results
+Module for analyzing and plotting connectivity-related results
+
 """
 
 from __future__ import print_function
@@ -33,7 +34,7 @@ from .utils import _saveFigData, _showFigure
 ## Support function for plotConn() - calculate conn using data from sim object
 # -------------------------------------------------------------------------------------------------------------------
 
-def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech,                         removeWeightNorm):
+def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, removeWeightNorm, logPlot):
 
     from .. import sim
 
@@ -147,7 +148,11 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
                             
                     countMatrix[cellIndsPre[conn[preGidIndex]], cellIndsPost[cell['gid']]] += 1
 
-        if feature in ['weight', 'delay']: connMatrix = connMatrix / countMatrix 
+        if feature in ['weight', 'delay']:
+            if logPlot: 
+                connMatrix = np.log10(connMatrix / countMatrix)
+            else: 
+                connMatrix = connMatrix / countMatrix
         elif feature in ['numConns']: connMatrix = countMatrix 
 
         pre, post = cellsPre, cellsPost 
@@ -232,7 +237,7 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
                                 weightNorm = cell['secs'][sec]['weightNorm'][segIndex]
                                 weightMatrix[popIndsPre[prePopLabel], popIndsPost[cell['tags']['pop']]] += conn[weightIndex] / weightNorm
                             except:
-                                pass
+                                import IPython; IPython.embed()
                         else:
                             weightMatrix[popIndsPre[prePopLabel], popIndsPost[cell['tags']['pop']]] += conn[weightIndex]
 
@@ -344,8 +349,11 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
     # normalize by number of postsyn cells
     if groupBy != 'cell':
         if feature == 'weight': 
-            connMatrix = weightMatrix / countMatrix  # avg weight per conn
-            connMatrix = np.nan_to_num(connMatrix, nan=0)  # if the count is 0 we get NaNs, but the weight is 0
+            if logPlot:
+                connMatrix = np.log10(weightMatrix / countMatrix)  # avg log weight per conn
+            else:
+                connMatrix = weightMatrix / countMatrix  # avg weight per conn
+                connMatrix = np.nan_to_num(connMatrix, nan=0)  # if the count is 0 we get NaNs, but the weight is 0
         elif feature == 'delay': 
             connMatrix = delayMatrix / countMatrix
             connMatrix = np.nan_to_num(connMatrix, nan=0)  # if the count is 0 we get NaNs, but the delay is 0
@@ -354,7 +362,10 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
         elif feature in ['probability', 'strength']:
             connMatrix = countMatrix / maxConnMatrix  # probability
             if feature == 'strength':
-                connMatrix = connMatrix * weightMatrix  # strength
+                if logPlot: 
+                    connMatrix = np.log10(connMatrix * weightMatrix)  # log strength
+                else: 
+                    connMatrix = connMatrix * weightMatrix  # strength
         elif feature == 'convergence':
             connMatrix = countMatrix / maxPostConnMatrix
         elif feature == 'divergence':
@@ -369,7 +380,7 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
 ## Support function for plotConn() - calculate conn using data from files with short format (no keys)
 # -------------------------------------------------------------------------------------------------------------------
 
-def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile,removeWeightNorm):
+def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile,removeWeightNorm, logPlot):
     
     from .. import sim
     import json
@@ -524,8 +535,11 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
 
     if groupBy != 'cell':
         if feature == 'weight': 
-            connMatrix = weightMatrix / countMatrix  # avg weight per conn (fix to remove divide by zero warning)
-            connMatrix = np.nan_to_num(connMatrix, nan=0)  # if the count is 0 we get NaNs, but the weight is 0 
+            if logPlot:
+                connMatrix = np.log10(weightMatrix / countMatrix)  # avg log weight per conn
+            else:
+                connMatrix = weightMatrix / countMatrix  # avg weight per conn (fix to remove divide by zero warning)
+                connMatrix = np.nan_to_num(connMatrix, nan=0)  # if the count is 0 we get NaNs, but the weight is 0 
         elif feature == 'delay': 
             connMatrix = delayMatrix / countMatrix
             connMatrix = np.nan_to_num(connMatrix, nan=0)  # if the count is 0 we get NaNs, but the delay is 0
@@ -534,7 +548,10 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
         elif feature in ['probability', 'strength']:
             connMatrix = countMatrix / maxConnMatrix  # probability
             if feature == 'strength':
-                connMatrix = connMatrix * weightMatrix  # strength
+                if logPlot: 
+                    connMatrix = np.log10(connMatrix * weightMatrix) # log strength
+                else: 
+                    connMatrix = connMatrix * weightMatrix  # strength
         elif feature == 'convergence':
             connMatrix = countMatrix / maxPostConnMatrix
         elif feature == 'divergence':
@@ -548,8 +565,9 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
 ## Plot connectivity
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderBy='gid', groupBy='pop', groupByIntervalPre=None, groupByIntervalPost=None, graphType='matrix', removeWeightNorm=False, synOrConn='syn', synMech=None, connsFile=None, tagsFile=None, clim=None, figSize=(8,8), fontSize=12, saveData=None, saveFig=None, showFig=True):
-    """Plots network connectivity.
+def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderBy='gid', groupBy='pop', groupByIntervalPre=None, groupByIntervalPost=None, graphType='matrix', removeWeightNorm=False, synOrConn='syn', synMech=None, connsFile=None, tagsFile=None, clim=None, figSize=(8,8), fontSize=12, saveData=None, saveFig=None, showFig=True, logPlot=False):
+    """
+    Function for/to <short description of `netpyne.analysis.network.plotConn`>
 
     Parameters
     ----------
@@ -570,7 +588,7 @@ def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderB
         List of postsynaptic cells to include. 
         **Default:** ``['all']``
         **Options:** same as in `includePre`
-    
+
     feature : str
         Feature to show in the connectivity plot.  The only features applicable to ``groupBy='cell'`` are ``'weight'``, ``'delay'`` and ``'numConns'``.
         **Default:** ``'strength'``
@@ -582,7 +600,7 @@ def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderB
         ``'strength'`` weight * probability, 
         ``'convergence'`` number of presynaptic cells per postynaptic one,
         ``'divergence'`` number of postsynaptic cells per presynaptic one
-    
+
     orderBy : str
         Unique numeric cell property by which to order x and y axes.
         **Default:** ``'gid'``
@@ -591,16 +609,18 @@ def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderB
     groupBy : str
         Plot connectivity for populations, individual cells, or by other numeric tags such as ``'y'``. 
         **Default:** ``'pop'``
-        **Options:** ``'pop'``, ``'cell'``, ``'y'`` 
+        **Options:** ``'pop'``, ``'cell'``, ``'y'``
 
     groupByIntervalPre : int or float
         Interval of `groupBy` feature to group presynaptic cells by in connectivity plot, e.g. ``100`` to group by cortical depth in steps of 100 um.
         **Default:** ``None``
-    
+        **Options:** ``<option>`` <description of option>
+ 
     groupByIntervalPost : int or float
         Interval of `groupBy` feature to group postsynaptic cells by in connectivity plot, e.g. ``100`` to group by cortical depth in steps of 100 um.
         **Default:** ``None``
-    
+        **Options:** ``<option>`` <description of option>
+ 
     graphType : str
         Type of graph to represent data.
         **Default:** ``'matrix'``
@@ -608,7 +628,8 @@ def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderB
 
     removeWeightNorm : bool
         **Default:** ``False``
-
+        **Options:** ``<option>`` <description of option>
+ 
     synOrConn : str
         Use synapses or connections; note one connection can have multiple synapses.
         **Default:** ``'syn'``
@@ -617,66 +638,64 @@ def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderB
     synMech : list
         Show results only for these synaptic mechanisms, e.g. ``['AMPA', 'GABAA', ...]``.
         **Default:** ``None``
-    
+        **Options:** ``<option>`` <description of option>
+ 
     connsFile : str
         Path to a saved data file of connectivity to plot from.
         **Default:** ``None``
-    
+        **Options:** ``<option>`` <description of option>
+ 
     tagsFile : str
         Path to a saved tags file to use in connectivity plot.
         **Default:** ``None``
-    
+        **Options:** ``<option>`` <description of option>
+ 
     clim : list [min, max]
         List of numeric values for the limits of the colorbar.
         **Default:** ``None`` uses the min and max of the connectivity matrix
-
+        **Options:** ``<option>`` <description of option>
+ 
     figSize : list [width, height]
         Size of figure in inches.
-        **Default:** ``(8, 8)`` 
-    
+        **Default:** ``(8, 8)``
+        **Options:** ``<option>`` <description of option>
+ 
     fontSize : int
         Font size on figure.
-        **Default:** ``12`` 
-
+        **Default:** ``12``
+        **Options:** ``<option>`` <description of option>
+ 
     saveData : bool or str
         Whether and where to save the data used to generate the plot. 
         **Default:** ``False`` 
         **Options:** ``True`` autosaves the data,
         ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
-    
+
     saveFig : bool or str
         Whether and where to save the figure.
         **Default:** ``False``
         **Options:** ``True`` autosaves the figure,
         ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
-    
+
     showFig : bool
         Shows the figure if ``True``.
         **Default:** ``True``
-
+        **Options:** ``<option>`` <description of option>
+ 
     Returns
     -------
-    (fig, dict)
-        A tuple consisting of the matplotlib figure handle and a dictionary containing the plot data.
 
-    See Also
-    --------
-    iplotConn :
 
-    Examples
-    --------
-    >>> import netpyne, netpyne.examples.example
-    >>> out = netpyne.analysis.plotConn()
-    """
+"""
     
     from .. import sim
 
     print('Plotting connectivity matrix...')
 
     if connsFile and tagsFile:
-        connMatrix, pre, post = _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile, removeWeightNorm)
+        connMatrix, pre, post = _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile, removeWeightNorm, logPlot)
     else:
-        connMatrix, pre, post = _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, removeWeightNorm)
+        connMatrix, pre, post = _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, removeWeightNorm, logPlot)
 
     if connMatrix is None:
         print("  Error calculating connMatrix in plotConn()")
@@ -754,11 +773,20 @@ def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderB
 
         if not clim: clim = [np.nanmin(connMatrix), np.nanmax(connMatrix)]
         plt.clim(clim[0], clim[1])
-        plt.colorbar(label=feature, shrink=0.8) #.set_label(label='Fitness',size=20,weight='bold')
+        
+        if logPlot:
+            plt.colorbar(label=feature + ' (log)', shrink=0.8)
+        else:
+            plt.colorbar(label=feature, shrink=0.8)
+        
+        
         plt.xlabel('post')
         h.xaxis.set_label_coords(0.5, 1.09)
         plt.ylabel('pre')
-        plt.title ('Connection '+feature+' matrix', y=1.12)
+        if logPlot:
+            plt.title('Connection '+feature+' matrix (log)', y=1.12)
+        else:
+            plt.title('Connection '+feature+' matrix', y=1.12)
 
     # stacked bar graph
     elif graphType == 'bar':
@@ -809,7 +837,8 @@ def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderB
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def plot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, tagsFile=None, figSize=(12,12), fontSize=12, saveData=None, saveFig=None, showFig=True): 
-    """Plots 2D representation of network cell positions and connections.
+    """
+    Function for/to <short description of `netpyne.analysis.network.plot2Dnet`>
 
     Parameters
     ----------
@@ -825,62 +854,59 @@ def plot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, t
         ``[120, 130]`` plots multiple cells, 
         ``[('popName1', 56)]`` plots a cell from a specific population, 
         ``[('popName1', [0, 1]), ('popName2', [4, 5, 6])]``, plots cells from multiple populations
-        
+
     view : str
         Perspective of view.
         **Default:** ``'xy'`` front view,
         **Options:** ``'xz'`` top-down view
-    
+
     showConns : bool
         Whether to show connections or not.
         **Default:** ``True``
-    
+        **Options:** ``<option>`` <description of option>
+ 
     popColors : dict
         Dictionary with custom color (value) used for each population (key).
         **Default:** ``None`` uses standard colors
-    
+        **Options:** ``<option>`` <description of option>
+ 
     tagsFile : str
         Path to a saved tags file to use in connectivity plot.
         **Default:** ``None``
-    
+        **Options:** ``<option>`` <description of option>
+ 
     figSize : list [width, height]
         Size of figure in inches.
-        **Default:** ``(12, 12)`` 
-    
+        **Default:** ``(12, 12)``
+        **Options:** ``<option>`` <description of option>
+ 
     fontSize : int
         Font size on figure.
-        **Default:** ``12`` 
-
+        **Default:** ``12``
+        **Options:** ``<option>`` <description of option>
+ 
     saveData : bool or str
         Whether and where to save the data used to generate the plot. 
         **Default:** ``False`` 
         **Options:** ``True`` autosaves the data,
         ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
-    
+
     saveFig : bool or str
         Whether and where to save the figure.
         **Default:** ``False``
         **Options:** ``True`` autosaves the figure,
         ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
-    
+
     showFig : bool
         Shows the figure if ``True``.
         **Default:** ``True``
-
+        **Options:** ``<option>`` <description of option>
+ 
     Returns
     -------
-    (fig, dict)
-        A tuple consisting of the matplotlib figure handle and a dictionary containing the plot data.
 
-    See Also
-    --------
-    iplot2Dnet :
 
-    Examples
-    --------
-    >>> import netpyne, netpyne.examples.example
-    >>> out = netpyne.analysis.plot2Dnet()
-    """
+"""
 
     from .. import sim
 
@@ -1002,7 +1028,8 @@ def plot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, t
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElectrodes=False, synStyle='.', synSize=3, dist=0.6, cvar=None, cvals=None, iv=False, ivprops=None, includeAxon=True, bkgColor=None, figSize=(10,8), fontSize=12, saveData=None, dpi=300, saveFig=None, showFig=True): 
-    """Plots 3D cell shapes.
+    """
+    Function for/to <short description of `netpyne.analysis.network.plotShape`>
 
     Parameters
     ----------
@@ -1023,94 +1050,99 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
         List of postsynaptic cells to include. 
         **Default:** ``['all']``
         **Options:** same as in `includePre`
-    
+
     showSyns : bool
         Show synaptic connections in 3D view.
         **Default:** ``False``
-        
+        **Options:** ``<option>`` <description of option>
+ 
     showElectrodes : bool
         Show LFP electrodes in 3D view.
         **Default:** ``False``
-        
+        **Options:** ``<option>`` <description of option>
+ 
     synStyle : str
         Style of marker to show synapses. 
         **Default:** ``'.'``
-        
-    dist : float
-        3D distance (like zoom).
-        **Default:** ``0.6``
-        
+        **Options:** ``<option>`` <description of option>
+ 
     synSize : int
         Size of marker to show synapses.
         **Default:** ``3``
-        
+        **Options:** ``<option>`` <description of option>
+ 
+    dist : float
+        3D distance (like zoom).
+        **Default:** ``0.6``
+        **Options:** ``<option>`` <description of option>
+ 
     cvar : str
         Variable to represent in shape plot.
         **Default:** ``None``
         **Options:** ``'numSyns'`` represents the number of synapses, ``'weightNorm'`` represents the normalized synaptic weight
-        
+
     cvals : list
         List of values to represent in shape plot; must be same as number of segments.
         **Default:** ``None``
-        
+        **Options:** ``<option>`` <description of option>
+ 
     iv : bool
         Use NEURON Interviews (instead of Matplotlib) to show shape plot.
         **Default:** ``False``
-        
+        **Options:** ``<option>`` <description of option>
+ 
     ivprops : dict
         Dictionary of properties to plot using Interviews (default: None)
         **Default:** ``None``
-        
+        **Options:** ``<option>`` <description of option>
+ 
     includeAxon : bool
         Include axon in shape plot.
         **Default:** ``True``
-        
+        **Options:** ``<option>`` <description of option>
+ 
     bkgColor : list or tuple
         RGBA list/tuple with background color.  E.g.: (0.5, 0.2, 0.1, 1.0) 
         **Default:** ``None``
-
+        **Options:** ``<option>`` <description of option>
+ 
     figSize : list [width, height]
         Size of figure in inches.
-        **Default:** ``(10, 8)`` 
-    
+        **Default:** ``(10, 8)``
+        **Options:** ``<option>`` <description of option>
+ 
     fontSize : int
         Font size on figure.
-        **Default:** ``12`` 
-        
+        **Default:** ``12``
+        **Options:** ``<option>`` <description of option>
+ 
     saveData : bool or str
         Whether and where to save the data used to generate the plot. 
         **Default:** ``False`` 
         **Options:** ``True`` autosaves the data,
         ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
-        
+
     dpi : int
         Resolution of figure in dots per inch.
         **Default:** ``300``
-        
+        **Options:** ``<option>`` <description of option>
+ 
     saveFig : bool or str
         Whether and where to save the figure.
         **Default:** ``False``
         **Options:** ``True`` autosaves the figure,
         ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
-    
+
     showFig : bool
         Shows the figure if ``True``.
         **Default:** ``True``
-
+        **Options:** ``<option>`` <description of option>
+ 
     Returns
     -------
-    (fig, dict)
-        A tuple consisting of the matplotlib figure handle and a dictionary containing the plot data.
 
-    See Also
-    --------
-    iplotShape :
 
-    Examples
-    --------
-    >>> import netpyne, netpyne.examples.example
-    >>> out = netpyne.analysis.plotShape()
-    """
+"""
 
     from .. import sim
     from neuron import h
@@ -1179,7 +1211,7 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
         shapeax.elev=90 # 90 
         shapeax.azim=-90 # -90
         shapeax.dist=dist*shapeax.dist
-        plt.axis('equal')
+        plt.axis('auto')
         cmap = plt.cm.viridis #plt.cm.jet  #plt.cm.rainbow #plt.cm.jet #YlOrBr_r
         morph.shapeplot(h,shapeax, sections=secs, cvals=cvals, cmap=cmap)
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
@@ -1281,6 +1313,50 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
 @exception
 def calculateDisynaptic(includePost = ['allCells'], includePre = ['allCells'], includePrePre = ['allCells'], 
         tags=None, conns=None, tagsFile=None, connsFile=None):
+    """
+    Function for/to <short description of `netpyne.analysis.network.calculateDisynaptic`>
+
+    Parameters
+    ----------
+    includePost : list
+        <Short description of includePost>
+        **Default:** ``['allCells']``
+        **Options:** ``<option>`` <description of option>
+ 
+    includePre : list
+        <Short description of includePre>
+        **Default:** ``['allCells']``
+        **Options:** ``<option>`` <description of option>
+ 
+    includePrePre : list
+        <Short description of includePrePre>
+        **Default:** ``['allCells']``
+        **Options:** ``<option>`` <description of option>
+ 
+    tags : <``None``?>
+        <Short description of tags>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    conns : <``None``?>
+        <Short description of conns>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    tagsFile : <``None``?>
+        <Short description of tagsFile>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+    connsFile : <``None``?>
+        <Short description of connsFile>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
 
     import json
     from time import time

@@ -1,7 +1,6 @@
 """
-cell/NML2Cell.py 
+Module containing a NeuroML2 cell class
 
-Contains pointCell class 
 """
 
 from __future__ import unicode_literals
@@ -26,7 +25,8 @@ from ..specs import Dict
 
 class NML2Cell (CompartCell):
     """
-    Class for NeuroML2 neuron models: No different than CompartCell
+    Class for/to <short description of `netpyne.cell.NML2Cell.NML2Cell`>
+
     """
     
     ''' Might this be useful to show better name for cell when psection() called?

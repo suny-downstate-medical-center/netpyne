@@ -1,7 +1,6 @@
 """
-specs/simConfig.py
+Module containing SimConfig class including simulation configuration and methods 
 
-SimConfig class includes simulation configuration parameters and methods
 """
 
 from __future__ import print_function
@@ -28,6 +27,13 @@ from .dicts import Dict, ODict
 # ----------------------------------------------------------------------------
 
 class SimConfig(object):
+    """
+    Class for/to <short description of `netpyne.specs.simConfig.SimConfig`>
+
+
+    """
+
+
 
     def __init__(self, simConfigDict = None):
         # Simulation parameters

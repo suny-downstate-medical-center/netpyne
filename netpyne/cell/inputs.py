@@ -138,14 +138,14 @@ def createPoissonPattern(params, rand):
     """
     creates external Poisson inputs
     input params:
-    - start: time of first spike. if -1, uniform distribution between startMin and startMax (ms)
-    - interval: increase in time of first spike; from cfg.inc_evinput (ms)
+    - start: time of first spike (ms)
+    - stop: stop time; if -1 the full duration (ms)
     - frequency: standard deviation of start (ms)
     """
 
     # new external pois designation
     t0 = params['start'] # self.p_ext['t_interval'][0]
-    T = params['interval'] #self.p_ext['t_interval'][1]
+    T = params['stop'] #self.p_ext['t_interval'][1]
     lamtha = params['frequency'] # self.p_ext[self.celltype][3] # index 3 is frequency (lamtha)
     # values MUST be sorted for VecStim()!
     # start the initial value

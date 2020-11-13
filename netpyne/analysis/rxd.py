@@ -1,5 +1,6 @@
 """
-Functions to plot and analyze reaction/diffusion-related results
+Module for plotting and analysis of reaction/diffusion-related results
+
 """
 
 from __future__ import unicode_literals
@@ -26,6 +27,58 @@ from .utils import exception, _showFigure, _saveFigData
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def plotRxDConcentration(speciesLabel, regionLabel, plane='xy', figSize=(5,10), fontSize=10, scalebar=False, title=True, showFig=True, saveFig=True):
+    """
+    Function for/to <short description of `netpyne.analysis.rxd.plotRxDConcentration`>
+
+    Parameters
+    ----------
+    speciesLabel : <type>
+        <Short description of speciesLabel>
+        **Default:** *required*
+
+    regionLabel : <type>
+        <Short description of regionLabel>
+        **Default:** *required*
+
+    plane : str
+        <Short description of plane>
+        **Default:** ``'xy'``
+        **Options:** ``<option>`` <description of option>
+ 
+    figSize : tuple
+        <Short description of figSize>
+        **Default:** ``(5, 10)``
+        **Options:** ``<option>`` <description of option>
+ 
+    fontSize : int
+        <Short description of fontSize>
+        **Default:** ``10``
+        **Options:** ``<option>`` <description of option>
+ 
+    scalebar : bool
+        <Short description of scalebar>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+    title : bool
+        <Short description of title>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    showFig : bool
+        <Short description of showFig>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+    saveFig : bool
+        <Short description of saveFig>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
     
     from .. import sim
     
@@ -35,9 +88,15 @@ def plotRxDConcentration(speciesLabel, regionLabel, plane='xy', figSize=(5,10), 
     species = sim.net.rxd['species'][speciesLabel]['hObj']
     region = sim.net.rxd['regions'][regionLabel]['hObj']
     plane2mean = {'xz': 1, 'xy': 2}
+
+    extent = []
+    extent.append(sim.net.rxd['regions'][regionLabel][plane[0] + 'lo'])
+    extent.append(sim.net.rxd['regions'][regionLabel][plane[0] + 'hi'])
+    extent.append(sim.net.rxd['regions'][regionLabel][plane[1] + 'lo'])
+    extent.append(sim.net.rxd['regions'][regionLabel][plane[1] + 'hi'])
     
     fig = plt.figure(figsize=figSize)
-    plt.imshow(species[region].states3d[:].mean(plane2mean[plane]).T, interpolation='nearest', origin='upper')  #  extent=k[extracellular].extent('xy')
+    plt.imshow(species[region].states3d[:].mean(plane2mean[plane]).T, interpolation='nearest', origin='upper', extent=extent)
     
     ax = plt.gca()
     if scalebar:

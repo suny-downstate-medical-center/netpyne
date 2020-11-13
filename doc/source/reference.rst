@@ -22,9 +22,9 @@ Network parameters
 
 The ``netParams`` object of class ``NetParams`` includes all the information necessary to define your network. It is composed of the following ordered dictionaries:
 
-* ``popParams`` - populations in the network and their parameters
+* ``cellParams`` - cell types and their associated parameters (e.g. cell geometry)
 
-* ``cellParams`` - cell property rules and their associated parameters (e.g. cell geometry)
+* ``popParams`` - populations in the network and their parameters
 
 * ``synMechParams`` - synaptic mechanisms and their parameters
 
@@ -43,34 +43,27 @@ The ``netParams`` object of class ``NetParams`` includes all the information nec
 	:width: 60%
 	:align: center
 
-Each of this ordered dicts can be filled in directly or using the NetParams object methods. Both ways are equivalent, but the object methods provide checks on the syntax of the parameters being added. Below are two equivalent ways of adding an item to the popParams ordered dictionary::
+Each of these ordered dicts can be filled in directly or using the NetParams object methods. Both ways are equivalent, but the object methods provide checks on the syntax of the parameters being added. Below are two equivalent ways of adding an item to the popParams ordered dictionary::
 
 	from netpyne import specs
 	netParams = specs.NetParams()
 
 	# Method 1: direct
-	netParams.popParams['Pop1'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 20}
+	netParams.popParams['Pop1'] = {'cellType': 'PYR', 'numCells': 20}
 
 	# Method 2: using object method
-	netParams.addPopParams(label='Pop1', params={'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 20})
+	netParams.addPopParams(label='Pop1', params={'cellType': 'PYR', 'numCells': 20})
 
 
 The organization of ``netParams`` is consistent with the standard sequence of events that the framework executes internally:
 
-* creates a ``Network`` object and adds inside it a set of ``Population`` and ``Cell`` objects based on ``popParams``
+* sets the cell properties according to type based on ``cellParams``
 
-* sets the cell properties based on ``cellParams`` (checking which cells match the conditions of each rule) 
+* creates a ``Network`` object and adds inside it a set of ``Cell`` and ``Population`` objects based on ``popParams``
 
 * creates a set of connections based on ``connParams`` and ``subConnParams`` (checking which presynpatic and postsynaptic cells match the connection rule conditions), and using the synaptic parameters in ``synMechParams``
 
 * adds stimulation to the cells based on ``stimSourceParams`` and ``stimTargetParams``
-
-
-The image below illustrates this process:
-
-.. image:: figs/process.png
-	:width: 50%
-	:align: center
 
 
 Additionally, ``netParams`` contains the following customizable single-valued attributes (e.g. ``netParams.sizeX = 100``):
@@ -104,6 +97,85 @@ Additionally, ``netParams`` contains the following customizable single-valued at
 Other arbitrary entries to the ``netParams`` dict can be added and used in custom-defined functions for connectivity parameters (see :ref:`function_string`). 
 
 
+.. _cell_types:
+
+Cell types
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Each item of the ``cellParams`` ordered dictionary consists of a key and a value. The key is a label to identify this cell type. The value consists of a dictionary that defines the cell properties, containing the following fields:
+
+* **secs** - Dictionary containing the sections of the cell, each in turn containing the following fields (can omit those that are empty):
+
+	* **geom**: Dictionary with geometry properties, such as ``diam``, ``L`` or ``Ra``. 
+		Can optionally include a field ``pt3d`` with a list of 3D points, each defined as a tuple of the form ``(x,y,z,diam)``
+
+	* **topol**: Dictionary with topology properties.
+		Includes ``parentSec`` (label of parent section), ``parentX`` (parent location where to make connection) and ``childX`` (current section --child-- location where to make connection).
+	
+	* **mechs**: Dictionary of density/distributed mechanisms.
+		The key contains the name of the mechanism (e.g. 'hh' or 'pas')
+		The value contains a dictionary with the properties of the mechanism (e.g. ``{'g': 0.003, 'e': -70}``).
+
+	* **ions**: Dictionary of ions.
+		The key contains the name of the ion (e.g. 'na' or 'k')
+		The value contains a dictionary with the properties of the ion (e.g. ``{'e': -70}``).
+	
+	* **pointps**: Dictionary of point processes (excluding synaptic mechanisms). 
+		The key contains an arbitrary label (e.g. 'Izhi')
+		The value contains a dictionary with the point process properties (e.g. ``{'mod':'Izhi2007a', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1})``. 
+		
+		Apart from internal point process variables, the following properties can be specified for each point process:
+
+		* ``mod``,the name of the NEURON mechanism, e.g. ``'Izhi2007a'``
+		* ``loc``, section location where to place synaptic mechanism, e.g. ``1.0``, default=0.5
+		* ``vref`` (optional), internal mechanism variable containing the cell membrane voltage, e.g. ``'V'``
+		* ``synList`` (optional), list of internal mechanism synaptic mechanism labels, e.g. ['AMPA', 'NMDA', 'GABAB']
+
+	* **vinit** - (optional) Initial membrane voltage (in mV) of the section (default: -65)
+	e.g. ``cellRule['secs']['soma']['vinit'] = -72``
+
+	* **spikeGenLoc** - (optional) Indicates that this section is responsible for spike generation (instead of the default 'soma'), and provides the location (segment) where spikes are generated.
+	e.g. ``cellRule['secs']['axon']['spikeGenLoc'] = 1.0``
+
+	* **threshold** - (optional) Threshold voltage (in mV) used to detect a spike originating in this section of the cell. If omitted, defaults to ``netParams.defaultThreshold = 10.0``
+	e.g. ``cellRule['secs']['soma']['threshold'] = 5.0``
+
+* **secLists** - (optional) Dictionary of sections lists (e.g. {'all': ['soma', 'dend']})
+
+
+Example of adding two different cell types::
+
+	## PYR_HH cell properties
+	soma = {'geom': {}, 'mechs': {}}  # soma properties
+	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'pt3d': []}
+	soma['geom']['pt3d'].append((0, 0, 0, 20))
+	soma['geom']['pt3d'].append((0, 0, 20, 20))
+	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
+
+	dend = {'geom': {}, 'topol': {}, 'mechs': {}}  # dend properties
+	dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}
+	dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}
+	dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 
+
+	PYR_HH_dict = {'secs': {'soma': soma, 'dend': dend}}
+	netParams.cellParams['PYR_HH'] = PYR_HH_dict  # add rule dict to list of cell property rules
+
+
+	## PYR_Izhi cell properties
+	Izhi_dict = {'secs': {'soma': {} }}
+	Izhi_dict['secs']['soma'] = {'geom': {}, 'pointps':{}}  # soma properties
+	Izhi_dict['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
+	Izhi_dict['secs']['soma']['pointps']['Izhi'] = {'mod':'Izhi2007a', 'vref':'V', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
+
+	netParams.cellParams['PYR_Izhi'] = Izhi_dict  # add rule to list of cell property rules
+
+
+.. note:: As in the examples above, you can use temporary variables/structures (e.g. ``soma`` or ``Izhi_dict``) to facilitate the creation of the final dictionary ``netParams.cellParams``.
+
+.. note:: You can directly create or modify the cell parameters via ``netParams.cellParams``, e.g. ``netParams.cellParams['PYR_HH']['secs']['soma']['geom']['L']=16``. 
+
+.. seealso:: Cell properties can be imported from an external file. See :ref:`importing_cells` for details and examples.
+
 .. _pop_params:
 
 Population parameters 
@@ -113,7 +185,7 @@ Each item of the ``popParams`` ordered dictionary consists of a key and value. T
 
 The value consists of a dictionary with the parameters of the population, and includes the following fields:
 
-* **cellType** - Arbitrary cell type attribute/tag assigned to all cells in this population; can be used as condition to apply specific cell properties. 
+* **cellType** - Cell type used for all cells in this population.
 	e.g. 'Pyr' (for pyramidal neurons) or 'FS' (for fast-spiking interneurons)
 
 * **numCells**, **density** or **gridSpacing** - The total number of cells in this population, the density in neurons/mm3, or the fixed grid spacing (only one of the three is required). 
@@ -122,9 +194,6 @@ The value consists of a dictionary with the parameters of the population, and in
 	``density`` can be expressed as a function of normalized location (``xnorm``, ``ynorm`` or ``znorm``), by providing a string with the variable and any common Python mathematical operators/functions. e.g. ``'1e5 * exp(-ynorm/2)'``.
 
 	``gridSpacing`` is the spacing between cells (in um). The total number of cells will be determined based on spacing and ``sizeX``, ``sizeY``, ``sizeZ``. e.g. ``10``.
-
-* **cellModel** - Arbitrary cell model attribute/tag assigned to all cells in this population; can be used as condition to apply specific cell properties. 
-	e.g. 'HH' (standard Hodkgin-Huxley type cell model) or 'Izhi2007' (Izhikevich 2007 point neuron model). 
 
 * **xRange** or **xnormRange** - Range of neuron positions in x-axis (horizontal length), specified two-element list [min, max]. 
 	``xRange`` for absolute value in um (e.g. [100,200]), or ``xnormRange`` for normalized value between 0 and 1 as fraction of ``sizeX`` (e.g. [0.1,0.2]).
@@ -138,14 +207,14 @@ The value consists of a dictionary with the parameters of the population, and in
 
 Examples of creating a population::
 
-	netParams.popParams['Sensory'] = {'cellType': 'PYR', 'cellModel': 'HH', 'ynormRange':[0.2, 0.5], 'density': 50000}
+	netParams.popParams['Sensory'] = {'cellType': 'PYR', 'ynormRange':[0.2, 0.5], 'density': 50000}
 
 The ``addPopParams(label, params)`` method of the class ``netParams`` can be used to add an item to ``popParams``. If working interactively, this has the advantage of checking the syntax of the parameters added::
  
-	netParams.addPopParams('Sensory', {'cellType': 'PYR', 'cellModel': 'HH', 'ynormRange':[0.2, 0.5], 'density': 50000})
+	netParams.addPopParams('Sensory', {'cellType': 'PYR', 'ynormRange':[0.2, 0.5], 'density': 50000})
 
 
-It is also possible to create populations of artificial cells, i.e. point processes, that generate spike events but don't have sections (e.g. NEURON objects: ``NetStim``, ``VecStim``, or ``IntFire2``). In this case, the ``cellModel`` field will specify the name of the point process mechanism, and the properties of the mechanism will be specified as additional fields. Note, since artificial cells are simpler they don't require defining separate cell parameters in the ``netParams.cellParams`` structure. For example, below are the fields required to create a population of NetStims (NEURON's artificial spike generator):
+It is also possible to create populations of artificial cells, i.e. point processes, that generate spike events but don't have sections (e.g. NEURON objects: ``NetStim``, ``VecStim``, or ``IntFire2``). In this case, a ``cellModel`` field will specify the name of the point process mechanism, and the properties of the mechanism will be specified as additional fields. Note, since artificial cells are simpler they don't require defining separate cell parameters in the ``netParams.cellParams`` structure. For example, below are the fields required to create a population of NetStims (NEURON's artificial spike generator):
 
 * **pop** - An arbitrary label for this population assigned to all cells (e.g. 'background'); can be used as a condition to apply specific connectivity rules. 
 
@@ -192,99 +261,10 @@ Finally, it is possible to define a population composed of individually-defined 
 
 	cellsList.append({'cellLabel':'gs15', 'x': 1, 'ynorm': 0.4 , 'z': 2})
 	cellsList.append({'cellLabel':'gs21', 'x': 2, 'ynorm': 0.5 , 'z': 3})
-	netParams.popParams['IT_cells'] = {'cellModel':'Izhi2007b', 'cellType':'IT', 'cellsList': cellsList} #  IT individual cells
+	netParams.popParams['IT_cells'] = {'cellType':'IT', 'cellsList': cellsList} #  IT individual cells
 
 
 .. note:: To use VecStim you need to download and compile (nrnivmodl) the `vecevent.mod file <https://raw.githubusercontent.com/Neurosim-lab/netpyne/development/doc/source/code/mod/vecevent.mod>`_ .
-
-.. _cell_property_rules:
-
-Cell property rules
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-The rationale for using cell property rules is that you can apply cell properties to subsets of neurons that match certain criteria, e.g. only those neurons of a given cell type, and/or of a given population, and/or within a certain range of locations. 
-
-Each item of the ``cellParams`` ordered dictionary consists of a key and a value. The key is an arbitrary label to identify this cell rule. The value consists of a dictionary that defines a cell property rule, containing the following fields:
-
-* **conds** - Set of conditions required to apply the properties to a cell. 
-	Defined as a dictionary with the attributes/tags of the cell and the required values, e.g. {'cellType': 'PYR', 'cellModel': 'HH'}. 
-
-* **secs** - Dictionary containing the sections of the cell, each in turn containing the following fields (can omit those that are empty):
-
-	* **geom**: Dictionary with geometry properties, such as ``diam``, ``L`` or ``Ra``. 
-		Can optionally include a field ``pt3d`` with a list of 3D points, each defined as a tuple of the form ``(x,y,z,diam)``
-
-	* **topol**: Dictionary with topology properties.
-		Includes ``parentSec`` (label of parent section), ``parentX`` (parent location where to make connection) and ``childX`` (current section --child-- location where to make connection).
-	
-	* **mechs**: Dictionary of density/distributed mechanisms.
-		The key contains the name of the mechanism (e.g. 'hh' or 'pas')
-		The value contains a dictionary with the properties of the mechanism (e.g. ``{'g': 0.003, 'e': -70}``).
-
-	* **ions**: Dictionary of ions.
-		The key contains the name of the ion (e.g. 'na' or 'k')
-		The value contains a dictionary with the properties of the ion (e.g. ``{'e': -70}``).
-	
-	* **pointps**: Dictionary of point processes (excluding synaptic mechanisms). 
-		The key contains an arbitrary label (e.g. 'Izhi')
-		The value contains a dictionary with the point process properties (e.g. ``{'mod':'Izhi2007a', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1})``. 
-		
-		Apart from internal point process variables, the following properties can be specified for each point process:
-
-		* ``mod``,the name of the NEURON mechanism, e.g. ``'Izhi2007a'``
-		* ``loc``, section location where to place synaptic mechanism, e.g. ``1.0``, default=0.5
-		* ``vref`` (optional), internal mechanism variable containing the cell membrane voltage, e.g. ``'V'``
-		* ``synList`` (optional), list of internal mechanism synaptic mechanism labels, e.g. ['AMPA', 'NMDA', 'GABAB']
-
-	* **vinit** - (optional) Initial membrane voltage (in mV) of the section (default: -65)
-	e.g. ``cellRule['secs']['soma']['vinit'] = -72``
-
-	* **spikeGenLoc** - (optional) Indicates that this section is responsible for spike generation (instead of the default 'soma'), and provides the location (segment) where spikes are generated.
-	e.g. ``cellRule['secs']['axon']['spikeGenLoc'] = 1.0``
-
-	* **threshold** - (optional) Threshold voltage (in mV) used to detect a spike originating in this section of the cell. If omitted, defaults to ``netParams.defaultThreshold = 10.0``
-	e.g. ``cellRule['secs']['soma']['threshold'] = 5.0``
-
-* **secLists** - (optional) Dictionary of sections lists (e.g. {'all': ['soma', 'dend']})
-
-
-Example of two cell property rules added using different valid approaches::
-
-	## PYR cell properties (HH)
-	cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'HH'},  'secs': {}}
-
-	soma = {'geom': {}, 'mechs': {}}  # soma properties
-	soma['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0, 'pt3d': []}
-	soma['geom']['pt3d'].append((0, 0, 0, 20))
-	soma['geom']['pt3d'].append((0, 0, 20, 20))
-	soma['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} 
-
-	dend = {'geom': {}, 'topol': {}, 'mechs': {}}  # dend properties
-	dend['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}
-	dend['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}
-	dend['mechs']['pas'] = {'g': 0.0000357, 'e': -70} 
-
-	cellRule['secs'] = {'soma': soma, 'dend': dend}
-	netParams.cellParams['PYR_HH'] = cellRule  # add rule dict to list of cell property rules
-
-
-	## PYR cell properties (Izhi)
-	cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'Izhi2007'},  'secs': {}}
-
-	cellRule['secs']['soma'] = {'geom': {}, 'pointps':{}}  # soma properties
-	cellRule['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
-	cellRule['secs']['soma']['pointps']['Izhi'] = {'mod':'Izhi2007a', 'vref':'V', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}
-
-	netParams.cellParams['PYR_Izhi'] = cellRule  # add rule to list of cell property rules
-
-
-.. note:: As in the examples above, you can use temporary variables/structures (e.g. ``soma`` or ``cellRule``) to facilitate the creation of the final dictionary ``netParams.cellParams``.
-
-.. ​note:: Several cell properties may be applied to the same cell if the conditions match. The latest cell properties will overwrite previous ones if there is an overlap.
-
-.. note:: You can directly create or modify the cell parameters via ``netParams.cellParams``, e.g. ``netParams.cellParams['PYR_HH']['secs']['soma']['geom']['L']=16``. 
-
-.. seealso:: Cell properties can be imported from an external file. See :ref:`importing_cells` for details and examples.
 
 
 Synaptic mechanisms parameters
@@ -459,30 +439,31 @@ Here is an example of connectivity rules:
 .. code-block:: python
 
 	## Cell connectivity rules
-	netParams.connParams['S->M'] = {
+	netParams.connParams['S->M'] = {    #  S -> M
 		'preConds': {'pop': 'S'}, 
-		'postConds': {'pop': 'M'},  #  S -> M
-		'sec': 'dend',					# target postsyn section
-		'synMech': 'AMPA',				# target synaptic mechanism
-		'weight': 0.01, 				# synaptic weight 
-		'delay': 5,						# transmission delay (ms) 
-		'probability': 0.5}				# probability of connection		
+		'postConds': {'pop': 'M'},      
+		'sec': 'dend',                  # target postsyn section
+		'synMech': 'AMPA',              # target synaptic mechanism
+		'weight': 0.01,                 # synaptic weight 
+		'delay': 5,                     # transmission delay (ms) 
+		'probability': 0.5}             # probability of connection		
 
-	netParams.connParams['bg->all'] = {
+	netParams.connParams['bg->all'] = {      # background -> S,M in ynorm range
 		'preConds': {'pop': 'background'}, 
-		'postConds': {'cellType': ['S','M'], 'ynorm': [0.1, 0.6]}, # background -> S,M with ynorm in range 0.1 to 0.6
-		'synReceptor': 'AMPA',			# target synaptic mechanism 
-		'weight': 0.01, 				# synaptic weight 
-		'delay': 5}						# transmission delay (ms) 
+		'postConds': {'cellType': ['S','M'], 
+					  'ynorm': [0.1, 0.6]}, 
+		'synReceptor': 'AMPA',               # target synaptic mechanism 
+		'weight': 0.01,                      # synaptic weight 
+		'delay': 5}                          # transmission delay (ms) 
 
-	netParams.connParams['yrange->HH'] = {
-	    {'preConds': {'y': [100, 600]}, 
-	    'postConds': {'cellModel': 'HH'}, # cells with y in range 100 to 600 -> cells implemented using HH models
-	    'synMech': ['AMPA', 'NMDA'],  					# target synaptic mechanisms
-	    'synsPerConn': 3, 								# number of synapses per cell connection (per synMech, ie. total syns = 2 x 3)
-	    'weight': 0.02,									# single weight for all synapses
-	    'delay': [5, 10],								# different delays for each of 3 synapses per synMech 
-	    'loc': [[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]} 		# different locations for each of the 6 synapses
+	netParams.connParams['yrange->HH'] = {            # cells with y in range 100 to 600 -> HH cells
+	    'preConds': {'y': [100, 600]}, 
+	    'postConds': {'cellType': 'HH'}, 
+	    'synMech': ['AMPA', 'NMDA'],                  # target synaptic mechanisms
+	    'synsPerConn': 3,                             # number of synapses per cell connection (per synMech, ie. total syns = 2 x 3)
+	    'weight': 0.02,                               # single weight for all synapses
+	    'delay': [5, 10],                             # different delays for each of 3 synapses per synMech 
+	    'loc': [[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]}    # different locations for each of the 6 synapses
 
 
 .. _function_string:
@@ -789,7 +770,6 @@ Wrappers:
 * **sim.simulate()** - wrapper to run the simulation and gather the data.
 * **sim.analyze()** - wrapper to save and plot the data. 
 * **sim.load(filename)** - wrapper to initialize, load net from file, and setup recording.
-
 * **sim.createSimulate(simConfig, netParams)** - wrapper to create and simulate the network.
 * **sim.createSimulateAnalyze(simConfig, netParams)** - wrapper to create, simulate and analyze the network.
 * **sim.intervalCreateSimulateAnalyze(simConfig, cfg, interval=t)** - wrapper to create, simulate and analyze the network, saving simulation output every t ms.
@@ -892,14 +872,9 @@ Methods to modify network
 
 * **net.modifyCells(params, updateMasterAllCells=False)**
 	
-	Modifies properties of cells in an instantiated network. The ``params`` argument is a dictionary with the following 2 items:
+	Modifies properties of cells in an instantiated network. The ``params`` argument is a dictionary with the following item:
 
-	- 'conds': dictionary of conditions to select cells that will be modified, with each item containing a cell tag (see list of cell tags available :ref:`cell_class_data_model`), and the desired value ([min, max] range format allowed).
-
-		e.g. ``{'label': 'PYR_HH'}`` targets cells that were created using the cellParams rule labeled 'PYR_HH'.
-		e.g. ``{'cellType': 'PYR', 'ynorm': [0.1, 0.6]} targets cells of type 'PYR' with normalized depth within 0.1 and 0.6.
-
-	- 'secs': dictionary of sections using same format as for initial setting of cell property rules (see :ref:`cell_property_rules` or :ref:`cell_class_data_model` for details)
+	- 'secs': dictionary of sections using same format as for initial setting of cell property rules (see :ref:`cell_types` or :ref:`cell_class_data_model` for details)
 
 		e.g. ``{'soma': {'geom': {'L': 100}}}`` sets the soma length to 100 um. 
 

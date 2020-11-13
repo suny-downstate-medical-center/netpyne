@@ -1,9 +1,6 @@
 """
-batch/evol.py 
+Module for evolutionary parameter optimization
 
-Code for evolutionary parameter optimization
-
-Contributors: salvadordura@gmail.com
 """
 
 from __future__ import print_function
@@ -27,6 +24,7 @@ except NameError:
 
 import imp
 import json
+import pickle
 import logging
 import datetime
 import os
@@ -50,10 +48,34 @@ pc = h.ParallelContext() # use bulletin board master/slave
 # -------------------------------------------------------------------------------
 
 # func needs to be outside of class
-def runEvolJob(script, cfgSavePath, netParamsSavePath, simDataPath):
+def runEvolJob(nrnCommand, script, cfgSavePath, netParamsSavePath, simDataPath):
+    """
+    Function for/to <short description of `netpyne.batch.evol.runEvolJob`>
+
+    Parameters
+    ----------
+    script : <type>
+        <Short description of script>
+        **Default:** *required*
+
+    cfgSavePath : <type>
+        <Short description of cfgSavePath>
+        **Default:** *required*
+
+    netParamsSavePath : <type>
+        <Short description of netParamsSavePath>
+        **Default:** *required*
+
+    simDataPath : <type>
+        <Short description of simDataPath>
+        **Default:** *required*
+
+
+    """
     import os
     print('\nJob in rank id: ',pc.id())
-    command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath)
+        
+    command = '%s %s simConfig=%s netParams=%s' % (nrnCommand, script, cfgSavePath, netParamsSavePath)
     print(command)
 
     with open(simDataPath+'.run', 'w') as outf, open(simDataPath+'.err', 'w') as errf:
@@ -64,6 +86,23 @@ def runEvolJob(script, cfgSavePath, netParamsSavePath, simDataPath):
 
 
 def evolOptim(self, pc):
+    """
+    Function for/to <short description of `netpyne.batch.evol.evolOptim`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+    pc : <type>
+        <Short description of pc>
+        **Default:** *required*
+
+
+    """
+
+
     import sys
     import inspyred.ec as EC
 
@@ -90,7 +129,9 @@ def evolOptim(self, pc):
         nodes = args.get('nodes', 1)
         paramLabels = args.get('paramLabels', [])
         coresPerNode = args.get('coresPerNode', 1)
-        mpiCommand = args.get('mpiCommand', 'ibrun')
+        mpiCommand = args.get('mpiCommand', 'mpirun')
+        nrnCommand = args.get('nrnCommand', 'nrniv')
+        
         numproc = nodes*coresPerNode
         
         # slurm setup
@@ -148,14 +189,17 @@ def evolOptim(self, pc):
                 # ----------------------------------------------------------------------
                 # MPI master-slaves
                 # ----------------------------------------------------------------------
-                pc.submit(runEvolJob, script, cfgSavePath, netParamsSavePath, jobPath)
+                pc.submit(runEvolJob, nrnCommand, script, cfgSavePath, netParamsSavePath, jobPath)
                 print('-'*80)
 
             else:
                 # ----------------------------------------------------------------------
                 # MPI job commnand
                 # ----------------------------------------------------------------------
-                command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
+                if mpiCommand == '':
+                    command = '%s %s simConfig=%s netParams=%s ' % (nrnCommand, script, cfgSavePath, netParamsSavePath)
+                else:
+                    command = '%s -np %d %s -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc, nrnCommand, script, cfgSavePath, netParamsSavePath)
                 
                 # ----------------------------------------------------------------------
                 # run on local machine with <nodes*coresPerNode> cores
@@ -239,6 +283,12 @@ def evolOptim(self, pc):
                         fitness[candidate_index] = fitnessFunc(simData, **fitnessFuncArgs)
                         jobs_completed += 1
                         print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
+                    elif os.path.isfile(jobNamePath+'.pkl'):
+                        with open('%s.pkl'% (jobNamePath), 'rb') as file:
+                            simData = pickle.load(file)['simData']
+                        fitness[candidate_index] = fitnessFunc(simData, **fitnessFuncArgs)
+                        jobs_completed += 1
+                        print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
                 except Exception as e:
                     # print 
                     err = "There was an exception evaluating candidate %d:"%(candidate_index)
@@ -251,11 +301,14 @@ def evolOptim(self, pc):
                 print("Max iterations reached, the %d unfinished jobs will be canceled and set to default fitness" % (len(unfinished)))
                 for canditade_index in unfinished:
                     fitness[canditade_index] = defaultFitness
-                    jobs_completed += 1      
-                    if 'scancelUser' in kwargs:
-                        os.system('scancel -u %s'%(kwargs['scancelUser']))
-                    else:              
-                        os.system('scancel %d'%(jobids[candidate_index]))  # terminate unfinished job (resubmitted jobs not terminated!)
+                    jobs_completed += 1
+                    try:
+                        if 'scancelUser' in kwargs:
+                            os.system('scancel -u %s'%(kwargs['scancelUser']))
+                        else:              
+                            os.system('scancel %d'%(jobids[candidate_index]))  # terminate unfinished job (resubmitted jobs not terminated!)
+                    except:
+                        pass
             sleep(args.get('time_sleep', 1))
         
         # kill all processes

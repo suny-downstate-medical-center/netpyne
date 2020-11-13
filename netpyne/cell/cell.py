@@ -1,7 +1,6 @@
 """
-cell/cell.py 
+Module containing a generic cell class
 
-Contains generic Cell class
 """
 
 from __future__ import division
@@ -33,7 +32,8 @@ from ..specs import Dict
 
 class Cell (object):
     """
-    Generic class for neuron models
+    Class for/to <short description of `netpyne.cell.cell.Cell`>
+
     """
     
     def __init__ (self, gid, tags):
@@ -199,14 +199,28 @@ class Cell (object):
                         elif 'synMech' in params:  # eg. soma(0.5).AMPA._ref_g
                             sec = self.secs[params['sec']]
                             synMechList = [synMech for synMech in sec['synMechs'] if synMech['label']==params['synMech'] and synMech['loc']==params['loc']] # make list with this label/loc
+                            ptr = None
                             if len(synMechList) > 0:
-                                if 'index' in params and index<len(synMechList):
-                                    synMech = synMechList[params['index']]
+                                if 'index' in params:
+                                    if params['index'] < len(synMechList):
+                                        synMech = synMechList[params['index']]
+                                        ptr = getattr(synMech['hObj'], '_ref_'+params['var'])
                                 else:
                                     synMech = synMechList[0] # 0th one which would have been returned by next()
-                                ptr = getattr(synMech['hObj'], '_ref_'+params['var'])
-                            else:
+                                    ptr = getattr(synMech['hObj'], '_ref_' + params['var'])
+                        elif 'stim' in params: # e.g. sim.net.cells[0].stims[0]['hObj'].i   
+                            if 'sec' in params and 'loc' in params and 'var' in params:
+                                sec = self.secs[params['sec']]
+                                stimList = [stim for stim in self.stims if stim['label']==params['stim'] and stim['loc']==params['loc']] # make list with this label/loc
                                 ptr = None
+                                if len(stimList) > 0:
+                                    if 'index' in params:
+                                        if params['index'] < len(stimList):
+                                            stim = stimList[params['index']]
+                                            ptr = getattr(stim['hObj'], '_ref_'+params['var'])
+                                    else:
+                                        stim = stimList[0] # 0th one which would have been returned by next()
+                                        ptr = getattr(stim['hObj'], '_ref_'+params['var'])
                         else:  # eg. soma(0.5)._ref_v
                             ptr = getattr(self.secs[params['sec']]['hObj'](params['loc']), '_ref_'+params['var'])
                     elif 'synMech' in params:  # special case where want to record from multiple synMechs
@@ -239,7 +253,8 @@ class Cell (object):
                                             ptr.extend([getattr(conn[params['mech']], '_ref_'+params['var'])])
                                         secLocs.extend([params['sec']+'_conn_'+str(conn_idx)])
                             else:
-                                print("Error!!! Specify conn mech to record from.") 
+                                print("Error recording conn trace, you need to specify the conn mech to record from.")
+                                
                         elif 'var' in params: # point process cell eg. cell._ref_v
                             ptr = getattr(self.hPointp, '_ref_'+params['var'])
 

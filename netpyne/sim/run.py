@@ -1,7 +1,6 @@
 """
-sim/run.py
+Module for running simulations
 
-Functions related to running the simulation
 """
 
 from __future__ import print_function
@@ -24,6 +23,13 @@ from . import utils
 # Commands required just before running simulation
 #------------------------------------------------------------------------------
 def preRun():
+    """
+    Function for/to <short description of `netpyne.sim.run.preRun`>
+
+
+    """
+
+
     from .. import sim
 
 
@@ -99,7 +105,23 @@ def preRun():
 #------------------------------------------------------------------------------
 # Run Simulation
 #------------------------------------------------------------------------------
-def runSim():
+
+def runSim(skipPreRun=False):
+    """
+    Function for/to <short description of `netpyne.sim.run.runSim`>
+
+    Parameters
+    ----------
+    skipPreRun : bool
+        <Short description of skipPreRun>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
+  
     from .. import sim
 
     sim.pc.barrier()
@@ -110,8 +132,10 @@ def runSim():
         except:
             if sim.cfg.verbose: 'Error Failed to use local dt.'
     sim.pc.barrier()
-    sim.timing('start', 'runTime') 
-    preRun()
+    sim.timing('start', 'runTime')
+
+    if not skipPreRun:
+        preRun()
     
     h.finitialize(float(sim.cfg.hParams['v_init']))
 
@@ -129,6 +153,23 @@ def runSim():
 # Run Simulation
 #------------------------------------------------------------------------------
 def runSimWithIntervalFunc(interval, func):
+    """
+    Function for/to <short description of `netpyne.sim.run.runSimWithIntervalFunc`>
+
+    Parameters
+    ----------
+    interval : <type>
+        <Short description of interval>
+        **Default:** *required*
+
+    func : <type>
+        <Short description of func>
+        **Default:** *required*
+
+
+    """
+
+
     from .. import sim
     sim.pc.barrier()
     sim.timing('start', 'runTime')
@@ -152,6 +193,13 @@ def runSimWithIntervalFunc(interval, func):
 # Calculate LFP (fucntion called at every time step)      
 #------------------------------------------------------------------------------
 def calculateLFP():
+    """
+    Function for/to <short description of `netpyne.sim.run.calculateLFP`>
+
+
+    """
+
+
     from .. import sim
     
     # Set pointers to i_membrane in each cell (required form LFP calc )        
@@ -178,6 +226,20 @@ def calculateLFP():
 # Calculate and print load balance
 #------------------------------------------------------------------------------
 def loadBalance(printNodeTimes = False):
+    """
+    Function for/to <short description of `netpyne.sim.run.loadBalance`>
+
+    Parameters
+    ----------
+    printNodeTimes : bool
+        <Short description of printNodeTimes>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+ 
+
+    """
+
+
     from .. import sim
 
     computation_time = sim.pc.step_time()

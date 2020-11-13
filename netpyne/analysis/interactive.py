@@ -2980,7 +2980,7 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
             line_width = 2
             line_color = 'black'
             if 'theme' in kwargs:
-                if kwargs['theme'] == 'gui' or 'dark' in kwargs['theme']:
+                if kwargs['theme'] == 'gui' or 'dark' in kwargs['theme'] or kwargs['theme'] == 'contrast':
                     line_color = 'lightgray'
             
             labels = legendLabels if legendLabels else include

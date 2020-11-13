@@ -836,7 +836,7 @@ def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderB
 ## Plot 2D representation of network cell positions and connections
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, tagsFile=None, figSize=(12,12), fontSize=12, saveData=None, saveFig=None, showFig=True): 
+def plot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, tagsFile=None, figSize=(12,12), fontSize=12, saveData=None, saveFig=None, showFig=True, lineWidth=0.1): 
     """
     Function for/to <short description of `netpyne.analysis.network.plot2Dnet`>
 
@@ -900,6 +900,11 @@ def plot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, t
     showFig : bool
         Shows the figure if ``True``.
         **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+ 
+     lineWidth: float
+        Width of connection lines.
+        **Default:** ``0.1``
         **Options:** ``<option>`` <description of option>
  
     Returns
@@ -987,7 +992,7 @@ def plot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, t
                     color='red'
                     if con['synMech'] in ['inh', 'GABA', 'GABAA', 'GABAB']:
                         color = 'blue'
-                    width = 0.1 #50*con['weight']
+                    width = lineWidth #50*con['weight']
                     plt.plot([posXpre, posXpost], [posYpre, posYpost], color=color, linewidth=width) # plot line from pre to post
     
     plt.xlabel('x (um)')
@@ -1005,7 +1010,7 @@ def plot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, t
     # save figure data
     if saveData:
         figData = {'posX': posX, 'posY': posY, 'posX': cellColors, 'posXpre': posXpre, 'posXpost': posXpost, 'posYpre': posYpre, 'posYpost': posYpost,
-         'include': include, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+         'include': include, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig, 'lineWidth': lineWidth}
     
         _saveFigData(figData, saveData, '2Dnet')
  

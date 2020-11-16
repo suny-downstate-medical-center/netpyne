@@ -11,15 +11,15 @@ class PYR2:
     self.soma = soma = h.Section(name='soma',cell=self)
     self.dend = dend = h.Section(name='dend',cell=self)
     self.dend.connect(self.soma,0.5,0) #   connect dend(0), soma(0.5)
-    self.rho = rho # dendritic to axo-somatic area ratio 
-    self.kappa = kappa # coupling resistance (Mohm) 
+    self.rho = rho # dendritic to axo-somatic area ratio
+    self.kappa = kappa # coupling resistance (Mohm)
     for sec in [self.soma,self.dend]:
       sec.insert('k_ion')
       sec.insert('na_ion')
       sec.insert('ca_ion')
       sec.ek = -90 # K+ current reversal potential (mV)
       sec.ena = 60 # Na+ current reversal potential (mV)
-      sec.eca = 140 # Ca2+ current reversal potential (mV)      
+      sec.eca = 140 # Ca2+ current reversal potential (mV)
       h.ion_style("ca_ion",0,1,0,0,0) # using an ohmic current rather than GHK equation
       sec.Ra=100
     self.initsoma()
@@ -34,7 +34,7 @@ class PYR2:
     soma.insert('naz') # naz.mod
     soma.insert('kv') # kv.mod
     soma.gmax_naz = 30e3
-    soma.gmax_kv = 1.5e3    
+    soma.gmax_kv = 1.5e3
     if self.soma_pas:
       soma.insert('pas')
       soma.e_pas=-70
@@ -57,7 +57,7 @@ class PYR2:
     dend.e_pas = -70 # only dendrite has leak conductance - why?
     dend.g_pas = 1/3e4 # only dendrite has leak conductance
     dend.gmax_naz=15
-    dend.gmax_Nca = 0.3 # high voltage-activated Ca^2+ 
+    dend.gmax_Nca = 0.3 # high voltage-activated Ca^2+
     dend.gmax_km = 0.1 # slow voltage-dependent non-inactivating K+
     dend.gmax_kca = 3  # slow Ca^2+-activated K+
 

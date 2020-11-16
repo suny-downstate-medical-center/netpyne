@@ -50,7 +50,7 @@ from .load import loadSimCfg, loadNetParams, loadNet, loadSimData, loadAll, load
 
 # import utils functions (general)
 from .utils import cellByGid, getCellsList, timing, version, gitChangeset, hashStr, hashList,\
-	_init_stim_randomizer, unique, checkMemory 
+	_init_stim_randomizer, unique, checkMemory
 
 # import utils functions to manipulate objects
 from .utils import copyReplaceItemObj, copyRemoveItemObj, replaceFuncObj, replaceDictODict, \
@@ -60,7 +60,7 @@ from .utils import copyReplaceItemObj, copyRemoveItemObj, replaceFuncObj, replac
 from .wrappers import create, simulate, intervalSimulate, analyze, createSimulate, \
 	createSimulateAnalyze, intervalCreateSimulateAnalyze, load, loadSimulate, loadSimulateAnalyze, \
 	createExportNeuroML2, importNeuroML2SimulateAnalyze
-     
+
 
 #------------------------------------------------------------------------------
 # Import classes and functions from other subpackages (so available via sim)
@@ -81,5 +81,5 @@ from ..tests.checks import checkOutput
 from ..tests.tests import SimTestObj
 
 # import export/import-related functions
-from .. import conversion 
-from ..conversion.neuromlFormat import * 
+from .. import conversion
+from ..conversion.neuromlFormat import *

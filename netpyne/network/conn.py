@@ -19,10 +19,10 @@ except NameError:
     basestring = str
 from future import standard_library
 standard_library.install_aliases()
-import numpy as np 
+import numpy as np
 from array import array as arrayFast
 from numbers import Number
-from numpy import array, sin, cos, tan, exp, sqrt, mean, inf, dstack, unravel_index, argsort, zeros, ceil, copy 
+from numpy import array, sin, cos, tan, exp, sqrt, mean, inf, dstack, unravel_index, argsort, zeros, ceil, copy
 
 
 # -----------------------------------------------------------------------------
@@ -46,11 +46,11 @@ def connectCells(self):
 
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'connectTime')
-    if sim.rank==0: 
+    if sim.rank==0:
         print('Making connections...')
 
-    if sim.nhosts > 1: # Gather tags from all cells 
-        allCellTags = sim._gatherAllCellTags()  
+    if sim.nhosts > 1: # Gather tags from all cells
+        allCellTags = sim._gatherAllCellTags()
     else:
         allCellTags = {cell.gid: cell.tags for cell in self.cells}
     allPopTags = {-i: pop.tags for i,pop in enumerate(self.pops.values())}  # gather tags from pops so can connect NetStim pops
@@ -71,7 +71,7 @@ def connectCells(self):
         preCellsTags, postCellsTags = self._findPrePostCellsCondition(allCellTags, connParam['preConds'], connParam['postConds'])
 
         # if conn function not specified, select based on params
-        if 'connFunc' not in connParam:  
+        if 'connFunc' not in connParam:
             if 'probability' in connParam: connParam['connFunc'] = 'probConn'  # probability based func
             elif 'convergence' in connParam: connParam['connFunc'] = 'convConn'  # convergence function
             elif 'divergence' in connParam: connParam['connFunc'] = 'divConn'  # divergence function
@@ -82,8 +82,8 @@ def connectCells(self):
         # process string-based funcs and call conn function
         if preCellsTags and postCellsTags:
             # initialize randomizer in case used in string-based function (see issue #89 for more details)
-            self.rand.Random123(sim.hashStr('conn_'+connParam['connFunc']), 
-                                sim.hashList(sorted(preCellsTags)+sorted(postCellsTags)), 
+            self.rand.Random123(sim.hashStr('conn_'+connParam['connFunc']),
+                                sim.hashList(sorted(preCellsTags)+sorted(postCellsTags)),
                                 sim.cfg.seeds['conn'])
             self._connStrToFunc(preCellsTags, postCellsTags, connParam)  # convert strings to functions (for the delay, and probability params)
             connFunc(preCellsTags, postCellsTags, connParam)  # call specific conn function
@@ -99,7 +99,7 @@ def connectCells(self):
     # add presynaptoc gap junctions
     if gapJunctions:
         # distribute info on presyn gap junctions across nodes
-        if not getattr(sim.net, 'preGapJunctions', False): 
+        if not getattr(sim.net, 'preGapJunctions', False):
             sim.net.preGapJunctions = []  # if doesn't exist, create list to store presynaptic cell gap junctions
         data = [sim.net.preGapJunctions]*sim.nhosts  # send cells data to other nodes
         data[sim.rank] = None
@@ -111,7 +111,7 @@ def connectCells(self):
         # add gap junctions of presynaptic cells (need to do separately because could be in different ranks)
         for preGapParams in getattr(sim.net, 'preGapJunctions', []):
             if preGapParams['gid'] in self.gid2lid:  # only cells in this rank
-                cell = self.cells[self.gid2lid[preGapParams['gid']]] 
+                cell = self.cells[self.gid2lid[preGapParams['gid']]]
                 cell.addConn(preGapParams)
 
     # apply subcellular connectivity params (distribution of synaspes)
@@ -127,9 +127,9 @@ def connectCells(self):
                 #cell.addSynMechsNEURONObj()
                 cell.addConnsNEURONObj()
 
-    nodeSynapses = sum([len(cell.conns) for cell in sim.net.cells]) 
+    nodeSynapses = sum([len(cell.conns) for cell in sim.net.cells])
     if sim.cfg.createPyStruct:
-        nodeConnections = sum([len(set([conn['preGid'] for conn in cell.conns])) for cell in sim.net.cells])   
+        nodeConnections = sum([len(set([conn['preGid'] for conn in cell.conns])) for cell in sim.net.cells])
     else:
         nodeConnections = nodeSynapses
 
@@ -157,7 +157,7 @@ def _findPrePostCellsCondition(self, allCellTags, preConds, postConds):
         if condKey in ['x','y','z','xnorm','ynorm','znorm']:
             preCellsTags = {gid: tags for (gid,tags) in preCellsTags.items() if condValue[0] <= tags.get(condKey, None) < condValue[1]}  # dict with pre cell tags
         else:
-            if isinstance(condValue, list): 
+            if isinstance(condValue, list):
                 preCellsTags = {gid: tags for (gid,tags) in preCellsTags.items() if tags.get(condKey, None) in condValue}  # dict with pre cell tags
             else:
                 preCellsTags = {gid: tags for (gid,tags) in preCellsTags.items() if tags.get(condKey, None) == condValue}  # dict with pre cell tags
@@ -167,7 +167,7 @@ def _findPrePostCellsCondition(self, allCellTags, preConds, postConds):
         for condKey,condValue in postConds.items():  # Find subset of cells that match postsyn criteria
             if condKey in ['x','y','z','xnorm','ynorm','znorm']:
                 postCellsTags = {gid: tags for (gid,tags) in postCellsTags.items() if condValue[0] <= tags.get(condKey, None) < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
-            elif isinstance(condValue, list): 
+            elif isinstance(condValue, list):
                 postCellsTags = {gid: tags for (gid,tags) in postCellsTags.items() if tags.get(condKey, None) in condValue}  # dict with post Cell objects
             else:
                 postCellsTags = {gid: tags for (gid,tags) in postCellsTags.items() if tags.get(condKey, None) == condValue}  # dict with post Cell objects
@@ -182,43 +182,43 @@ def _findPrePostCellsCondition(self, allCellTags, preConds, postConds):
 # -----------------------------------------------------------------------------
 def _connStrToFunc(self, preCellsTags, postCellsTags, connParam):
     # list of params that have a function passed in as a string
-    paramsStrFunc = [param for param in self.connStringFuncParams+['probability', 'convergence', 'divergence'] if param in connParam and isinstance(connParam[param], basestring)]  
+    paramsStrFunc = [param for param in self.connStringFuncParams+['probability', 'convergence', 'divergence'] if param in connParam and isinstance(connParam[param], basestring)]
 
     # dict to store correspondence between string and actual variable
-    dictVars = {}  
-    dictVars['pre_x']       = lambda preConds,postConds: preConds['x'] 
-    dictVars['pre_y']       = lambda preConds,postConds: preConds['y'] 
-    dictVars['pre_z']       = lambda preConds,postConds: preConds['z'] 
-    dictVars['pre_xnorm']   = lambda preConds,postConds: preConds['xnorm'] 
-    dictVars['pre_ynorm']   = lambda preConds,postConds: preConds['ynorm'] 
-    dictVars['pre_znorm']   = lambda preConds,postConds: preConds['znorm'] 
-    dictVars['post_x']      = lambda preConds,postConds: postConds['x'] 
-    dictVars['post_y']      = lambda preConds,postConds: postConds['y'] 
-    dictVars['post_z']      = lambda preConds,postConds: postConds['z'] 
-    dictVars['post_xnorm']  = lambda preConds,postConds: postConds['xnorm'] 
-    dictVars['post_ynorm']  = lambda preConds,postConds: postConds['ynorm'] 
-    dictVars['post_znorm']  = lambda preConds,postConds: postConds['znorm'] 
+    dictVars = {}
+    dictVars['pre_x']       = lambda preConds,postConds: preConds['x']
+    dictVars['pre_y']       = lambda preConds,postConds: preConds['y']
+    dictVars['pre_z']       = lambda preConds,postConds: preConds['z']
+    dictVars['pre_xnorm']   = lambda preConds,postConds: preConds['xnorm']
+    dictVars['pre_ynorm']   = lambda preConds,postConds: preConds['ynorm']
+    dictVars['pre_znorm']   = lambda preConds,postConds: preConds['znorm']
+    dictVars['post_x']      = lambda preConds,postConds: postConds['x']
+    dictVars['post_y']      = lambda preConds,postConds: postConds['y']
+    dictVars['post_z']      = lambda preConds,postConds: postConds['z']
+    dictVars['post_xnorm']  = lambda preConds,postConds: postConds['xnorm']
+    dictVars['post_ynorm']  = lambda preConds,postConds: postConds['ynorm']
+    dictVars['post_znorm']  = lambda preConds,postConds: postConds['znorm']
     dictVars['dist_x']      = lambda preConds,postConds: abs(preConds['x'] - postConds['x'])
-    dictVars['dist_y']      = lambda preConds,postConds: abs(preConds['y'] - postConds['y']) 
+    dictVars['dist_y']      = lambda preConds,postConds: abs(preConds['y'] - postConds['y'])
     dictVars['dist_z']      = lambda preConds,postConds: abs(preConds['z'] - postConds['z'])
     dictVars['dist_3D']    = lambda preConds,postConds: np.sqrt((preConds['x'] - postConds['x'])**2 +
-                            (preConds['y'] - postConds['y'])**2 + 
+                            (preConds['y'] - postConds['y'])**2 +
                             (preConds['z'] - postConds['z'])**2)
     dictVars['dist_3D_border'] = lambda preConds,postConds: np.sqrt((abs(preConds['x'] - postConds['x']) - postConds['borderCorrect'][0])**2 +
-                            (abs(preConds['y'] - postConds['y']) - postConds['borderCorrect'][1])**2 + 
+                            (abs(preConds['y'] - postConds['y']) - postConds['borderCorrect'][1])**2 +
                             (abs(preConds['z'] - postConds['z']) - postConds['borderCorrect'][2])**2)
     dictVars['dist_2D']     = lambda preConds,postConds: np.sqrt((preConds['x'] - postConds['x'])**2 +
                             (preConds['z'] - postConds['z'])**2)
     dictVars['dist_xnorm']  = lambda preConds,postConds: abs(preConds['xnorm'] - postConds['xnorm'])
-    dictVars['dist_ynorm']  = lambda preConds,postConds: abs(preConds['ynorm'] - postConds['ynorm']) 
+    dictVars['dist_ynorm']  = lambda preConds,postConds: abs(preConds['ynorm'] - postConds['ynorm'])
     dictVars['dist_znorm']  = lambda preConds,postConds: abs(preConds['znorm'] - postConds['znorm'])
     dictVars['dist_norm3D'] = lambda preConds,postConds: np.sqrt((preConds['xnorm'] - postConds['xnorm'])**2 +
-                            np.sqrt(preConds['ynorm'] - postConds['ynorm']) + 
+                            np.sqrt(preConds['ynorm'] - postConds['ynorm']) +
                             np.sqrt(preConds['znorm'] - postConds['znorm']))
     dictVars['dist_norm2D'] = lambda preConds,postConds: np.sqrt((preConds['xnorm'] - postConds['xnorm'])**2 +
                             np.sqrt(preConds['znorm'] - postConds['znorm']))
     dictVars['rand'] = lambda unused1,unused2: self.rand
-    
+
     # add netParams variables
     for k,v in self.params.__dict__.items():
         if isinstance(v, Number):
@@ -229,31 +229,31 @@ def _connStrToFunc(self, preCellsTags, postCellsTags, connParam):
         strFunc = connParam[paramStrFunc]  # string containing function
         for randmeth in self.stringFuncRandMethods: strFunc = strFunc.replace(randmeth, 'rand.'+randmeth) # append rand. to h.Random() methods
         strVars = [var for var in list(dictVars.keys()) if var in strFunc and var+'norm' not in strFunc]  # get list of variables used (eg. post_ynorm or dist_xyz)
-        lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function 
+        lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function
         lambdaFunc = eval(lambdaStr)
-   
+
         if paramStrFunc in ['probability']:
             # replace function with dict of values derived from function (one per pre+post cell)
             connParam[paramStrFunc+'Func'] = {(preGid,postGid): lambdaFunc(
-                **{strVar: dictVars[strVar] if isinstance(dictVars[strVar], Number) else dictVars[strVar](preCellTags, postCellTags) for strVar in strVars})  
+                **{strVar: dictVars[strVar] if isinstance(dictVars[strVar], Number) else dictVars[strVar](preCellTags, postCellTags) for strVar in strVars})
                 for preGid,preCellTags in preCellsTags.items() for postGid,postCellTags in postCellsTags.items()}
 
         elif paramStrFunc in ['convergence']:
             # replace function with dict of values derived from function (one per post cell)
             connParam[paramStrFunc+'Func'] = {postGid: lambdaFunc(
-                **{strVar: dictVars[strVar] if isinstance(dictVars[strVar], Number) else dictVars[strVar](None, postCellTags) for strVar in strVars}) 
+                **{strVar: dictVars[strVar] if isinstance(dictVars[strVar], Number) else dictVars[strVar](None, postCellTags) for strVar in strVars})
                 for postGid,postCellTags in postCellsTags.items()}
 
         elif paramStrFunc in ['divergence']:
             # replace function with dict of values derived from function (one per post cell)
             connParam[paramStrFunc+'Func'] = {preGid: lambdaFunc(
-                **{strVar: dictVars[strVar] if isinstance(dictVars[strVar], Number) else dictVars[strVar](preCellTags, None) for strVar in strVars}) 
+                **{strVar: dictVars[strVar] if isinstance(dictVars[strVar], Number) else dictVars[strVar](preCellTags, None) for strVar in strVars})
                 for preGid, preCellTags in preCellsTags.items()}
 
         else:
             # store lambda function and func vars in connParam (for weight, delay and synsPerConn since only calculated for certain conns)
             connParam[paramStrFunc+'Func'] = lambdaFunc
-            connParam[paramStrFunc+'FuncVars'] = {strVar: dictVars[strVar] for strVar in strVars} 
+            connParam[paramStrFunc+'FuncVars'] = {strVar: dictVars[strVar] for strVar in strVars}
 
 
 # -----------------------------------------------------------------------------
@@ -279,8 +279,8 @@ def _disynapticBiasProb(self, origProbability, bias, prePreGids, postPreGids, di
 # -----------------------------------------------------------------------------
 def _disynapticBiasProb2(self, probMatrix, allRands, bias, prePreGids, postPreGids):
     connGids = []
-    # calculate which conns are disyn vs 
-    disynMatrix = {(preGid, postGid): not set(prePreGids[preGid]).isdisjoint(postPreGids[postGid]) 
+    # calculate which conns are disyn vs
+    disynMatrix = {(preGid, postGid): not set(prePreGids[preGid]).isdisjoint(postPreGids[postGid])
             for preGid, postGid in list(probMatrix.keys())}
 
     # calculate which conns are going to be created
@@ -301,7 +301,7 @@ def _disynapticBiasProb2(self, probMatrix, allRands, bias, prePreGids, postPreGi
     disynAdd = disynNumNew - len(disynConn)
 
     if disynAdd > 0:
-        # sort by low/high probs 
+        # sort by low/high probs
         nonDisynConn = sorted(nonDisynConn, key=lambda k: probMatrix[k])
         disynNotConn = sorted(disynNotConn, key=lambda k: probMatrix[k], reverse=True)
 
@@ -312,7 +312,7 @@ def _disynapticBiasProb2(self, probMatrix, allRands, bias, prePreGids, postPreGi
 
     connGids = [(pre,post) for (pre,post), c in connCreate.items() if c]
     return connGids
-    
+
 
 # -----------------------------------------------------------------------------
 # Full connectivity
@@ -346,12 +346,12 @@ def fullConn(self, preCellsTags, postCellsTags, connParam):
     if sim.cfg.verbose: print('Generating set of all-to-all connections (rule: %s) ...' % (connParam['label']))
 
     # get list of params that have a lambda function
-    paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
+    paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam]
 
     for paramStrFunc in paramsStrFunc:
         # replace lambda function (with args as dict of lambda funcs) with list of values
         connParam[paramStrFunc[:-4]+'List'] = {(preGid,postGid): connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()}) for preGid, preCellTags in preCellsTags.items() for postGid, postCellTags in postCellsTags.items()}
-        
+
     for postCellGid in postCellsTags:  # for each postsyn cell
         if postCellGid in self.gid2lid:  # check if postsyn is in this node's list of gids
             for preCellGid, preCellTags in preCellsTags.items():  # for each presyn cell
@@ -389,21 +389,21 @@ def generateRandsPrePost(self, pre, post):
     sortedPost = sorted(post)
     # initialize randomizer using unique hash of pre and post gids and global conn seed
     self.rand.Random123(sim.hashList(sortedPre), sim.hashList(sortedPost), sim.cfg.seeds['conn'])  #
-    
+
     # obtain rand value for pre,post pairs
     lenPre = len(pre)
     lenPost = len(post)
     vec = sim.h.Vector(lenPre*lenPost)  # create Vector
     self.rand.uniform(0,1)  # set unfiform distribution
-    vecList = list(vec.setrand(self.rand))  # fill in vector 
-    allRands = {(preGid,postGid): vecList[(ipre*lenPost)+ipost] 
+    vecList = list(vec.setrand(self.rand))  # fill in vector
+    allRands = {(preGid,postGid): vecList[(ipre*lenPost)+ipost]
         for ipre,preGid in enumerate(sortedPre) for ipost,postGid in enumerate(sortedPost)}  # convert to dict
 
     return allRands
 
 
 # -----------------------------------------------------------------------------
-# Probabilistic connectivity 
+# Probabilistic connectivity
 # -----------------------------------------------------------------------------
 def probConn(self, preCellsTags, postCellsTags, connParam):
     """
@@ -445,23 +445,23 @@ def probConn(self, preCellsTags, postCellsTags, connParam):
         funcKeys[paramStrFunc] = [key for key in connParam[paramStrFunc + 'Vars'] if callable(connParam[paramStrFunc + 'Vars'][key])]
 
     # probabilistic connections with disynapticBias (deprecated)
-    if isinstance(connParam.get('disynapticBias', None), Number):  
+    if isinstance(connParam.get('disynapticBias', None), Number):
         allPreGids = sim._gatherAllCellConnPreGids()
         prePreGids = {gid: allPreGids[gid] for gid in preCellsTags}
         postPreGids = {gid: allPreGids[gid] for gid in postCellsTags}
-        
+
         probMatrix = {(preCellGid,postCellGid): connParam['probabilityFunc'][preCellGid,postCellGid] if 'probabilityFunc' in connParam else connParam['probability']
                                             for postCellGid,postCellTags in postCellsTags.items() # for each postsyn cell
                                             for preCellGid, preCellTags in preCellsTags.items()  # for each presyn cell
                                             if postCellGid in self.gid2lid}  # check if postsyn is in this node
-        
+
         connGids = self._disynapticBiasProb2(probMatrix, allRands, connParam['disynapticBias'], prePreGids, postPreGids)
         for preCellGid, postCellGid in connGids:
             for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
-                connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellsTags[preCellGid],postCellsTags[postCellGid]) for k,v in connParam[paramStrFunc+'Vars'].items()}  
+                connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellsTags[preCellGid],postCellsTags[postCellGid]) for k,v in connParam[paramStrFunc+'Vars'].items()}
             self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
-    # standard probabilistic conenctions   
+    # standard probabilistic conenctions
     else:
         # print('rank %d'%(sim.rank))
         # print(connParam)
@@ -481,7 +481,7 @@ def probConn(self, preCellsTags, postCellsTags, connParam):
 
 
 # -----------------------------------------------------------------------------
-# Generate random unique integers 
+# Generate random unique integers
 # -----------------------------------------------------------------------------
 def randUniqueInt(self, r, N, vmin, vmax):
     """
@@ -522,7 +522,7 @@ def randUniqueInt(self, r, N, vmin, vmax):
 
 
 # -----------------------------------------------------------------------------
-# Convergent connectivity 
+# Convergent connectivity
 # -----------------------------------------------------------------------------
 def convConn(self, preCellsTags, postCellsTags, connParam):
     """
@@ -551,9 +551,9 @@ def convConn(self, preCellsTags, postCellsTags, connParam):
     from .. import sim
 
     if sim.cfg.verbose: print('Generating set of convergent connections (rule: %s) ...' % (connParam['label']))
-           
+
     # get list of params that have a lambda function
-    paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
+    paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam]
 
     # copy the vars into args immediately and work out which keys are associated with lambda functions only once per method
     funcKeys = {}
@@ -561,7 +561,7 @@ def convConn(self, preCellsTags, postCellsTags, connParam):
         connParam[paramStrFunc + 'Args'] = connParam[paramStrFunc + 'Vars'].copy()
         funcKeys[paramStrFunc] = [key for key in connParam[paramStrFunc + 'Vars'] if callable(connParam[paramStrFunc + 'Vars'][key])]
 
-    # converted to list only once 
+    # converted to list only once
     preCellsTagsKeys = sorted(preCellsTags)
 
     # calculate hash for post cell gids
@@ -572,26 +572,26 @@ def convConn(self, preCellsTags, postCellsTags, connParam):
             convergence = connParam['convergenceFunc'][postCellGid] if 'convergenceFunc' in connParam else connParam['convergence']  # num of presyn conns / postsyn cell
             convergence = max(min(int(round(convergence)), len(preCellsTags)-1), 0)
             self.rand.Random123(hashPreCells, postCellGid, sim.cfg.seeds['conn'])  # init randomizer
-            randSample = self.randUniqueInt(self.rand, convergence+1, 0, len(preCellsTags)-1)             
+            randSample = self.randUniqueInt(self.rand, convergence+1, 0, len(preCellsTags)-1)
 
-            # note: randSample[divergence] is an extra value used only if one of the random postGids coincided with the preGid 
+            # note: randSample[divergence] is an extra value used only if one of the random postGids coincided with the preGid
             preCellsSample = {preCellsTagsKeys[randSample[convergence]] if preCellsTagsKeys[i]==postCellGid else preCellsTagsKeys[i]:0
                                    for i in randSample[0:convergence]}  # dict of selected gids of postsyn cells with removed post gid
             preCellsConv = {k:v for k,v in preCellsTags.items() if k in preCellsSample}  # dict of selected presyn cells tags
 
             for preCellGid, preCellTags in preCellsConv.items():  # for each presyn cell
-         
+
                 for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
                     # update the relevant FuncArgs dict where lambda functions are known to exist in the corresponding FuncVars dict
                     for funcKey in funcKeys[paramStrFunc]:
                         connParam[paramStrFunc + 'Args'][funcKey] = connParam[paramStrFunc+'Vars'][funcKey](preCellTags,postCellTags)
 
-                if preCellGid != postCellGid: # if not self-connection   
+                if preCellGid != postCellGid: # if not self-connection
                     self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
 
 # -----------------------------------------------------------------------------
-# Divergent connectivity 
+# Divergent connectivity
 # -----------------------------------------------------------------------------
 def divConn(self, preCellsTags, postCellsTags, connParam):
     """
@@ -620,9 +620,9 @@ def divConn(self, preCellsTags, postCellsTags, connParam):
     from .. import sim
 
     if sim.cfg.verbose: print('Generating set of divergent connections (rule: %s) ...' % (connParam['label']))
-     
+
     # get list of params that have a lambda function
-    paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
+    paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam]
 
     # copy the vars into args immediately and work out which keys are associated with lambda functions only once per method
     funcKeys = {}
@@ -630,8 +630,8 @@ def divConn(self, preCellsTags, postCellsTags, connParam):
         connParam[paramStrFunc + 'Args'] = connParam[paramStrFunc + 'Vars'].copy()
         funcKeys[paramStrFunc] = [key for key in connParam[paramStrFunc + 'Vars'] if callable(connParam[paramStrFunc + 'Vars'][key])]
 
-    # converted to list only once 
-    postCellsTagsKeys = sorted(postCellsTags)    
+    # converted to list only once
+    postCellsTagsKeys = sorted(postCellsTags)
 
     # calculate hash for post cell gids
     hashPostCells = sim.hashList(postCellsTagsKeys)
@@ -641,12 +641,12 @@ def divConn(self, preCellsTags, postCellsTags, connParam):
         divergence = max(min(int(round(divergence)), len(postCellsTags)-1), 0)
         self.rand.Random123(hashPostCells, preCellGid, sim.cfg.seeds['conn'])  # init randomizer
         randSample = self.randUniqueInt(self.rand, divergence+1, 0, len(postCellsTags)-1)
-        
-        # note: randSample[divergence] is an extra value used only if one of the random postGids coincided with the preGid 
+
+        # note: randSample[divergence] is an extra value used only if one of the random postGids coincided with the preGid
         postCellsSample = {postCellsTagsKeys[randSample[divergence]] if postCellsTagsKeys[i]==preCellGid else postCellsTagsKeys[i]: 0
                                for i in randSample[0:divergence]}  # dict of selected gids of postsyn cells with removed pre gid
 
-        for postCellGid in [c for c in postCellsSample if c in self.gid2lid]:            
+        for postCellGid in [c for c in postCellsSample if c in self.gid2lid]:
             postCellTags = postCellsTags[postCellGid]
             for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
                 # update the relevant FuncArgs dict where lambda functions are known to exist in the corresponding FuncVars dict
@@ -658,7 +658,7 @@ def divConn(self, preCellsTags, postCellsTags, connParam):
 
 
 # -----------------------------------------------------------------------------
-# From list connectivity 
+# From list connectivity
 # -----------------------------------------------------------------------------
 def fromListConn(self, preCellsTags, postCellsTags, connParam):
     """
@@ -692,30 +692,30 @@ def fromListConn(self, preCellsTags, postCellsTags, connParam):
     orderedPostGids = sorted(postCellsTags)
 
     # list of params that can have a lambda function
-    paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam] 
+    paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam]
     for paramStrFunc in paramsStrFunc:
         # replace lambda function (with args as dict of lambda funcs) with list of values
-        connParam[paramStrFunc[:-4]+'List'] = {(orderedPreGids[preId],orderedPostGids[postId]): 
-            connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellsTags[orderedPreGids[preId]], postCellsTags[orderedPostGids[postId]]) 
+        connParam[paramStrFunc[:-4]+'List'] = {(orderedPreGids[preId],orderedPostGids[postId]):
+            connParam[paramStrFunc](**{k:v if isinstance(v, Number) else v(preCellsTags[orderedPreGids[preId]], postCellsTags[orderedPostGids[postId]])
             for k,v in connParam[paramStrFunc+'Vars'].items()}) for preId,postId in connParam['connList']}
 
-    if 'weight' in connParam and isinstance(connParam['weight'], list): 
+    if 'weight' in connParam and isinstance(connParam['weight'], list):
         connParam['weightFromList'] = list(connParam['weight'])  # if weight is a list, copy to weightFromList
-    if 'delay' in connParam and isinstance(connParam['delay'], list): 
+    if 'delay' in connParam and isinstance(connParam['delay'], list):
         connParam['delayFromList'] = list(connParam['delay'])  # if delay is a list, copy to delayFromList
-    if 'loc' in connParam and isinstance(connParam['loc'], list): 
+    if 'loc' in connParam and isinstance(connParam['loc'], list):
         connParam['locFromList'] = list(connParam['loc'])  # if delay is a list, copy to locFromList
 
 
     for iconn, (relativePreId, relativePostId) in enumerate(connParam['connList']):  # for each postsyn cell
-        preCellGid = orderedPreGids[relativePreId]     
+        preCellGid = orderedPreGids[relativePreId]
         postCellGid = orderedPostGids[relativePostId]
         if postCellGid in self.gid2lid:  # check if postsyn is in this node's list of gids
-            
-            if 'weightFromList' in connParam: connParam['weight'] = connParam['weightFromList'][iconn] 
+
+            if 'weightFromList' in connParam: connParam['weight'] = connParam['weightFromList'][iconn]
             if 'delayFromList' in connParam: connParam['delay'] = connParam['delayFromList'][iconn]
             if 'locFromList' in connParam: connParam['loc'] = connParam['locFromList'][iconn]
-    
+
             if preCellGid != postCellGid: # if not self-connection
                 self._addCellConn(connParam, preCellGid, postCellGid) # add connection
 
@@ -731,11 +731,11 @@ def _addCellConn(self, connParam, preCellGid, postCellGid):
     finalParam = {}
 
     # Set final parameter values; initialize randomizer for string-based funcs that use rand to ensue replicability
-    # Note: could potentially speed up by generating list of values for all rand funcs used (e.g. rand.uniform()) 
+    # Note: could potentially speed up by generating list of values for all rand funcs used (e.g. rand.uniform())
     # and then selecting a value from list based of pre- and post- gid -- that way only seed once at beginning in connectCells()
     # Howeve, not clear if faster in all cases since need to generate values for len(pre)*len(post), whereas here only a subset
     randSeeded = False
-        
+
     for param in paramStrFunc:
         if param+'List' in connParam:
             finalParam[param] = connParam[param+'List'][preCellGid,postCellGid]
@@ -743,12 +743,12 @@ def _addCellConn(self, connParam, preCellGid, postCellGid):
             if not randSeeded and 'rand' in connParam[param+'FuncArgs']:
                 self.rand.Random123(preCellGid, postCellGid, sim.cfg.seeds['conn'])
                 randSeeded = True
-            finalParam[param] = connParam[param+'Func'](**connParam[param+'FuncArgs']) 
+            finalParam[param] = connParam[param+'Func'](**connParam[param+'FuncArgs'])
         else:
             finalParam[param] = connParam.get(param)
 
-    # get Cell object 
-    postCell = self.cells[self.gid2lid[postCellGid]] 
+    # get Cell object
+    postCell = self.cells[self.gid2lid[postCellGid]]
 
     # convert synMech param to list (if not already)
     if not isinstance(connParam.get('synMech'), list):
@@ -766,24 +766,21 @@ def _addCellConn(self, connParam, preCellGid, postCellGid):
                 elif 'synMech'+param.title()+'Factor' in connParam: # adapt weight for each synMech
                     finalParam[param+'SynMech'] = finalParam[param] * connParam['synMech'+param.title()+'Factor'][i]
 
-        params = {'preGid': preCellGid, 
-        'sec': connParam.get('sec'), 
-        'loc': finalParam['locSynMech'], 
-        'synMech': synMech, 
+        params = {'preGid': preCellGid,
+        'sec': connParam.get('sec'),
+        'loc': finalParam['locSynMech'],
+        'synMech': synMech,
         'weight': finalParam['weightSynMech'],
         'delay': finalParam['delaySynMech'],
         'synsPerConn': finalParam['synsPerConn']}
 
         # if 'threshold' in connParam: params['threshold'] = connParam.get('threshold')  # deprecated, use threshold in preSyn cell sec
-        if 'shape' in connParam: params['shape'] = connParam.get('shape')    
-        if 'plast' in connParam: params['plast'] = connParam.get('plast')    
+        if 'shape' in connParam: params['shape'] = connParam.get('shape')
+        if 'plast' in connParam: params['plast'] = connParam.get('plast')
         if 'gapJunction' in connParam:
             params['gapJunction'] = connParam.get('gapJunction')
             params['preLoc'] = connParam.get('preLoc')
 
         if sim.cfg.includeParamsLabel: params['label'] = connParam.get('label')
-        
+
         postCell.addConn(params=params)
-
-
-

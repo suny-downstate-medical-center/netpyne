@@ -32,7 +32,7 @@ class PointCell (Cell):
     Class for/to <short description of `netpyne.cell.pointCell.PointCell`>
 
     """
-    
+
     def __init__ (self, gid, tags, create=True, associateGid=True):
         from .. import sim
 
@@ -42,7 +42,7 @@ class PointCell (Cell):
             self.params = deepcopy(self.tags.pop('params'))
 
         if create and sim.cfg.createNEURONObj:
-            self.createNEURONObj()  # create cell 
+            self.createNEURONObj()  # create cell
         if associateGid: self.associateGid() # register cell for this node
 
     def __str__ (self):
@@ -62,14 +62,14 @@ class PointCell (Cell):
             self.hPointp = getattr(h, self.tags['cellModel'])()
         except:
             print("Error creating point process mechanism %s in cell with gid %d" % (self.tags['cellModel'], self.gid))
-            return 
+            return
 
-        # if rate is list with 2 items generate random value from uniform 
+        # if rate is list with 2 items generate random value from uniform
         if 'rate' in self.params and isinstance(self.params['rate'], list) and len(self.params['rate']) == 2:
             rand = h.Random()
-            rand.Random123(sim.hashStr('point_rate'), self.gid, sim.cfg.seeds['stim']) # initialize randomizer 
+            rand.Random123(sim.hashStr('point_rate'), self.gid, sim.cfg.seeds['stim']) # initialize randomizer
             self.params['rate'] = rand.uniform(self.params['rate'][0], self.params['rate'][1])
- 
+
 
         # if rates is list with 2 items generate time-depenedent rates using vector.play()
         if 'rates' in self.params and isinstance(self.params['rates'], list) and len(self.params['rates']) == 2:
@@ -94,42 +94,42 @@ class PointCell (Cell):
         if self.tags['cellModel'] == 'NetStim':
             if sim.cfg.verbose: print("Creating a NetStim pointcell")
             rand = h.Random()
-            self.hRandom = rand 
+            self.hRandom = rand
             if 'number' not in self.params:
-                params['number'] = 1e9 
-                setattr(self.hPointp, 'number', params['number']) 
-            if 'seed' not in self.params: 
+                params['number'] = 1e9
+                setattr(self.hPointp, 'number', params['number'])
+            if 'seed' not in self.params:
                 self.params['seed'] = sim.cfg.seeds['stim'] # note: random number generator initialized from sim.preRun()
-        
+
 
         # VecStim - generate spike vector based on params
         if self.tags['cellModel'] == 'VecStim':
             # seed
-            if 'seed' not in self.params: 
+            if 'seed' not in self.params:
                 self.params['seed'] = sim.cfg.seeds['stim']
 
             # convert rate to interval
             if 'rate' in self.params:
-                self.params['interval'] = 1000.0/self.params['rate'] 
+                self.params['interval'] = 1000.0/self.params['rate']
 
             # if interval
             if 'interval' in self.params:
                 # set interval, start and noise params
-                interval = self.params['interval'] 
+                interval = self.params['interval']
                 start = self.params['start'] if 'start' in self.params else 0.0
                 noise = self.params['noise'] if 'noise' in self.params else 0.0
 
-                maxReproducibleSpks = 1e4  # num of rand spikes generated; only a subset is used; ensures reproducibility 
+                maxReproducibleSpks = 1e4  # num of rand spikes generated; only a subset is used; ensures reproducibility
 
-                # fixed interval of duration (1 - noise)*interval 
+                # fixed interval of duration (1 - noise)*interval
                 fixedInterval = np.full(int(((1+1.5*noise)*sim.cfg.duration/interval)), [(1.0-noise)*interval])  # generate 1+1.5*noise spikes to account for noise
                 numSpks = len(fixedInterval)
 
                 # randomize the first spike so on average it occurs at start + noise*interval
-                # invl = (1. - noise)*mean + noise*mean*erand() - interval*(1. - noise)    
+                # invl = (1. - noise)*mean + noise*mean*erand() - interval*(1. - noise)
                 if noise == 0.0:
                     vec = h.Vector(len(fixedInterval))
-                    spkTimes =  np.cumsum(fixedInterval) + (start - interval) 
+                    spkTimes =  np.cumsum(fixedInterval) + (start - interval)
                 else:
                     # plus negexp interval of mean duration noise*interval. Note that the most likely negexp interval has duration 0.
                     rand = h.Random()
@@ -139,18 +139,18 @@ class PointCell (Cell):
                     # vec = h.Vector(numSpks)
                     # rand.negexp(noise*interval)
                     # vec.setrand(rand)
-                    # negexpInterval= np.array(vec)                     
+                    # negexpInterval= np.array(vec)
                     # #print negexpInterval
                     # spkTimes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
 
                     if numSpks < 100:
                         # Method 2: vec length=1, slower but reproducible
-                        vec = h.Vector(1) 
+                        vec = h.Vector(1)
                         rand.negexp(noise*interval)
                         negexpInterval = []
                         for i in range(numSpks):
                             vec.setrand(rand)
-                            negexpInterval.append(vec.x[0])  # = np.array(vec)[0:len(fixedInterval)]                     
+                            negexpInterval.append(vec.x[0])  # = np.array(vec)[0:len(fixedInterval)]
                         spkTimes = np.cumsum(fixedInterval + np.array(negexpInterval)) + (start - interval*(1-noise))
 
                     elif numSpks < maxReproducibleSpks:
@@ -158,7 +158,7 @@ class PointCell (Cell):
                         vec = h.Vector(maxReproducibleSpks)
                         rand.negexp(noise*interval)
                         vec.setrand(rand)
-                        negexpInterval = np.array(vec.c(0,len(fixedInterval)-1))                  
+                        negexpInterval = np.array(vec.c(0,len(fixedInterval)-1))
                         spkTimes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
 
                     else:
@@ -181,19 +181,19 @@ class PointCell (Cell):
                     spkTimes = createRhythmicPattern(self.params['spikePattern'], rand)
                 elif patternType == 'evoked':
                     from .inputs import createEvokedPattern
-                    spkTimes = createEvokedPattern(self.params['spikePattern'], rand) 
+                    spkTimes = createEvokedPattern(self.params['spikePattern'], rand)
                 elif patternType == 'poisson':
                     from .inputs import createPoissonPattern
                     if self.params['spikePattern']['stop'] == -1:
                         self.params['spikePattern']['stop'] = sim.cfg.duration
-                    spkTimes = createPoissonPattern(self.params['spikePattern'], rand)                    
+                    spkTimes = createPoissonPattern(self.params['spikePattern'], rand)
                 elif patternType == 'gauss':
                     from .inputs import createGaussPattern
-                    spkTimes = createGaussPattern(self.params['spikePattern'], rand)                    
+                    spkTimes = createGaussPattern(self.params['spikePattern'], rand)
                 else:
                     print('\nError: invalid spikePattern type %s' % (patternType))
                     return
-                
+
                 vec = h.Vector(len(spkTimes))
 
             # if spkTimess
@@ -213,7 +213,7 @@ class PointCell (Cell):
                     return
                 spkTimes = np.array(spkTimes)
                 vec = h.Vector(len(spkTimes))
-            
+
             # missing params
             else:
                 print('\nError: VecStim requires interval, rate or spkTimes')
@@ -222,16 +222,16 @@ class PointCell (Cell):
             # pulse list: start, end, rate, noise
             if 'pulses' in self.params:
                 for ipulse, pulse in enumerate(self.params['pulses']):
-                    
-                    # if rate is list with 2 items generate random value from uniform 
+
+                    # if rate is list with 2 items generate random value from uniform
                     if 'rate' in pulse and isinstance(pulse['rate'], list) and len(pulse['rate']) == 2:
                         rand = h.Random()
-                        rand.Random123(sim.hashStr('point_rate_pulse'+str(ipulse)), self.gid, sim.cfg.seeds['stim']) # initialize randomizer 
+                        rand.Random123(sim.hashStr('point_rate_pulse'+str(ipulse)), self.gid, sim.cfg.seeds['stim']) # initialize randomizer
                         pulse['rate'] = rand.uniform(pulse['rate'][0], pulse['rate'][1])
 
                     # check interval or rate params
                     if 'interval' in pulse:
-                        interval = pulse['interval'] 
+                        interval = pulse['interval']
                     elif 'rate' in pulse:
                         interval = 1000.0/pulse['rate']
                     else:
@@ -239,7 +239,7 @@ class PointCell (Cell):
                         return
 
                     # check start,end and noise params
-                    if any([x not in pulse for x in ['start', 'end']]):  
+                    if any([x not in pulse for x in ['start', 'end']]):
                         print('Error: Vecstim pulse missing "start" and/or "end" parameter')
                         return
                     else:
@@ -247,7 +247,7 @@ class PointCell (Cell):
                         start = pulse['start']
                         end = pulse['end']
 
-                        # fixed interval of duration (1 - noise)*interval 
+                        # fixed interval of duration (1 - noise)*interval
                         fixedInterval = np.full(int(((1+1.5*noise)*(end-start)/interval)), [(1.0-noise)*interval])  # generate 1+0.5*noise spikes to account for noise
                         numSpks = len(fixedInterval)
 
@@ -262,23 +262,23 @@ class PointCell (Cell):
                             # plus negexp interval of mean duration noise*interval. Note that the most likely negexp interval has duration 0.
                             rand = h.Random()
                             rand.Random123(ipulse, self.gid, self.params['seed'])
-                            
+
                             # Method 1: vec length depends on duration -- not reproducible
                             # vec = h.Vector(len(fixedInterval))
                             # rand.negexp(noise*interval)
                             # vec.setrand(rand)
-                            # negexpInterval = np.array(vec) 
+                            # negexpInterval = np.array(vec)
                             # pulseSpikes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
 
                             # Method 2: vec length=1, slower but reproducible
-                            vec = h.Vector(1) 
+                            vec = h.Vector(1)
                             rand.negexp(noise*interval)
                             negexpInterval = []
                             for i in range(numSpks):
                                 vec.setrand(rand)
-                                negexpInterval.append(vec.x[0])  # = np.array(vec)[0:len(fixedInterval)]                    
+                                negexpInterval.append(vec.x[0])  # = np.array(vec)[0:len(fixedInterval)]
                             pulseSpikes = np.cumsum(fixedInterval + np.array(negexpInterval)) + (start - interval*(1-noise))
-     
+
                             pulseSpikes[pulseSpikes < start] = start
                             spkTimes = np.append(spkTimes, pulseSpikes[pulseSpikes <= end])
 
@@ -292,7 +292,7 @@ class PointCell (Cell):
     def associateGid (self, threshold = None):
         from .. import sim
 
-        if sim.cfg.createNEURONObj: 
+        if sim.cfg.createNEURONObj:
             sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
             if 'vref' in self.tags:
                 nc = h.NetCon(getattr(self.hPointp, '_ref_'+self.tags['vref']), None)
@@ -319,7 +319,7 @@ class PointCell (Cell):
             weights = [scaleFactor * w for w in params['weight']]
         else:
             weights = [scaleFactor * params['weight']] * params['synsPerConn']
-        
+
         return weights
 
 
@@ -338,11 +338,11 @@ class PointCell (Cell):
 
         # Weight
         weights = self._setConnWeights(params, netStimParams)
-        weightIndex = 0  # set default weight matrix index   
+        weightIndex = 0  # set default weight matrix index
 
         # Delays
         if isinstance(params['delay'],list):
-            delays = params['delay'] 
+            delays = params['delay']
         else:
             delays = [params['delay']] * params['synsPerConn']
 
@@ -354,53 +354,53 @@ class PointCell (Cell):
 
             # Python Structure
             if sim.cfg.createPyStruct:
-                connParams = {k:v for k,v in params.items() if k not in ['synsPerConn']} 
+                connParams = {k:v for k,v in params.items() if k not in ['synsPerConn']}
                 connParams['weight'] = weights[i]
                 connParams['delay'] = delays[i]
                 if netStimParams:
                     connParams['preGid'] = 'NetStim'
                     connParams['preLabel'] = netStimParams['source']
-                self.conns.append(Dict(connParams))                
+                self.conns.append(Dict(connParams))
             else:  # do not fill in python structure (just empty dict for NEURON obj)
                 self.conns.append(Dict())
 
             # NEURON objects
             if sim.cfg.createNEURONObj:
                 if 'vref' in self.tags:
-                    postTarget = getattr(self.hPointp, '_ref_'+self.tags['vref']) #  local point neuron 
-                else: 
+                    postTarget = getattr(self.hPointp, '_ref_'+self.tags['vref']) #  local point neuron
+                else:
                     postTarget = self.hPointp
 
                 if netStimParams:
                     netcon = h.NetCon(netstim, postTarget) # create Netcon between netstim and target
                 else:
                     netcon = sim.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
-                
+
                 netcon.weight[weightIndex] = weights[i]  # set Netcon weight
                 netcon.delay = delays[i]  # set Netcon delay
                 #netcon.threshold = threshold # set Netcon threshold
                 self.conns[-1]['hObj'] = netcon  # add netcon object to dict in conns list
-        
+
 
                 # Add time-dependent weight shaping
                 if 'shape' in params and params['shape']:
                     temptimevecs = []
                     tempweightvecs = []
-                    
+
                     # Default shape
                     pulsetype = params['shape']['pulseType'] if 'pulseType' in params['shape'] else 'square'
                     pulsewidth = params['shape']['pulseWidth'] if 'pulseWidth' in params['shape'] else 100.0
                     pulseperiod = params['shape']['pulsePeriod'] if 'pulsePeriod' in params['shape'] else 100.0
-                    
+
                     # Determine on-off switching time pairs for stimulus, where default is always on
                     if 'switchOnOff' not in params['shape']:
                         switchtimes = [0, sim.cfg.duration]
                     else:
                         if not params['shape']['switchOnOff'] == sorted(params['shape']['switchOnOff']):
-                            raise Exception('On-off switching times for a particular stimulus are not monotonic')   
+                            raise Exception('On-off switching times for a particular stimulus are not monotonic')
                         switchtimes = deepcopy(params['shape']['switchOnOff'])
                         switchtimes.append(sim.cfg.duration)
-                    
+
                     switchiter = iter(switchtimes)
                     switchpairs = list(zip(switchiter,switchiter))
                     for pair in switchpairs:
@@ -408,13 +408,13 @@ class PointCell (Cell):
                         stimvecs = self._shapeStim(width=float(pulsewidth)/1000.0, isi=float(pulseperiod)/1000.0, weight=params['weight'], start=float(pair[0])/1000.0, finish=float(pair[1])/1000.0, stimshape=pulsetype)
                         temptimevecs.extend(stimvecs[0])
                         tempweightvecs.extend(stimvecs[1])
-                    
+
                     self.conns[-1]['shapeTimeVec'] = h.Vector().from_python(temptimevecs)
                     self.conns[-1]['shapeWeightVec'] = h.Vector().from_python(tempweightvecs)
                     self.conns[-1]['shapeWeightVec'].play(netcon._ref_weight[weightIndex], self.conns[-1]['shapeTimeVec'])
 
 
-            if sim.cfg.verbose: 
+            if sim.cfg.verbose:
                 sec = params['sec']
                 loc = params['loc']
                 preGid = netStimParams['source']+' NetStim' if netStimParams else params['preGid']
@@ -431,7 +431,7 @@ class PointCell (Cell):
     def __getattr__(self, name):
         def wrapper(*args, **kwargs):
             from .. import sim
-            try: 
+            try:
                 name(*args,**kwargs)
             except:
                 if sim.cfg.verbose:
@@ -443,5 +443,3 @@ class PointCell (Cell):
 
     # def addSynMechsNEURONObj (self):
     #     print 'Error: Function not yet implemented for Point Neurons'
-
-        

@@ -112,9 +112,9 @@ class Dict(dict):
         """
         old (string): old dict key
         new (string): new dict key
-        label (list/tuple of strings): nested keys pointing to dict with key to be replaced; 
-            e.g. ('PYR', 'secs'); use None to replace root key; defaults to None 
-        
+        label (list/tuple of strings): nested keys pointing to dict with key to be replaced;
+            e.g. ('PYR', 'secs'); use None to replace root key; defaults to None
+
         returns: True if successful, False otherwse
         """
 
@@ -122,9 +122,9 @@ class Dict(dict):
         if isinstance(label, (tuple, list)):
             for ip in range(len(label)):
                 try:
-                    obj = obj[label[ip]] 
+                    obj = obj[label[ip]]
                 except:
-                    return False 
+                    return False
 
         if old in obj:
             obj[new] = obj.pop(old)  # replace
@@ -250,19 +250,19 @@ class ODict(OrderedDict):
         """
         old (string): old dict key
         new (string): new dict key
-        label (list/tuple of strings): nested keys pointing to dict with key to be replaced; 
-            e.g. ('PYR', 'secs'); use None to replace root key; defaults to None 
-        
+        label (list/tuple of strings): nested keys pointing to dict with key to be replaced;
+            e.g. ('PYR', 'secs'); use None to replace root key; defaults to None
+
         returns: True if successful, False otherwse
         """
-        
+
         obj = self
         if isinstance(label, (tuple, list)):
             for ip in range(len(label)):
                 try:
-                    obj = obj[label[ip]] 
+                    obj = obj[label[ip]]
                 except:
-                    return False 
+                    return False
 
         if old in obj:
             obj[new] = obj.pop(old)  # replace
@@ -272,11 +272,9 @@ class ODict(OrderedDict):
 
     def rename(self, *args, **kwargs):
         self.__rename__(*args, **kwargs)
-        
+
     def __getstate__ (self):
         return self.toOrderedDict()
 
     def __setstate__ (self, d):
         self = self.fromOrderedDict(d)
-
-

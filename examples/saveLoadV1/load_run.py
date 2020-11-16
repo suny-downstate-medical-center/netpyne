@@ -11,7 +11,7 @@ simConfig.dt = 0.01                           # Internal integration timestep, i
 simConfig.createNEURONObj = True             # create HOC objects when instantiating network
 simConfig.createPyStruct = True              # create Python structure (simulator-independent) when instantiating network
 simConfig.verbose = 0
-simConfig.hParams['v_init'] = -90 
+simConfig.hParams['v_init'] = -90
 
 # Recording
 simConfig.recordStep = 0.1                                  # Step size in ms to save data (eg. V traces, LFP, etc)
@@ -29,4 +29,4 @@ simConfig.analysis['plotConn'] = True                                           
 # LOAD, RUN AND ANALYZE NETWORK
 ###############################################################################
 
-sim.loadSimulateAnalyze(filename='V1.json', simConfig=simConfig)    
+sim.loadSimulateAnalyze(filename='V1.json', simConfig=simConfig)

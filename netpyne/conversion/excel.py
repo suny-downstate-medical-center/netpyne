@@ -29,7 +29,7 @@ def importConnFromExcel (fileName, sheetName):
         **Default:** *required*
 
     """
-    
+
     import openpyxl as xl
 
     # set columns
@@ -39,12 +39,12 @@ def importConnFromExcel (fileName, sheetName):
     colSyn = 3 # 'D'
     colProb = 5 # 'F'
     colWeight = 6 # 'G'
-    colAnnot = 8 # 'I' 
+    colAnnot = 8 # 'I'
 
     outFileName = fileName[:-5]+'_'+sheetName+'.py' # set output file name
 
     connText = """## Generated using importConnFromExcel() function in params/utils.py \n\nnetParams['connParams'] = [] \n\n"""
-    
+
     # open excel file and sheet
     wb = xl.load_workbook(fileName)
     sheet = wb.get_sheet_by_name(sheetName)
@@ -69,7 +69,7 @@ def importConnFromExcel (fileName, sheetName):
                     if i>0: line = line + ", "
                     cond2 = cond.split('=')  # split into key and value
                     line = line + "'" + cond2[0].replace(' ','') + "': " + cond2[1].replace(' ','')   # generate line
-                line = line + "}" # end of preTags      
+                line = line + "}" # end of preTags
 
                 # write postTags
                 line = line + ",\n'postConds': {"
@@ -77,7 +77,7 @@ def importConnFromExcel (fileName, sheetName):
                     if i>0: line = line + ", "
                     cond2 = cond.split('=')  # split into key and value
                     line = line + "'" + cond2[0].replace(' ','') + "': " + cond2[1].replace(' ','')   # generate line
-                line = line + "}" # end of postTags         
+                line = line + "}" # end of postTags
                 line = line + ",\n'connFunc': '" + func + "'"  # write connFunc
                 line = line + ",\n'synMech': '" + syn + "'"  # write synReceptor
                 line = line + ",\n'probability': " + str(prob)  # write prob
@@ -85,4 +85,3 @@ def importConnFromExcel (fileName, sheetName):
                 line = line + "})"  # add closing brackets
                 line = line + '\n\n' # new line after each conn rule
                 f.write(line)  # write to file
-                

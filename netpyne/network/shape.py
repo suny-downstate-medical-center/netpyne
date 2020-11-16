@@ -14,7 +14,7 @@ standard_library.install_aliases()
 from neuron import h
 
 # -----------------------------------------------------------------------------
-# Calculate segment coordinates from 3d point coordinates 
+# Calculate segment coordinates from 3d point coordinates
 # -----------------------------------------------------------------------------
 def calcSegCoords(self):
     """
@@ -29,10 +29,10 @@ def calcSegCoords(self):
 
     """
 
-   
+
     from .. import sim
     if sim.cfg.createNEURONObj:
-        # Calculate relative seg coords for 1 cell per pop, 
+        # Calculate relative seg coords for 1 cell per pop,
         for pop in list(self.pops.values()):
             if pop.cellModelClass == sim.CompartCell:
                 pop.calcRelativeSegCoords()

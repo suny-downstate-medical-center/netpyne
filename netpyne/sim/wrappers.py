@@ -24,17 +24,17 @@ def create(netParams=None, simConfig=None, output=False):
         <Short description of netParams>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     simConfig : <``None``?>
         <Short description of simConfig>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     output : bool
         <Short description of output>
         **Default:** ``False``
         **Options:** ``<option>`` <description of option>
- 
+
 """
 
     from .. import sim
@@ -51,7 +51,7 @@ def create(netParams=None, simConfig=None, output=False):
     simData = sim.setupRecording()             # setup variables to record for each cell (spikes, V traces, etc)
 
     if output: return (pops, cells, conns, rxd, stims, simData)
-    
+
 
 #------------------------------------------------------------------------------
 # Wrapper to simulate network
@@ -63,9 +63,9 @@ def simulate():
 """
 
     from .. import sim
-    sim.runSim()         
+    sim.runSim()
     sim.gatherData()                  # gather spiking data and cell info from each node
-    
+
 #------------------------------------------------------------------------------
 # Wrapper to simulate network
 #------------------------------------------------------------------------------
@@ -82,10 +82,10 @@ def intervalSimulate(interval):
 """
 
     from .. import sim
-    sim.runSimWithIntervalFunc(interval, sim.intervalSave)                      # run parallel Neuron simulation  
+    sim.runSimWithIntervalFunc(interval, sim.intervalSave)                      # run parallel Neuron simulation
     #this gather is justa merging of files
     sim.fileGather()                  # gather spiking data and cell info from saved file
-    
+
 #------------------------------------------------------------------------------
 # Wrapper to analyze network
 #------------------------------------------------------------------------------
@@ -96,7 +96,7 @@ def analyze():
 """
 
     from .. import sim
-    sim.saveData()                      # run parallel Neuron simulation  
+    sim.saveData()                      # run parallel Neuron simulation
     sim.analysis.plotData()                  # gather spiking data and cell info from each node
 
 
@@ -113,24 +113,24 @@ def createSimulate(netParams=None, simConfig=None, output=False):
         <Short description of netParams>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     simConfig : <``None``?>
         <Short description of simConfig>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     output : bool
         <Short description of output>
         **Default:** ``False``
         **Options:** ``<option>`` <description of option>
- 
+
 """
 
     from .. import sim
     (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
-    sim.simulate() 
+    sim.simulate()
 
-    if output: return (pops, cells, conns, stims, simData)    
+    if output: return (pops, cells, conns, stims, simData)
 
 
 #------------------------------------------------------------------------------
@@ -146,25 +146,25 @@ def createSimulateAnalyze(netParams=None, simConfig=None, output=False):
         <Short description of netParams>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     simConfig : <``None``?>
         <Short description of simConfig>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     output : bool
         <Short description of output>
         **Default:** ``False``
         **Options:** ``<option>`` <description of option>
- 
+
 """
-    
+
     from .. import sim
     (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
-    sim.simulate() 
+    sim.simulate()
     sim.analyze()
     if output: return (pops, cells, conns, stims, simData)
-    
+
 #------------------------------------------------------------------------------
 # Wrapper to create, simulate, and analyse network, while saving to master in intervals
 #------------------------------------------------------------------------------
@@ -178,22 +178,22 @@ def intervalCreateSimulateAnalyze(netParams=None, simConfig=None, output=False, 
         <Short description of netParams>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     simConfig : <``None``?>
         <Short description of simConfig>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     output : bool
         <Short description of output>
         **Default:** ``False``
         **Options:** ``<option>`` <description of option>
- 
+
     interval : <``None``?>
         <Short description of interval>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
 """
 
     import os
@@ -213,8 +213,8 @@ def intervalCreateSimulateAnalyze(netParams=None, simConfig=None, output=False, 
     sim.pc.barrier()
     sim.analyze()
     if output: return (pops, cells, conns, stims, simData)
-    
-    
+
+
 #------------------------------------------------------------------------------
 # Wrapper to load all, ready for simulation
 #------------------------------------------------------------------------------
@@ -233,22 +233,22 @@ def load(filename, simConfig=None, output=False, instantiate=True, instantiateCe
         <Short description of simConfig>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     output : bool
         <Short description of output>
         **Default:** ``False``
         **Options:** ``<option>`` <description of option>
- 
+
     instantiate : bool
         <Short description of instantiate>
         **Default:** ``True``
         **Options:** ``<option>`` <description of option>
- 
+
     createNEURONObj : bool
         <Short description of createNEURONObj>
         **Default:** ``True``
         **Options:** ``<option>`` <description of option>
- 
+
 """
 
     from .. import sim
@@ -269,7 +269,7 @@ def load(filename, simConfig=None, output=False, instantiate=True, instantiateCe
 
     simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
 
-    if output: 
+    if output:
         try:
             return (pops, cells, conns, stims, rxd, simData)
         except:
@@ -292,12 +292,12 @@ def loadSimulate(filename, simConfig=None, output=False):
         <Short description of simConfig>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     output : bool
         <Short description of output>
         **Default:** ``False``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -326,12 +326,12 @@ def loadSimulateAnalyze(filename, simConfig=None, output=False):
         <Short description of simConfig>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     output : bool
         <Short description of output>
         **Default:** ``False``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -342,7 +342,7 @@ def loadSimulateAnalyze(filename, simConfig=None, output=False):
     sim.analyze()
 
     #if output: return (pops, cells, conns, stims, simData)
-        
+
 
 #------------------------------------------------------------------------------
 # Wrapper to create and export network to NeuroML2
@@ -357,37 +357,37 @@ def createExportNeuroML2(netParams=None, simConfig=None, reference=None, connect
         <Short description of netParams>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     simConfig : <``None``?>
         <Short description of simConfig>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     reference : <``None``?>
         <Short description of reference>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     connections : bool
         <Short description of connections>
         **Default:** ``True``
         **Options:** ``<option>`` <description of option>
- 
+
     stimulations : bool
         <Short description of stimulations>
         **Default:** ``True``
         **Options:** ``<option>`` <description of option>
- 
+
     output : bool
         <Short description of output>
         **Default:** ``False``
         **Options:** ``<option>`` <description of option>
- 
+
     format : str
         <Short description of format>
         **Default:** ``'xml'``
         **Options:** ``<option>`` <description of option>
- 
+
 """
 
     from .. import sim
@@ -405,8 +405,8 @@ def createExportNeuroML2(netParams=None, simConfig=None, reference=None, connect
     sim.exportNeuroML2(reference,connections,stimulations,format)     # export cells and connectivity to NeuroML 2 format
 
     if output: return (pops, cells, conns, stims, rxd, simData)
-    
-    
+
+
 #------------------------------------------------------------------------------
 # Wrapper to import network from NeuroML2
 #------------------------------------------------------------------------------
@@ -429,5 +429,5 @@ def importNeuroML2SimulateAnalyze(fileName, simConfig):
 
 
     from .. import sim
-        
+
     return sim.importNeuroML2(fileName, simConfig, simulate=True, analyze=True)

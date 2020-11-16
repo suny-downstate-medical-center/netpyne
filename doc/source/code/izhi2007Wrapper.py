@@ -1,7 +1,7 @@
 """
 IZHI
 
-Python wrappers for the different celltypes of Izhikevich neuron. 
+Python wrappers for the different celltypes of Izhikevich neuron.
 Equations and parameter values taken from
   Izhikevich EM (2007). "Dynamical systems in neuroscience", MIT Press
 Equation for synaptic inputs taken from
@@ -33,7 +33,7 @@ type2007 = collections.OrderedDict([
   ('RTN_burst', (0.4,  0.25, -65, -45,  0, 0.015, 10, -55,   50,   7))])
 
 # class of basic Izhikevich neuron based on parameters in type2007
-class IzhiCell (): 
+class IzhiCell ():
   '''Create an izhikevich cell based on 2007 parameterization using either izhi2007.mod (no hosting section) or izhi2007b.mod (v in created section)
   If host is omitted or None, this will be a section-based version that uses Izhi2007b with state vars v, u where v is the section voltage
   If host is given then this will be a shared unused section that simply houses an Izhi2007 using state vars V and u
@@ -45,15 +45,15 @@ class IzhiCell ():
     if host is None:  # need to set up a sec for this
       self.sec=h.Section(name='izhi2007'+type+str(cellid))
       self.sec.L, self.sec.diam, self.sec.cm = 10, 10, 31.831 # empirically tuned
-      self.izh = h.Izhi2007b(0.5, sec=self.sec) 
+      self.izh = h.Izhi2007b(0.5, sec=self.sec)
       self.vinit = -60
-    else: 
+    else:
       self.sec = dummy
-      self.izh = h.Izhi2007a(0.5, sec=self.sec) # Create a new u,V 2007 neuron at location 0.5 (doesn't matter where) 
+      self.izh = h.Izhi2007a(0.5, sec=self.sec) # Create a new u,V 2007 neuron at location 0.5 (doesn't matter where)
 
     self.izh.C,self.izh.k,self.izh.vr,self.izh.vt,self.izh.vpeak,self.izh.a,self.izh.b,self.izh.c,self.izh.d,self.izh.celltype = type2007[type]
     self.izh.cellid   = cellid # Cell ID for keeping track which cell this is
-  
+
   def init (self): self.sec(0.5).v = self.vinit
 
   def reparam (self, type='RS', cellid=-1):

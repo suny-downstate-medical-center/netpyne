@@ -1293,7 +1293,7 @@ metadata = {
                 "help": "List of cells from which to record traces. Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All cells selected in the include argument of simConfig.analysis['plotTraces'] will be automatically included in recordCells. (default: []).",
                 "suggestions": "",
                 "type": "list(float)"
-            },    
+            },
             "recordTraces": {
                 "label": "Traces to record from cells",
                 "help": "Dict of traces to record (default: {} ; example: {'V_soma': {'sec':'soma','loc':0.5,'var':'v'} }).",

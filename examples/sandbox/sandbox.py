@@ -17,10 +17,10 @@ netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 
 
 
 netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.0}
-netParams.stimTargetParams['bg1'] = {'source': 'bkg', 
-									'conds': {'pop': 'IT5B'}, 
-									'weight': 0.1, 
-									'delay': 5, 
+netParams.stimTargetParams['bg1'] = {'source': 'bkg',
+									'conds': {'pop': 'IT5B'},
+									'weight': 0.1,
+									'delay': 5,
 									'sec': ['soma', 'Adend1', 'Adend2', 'Adend3', 'Bdend'],
 									'synsPerConn': 3}
 
@@ -39,13 +39,11 @@ simConfig.connRandomSecFromList = True
 
 simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 simConfig.recordStep = 0.05 			# Step size in ms to save data (eg. V traces, LFP, etc)
-simConfig.saveJson = True 	
+simConfig.saveJson = True
 simConfig.filename = 'model3'  # Set file output name
- 
+
 simConfig.analysis['plotRaster'] = True 			# Plot a raster
 simConfig.analysis['plotTraces'] = {'include': [0]} 			# Plot recorded traces for this list of cells
 
 # Create network and run simulation
 sim.create(netParams = netParams, simConfig = simConfig)
-
-

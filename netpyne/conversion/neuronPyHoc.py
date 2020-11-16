@@ -19,7 +19,7 @@ from numbers import Number
 from neuron import h
 import importlib
 
-#h.load_file("stdrun.hoc") 
+#h.load_file("stdrun.hoc")
 
 def getSecName(sec, dirCellSecNames = None):
     """
@@ -35,7 +35,7 @@ def getSecName(sec, dirCellSecNames = None):
         <Short description of dirCellSecNames>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -43,15 +43,15 @@ def getSecName(sec, dirCellSecNames = None):
     if dirCellSecNames is None: dirCellSecNames = {}
 
     if '>.' in sec.name():
-        fullSecName = sec.name().split('>.')[1] 
+        fullSecName = sec.name().split('>.')[1]
     elif '.' in sec.name():
-        fullSecName = sec.name().split('.')[1]  
+        fullSecName = sec.name().split('.')[1]
     else:
         fullSecName = sec.name()
     if '[' in fullSecName:  # if section is array element
         secNameTemp = fullSecName.split('[')[0]
         secIndex = int(fullSecName.split('[')[1].split(']')[0])
-        secName = secNameTemp+'_'+str(secIndex) 
+        secName = secNameTemp+'_'+str(secIndex)
     else:
         secName = fullSecName
         secIndex = -1
@@ -81,7 +81,7 @@ def importCellParams(fileName, labels, values, key = None):
         <Short description of key>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -143,7 +143,7 @@ def mechVarList():
 #     for k in [x for x in dir(h) if x not in exclude]:
 #         try:
 #             v = getattr(h,k)
-#             if isinstance(v, Number):     # store float and int globals 
+#             if isinstance(v, Number):     # store float and int globals
 #                 if k not in origGlob or origGlob[k] != v:
 #                     glob[k] = v
 #         except:
@@ -165,7 +165,7 @@ def getGlobals(mechNames, origGlob={}):
         <Short description of origGlob>
         **Default:** ``{}``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -209,7 +209,7 @@ def setGlobals(glob):
     # for k in [x for x in dir(h) if x not in exclude]:
     #     if k not in glob:
     #         try:
-    #             setattr(h, k, None) 
+    #             setattr(h, k, None)
     #         except:
     #             print k
 
@@ -257,16 +257,16 @@ def importCell(fileName, cellName, cellArgs = None, cellInstance = False):
         <Short description of cellArgs>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     cellInstance : bool
         <Short description of cellInstance>
         **Default:** ``False``
         **Options:** ``<option>`` <description of option>
- 
+
 """
-    
+
     h.initnrn()
-    
+
     varList = mechVarList()  # list of properties for all density mechanisms and point processes
     origGlob = getGlobals(list(varList['mechs'].keys())+list(varList['pointps'].keys()))
     origGlob['v_init'] = -65  # add by hand since won't be set unless load h.load_file('stdrun')
@@ -305,7 +305,7 @@ def importCell(fileName, cellName, cellArgs = None, cellInstance = False):
         return
 
     secDic, secListDic, synMechs, globs = getCellParams(cell, varList, origGlob)
-    
+
     if fileName.endswith('.py'):
         _delete_module(moduleName)
         _delete_module('tempModule')
@@ -356,9 +356,9 @@ def importCellsFromNet(netParams, fileName, labelList, condsList, cellNamesList,
         **Default:** *required*
 
 """
-    
+
     h.initnrn()
-    
+
     if fileName.endswith('.hoc') or fileName.endswith('.tem'):
         print('Importing from .hoc network not yet supported')
         return
@@ -414,12 +414,12 @@ def getCellParams(cell, varList={}, origGlob={}):
         <Short description of varList>
         **Default:** ``{}``
         **Options:** ``<option>`` <description of option>
- 
+
     origGlob : dict
         <Short description of origGlob>
         **Default:** ``{}``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -438,36 +438,36 @@ def getCellParams(cell, varList={}, origGlob={}):
         secs = []
 
     # create dict with hname of each element in dir(cell)
-    dirCellHnames = {}  
+    dirCellHnames = {}
     for dirCellName in [d for d in dirCell if not d.startswith('__')]:  # avoid attributes starting with '__'
         dirCellObject = getattr(cell, dirCellName)
         if isinstance(dirCellObject, list):
             for i, dirCellObjectItem in enumerate(dirCellObject):
-                try:   
-                    if dirCellObjectItem.hname() not in dirCellHnames: # give preference to dict entries 
+                try:
+                    if dirCellObjectItem.hname() not in dirCellHnames: # give preference to dict entries
                         dirCellHnames.update({dirCellObjectItem.hname(): dirCellName+'_'+str(i)})
                 except:
                     pass
         elif isinstance(dirCellObject, dict):
             for k, v in dirCellObject.items():
-                try:   
+                try:
                     dirCellHnames.update({v.hname(): k})
                 except:
                     pass
         else:
-            try:   
+            try:
                 dirCellHnames.update({dirCellObject.hname(): dirCellName})
             except:
                 pass
 
-    # create dict with dir(cell) name corresponding to each hname 
-    dirCellSecNames = {} 
+    # create dict with dir(cell) name corresponding to each hname
+    dirCellSecNames = {}
     for sec in secs:
         dirCellSecNames.update({hname: name for hname,name in dirCellHnames.items() if hname == sec.hname()})
 
     secDic = {}
     synMechs = []
-    for sec in secs: 
+    for sec in secs:
         # create new section dict with name of section
         secName = getSecName(sec, dirCellSecNames)
 
@@ -487,7 +487,7 @@ def getCellParams(cell, varList={}, origGlob={}):
         # store 3d geometry
         sec.push()  # access current section so ismembrane() works
         numPoints = int(h.n3d())
-        if numPoints: 
+        if numPoints:
             points = []
             for ipoint in range(numPoints):
                 x = h.x3d(ipoint)
@@ -499,12 +499,12 @@ def getCellParams(cell, varList={}, origGlob={}):
 
         # store mechanisms
         #varList = mechVarList()  # list of properties for all density mechanisms and point processes
-        ignoreMechs = ['dist']  # dist only used during cell creation 
-        ignoreVars = []  # 
+        ignoreMechs = ['dist']  # dist only used during cell creation
+        ignoreVars = []  #
         mechDic = {}
         ionDic = {}
-        
-        for mech in dir(sec(0.5)): 
+
+        for mech in dir(sec(0.5)):
             if h.ismembrane(mech) and mech not in ignoreMechs:  # check if membrane mechanism
                 if not mech.endswith('_ion'):  # exclude ions
                     mechDic[mech] = {}  # create dic for mechanism properties
@@ -515,9 +515,9 @@ def getCellParams(cell, varList={}, origGlob={}):
                             try:
                                 varVals = [seg.__getattribute__(mech).__getattribute__(varName) for seg in sec]
                                 if len(set(varVals)) == 1:
-                                    varVals = varVals[0] 
+                                    varVals = varVals[0]
                                 mechDic[mech][varName] = varVals
-                            except: 
+                            except:
                                 pass
                                 #print 'Could not read variable %s from mechanism %s'%(varName,mech)
 
@@ -537,15 +537,15 @@ def getCellParams(cell, varList={}, origGlob={}):
                                 else: # var name before ion name (eg. 'ena')
                                     varVals = [seg.__getattribute__(varNameSplit+ionName) for seg in sec]
                                 if len(set(varVals)) == 1:
-                                    varVals = varVals[0] 
+                                    varVals = varVals[0]
                                 ionDic[ionName][varNameSplit] = varVals
-                            except: 
+                            except:
                                 pass
-                                #print 'Could not read variable %s from mechanism %s'%(varName,mech)                    
+                                #print 'Could not read variable %s from mechanism %s'%(varName,mech)
 
 
         secDic[secName]['mechs'] = mechDic
-        if len(ionDic)>0: 
+        if len(ionDic)>0:
             secDic[secName]['ions'] = ionDic
 
         # add synapses and point neurons
@@ -569,7 +569,7 @@ def getCellParams(cell, varList={}, origGlob={}):
 
                     if not any([_equal_dicts(synMech, synMech2, ignore_keys=['label']) for synMech2 in synMechs]):
                         synMechs.append(synMech)
-                
+
                 else: # assume its a non-synapse point process
                     pointpName = pointpMod + '_'+ str(len(pointps))
                     pointps[pointpName] = {}
@@ -579,7 +579,7 @@ def getCellParams(cell, varList={}, origGlob={}):
                         try:
                             pointps[pointpName][varName] = point.__getattribute__(varName)
                             # special condition for Izhi model, to set vinit=vr
-                            # if varName == 'vr': secDic[secName]['vinit'] = point.__getattribute__(varName) 
+                            # if varName == 'vr': secDic[secName]['vinit'] = point.__getattribute__(varName)
                         except:
                             print('Could not read %s variable from point process %s'%(varName,pointpName))
 
@@ -593,10 +593,10 @@ def getCellParams(cell, varList={}, origGlob={}):
             secDic[secName]['topol']['childX'] = h.section_orientation()
 
         h.pop_section()  # to prevent section stack overflow
-        
+
     # store section lists
     secLists = h.List('SectionList')
-    if int(secLists.count()): 
+    if int(secLists.count()):
         secListDic = {}
         for i in range(int(secLists.count())):  # loop over section lists
             hname = secLists.o(i).hname()
@@ -613,9 +613,9 @@ def getCellParams(cell, varList={}, origGlob={}):
     pointpsList = list(varList['pointps'].keys()) if 'pointps' in varList else []
     globs = getGlobals(mechsList+pointpsList, origGlob=origGlob)
     if 'v_init' in globs:  # set v_init for each section (allows for cells with differnet vinits)
-        for sec in list(secDic.values()): sec['vinit'] = globs['v_init']  
+        for sec in list(secDic.values()): sec['vinit'] = globs['v_init']
 
-    # clean 
+    # clean
     cell = None
     for i in range(len(secs)):
         tmp=secs.pop()
@@ -625,6 +625,3 @@ def getCellParams(cell, varList={}, origGlob={}):
 
 
     return secDic, secListDic, synMechs, globs
-
-
-

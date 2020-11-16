@@ -13,7 +13,7 @@ standard_library.install_aliases()
 from netpyne import __gui__
 
 try:
-    from datetime import datetime 
+    from datetime import datetime
 except:
     pass
 # -------------------------------------------------------------------------------------------------------------------
@@ -50,7 +50,7 @@ def plotData():
             sumTime = sum([t for k,t in sim.timingData.items() if k not in ['totalTime']])
             if sim.timingData['totalTime'] <= 1.2*sumTime:  # Print total time (only if makes sense)
                 print(('\nTotal time = %0.2f s' % sim.timingData['totalTime']))
-            
+
         try:
             print('\nEnd time: ', datetime.now())
         except:

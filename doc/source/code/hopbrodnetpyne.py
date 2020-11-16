@@ -14,7 +14,7 @@ netParams.stimSourceParams['bg'] = {'type': 'IClamp', 'delay': 10, 'dur': int(10
 # cells
 netParams.cellParams['hh_PYR'] = {
   'conds': {'cellType': 'PYR'}, # could have complex rule here for eg PYR cells in certain loc with particular implementation
-  'secs': {'soma': {'geom' :  {'diam': 5, 'L': 5}, 'vinit' : -70.6, 
+  'secs': {'soma': {'geom' :  {'diam': 5, 'L': 5}, 'vinit' : -70.6,
                          'mechs':  {'hh' : {'gnabar': 0.10, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}}}}}
 netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau2': 1.0, 'e': 0}
 netParams.synMechParams['inh'] = {'mod': 'Exp2Syn', 'tau2': 1.0, 'e': -80}
@@ -38,7 +38,7 @@ def create ():
   sim.setupRecording()                      # setup variables to record for each cell (spikes, V traces, etc)
 
 def run (): sim.simulate()
-def plot (): 
+def plot ():
   sim.analysis.plotRaster()
   sim.analysis.plotRaster(syncLines=True)
   sim.analysis.plotData()

@@ -1,5 +1,5 @@
 """
-Module containing SimConfig class including simulation configuration and methods 
+Module containing SimConfig class including simulation configuration and methods
 
 """
 
@@ -51,8 +51,8 @@ class SimConfig(object):
         self.includeParamsLabel = True  # include label of param rule that created that cell, conn or stim
         self.gatherOnlySimData = False  # omits gathering of net+cell data thus reducing gatherData time
         self.compactConnFormat = False  # replace dict format with compact list format for conns (need to provide list of keys to include)
-        self.connRandomSecFromList = True  # select random section (and location) from list even when synsPerConn=1 
-        self.distributeSynsUniformly = True  # locate synapses at uniformly across section list; if false, place one syn per section in section list   
+        self.connRandomSecFromList = True  # select random section (and location) from list even when synsPerConn=1
+        self.distributeSynsUniformly = True  # locate synapses at uniformly across section list; if false, place one syn per section in section list
         self.pt3dRelativeToCellLocation = True  # Make cell 3d points relative to the cell x,y,z location
         self.invertedYCoord = True  # Make y-axis coordinate negative so they represent depth when visualized (0 at the top)
         self.allowSelfConns = False  # allow connections from a cell to itself
@@ -64,7 +64,7 @@ class SimConfig(object):
         self.saveTiming = False  # save timing data to pickle file
         self.printRunTime = False  # print run time at interval (in sec) specified here (eg. 0.1)
         self.printPopAvgRates = False  # print population avg firing rates after run
-        self.printSynsAfterRule = False  # print total of connections after each conn rule is applied 
+        self.printSynsAfterRule = False  # print total of connections after each conn rule is applied
         self.verbose = False  # show detailed messages
 
         # Recording
@@ -74,7 +74,7 @@ class SimConfig(object):
         self.recordStim = False  # record spikes of cell stims
         self.recordLFP = []  # list of 3D locations to record LFP from
         self.recordDipoles = False # record dipoles
-        self.saveLFPCells = False  # Store LFP generate individually by each cell 
+        self.saveLFPCells = False  # Store LFP generate individually by each cell
         self.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
         self.recordTime = True  # record time step of recording
 

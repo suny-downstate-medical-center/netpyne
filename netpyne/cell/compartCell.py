@@ -91,6 +91,7 @@ class CompartCell (Cell):
                     elif self.tags.get(condKey) != condVal:
                         conditionsMet = 0
                         break
+
             elif self.tags['cellType'] != propLabel:  # simplified method for defining cell params (when no 'conds')
                 conditionsMet = False
 

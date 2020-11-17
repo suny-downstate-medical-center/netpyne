@@ -35,6 +35,8 @@
 
 - Avoid adding section-based weightNorm values to point neurons (was affecting tut_import.py)
 
+- Prevent error when loading pointCell params from json by converting Dict to dict
+
 # Version 0.9.7
 
 **New features**

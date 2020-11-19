@@ -1,7 +1,7 @@
 """
 IZHI
 
-Python wrappers for the different celltypes of Izhikevich neuron. 
+Python wrappers for the different celltypes of Izhikevich neuron.
 Equations and parameter values taken from
   Izhikevich EM (2007). "Dynamical systems in neuroscience", MIT Press
 Equation for synaptic inputs taken from
@@ -21,7 +21,7 @@ import collections
 from neuron import h
 dummy = h.Section()
 type2003 = collections.OrderedDict([
-  #                                 a         b     c         d      
+  #                                 a         b     c         d
  ('tonic spiking'               , (0.02   ,  0.2 , -65.0 ,   6.0)) ,
  ('mixed mode'                  , (0.02   ,  0.2 , -55.0 ,   4.0)) ,
  ('spike latency'               , (0.02   ,  0.2 , -65.0 ,   6.0)) ,
@@ -44,7 +44,7 @@ type2003 = collections.OrderedDict([
  ('inhibition-induced bursting' , (-0.026 , -1.0 , -45.0 ,  -2.0))])
 
 # class of basic Izhikevich neuron based on parameters in type2003
-class IzhiCell (): 
+class IzhiCell ():
   '''Create an izhikevich cell based on 2007 parameterization using either izhi2007.mod (no hosting section) or izhi2007b.mod (v in created section)
   If host is omitted or None, this will be a section-based version that uses Izhi2007b with state vars v, u where v is the section voltage
   If host is given then this will be a shared unused section that simply houses an Izhi2007 using state vars V and u
@@ -56,17 +56,16 @@ class IzhiCell ():
     if host is None:  # need to set up a sec for this
       self.sec=h.Section(name='izhi2003'+type+str(cellid))
       self.sec.L, self.sec.diam = 6.3, 5 # empirically tuned
-      self.izh = h.Izhi2003b(0.5, sec=self.sec) 
-    else: 
+      self.izh = h.Izhi2003b(0.5, sec=self.sec)
+    else:
       self.sec = dummy
-      self.izh = h.Izhi2003a(0.5, sec=self.sec) # Create a new u,V 2007 neuron at location 0.5 (doesn't matter where) 
+      self.izh = h.Izhi2003a(0.5, sec=self.sec) # Create a new u,V 2007 neuron at location 0.5 (doesn't matter where)
 
     self.izh.a,self.izh.b,self.izh.c,self.izh.d = type2003[type]
     self.izh.Iin = 0
-   
+
   def init (self): self.sec(0.5).v = self.vinit
 
   def reparam (self, type='tonic spiking', cellid=-1):
     self.type=type
     self.izh.a,self.izh.b,self.izh.c,self.izh.d = type2003[type]
-   

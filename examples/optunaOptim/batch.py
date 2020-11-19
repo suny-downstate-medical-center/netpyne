@@ -9,7 +9,7 @@ To run use: mpiexec -np [num_cores] nrniv -mpi batchRun.py
 
 def batchOptuna():
     # parameters space to explore
-    
+
     ## simple net
     params = specs.ODict()
     params['prob'] = [0.01, 0.5]  # can add 3rd value for starting value (0)
@@ -19,7 +19,7 @@ def batchOptuna():
     pops = {}
     pops['S'] = {'target': 5, 'width': 2, 'min': 2}
     pops['M'] = {'target': 15, 'width': 2, 'min': 0.2}
-    
+
     # fitness function
     fitnessFuncArgs = {}
     fitnessFuncArgs['pops'] = pops
@@ -31,25 +31,25 @@ def batchOptuna():
         maxFitness = kwargs['maxFitness']
         popFitness = [None for i in pops.items()]
 
-        popFitness = [min(np.exp(  abs(v['target'] - simData['popRates'][k])  /  v['width']), maxFitness) 
+        popFitness = [min(np.exp(  abs(v['target'] - simData['popRates'][k])  /  v['width']), maxFitness)
                 if simData["popRates"][k]>v['min'] else maxFitness for k,v in pops.items()]
         fitness = np.mean(popFitness)
         popInfo = '; '.join(['%s rate=%.1f fit=%1.f'%(p,r,f) for p,r,f in zip(list(simData['popRates'].keys()), list(simData['popRates'].values()), popFitness)])
         print('  '+popInfo)
         return fitness
-        
+
     # create Batch object with paramaters to modify, and specifying files to use
     b = Batch(params=params)
-    
+
     # Set output folder, grid method (all param combinations), and run configuration
     b.batchLabel = 'simple'
     b.saveFolder = './'+b.batchLabel
     b.method = 'optuna'
     b.runCfg = {
-        'type': 'mpi_direct',#'hpc_slurm', 
+        'type': 'mpi_direct',#'hpc_slurm',
         'script': 'init.py',
         # options required only for mpi_direct or hpc
-        'mpiCommand': 'mpiexec',  
+        'mpiCommand': 'mpiexec',
         'nodes': 1,
         'coresPerNode': 2,
         # 'allocation': 'default',
@@ -66,7 +66,7 @@ def batchOptuna():
         'maxtime':      3600,    #    Maximum time allowed, in seconds
         'maxiter_wait': 10,
         'time_sleep': 5,
-        'popsize': 1  # unused - run with mpi 
+        'popsize': 1  # unused - run with mpi
     }
 
     # Run batch simulations
@@ -74,4 +74,4 @@ def batchOptuna():
 
 # Main code
 if __name__ == '__main__':
-    batchOptuna()  # 'simple' or 'complex' 
+    batchOptuna()  # 'simple' or 'complex'

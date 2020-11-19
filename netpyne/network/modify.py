@@ -1,8 +1,7 @@
 
 """
-network/modify.py 
+Module for modifying the network model instance
 
-Network class methods to modify the network instance
 """
 
 from __future__ import print_function
@@ -17,11 +16,33 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 def modifyCells(self, params, updateMasterAllCells=False):
+    """
+    Function for/to <short description of `netpyne.network.modify.modifyCells`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+    params : <type>
+        <Short description of params>
+        **Default:** *required*
+
+    updateMasterAllCells : bool
+        <Short description of updateMasterAllCells>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+
+
+    """
+
+
     from .. import sim
 
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'modifyCellsTime')
-    if sim.rank==0: 
+    if sim.rank==0:
         print('Modfying cell parameters...')
 
     for cell in self.cells:
@@ -38,11 +59,33 @@ def modifyCells(self, params, updateMasterAllCells=False):
 # Modify synMech params
 # -----------------------------------------------------------------------------
 def modifySynMechs(self, params, updateMasterAllCells=False):
+    """
+    Function for/to <short description of `netpyne.network.modify.modifySynMechs`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+    params : <type>
+        <Short description of params>
+        **Default:** *required*
+
+    updateMasterAllCells : bool
+        <Short description of updateMasterAllCells>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+
+
+    """
+
+
     from .. import sim
 
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'modifySynMechsTime')
-    if sim.rank==0: 
+    if sim.rank==0:
         print('Modfying synaptic mech parameters...')
 
     for cell in self.cells:
@@ -59,11 +102,33 @@ def modifySynMechs(self, params, updateMasterAllCells=False):
 # Modify conn params
 # -----------------------------------------------------------------------------
 def modifyConns(self, params, updateMasterAllCells=False):
+    """
+    Function for/to <short description of `netpyne.network.modify.modifyConns`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+    params : <type>
+        <Short description of params>
+        **Default:** *required*
+
+    updateMasterAllCells : bool
+        <Short description of updateMasterAllCells>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+
+
+    """
+
+
     from .. import sim
 
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'modifyConnsTime')
-    if sim.rank==0: 
+    if sim.rank==0:
         print('Modfying connection parameters...')
 
     for cell in self.cells:
@@ -80,11 +145,33 @@ def modifyConns(self, params, updateMasterAllCells=False):
 # Modify stim source params
 # -----------------------------------------------------------------------------
 def modifyStims(self, params, updateMasterAllCells=False):
+    """
+    Function for/to <short description of `netpyne.network.modify.modifyStims`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+    params : <type>
+        <Short description of params>
+        **Default:** *required*
+
+    updateMasterAllCells : bool
+        <Short description of updateMasterAllCells>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+
+
+    """
+
+
     from .. import sim
-    
+
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'modifyStimsTime')
-    if sim.rank==0: 
+    if sim.rank==0:
         print('Modfying stimulation parameters...')
 
     for cell in self.cells:
@@ -95,5 +182,3 @@ def modifyStims(self, params, updateMasterAllCells=False):
 
     sim.timing('stop', 'modifyStimsTime')
     if sim.rank == 0 and sim.cfg.timing: print(('  Done; stims modification time = %0.2f s.' % sim.timingData['modifyStimsTime']))
-
-

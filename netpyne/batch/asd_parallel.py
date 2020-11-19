@@ -1,9 +1,6 @@
 """
-batch/evol.py 
+Module for adaptive stochastic descent optimization
 
-Code for adaptive stochastic descent optimizaiton method (Kerr et al. 2018; PLoS ONE)
-
-Contributors: salvadordura@gmail.com
 """
 
 from __future__ import print_function
@@ -52,61 +49,132 @@ pc = h.ParallelContext() # use bulletin board master/slave
 
 
 def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, pinc=2, pdec=2,
-    pinitial=None, sinitial=None, xmin=None, xmax=None, maxiters=None, maxtime=None, 
-    abstol=1e-6, reltol=1e-3, stalliters=None, stoppingfunc=None, randseed=None, 
+    pinitial=None, sinitial=None, xmin=None, xmax=None, maxiters=None, maxtime=None,
+    abstol=1e-6, reltol=1e-3, stalliters=None, stoppingfunc=None, randseed=None,
     label=None, maxFitness=None, verbose=2, **kwargs):
     """
-    Optimization using adaptive stochastic descent (ASD).
-    
-    output = asd(func,x0) starts at x0 and attempts to find a 
-    local minimizer x of the function func. func accepts input x and returns a scalar 
-    function value evaluated  at x. x0 can be a scalar, list, or Numpy array of 
-    any size. 
-    
-    asd() has the following options that can be set using keyword arguments. Their
-    names and default values are as follows:
-      stepsize       0.1     Initial step size as a fraction of each parameter
-      sinc           2       Step size learning rate (increase)
-      sdec           2       Step size learning rate (decrease)
-      pinc           2       Parameter selection learning rate (increase)
-      pdec           2       Parameter selection learning rate (decrease)
-      pinitial       None    Set initial parameter selection probabilities
-      sinitial       None    Set initial step sizes; if empty, calculated from stepsize instead
-      xmin           None    Min value allowed for each parameter  
-      xmax           None    Max value allowed for each parameter 
-      maxiters       1000    Maximum number of iterations (1 iteration = 1 function evaluation)
-      maxtime        3600    Maximum time allowed, in seconds
-      abstol         1e-6    Minimum absolute change in objective function
-      reltol         1e-3    Minimum relative change in objective function
-      stalliters     10*n    Number of iterations over which to calculate TolFun (n = number of parameters)
-      stoppingfunc   None    External method that can be used to stop the calculation from the outside.
-      randseed       None    The random seed to use
-      verbose        2       How much information to print during the run
-      label          None    A label to use to annotate the output
-     
-    asd() returns a dict
-    with the following items:
-        x          -- The parameter set that minimizes the objective function
-        fval       -- The value of the objective function at the final iteration
-        exitreason -- Why the algorithm terminated;
-        details    -- A objdict with additional output: fvals, the value of the objective
-                      function at each iteration; xvals, the parameter values at each iteration;
-                      probabilities, the probability of each step; and stepsizes, the size of each
-                      step for each parameter.
-  
-    Example:
-        import numpy as np
-        import sciris as sc
-        result = sc.asd(np.linalg.norm, [1, 2, 3])
-        print(result.x)
+    Function for/to <short description of `netpyne.batch.asd_parallel.asd`>
 
-    Please use the following citation for this method:
-        CC Kerr, S Dura-Bernal, TG Smolinski, GL Chadderdon, DP Wilson (2018). 
-        Optimization by adaptive stochastic descent. 
-        PloS ONE 13 (3), e0192944.
-    
-    Version: 2019jul08
-    """
+    Parameters
+    ----------
+    function : <type>
+        <Short description of function>
+        **Default:** *required*
+
+    xPop : <type>
+        <Short description of xPop>
+        **Default:** *required*
+
+    saveFile : <``None``?>
+        <Short description of saveFile>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+
+    args : <``None``?>
+        <Short description of args>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+
+    stepsize : float
+        <Short description of stepsize>
+        **Default:** ``0.1``
+        **Options:** ``<option>`` <description of option>
+
+    sinc : int
+        <Short description of sinc>
+        **Default:** ``2``
+        **Options:** ``<option>`` <description of option>
+
+    sdec : int
+        <Short description of sdec>
+        **Default:** ``2``
+        **Options:** ``<option>`` <description of option>
+
+    pinc : int
+        <Short description of pinc>
+        **Default:** ``2``
+        **Options:** ``<option>`` <description of option>
+
+    pdec : int
+        <Short description of pdec>
+        **Default:** ``2``
+        **Options:** ``<option>`` <description of option>
+
+    pinitial : <``None``?>
+        <Short description of pinitial>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+
+    sinitial : <``None``?>
+        <Short description of sinitial>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+
+    xmin : <``None``?>
+        <Short description of xmin>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+
+    xmax : <``None``?>
+        <Short description of xmax>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+
+    maxiters : <``None``?>
+        <Short description of maxiters>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+
+    maxtime : <``None``?>
+        <Short description of maxtime>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+
+    abstol : float
+        <Short description of abstol>
+        **Default:** ``1e-06``
+        **Options:** ``<option>`` <description of option>
+
+    reltol : float
+        <Short description of reltol>
+        **Default:** ``0.001``
+        **Options:** ``<option>`` <description of option>
+
+    stalliters : <``None``?>
+        <Short description of stalliters>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+
+    stoppingfunc : <``None``?>
+        <Short description of stoppingfunc>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+
+    randseed : <``None``?>
+        <Short description of randseed>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+
+    label : <``None``?>
+        <Short description of label>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+
+    maxFitness : <``None``?>
+        <Short description of maxFitness>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+
+    verbose : int
+        <Short description of verbose>
+        **Default:** ``2``
+        **Options:** ``<option>`` <description of option>
+
+    kwargs : <type>
+        <Short description of kwargs>
+        **Default:** *required*
+
+"""
     if randseed is not None:
         nr.seed(int(randseed)) # Don't reset it if not supplied
         if verbose >= 3: print('ASD: Launching with random seed is %i; sample: %f' % (randseed, nr.random()))
@@ -123,9 +191,9 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
     if maxtime  is None: maxtime  = 3600
     if maxiters is None: maxiters = 1000
     maxrangeiters = 100  # Number of times to try generating a new parameter
-    
+
     popsize = len(xPop)
-    
+
     for x in xPop:
         x, origshape = consistentshape(x, origshape=True) # Turn it into a vector but keep the original shape (not necessarily class, though)
         nparams = len(x) # Number of parameters
@@ -149,15 +217,15 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
     if not sum(probabilities):
         errormsg = 'ASD: The sum of input probabilities cannot be zero'
         raise Exception(errormsg)
-    probabilitiesPop = [dcp(probabilities) for i in range(popsize)]  # create independent probabilities for each population individual 
-    
+    probabilitiesPop = [dcp(probabilities) for i in range(popsize)]  # create independent probabilities for each population individual
+
     # Handle step sizes
     if sinitial is None:
         stepsizes = abs(stepsize * x)
         stepsizes = np.concatenate((stepsizes, stepsizes)) # need to duplicate since two for each parameter
     else:
         stepsizes = consistentshape(sinitial)
-    stepsizesPop = [dcp(stepsizes) for i in range(popsize)]  # create independent step sizes for each population individual 
+    stepsizesPop = [dcp(stepsizes) for i in range(popsize)]  # create independent step sizes for each population individual
 
     # Handle x limits
     xmin = np.zeros(nparams) - np.inf if xmin is None else consistentshape(xmin)
@@ -178,7 +246,7 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
         if all(stepsizes == 0): stepsizes += stepsize # Handle the case where all step sizes are 0
         if any(stepsizes == 0): stepsizes[stepsizes == 0] = np.mean(stepsizes[stepsizes != 0]) # Replace step sizes of zeros with the mean of non-zero entries
     if args is None: args = {} # Reset if no function arguments supplied
-    
+
     # evaluate initial values
     fvalPop = function(xPop, args)
     fvalorigPop = [float(fval) for fval in fvalPop]
@@ -211,12 +279,12 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
 
             if verbose == 1: print(offset + label + 'Iteration %i; elapsed %0.1f s; objective: %0.3e' % (count, time() - start, fval)) # For more verbose, use other print statement below
             if verbose >= 4: print('\n\n Count=%i \n x=%s \n probabilities=%s \n stepsizes=%s' % (count, x, probabilities, stepsizes))
-            
+
             if fvalnew == maxFitness:
                 print('Note: rerunning candidate %i since it did not complete in previous iteration ...\n' % (icand))
                 xnew = dcp(x)  # if maxFitness means error evaluating function (eg. preempted job on HPC) so rerun same param set
                 xnewPop.append(xnew)
-            else:   
+            else:
                 # Calculate next parameters
                 probabilities = probabilities / sum(probabilities) # Normalize probabilities
                 cumprobs = np.cumsum(probabilities) # Calculate the cumulative distribution
@@ -236,17 +304,17 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
                     probabilities[choice] = probabilities[choice] / pdec
                     stepsizes[choice] = stepsizes[choice] / sdec
 
-                # Calculate the new value 
+                # Calculate the new value
                 xnew = dcp(x) # Initialize the new parameter set
                 xnew[par] = newval  # Update the new parameter set
                 xnewPop.append(xnew)
 
             # update pop variables
-            
-            xPop[icand], fvalPop[icand], probabilitiesPop[icand], stepsizesPop[icand] = x, fval, probabilities, stepsizes 
+
+            xPop[icand], fvalPop[icand], probabilitiesPop[icand], stepsizesPop[icand] = x, fval, probabilities, stepsizes
 
         fvalnewPop = function(xnewPop, args)  # Calculate the objective function for the new parameter sets
-        
+
         print('\n')
         for icand, (x, xnew, fval, fvalorig, fvalnew, fvalold, fvals, probabilities, stepsizes, abserrorhistory, relerrorhistory) in \
             enumerate(zip(xPop, xnewPop, fvalPop, fvalorigPop, fvalnewPop, fvaloldPop, fvalsPop, probabilitiesPop, stepsizesPop, abserrorhistoryPop, relerrorhistoryPop)):
@@ -258,14 +326,14 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
                 fvalold = float(fval)
                 flag = '--'  # Marks no change
 
-            else:  
+            else:
                 eps = 1e-12  # Small value to avoid divide-by-zero errors
                 try:
                     if abs(fvalnew)<eps and abs(fval)<eps: ratio = 1 # They're both zero: set the ratio to 1
                     elif abs(fvalnew)<eps:                 ratio = 1.0/eps # Only the denominator is zero: reset to the maximum ratio
                     else:                                  ratio = fval / float(fvalnew)  # The normal situation: calculate the real ratio
                 except:
-                    ratio = 1.0  
+                    ratio = 1.0
                 abserrorhistory[np.mod(count, stalliters)] = max(0, fval-fvalnew) # Keep track of improvements in the error
                 relerrorhistory[np.mod(count, stalliters)] = max(0, ratio-1.0) # Keep track of improvements in the error
                 if verbose >= 3: print(offset + 'candidate %d, step=%i choice=%s, par=%s, pm=%s, origval=%s, newval=%s' % (icand, count, choice, par, pm, x[par], xnew[par]))
@@ -284,7 +352,7 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
                     flag = '--' # Marks no change
                     if np.isnan(fvalnew):
                         if verbose >= 1: print('ASD: Warning, objective function returned NaN')
-            
+
             if verbose >= 2: print(offset + label + 'candidate %d, step %i (%0.1f s) %s (orig: %s | best:%s | new:%s | diff:%s)' % ((icand, count, time() - start, flag) + sigfig([fvalorig, fvalold, fvalnew, fvalnew - fvalold])))
 
             # Store output information
@@ -292,7 +360,7 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
             allsteps[count,:] = dcp(x)  # Store parameters
 
             xPop[icand], xnewPop[icand], fvalPop[icand], fvalorigPop[icand], fvalnewPop[icand], fvaloldPop[icand], fvalsPop[icand], probabilitiesPop[icand], stepsizesPop[icand], abserrorhistoryPop[icand], relerrorhistoryPop[icand], allstepsPop[icand] = x, xnew, fval, fvalorig, fvalnew, fvalold, fvals, probabilities, stepsizes, abserrorhistory, relerrorhistory, allsteps
-        
+
         print('\n')
 
         if saveFile:
@@ -343,6 +411,31 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
 
 # func needs to be outside of class
 def runASDJob(script, cfgSavePath, netParamsSavePath, simDataPath):
+    """
+    Function for/to <short description of `netpyne.batch.asd_parallel.runASDJob`>
+
+    Parameters
+    ----------
+    script : <type>
+        <Short description of script>
+        **Default:** *required*
+
+    cfgSavePath : <type>
+        <Short description of cfgSavePath>
+        **Default:** *required*
+
+    netParamsSavePath : <type>
+        <Short description of netParamsSavePath>
+        **Default:** *required*
+
+    simDataPath : <type>
+        <Short description of simDataPath>
+        **Default:** *required*
+
+
+    """
+
+
     import os
     print('\nJob in rank id: ',pc.id())
     command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath)
@@ -350,12 +443,29 @@ def runASDJob(script, cfgSavePath, netParamsSavePath, simDataPath):
 
     with open(simDataPath+'.run', 'w') as outf, open(simDataPath+'.err', 'w') as errf:
         pid = Popen(command.split(' '), stdout=outf, stderr=errf, preexec_fn=os.setsid).pid
-    
+
     with open('./pids.pid', 'a') as file:
         file.write(str(pid) + ' ')
 
 
 def asdOptim(self, pc):
+    """
+    Function for/to <short description of `netpyne.batch.asd_parallel.asdOptim`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+    pc : <type>
+        <Short description of pc>
+        **Default:** *required*
+
+
+    """
+
+
     import sys
 
     # -------------------------------------------------------------------------------
@@ -371,19 +481,19 @@ def asdOptim(self, pc):
 
         # options slurm, mpi
         type = args.get('type', 'mpi_direct')
-        
+
         # paths to required scripts
         script = args.get('script', 'init.py')
         netParamsSavePath =  args.get('netParamsSavePath')
         genFolderPath = self.saveFolder + '/gen_' + str(ngen)
-        
+
         # mpi command setup
         nodes = args.get('nodes', 1)
         paramLabels = args.get('paramLabels', [])
         coresPerNode = args.get('coresPerNode', 1)
         mpiCommand = args.get('mpiCommand', 'ibrun')
         numproc = nodes*coresPerNode
-        
+
         # slurm setup
         custom = args.get('custom', '')
         folder = args.get('folder', '.')
@@ -396,22 +506,22 @@ def asdOptim(self, pc):
         fitnessFunc = args.get('fitnessFunc')
         fitnessFuncArgs = args.get('fitnessFuncArgs')
         maxFitness = args.get('maxFitness')
-        
+
         # read params or set defaults
         sleepInterval = args.get('sleepInterval', 0.2)
-        
+
         # create folder if it does not exist
         createFolder(genFolderPath)
-        
+
         # remember pids and jobids in a list
         pids = []
         jobids = {}
-        
+
         # create a job for each candidate
         for candidate_index, candidate in enumerate(candidates):
             # required for slurm
             sleep(sleepInterval)
-            
+
             # name and path
             jobName = "gen_" + str(ngen) + "_cand_" + str(candidate_index)
             jobPath = genFolderPath + '/' + jobName
@@ -420,22 +530,22 @@ def asdOptim(self, pc):
             if len(self.initCfg) > 0:
                 for paramLabel, paramVal in self.initCfg.items():
                     self.setCfgNestedParam(paramLabel, paramVal)
-            
+
             # modify cfg instance with candidate values
             print(paramLabels, candidate)
             for label, value in zip(paramLabels, candidate):
                 print('set %s=%s' % (label, value))
                 self.setCfgNestedParam(label, value)
-            
+
             #self.setCfgNestedParam("filename", jobPath)
             self.cfg.simLabel = jobName
             self.cfg.saveFolder = genFolderPath
 
             # save cfg instance to file
-            cfgSavePath = jobPath + '_cfg.json' 
+            cfgSavePath = jobPath + '_cfg.json'
             self.cfg.save(cfgSavePath)
-            
-            
+
+
             if type=='mpi_bulletin':
                 # ----------------------------------------------------------------------
                 # MPI master-slaves
@@ -448,14 +558,14 @@ def asdOptim(self, pc):
                 # MPI job commnand
                 # ----------------------------------------------------------------------
                 command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
-                
+
                 # ----------------------------------------------------------------------
                 # run on local machine with <nodes*coresPerNode> cores
                 # ----------------------------------------------------------------------
                 if type=='mpi_direct':
                     executer = '/bin/bash'
                     jobString = bashTemplate('mpi_direct') %(custom, folder, command)
-                
+
                 # ----------------------------------------------------------------------
                 # run on HPC through slurm
                 # ----------------------------------------------------------------------
@@ -463,7 +573,7 @@ def asdOptim(self, pc):
                     executer = 'sbatch'
                     res = '#SBATCH --res=%s' % (reservation) if reservation else ''
                     jobString = bashTemplate('hpc_slurm') % (jobName, allocation, walltime, nodes, coresPerNode, jobPath, jobPath, email, res, custom, folder, command)
-                
+
                 # ----------------------------------------------------------------------
                 # run on HPC through PBS
                 # ----------------------------------------------------------------------
@@ -472,18 +582,18 @@ def asdOptim(self, pc):
                     queueName = args.get('queueName', 'default')
                     nodesppn = 'nodes=%d:ppn=%d' % (nodes, coresPerNode)
                     jobString = bashTemplate('hpc_torque') % (jobName, walltime, queueName, nodesppn, jobPath, jobPath, custom, command)
-                
+
                 # ----------------------------------------------------------------------
                 # save job and run
                 # ----------------------------------------------------------------------
                 print('Submitting job ', jobName)
                 print(jobString)
                 print('-'*80)
-                # save file 
+                # save file
                 batchfile = '%s.sbatch' % (jobPath)
                 with open(batchfile, 'w') as text_file:
                     text_file.write("%s" % jobString)
-                
+
                 if type == 'mpi_direct':
                     with open(jobPath+'.run', 'a+') as outf, open(jobPath+'.err', 'w') as errf:
                         pids.append(Popen([executer, batchfile], stdout=outf, stderr=errf, preexec_fn=os.setsid).pid)
@@ -493,11 +603,11 @@ def asdOptim(self, pc):
 
                 #proc = Popen(command.split([executer, batchfile]), stdout=PIPE, stderr=PIPE)
                 sleep(0.1)
-                #read = proc.stdout.read()  
+                #read = proc.stdout.read()
 
                 if type == 'mpi_direct':
                     with open('./pids.pid', 'a') as file:
-                        file.write(str(pids))                          
+                        file.write(str(pids))
                 else:
                     with open(jobPath+'.jobid', 'r') as outf:
                         read=outf.readline()
@@ -521,7 +631,7 @@ def asdOptim(self, pc):
                 #pc.done()
             except:
                 pass
-                
+
         num_iters = 0
         jobs_completed = 0
         fitness = [None for cand in candidates]
@@ -541,33 +651,33 @@ def asdOptim(self, pc):
                         jobs_completed += 1
                         print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
                 except Exception as e:
-                    # print 
+                    # print
                     err = "There was an exception evaluating candidate %d:"%(candidate_index)
                     print(("%s \n %s"%(err,e)))
                     #pass
                     #print 'Error evaluating fitness of candidate %d'%(candidate_index)
             num_iters += 1
             print('completed: %d' %(jobs_completed))
-            if num_iters >= args.get('maxiter_wait', 5000): 
+            if num_iters >= args.get('maxiter_wait', 5000):
                 print("Max iterations reached, the %d unfinished jobs will be canceled and set to default fitness" % (len(unfinished)))
                 for canditade_index in unfinished:
-                    fitness[canditade_index] = maxFitness # rerun those that didn't complete; 
+                    fitness[canditade_index] = maxFitness # rerun those that didn't complete;
                     jobs_completed += 1
-                    try:   
+                    try:
                         if 'scancelUser' in kwargs:
                             os.system('scancel -u %s'%(kwargs['scancelUser']))
-                        else:              
+                        else:
                             os.system('scancel %d' % (jobids[candidate_index]))  # terminate unfinished job (resubmitted jobs not terminated!)
                     except:
                         pass
             sleep(args.get('time_sleep', 1))
-        
+
         # kill all processes
         if type == 'mpi_bulletin':
             try:
                 with open("./pids.pid", 'r') as file: # read pids for mpi_bulletin
                     pids = [int(i) for i in file.read().split(' ')[:-1]]
-                
+
                 with open("./pids.pid", 'w') as file: # delete content
                     pass
                 for pid in pids:
@@ -577,9 +687,9 @@ def asdOptim(self, pc):
                         pass
             except:
                 pass
-        
+
         elif type == 'mpi_direct':
-            
+
             import psutil
 
             PROCNAME = "nrniv"
@@ -591,15 +701,15 @@ def asdOptim(self, pc):
                         proc.kill()
                 except:
                     pass
-            
-        # don't want to to this for hpcs since jobs are running on compute nodes not master 
+
+        # don't want to to this for hpcs since jobs are running on compute nodes not master
 
         print("-" * 80)
         print("  Completed a generation  ")
         print("-" * 80)
-        
+
         return fitness # single candidate for now
-        
+
 
 
     # -------------------------------------------------------------------------------
@@ -622,8 +732,8 @@ def asdOptim(self, pc):
       pdec           2       Parameter selection learning rate (decrease)
       pinitial       None    Set initial parameter selection probabilities
       sinitial       None    Set initial step sizes; if empty, calculated from stepsize instead
-      xmin           None    Min value allowed for each parameter  
-      xmax           None    Max value allowed for each parameter 
+      xmin           None    Min value allowed for each parameter
+      xmax           None    Max value allowed for each parameter
       maxiters       1000    Maximum number of iterations (1 iteration = 1 function evaluation)
       maxtime        3600    Maximum time allowed, in seconds
       abstol         1e-6    Minimum absolute change in objective function
@@ -633,7 +743,7 @@ def asdOptim(self, pc):
       randseed       None    The random seed to use
       verbose        2       How much information to print during the run
       label          None    A label to use to annotate the output
-    ''' 
+    '''
 
     kwargs['xmin'] = [x['values'][0] for x in self.params]
     kwargs['xmax'] = [x['values'][1] for x in self.params]
@@ -648,11 +758,11 @@ def asdOptim(self, pc):
 
     # if no 3rd value, calculate random values
     else:
-        popsize = self.optimCfg.get('popsize', 1) 
+        popsize = self.optimCfg.get('popsize', 1)
         x0 = []
         for p in range(popsize):
             x0.append([np.random.uniform(x['values'][0], x['values'][1]) for x in self.params])
-            
+
 
     if 'args' not in kwargs: kwargs['args'] = {}
     kwargs['args']['cfg'] = self.cfg  # include here args/params to pass to evaluator function
@@ -665,12 +775,12 @@ def asdOptim(self, pc):
     kwargs['args']['time_sleep'] = self.optimCfg['time_sleep']
     kwargs['args']['popsize'] = popsize
     kwargs['args']['maxFitness'] = self.optimCfg.get('maxFitness', 1000)
-    
-    
-    for key, value in self.optimCfg.items(): 
+
+
+    for key, value in self.optimCfg.items():
         kwargs[key] = value
-    
-    for key, value in self.runCfg.items(): 
+
+    for key, value in self.runCfg.items():
         kwargs['args'][key] = value
 
 
@@ -681,19 +791,19 @@ def asdOptim(self, pc):
 
     # -------------------------------------------------------------------------------
     # Run algorithm
-    # ------------------------------------------------------------------------------- 
+    # -------------------------------------------------------------------------------
     saveFile = '%s/%s_temp_output.json' % (self.saveFolder, self.batchLabel)
     output = asd(evaluator, x0, saveFile, **kwargs)
-    
+
     # print best and finish
     bestFval = np.min(output['fval'])
     bestX = output['x'][np.argmin(output['fval'])]
-    
+
     print('\nBest Solution with fitness = %.4g: \n' % (bestFval), bestX)
     print("-" * 80)
     print("   Completed adaptive stochasitc parameter optimization   ")
     print("-" * 80)
-    
+
     sim.saveJSON('%s/%s_output.json' % (self.saveFolder, self.batchLabel), output)
     #sleep(1)
 

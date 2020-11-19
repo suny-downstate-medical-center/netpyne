@@ -1,5 +1,6 @@
 """
-Functions for dealing with metadata
+Package dealing with metadata
+
 """
 
 from __future__ import unicode_literals

@@ -1,6 +1,6 @@
 
 """
-netParams.py 
+netParams.py
 
 High-level specifications for M1 network model using NetPyNE
 """
@@ -70,21 +70,21 @@ if 'PT5B_full' not in loadCellParams:
     # Adapt ih params based on cfg param
     for secName in cellRule['secs']:
         for mechName,mech in cellRule['secs'][secName]['mechs'].items():
-            if mechName in ['ih','h','h15', 'hd']: 
+            if mechName in ['ih','h','h15', 'hd']:
                 mech['gbar'] = [g*cfg.ihGbar for g in mech['gbar']] if isinstance(mech['gbar'],list) else mech['gbar']*cfg.ihGbar
-                if cfg.ihModel == 'migliore':   
+                if cfg.ihModel == 'migliore':
                     mech['clk'] = cfg.ihlkc  # migliore's shunt current factor
                     mech['elk'] = cfg.ihlke  # migliore's shunt current reversal potential
-                if secName.startswith('dend'): 
+                if secName.startswith('dend'):
                     mech['gbar'] *= cfg.ihGbarBasal  # modify ih conductance in soma+basal dendrites
                     mech['clk'] *= cfg.ihlkcBasal  # modify ih conductance in soma+basal dendrites
-                if secName in cellRule['secLists']['below_soma']: #secName.startswith('dend'): 
+                if secName in cellRule['secLists']['below_soma']: #secName.startswith('dend'):
                     mech['clk'] *= cfg.ihlkcBelowSoma  # modify ih conductance in soma+basal dendrites
     # Reduce dend Na to avoid dend spikes (compensate properties by modifying axon params)
     for secName in cellRule['secLists']['alldend']:
-        cellRule['secs'][secName]['mechs']['nax']['gbar'] = 0.0153130368342 * cfg.dendNa # 0.25 
+        cellRule['secs'][secName]['mechs']['nax']['gbar'] = 0.0153130368342 * cfg.dendNa # 0.25
     cellRule['secs']['soma']['mechs']['nax']['gbar'] = 0.0153130368342  * cfg.somaNa
-    cellRule['secs']['axon']['mechs']['nax']['gbar'] = 0.0153130368342  * cfg.axonNa # 11  
+    cellRule['secs']['axon']['mechs']['nax']['gbar'] = 0.0153130368342  * cfg.axonNa # 11
     cellRule['secs']['axon']['geom']['Ra'] = 137.494564931 * cfg.axonRa # 0.005
     # Remove Na (TTX)
     if cfg.removeNa:
@@ -104,7 +104,7 @@ netParams.popParams['PT5B'] = {'cellModel': 'HH_full', 'cellType': 'PT', 'ynormR
 #------------------------------------------------------------------------------
 netParams.synMechParams['NMDA'] = {'mod': 'MyExp2SynNMDABB', 'tau1NMDA': 15, 'tau2NMDA': 150, 'e': 0}
 netParams.synMechParams['AMPA'] = {'mod':'MyExp2SynBB', 'tau1': 0.05, 'tau2': 5.3*cfg.AMPATau2Factor, 'e': 0}
-netParams.synMechParams['GABAB'] = {'mod':'MyExp2SynBB', 'tau1': 3.5, 'tau2': 260.9, 'e': -93} 
+netParams.synMechParams['GABAB'] = {'mod':'MyExp2SynBB', 'tau1': 3.5, 'tau2': 260.9, 'e': -93}
 netParams.synMechParams['GABAA'] = {'mod':'MyExp2SynBB', 'tau1': 0.07, 'tau2': 18.2, 'e': -80}
 netParams.synMechParams['GABAASlow'] = {'mod': 'MyExp2SynBB','tau1': 2, 'tau2': 100, 'e': -80}
 
@@ -124,12 +124,12 @@ if cfg.addIClamp:
 
         # add stim source
         netParams.stimSourceParams[key] = {'type': 'IClamp', 'delay': start, 'dur': dur, 'amp': amp}
-        
+
         # connect stim source to target
         netParams.stimTargetParams[key+'_'+pop] =  {
-            'source': key, 
+            'source': key,
             'conds': {'pop': pop},
-            'sec': sec, 
+            'sec': sec,
             'loc': loc}
 
 #------------------------------------------------------------------------------
@@ -139,7 +139,7 @@ if cfg.addNetStim:
     for key in [k for k in dir(cfg) if k.startswith('NetStim')]:
         params = getattr(cfg, key, None)
         [pop, ynorm, sec, loc, synMech, synMechWeightFactor, start, interval, noise, number, weight, delay] = \
-        [params[s] for s in ['pop', 'ynorm', 'sec', 'loc', 'synMech', 'synMechWeightFactor', 'start', 'interval', 'noise', 'number', 'weight', 'delay']] 
+        [params[s] for s in ['pop', 'ynorm', 'sec', 'loc', 'synMech', 'synMechWeightFactor', 'start', 'interval', 'noise', 'number', 'weight', 'delay']]
 
         if synMech == ESynMech:
             wfrac = cfg.synWeightFractionEE
@@ -154,9 +154,9 @@ if cfg.addNetStim:
         # connect stim source to target
         # for i, syn in enumerate(synMech):
         netParams.stimTargetParams[key+'_'+pop] =  {
-            'source': key, 
+            'source': key,
             'conds': {'pop': pop, 'ynorm': ynorm},
-            'sec': sec, 
+            'sec': sec,
             'loc': loc,
             'synMech': synMech,
             'weight': weight,
@@ -166,21 +166,20 @@ if cfg.addNetStim:
 
 #------------------------------------------------------------------------------
 # Subcellular connectivity (synaptic distributions)
-#------------------------------------------------------------------------------         
+#------------------------------------------------------------------------------
 if cfg.addSubConn:
     with open('conn/conn_dend_PT.json', 'rb') as fileObj: connDendPTData = json.load(fileObj)
-    
+
     #------------------------------------------------------------------------------
     # Use subcellular distribution from L2/3 -> PT (Suter, 2015)
-    lenY = 30 
+    lenY = 30
     spacing = 50
     gridY = list(range(0, -spacing*lenY, -spacing))
     synDens, _, fixedSomaY = connDendPTData['synDens'], connDendPTData['gridY'], connDendPTData['fixedSomaY']
 
     netParams.subConnParams['L2->PT'] = {
-    'preConds': {'cellType': 'NetStim'}, # all presyn inputs 
-    'postConds': {'cellType': 'PT5B'},  
+    'preConds': {'cellType': 'NetStim'}, # all presyn inputs
+    'postConds': {'cellType': 'PT5B'},
     'sec': 'spiny',
-    'groupSynMechs': ESynMech, 
-    'density': {'type': '1Dmap', 'gridX': None, 'gridY': gridY, 'gridValues': synDens['L2_PT'], 'fixedSomaY': fixedSomaY}} 
-
+    'groupSynMechs': ESynMech,
+    'density': {'type': '1Dmap', 'gridX': None, 'gridY': gridY, 'gridValues': synDens['L2_PT'], 'fixedSomaY': fixedSomaY}}

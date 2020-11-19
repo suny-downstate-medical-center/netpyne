@@ -33,7 +33,7 @@ if cfg.networkType == 'simple':
 elif cfg.networkType == 'complex':
 	cfg.duration = 1*1e3           # Duration of the simulation, in ms
 	cfg.dt = 0.1                # Internal integration timestep to use
-	cfg.verbose = False            # Show detailed messages 
+	cfg.verbose = False            # Show detailed messages
 	cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 	cfg.filename = 'simple_net'   # Set file output name
 	cfg.saveDataInclude = ['simData']
@@ -41,9 +41,9 @@ elif cfg.networkType == 'complex':
 	cfg.printPopAvgRates = [100, cfg.duration]
 
 	# Variable parameters (used in netParams)
-	cfg.probEall = 0.1 
-	cfg.weightEall = 0.005 
-	cfg.probIE = 0.4 
+	cfg.probEall = 0.1
+	cfg.weightEall = 0.005
+	cfg.probIE = 0.4
 	cfg.weightIE = 0.001
-	cfg.probLengthConst = 150 
-	cfg.stimWeight = 0.1 
+	cfg.probLengthConst = 150
+	cfg.stimWeight = 0.1

@@ -18,24 +18,24 @@ from netParams import netParams
 import os
 
 ### This is an example function run at an interval during the simulation
-### This function save weights everytime it runs and will save simulation data 
+### This function save weights everytime it runs and will save simulation data
 ### at a different interval defined by cfg.intervalRun and cfg.saveInterval.
 def saveWeights(t):
 
     # if a list for weights is not initialized make one
     if not hasattr(sim, 'allWeights'):
         sim.allWeights=[]
-    
+
     # save the weights
     for cell in sim.net.cells:
         for conn in cell.conns:
             sim.allWeights.append(float(conn['hObj'].weight[0]))
-    
+
     # if the sim time matches the saveInterval then save data
     # NOTE: intervalRun must divide evenly into saveInterval (saveInterval % intervalRun == 0)
     if (round(t, 4) % cfg.saveInterval == 0):
             sim.intervalSave(t)
-    
+
 
 print("Starting sim ...")
 
@@ -43,10 +43,10 @@ print("Starting sim ...")
 
 # we run with an interval function defined above
 # if you just want to save the data and not the wieghts you can use the sim.intervalSave function instead of saveWeights
-sim.runSimWithIntervalFunc(cfg.intervalRun, saveWeights)  
+sim.runSimWithIntervalFunc(cfg.intervalRun, saveWeights)
 
-# we run fileGather() instead of gather       
-sim.fileGather()   
+# we run fileGather() instead of gather
+sim.fileGather()
 sim.analyze()
 
 

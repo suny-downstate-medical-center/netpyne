@@ -3,7 +3,7 @@ analysis/morlet.py
 
 Time-frequency representation using Morlet wavelets
 
- Original version written by Shane Lee (Brown University) 
+ Original version written by Shane Lee (Brown University)
  Modified by Sam Neymotin (NKI; added phase calculations, saving/passing in Morlet, specifying different
  frequency steps and frequencies used for calculations (e.g. logarithmic frequency instead of linear)
  don't detrend the signal > 1 time; don't waste RAM by copying/storing time-series in MorletSpec class;
@@ -19,9 +19,9 @@ import numpy as np
 import scipy.signal as sps
 import matplotlib.pyplot as plt
 
-def index2ms(idx, sampr): 
+def index2ms(idx, sampr):
     return 1e3*idx/sampr # index to millisecond; sampr=sampling rate in Hz
-def ms2index(ms, sampr): 
+def ms2index(ms, sampr):
     return int(sampr*ms/1e3) # millisecond to index; sampr=sampling rate in Hz
 
 # calculate the Morlet wavelet for central frequency f
@@ -47,7 +47,7 @@ def MorletVec(sig, sampr, freq, width, m=None, getphase=False):
     sig: input signal
     sampr: sampling rate (Hz)
     freq: frequency
-    m: Morlet wavelet        
+    m: Morlet wavelet
     width: number of cycles of Morlet wavelet
     """
     # calculate the morlet wavelet for this frequency
@@ -96,4 +96,3 @@ class MorletSpec():
         else:
             for j,freq in enumerate(self.f):
                 self.TFR[j, :] = MorletVec(sig, self.sampr, freq, self.width, getphase=False)
-

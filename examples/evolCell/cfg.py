@@ -1,7 +1,7 @@
 """
-cfg.py 
+cfg.py
 
-Simulation configuration 
+Simulation configuration
 
 Contributors: salvadordura@gmail.com
 """
@@ -20,8 +20,8 @@ cfg = specs.SimConfig()
 #------------------------------------------------------------------------------
 # Run parameters
 #------------------------------------------------------------------------------
-cfg.duration = 10*1e3			## Duration of the sim, in ms -- value from M1 cfg.py 
-cfg.dt = 0.05                   ## Internal Integration Time Step -- value from M1 cfg.py 
+cfg.duration = 10*1e3			## Duration of the sim, in ms -- value from M1 cfg.py
+cfg.dt = 0.05                   ## Internal Integration Time Step -- value from M1 cfg.py
 cfg.verbose = 1           	## Show detailed messages
 cfg.hParams['celsius'] = 37
 cfg.printRunTime = 1
@@ -29,11 +29,11 @@ cfg.printPopAvgRates = [500, cfg.duration]
 
 
 #------------------------------------------------------------------------------
-# Recording 
+# Recording
 #------------------------------------------------------------------------------
 cfg.recordTraces = {'V_soma': {'sec': 'soma', 'loc': 0.5, 'var': 'v'}}
-cfg.recordStims = False  
-cfg.recordStep = 0.1 
+cfg.recordStims = False
+cfg.recordStep = 0.1
 
 
 #------------------------------------------------------------------------------
@@ -47,15 +47,15 @@ cfg.saveDataInclude = ['simConfig', 'netParams', 'net', 'simData']
 
 
 #------------------------------------------------------------------------------
-# Analysis and plotting 
+# Analysis and plotting
 #------------------------------------------------------------------------------
 cfg.analysis['plotfI'] = {'amps': [0.1], 'times': [1000], 'dur': 1000, 'targetRates': [10], 'saveFig': True, 'showFig': True}
 
-cfg.analysis['plotTraces'] = {'include': [0], 'oneFigPer': 'cell', 'saveFig': True, 
+cfg.analysis['plotTraces'] = {'include': [0], 'oneFigPer': 'cell', 'saveFig': True,
  							  'showFig': False, 'figSize': (12,8), 'timeRange': [0,cfg.duration]}
 
 #------------------------------------------------------------------------------
-# Current inputs 
+# Current inputs
 #------------------------------------------------------------------------------
 cfg.addIClamp = 1
 

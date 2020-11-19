@@ -1,7 +1,6 @@
 """
-batch/batch.py 
+Module for setting up and running batch simulations
 
-Class to setup and run batch simulations
 """
 
 from __future__ import print_function
@@ -47,16 +46,31 @@ from .asd_parallel import asdOptim
 try:
     from .optuna_parallel import optunaOptim
 except:
-    print('Warning: Could not import "optuna" package...')
+    pass
+    # print('Warning: Could not import "optuna" package...')
+
 
 pc = h.ParallelContext() # use bulletin board master/slave
-if pc.id()==0: pc.master_works_on_jobs(0) 
+if pc.id()==0: pc.master_works_on_jobs(0)
 
 
 # -------------------------------------------------------------------------------
 # function to convert tuples to strings (avoids erro when saving/loading)
 # -------------------------------------------------------------------------------
 def tupleToStr(obj):
+    """
+    Function for/to <short description of `netpyne.batch.batch.tupleToStr`>
+
+    Parameters
+    ----------
+    obj : <type>
+        <Short description of obj>
+        **Default:** *required*
+
+
+    """
+
+
     #print '\nbefore:', obj
     if type(obj) == list:
         for item in obj:
@@ -67,7 +81,7 @@ def tupleToStr(obj):
             if type(val) in [list, dict]:
                 tupleToStr(val)
             if type(key) == tuple:
-                obj[str(key)] = obj.pop(key) 
+                obj[str(key)] = obj.pop(key)
     #print 'after:', obj
     return obj
 
@@ -76,6 +90,13 @@ def tupleToStr(obj):
 # Batch class
 # -------------------------------------------------------------------------------
 class Batch(object):
+    """
+    Class for/to <short description of `netpyne.batch.batch.Batch`>
+
+
+    """
+
+
 
     def __init__(self, cfgFile='cfg.py', netParamsFile='netParams.py', params=None, groupedParams=None, initCfg={}, seed=None):
         self.batchLabel = 'batch_'+str(datetime.date.today())
@@ -94,7 +115,7 @@ class Batch(object):
         if groupedParams:
             for p in self.params:
                 if p['label'] in groupedParams: p['group'] = True
-    
+
 
     def save(self, filename):
         import os
@@ -102,7 +123,7 @@ class Batch(object):
         basename = os.path.basename(filename)
         folder = filename.split(basename)[0]
         ext = basename.split('.')[1]
-        
+
         # make dir
         createFolder(folder)
 
@@ -114,7 +135,7 @@ class Batch(object):
 
         odict['initCfg'] = tupleToStr(odict['initCfg'])
         dataSave = {'batch': tupleToStr(odict)}
-        
+
         if ext == 'json':
             from .. import sim
             #from json import encoder
@@ -141,28 +162,28 @@ class Batch(object):
 
         # create Folder to save simulation
         createFolder(self.saveFolder)
-        
+
         # save Batch dict as json
         targetFile = self.saveFolder+'/'+self.batchLabel+'_batch.json'
         self.save(targetFile)
 
         # copy this batch script to folder
         targetFile = self.saveFolder+'/'+self.batchLabel+'_batchScript.py'
-        os.system('cp ' + os.path.realpath(__file__) + ' ' + targetFile) 
+        os.system('cp ' + os.path.realpath(__file__) + ' ' + targetFile)
 
         # copy this batch script to folder, netParams and simConfig
         #os.system('cp ' + self.netParamsFile + ' ' + self.saveFolder + '/netParams.py')
 
         netParamsSavePath = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
-        os.system('cp ' + self.netParamsFile + ' ' + netParamsSavePath) 
-        
+        os.system('cp ' + self.netParamsFile + ' ' + netParamsSavePath)
+
         os.system('cp ' + os.path.realpath(__file__) + ' ' + self.saveFolder + '/batchScript.py')
-        
+
         # save initial seed
         with open(self.saveFolder + '/_seed.seed', 'w') as seed_file:
             if not self.seed: self.seed = int(time())
             seed_file.write(str(self.seed))
-            
+
         # import cfg
         cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
 
@@ -172,12 +193,12 @@ class Batch(object):
             loader.exec_module(cfgModule)
         except:  # py2
             cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
-        
+
         if hasattr(cfgModule, 'cfg'):
             self.cfg = cfgModule.cfg
         else:
             self.cfg = cfgModule.simConfig
-            
+
         self.cfg.checkErrors = False  # avoid error checking during batch
 
 

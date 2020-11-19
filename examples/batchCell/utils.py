@@ -1,5 +1,5 @@
 """
-utils.py 
+utils.py
 
 General functions to analyse simulation data
 """
@@ -38,7 +38,7 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
     # read params labels and ranges
     params = b['params']
 
-    # read vars from all files - store in dict 
+    # read vars from all files - store in dict
     if b['method'] == 'grid':
         labelList, valuesList = list(zip(*[(p['label'], p['values']) for p in params]))
         valueCombinations = product(*(valuesList))
@@ -58,7 +58,7 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
                         output = json.load(fileObj, object_pairs_hook=specs.OrderedDict)
 
                     # save output file in data dict
-                    data[iCombStr] = {}  
+                    data[iCombStr] = {}
                     data[iCombStr]['paramValues'] = pComb  # store param values
                     if not vars: vars = list(output.keys())
                     for key in vars:
@@ -79,12 +79,12 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
             dataSave = {'params': params, 'data': data}
             with open(filename, 'w') as fileObj:
                 json.dump(dataSave, fileObj)
-        
+
         return params, data
 
 
 def compare(source_file, target_file, source_key=None, target_key=None):
-    from deepdiff import DeepDiff 
+    from deepdiff import DeepDiff
     with open(source_file, 'r') as fileObj:
         if source_file.endswith('.json'):
             source = json.load(fileObj, object_pairs_hook=specs.OrderedDict)
@@ -98,7 +98,7 @@ def compare(source_file, target_file, source_key=None, target_key=None):
         elif source_file.endswith('.pkl'):
             target = pickle.load(fileObj)
     if target_key: target = target[target_key]
-    
+
     ddiff = DeepDiff(source, target)
     pprint(ddiff)
     return ddiff
@@ -117,5 +117,3 @@ def setPlotFormat(numColors=8):
     colormap = plt.get_cmap('gist_rainbow')
     colorlist = [colormap(1.*i/NUM_COLORS) for i in range(NUM_COLORS)]
     plt.rc('axes', prop_cycle=(cycler('color', colorlist)))
-
-

@@ -68,7 +68,7 @@ def getParametersForCellModel(cellModel):
                 }
             }
         }, parameters)
-    
+
     if cellModel == 'VecStim':
         merge({
             "netParams": {

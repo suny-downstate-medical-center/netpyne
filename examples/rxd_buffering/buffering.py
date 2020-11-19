@@ -18,7 +18,7 @@ netParams.cellParams['PYR'] = {'conds': {'cellModel': 'HH'},  'secs': {'soma': {
 ### regions
 netParams.rxdParams['regions'] = {'cyt': {'cells': ['all'], 'secs': 'soma', 'nrn_region': 'i'}}
 
-### species 
+### species
 species = {}
 species['ca'] = {'regions': ['cyt'], 'charge': 2, 'initial': 1e-4}
 species['buf'] = {'regions': ['cyt'], 'initial': 1e-4}
@@ -57,5 +57,3 @@ sim.create(netParams,cfg)
 h.finitialize()
 sim.simulate()
 sim.analyze()
-
-

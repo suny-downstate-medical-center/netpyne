@@ -20,6 +20,12 @@
 
 - Enabled random distribution of multiple synapses with synsPerConn>1 and connRandomSecFromList=True 
 
+- Added lineWidth option to plot2Dnet (thanks Eric!)
+
+- Updated Travis Continuous Integration to use NEURON 7.8.1 (from 7.6.2)
+
+- Removed trailing white space from all Python files in the repository
+
 
 **Bug fixes**
 
@@ -36,6 +42,19 @@
 - Avoid adding section-based weightNorm values to point neurons (was affecting tut_import.py)
 
 - Prevent error when loading pointCell params from json by converting Dict to dict
+
+- Fixed bug in plotShape (thanks Eric!)
+
+- Updated setup.py so PyPI website renders the README as markdown
+
+- Fixed expected numSpikes in test of M1detailed example
+
+- Merged GUI branch into development branch
+
+- Fixed bug in iplotConn
+
+- Fixed bug and coloring in iplotSpikeStats with different themes
+
 
 # Version 0.9.7
 

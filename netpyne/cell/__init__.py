@@ -1,5 +1,6 @@
 """
-Functions for dealing with cell models
+Package for dealing with cell models
+
 """
 
 from __future__ import unicode_literals
@@ -11,4 +12,4 @@ standard_library.install_aliases()
 from .compartCell import CompartCell
 from .pointCell import PointCell
 from .NML2Cell import NML2Cell
-from .NML2SpikeSource import NML2SpikeSource 
+from .NML2SpikeSource import NML2SpikeSource

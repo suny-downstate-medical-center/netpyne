@@ -1,6 +1,6 @@
 
 from netpyne import sim
-from netpyne import specs 
+from netpyne import specs
 
 
 nml2_file_name = 'SimpleNet.net.nml'

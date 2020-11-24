@@ -1,9 +1,6 @@
 """
-batch/grid.py 
+Module for grid search parameter optimization and exploration
 
-Code for grid search parameter optimization/exploration
-
-Contributors: salvadordura@gmail.com
 """
 
 from __future__ import print_function
@@ -47,13 +44,34 @@ pc = h.ParallelContext() # use bulletin board master/slave
 
 
 # -------------------------------------------------------------------------------
-# function to run single job using ParallelContext bulletin board (master/slave) 
+# function to run single job using ParallelContext bulletin board (master/slave)
 # -------------------------------------------------------------------------------
-        
+
 # func needs to be outside of class
 def runJob(script, cfgSavePath, netParamsSavePath):
+    """
+    Function for/to <short description of `netpyne.batch.grid.runJob`>
+
+    Parameters
+    ----------
+    script : <type>
+        <Short description of script>
+        **Default:** *required*
+
+    cfgSavePath : <type>
+        <Short description of cfgSavePath>
+        **Default:** *required*
+
+    netParamsSavePath : <type>
+        <Short description of netParamsSavePath>
+        **Default:** *required*
+
+
+    """
+
+
     print('\nJob in rank id: ',pc.id())
-    command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath) 
+    command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath)
     print(command+'\n')
     proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
     print(proc.stdout.read().decode())
@@ -64,21 +82,38 @@ def runJob(script, cfgSavePath, netParamsSavePath):
 # Grid Search optimization
 # -------------------------------------------------------------------------------
 def gridSearch(self, pc):
+    """
+    Function for/to <short description of `netpyne.batch.grid.gridSearch`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+    pc : <type>
+        <Short description of pc>
+        **Default:** *required*
+
+
+    """
+
+
 
     createFolder(self.saveFolder)
-    
+
     # save Batch dict as json
     targetFile = self.saveFolder+'/'+self.batchLabel+'_batch.json'
     self.save(targetFile)
 
     # copy this batch script to folder
     targetFile = self.saveFolder+'/'+self.batchLabel+'_batchScript.py'
-    os.system('cp ' + os.path.realpath(__file__) + ' ' + targetFile) 
+    os.system('cp ' + os.path.realpath(__file__) + ' ' + targetFile)
 
     # copy netParams source to folder
     netParamsSavePath = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
-    os.system('cp ' + self.netParamsFile + ' ' + netParamsSavePath) 
-    
+    os.system('cp ' + self.netParamsFile + ' ' + netParamsSavePath)
+
     # import cfg
     cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
 
@@ -102,10 +137,10 @@ def gridSearch(self, pc):
         groupedParams = False
         ungroupedParams = False
         for p in self.params:
-            if 'group' not in p: 
+            if 'group' not in p:
                 p['group'] = False
                 ungroupedParams = True
-            elif p['group'] == True: 
+            elif p['group'] == True:
                 groupedParams = True
 
         if ungroupedParams:
@@ -146,7 +181,7 @@ def gridSearch(self, pc):
             else:
                 iComb = []
                 pComb = []
-                
+
             print(iComb, pComb)
 
             for i, paramVal in enumerate(pComb):
@@ -154,10 +189,10 @@ def gridSearch(self, pc):
                 self.setCfgNestedParam(paramLabel, paramVal)
 
                 print(str(paramLabel)+' = '+str(paramVal))
-                
+
             # set simLabel and jobName
             simLabel = self.batchLabel+''.join([''.join('_'+str(i)) for i in iComb])
-            jobName = self.saveFolder+'/'+simLabel  
+            jobName = self.saveFolder+'/'+simLabel
 
             sleepInterval = 1
 
@@ -169,7 +204,7 @@ def gridSearch(self, pc):
             elif self.runCfg.get('skipCustom', None) and glob.glob(jobName+self.runCfg['skipCustom']):
                 print('Skipping job %s since %s file already exists...' % (jobName, self.runCfg['skipCustom']))
             else:
-                # save simConfig json to saveFolder                        
+                # save simConfig json to saveFolder
                 self.cfg.simLabel = simLabel
                 self.cfg.saveFolder = self.saveFolder
                 cfgSavePath = self.saveFolder+'/'+simLabel+'_cfg.json'
@@ -189,11 +224,11 @@ def gridSearch(self, pc):
                     nodesppn = 'nodes=%d:ppn=%d'%(nodes,ppn)
                     custom = self.runCfg.get('custom', '')
                     numproc = nodes*ppn
-                    
-                    command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)  
+
+                    command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
 
 
-                    jobString = """#!/bin/bash 
+                    jobString = """#!/bin/bash
 #PBS -N %s
 #PBS -l walltime=%s
 #PBS -q %s
@@ -235,13 +270,13 @@ echo $PBS_O_WORKDIR
                     custom = self.runCfg.get('custom', '')
                     if reservation:
                         res = '#SBATCH --res=%s'%(reservation)
-                    else:  
+                    else:
                         res = ''
 
                     numproc = nodes*coresPerNode
-                    command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath) 
+                    command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
 
-                    jobString = """#!/bin/bash 
+                    jobString = """#!/bin/bash
 #SBATCH --job-name=%s
 #SBATCH -A %s
 #SBATCH -t %s
@@ -261,7 +296,7 @@ wait
                     """  % (simLabel, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, res, custom, folder, command)
 
                     # Send job_string to sbatch
-                    
+
                     print('Submitting job ',jobName)
                     print(jobString+'\n')
 
@@ -277,38 +312,37 @@ wait
                 # run mpi jobs directly e.g. if have 16 cores, can run 4 jobs * 4 cores in parallel
                 # eg. usage: python batch.py
                 elif self.runCfg.get('type',None) == 'mpi_direct':
-                    jobName = self.saveFolder+'/'+simLabel     
+                    jobName = self.saveFolder+'/'+simLabel
                     print('Running job ',jobName)
                     cores = self.runCfg.get('cores', 1)
                     folder = self.runCfg.get('folder', '.')
                     script = self.runCfg.get('script', 'init.py')
                     mpiCommand = self.runCfg.get('mpiCommand', 'ibrun')
 
-                    command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, cores, script, cfgSavePath, netParamsSavePath) 
-                    
+                    command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, cores, script, cfgSavePath, netParamsSavePath)
+
                     print(command+'\n')
                     proc = Popen(command.split(' '), stdout=open(jobName+'.run','w'),  stderr=open(jobName+'.err','w'))
                     #print proc.stdout.read()
-                    
-                    
+
+
                 # pc bulletin board job submission (master/slave) via mpi
                 # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
                 elif self.runCfg.get('type',None) == 'mpi_bulletin':
-                    jobName = self.saveFolder+'/'+simLabel     
+                    jobName = self.saveFolder+'/'+simLabel
                     print('Submitting job ',jobName)
                     # master/slave bulletin board schedulling of jobs
                     pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath)
-                    
+
                 else:
                     print(self.runCfg)
                     print("Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'")
                     import sys
                     sys.exit(0)
-        
+
             sleep(sleepInterval) # avoid saturating scheduler
     print("-"*80)
     print("   Finished submitting jobs for grid parameter exploration   ")
     print("-" * 80)
     while pc.working():
         sleep(sleepInterval)
-

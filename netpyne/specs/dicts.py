@@ -1,9 +1,8 @@
 """
-specs/dict.py
-Contains Dict and ODict classes
+Module containing Dict and ODict classes
 
-Reproduce dict and OrderedDict behavior but add support to use object-like dot notation
-e.g. cell.secs.soma.geom.diam
+These classes reproduce normal Dict and ODict behavior, but add support for object-like dot notation (e.g. cell.secs.soma.geom)
+
 """
 
 from __future__ import unicode_literals
@@ -23,6 +22,13 @@ from collections import OrderedDict
 # ----------------------------------------------------------------------------
 
 class Dict(dict):
+    """
+    Class for/to <short description of `netpyne.specs.dicts.Dict`>
+
+
+    """
+
+
 
     __slots__ = []
 
@@ -106,9 +112,9 @@ class Dict(dict):
         """
         old (string): old dict key
         new (string): new dict key
-        label (list/tuple of strings): nested keys pointing to dict with key to be replaced; 
-            e.g. ('PYR', 'secs'); use None to replace root key; defaults to None 
-        
+        label (list/tuple of strings): nested keys pointing to dict with key to be replaced;
+            e.g. ('PYR', 'secs'); use None to replace root key; defaults to None
+
         returns: True if successful, False otherwse
         """
 
@@ -116,9 +122,9 @@ class Dict(dict):
         if isinstance(label, (tuple, list)):
             for ip in range(len(label)):
                 try:
-                    obj = obj[label[ip]] 
+                    obj = obj[label[ip]]
                 except:
-                    return False 
+                    return False
 
         if old in obj:
             obj[new] = obj.pop(old)  # replace
@@ -146,6 +152,13 @@ class Dict(dict):
 # ----------------------------------------------------------------------------
 
 class ODict(OrderedDict):
+    """
+    Class for/to <short description of `netpyne.specs.dicts.ODict`>
+
+
+    """
+
+
 
     __slots__ = []
 
@@ -237,19 +250,19 @@ class ODict(OrderedDict):
         """
         old (string): old dict key
         new (string): new dict key
-        label (list/tuple of strings): nested keys pointing to dict with key to be replaced; 
-            e.g. ('PYR', 'secs'); use None to replace root key; defaults to None 
-        
+        label (list/tuple of strings): nested keys pointing to dict with key to be replaced;
+            e.g. ('PYR', 'secs'); use None to replace root key; defaults to None
+
         returns: True if successful, False otherwse
         """
-        
+
         obj = self
         if isinstance(label, (tuple, list)):
             for ip in range(len(label)):
                 try:
-                    obj = obj[label[ip]] 
+                    obj = obj[label[ip]]
                 except:
-                    return False 
+                    return False
 
         if old in obj:
             obj[new] = obj.pop(old)  # replace
@@ -259,11 +272,9 @@ class ODict(OrderedDict):
 
     def rename(self, *args, **kwargs):
         self.__rename__(*args, **kwargs)
-        
+
     def __getstate__ (self):
         return self.toOrderedDict()
 
     def __setstate__ (self, d):
         self = self.fromOrderedDict(d)
-
-

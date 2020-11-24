@@ -1,8 +1,7 @@
 
 """
-network.py 
+Module defining Network class and methods
 
-Defines Network class which contains cell objects and network-realated methods
 """
 
 from __future__ import print_function
@@ -16,6 +15,13 @@ from ..specs import ODict
 from neuron import h  # import NEURON
 
 class Network(object):
+    """
+    Class for/to <short description of `netpyne.network.network.Network`>
+
+
+    """
+
+
 
     # -----------------------------------------------------------------------------
     # initialize variables
@@ -24,14 +30,14 @@ class Network(object):
         self.params = params
 
         # params that can be expressed using string-based functions in connections
-        self.connStringFuncParams = ['weight', 'delay', 'synsPerConn', 'loc']  
+        self.connStringFuncParams = ['weight', 'delay', 'synsPerConn', 'loc']
 
         # params that can be expressed using string-based functions in stims
-        self.stimStringFuncParams = ['delay', 'dur', 'amp', 'gain', 'rstim', 'tau1', 'tau2', 
-        'onset', 'tau', 'gmax', 'e', 'i', 'interval', 'rate', 'number', 'start', 'noise']  
+        self.stimStringFuncParams = ['delay', 'dur', 'amp', 'gain', 'rstim', 'tau1', 'tau2',
+        'onset', 'tau', 'gmax', 'e', 'i', 'interval', 'rate', 'number', 'start', 'noise']
 
         # list of h.Random() methods allowed in string-based functions (both for conns and stims)
-        self.stringFuncRandMethods = ['binomial', 'discunif', 'erlang', 'geometric', 'hypergeo', 
+        self.stringFuncRandMethods = ['binomial', 'discunif', 'erlang', 'geometric', 'hypergeo',
         'lognormal', 'negexp', 'normal', 'poisson', 'uniform', 'weibull']
 
         self.rand = h.Random()  # random number generator
@@ -41,9 +47,9 @@ class Network(object):
         self.cells_dpls = {} # dict with vectors of dipole over time for each cell
         self.cells_dpl = {} # dict with vectors of dipole at one time for each cell
 
-        self.gid2lid = {} # Empty dict for storing GID -> local index (key = gid; value = local id) -- ~x6 faster than .index() 
-        self.lastGid = 0  # keep track of last cell gid 
-        self.lastGapId = 0  # keep track of last gap junction gid 
+        self.gid2lid = {} # Empty dict for storing GID -> local index (key = gid; value = local id) -- ~x6 faster than .index()
+        self.lastGid = 0  # keep track of last cell gid
+        self.lastGapId = 0  # keep track of last gap junction gid
 
 
     # -----------------------------------------------------------------------------
@@ -58,7 +64,7 @@ class Network(object):
     def createPops(self):
         from .. import sim
 
-        for popLabel, popParam in self.params.popParams.items(): # for each set of population paramseters 
+        for popLabel, popParam in self.params.popParams.items(): # for each set of population paramseters
             self.pops[popLabel] = sim.Pop(popLabel, popParam)  # instantiate a new object of class Pop and add to list pop
         return self.pops
 
@@ -71,23 +77,50 @@ class Network(object):
 
         sim.pc.barrier()
         sim.timing('start', 'createTime')
-        if sim.rank==0: 
-            print(("\nCreating network of %i cell populations on %i hosts..." % (len(self.pops), sim.nhosts))) 
-        
+        if sim.rank==0:
+            print(("\nCreating network of %i cell populations on %i hosts..." % (len(self.pops), sim.nhosts)))
+
+        self._setDiversityRanges()  # update fractions for rules
+
         for ipop in list(self.pops.values()): # For each pop instantiate the network cells (objects of class 'Cell')
             newCells = ipop.createCells() # create cells for this pop using Pop method
             self.cells.extend(newCells)  # add to list of cells
             sim.pc.barrier()
-            if sim.rank==0 and sim.cfg.verbose: print(('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['pop'])))  
+            if sim.rank==0 and sim.cfg.verbose: print(('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['pop'])))
 
         if self.params.defineCellShapes: self.defineCellShapes()
-  
-        print(('  Number of cells on node %i: %i ' % (sim.rank,len(self.cells)))) 
+
+        print(('  Number of cells on node %i: %i ' % (sim.rank,len(self.cells))))
         sim.pc.barrier()
         sim.timing('stop', 'createTime')
         if sim.rank == 0 and sim.cfg.timing: print(('  Done; cell creation time = %0.2f s.' % sim.timingData['createTime']))
 
         return self.cells
+
+    # -----------------------------------------------------------------------------
+    # Set fraction of cells for populations with cell diversity
+    # -----------------------------------------------------------------------------
+    def _setDiversityRanges(self):
+        from .. import sim
+
+        condFracs = {}
+        for cellRule in sim.net.params.cellParams.values():
+            if 'diversityFraction' in cellRule:
+                divFrac = cellRule['diversityFraction']
+                cellType = cellRule['conds'].get('cellType', None)
+                cellModel = cellRule['conds'].get('CellModel', None)
+                pop = cellRule['conds'].get('pop', None)
+
+                if (cellType, cellModel, pop) in condFracs:
+                    startFrac = float(condFracs[(cellType, cellModel, pop)])
+                    endFrac = startFrac + divFrac
+                    cellRule['conds']['fraction'] = [startFrac, endFrac]
+                    condFracs[(cellType, cellModel, pop)] = endFrac
+                else:
+                    startFrac = 0
+                    endFrac = startFrac + divFrac
+                    cellRule['conds']['fraction'] = [startFrac, endFrac]
+                    condFracs[(cellType, cellModel, pop)] = endFrac
 
     # -----------------------------------------------------------------------------
     # Import stim methods
@@ -121,6 +154,3 @@ class Network(object):
     # Import modify methods
     # -----------------------------------------------------------------------------
     from .modify import modifyCells, modifySynMechs, modifyConns, modifyStims
-
-
-

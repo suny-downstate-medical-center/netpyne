@@ -11,20 +11,20 @@ pip install autodocsumm
 
 
 Here are the steps to release a new version of NetPyNE
-(step 9 is completed by this file):
+(step 10 is completed by executing this file):
 
 1) Go through Pull Requests and merge acceptable ones into Development
 2) Ensure all tests pass after the last commit
 3) Ensure all new features are described in the documentation
-4) Update CHANGES.md 
+4) Update CHANGES.md
 5) Update the __init__.py version number
 6) Update the version number in the Sphinx documentation (netpyne/doc/source/conf.py)
 7) Commit with the message “VERSION #.#.#”
-8) Create a Pull Request from Development to Master 
+8) Create a Pull Request from Development to Master
     8a) Title it “PR from development to master - VERSION #.#.#”
     8b) Ensure the Pull Request passes all tests
     8c) Merge the Pull Request
-9) Start a new Release on GitHub 
+9) Start a new Release on GitHub
     9a) Title it and tag it “v#.#.#”
     9b) Copy the text in CHANGES.md into the Release description
     9c) Publish the Release
@@ -96,4 +96,3 @@ with open('source/package_index.rst', 'w') as f:
 # Generate the html files
 print('Building html files.')
 os.system('sphinx-build source ./build')
-

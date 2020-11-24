@@ -11,7 +11,7 @@ To run use: mpiexec -np [num_cores] nrniv -mpi batchRun.py
 
 def batchEvol(networkType):
 	# parameters space to explore
-	
+
 	if networkType == 'simple':
 		## simple net
 		params = specs.ODict()
@@ -19,7 +19,7 @@ def batchEvol(networkType):
 		params['weight'] = [0.001, 0.1]
 		params['delay'] = [1, 20]
 
-		pops = {} 
+		pops = {}
 		pops['S'] = {'target': 5, 'width': 2, 'min': 2}
 		pops['M'] = {'target': 15, 'width': 2, 'min': 0.2}
 
@@ -33,7 +33,7 @@ def batchEvol(networkType):
 		params['probLengthConst'] = [100,200]
 		params['stimWeight'] = [0.05, 0.2]
 
-		pops = {} 
+		pops = {}
 		pops['E2'] = {'target': 5, 'width': 2, 'min': 1}
 		pops['I2'] = {'target': 10, 'width': 5, 'min': 2}
 		pops['E4'] = {'target': 30, 'width': 10, 'min': 1}
@@ -42,7 +42,7 @@ def batchEvol(networkType):
 		pops['I5'] = {'target': 25, 'width': 5, 'min': 2}
 
 	# fitness function
-	fitnessFuncArgs = {}	
+	fitnessFuncArgs = {}
 	fitnessFuncArgs['pops'] = pops
 	fitnessFuncArgs['maxFitness'] = 1000
 
@@ -51,25 +51,25 @@ def batchEvol(networkType):
 		pops = kwargs['pops']
 		maxFitness = kwargs['maxFitness']
 		popFitness = [None for i in pops.items()]
-		popFitness = [min(np.exp(  abs(v['target'] - simData['popRates'][k])  /  v['width']), maxFitness) 
+		popFitness = [min(np.exp(  abs(v['target'] - simData['popRates'][k])  /  v['width']), maxFitness)
 				if simData["popRates"][k]>v['min'] else maxFitness for k,v in pops.items()]
 		fitness = np.mean(popFitness)
 		popInfo = '; '.join(['%s rate=%.1f fit=%1.f'%(p,r,f) for p,r,f in zip(list(simData['popRates'].keys()), list(simData['popRates'].values()), popFitness)])
 		print('  '+popInfo)
 		return fitness
-		
+
 	# create Batch object with paramaters to modify, and specifying files to use
 	b = Batch(params=params)
-	
+
 	# Set output folder, grid method (all param combinations), and run configuration
 	b.batchLabel = 'simple'
 	b.saveFolder = './'+b.batchLabel
 	b.method = 'evol'
 	b.runCfg = {
-		'type': 'mpi_bulletin',#'hpc_slurm', 
+		'type': 'mpi_bulletin',#'hpc_slurm',
 		'script': 'init.py',
 		# options required only for hpc
-		'mpiCommand': 'mpirun',  
+		'mpiCommand': 'mpirun',
 		'nodes': 1,
 		'coresPerNode': 2,
 		'allocation': 'default',
@@ -97,4 +97,4 @@ def batchEvol(networkType):
 
 # Main code
 if __name__ == '__main__':
-	batchEvol('simple')  # 'simple' or 'complex' 
+	batchEvol('simple')  # 'simple' or 'complex'

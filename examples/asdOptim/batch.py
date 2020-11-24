@@ -9,7 +9,7 @@ To run use: mpiexec -np [num_cores] nrniv -mpi batchRun.py
 
 def batchASD():
     # parameters space to explore
-    
+
     ## simple net
     params = specs.ODict()
     params['prob'] = [0.01, 0.5, [0.4, 0.3]]  # can add 3rd value for starting value (0)
@@ -19,7 +19,7 @@ def batchASD():
     pops = {}
     pops['S'] = {'target': 5, 'width': 2, 'min': 2}
     pops['M'] = {'target': 15, 'width': 2, 'min': 0.2}
-    
+
     # fitness function
     fitnessFuncArgs = {}
     fitnessFuncArgs['pops'] = pops
@@ -30,25 +30,25 @@ def batchASD():
         pops = kwargs['pops']
         maxFitness = kwargs['maxFitness']
         popFitness = [None for i in pops.items()]
-        popFitness = [min(np.exp(  abs(v['target'] - simData['popRates'][k])  /  v['width']), maxFitness) 
+        popFitness = [min(np.exp(  abs(v['target'] - simData['popRates'][k])  /  v['width']), maxFitness)
                 if simData["popRates"][k]>v['min'] else maxFitness for k,v in pops.items()]
         fitness = np.mean(popFitness)
         popInfo = '; '.join(['%s rate=%.1f fit=%1.f'%(p,r,f) for p,r,f in zip(list(simData['popRates'].keys()), list(simData['popRates'].values()), popFitness)])
         print('  '+popInfo)
         return fitness
-        
+
     # create Batch object with paramaters to modify, and specifying files to use
     b = Batch(params=params)
-    
+
     # Set output folder, grid method (all param combinations), and run configuration
     b.batchLabel = 'simple'
     b.saveFolder = './'+b.batchLabel
     b.method = 'asd'
     b.runCfg = {
-        'type': 'mpi_direct',#'hpc_slurm', 
+        'type': 'mpi_direct',#'hpc_slurm',
         'script': 'init.py',
         # options required only for mpi_direct or hpc
-        'mpiCommand': 'mpiexec',  
+        'mpiCommand': 'mpiexec',
         'nodes': 1,
         'coresPerNode': 2,
         # 'allocation': 'default',
@@ -87,4 +87,4 @@ def batchASD():
 
 # Main code
 if __name__ == '__main__':
-    batchASD()  # 'simple' or 'complex' 
+    batchASD()  # 'simple' or 'complex'

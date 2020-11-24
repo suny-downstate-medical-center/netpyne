@@ -15,7 +15,7 @@ from netParams import netParams
 from cfg import cfg
 
 # --------------------------------
-# Instantiate network 
+# Instantiate network
 # --------------------------------
 sim.initialize(netParams, cfg)  # create network object and set cfg and net params
 sim.net.createPops()                  # instantiate network populations
@@ -25,4 +25,4 @@ sim.net.addStims()                    # add external stimulation to cells (IClam
 sim.net.addRxD()                      # add reaction-diffusion (RxD)
 sim.setupRecording()             # setup variables to record for each cell (spikes, V traces, etc)
 sim.simulate()
-sim.analyze()      
+sim.analyze()

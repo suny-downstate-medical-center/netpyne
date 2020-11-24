@@ -41,15 +41,15 @@ netParams.synMechParams['inh'] = {'mod': 'Exp2Syn', 'tau1': 0.6, 'tau2': 8.5, 'e
 
 ## Stimulation parameters
 netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 20, 'noise': 0.3}
-netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 
-										'conds': {'cellType': ['E','I']}, 
-										'weight': 0.01, 
-										'delay': 'max(1, normal(5,2))', 
+netParams.stimTargetParams['bkg->all'] = {'source': 'bkg',
+										'conds': {'cellType': ['E','I']},
+										'weight': 0.01,
+										'delay': 'max(1, normal(5,2))',
 										'synMech': 'exc'}
 
 ## Connectivity parameters
 netParams.connParams['E->all'] = {
-                'preConds': {'cellType': 'E'}, 
+                'preConds': {'cellType': 'E'},
                 'postConds': {'y': [100,1000]},  #  E -> all (100-1000 um)
                 'probability': 0.1,                  # probability of connection
                 'weight': '0.002*post_ynorm',         # synaptic weight
@@ -57,7 +57,7 @@ netParams.connParams['E->all'] = {
                 'synMech': 'exc'}                    # synaptic mechanism
 
 netParams.connParams['I->E'] = {
-                'preConds': {'cellType': 'I'}, 
+                'preConds': {'cellType': 'I'},
                 'postConds': {'pop': ['E2','E4','E5']},       #  I -> E
                 'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
                 'weight': 0.001,                                     # synaptic weight
@@ -83,5 +83,3 @@ cfg.analysis['plotTraces'] = {'include': [5]}      # Plot recorded traces for th
 # Create network and run simulation
 if __name__ == "__main__":
     sim.createSimulateAnalyze(netParams = netParams, simConfig = cfg)
-
-

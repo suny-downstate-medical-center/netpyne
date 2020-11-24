@@ -1,5 +1,6 @@
 """
-Set of classes to define high-level model specifications
+Package of classes to define high-level model specifications
+
 """
 
 from __future__ import unicode_literals

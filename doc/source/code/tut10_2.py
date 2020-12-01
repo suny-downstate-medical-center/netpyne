@@ -70,7 +70,6 @@ netParams.stimTargetParams['bkg->PYR'] = {'source': 'bkg', 'conds': {'cellType':
 
 # Simulation options
 simConfig = specs.SimConfig()       # object of class SimConfig to store simulation configuration
-_mechStrToFunc(sec, self.soma, as2[as2.index("_")+1:], sec.nseg, [a4,a5,'pathdistfromsoma',a6,a7, g8], ['a4','a5','dist', 'a6', 'a7', 'g8'], '(a4 + a5*exp((dist-a6)/a7)) * g8')
 
 def _mechStrToFunc(sec, soma, mech, nseg = False,  strVars = vars, strFunc = strFunc):
     '''
@@ -116,6 +115,8 @@ def _mechStrToFunc(sec, soma, mech, nseg = False,  strVars = vars, strFunc = str
     mechDistribution = [lambdaFunc(*values) for seg in sec]
     print (mechDistribution)
     return mechDistribution
+
+_mechStrToFunc(sec, self.soma, as2[as2.index("_")+1:], sec.nseg, [a4,a5,'pathdistfromsoma',a6,a7, g8], ['a4','a5','dist', 'a6', 'a7', 'g8'], '(a4 + a5*exp((dist-a6)/a7)) * g8')
 
 def calculate_distribution(d3, dist, a4, a5,  a6,  a7, g8):
     '''
@@ -182,7 +183,7 @@ class MSN:
 
         val3 = _mechStrToFunc(sec, self.soma, as2[as2.index("_")+1:], sec.nseg, [a4,a5,dist,a6,a7, g8], ['a4','a5','dist', 'a6', 'a7', 'g8'], '(a4 + a5*exp((dist-a6)/a7)) * g8')
 
-        __mechStrToFunc(sec, self.soma, mechName, mechParams["values"], mechParams["strVars"], mechParams["strFunc"], nseg = sec.nseg)
+        # __mechStrToFunc(sec, self.soma, mechName, mechParams["values"], mechParams["strVars"], mechParams["strFunc"], nseg = sec.nseg)
 
         PYRcell['secs']['dend']['mechs']['hh'] = {'gnabar': 0.12,'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanisms
 

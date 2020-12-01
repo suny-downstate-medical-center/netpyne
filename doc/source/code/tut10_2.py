@@ -152,8 +152,6 @@ def calculate_distribution(d3, dist, a4, a5,  a6,  a7, g8):
 
     value = value*g8
     return value
-
-
 # ======================= the MSN class ==================================================
 
 class MSN:

@@ -1,3 +1,9 @@
+# Version 0.9.9
+
+** Bug fixes ** 
+
+- Made rate_b be positional instead of keyword argument in rxd multiCompartmentReaction
+
 # Version 0.9.8
 
 **New features**

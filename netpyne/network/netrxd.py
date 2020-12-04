@@ -381,7 +381,7 @@ def _addReactions(self, params, multicompartment=False):
         self.rxd[reactionDictKey][label]['hObj'] = getattr(rxd, reactionStr)(dynamicVars['reactant'],
                                                                             dynamicVars['product'],
                                                                             dynamicVars['rate_f'] if 'rate_f' in dynamicVars else rate_f,
-                                                                            rate_b=dynamicVars['rate_b'] if 'rate_b' in dynamicVars else rate_b,
+                                                                            dynamicVars['rate_b'] if 'rate_b' in dynamicVars else rate_b,
                                                                             regions=nrnRegions,
                                                                             custom_dynamics=param['custom_dynamics'],
                                                                             membrane_flux=param['membrane_flux'],

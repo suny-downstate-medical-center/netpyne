@@ -379,7 +379,6 @@ def _addReactions(self, params, multicompartment=False):
 
         if rate_b is None and dynamicVars.get('rate_b', None) is None:
             # omit positional argument 'rate_b'
-            print('\nNO\n')
             self.rxd[reactionDictKey][label]['hObj'] = getattr(rxd, reactionStr)(dynamicVars['reactant'],
                                                                             dynamicVars['product'],
                                                                             dynamicVars['rate_f'] if 'rate_f' in dynamicVars else rate_f,
@@ -390,7 +389,6 @@ def _addReactions(self, params, multicompartment=False):
 
         else:
             # include positional argument 'rate_b'
-            print('\nYES\n')
             self.rxd[reactionDictKey][label]['hObj'] = getattr(rxd, reactionStr)(dynamicVars['reactant'],
                                                                             dynamicVars['product'],
                                                                             dynamicVars['rate_f'] if 'rate_f' in dynamicVars else rate_f,

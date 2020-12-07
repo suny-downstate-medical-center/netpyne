@@ -376,9 +376,22 @@ def _addReactions(self, params, multicompartment=False):
             param['membrane_flux'] = False
 
 
-        #import IPython; IPython.embed()
 
-        self.rxd[reactionDictKey][label]['hObj'] = getattr(rxd, reactionStr)(dynamicVars['reactant'],
+        if rate_b is None and dynamicVars.get('rate_b', None) is None:
+            # omit positional argument 'rate_b'
+            print('\nNO\n')
+            self.rxd[reactionDictKey][label]['hObj'] = getattr(rxd, reactionStr)(dynamicVars['reactant'],
+                                                                            dynamicVars['product'],
+                                                                            dynamicVars['rate_f'] if 'rate_f' in dynamicVars else rate_f,
+                                                                            regions=nrnRegions,
+                                                                            custom_dynamics=param['custom_dynamics'],
+                                                                            membrane_flux=param['membrane_flux'],
+                                                                            membrane=nrnMembraneRegion)
+
+        else:
+            # include positional argument 'rate_b'
+            print('\nYES\n')
+            self.rxd[reactionDictKey][label]['hObj'] = getattr(rxd, reactionStr)(dynamicVars['reactant'],
                                                                             dynamicVars['product'],
                                                                             dynamicVars['rate_f'] if 'rate_f' in dynamicVars else rate_f,
                                                                             dynamicVars['rate_b'] if 'rate_b' in dynamicVars else rate_b,

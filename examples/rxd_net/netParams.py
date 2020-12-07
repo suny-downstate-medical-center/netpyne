@@ -108,7 +108,7 @@ h_gate = 'ip3r_gate_state[cyt_er_membrane]'
 kip3 = 'gip3r * (%s * %s) ** 3' % (minf, h_gate)
 
 mcReactions = {}
-mcReactions['serca'] = {'reactant': 'ca[cyt]', 'product': 'ca[er]', 'rate_f': 'gserca / ((kserca / (1000. * ca[cyt])) ** 2 + 1)', 'membrane': 'cyt_er_membrane', 'custom_dynamics': True}
+mcReactions['serca'] = {'reactant': 'ca[cyt]', 'product': 'ca[er]', 'rate_f': 'gserca / ((kserca / (1000. * ca[cyt])) ** 2 + 1)',  'membrane': 'cyt_er_membrane', 'custom_dynamics': True}
 mcReactions['leak'] = {'reactant': 'ca[er]', 'product': 'ca[cyt]', 'rate_f': constants['gleak'], 'rate_b': constants['gleak'], 'membrane': 'cyt_er_membrane'}
 mcReactions['ip3r'] = {'reactant': 'ca[er]', 'product': 'ca[cyt]', 'rate_f': kip3, 'rate_b': kip3, 'membrane': 'cyt_er_membrane'}
 netParams.rxdParams['multicompartmentReactions'] = mcReactions

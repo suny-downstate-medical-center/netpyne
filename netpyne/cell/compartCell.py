@@ -1319,13 +1319,19 @@ class CompartCell (Cell):
 
         p3dsoma = self.getSomaPos()
         pop = self.tags['pop']
-        morphSegCoords = sim.net.pops[pop]._morphSegCoords
-
-        # rotated coordinates around z axis first then shift relative to the soma
+        
         self._segCoords = {}
         p3dsoma = p3dsoma[np.newaxis].T  # trasnpose 1d array to enable matrix calculation
-        self._segCoords['p0'] = p3dsoma + morphSegCoords['p0']
-        self._segCoords['p1'] = p3dsoma + morphSegCoords['p1']
+
+        if hasattr(sim.net.pops[pop], '_morphSegCoords'):
+            # rotated coordinates around z axis first then shift relative to the soma            
+            morphSegCoords = sim.net.pops[pop]._morphSegCoords
+            self._segCoords['p0'] = p3dsoma + morphSegCoords['p0']
+            self._segCoords['p1'] = p3dsoma + morphSegCoords['p1']
+        else:
+            # rotated coordinates around z axis 
+            self._segCoords['p0'] = p3dsoma 
+            self._segCoords['p1'] = p3dsoma
 
     def setImembPtr(self):
         """Set PtrVector to point to the i_membrane_"""

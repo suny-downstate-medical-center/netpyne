@@ -341,6 +341,7 @@ def _addReactions(self, params, multicompartment=False):
             rate_f = param['rate_f']
 
         # rate_b
+        rate_b = None
         if 'rate_b' not in param:
             param['rate_b'] = None
         if isinstance(param['rate_b'], basestring):

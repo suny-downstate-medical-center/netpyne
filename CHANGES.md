@@ -4,6 +4,8 @@
 
 - Made rate_b be positional instead of keyword argument in rxd multiCompartmentReaction
 
+- Check if _morphSegCoords exists in population before using
+
 # Version 0.9.8
 
 **New features**

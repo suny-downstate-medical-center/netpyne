@@ -36,14 +36,14 @@ simConfig.recordLFP = [[x, y, 35] for y in range(280, 1000, 150) for x in [30, 9
 simConfig.analysis['plotTraces'] = {'include': [('E',0)], 'oneFigPer':'cell', 'overlay': True, 'figSize': (5,3),'saveFig': True}      # Plot recorded traces for this list of cells
 simConfig.analysis['plotLFP'] = {'includeAxon': False, 'plots': ['timeSeries',  'locations'], 'figSize': (5,9), 'saveFig': True}
 simConfig.analysis['getCSD'] = {'timeRange': [10,45],'spacing_um': 150, 'vaknin': True}
-
+simConfig.analysis['plotCSD'] = {'LFP_overlay':True}
 #sim.analysis.getCSD(...args...)
 #simConfig.analysis['plotCSD'] = {}
 
 
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
-sim.analysis.plotCSD()
+#sim.analysis.plotCSD()
 
 # check model output
 sim.checkOutput('cell_lfp')

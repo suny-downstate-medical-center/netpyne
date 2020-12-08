@@ -138,7 +138,9 @@ Friesen model
 :download:`AMPA.mod <code/mod/AMPA.mod>`,
 :download:`NMDA.mod <code/mod/NMDA.mod>`,
 :download:`OFThpo.mod <code/mod/OFThpo.mod>`,
-:download:`OFThresh.mod <code/mod/OFThresh.mod>`
+:download:`OFThresh.mod <code/mod/OFThresh.mod>`,
+:download:`netcon.inc <code/netcon.inc>`,
+:download:`ofc.inc <code/mod/ofc.inc>`
 
 *NetPyNE Code:* ::
 

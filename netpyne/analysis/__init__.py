@@ -1,5 +1,6 @@
 """
-Functions for analysis and plotting
+Package for analysis and plotting
+
 """
 
 from __future__ import unicode_literals
@@ -34,7 +35,7 @@ from .network import plotConn, _plotConnCalculateFromSim, _plotConnCalculateFrom
 # Import spike-related functions
 # -------------------------------------------------------------------------------------------------------------------
 from .spikes import calculateRate, plotRates, plotSyncs, plotRaster, plotSpikeHist, plotSpikeStats, \
-    plotRatePSD, plotRateSpectrogram, popAvgRates, plotfI
+    plotRatePSD, plotRateSpectrogram, popAvgRates, plotfI, calculatefI
 
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -64,6 +65,7 @@ from .rxd import plotRxDConcentration
 # -------------------------------------------------------------------------------------------------------------------
 # Import interactive functions functions
 # -------------------------------------------------------------------------------------------------------------------
+
 try:
   from .interactive import iplotDipole, iplotDipoleSpectrogram, iplotDipolePSD, iplotRaster, iplotSpikeHist, iplotRatePSD, iplotTraces, iplotLFP, iplotConn, iplotRxDConcentration, iplot2Dnet, iplotSpikeStats
 except:
@@ -74,7 +76,3 @@ except:
 # Import CSD-related functions
 # -------------------------------------------------------------------------------------------------------------------
 from .csd import getCSD, plotCSD
-
-
-
-

@@ -1,6 +1,72 @@
+# Version 0.9.9
+
+** Bug fixes ** 
+
+- Made rate_b be positional instead of keyword argument in rxd multiCompartmentReaction
+
+# Version 0.9.8
+
+**New features**
+
+- analysis.plotLFP can now be applied to external data
+
+- Evolutionary and Optuna optimization can now read results from .pkl files
+
+- Enabled recording of stimulus variables (e.g. SEClamp i)
+
+- Added options in load func to avoid instantiating cells, conns, stims and/or rxd 
+
+- Analysis and plotting of rate vs current (f-I) curve for single cell tuning
+
+- Recording and plotting of current dipoles in arbitrary subset of populations
+
+- Added option to plot LFP spectrogram with log y-axis 
+
+- Added option to plot the log of connectivity in plotConn
+
+- Enabled random distribution of multiple synapses with synsPerConn>1 and connRandomSecFromList=True 
+
+- Added lineWidth option to plot2Dnet (thanks Eric!)
+
+- Updated Travis Continuous Integration to use NEURON 7.8.1 (from 7.6.2)
+
+- Removed trailing white space from all Python files in the repository
+
+
+**Bug fixes**
+
+- Fixed bug when using index with recordTraces
+
+- Fixed axes values in plotRxDConcentration and iplotRxDConcentration
+
+- Added links to necessary mod files in the importing cell models tutorial
+
+- Added aux_fun.inc to doc/source/code/mod as it's needed for some examples
+
+- Blocked terminal output from Git when no repository is found (i.e. with pip install netpyne)
+
+- Avoid adding section-based weightNorm values to point neurons (was affecting tut_import.py)
+
+- Prevent error when loading pointCell params from json by converting Dict to dict
+
+- Fixed bug in plotShape (thanks Eric!)
+
+- Updated setup.py so PyPI website renders the README as markdown
+
+- Fixed expected numSpikes in test of M1detailed example
+
+- Merged GUI branch into development branch
+
+- Fixed bug in iplotConn
+
+- Fixed bug and coloring in iplotSpikeStats with different themes
+
+
 # Version 0.9.7
 
 **New features**
+
+- Added optimization using Optuna (optuna.org)
 
 - Simplified cellParams to use dict key as 'cellType' and make 'conds' optional
 
@@ -50,6 +116,8 @@
 
 
 **Documentation improvements**
+
+- Updated and tested online tutorials
 
 - Changed all triple single-quoted docstrings to triple double-quoted
 

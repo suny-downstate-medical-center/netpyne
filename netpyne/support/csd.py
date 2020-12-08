@@ -38,7 +38,7 @@ def getCSD(lfps,sampr,minf=0.05,maxf=300,norm=True,vaknin=False,spacing=1.0):
     get current source density approximation using set of local field potentials with equidistant spacing
     first performs a lowpass filter
     lfps is a list or numpy array of LFPs arranged spatially by column
-    spacing is in microns   
+    spacing is in microns
     """
     datband = getbandpass(lfps,sampr,minf,maxf)
     if datband.shape[0] > datband.shape[1]: # take CSD along smaller dimension

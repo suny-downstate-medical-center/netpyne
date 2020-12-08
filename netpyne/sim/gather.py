@@ -1,7 +1,6 @@
 """
-sim/gather.py
+Module for gathering data from nodes after a simulation
 
-Functions related to gathering data from nodes after the simulation
 """
 
 from __future__ import print_function
@@ -20,8 +19,22 @@ from ..specs import Dict, ODict
 # Gather data from nodes
 #------------------------------------------------------------------------------
 def gatherData(gatherLFP = True):
+    """
+    Function for/to <short description of `netpyne.sim.gather.gatherData`>
+
+    Parameters
+    ----------
+    gatherLFP : bool
+        <Short description of gatherLFP>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+
+
+    """
+
+
     from .. import sim
-        
+
     sim.timing('start', 'gatherTime')
     ## Pack data from all hosts
     if sim.rank==0:
@@ -41,8 +54,8 @@ def gatherData(gatherLFP = True):
     # Store conns in a compact list format instead of a long dict format (cfg.compactConnFormat contains list of keys to include)
     elif sim.cfg.compactConnFormat:
         sim.compactConnFormat()
-            
-    # remove data structures used to calculate LFP 
+
+    # remove data structures used to calculate LFP
     if gatherLFP and sim.cfg.recordLFP and hasattr(sim.net, 'compartCells') and sim.cfg.createNEURONObj:
         for cell in sim.net.compartCells:
             try:
@@ -56,8 +69,11 @@ def gatherData(gatherLFP = True):
                 del pop._morphSegCoords
             except:
                 pass
-    simDataVecs = ['spkt', 'spkid', 'stims'] + list(sim.cfg.recordTraces.keys())
-    if sim.cfg.recordDipoles: simDataVecs.append('dipole')
+    simDataVecs = ['spkt', 'spkid', 'stims', 'dipole'] + list(sim.cfg.recordTraces.keys())
+    if sim.cfg.recordDipoles:
+        _aggregateDipoles()
+        simDataVecs.append('dipole')
+
     singleNodeVecs = ['t']
     if sim.nhosts > 1:  # only gather if >1 nodes
         netPopsCellGids = {popLabel: list(pop.cellGids) for popLabel,pop in sim.net.pops.items()}
@@ -78,6 +94,9 @@ def gatherData(gatherLFP = True):
                 for k in list(gather[0]['simData'].keys()):  # initialize all keys of allSimData dict
                     if gatherLFP and k == 'LFP':
                         sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
+                    elif sim.cfg.recordDipoles and k == 'dipole':
+                        for dk in sim.cfg.recordDipoles:
+                            sim.allSimData[k][dk] = np.zeros(len(gather[0]['simData']['dipole'][dk]))
                     else:
                         sim.allSimData[k] = {}
 
@@ -89,21 +108,22 @@ def gatherData(gatherLFP = True):
                     for key,val in node['simData'].items():  # update simData dics of dics of h.Vector
                         if key in simDataVecs:          # simData dicts that contain Vectors
                             if isinstance(val, dict):
-                                for cell,val2 in val.items():
+                                for key2,val2 in val.items():
                                     if isinstance(val2,dict):
-                                        sim.allSimData[key].update(Dict({cell:Dict()}))
+                                        sim.allSimData[key].update(Dict({key2:Dict()}))
                                         for stim,val3 in val2.items():
-                                            sim.allSimData[key][cell].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
+                                            sim.allSimData[key][key2].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
+                                    #elif key == 'dipole':
+                                    #    sim.allSimData[key][key2] = np.add(sim.allSimData[key][key2],val2.as_numpy()) # add together dipole values from each node
                                     else:
-                                        sim.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
+                                        sim.allSimData[key].update({key2:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
                         elif gatherLFP and key == 'LFP':
                             sim.allSimData[key] += np.array(val)
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
-    
-                
+
                 if len(sim.allSimData['spkt']) > 0:
                     sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
                     sim.allSimData['spkt'], sim.allSimData['spkid'] = list(sim.allSimData['spkt']), list(sim.allSimData['spkid'])
@@ -120,7 +140,7 @@ def gatherData(gatherLFP = True):
             data[0] = {}
             for k,v in nodeData.items():
                 data[0][k] = v
-            
+
             #print data
             gather = sim.pc.py_alltoall(data)
             sim.pc.barrier()
@@ -134,6 +154,9 @@ def gatherData(gatherLFP = True):
                 for k in list(gather[0]['simData'].keys()):  # initialize all keys of allSimData dict
                     if gatherLFP and k == 'LFP':
                         sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
+                    elif sim.cfg.recordDipoles and k == 'dipole':
+                        for dk in sim.cfg.recordDipoles:
+                            sim.allSimData[k][dk] = np.zeros(len(gather[0]['simData']['dipole'][dk]))
                     else:
                         sim.allSimData[k] = {}
 
@@ -149,13 +172,15 @@ def gatherData(gatherLFP = True):
                     for key,val in node['simData'].items():  # update simData dics of dics of h.Vector
                         if key in simDataVecs:          # simData dicts that contain Vectors
                             if isinstance(val,dict):
-                                for cell,val2 in val.items():
+                                for key2,val2 in val.items():
                                     if isinstance(val2,dict):
-                                        sim.allSimData[key].update(Dict({cell:Dict()}))
+                                        sim.allSimData[key].update(Dict({key2:Dict()}))
                                         for stim,val3 in val2.items():
-                                            sim.allSimData[key][cell].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
+                                            sim.allSimData[key][key2].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
+                                    #elif key == 'dipole':
+                                    #    sim.allSimData[key][key2] = np.add(sim.allSimData[key][key2],val2.as_numpy()) # add together dipole values from each node
                                     else:
-                                        sim.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
+                                        sim.allSimData[key].update({key2:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
                         elif gatherLFP and key == 'LFP':
@@ -208,7 +233,7 @@ def gatherData(gatherLFP = True):
                         sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
                 else:
                     sim.allSimData[key] = val           # update simData dicts which are not Vectors
-    
+
     ## Print statistics
     sim.pc.barrier()
     if sim.rank == 0:
@@ -243,38 +268,19 @@ def gatherData(gatherLFP = True):
         print(('  Connections: %i (%0.2f per cell)' % (sim.totalConnections, sim.connsPerCell)))
         if sim.totalSynapses != sim.totalConnections:
             print(('  Synaptic contacts: %i (%0.2f per cell)' % (sim.totalSynapses, sim.synsPerCell)))
-        
+
         if 'runTime' in sim.timingData:
-            print(('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate)))            
+            print(('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate)))
             print(('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration/1e3, sim.nhosts)))
             print(('  Run time: %0.2f s' % (sim.timingData['runTime'])))
-            
+
             if sim.cfg.printPopAvgRates and not sim.cfg.gatherOnlySimData:
 
-                trange = sim.cfg.printPopAvgRates if isinstance(sim.cfg.printPopAvgRates,list) else None
+                trange = sim.cfg.printPopAvgRates if isinstance(sim.cfg.printPopAvgRates, list) else None
                 sim.allSimData['popRates'] = sim.analysis.popAvgRates(tranges=trange)
 
             if 'plotfI' in sim.cfg.analysis:
-                times = sim.cfg.analysis['plotfI'].get('times', [0, sim.cfg.duration])
-                dur = sim.cfg.analysis['plotfI'].get('dur', sim.cfg.duration)
-                onset = sim.cfg.analysis['plotfI'].get('calculateOnset', False)
-                durSteady = sim.cfg.analysis['plotfI'].get('durSteady', None) 
-
-                sim.allSimData['fI'] = [len([spkt for spkt in sim.allSimData['spkt']
-                                if t <= spkt < t + dur]) / (dur / 1000.0) for t in times]  
-
-                if onset: # rate based on inter-spike interval of 1st 2 spikes 
-                    sim.allSimData['fI_onset'] = []
-                    for t in times:
-                        allSpks = [spkt for spkt in sim.allSimData['spkt'] if t <= spkt < t + dur]
-                        if len(allSpks) >= 2:
-                            sim.allSimData['fI_onset'].append(1000.0 / (allSpks[1] - allSpks[0]))
-                        else:
-                            sim.allSimData['fI_onset'].append(0.0)
-                
-                if durSteady: # rate based on the last 'dur' ms
-                    sim.allSimData['fI_steady'] = [len([spkt for spkt in sim.allSimData['spkt']
-                                if t + dur - durSteady <= spkt < t + dur]) / (durSteady / 1000.0) for t in times]  
+                sim.analysis.calculatefI()  # need to call here so data is saved to file
 
             sim.allSimData['avgRate'] = sim.firingRate  # save firing rate
 
@@ -285,9 +291,23 @@ def gatherData(gatherLFP = True):
 #  Gathers simData from filess
 #------------------------------------------------------------------------------
 def fileGather(gatherLFP = True):
+    """
+    Function for/to <short description of `netpyne.sim.gather.fileGather`>
+
+    Parameters
+    ----------
+    gatherLFP : bool
+        <Short description of gatherLFP>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+
+
+    """
+
+
     import os, pickle
     from .. import sim
-    
+
     sim.timing('start', 'gatherTime')
 
     # iterate through the saved files and concat their data
@@ -296,9 +316,9 @@ def fileGather(gatherLFP = True):
         import re
         if hasattr(sim.cfg, 'intervalFolder'):
             targetFolder = sim.cfg.intervalFolder
-        else: 
+        else:
             targetFolder = os.path.dirname(sim.cfg.filename)
-                
+
         for f in os.listdir(targetFolder):
             if re.search(r'data_\d+.pkl$', f) is not None:
                 with open(targetFolder + '/' + f, 'rb') as data:
@@ -310,24 +330,24 @@ def fileGather(gatherLFP = True):
                             elif isinstance(temp[k], dict):
                                 fileData[k].update(temp[k])
                         else:
-                            fileData[k] = temp[k] 
+                            fileData[k] = temp[k]
 
-    
+
     simDataVecs = ['spkt','spkid','stims']+list(sim.cfg.recordTraces.keys())
     singleNodeVecs = ['t']
 
     if sim.rank == 0:
         sim.allSimData = Dict()
         sim.allSimData.update(fileData)
-    
-    
+
+
         if len(sim.allSimData['spkt']) > 0:
             sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
             sim.allSimData['spkt'], sim.allSimData['spkid'] = list(sim.allSimData['spkt']), list(sim.allSimData['spkid'])
-    
-                        
+
+
     # 1 get the right data, now check that we have right amount
-    # 2 use that data rather than gathering later        
+    # 2 use that data rather than gathering later
     ## Pack data from all hosts
     if sim.rank==0:
         print('\nGathering data from files...')
@@ -346,8 +366,8 @@ def fileGather(gatherLFP = True):
     # Store conns in a compact list format instead of a long dict format (cfg.compactConnFormat contains list of keys to include)
     elif sim.cfg.compactConnFormat:
         sim.compactConnFormat()
-    
-    # remove data structures used to calculate LFP 
+
+    # remove data structures used to calculate LFP
     if gatherLFP and sim.cfg.recordLFP and hasattr(sim.net, 'compartCells') and sim.cfg.createNEURONObj:
         for cell in sim.net.compartCells:
             try:
@@ -378,7 +398,7 @@ def fileGather(gatherLFP = True):
             data[0] = {}
             for k,v in nodeData.items():
                 data[0][k] = v
-            
+
             #print data
             gather = sim.pc.py_alltoall(data)
             sim.pc.barrier()
@@ -387,13 +407,13 @@ def fileGather(gatherLFP = True):
                 allPops = ODict()
                 for popLabel,pop in sim.net.pops.items(): allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
                 allPopsCellGids = {popLabel: [] for popLabel in netPopsCellGids} ####################
-                
+
 
                 # fill in allSimData taking into account if data is dict of h.Vector (code needs improvement to be more generic)
                 for node in gather:  # concatenate data from each node
                     allCells.extend(node['netCells'])  # extend allCells list
                     for popLabel,popCellGids in node['netPopsCellGids'].items():
-                        allPopsCellGids[popLabel].extend(popCellGids) 
+                        allPopsCellGids[popLabel].extend(popCellGids)
 
                 if len(sim.allSimData['spkt']) > 0:
                     sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
@@ -414,7 +434,7 @@ def fileGather(gatherLFP = True):
                 item.clear()
                 del item
 
-    
+
     ## Print statistics
     sim.pc.barrier()
     if sim.rank == 0:
@@ -447,28 +467,183 @@ def fileGather(gatherLFP = True):
 
         print(('  Cells: %i' % (sim.numCells) ))
         print(('  Connections: %i (%0.2f per cell)' % (sim.totalConnections, sim.connsPerCell)))
-        
+
         if sim.totalSynapses != sim.totalConnections:
             print(('  Synaptic contacts: %i (%0.2f per cell)' % (sim.totalSynapses, sim.synsPerCell)))
 
         if 'runTime' in sim.timingData:
-            print(('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate)))              
+            print(('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate)))
             print(('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration/1e3, sim.nhosts)))
             print(('  Run time: %0.2f s' % (sim.timingData['runTime'])))
 
             if sim.cfg.printPopAvgRates and not sim.cfg.gatherOnlySimData:
                 trange = sim.cfg.printPopAvgRates if isinstance(sim.cfg.printPopAvgRates,list) else None
                 sim.allSimData['popRates'] = sim.analysis.popAvgRates(tranges=trange)
-            
+
             if 'plotfI' in sim.cfg.analysis:
                 times = get(sim.cfg.analysis['plotfI'], 'times', [0, sim.cfg.duration])
-                dur = get(sim.cfg.analysis['plotfI'], 'dur', sim.cfg.duration) 
+                dur = get(sim.cfg.analysis['plotfI'], 'dur', sim.cfg.duration)
                 sim.allSimData['fI'] = [len([spkt for spkt in sim.allSimData['spkt']
-                                if t <= spkt < t + dur]) / (dur / 1000.0) for t in times]                    
-    
+                                if t <= spkt < t + dur]) / (dur / 1000.0) for t in times]
+
             sim.allSimData['avgRate'] = sim.firingRate  # save firing rate
 
         return sim.allSimData
+
+
+
+#------------------------------------------------------------------------------
+#  Gathers simData from filess
+#------------------------------------------------------------------------------
+def mergeFiles(gatherLFP = True, targetFolder = None, saveFilename = None):
+    """
+    Function for/to <short description of `netpyne.sim.gather.fileGather`>
+
+    Parameters
+    ----------
+    gatherLFP : bool
+        <Short description of gatherLFP>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+
+
+    """
+
+
+    import os, pickle
+    from .. import sim
+
+
+    # iterate through the saved files and concat their data
+    fileData = Dict()
+    if sim.rank == 0:
+        import re
+        if not targetFolder:
+            if hasattr(sim.cfg, 'intervalFolder'):
+                targetFolder = sim.cfg.intervalFolder
+            else:
+                targetFolder = os.path.dirname(sim.cfg.filename)
+
+        # find all individual sim labels whose files need to be gathered
+        simLabels = [f.replace('_node0.pkl','') for f in os.listdir(targetFolder) if f.endswith('_node0.pkl')]
+        for simLabel in simLabels:
+            print('Merging files for simulation %s...' % (simLabel))
+            fileList = [f for f in os.listdir(targetFolder) if f.startswith(simLabel+'_node')]
+            for f in fileList:
+                with open(targetFolder + '/' + f, 'rb') as data:
+                    temp = pickle.load(data)
+                    print('  Merging data file %s' % (f))
+                    for k in temp.keys():
+                        if k in fileData:
+                            if isinstance(temp[k], list):
+                                fileData[k] = fileData[k] + temp[k]
+                            elif isinstance(temp[k], dict):
+                                fileData[k].update(temp[k])
+                        else:
+                            fileData[k] = temp[k]
+
+            simDataVecs = ['spkt','spkid','stims']+list(sim.cfg.recordTraces.keys())
+            singleNodeVecs = ['t']
+
+            sim.allSimData = Dict()
+            sim.allSimData.update(fileData)
+
+            if len(sim.allSimData['spkt']) > 0:
+                sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
+                sim.allSimData['spkt'], sim.allSimData['spkid'] = list(sim.allSimData['spkt']), list(sim.allSimData['spkid'])
+
+
+            # 1 get the right data, now check that we have right amount
+            # 2 use that data rather than gathering later
+            ## Pack data from all hosts
+            if sim.rank==0:
+                print('\nGathering data from files...')
+
+            # flag to avoid saving sections data for each cell (saves gather time and space; cannot inspect cell secs or re-simulate)
+            if not sim.cfg.saveCellSecs:
+                for cell in sim.net.cells:
+                    cell.secs = None
+                    cell.secLists = None
+
+            # flag to avoid saving conns data for each cell (saves gather time and space; cannot inspect cell conns or re-simulate)
+            if not sim.cfg.saveCellConns:
+                for cell in sim.net.cells:
+                    cell.conns = []
+
+            # Store conns in a compact list format instead of a long dict format (cfg.compactConnFormat contains list of keys to include)
+            elif sim.cfg.compactConnFormat:
+                sim.compactConnFormat()
+
+            # remove data structures used to calculate LFP
+            if gatherLFP and sim.cfg.recordLFP and hasattr(sim.net, 'compartCells') and sim.cfg.createNEURONObj:
+                for cell in sim.net.compartCells:
+                    try:
+                        del cell.imembVec
+                        del cell.imembPtr
+                        del cell._segCoords
+                    except:
+                        pass
+                for pop in list(sim.net.pops.values()):
+                    try:
+                        del pop._morphSegCoords
+                    except:
+                        pass
+
+            # simDataVecs = ['spkt','spkid','stims']+list(sim.cfg.recordTraces.keys())
+            # singleNodeVecs = ['t']
+            if sim.nhosts > 1:  # only gather if >1 nodes
+                netPopsCellGids = {popLabel: list(pop.cellGids) for popLabel,pop in sim.net.pops.items()}
+
+                # gather only sim data
+                if getattr(sim.cfg, 'gatherOnlySimData', False):
+                    pass
+                # gather the non-simData
+                else:
+                    # nodeData = {'netCells': [c.__getstate__() for c in sim.net.cells], 'netPopsCellGids': netPopsCellGids, 'simData': sim.simData}
+                    nodeData = {'netCells': [c.__getstate__() for c in sim.net.cells], 'netPopsCellGids': netPopsCellGids}
+                    data = [None]*sim.nhosts
+                    data[0] = {}
+                    for k,v in nodeData.items():
+                        data[0][k] = v
+
+                    #print data
+                    gather = sim.pc.py_alltoall(data)
+                    sim.pc.barrier()
+                    if sim.rank == 0:
+                        allCells = []
+                        allPops = ODict()
+                        for popLabel,pop in sim.net.pops.items(): allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
+                        allPopsCellGids = {popLabel: [] for popLabel in netPopsCellGids} ####################
+
+
+                        # fill in allSimData taking into account if data is dict of h.Vector (code needs improvement to be more generic)
+                        for node in gather:  # concatenate data from each node
+                            allCells.extend(node['netCells'])  # extend allCells list
+                            for popLabel,popCellGids in node['netPopsCellGids'].items():
+                                allPopsCellGids[popLabel].extend(popCellGids)
+
+                        if len(sim.allSimData['spkt']) > 0:
+                            sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
+                            sim.allSimData['spkt'], sim.allSimData['spkid'] = list(sim.allSimData['spkt']), list(sim.allSimData['spkid'])
+
+                        sim.net.allCells =  sorted(allCells, key=lambda k: k['gid'])
+
+                        for popLabel,pop in allPops.items():
+                            pop['cellGids'] = sorted(allPopsCellGids[popLabel])
+                        sim.net.allPops = allPops
+                # clean to avoid mem leaks
+                for node in gather:
+                    if node:
+                        node.clear()
+                        del node
+                for item in data:
+                    if item:
+                        item.clear()
+                        del item
+
+            sim.saveData(filename=saveFilename)
+            # SAVE TO SINGLE FILE!! option to save only parts of it
+
 
 
 #------------------------------------------------------------------------------
@@ -563,3 +738,19 @@ def _gatherCells():
         sim.net.allCells = [c.__getstate__() for c in sim.net.cells]
 
 
+#------------------------------------------------------------------------------
+# Aggregate dipole data for each cell on nodes
+#------------------------------------------------------------------------------
+def _aggregateDipoles ():
+    from .. import sim
+
+    if not hasattr(sim.net, 'compartCells'):
+        sim.net.compartCells = [c for c in sim.net.cells if type(c) is sim.CompartCell]
+
+    for k in sim.cfg.recordDipoles:
+        sim.simData['dipole'][k] = sim.h.Vector((sim.cfg.duration/sim.cfg.recordStep)+1)
+
+    for cell in sim.net.compartCells:
+        for k, v in sim.cfg.recordDipoles.items():
+            if cell.tags['pop'] in v:
+                sim.simData['dipole'][k].add(cell.dipole['hRec'])

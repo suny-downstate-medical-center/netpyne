@@ -27,8 +27,8 @@ def generate(reference = "SimpleNet",
                                                   100,100,100,
                                                   color='0 .8 0')
 
-    syn = oc.add_exp_two_syn(nml_doc, 
-                             id="syn0", 
+    syn = oc.add_exp_two_syn(nml_doc,
+                             id="syn0",
                              gbase="2nS",
                              erev="0mV",
                              tau_rise="0.5ms",
@@ -46,23 +46,23 @@ def generate(reference = "SimpleNet",
                                 all_cells=True)
 
     nml_file_name = '%s.net.nml'%network.id
-    oc.save_network(nml_doc, 
+    oc.save_network(nml_doc,
                     nml_file_name,
                     validate=(format=='xml'),
                     format = format)
 
     if format=='xml':
-        oc.generate_lems_simulation(nml_doc, 
-                                    network, 
-                                    nml_file_name, 
-                                    duration =      500, 
+        oc.generate_lems_simulation(nml_doc,
+                                    network,
+                                    nml_file_name,
+                                    duration =      500,
                                     dt =            0.025)
 
 
 if __name__ == '__main__':
-    
-    import sys 
-    
+
+    import sys
+
     if len(sys.argv)==2:
         generate(scale=int(sys.argv[1]))
     else:

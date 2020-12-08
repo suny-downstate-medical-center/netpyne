@@ -5,37 +5,37 @@ from math import exp,log
 
 h.load_file('stdrun.hoc')
 
-Vrest       = -88.5366550238 
-h.v_init = -75.0413649414 
+Vrest       = -88.5366550238
+h.v_init = -75.0413649414
 h.celsius     = 34.0 # for in vitro opt
 
 # geom properties
-somaL = 48.4123467666 
-somaDiam = 28.2149102762 
-axonL = 594.292937602 
-axonDiam =  1.40966286462 
-apicL = 261.904636003 
-apicDiam = 1.5831889597 
-bdendL = 299.810775175 
-bdendDiam = 2.2799248874 
+somaL = 48.4123467666
+somaDiam = 28.2149102762
+axonL = 594.292937602
+axonDiam =  1.40966286462
+apicL = 261.904636003
+apicDiam = 1.5831889597
+bdendL = 299.810775175
+bdendDiam = 2.2799248874
 
-# passive properties 
-axonCap =  1.01280903702 
-somaCap =  1.78829677463 
-apicCap = 1.03418636866 
-bdendCap = 1.89771901209 
-rall = 114.510490019 
-axonRM = 3945.2107187 
-somaRM = 18501.7540916 
-apicRM = 10751.193413 
-bdendRM = 13123.00174 
+# passive properties
+axonCap =  1.01280903702
+somaCap =  1.78829677463
+apicCap = 1.03418636866
+bdendCap = 1.89771901209
+rall = 114.510490019
+axonRM = 3945.2107187
+somaRM = 18501.7540916
+apicRM = 10751.193413
+bdendRM = 13123.00174
 
 # Na, K reversal potentials calculated from BenS internal/external solutions via Nernst eq.
 p_ek = -104.0 # these reversal potentials for in vitro conditions
-p_ena = 42.0 
+p_ena = 42.0
 # h-current
 h.erev_ih = -37.0 # global
-gbar_h = 0.000140956438043 
+gbar_h = 0.000140956438043
 h_gbar_tuft = 0.00565 # mho/cm^2 (based on Harnett 2015 J Neurosci)
 
 # d-current
@@ -57,7 +57,7 @@ kap_vhalfn  = 32.7885075379
 kap_tq      = -52.0967985869
 kap_vhalfl = -59.7867409796 # global!!
 
-# other ion channel parameters 
+# other ion channel parameters
 cal_gcalbar = 4.41583533572e-06
 can_gcanbar = 4.60717910591e-06
 calginc = 1.0
@@ -65,8 +65,8 @@ h_lambda = 325.0
 kBK_gpeak = 5.09733585163e-05
 kBK_caVhminShift = 43.8900261407
 cadad_depth = 0.119408607923
-cadad_taur = 99.1146852282 
-			
+cadad_taur = 99.1146852282
+
 ###############################################################################
 # SPI6 Cell
 ###############################################################################
@@ -118,21 +118,21 @@ class SPI6 ():
     axon.gbar_kap = gbar_kap * kap_gbar_axonm
 
   def set_calprops (self,sec):
-    sec.gcalbar_cal = cal_gcalbar 
-    sec.gcanbar_can = can_gcanbar 
+    sec.gcalbar_cal = cal_gcalbar
+    sec.gcanbar_can = can_gcanbar
     sec.gpeak_kBK = kBK_gpeak
     sec.caVhmin_kBK = -46.08 + kBK_caVhminShift
     sec.depth_cadad = cadad_depth
-    sec.taur_cadad = cadad_taur   
+    sec.taur_cadad = cadad_taur
 
   def set_somag (self):
     sec = self.soma
     sec.gbar_ih = gbar_h # Ih
     self.set_calprops(sec)
-    sec.gbar_kdmc  = gbar_kdmc 
+    sec.gbar_kdmc  = gbar_kdmc
     sec.gbar_nax = gbar_nax * nax_gbar_somam
 
-  def set_bdendg (self): 
+  def set_bdendg (self):
     sec = self.Bdend
     sec.gbar_ih = gbar_h # Ih
     self.set_calprops(sec)
@@ -168,10 +168,10 @@ class SPI6 ():
     for sec in self.all_sec:
       sec.ek = p_ek # K+ current reversal potential (mV)
       sec.ena = p_ena # Na+ current reversal potential (mV)
-      sec.Ra = rall; sec.e_pas = Vrest # passive      
-      sec.gbar_nax    = gbar_nax # Na      
+      sec.Ra = rall; sec.e_pas = Vrest # passive
+      sec.gbar_nax    = gbar_nax # Na
       sec.gbar_kdr    = gbar_kdr # KDR
-      sec.vhalfn_kdr = kdr_vhalfn # KDR kinetics 
+      sec.vhalfn_kdr = kdr_vhalfn # KDR kinetics
       sec.gbar_kap    = gbar_kap # K-A
       sec.vhalfn_kap = kap_vhalfn # K-A kinetics
       sec.vhalfl_kap = kap_vhalfl
@@ -190,11 +190,11 @@ class SPI6 ():
       sec.insert('kdr') # K delayed rectifier current
       sec.insert('kap') # K-A current
     for sec in [self.Adend3, self.Adend2, self.Adend1, self.Bdend, self.soma]:
-      sec.insert('ih') # h-current      
+      sec.insert('ih') # h-current
       sec.insert('ca_ion') # calcium channels
       sec.insert('cal') # cal_mig.mod
       sec.insert('can') # can_mig.mod
-      sec.insert('cadad') # cadad.mod - calcium decay 
+      sec.insert('cadad') # cadad.mod - calcium decay
       sec.insert('kBK') # kBK.mod - ca and v dependent k channel
     for sec in [self.soma, self.axon]: sec.insert('kdmc')  # K-D current in soma & axon only
 
@@ -206,4 +206,3 @@ def prmstr (p,s,fctr=2.0,shift=5.0):
     print(s, '=',str(p*fctr),str(p/fctr),str(p),'True')
   else:
     print(s, ' = ' , str(p/fctr), str(p*fctr), str(p), 'True')
-

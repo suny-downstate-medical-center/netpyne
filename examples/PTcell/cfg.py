@@ -1,5 +1,5 @@
 """
-cfg.py 
+cfg.py
 
 Simulation configuration for M1 model (using NetPyNE)
 """
@@ -7,7 +7,7 @@ Simulation configuration for M1 model (using NetPyNE)
 from netpyne import specs
 import pickle
 
-cfg = specs.SimConfig()  
+cfg = specs.SimConfig()
 
 #------------------------------------------------------------------------------
 #
@@ -20,11 +20,11 @@ cfg = specs.SimConfig()
 #------------------------------------------------------------------------------
 cfg.duration = 0.1*1e3
 cfg.dt = 0.05
-cfg.seeds = {'conn': 4321, 'stim': 1234, 'loc': 4321} 
-cfg.hParams = {'celsius': 34, 'v_init': -80}  
+cfg.seeds = {'conn': 4321, 'stim': 1234, 'loc': 4321}
+cfg.hParams = {'celsius': 34, 'v_init': -80}
 cfg.verbose = 0
 cfg.createNEURONObj = True
-cfg.createPyStruct = True  
+cfg.createPyStruct = True
 cfg.cvode_active = False
 cfg.cvode_atol = 1e-6
 cfg.cache_efficient = True
@@ -36,16 +36,16 @@ cfg.printPopAvgRates = True
 cfg.checkErrors = False
 
 #------------------------------------------------------------------------------
-# Recording 
+# Recording
 #------------------------------------------------------------------------------
 allpops = ['PT5B']
 
 cfg.recordTraces = {'V_soma': {'sec':'soma', 'loc':0.5, 'var':'v'}}
 
 cfg.recordStim = False
-cfg.recordTime = False  
+cfg.recordTime = False
 cfg.recordStep = 0.1
-cfg.recordLFP = [[10, y, 90] for y in range(450, 1250, 100)] 
+cfg.recordLFP = [[10, y, 90] for y in range(450, 1250, 100)]
 cfg.saveLFPCells = False
 
 #------------------------------------------------------------------------------
@@ -56,16 +56,16 @@ cfg.saveFolder = '.'
 cfg.savePickle = False
 cfg.saveJson = True
 cfg.saveDataInclude = ['simData', 'simConfig', 'netParams']#, 'net']
-cfg.backupCfgFile = None #['cfg.py', 'backupcfg/'] 
+cfg.backupCfgFile = None #['cfg.py', 'backupcfg/']
 cfg.gatherOnlySimData = False
 cfg.saveCellSecs = True
 cfg.saveCellConns = True
 
 #------------------------------------------------------------------------------
-# Analysis and plotting 
+# Analysis and plotting
 #------------------------------------------------------------------------------
 with open('cells/popColors.pkl', 'rb') as fileObj: popColors = pickle.load(fileObj)['popColors']
-cfg.analysis['plotTraces'] = {'include': [('PT5B',00)], 'timeRange': [0,100], 'oneFigPer': 'cell', 'figSize': (10,4), 'saveFig': True, 'showFig': False} 
+cfg.analysis['plotTraces'] = {'include': [('PT5B',00)], 'timeRange': [0,100], 'oneFigPer': 'cell', 'figSize': (10,4), 'saveFig': True, 'showFig': False}
 cfg.analysis['plotLFP'] = {'separation': 1.0, 'plots': ['timeSeries', 'locations']}
 
 #------------------------------------------------------------------------------
@@ -99,7 +99,7 @@ cfg.synWeightFractionSOME = [0.9, 0.1] # SOM -> E GABAASlow to GABAB ratio
 cfg.AMPATau2Factor = 1.0
 
 #------------------------------------------------------------------------------
-# Network 
+# Network
 #------------------------------------------------------------------------------
 cfg.weightNormThreshold = 4.0  # weight normalization factor threshold
 
@@ -109,7 +109,7 @@ cfg.weightNormThreshold = 4.0  # weight normalization factor threshold
 cfg.addSubConn = 1
 
 #------------------------------------------------------------------------------
-# Current inputs 
+# Current inputs
 #------------------------------------------------------------------------------
 cfg.addIClamp = 1
 
@@ -117,7 +117,7 @@ cfg.IClamp1 = {'pop': 'PT5B', 'sec': 'soma', 'loc': 0.5, 'start': 0, 'dur': 1000
 
 
 #------------------------------------------------------------------------------
-# NetStim inputs 
+# NetStim inputs
 #------------------------------------------------------------------------------
 cfg.addNetStim = 1
 

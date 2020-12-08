@@ -1,8 +1,8 @@
 """
-analysis.py 
+analysis.py
 
-Functions to read and plot figures from the batch simulation results. 
-Can call readPlotNa() or readPlotNMDA() from __main__() or import analysis and call interactively.  
+Functions to read and plot figures from the batch simulation results.
+Can call readPlotNa() or readPlotNMDA() from __main__() or import analysis and call interactively.
 """
 
 import utils
@@ -12,13 +12,13 @@ import matplotlib.pyplot as plt
 
 def plotfINa(dataFolder, batchLabel, params, data):
     utils.setPlotFormat(numColors = 8)
-    
+
     Pvals = params[0]['values']
     Ivals = params[1]['values']
     Pvalsdic = {val: i for i,val in enumerate(Pvals)}
     Ivalsdic = {val: i for i,val in enumerate(Ivals)}
 
-    rates = [[0 for x in range(len(Pvals))] for y in range(len(Ivals))] 
+    rates = [[0 for x in range(len(Pvals))] for y in range(len(Ivals))]
     for key, d in data.items():
         rate = len(d['simData']['spkt'])
         Pindex = Pvalsdic[d['paramValues'][0]]
@@ -44,13 +44,13 @@ def plotfINa(dataFolder, batchLabel, params, data):
 
 def plotNMDA(dataFolder, batchLabel, params, data, somaLabel='soma', stimRange=[5000,10000]):
     utils.setPlotFormat(numColors = 8)
-    
+
     Pvals = params[0]['values']
     Wvals = params[1]['values']
     Pvalsdic = {val: i for i,val in enumerate(Pvals)}
     Wvalsdic = {val: i for i,val in enumerate(Wvals)}
 
-    epsps = [[0 for x in range(len(Pvals))] for y in range(len(Wvals))] 
+    epsps = [[0 for x in range(len(Pvals))] for y in range(len(Wvals))]
     for key, d in data.items():
         cellLabel = list(d['simData']['V_soma'].keys())[0]
         vsoma = d['simData']['V_'+somaLabel][cellLabel]
@@ -80,16 +80,16 @@ def plotNMDA(dataFolder, batchLabel, params, data, somaLabel='soma', stimRange=[
 def readPlotNa():
     dataFolder = 'data/'
     batchLabel = 'batchNa'
-    
-    params, data = utils.readBatchData(dataFolder, batchLabel, loadAll=0, saveAll=1, vars=None, maxCombs=None) 
+
+    params, data = utils.readBatchData(dataFolder, batchLabel, loadAll=0, saveAll=1, vars=None, maxCombs=None)
     plotfINa(dataFolder, batchLabel, params, data)
 
 
 def readPlotNMDA():
     dataFolder = 'data/'
     batchLabel = 'batchNMDA'
-    
-    params, data = utils.readBatchData(dataFolder, batchLabel, loadAll=0, saveAll=1, vars=None, maxCombs=None) 
+
+    params, data = utils.readBatchData(dataFolder, batchLabel, loadAll=0, saveAll=1, vars=None, maxCombs=None)
     plotNMDA(dataFolder, batchLabel, params, data)
 
 
@@ -97,4 +97,3 @@ def readPlotNMDA():
 if __name__ == '__main__':
     readPlotNa()
     # readPlotNMDA()
-    

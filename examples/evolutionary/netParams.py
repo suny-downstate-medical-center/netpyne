@@ -90,13 +90,13 @@ elif cfg.networkType == 'complex':
 	netParams.connParams['E->all'] = {
 	  'preConds': {'cellType': 'E'}, 'postConds': {'y': [100,1000]},  #  E -> all (100-1000 um)
 	  'probability': cfg.probEall,                  # probability of connection
-	  'weight': str(cfg.weightEall)+'*post_ynorm',         # synaptic weight 
-	  'delay': 'dist_3D/propVelocity',      # transmission delay (ms) 
-	  'synMech': 'exc'}                     # synaptic mechanism 
+	  'weight': str(cfg.weightEall)+'*post_ynorm',         # synaptic weight
+	  'delay': 'dist_3D/propVelocity',      # transmission delay (ms)
+	  'synMech': 'exc'}                     # synaptic mechanism
 
 	netParams.connParams['I->E'] = {
 	  'preConds': {'cellType': 'I'}, 'postConds': {'pop': ['E2','E4','E5']},       #  I -> E
 	  'probability': str(cfg.probIE)+'*exp(-dist_3D/probLengthConst)',   # probability of connection
-	  'weight': cfg.weightIE,                                      # synaptic weight 
-	  'delay': 'dist_3D/propVelocity',                      # transmission delay (ms) 
-	  'synMech': 'inh'}                                     # synaptic mechanism 
+	  'weight': cfg.weightIE,                                      # synaptic weight
+	  'delay': 'dist_3D/propVelocity',                      # transmission delay (ms)
+	  'synMech': 'inh'}                                     # synaptic mechanism

@@ -17,18 +17,18 @@ class Utils(HocUtils):
 
     def generate_morphology(self, cell, morph_filename):
         h = self.h
-        
+
         swc = self.h.Import3d_SWC_read()
         swc.input(morph_filename)
         imprt = self.h.Import3d_GUI(swc, 0)
         imprt.instantiate(cell)
-        
+
         for seg in cell.soma[0]:
             seg.area()
 
         for sec in cell.all:
             sec.nseg = 1 + 2 * int(sec.L / 40)
-        
+
         cell.simplify_axon()
         for sec in cell.axonal:
             sec.L = 30
@@ -37,7 +37,7 @@ class Utils(HocUtils):
         cell.axon[0].connect(cell.soma[0], 0.5, 0)
         cell.axon[1].connect(cell.axon[0], 1, 0)
         h.define_shape()
-    
+
     def load_cell_parameters(self, cell):
         passive = self.description.data['passive'][0]
         conditions = self.description.data['conditions'][0]
@@ -59,11 +59,10 @@ class Utils(HocUtils):
                 if p["mechanism"] != "":
                     sec.insert(p["mechanism"])
                 setattr(sec, p["name"], p["value"])
-        
+
         # Set reversal potentials
         for erev in conditions['erev']:
             sections = [s for s in cell.all if s.name().split(".")[1][:4] == erev["section"]]
             for sec in sections:
                 sec.ena = erev["ena"]
                 sec.ek = erev["ek"]
-

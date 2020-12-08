@@ -26,7 +26,7 @@ netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'cellType':
 simConfig = specs.SimConfig()        # object of class SimConfig to store simulation configuration
 simConfig.duration = 0.05*1e3           # Duration of the simulation, in ms
 simConfig.dt = 0.1                # Internal integration timestep to use
-simConfig.verbose = False            # Show detailed messages 
+simConfig.verbose = False            # Show detailed messages
 simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}
 simConfig.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'cell_lfp'  # Set file output name
@@ -47,5 +47,3 @@ sim.analysis.plotCSD()
 
 # check model output
 sim.checkOutput('cell_lfp')
-
-

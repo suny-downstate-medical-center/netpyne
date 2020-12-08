@@ -1,5 +1,5 @@
 """
-inputs.py 
+inputs.py
 
 Methods to create patterned spike inputs
 """
@@ -27,12 +27,12 @@ def createRhythmicPattern(params, rand):
     - start: time of first spike. if -1, uniform distribution between startMin and startMax (ms)
     - startMin: minimum values of uniform distribution for start time (ms)
     - startMax: maximum values of uniform distribution for start time (ms)
-    - startStd: standard deviation of normal distrinution for start time (ms); mean is set by start param. Only used if > 0.0      
+    - startStd: standard deviation of normal distrinution for start time (ms); mean is set by start param. Only used if > 0.0
     - freq: oscillatory frequency of rhythmic pattern (Hz)
     - freqStd: standard deviation of oscillatory frequency (Hz)
     - distribution: distribution type fo oscillatory frequencies; either 'normal' or 'uniform'
     - eventsPerCycle: spikes/burst per cycle; should be either 1 or 2
-    - repeats: number of times to repeat input pattern (equivalent to number of inputs) 
+    - repeats: number of times to repeat input pattern (equivalent to number of inputs)
     - stop: maximum time for last spike of pattern (ms)
     """
 
@@ -47,7 +47,7 @@ def createRhythmicPattern(params, rand):
         start = rand.normal(start, params['startStd']) # start time uses different prng
     freq = params.get('freq', 0)
     freqStd = params.get('freqStd', 0)
-    eventsPerCycle = params.get('eventsPerCycle', 2) 
+    eventsPerCycle = params.get('eventsPerCycle', 2)
     distribution = params.get('distribution', 'normal')
 
     if eventsPerCycle > 2 or eventsPerCycle <= 0:
@@ -101,7 +101,7 @@ def createRhythmicPattern(params, rand):
     else:
         print("Indicated distribution not recognized. Not making any alpha feeds.")
         t_input = []
-    
+
     return np.array(t_input)
 
 def createEvokedPattern(params, rand, inc = 0):
@@ -111,7 +111,7 @@ def createEvokedPattern(params, rand, inc = 0):
     - start: time of first spike. if -1, uniform distribution between startMin and startMax (ms)
     - inc: increase in time of first spike; from cfg.inc_evinput (ms)
     - startStd: standard deviation of start (ms)
-    - numspikes: total number of spikes to generate 
+    - numspikes: total number of spikes to generate
     """
 
     # assign the params
@@ -138,14 +138,14 @@ def createPoissonPattern(params, rand):
     """
     creates external Poisson inputs
     input params:
-    - start: time of first spike. if -1, uniform distribution between startMin and startMax (ms)
-    - interval: increase in time of first spike; from cfg.inc_evinput (ms)
+    - start: time of first spike (ms)
+    - stop: stop time; if -1 the full duration (ms)
     - frequency: standard deviation of start (ms)
     """
 
     # new external pois designation
     t0 = params['start'] # self.p_ext['t_interval'][0]
-    T = params['interval'] #self.p_ext['t_interval'][1]
+    T = params['stop'] #self.p_ext['t_interval'][1]
     lamtha = params['frequency'] # self.p_ext[self.celltype][3] # index 3 is frequency (lamtha)
     # values MUST be sorted for VecStim()!
     # start the initial value
@@ -158,7 +158,7 @@ def createPoissonPattern(params, rand):
             # so as to not clobber confusingly base off of t_gen ...
             t_gen += (-1000. * np.log(1. - rand.uniform(0,1)) / lamtha)
             if t_gen < T: val_pois = np.append(val_pois, t_gen)
-       
+
     return val_pois
 
 
@@ -166,10 +166,10 @@ def createGaussPattern(params, rand):
     """
     Creates Gaussian inputs
     input params:
-    - mu: Gaussian mean  
+    - mu: Gaussian mean
     - sigma: Gaussian variance
     """
-    
+
     # set params
     mu = params['mu']
     sigma = params['sigma']
@@ -184,5 +184,5 @@ def createGaussPattern(params, rand):
     # remove < 0 values and sort
     val_gauss = val_gauss[val_gauss > 0]
     val_gauss = np.sort(val_gauss)
-    
+
     return val_gauss

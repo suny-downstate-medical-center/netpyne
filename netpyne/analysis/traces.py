@@ -1,5 +1,6 @@
 """
-Functions to plot and analyze traces-related results
+Module for analysis and plotting of traces-related results
+
 """
 
 from __future__ import print_function
@@ -28,103 +29,105 @@ from .utils import colorList, _showFigure, _saveFigData, exception, getCellsIncl
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, title=None, overlay=False, colors=None, ylim=None, axis=True, scaleBarLoc=1, figSize = (10,8), fontSize=12, saveData=None, saveFig=None, showFig=True):
-    """Creates plots of recorded traces.
+    """
+    Function for/to <short description of `netpyne.analysis.traces.plotTraces`>
 
     Parameters
     ----------
     include : list
         Populations and cells to include in the plot.
-        **Default:** 
+        **Default:**
         ``['eachPop', 'allCells']`` plots histogram for each population and overall average
-        **Options:** 
-        ``['all']`` plots all cells and stimulations, 
-        ``['allNetStims']`` plots just stimulations, 
-        ``['popName1']`` plots a single population, 
-        ``['popName1', 'popName2']`` plots multiple populations, 
-        ``[120]`` plots a single cell, 
-        ``[120, 130]`` plots multiple cells, 
-        ``[('popName1', 56)]`` plots a cell from a specific population, 
+        **Options:**
+        ``['all']`` plots all cells and stimulations,
+        ``['allNetStims']`` plots just stimulations,
+        ``['popName1']`` plots a single population,
+        ``['popName1', 'popName2']`` plots multiple populations,
+        ``[120]`` plots a single cell,
+        ``[120, 130]`` plots multiple cells,
+        ``[('popName1', 56)]`` plots a cell from a specific population,
         ``[('popName1', [0, 1]), ('popName2', [4, 5, 6])]``, plots cells from multiple populations
 
     timeRange : list [start, stop]
         Time range to plot.
-        **Default:** 
+        **Default:**
         ``None`` plots entire time range
+        **Options:** ``<option>`` <description of option>
 
     oneFigPer : str
         Whether to plot one figure per cell (showing multiple traces) or per trace (showing multiple cells).
-        **Default:** ``'cell'`` 
+        **Default:** ``'cell'``
         **Options:** ``'trace'``
 
     rerun : bool
         Rerun simulation so a new set of cells gets recorded.
-        **Default:** ``False`` 
-    
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+
     title : str
         Set the whole figure title, works only with ``oneFigPer='cell'``.
         **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
 
     overlay : bool
         Whether to overlay plots or use subplots.
         **Default:** ``True`` overlays plots.
+        **Options:** ``<option>`` <description of option>
 
     colors : list
         List of normalized RGB colors to use for traces.
         **Default:** ``None`` uses standard colors
+        **Options:** ``<option>`` <description of option>
 
     ylim : list [min, max]
         Sets the y limits of the plot.
         **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
 
     axis : bool
         Whether to show axis or not; if not, then a scalebar is included.
         **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
 
     scaleBarLoc : int
         Sets the location of the scale bar (added when axis=False).
         **Default:** ``1``
-        **Options:** 
+        **Options:**
         ``1``  upper right, ``2`` upper left, ``3`` lower left, ``4`` lower right, ``5`` right, ``6`` center left, ``7`` center right, ``8`` lower center, ``9`` upper center, ``10`` center
 
     figSize : list [width, height]
         Size of figure in inches.
-        **Default:** ``(10, 8)`` 
-    
+        **Default:** ``(10, 8)``
+        **Options:** ``<option>`` <description of option>
+
     fontSize : int
         Font size on figure.
-        **Default:** ``12`` 
-    
+        **Default:** ``12``
+        **Options:** ``<option>`` <description of option>
+
     saveData : bool or str
-        Whether and where to save the data used to generate the plot. 
-        **Default:** ``False`` 
+        Whether and where to save the data used to generate the plot.
+        **Default:** ``False``
         **Options:** ``True`` autosaves the data,
         ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
-    
+
     saveFig : bool or str
         Whether and where to save the figure.
         **Default:** ``False``
         **Options:** ``True`` autosaves the figure,
         ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
-    
+
     showFig : bool
         Shows the figure if ``True``.
         **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
 
     Returns
     -------
-    (fig, dict)
-        A tuple consisting of the matplotlib figure handle and a dictionary containing the plot data.
 
-    See Also
-    --------
-    iplotTraces :
 
-    Examples
-    --------
-    >>> import netpyne, netpyne.examples.example
-    >>> out = netpyne.analysis.plotTraces()
-    """
-    
+"""
+
     from .. import sim
     from ..support.scalebar import add_scalebar
 
@@ -135,15 +138,15 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
             include = sim.cfg.analysis['plotTraces']['include'] + sim.cfg.recordCells
         else:
             include = sim.cfg.recordCells
-            
+
     global colorList
-    if isinstance(colors, list): 
+    if isinstance(colors, list):
         colorList2 = colors
     else:
         colorList2 = colorList
 
     # rerun simulation so new include cells get recorded from
-    if rerun: 
+    if rerun:
         cellsRecord = [cell.gid for cell in sim.getCellsList(include)]
         for cellRecord in cellsRecord:
             if cellRecord not in sim.cfg.recordCells:
@@ -241,17 +244,17 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
                     plt.xlim(timeRange)
                     if ylim: plt.ylim(ylim)
                     plt.title('%s '%(trace))
-                    
+
                     if not overlay:
                         if not axis or axis=='off':  # if no axis, add scalebar
                             addScaleBar()
 
-            if overlay: 
+            if overlay:
                 if not axis or axis=='off':  # if no axis, add scalebar
                     addScaleBar()
                 if len(subGids) < 20:
                     #maxLabelLen = 10
-                    #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen)) 
+                    #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))
                     #plt.legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
                     plt.legend()  # PUT BACK!!!!!!
 
@@ -312,18 +315,18 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
                     if itrace==0: plt.title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
                     if not overlay:
                         if not axis or axis=='off':  # if no axis, add scalebar
-                            addScaleBar()       
-                    
-            if overlay: 
+                            addScaleBar()
+
+            if overlay:
                 if not axis or axis=='off':  # if no axis, add scalebar
-                    addScaleBar() 
+                    addScaleBar()
                 #maxLabelLen = 10
                 #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))
                 plt.legend() #fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
 
             if title:
                 figs['_gid_'+str(gid)].suptitle(cell['tags'][title])
-                
+
     # Plot one fig per trace
     elif oneFigPer == 'trace':
         plotFigPerTrace(cellGids)
@@ -344,23 +347,23 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
     if saveData:
         figData = {'tracesData': tracesData, 'include': include, 'timeRange': timeRange, 'oneFigPer': oneFigPer,
          'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
-    
+
         _saveFigData(figData, saveData, 'traces')
- 
+
     # save figure
-    if saveFig: 
+    if saveFig:
         if isinstance(saveFig, basestring):
             filename = saveFig
         else:
-            filename = sim.cfg.filename+'_'+'traces.png'
+            filename = sim.cfg.filename + '_traces.png'
         if len(figs) > 1:
             for figLabel, figObj in figs.items():
                 plt.figure(figObj.number)
-                plt.savefig(filename[:-4]+figLabel+filename[-4:])
+                plt.savefig(filename[:-4] + '_' + figLabel + '_' + filename[-4:])
         else:
             plt.savefig(filename)
 
-    # show fig 
+    # show fig
     if showFig: _showFigure()
 
     return figs, {'tracesData': tracesData, 'include': include}
@@ -370,6 +373,60 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
 # -------------------------------------------------------------------------------------------------------------------
 @exception
 def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='absolute', polarity='exc', saveFig=False, showFig=True):
+    """
+    Function for/to <short description of `netpyne.analysis.traces.plotEPSPAmp`>
+
+    Parameters
+    ----------
+    include : <``None``?>
+        <Short description of include>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+
+    trace : <``None``?>
+        <Short description of trace>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+
+    start : int
+        <Short description of start>
+        **Default:** ``0``
+        **Options:** ``<option>`` <description of option>
+
+    interval : int
+        <Short description of interval>
+        **Default:** ``50``
+        **Options:** ``<option>`` <description of option>
+
+    number : int
+        <Short description of number>
+        **Default:** ``2``
+        **Options:** ``<option>`` <description of option>
+
+    amp : str
+        <Short description of amp>
+        **Default:** ``'absolute'``
+        **Options:** ``<option>`` <description of option>
+
+    polarity : str
+        <Short description of polarity>
+        **Default:** ``'exc'``
+        **Options:** ``<option>`` <description of option>
+
+    saveFig : bool
+        <Short description of saveFig>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+
+    showFig : bool
+        <Short description of showFig>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+
+
+    """
+
+
 
     from .. import sim
 
@@ -380,7 +437,7 @@ def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='a
     cells, cellGids, _ = getCellsInclude(include)
     gidPops = {cell['gid']: cell['tags']['pop'] for cell in cells}
 
-    if not trace: 
+    if not trace:
         print('Error: Missing trace to to plot EPSP amplitudes')
         return
     step = sim.cfg.recordStep
@@ -391,9 +448,9 @@ def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='a
         vsoma = sim.allSimData[trace]['cell_'+str(gid)]
         for ipeak in range(number):
             if polarity == 'exc':
-                peakAbs = max(vsoma[int(start/step+(ipeak*interval/step)):int(start/step+(ipeak*interval/step)+(interval-1)/step)]) 
+                peakAbs = max(vsoma[int(start/step+(ipeak*interval/step)):int(start/step+(ipeak*interval/step)+(interval-1)/step)])
             elif polarity == 'inh':
-                peakAbs = min(vsoma[int(start/step+(ipeak*interval/step)):int(start/step+(ipeak*interval/step)+(interval-1)/step)]) 
+                peakAbs = min(vsoma[int(start/step+(ipeak*interval/step)):int(start/step+(ipeak*interval/step)+(interval-1)/step)])
             peakRel = peakAbs - vsoma[int((start-1)/step)]
             peaksAbs[ipeak,icell] = peakAbs
             peaksRel[ipeak,icell] = peakRel
@@ -409,7 +466,7 @@ def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='a
         for icell in range(len(cellGids)):
             peaks[:, icell] = peaksRel[:, icell] / peaksRel[0, icell]
         ylabel = 'EPSP amplitude ratio'
-        
+
     xlabel = 'EPSP number'
 
     # plot
@@ -427,14 +484,14 @@ def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='a
         plt.plot((0, number-1), (1.0, 1.0), ':', color= 'gray')
 
     # save figure
-    if saveFig: 
+    if saveFig:
         if isinstance(saveFig, basestring):
             filename = saveFig
         else:
             filename = sim.cfg.filename+'_'+'EPSPamp_'+amp+'.png'
         plt.savefig(filename)
 
-    # show fig 
+    # show fig
     if showFig: _showFigure()
 
     return fig, {'peaks': peaks}

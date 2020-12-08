@@ -3,24 +3,24 @@ from netpyne import specs, sim
 # Network parameters
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
-netParams.sizeX = 100 # x-dimension (horizontal length) size in um
-netParams.sizeY = 1000 # y-dimension (vertical height or cortical depth) size in um
-netParams.sizeZ = 100 # z-dimension (horizontal length) size in um
-netParams.propVelocity = 100.0 # propagation velocity (um/ms)
-netParams.probLengthConst = 150.0 # length constant for conn probability (um)
+netParams.sizeX = 100              # x-dimension (horizontal length) size in um
+netParams.sizeY = 1000             # y-dimension (vertical height or cortical depth) size in um
+netParams.sizeZ = 100              # z-dimension (horizontal length) size in um
+netParams.propVelocity = 100.0     # propagation velocity (um/ms)
+netParams.probLengthConst = 150.0  # length constant for conn probability (um)
 
-## Cell property rules
+## Cell types
 secs = {} # sections dict
-secs['soma'] = {'geom': {}, 'mechs': {}}                              # soma params dict
-secs['soma']['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0}                   # soma geometry
-secs['soma']['mechs']['hh'] = {'gnabar': 0.13, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanism
-netParams.cellParams['E'] = {'secs': secs}                          # add dict to list of cell params
+secs['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+secs['soma']['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0}                               # soma geometry
+secs['soma']['mechs']['hh'] = {'gnabar': 0.13, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+netParams.cellParams['E'] = {'secs': secs}                                              # add dict to list of cell params
 
 secs = {} # sections dict
-secs['soma'] = {'geom': {}, 'mechs': {}}                              # soma params dict
-secs['soma']['geom'] = {'diam': 10.0, 'L': 9.0, 'Ra': 110.0}                  # soma geometry
-secs['soma']['mechs']['hh'] = {'gnabar': 0.11, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanism
-netParams.cellParams['I'] = {'secs': secs}                       # add dict to list of cell params
+secs['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
+secs['soma']['geom'] = {'diam': 10.0, 'L': 9.0, 'Ra': 110.0}                            # soma geometry
+secs['soma']['mechs']['hh'] = {'gnabar': 0.11, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+netParams.cellParams['I'] = {'secs': secs}                                              # add dict to list of cell params
 
 ## Population parameters
 netParams.popParams['E2'] = {'cellType': 'E', 'numCells': 50, 'yRange': [100,300]}
@@ -43,39 +43,40 @@ netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'cellType':
 
 ## Cell connectivity rules
 netParams.connParams['E->all'] = {
-  'preConds': {'cellType': 'E'}, 'postConds': {'y': [100,1000]},  #  E -> all (100-1000 um)
-  'probability': 0.1 ,                  # probability of connection
-  'weight': '0.005*post_ynorm',         # synaptic weight 
-  'delay': 'dist_3D/propVelocity',      # transmission delay (ms) 
-  'synMech': 'exc'}                     # synaptic mechanism 
+    'preConds': {'cellType': 'E'}, 'postConds': {'y': [100,1000]},  #  E -> all (100-1000 um)
+    'probability': 0.1 ,                  # probability of connection
+    'weight': '0.005*post_ynorm',         # synaptic weight
+    'delay': 'dist_3D/propVelocity',      # transmission delay (ms)
+    'synMech': 'exc'}                     # synaptic mechanism
 
 netParams.connParams['I->E'] = {
-  'preConds': {'cellType': 'I'}, 'postConds': {'pop': ['E2','E4','E5']},       #  I -> E
-  'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
-  'weight': 0.001,                                      # synaptic weight 
-  'delay': 'dist_3D/propVelocity',                      # transmission delay (ms) 
-  'synMech': 'inh'}                                     # synaptic mechanism 
+    'preConds': {'cellType': 'I'}, 'postConds': {'pop': ['E2','E4','E5']},       #  I -> E
+    'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
+    'weight': 0.001,                                      # synaptic weight
+    'delay': 'dist_3D/propVelocity',                      # transmission delay (ms)
+    'synMech': 'inh'}                                     # synaptic mechanism
 
 
 # Simulation options
 simConfig = specs.SimConfig()        # object of class SimConfig to store simulation configuration
 simConfig.duration = 1*1e3           # Duration of the simulation, in ms
-simConfig.dt = 0.025                # Internal integration timestep to use
-simConfig.verbose = False            # Show detailed messages 
+simConfig.dt = 0.025                 # Internal integration timestep to use
+simConfig.verbose = False            # Show detailed messages
 simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 simConfig.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
-simConfig.filename = 'model_output'  # Set file output name
+simConfig.filename = 'tut5'          # Set file output name
 simConfig.savePickle = False         # Save params, network and sim output to pickle file
-simConfig.saveMat = False         # Save params, network and sim output to pickle file
+simConfig.saveMat = False            # Save params, network and sim output to pickle file
 
 
-simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True}      # Plot a raster
-simConfig.analysis['plotTraces'] = {'include': [('E2',0), ('E4', 0), ('E5', 5)]}      # Plot recorded traces for this list of cells
-simConfig.analysis['plot2Dnet'] = True            # plot 2D visualization of cell positions and connections
-simConfig.analysis['plotConn'] = True             # plot connectivity matrix
+simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True, 'saveFig': True}         # Plot a raster
+simConfig.analysis['plotTraces'] = {'include': [('E2',0), ('E4', 0), ('E5', 5)], 'saveFig': True}  # Plot recorded traces for this list of cells
+simConfig.analysis['plot2Dnet'] = {'saveFig': True}                                                # plot 2D cell positions and connections
+simConfig.analysis['plotConn'] = {'saveFig': True}                                                 # plot connectivity matrix
+
 
 # Create network and run simulation
-sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
+sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)
 
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty
 

@@ -35,7 +35,7 @@ from scipy.signal import (cheb2ord, cheby2, convolve, get_window, iirfilter,
 ## LOCAL APPLICATION IMPORTS 
 from .filter import lowpass,bandpass
 #from .utils import exception, _saveFigData, _showFigure
-from .utils import _saveFigData 
+from .utils import exception, _saveFigData 
 
 
 ############################################

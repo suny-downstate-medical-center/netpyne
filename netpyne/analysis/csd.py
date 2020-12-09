@@ -525,14 +525,11 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
 
 
   # (ii) Set up figure 
-  fig = plt.figure() #plt.figure(figsize=(10, 8)) #<-- quite large; for multiple subplots 
+  fig = plt.figure() 
 
   # (iii) Create plots w/ common axis labels and tick marks
   axs = []
-  # if LFP_overlay is True:
-  #   numplots=1
-  # else:
-  #   numplots=1   # SWITCHED, used to be above numplots = 2, and here numplots = 1
+
   numplots = 1
 
   gs_outer = matplotlib.gridspec.GridSpec(2, 2, figure=fig, wspace=0.4, hspace=0.2, height_ratios = [20, 1]) # GridSpec(2, 4, figure = ...)
@@ -543,9 +540,12 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
     axs[i].tick_params(axis='y', which='major', labelsize=8)
 
   # (iv) Set up title and y axis label and axis limits for CSD plot
-  spline=axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r') # cmap = 'jet_r'
+  spline=axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r')
   axs[0].set_ylabel('Contact depth (um)', fontsize = 12)
-  axs[0].set_title('CSD with LFP overlay',fontsize=14) #axs[0].set_title('RectBivariateSpline',fontsize=12)
+  if LFP_overlay:
+    axs[0].set_title('CSD with LFP overlay',fontsize=14) #axs[0].set_title('RectBivariateSpline',fontsize=12)
+  elif not LFP_overlay:
+    axs[0].set_title('Current Source Density (CSD)',fontsize=14)
   xmin = axs[0].get_xlim()[0]
   xmax = axs[0].get_xlim()[1]
   #ymin = axs[0].get_ylim()[0]
@@ -553,7 +553,7 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
 
 
   # grid for LFP plots
-  if LFP_overlay is True:
+  if LFP_overlay:
     axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r')
     # DEFINED ABOVE # LFP_data = np.array(LFP_input_data)#[int(timeRange[0]/dt):int(timeRange[1]/dt),:] #np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
     nrow = LFP_data.shape[1] # LFP_data.shape[0] gives you number of recorded time points.... 
@@ -581,7 +581,7 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
 
   ## ADD HORIZONTAL LINES AT CORTICAL LAYER BOUNDARIES
   A1_layer_bounds = {'L1': 100, 'L2': 160, 'L3': 950, 'L4': 1250, 'L5A': 1334, 'L5B': 1550, 'L6': 2000} # "lower" bound for each layer
-  if layer_lines is True: 
+  if layer_lines: 
     for i in A1_layer_bounds.keys():
       axs[0].hlines(A1_layer_bounds[i], xmin, xmax, colors='black', linewidth=1,linestyles='dotted') 
 
@@ -599,7 +599,6 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
   if type(stim_start_time) is int or type(stim_start_time) is float:
     axs[0].vlines(stim_start_time,ymin,ymax,colors='red',linewidth=1,linestyles='dashed')
 
-  #plt.show()
 
   # SAVE FIGURE
   if saveFig:

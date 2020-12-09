@@ -363,7 +363,7 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,timeRange
 ######### PLOTTING CSD #########
 ################################
 @exception
-def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sampr=None,stim_start_time=None,spacing_um=None,ymax=None,dt=None,hlines=False,layer_lines=False,saveFig=True,showFig=True): # saveData=None
+def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sampr=None,stim_start_time=None,spacing_um=None,ymax=None,dt=None,hlines=False,layer_lines=False,layer_bounds=None,saveFig=True,showFig=True): # saveData=None
   """ Plots CSD values extracted from simulated LFP data 
       
       Parameters
@@ -424,6 +424,12 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
         Indicates whether or not to plot horizontal lines over CSD plot at layer boundaries 
         **Default:**
         ``False`` 
+
+      layer_bounds : dict
+        Dictionary containing layer labels as keys, and layer boundaries as values. 
+        e.g. {'L1':100, 'L2': 160, 'L3': 950, 'L4': 1250, 'L5A': 1334, 'L5B': 1550, 'L6': 2000}
+        **Default:**
+        ``None``
 
      saveFig : bool or str
         Whether and where to save the figure.
@@ -580,19 +586,22 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
 
 
   ## ADD HORIZONTAL LINES AT CORTICAL LAYER BOUNDARIES
-  A1_layer_bounds = {'L1': 100, 'L2': 160, 'L3': 950, 'L4': 1250, 'L5A': 1334, 'L5B': 1550, 'L6': 2000} # "lower" bound for each layer
-  if layer_lines: 
-    for i in A1_layer_bounds.keys():
-      axs[0].hlines(A1_layer_bounds[i], xmin, xmax, colors='black', linewidth=1,linestyles='dotted') 
+  #layer_bounds = {'L1': 100, 'L2': 160, 'L3': 950, 'L4': 1250, 'L5A': 1334, 'L5B': 1550, 'L6': 2000} # "lower" bound for each layer
 
-    ## add labels for each layer -- would have to be adjusted by hand if changing layer bounds
-    fig.text(0.922,0.855,'L1',color='black')
-    fig.text(0.92,0.825,'L2',color='black')
-    fig.text(0.92,0.68,'L3',color='black')
-    fig.text(0.92,0.5,'L4',color='black')
-    fig.text(0.92,0.44,'L5A',color='black')
-    fig.text(0.92,0.39,'L5B',color='black')
-    fig.text(0.92,0.29,'L6',color='black')
+  if layer_lines: 
+    if layer_bounds is None:
+      print('No layer boundaries given')
+    else:
+      layerKeys = []  # list that will contain layer names (e.g. 'L1')
+      for i in layer_bounds.keys():
+        axs[0].hlines(layer_bounds[i], xmin, xmax, colors='black', linewidth=1, linestyles='dotted') # draw horizontal lines at lower boundary of each layer
+        layerKeys.append(i)   # make a list of the layer names 
+      for n in range(len(layerKeys)): # place layer name labels (e.g. 'L1', 'L2') onto plot 
+        if n == 0:
+          axs[0].text(xmax+5, layer_bounds[layerKeys[n]]/2, layerKeys[n],color='black',fontsize=8)
+        else:
+          axs[0].text(xmax+5, (layer_bounds[layerKeys[n]] + layer_bounds[layerKeys[n-1]])/2,layerKeys[n],color='black',fontsize=8)
+
 
 
   ## SET VERTICAL LINE AT STIMULUS ONSET

@@ -35,3 +35,10 @@ Either of these options will do the same thing.  They will:
 - Copy the NetPyNE **tutorials** directory into **netpyne_tuts**
 - Change into the **tutorials** directory
 - Start Jupyter Notebook
+
+## Future use
+
+This installation step only needs to be performed once.  To re-enter the virtual environment in the future, change to the **netpyne_tuts** directory and execute the following:
+
+    source env/bin/activate
+    jupyter notebook

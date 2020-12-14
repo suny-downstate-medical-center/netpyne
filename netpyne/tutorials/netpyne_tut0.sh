@@ -13,6 +13,7 @@ python3 -m pip install --upgrade pip &&
 python3 -m pip install --upgrade ipython &&
 python3 -m pip install --upgrade ipykernel &&
 python3 -m pip install --upgrade jupyter &&
+ipython kernel install --user --name=env &&
 python3 -m pip install --upgrade neuron &&
 git clone https://github.com/Neurosim-lab/netpyne.git &&
 python3 -m pip install -e netpyne &&

@@ -6,7 +6,7 @@ We don't want to affect your system in any way, so we will operate from a virtua
 
 You can open a terminal and enter the following at the prompt:
 
-    mkdir netpyne_tuts && cd netpyne_tuts && export PATH=/bin:/usr/bin && python3 -m venv env && source env/bin/activate && python3 -m pip install --upgrade pip && python3 -m pip install --upgrade ipython && python3 -m pip install --upgrade ipykernel && python3 -m pip install --upgrade jupyter && python3 -m pip install --upgrade neuron && git clone https://github.com/Neurosim-lab/netpyne.git && python3 -m pip install -e netpyne && cp -r netpyne/netpyne/tutorials . && cd tutorials && jupyter notebook
+    mkdir netpyne_tuts && cd netpyne_tuts && export PATH=/bin:/usr/bin && python3 -m venv env && source env/bin/activate && python3 -m pip install --upgrade pip && python3 -m pip install --upgrade ipython && python3 -m pip install --upgrade ipykernel && python3 -m pip install --upgrade jupyter && ipython kernel install --user --name=env && python3 -m pip install --upgrade neuron && git clone https://github.com/Neurosim-lab/netpyne.git && python3 -m pip install -e netpyne && cp -r netpyne/netpyne/tutorials . && cd tutorials && jupyter notebook
 
 ## Installation option two
 
@@ -30,6 +30,7 @@ Either of these options will do the same thing.  They will:
 - Create a virtual environment named **env**
 - Activate (enter) the virtual environment
 - Upgrade pip and install necessary packages
+- Create a Jupyter kernel out of **env**
 - Clone the NetPyNE GitHub repository
 - Install NetPyNE using pip 
 - Copy the NetPyNE **tutorials** directory into **netpyne_tuts**

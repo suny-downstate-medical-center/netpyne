@@ -317,7 +317,7 @@ wait
                     cores = self.runCfg.get('cores', 1)
                     folder = self.runCfg.get('folder', '.')
                     script = self.runCfg.get('script', 'init.py')
-                    mpiCommand = self.runCfg.get('mpiCommand', 'ibrun')
+                    mpiCommand = self.runCfg.get('mpiCommand', 'mpirun')
 
                     command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, cores, script, cfgSavePath, netParamsSavePath)
 

@@ -583,12 +583,13 @@ def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=
 
     elif overlay == 'LFP':
       axs[0].set_title('CSD with LFP overlay',fontsize=14) 
-      subaxs.append(plt.Subplot(fig,gs_inner[chan],frameon=False))
-      fig.add_subplot(subaxs[chan])
-      subaxs[chan].margins(0.0,0.01)
-      subaxs[chan].get_xaxis().set_visible(False)
-      subaxs[chan].get_yaxis().set_visible(False)
-      subaxs[chan].plot(X,LFP_data[:,chan],color='gray',linewidth=0.3)
+      for chan in range(nrow):
+        subaxs.append(plt.Subplot(fig,gs_inner[chan],frameon=False))
+        fig.add_subplot(subaxs[chan])
+        subaxs[chan].margins(0.0,0.01)
+        subaxs[chan].get_xaxis().set_visible(False)
+        subaxs[chan].get_yaxis().set_visible(False)
+        subaxs[chan].plot(X,LFP_data[:,chan],color='gray',linewidth=0.3)
 
   else:
     axs[0].set_title('Current Source Density (CSD)',fontsize=14)

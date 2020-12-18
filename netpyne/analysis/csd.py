@@ -476,10 +476,10 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
 
       # GET CSD DATA  --> ## RETRIEVE CSD DATA (in mV/mm*2)
       print("Using CSD sim data from sim.allSimData['CSD']")
-      CSD_data = sim.allSimData['CSD']['CSD_data'][int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+      CSD_data = sim.allSimData['CSD']['CSD_data'][:,int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep)]
       #CSD_data = sim.allSimData['CSD']['CSD_data']   
       ####### noBandpass trial ######
-      CSD_data_noBandpass = sim.allSimData['CSD']['CSD_data_noBandpass'][int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+      CSD_data_noBandpass = sim.allSimData['CSD']['CSD_data_noBandpass'][:,int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep)]
       ###############################
 
 

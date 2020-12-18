@@ -82,7 +82,7 @@ def removemean (x, ax=1):
 ################################################
 ######### GET CSD VALUES FROM LFP DATA #########
 ################################################
-def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,timeRange=None,spacing_um=None,minf=0.05,maxf=300,norm=True,vaknin=True,save_to_sim=True,getAllData=False):
+def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,spacing_um=None,minf=0.05,maxf=300,norm=True,vaknin=True,save_to_sim=True,getAllData=False): # timeRange=None,
   """ Extracts CSD values from simulated LFP data 
 
       Parameters
@@ -109,12 +109,6 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,timeRange
         Time between recording points (ms). 
         **Default:**
           sim.config.recordStep if data is from sim
-
-      timeRange : list [start, stop]  
-        Time range to calculate CSD (ms). 
-        ** MUST BE PROVIDED BY USER IF LFP_exists IS TRUE ** 
-        **Default:** 
-        ``None`` uses entire time range if data is from sim
 
       spacing_um : float
         Electrode's contact spacing in units of microns 
@@ -160,57 +154,48 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,timeRange
       print('No LFP input data, input file, or existing simulation. Cannot calculate CSD.')
     else:
       ## Check if LFP was recorded during the simulation 
-      print('getCSD() is using data from existing simulation.')
+      print('getCSD() is using LFP data from existing simulation.')
 
 
-    ## These lines technically assume that from .. import sim worked -- slight reorganization needed 
-    if timeRange is None:
-      try:
-        timeRange = sim.cfg.analysis['plotLFP']['timeRange']
-        # This sets the timeRange equal to the timeRange used in plotLFP
-      except:
-        print('No timeRange specified in plotLFP -- using entire sim duration as timeRange.')
-        timeRange = [0,sim.cfg.duration]
-        print('timeRange = ' + str(timeRange))
-      else:
-        print('timeRange specified in plotLFP.')
-        print('timeRange = ' + str(timeRange))
-    else:
-      print('Using timeRange from getCSD() arguments.')
-      print('timeRange = ' + str(timeRange)) # This is to verify that the timeRange being used is the timeRange specified in the arguments
+    # ## These lines technically assume that from .. import sim worked -- slight reorganization needed 
+    # if timeRange is None:
+    #   try:
+    #     timeRange = sim.cfg.analysis['plotLFP']['timeRange']
+    #     # This sets the timeRange equal to the timeRange used in plotLFP
+    #   except:
+    #     print('No timeRange specified in plotLFP -- using entire sim duration as timeRange.')
+    #     timeRange = [0,sim.cfg.duration]
+    #     print('timeRange = ' + str(timeRange))
+    #   else:
+    #     print('timeRange specified in plotLFP.')
+    #     print('timeRange = ' + str(timeRange))
+    # else:
+    #   print('Using timeRange from getCSD() arguments.')
+    #   print('timeRange = ' + str(timeRange)) # This is to verify that the timeRange being used is the timeRange specified in the arguments
 
 
+    # time step used in simulation recording 
     if dt is None:
       dt = sim.cfg.recordStep                         # units: ms 
     print('dt = ' + str(dt))
 
-    tt = np.arange(timeRange[0], timeRange[1],dt)   # make array of time points 
-    print('tt.size = ' + str(tt.size))
+    # tt = np.arange(timeRange[0], timeRange[1],dt)   # make array of time points 
+    # print('tt.size = ' + str(tt.size))
 
 
     sim_data_categories = sim.allSimData.keys()
+    
+    # Get LFP data from sim and instantiate as a numpy array 
     if 'LFP' in sim_data_categories:
-      list_lfp_data = sim.allSimData['LFP']
-      lfp_data = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+      lfp_data = np.array(sim.allSimData['LFP'])
       print('lfp_data shape = ' + str(lfp_data.shape))
-      # array_lfp_data = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:] # from lfp.py, line 200; array splicing
-      # print('full_lfp_data.size = ' + str(full_lfp_data.size))
-      # if len(tt) == len(list_lfp_data):
-      #   lfp_data = array_lfp_data
-      # elif len(tt) < len(list_lfp_data):      #full_lfp_data.size:
-      #   lfp_data = full_lfp_data
-      #   print('DEBUGGING LINE: went with option 2 -- confirming.')
-      #   print('lfp_data.size = ' + str(lfp_data.size))
-      # elif len(tt) > len(list_lfp_data):        #full_lfp_data.size:
-      #   print('WARNING: More time points than number of lfp data points.')
-      #   lfp_data = full_lfp_data # MAY HAVE TO REWORK THIS 
     elif 'LFP' not in sim_data_categories:
       print('!! WARNING: NO LFP DATA !! Need to re-run simulation with cfg.recordLFP enabled')
 
 
-
+    # Sampling rate of data recording during the simulation 
     if sampr is None:
-      sampr = 1./sim.cfg.recordStep          # Sampling rate of data recording during the simulation 
+      sampr = 1./sim.cfg.recordStep
 
 
     # Spacing between electrodes --> convert from micron to mm 
@@ -222,20 +207,8 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,timeRange
 
 
   ############### CONDITION 2 : ARBITRARY LFP DATA ############################
-
-  #elif LFP_exists is True:   ### GET LFP DATA AND CONFIRM EXISTENCE OF OTHER NECESSARY PARAMS FROM USER
-    # if LFP_input_data is None and LFP_input_file is None:
-    #   print('MUST PROVIDE LFP DATA')
-    #   if timeRange is None:
-    #     print('MUST PROVIDE TIME RANGE in ms')
-    #   if sampr is None:
-    #     print('MUST PROVIDE SAMPLING RATE in Hz')
-    #   if dt is None:
-    #     print('MUST PROVIDE dt in ms')
-    #   if spacing_um is None:
-    #     print('MUST PROVIDE SPACING BETWEEN ELECTRODES in MICRONS')
-
-  ## EXPAND CAPABILITY TO INCLUDE LIST OF MULTIPLE FILES 
+  ## NOTE: EXPAND CAPABILITY TO INCLUDE LIST OF MULTIPLE FILES 
+  
   ## LOAD SIM DATA FROM JSON FILE
   elif LFP_input_data is None and '.json' in LFP_input_file:
     data = {}
@@ -249,24 +222,26 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,timeRange
 
 
     ## EXTRACT LFP DATA 
-    #full_lfp_data = {}
     for key in data.keys:
-      full_lfp_data = data[key]['simData']['LFP']  # only works in the 1 input file scenario; expand capability for multiple files             
+      lfp_data_list = data[key]['simData']['LFP']  # only works in the 1 input file scenario; expand capability for multiple files             
+    
+    ## CAST LFP DATA AS NUMPY ARRAY 
+    lfp_data = np.array(lfp_data_list)
 
     ## GET CSD DATA AND RELEVANT PLOTTING PARAMS 
     csd_data = {}
     for i in data.keys():
       csd_data[i] = {}        # e.g. csd['json_input_data'] = {}
 
-      if timeRange is None:
-        try:
-          csd_data[i]['timeRange'] = sim.cfg.analysis['plotLFP']['timeRange'] # USE LFP TIMERANGE BY DEFAULT
-        except:
-          csd_data[i]['timeRange'] = [0, data[i]['simConfig']['duration']] # USE WHOLE SIM DURATION IF NOT ACCESSIBLE
-          print('timeRange not specified in plotLFP - using whole sim duration for timeRange')
-        timeRange = csd_data[i]['timeRange']        # only works in the 1 input file scenario; expand capability for multiple files 
-      else:
-        csd_data[i]['timeRange'] = timeRange
+      # if timeRange is None:
+      #   try:
+      #     csd_data[i]['timeRange'] = sim.cfg.analysis['plotLFP']['timeRange'] # USE LFP TIMERANGE BY DEFAULT
+      #   except:
+      #     csd_data[i]['timeRange'] = [0, data[i]['simConfig']['duration']] # USE WHOLE SIM DURATION IF NOT ACCESSIBLE
+      #     print('timeRange not specified in plotLFP - using whole sim duration for timeRange')
+      #   timeRange = csd_data[i]['timeRange']        # only works in the 1 input file scenario; expand capability for multiple files 
+      # else:
+      #   csd_data[i]['timeRange'] = timeRange
 
       if sampr is None:
         csd_data[i]['sampr'] = 1./data[i]['simConfig']['recordStep']
@@ -286,20 +261,18 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,timeRange
       else:
         csd_data[i]['dt'] = dt
 
-    ## GET LFP DATA OVER THE SPECIFIED TIME RANGE
-    lfp_data = np.array(full_lfp_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]
 
-    ## MAKE ARRAY OF TIME POINTS ## USEFUL FOR GETALLDATA CONDITION
-    tt = np.arange(timeRange[0],timeRange[1],dt)
+    # ## MAKE ARRAY OF TIME POINTS ## USEFUL FOR GETALLDATA CONDITION
+    # tt = np.arange(timeRange[0],timeRange[1],dt)
 
 
   ## FOR LIST OF LFP DATA WITHOUT ANY .JSON INPUT FILE 
   elif len(LFP_input_data) > 0 and LFP_input_file is None:     # elif LFP_input_file is None and ...
     ## GET LFP DATA OVER THE SPECIFIED TIME RANGE
-    lfp_data = np.array(LFP_input_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]  # get lfp_data in timeRange specified 
+    lfp_data = np.array(LFP_input_data)  # get lfp_data and cast as numpy array
 
-    ## MAKE ARRAY OF TIME POINTS
-    tt = np.arange(timeRange[0],timeRange[1],dt)
+    # ## MAKE ARRAY OF TIME POINTS
+    # tt = np.arange(timeRange[0],timeRange[1],dt)
 
 
   ##############################################################################
@@ -328,7 +301,24 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,timeRange
 
   # now each column (or row) is an electrode -- take CSD along electrodes
   CSD_data = -np.diff(datband,n=2,axis=ax)/spacing_mm**2  ## CSD_data should be in mV/mm**2, assuming that LFP data is in mV. 
+  
 
+  ####### noBandpass trial #######
+  datband_noBandpass = lfp_data.T
+  
+  if datband_noBandpass.shape[0] > datband_noBandpass.shape[1]:
+    ax = 1
+  else:
+    ax = 0
+  
+  if vaknin:
+   datband_noBandpass = Vaknin(datband_noBandpass)
+  
+  if norm:
+    removemean(datband_noBandpass,ax=ax)
+  
+  CSD_data_noBandpass = -np.diff(datband_noBandpass,n=2,axis=ax)/spacing_mm**2 # noBandpass trial 
+  ##########################################
 
 
   ################## SAVING DATA ##########################
@@ -341,6 +331,7 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,timeRange
       sim.allSimData['CSD']['sampr'] = sampr
       sim.allSimData['CSD']['spacing_um'] = spacing_um 
       sim.allSimData['CSD']['CSD_data'] = CSD_data
+      sim.allSimData['CSD']['CSD_data_noBandpass'] = CSD_data_noBandpass # noBandpass trial 
     except:
       print('NOTE: No sim.allSimData construct available to store CSD data')
 
@@ -465,6 +456,10 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
       print("Using CSD sim data from sim.allSimData['CSD']")
       CSD_data = sim.allSimData['CSD']['CSD_data']   ## RETRIEVE CSD DATA (in mV/mm*2)
 
+      ####### noBandpass trial ######
+      CSD_data_noBandpass = sim.allSimData['CSD']['CSD_data_noBandpass']
+      ###############################
+
       if timeRange is None:  ## RETRIEVE TIME RANGE (in ms), IF UNSPECIFIED IN ARGS
         timeRange = sim.allSimData['CSD']['timeRange']
 
@@ -527,6 +522,7 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
   xmax = int(X[-1]) + 1  #int(sim.allSimData['t'][-1])
   ymin = 0
   ## DEALT WITH ymax IN ALL CONDITIONS ABOVE #  ymax = sim.cfg.recordLFP[-1][1] + spacing_um #(sim.cfg.recordLFP[-1][1])/1000 + spacing_mm #depth 
+  #ymax = 24  
   extent_xy = [xmin, xmax, ymax, ymin]
 
 
@@ -546,21 +542,27 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
     axs[i].tick_params(axis='y', which='major', labelsize=8)
 
   # (iv) Set up title and y axis label and axis limits for CSD plot
-  spline=axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r')
+  ### DOES THIS LINE BELOW (spline=...) DO THE CSD COLOR MAP PLOT? 
+  #spline=axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r')
   axs[0].set_ylabel('Contact depth (um)', fontsize = 12)
   if LFP_overlay:
-    axs[0].set_title('CSD with LFP overlay',fontsize=14) #axs[0].set_title('RectBivariateSpline',fontsize=12)
+    #axs[0].set_title('CSD with LFP overlay',fontsize=14) #axs[0].set_title('RectBivariateSpline',fontsize=12)
+    axs[0].set_title('Bandpass vs. Raw CSD',fontsize=14) ### noBandpass trial ### ## MAKE THIS ITS OWN THING IF NECESSARY
   elif not LFP_overlay:
     axs[0].set_title('Current Source Density (CSD)',fontsize=14)
-  xmin = axs[0].get_xlim()[0]
-  xmax = axs[0].get_xlim()[1]
+  
+  # noBandpass trial -- commented out xmin and xmax to see if this clears up time course confusion -- nope. 
+  #xmin = axs[0].get_xlim()[0]
+  #xmax = axs[0].get_xlim()[1]
+  
   #ymin = axs[0].get_ylim()[0]
   #ymax = axs[0].get_ylim()[1]
 
 
   # grid for LFP plots
   if LFP_overlay:
-    axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r')
+    ## DOES THIS LINE BELOW ALSO DO THE CSD COLOR MAP PLOT? 
+    axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r', alpha=0.3)
     # DEFINED ABOVE # LFP_data = np.array(LFP_input_data)#[int(timeRange[0]/dt):int(timeRange[1]/dt),:] #np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
     nrow = LFP_data.shape[1] # LFP_data.shape[0] gives you number of recorded time points.... 
     gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(nrow, 1, subplot_spec=gs_outer[0:2], wspace=0.0, hspace=0.0)  # subplot_spec=gs_outer[2:4]
@@ -575,12 +577,16 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
       subaxs[chan].margins(0.0,0.01)
       subaxs[chan].get_xaxis().set_visible(False)
       subaxs[chan].get_yaxis().set_visible(False)
-      subaxs[chan].plot(X,LFP_data[:,chan],color=clr,linewidth=lw)
+      #subaxs[chan].plot(X,LFP_data[:,chan],color='black',linewidth=lw) ## LFP OVERLAY 
 
+      ## CSD TIME COURSE DATA (BANDPASSED): 
+      subaxs[chan].plot(X,CSD_data[chan,:],color='blue',linewidth=0.4)
+      ## noBandpass trial 
+      subaxs[chan].plot(X,CSD_data_noBandpass[chan,:],color='red',linewidth=0.4)
 
 
   ## ADD HORIZONTAL LINES AT LOCATIONS OF EACH ELECTRODE
-  if hlines is True:
+  if hlines:
     for i in range(len(sim.cfg.recordLFP)):
       axs[0].hlines(sim.cfg.recordLFP[i][1], xmin, xmax, colors='black', linestyles='dashed')
 

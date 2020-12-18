@@ -357,7 +357,7 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,spacing_u
 ######### PLOTTING CSD #########
 ################################
 @exception
-def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sampr=None,stim_start_time=None,spacing_um=None,ymax=None,dt=None,hlines=False,layer_lines=False,layer_bounds=None,saveFig=True,showFig=True): # saveData=None
+def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=None,stim_start_time=None,spacing_um=None,ymax=None,dt=None,hlines=False,layer_lines=False,layer_bounds=None,saveFig=True,showFig=True): # saveData=None
   """ Plots CSD values extracted from simulated LFP data 
       
       Parameters
@@ -372,9 +372,10 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
         **Default:**
         ``None``
 
-      LFP_overlay : bool
-        Option to include LFP data overlaid on CSD plot 
-        **Default:** ``True`` 
+      LFP_overlay : str
+        Option to include other data overlaid on CSD color map plot 
+        Options: 'CSD_raw', 'CSD_bandpassed', 'LFP'
+        **Default:** ``None`` 
 
 
       timeRange : list [start, stop]
@@ -549,48 +550,64 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
     axs[i].set_xlabel('Time (ms)',fontsize=12)
     axs[i].tick_params(axis='y', which='major', labelsize=8)
 
-  # (iv) Set up title and y axis label and axis limits for CSD plot
-  ### DOES THIS LINE BELOW (spline=...) DO THE CSD COLOR MAP PLOT? 
-  #spline=axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r')
+  # (iv) PLOT INTERPOLATED CSD COLOR MAP
+  spline=axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r', alpha=0.9) # alpha controls transparency -- set to 0 for transparent, 1 for opaque
   axs[0].set_ylabel('Contact depth (um)', fontsize = 12)
-  if LFP_overlay:
-    #axs[0].set_title('CSD with LFP overlay',fontsize=14) #axs[0].set_title('RectBivariateSpline',fontsize=12)
-    axs[0].set_title('Bandpass vs. Raw CSD',fontsize=14) ### noBandpass trial ### ## MAKE THIS ITS OWN THING IF NECESSARY
-  elif not LFP_overlay:
-    axs[0].set_title('Current Source Density (CSD)',fontsize=14)
-  
-  # noBandpass trial -- commented out xmin and xmax to see if this clears up time course confusion -- nope. 
-  #xmin = axs[0].get_xlim()[0]
-  #xmax = axs[0].get_xlim()[1]
-  
-  #ymin = axs[0].get_ylim()[0]
-  #ymax = axs[0].get_ylim()[1]
 
-
-  # grid for LFP plots
-  if LFP_overlay:
-    ## DOES THIS LINE BELOW ALSO DO THE CSD COLOR MAP PLOT? 
-    axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r', alpha=0.3)
-    # DEFINED ABOVE # LFP_data = np.array(LFP_input_data)#[int(timeRange[0]/dt):int(timeRange[1]/dt),:] #np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
-    nrow = LFP_data.shape[1] # LFP_data.shape[0] gives you number of recorded time points.... 
+  # (v) Set Title of plot & overlay data if specified (CSD_raw, CSD_bandpassed, or LFP)  
+  if overlay is not None:
+    nrow = LFP_data.shape[1]  # could this also be CSD_data.shape[0] -- TEST THIS 
     gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(nrow, 1, subplot_spec=gs_outer[0:2], wspace=0.0, hspace=0.0)  # subplot_spec=gs_outer[2:4]
-    clr = 'gray' 
-    lw=0.3
     subaxs = []
-
-    # go down grid and add LFP from each channel
+    # go down grid and add data from each channel
     for chan in range(nrow):
       subaxs.append(plt.Subplot(fig,gs_inner[chan],frameon=False))
       fig.add_subplot(subaxs[chan])
       subaxs[chan].margins(0.0,0.01)
       subaxs[chan].get_xaxis().set_visible(False)
       subaxs[chan].get_yaxis().set_visible(False)
+
+  if overlay == 'CSD_raw':
+    axs[0].set_title('CSD with raw CSD time series overlay',fontsize=14) ### noBandpass trial 
+    subaxs[chan].plot(X,CSD_data_noBandpass[chan,:],color='red',linewidth=0.4)
+
+  elif overlay == 'LFP': 
+    axs[0].set_title('CSD with LFP overlay',fontsize=14) 
+    subaxs[chan].plot(X,LFP_data[:,chan],color='gray',linewidth=0.3)
+
+  elif overlay == 'CSD_bandpassed':
+    axs[0].set_title('CSD with Bandpassed CSD time series overlay',fontsize=12) 
+    subaxs[chan].plot(X,CSD_data[chan,:],color='blue',linewidth=0.3)
+  
+  else:
+    axs[0].set_title('Current Source Density (CSD)',fontsize=14)
+  
+
+
+  # # grid for LFP plots
+  # if LFP_overlay:
+  #   ## DOES THIS LINE BELOW ALSO DO THE CSD COLOR MAP PLOT? 
+  #   axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r', alpha=0.8)
+  #   # DEFINED ABOVE # LFP_data = np.array(LFP_input_data)#[int(timeRange[0]/dt):int(timeRange[1]/dt),:] #np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+  #   nrow = LFP_data.shape[1] # LFP_data.shape[0] gives you number of recorded time points.... 
+  #   gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(nrow, 1, subplot_spec=gs_outer[0:2], wspace=0.0, hspace=0.0)  # subplot_spec=gs_outer[2:4]
+  #   clr = 'gray' 
+  #   lw=0.3
+  #   subaxs = []
+
+    # go down grid and add LFP from each channel
+    # for chan in range(nrow):
+    #   subaxs.append(plt.Subplot(fig,gs_inner[chan],frameon=False))
+    #   fig.add_subplot(subaxs[chan])
+    #   subaxs[chan].margins(0.0,0.01)
+    #   subaxs[chan].get_xaxis().set_visible(False)
+    #   subaxs[chan].get_yaxis().set_visible(False)
       #subaxs[chan].plot(X,LFP_data[:,chan],color='black',linewidth=lw) ## LFP OVERLAY 
 
       ## CSD TIME COURSE DATA (BANDPASSED): 
-      subaxs[chan].plot(X,CSD_data[chan,:],color='blue',linewidth=0.4)
+      #subaxs[chan].plot(X,CSD_data[chan,:],color='blue',linewidth=0.3)
       ## noBandpass trial 
-      subaxs[chan].plot(X,CSD_data_noBandpass[chan,:],color='red',linewidth=0.4)
+      #subaxs[chan].plot(X,CSD_data_noBandpass[chan,:],color='red',linewidth=0.4)
 
 
   ## ADD HORIZONTAL LINES AT LOCATIONS OF EACH ELECTRODE

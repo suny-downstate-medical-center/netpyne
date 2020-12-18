@@ -34,7 +34,6 @@ from scipy.signal import (cheb2ord, cheby2, convolve, get_window, iirfilter,
 
 ## LOCAL APPLICATION IMPORTS 
 from .filter import lowpass,bandpass
-#from .utils import exception, _saveFigData, _showFigure
 from .utils import exception, _saveFigData 
 
 
@@ -72,11 +71,11 @@ def removemean (x, ax=1):
   #print(np.mean(x, axis=ax, keepdims=True))
 
 
+############################################
 ###### FUNCTIONS SPECIFIC TO NHP DATA ######
-############## REMOVED ###################
+############## REMOVED #####################
 
 
-##################################################################
 
 
 ################################################
@@ -157,30 +156,10 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,spacing_u
       print('getCSD() is using LFP data from existing simulation.')
 
 
-    # ## These lines technically assume that from .. import sim worked -- slight reorganization needed 
-    # if timeRange is None:
-    #   try:
-    #     timeRange = sim.cfg.analysis['plotLFP']['timeRange']
-    #     # This sets the timeRange equal to the timeRange used in plotLFP
-    #   except:
-    #     print('No timeRange specified in plotLFP -- using entire sim duration as timeRange.')
-    #     timeRange = [0,sim.cfg.duration]
-    #     print('timeRange = ' + str(timeRange))
-    #   else:
-    #     print('timeRange specified in plotLFP.')
-    #     print('timeRange = ' + str(timeRange))
-    # else:
-    #   print('Using timeRange from getCSD() arguments.')
-    #   print('timeRange = ' + str(timeRange)) # This is to verify that the timeRange being used is the timeRange specified in the arguments
-
-
     # time step used in simulation recording 
     if dt is None:
       dt = sim.cfg.recordStep                         # units: ms 
     print('dt = ' + str(dt))
-
-    # tt = np.arange(timeRange[0], timeRange[1],dt)   # make array of time points 
-    # print('tt.size = ' + str(tt.size))
 
 
     sim_data_categories = sim.allSimData.keys()
@@ -233,16 +212,6 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,spacing_u
     for i in data.keys():
       csd_data[i] = {}        # e.g. csd['json_input_data'] = {}
 
-      # if timeRange is None:
-      #   try:
-      #     csd_data[i]['timeRange'] = sim.cfg.analysis['plotLFP']['timeRange'] # USE LFP TIMERANGE BY DEFAULT
-      #   except:
-      #     csd_data[i]['timeRange'] = [0, data[i]['simConfig']['duration']] # USE WHOLE SIM DURATION IF NOT ACCESSIBLE
-      #     print('timeRange not specified in plotLFP - using whole sim duration for timeRange')
-      #   timeRange = csd_data[i]['timeRange']        # only works in the 1 input file scenario; expand capability for multiple files 
-      # else:
-      #   csd_data[i]['timeRange'] = timeRange
-
       if sampr is None:
         csd_data[i]['sampr'] = 1./data[i]['simConfig']['recordStep']
         sampr = csd_data[i]['sampr']
@@ -262,17 +231,12 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,spacing_u
         csd_data[i]['dt'] = dt
 
 
-    # ## MAKE ARRAY OF TIME POINTS ## USEFUL FOR GETALLDATA CONDITION
-    # tt = np.arange(timeRange[0],timeRange[1],dt)
-
 
   ## FOR LIST OF LFP DATA WITHOUT ANY .JSON INPUT FILE 
   elif len(LFP_input_data) > 0 and LFP_input_file is None:     # elif LFP_input_file is None and ...
-    ## GET LFP DATA OVER THE SPECIFIED TIME RANGE
     lfp_data = np.array(LFP_input_data)  # get lfp_data and cast as numpy array
 
-    # ## MAKE ARRAY OF TIME POINTS
-    # tt = np.arange(timeRange[0],timeRange[1],dt)
+
 
 
   ##############################################################################
@@ -459,7 +423,6 @@ def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=
     if 'CSD' in sim_data_categories:
 
       if timeRange is None:  ## RETRIEVE TIME RANGE (in ms), IF UNSPECIFIED IN ARGS
-        #timeRange = sim.allSimData['CSD']['timeRange']
         timeRange = [0,sim.cfg.duration] # sim.cfg.duration is a float # timeRange should be the entire sim duration 
 
       dt = sim.cfg.recordStep                                       # dt --> recording time step (ms)
@@ -477,8 +440,7 @@ def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=
 
       # GET CSD DATA  --> ## RETRIEVE CSD DATA (in mV/mm*2)
       print("Using CSD sim data from sim.allSimData['CSD']")
-      CSD_data = sim.allSimData['CSD']['CSD_data'][:,int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep)]
-      #CSD_data = sim.allSimData['CSD']['CSD_data']   
+      CSD_data = sim.allSimData['CSD']['CSD_data'][:,int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep)]  
       ####### noBandpass trial ######
       CSD_data_noBandpass = sim.allSimData['CSD']['CSD_data_noBandpass'][:,int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep)]
       ###############################
@@ -530,7 +492,7 @@ def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=
   xmin = int(X[0])
   xmax = int(X[-1]) + 1  #int(sim.allSimData['t'][-1])
   ymin = 0
-  ## DEALT WITH ymax IN ALL CONDITIONS ABOVE #  ymax = sim.cfg.recordLFP[-1][1] + spacing_um #(sim.cfg.recordLFP[-1][1])/1000 + spacing_mm #depth  
+  ## DEALT WITH ymax IN ALL CONDITIONS ABOVE  
   extent_xy = [xmin, xmax, ymax, ymin]
 
 

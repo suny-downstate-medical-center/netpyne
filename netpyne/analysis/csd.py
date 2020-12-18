@@ -342,7 +342,7 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,spacing_u
 
   # RETURN CSD AND OTHER RELEVANT PARAM VALUES, IF DESIRED 
   if getAllData is True:
-    return lfp_data, CSD_data, timeRange, sampr, spacing_um, dt, tt
+    return lfp_data, CSD_data, sampr, spacing_um, dt
   if getAllData is False:
     return CSD_data       # returns CSD in units of mV/mm**2 (assuming lfps are in mV)
 

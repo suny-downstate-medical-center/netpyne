@@ -303,7 +303,9 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,spacing_u
   CSD_data = -np.diff(datband,n=2,axis=ax)/spacing_mm**2  ## CSD_data should be in mV/mm**2, assuming that LFP data is in mV. 
   
 
-  ####### noBandpass trial #######
+  ########################################
+  ########## noBandpass trial ############
+  ########################################
   datband_noBandpass = lfp_data.T
   
   if datband_noBandpass.shape[0] > datband_noBandpass.shape[1]:
@@ -321,13 +323,14 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,spacing_u
   ##########################################
 
 
+
   ################## SAVING DATA ##########################
   # Add CSD and other param values to sim.allSimData for access outside of this function or script 
   if save_to_sim is True:   ## FROM SIM 
     try:
       from .. import sim 
       sim.allSimData['CSD'] = {}
-      sim.allSimData['CSD']['timeRange'] = timeRange       # ['CSD']['sim']
+      #sim.allSimData['CSD']['timeRange'] = timeRange 
       sim.allSimData['CSD']['sampr'] = sampr
       sim.allSimData['CSD']['spacing_um'] = spacing_um 
       sim.allSimData['CSD']['CSD_data'] = CSD_data

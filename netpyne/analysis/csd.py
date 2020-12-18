@@ -530,8 +530,7 @@ def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=
   xmin = int(X[0])
   xmax = int(X[-1]) + 1  #int(sim.allSimData['t'][-1])
   ymin = 0
-  ## DEALT WITH ymax IN ALL CONDITIONS ABOVE #  ymax = sim.cfg.recordLFP[-1][1] + spacing_um #(sim.cfg.recordLFP[-1][1])/1000 + spacing_mm #depth 
-  #ymax = 24  
+  ## DEALT WITH ymax IN ALL CONDITIONS ABOVE #  ymax = sim.cfg.recordLFP[-1][1] + spacing_um #(sim.cfg.recordLFP[-1][1])/1000 + spacing_mm #depth  
   extent_xy = [xmin, xmax, ymax, ymin]
 
 
@@ -555,7 +554,7 @@ def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=
   axs[0].set_ylabel('Contact depth (um)', fontsize = 12)
 
   # (v) Set Title of plot & overlay data if specified (CSD_raw, CSD_bandpassed, or LFP)  
-  if overlay is 'CSD_raw' or 'CSD_bandpassed' or 'LFP':
+  if overlay is 'CSD_raw' or overlay is 'CSD_bandpassed' or overlay is 'LFP':
     nrow = LFP_data.shape[1]  # could this also be CSD_data.shape[0] -- TEST THIS 
     gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(nrow, 1, subplot_spec=gs_outer[0:2], wspace=0.0, hspace=0.0)  # subplot_spec=gs_outer[2:4]
     subaxs = []
@@ -592,50 +591,9 @@ def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=
         subaxs[chan].plot(X,LFP_data[:,chan],color='gray',linewidth=0.3)
 
   else:
+    print('No data being overlaid')
     axs[0].set_title('Current Source Density (CSD)',fontsize=14)
 
-
-  # if overlay == 'CSD_raw':
-  #   axs[0].set_title('CSD with raw CSD time series overlay',fontsize=14) ### noBandpass trial 
-  #   subaxs[chan].plot(X,CSD_data_noBandpass[chan,:],color='red',linewidth=0.4)
-
-  # elif overlay == 'LFP': 
-  #   axs[0].set_title('CSD with LFP overlay',fontsize=14) 
-  #   subaxs[chan].plot(X,LFP_data[:,chan],color='gray',linewidth=0.3)
-
-  # elif overlay == 'CSD_bandpassed':
-  #   axs[0].set_title('CSD with Bandpassed CSD time series overlay',fontsize=12) 
-  #   subaxs[chan].plot(X,CSD_data[chan,:],color='blue',linewidth=0.3)
-  
-  # else:
-  #   axs[0].set_title('Current Source Density (CSD)',fontsize=14)
-  
-
-
-  # # grid for LFP plots
-  # if LFP_overlay:
-  #   ## DOES THIS LINE BELOW ALSO DO THE CSD COLOR MAP PLOT? 
-  #   axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r', alpha=0.8)
-  #   # DEFINED ABOVE # LFP_data = np.array(LFP_input_data)#[int(timeRange[0]/dt):int(timeRange[1]/dt),:] #np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
-  #   nrow = LFP_data.shape[1] # LFP_data.shape[0] gives you number of recorded time points.... 
-  #   gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(nrow, 1, subplot_spec=gs_outer[0:2], wspace=0.0, hspace=0.0)  # subplot_spec=gs_outer[2:4]
-  #   clr = 'gray' 
-  #   lw=0.3
-  #   subaxs = []
-
-    # go down grid and add LFP from each channel
-    # for chan in range(nrow):
-    #   subaxs.append(plt.Subplot(fig,gs_inner[chan],frameon=False))
-    #   fig.add_subplot(subaxs[chan])
-    #   subaxs[chan].margins(0.0,0.01)
-    #   subaxs[chan].get_xaxis().set_visible(False)
-    #   subaxs[chan].get_yaxis().set_visible(False)
-      #subaxs[chan].plot(X,LFP_data[:,chan],color='black',linewidth=lw) ## LFP OVERLAY 
-
-      ## CSD TIME COURSE DATA (BANDPASSED): 
-      #subaxs[chan].plot(X,CSD_data[chan,:],color='blue',linewidth=0.3)
-      ## noBandpass trial 
-      #subaxs[chan].plot(X,CSD_data_noBandpass[chan,:],color='red',linewidth=0.4)
 
 
   ## ADD HORIZONTAL LINES AT LOCATIONS OF EACH ELECTRODE

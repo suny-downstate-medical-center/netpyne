@@ -450,23 +450,19 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
   if CSD_data is None:
     
     #print('sim data used for plotting')
-    getCSD(timeRange=timeRange,sampr=sampr,spacing_um=spacing_um,dt=dt,getAllData=True)
+    getCSD(sampr=sampr,spacing_um=spacing_um,dt=dt,getAllData=True)
 
     from .. import sim      ## put this in try except block? 
 
     sim_data_categories = sim.allSimData.keys()
     if 'CSD' in sim_data_categories:
-      print("Using CSD sim data from sim.allSimData['CSD']")
-      CSD_data = sim.allSimData['CSD']['CSD_data']   ## RETRIEVE CSD DATA (in mV/mm*2)
-
-      ####### noBandpass trial ######
-      CSD_data_noBandpass = sim.allSimData['CSD']['CSD_data_noBandpass']
-      ###############################
 
       if timeRange is None:  ## RETRIEVE TIME RANGE (in ms), IF UNSPECIFIED IN ARGS
-        timeRange = sim.allSimData['CSD']['timeRange']
+        #timeRange = sim.allSimData['CSD']['timeRange']
+        timeRange = [0,sim.cfg.duration] # sim.cfg.duration is a float # timeRange should be the entire sim duration 
 
       dt = sim.cfg.recordStep                                       # dt --> recording time step (ms)
+      
       tt = np.arange(timeRange[0],timeRange[1],dt)                  # tt --> time points 
 
       spacing_um = sim.allSimData['CSD']['spacing_um']   ## RETRIEVE SPACING BETWEEN ELECTRODE CONTACTS (in microns)
@@ -474,8 +470,17 @@ def plotCSD(CSD_data=None,LFP_input_data=None,LFP_overlay=True,timeRange=None,sa
 
       ymax = sim.cfg.recordLFP[-1][1] + spacing_um
 
-      # Get LFP_data 
+      # GET LFP DATA 
+      ## This will be the LFP data sliced by relevant timeRange -- default is whole sim, unless specified in plotCSD() args
       LFP_data = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+
+      # GET CSD DATA  --> ## RETRIEVE CSD DATA (in mV/mm*2)
+      print("Using CSD sim data from sim.allSimData['CSD']")
+      CSD_data = sim.allSimData['CSD']['CSD_data'][int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+      #CSD_data = sim.allSimData['CSD']['CSD_data']   
+      ####### noBandpass trial ######
+      CSD_data_noBandpass = sim.allSimData['CSD']['CSD_data_noBandpass'][int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+      ###############################
 
 
     elif 'CSD' not in sim_data_categories:

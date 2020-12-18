@@ -555,32 +555,59 @@ def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=
   axs[0].set_ylabel('Contact depth (um)', fontsize = 12)
 
   # (v) Set Title of plot & overlay data if specified (CSD_raw, CSD_bandpassed, or LFP)  
-  if overlay is not None:
+  if overlay is 'CSD_raw' or 'CSD_bandpassed' or 'LFP':
     nrow = LFP_data.shape[1]  # could this also be CSD_data.shape[0] -- TEST THIS 
     gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(nrow, 1, subplot_spec=gs_outer[0:2], wspace=0.0, hspace=0.0)  # subplot_spec=gs_outer[2:4]
     subaxs = []
+
     # go down grid and add data from each channel
-    for chan in range(nrow):
+    if overlay == 'CSD_raw':
+      axs[0].set_title('CSD with raw CSD time series overlay',fontsize=14)
+      for chan in range(nrow):
+        subaxs.append(plt.Subplot(fig,gs_inner[chan],frameon=False))
+        fig.add_subplot(subaxs[chan])
+        subaxs[chan].margins(0.0,0.01)
+        subaxs[chan].get_xaxis().set_visible(False)
+        subaxs[chan].get_yaxis().set_visible(False)
+        subaxs[chan].plot(X,CSD_data_noBandpass[chan,:],color='red',linewidth=0.4)
+    
+    elif overlay == 'CSD_bandpassed':
+      axs[0].set_title('CSD with Bandpassed CSD time series overlay',fontsize=12) 
+      for chan in range(nrow):
+        subaxs.append(plt.Subplot(fig,gs_inner[chan],frameon=False))
+        fig.add_subplot(subaxs[chan])
+        subaxs[chan].margins(0.0,0.01)
+        subaxs[chan].get_xaxis().set_visible(False)
+        subaxs[chan].get_yaxis().set_visible(False)
+        subaxs[chan].plot(X,CSD_data[chan,:],color='blue',linewidth=0.3)
+
+    elif overlay == 'LFP':
+      axs[0].set_title('CSD with LFP overlay',fontsize=14) 
       subaxs.append(plt.Subplot(fig,gs_inner[chan],frameon=False))
       fig.add_subplot(subaxs[chan])
       subaxs[chan].margins(0.0,0.01)
       subaxs[chan].get_xaxis().set_visible(False)
       subaxs[chan].get_yaxis().set_visible(False)
+      subaxs[chan].plot(X,LFP_data[:,chan],color='gray',linewidth=0.3)
 
-  if overlay == 'CSD_raw':
-    axs[0].set_title('CSD with raw CSD time series overlay',fontsize=14) ### noBandpass trial 
-    subaxs[chan].plot(X,CSD_data_noBandpass[chan,:],color='red',linewidth=0.4)
-
-  elif overlay == 'LFP': 
-    axs[0].set_title('CSD with LFP overlay',fontsize=14) 
-    subaxs[chan].plot(X,LFP_data[:,chan],color='gray',linewidth=0.3)
-
-  elif overlay == 'CSD_bandpassed':
-    axs[0].set_title('CSD with Bandpassed CSD time series overlay',fontsize=12) 
-    subaxs[chan].plot(X,CSD_data[chan,:],color='blue',linewidth=0.3)
-  
   else:
     axs[0].set_title('Current Source Density (CSD)',fontsize=14)
+
+
+  # if overlay == 'CSD_raw':
+  #   axs[0].set_title('CSD with raw CSD time series overlay',fontsize=14) ### noBandpass trial 
+  #   subaxs[chan].plot(X,CSD_data_noBandpass[chan,:],color='red',linewidth=0.4)
+
+  # elif overlay == 'LFP': 
+  #   axs[0].set_title('CSD with LFP overlay',fontsize=14) 
+  #   subaxs[chan].plot(X,LFP_data[:,chan],color='gray',linewidth=0.3)
+
+  # elif overlay == 'CSD_bandpassed':
+  #   axs[0].set_title('CSD with Bandpassed CSD time series overlay',fontsize=12) 
+  #   subaxs[chan].plot(X,CSD_data[chan,:],color='blue',linewidth=0.3)
+  
+  # else:
+  #   axs[0].set_title('Current Source Density (CSD)',fontsize=14)
   
 
 

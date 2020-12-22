@@ -1,6 +1,12 @@
 # Version 0.9.9
 
-** Bug fixes ** 
+**New features**
+
+- Plot current source density (CSD) from local field potential (LFP) simulated data 
+
+- Additional customization of 3D shape plot: show voltage as color, change proportions, include axis labels
+
+**Bug fixes** 
 
 - Made rate_b be positional instead of keyword argument in rxd multiCompartmentReaction
 

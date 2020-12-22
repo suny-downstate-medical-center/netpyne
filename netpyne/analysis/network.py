@@ -1032,7 +1032,7 @@ def plot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, t
 ## Plot cell shape
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElectrodes=False, synStyle='.', synSize=3, dist=0.6, cvar=None, cvals=None, iv=False, ivprops=None, includeAxon=True, bkgColor=None, figSize=(10,8), fontSize=12, saveData=None, dpi=300, saveFig=None, showFig=True):
+def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElectrodes=False, synStyle='.', synSize=3, dist=0.6, cvar=None, cvals=None, iv=False, ivprops=None, includeAxon=True, bkgColor=None, axis='auto', axisLabels=False, figSize=(10,8), fontSize=12, saveData=None, dpi=300, saveFig=None, showFig=True):
     """
     Function for/to <short description of `netpyne.analysis.network.plotShape`>
 
@@ -1200,6 +1200,16 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
 
                 cvals = np.array(cvals)
 
+            # voltage
+            elif cvar == 'voltage':
+                for cellPost in cellsPost:
+                    cellSecs = cellPost.secs if includeAxon else {k:s for k,s in cellPost.secs.items() if 'axon' not in s['hObj'].hname()}
+                    for secLabel,sec in cellSecs.items():
+                        for seg in sec['hObj']:
+                            cvals.append(seg.v)
+    
+                cvals = np.array(cvals)
+
         if not isinstance(cellsPost[0].secs, dict):
             print('Error: Cell sections not available')
             return -1
@@ -1209,16 +1219,46 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
             secs = [sec for sec in secs if 'axon' not in sec.hname()]
 
         # Plot shapeplot
-        cbLabels = {'numSyns': 'number of synapses per segment', 'weightNorm': 'weight scaling'}
+        cbLabels = {'numSyns': 'Number of synapses per segment', 
+                    'weightNorm': 'Weight scaling',
+                    'voltage': 'Voltage (mV)'}
         plt.rcParams.update({'font.size': fontSize})
         fig=plt.figure(figsize=figSize)
         shapeax = plt.subplot(111, projection='3d')
         shapeax.elev=90 # 90
         shapeax.azim=-90 # -90
         shapeax.dist=dist*shapeax.dist
-        plt.axis('auto')
+        plt.axis(axis)
         cmap = plt.cm.viridis #plt.cm.jet  #plt.cm.rainbow #plt.cm.jet #YlOrBr_r
-        morph.shapeplot(h,shapeax, sections=secs, cvals=cvals, cmap=cmap)
+        morph.shapeplot(h, shapeax, sections=secs, cvals=cvals, cmap=cmap)
+
+        # fix so that axes can be scaled
+        ax = plt.gca()
+        def set_axes_equal(ax: plt.Axes):
+            """Set 3D plot axes to equal scale.
+
+            Make axes of 3D plot have equal scale so that spheres appear as
+            spheres and cubes as cubes.  Required since `ax.axis('equal')`
+            and `ax.set_aspect('equal')` don't work on 3D.
+            """
+            limits = np.array([
+                ax.get_xlim3d(),
+                ax.get_ylim3d(),
+                ax.get_zlim3d(),
+            ])
+            origin = np.mean(limits, axis=1)
+            radius = 0.5 * np.max(np.abs(limits[:, 1] - limits[:, 0]))
+            _set_axes_radius(ax, origin, radius)
+
+        def _set_axes_radius(ax, origin, radius):
+            x, y, z = origin
+            ax.set_xlim3d([x - radius, x + radius])
+            ax.set_ylim3d([y - radius, y + radius])
+            ax.set_zlim3d([z - radius, z + radius])
+
+        ax.set_box_aspect([1,1,1]) # IMPORTANT - this is the new, key line
+        set_axes_equal(ax) 
+
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
         if cvals is not None and len(cvals)>0:
             sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=np.min(cvals), vmax=np.max(cvals)))
@@ -1254,11 +1294,15 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
                 ax.text(coords[i,0],coords[i,1],coords[i,2], '  '+str(showElectrodes[i]), fontweight='bold' )
             cb.set_label('Segment total transfer resistance to electrodes (kiloohm)', rotation=90, fontsize=fontSize)
 
-        #plt.title(str(includePre)+' -> '+str(includePost) + ' ' + str(cvar))
-        shapeax.set_xticklabels([])
-        shapeax.set_yticklabels([])
-        shapeax.set_zticklabels([])
-        #shapeax.set_ylabel('y location (um)')
+        if axisLabels:
+            shapeax.set_xlabel('x (um)')
+            shapeax.set_ylabel('y (um)')
+            shapeax.set_zlabel('z (um)')
+        else:
+            shapeax.set_xticklabels([])
+            shapeax.set_yticklabels([])
+            shapeax.set_zticklabels([])
+            
 
         # save figure
         if saveFig:

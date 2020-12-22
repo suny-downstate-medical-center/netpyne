@@ -321,7 +321,7 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,spacing_u
 ######### PLOTTING CSD #########
 ################################
 @exception
-def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=None,stim_start_time=None,spacing_um=None,ymax=None,dt=None,hlines=False,layer_lines=False,layer_bounds=None,saveFig=True,showFig=True): # saveData=None
+def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=None,stim_start_time=None,spacing_um=None,ymax=None,dt=None,hlines=False,layer_lines=False,layer_bounds=None,smooth=None,figSize=(10,10),dpi=200,saveFig=True,showFig=True): # saveData=None
   """ Plots CSD values extracted from simulated LFP data 
       
       Parameters
@@ -497,7 +497,7 @@ def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=
 
 
   # (ii) Set up figure 
-  fig = plt.figure() 
+  fig = plt.figure(figsize=figSize) 
 
   # (iii) Create plots w/ common axis labels and tick marks
   axs = []
@@ -512,6 +512,9 @@ def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=
     axs[i].tick_params(axis='y', which='major', labelsize=8)
 
   # (iv) PLOT INTERPOLATED CSD COLOR MAP
+  if smooth:
+    Z = scipy.ndimage.filters.gaussian_filter(Z, smooth, mode='nearest')#nearest')#constant')
+
   spline=axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r', alpha=0.9) # alpha controls transparency -- set to 0 for transparent, 1 for opaque
   axs[0].set_ylabel('Contact depth (um)', fontsize = 12)
 
@@ -595,9 +598,9 @@ def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=
     else:
       filename = sim.cfg.filename + '_CSD.png'
     try:
-      plt.savefig(filename)   #dpi
+      plt.savefig(filename, dpi=dpi)   #dpi
     except:
-      plt.savefig('CSD_fig.png')
+      plt.savefig('CSD_fig.png', dpi=dpi)
 
   # DISPLAY FINAL FIGURE
   if showFig is True:

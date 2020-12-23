@@ -321,7 +321,7 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,spacing_u
 ######### PLOTTING CSD #########
 ################################
 @exception
-def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=None,stim_start_time=None,spacing_um=None,ymax=None,dt=None,hlines=False,layer_lines=False,layer_bounds=None,smooth=None,figSize=(10,10),dpi=200,saveFig=True,showFig=True): # saveData=None
+def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=None,stim_start_time=None,spacing_um=None,ymax=None,dt=None,hlines=False,layer_lines=False,layer_bounds=None,smooth=None,fontSize=12, figSize=(10,10),dpi=200,saveFig=True,showFig=True): # saveData=None
   """ Plots CSD values extracted from simulated LFP data 
       
       Parameters
@@ -486,6 +486,7 @@ def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=
   Y_plot = np.linspace(0,CSD_data.shape[0],num=1000) 
   Z = CSD_spline(Y_plot, X)
 
+  plt.rcParams.update({'font.size': fontSize})
 
 
   # (i) Set up axes 
@@ -508,15 +509,15 @@ def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=
   for i in range(numplots):
     axs.append(plt.Subplot(fig,gs_outer[i*2:i*2+2]))
     fig.add_subplot(axs[i])
-    axs[i].set_xlabel('Time (ms)',fontsize=12)
-    axs[i].tick_params(axis='y', which='major', labelsize=8)
+    axs[i].set_xlabel('Time (ms)',fontsize=fontSize)
+    axs[i].tick_params(axis='y', which='major', labelsize=fontSize)
 
   # (iv) PLOT INTERPOLATED CSD COLOR MAP
   if smooth:
     Z = scipy.ndimage.filters.gaussian_filter(Z, smooth, mode='nearest')#nearest')#constant')
 
   spline=axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r', alpha=0.9) # alpha controls transparency -- set to 0 for transparent, 1 for opaque
-  axs[0].set_ylabel('Contact depth (um)', fontsize = 12)
+  axs[0].set_ylabel('Contact depth (um)', fontsize=fontSize)
 
   # (v) Set Title of plot & overlay data if specified (CSD_raw, CSD_bandpassed, or LFP)  
   if overlay is 'CSD_raw' or overlay is 'CSD_bandpassed' or overlay is 'LFP':
@@ -526,7 +527,7 @@ def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=
 
     # go down grid and add data from each channel
     if overlay == 'CSD_raw':
-      axs[0].set_title('CSD with raw CSD time series overlay',fontsize=14)
+      axs[0].set_title('CSD with raw CSD time series overlay',fontsize=fontSize)
       for chan in range(nrow):
         subaxs.append(plt.Subplot(fig,gs_inner[chan],frameon=False))
         fig.add_subplot(subaxs[chan])
@@ -536,7 +537,7 @@ def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=
         subaxs[chan].plot(X,CSD_data_noBandpass[chan,:],color='red',linewidth=0.4)
     
     elif overlay == 'CSD_bandpassed':
-      axs[0].set_title('CSD with Bandpassed CSD time series overlay',fontsize=12) 
+      axs[0].set_title('CSD with Bandpassed CSD time series overlay',fontsize=fontSize) 
       for chan in range(nrow):
         subaxs.append(plt.Subplot(fig,gs_inner[chan],frameon=False))
         fig.add_subplot(subaxs[chan])
@@ -557,7 +558,7 @@ def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=
 
   else:
     print('No data being overlaid')
-    axs[0].set_title('Current Source Density (CSD)',fontsize=14)
+    axs[0].set_title('Current Source Density (CSD)',fontsize=fontSize)
 
 
 
@@ -580,9 +581,9 @@ def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=
         layerKeys.append(i)   # make a list of the layer names 
       for n in range(len(layerKeys)): # place layer name labels (e.g. 'L1', 'L2') onto plot 
         if n == 0:
-          axs[0].text(xmax+5, layer_bounds[layerKeys[n]]/2, layerKeys[n],color='black',fontsize=8)
+          axs[0].text(xmax+5, layer_bounds[layerKeys[n]]/2, layerKeys[n],color='black',fontsize=fontSize)
         else:
-          axs[0].text(xmax+5, (layer_bounds[layerKeys[n]] + layer_bounds[layerKeys[n-1]])/2,layerKeys[n],color='black',fontsize=8)
+          axs[0].text(xmax+5, (layer_bounds[layerKeys[n]] + layer_bounds[layerKeys[n-1]])/2,layerKeys[n],color='black',fontsize=fontSize)
 
 
 

@@ -1032,7 +1032,7 @@ def plot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, t
 ## Plot cell shape
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElectrodes=False, synStyle='.', synSize=3, dist=0.6, cvar=None, cvals=None, iv=False, ivprops=None, includeAxon=True, bkgColor=None, axis='auto', axisLabels=False, figSize=(10,8), fontSize=12, saveData=None, dpi=300, saveFig=None, showFig=True):
+def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElectrodes=False, synStyle='.', synSize=3, dist=0.6, elev=90, azim=-90, cvar=None, cvals=None, iv=False, ivprops=None, includeAxon=True, bkgColor=None, axis='auto', axisLabels=False, figSize=(10,8), fontSize=12, saveData=None, dpi=300, saveFig=None, showFig=True):
     """
     Function for/to <short description of `netpyne.analysis.network.plotShape`>
 
@@ -1225,8 +1225,8 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
         plt.rcParams.update({'font.size': fontSize})
         fig=plt.figure(figsize=figSize)
         shapeax = plt.subplot(111, projection='3d')
-        shapeax.elev=90 # 90
-        shapeax.azim=-90 # -90
+        shapeax.elev=elev # 90
+        shapeax.azim=azim  # -90
         shapeax.dist=dist*shapeax.dist
         plt.axis(axis)
         cmap = plt.cm.viridis #plt.cm.jet  #plt.cm.rainbow #plt.cm.jet #YlOrBr_r

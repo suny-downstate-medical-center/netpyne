@@ -12,6 +12,8 @@
 
 - Check if _morphSegCoords exists in population before using
 
+- Fixed bug to avoid recursive creating of synMechs when loading with cfg.oneSynPerNetcon=True
+
 # Version 0.9.8
 
 **New features**

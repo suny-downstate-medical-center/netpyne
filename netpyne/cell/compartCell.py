@@ -623,7 +623,7 @@ class CompartCell (Cell):
                     synMech = Dict()
                     sec['synMechs'].append(synMech)
                 # add the NEURON object
-                addSynMechNEURONObj(synMech, synMechParams, sec, loc)
+                self.addSynMechNEURONObj(synMech, synMechParams, sec, loc)
             else:
                 synMech = None
             return synMech

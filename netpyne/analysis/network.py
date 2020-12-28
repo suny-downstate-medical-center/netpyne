@@ -1234,7 +1234,7 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
 
         # fix so that axes can be scaled
         ax = plt.gca()
-        def set_axes_equal(ax: plt.Axes):
+        def set_axes_equal(ax):
             """Set 3D plot axes to equal scale.
 
             Make axes of 3D plot have equal scale so that spheres appear as

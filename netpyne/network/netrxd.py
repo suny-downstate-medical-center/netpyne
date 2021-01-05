@@ -228,6 +228,10 @@ def _addSpecies(self, params):
                 continue
         else:
             initial = param['initial']
+
+        # ecs boundary condition 
+        if 'ecs_boundary_conditions' not in param:
+            param['ecs_boundary_conditions'] = None
         
         # atolscale
         if 'atolscale' not in param:
@@ -239,7 +243,8 @@ def _addSpecies(self, params):
                                                 charge=param['charge'], 
                                                 initial=initial, 
                                                 atolscale=param['atolscale'], 
-                                                name=label)
+                                                name=label,
+                                                ecs_boundary_conditions=param['ecs_boundary_conditions'])
         print('  Created Species %s'%(label))
 
 

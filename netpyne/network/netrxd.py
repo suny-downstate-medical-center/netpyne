@@ -145,12 +145,20 @@ def _addRegions(self, params):
                         nrnSecs.append(sec['hObj'])
 
         # call rxd method to create Region
-        self.rxd['regions'][label]['hObj'] = rxd.Region(secs=nrnSecs, 
-                                                nrn_region=param['nrn_region'], 
-                                                geometry=geometry, 
-                                                dimension=param['dimension'], 
-                                                dx=param['dx'], 
-                                                name=label)
+        if param['geometry'] == 'rxd.membrane()':
+            self.rxd['regions'][label]['hObj'] = rxd.Region(secs=nrnSecs, 
+                                                    nrn_region=param['nrn_region'], 
+                                                    geometry=rxd.membrane(), 
+                                                    dimension=param['dimension'], 
+                                                    dx=param['dx'], 
+                                                    name=label)
+        else:
+            self.rxd['regions'][label]['hObj'] = rxd.Region(secs=nrnSecs, 
+                                                    nrn_region=param['nrn_region'], 
+                                                    geometry=geometry, 
+                                                    dimension=param['dimension'], 
+                                                    dx=param['dx'], 
+                                                    name=label)
         print('  Created Region %s'%(label))
 
 
@@ -237,13 +245,18 @@ def _addSpecies(self, params):
         if 'atolscale' not in param:
             param['atolscale'] = 1
 
-        # call rxd method to create Region
+        if 'name' not in param:
+            name = label
+        else:
+            name = param['name']
+
+        # call rxd method to create Species
         self.rxd['species'][label]['hObj'] = rxd.Species(regions=nrnRegions, 
                                                 d=param['d'], 
                                                 charge=param['charge'], 
                                                 initial=initial, 
                                                 atolscale=param['atolscale'], 
-                                                name=label,
+                                                name=name,
                                                 ecs_boundary_conditions=param['ecs_boundary_conditions'])
         print('  Created Species %s'%(label))
 
@@ -284,10 +297,15 @@ def _addStates(self, params):
                 continue
         else:
             initial = param['initial']
+
+        if 'name' not in param:
+            name = label
+        else:
+            name = param['name']
         
         # call rxd method to create Region
         self.rxd['states'][label]['hObj'] = rxd.State(regions=nrnRegions, 
-                                                    initial=initial)
+                                                    initial=initial, name=name)
         print('  Created State %s'%(label))
 
 # -----------------------------------------------------------------------------

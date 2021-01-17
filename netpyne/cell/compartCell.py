@@ -898,7 +898,26 @@ class CompartCell (Cell):
                         break
 
             if conditionsMet and 'preConds' in params:
-                print('Warning: modifyConns() does not yet support conditions of presynaptic cells')
+                try:
+                    cell = sim.net.cells[conn['preGid']]
+
+                    if cell:
+                        for (condKey,condVal) in params['preConds'].items():  # check if all conditions are met
+                            # check if conditions met
+                            if isinstance(condVal, list) and isinstance(condVal[0], Number):
+                                if cell.tags.get(condKey) < condVal[0] or cell.tags.get(condKey) > condVal[1]:
+                                    conditionsMet = 0
+                                    break
+                            elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
+                                if cell.tags.get(condKey) not in condVal:
+                                    conditionsMet = 0
+                                    break
+                            elif cell.tags.get(condKey) != condVal:
+                                conditionsMet = 0
+                                break
+                except:
+                    pass
+                    #print('Warning: modifyConns() does not yet support conditions of presynaptic cells when running parallel sims')
 
             if conditionsMet:  # if all conditions are met, set values for this cell
                 if sim.cfg.createPyStruct:

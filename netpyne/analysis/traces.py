@@ -28,7 +28,7 @@ from .utils import colorList, _showFigure, _saveFigData, exception, getCellsIncl
 ## Plot recorded cell traces (V, i, g, etc.)
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, title=None, overlay=False, colors=None, ylim=None, axis=True, legend=True, scaleBarLoc=1, figSize = (10,8), fontSize=12, saveData=None, saveFig=None, showFig=True):
+def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, title=None, subtitles=True, overlay=False, colors=None, ylim=None, axis=True, legend=True, scaleBarLoc=1, figSize = (10,8), fontSize=12, saveData=None, saveFig=None, showFig=True):
     """
     Function for/to <short description of `netpyne.analysis.traces.plotTraces`>
 
@@ -242,7 +242,8 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
                     plt.xlabel('Time (ms)', fontsize=fontsiz)
                     plt.xlim(timeRange)
                     if ylim: plt.ylim(ylim)
-                    plt.title('%s '%(trace))
+                    if subtitles:
+                        plt.title('%s '%(trace))
 
                     if not overlay:
                         if not axis or axis=='off':  # if no axis, add scalebar
@@ -312,9 +313,10 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
                     plt.ylabel(trace, fontsize=fontsiz)
                     plt.xlim(timeRange)
                     if ylim: plt.ylim(ylim)
-                    if itrace==0: plt.title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                    if itrace==0 and subtitles: 
+                        plt.title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
                     if not overlay:
-                        if not axis or axis=='off':  # if no axis, add scalebar
+                        if not axis or axis=='off' and itrace==0:  # if no axis, add scalebar
                             addScaleBar()
 
             if overlay:

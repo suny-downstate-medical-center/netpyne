@@ -6,6 +6,9 @@
 
 - Additional customization of 3D shape plot: show voltage as color, change proportions, include axis labels
 
+- Enable modifyConns based on properties of presynaptic neurons
+
+
 **Bug fixes** 
 
 - Made rate_b be positional instead of keyword argument in rxd multiCompartmentReaction

@@ -511,6 +511,7 @@ def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=
     fig.add_subplot(axs[i])
     axs[i].set_xlabel('Time (ms)',fontsize=fontSize)
     axs[i].tick_params(axis='y', which='major', labelsize=fontSize)
+    axs[i].tick_params(axis='x', which='major', labelsize=fontSize)
 
   # (iv) PLOT INTERPOLATED CSD COLOR MAP
   if smooth:

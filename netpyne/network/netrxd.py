@@ -112,13 +112,17 @@ def _addRegions(self, params):
         if 'geometry' not in param:
             param['geometry'] = None
             geometry = param['geometry']
+        # import IPython; IPython.embed()
         if isinstance(param['geometry'], dict):
             try:
-                param['geometry']['hObj'] = getattr(rxd, param['geometry']['class'])(**param['geometry']['args'])
-                geometry = param['geometry']['hObj']
+                if 'args' in param['geometry']:
+                    param['geometry']['hObj'] = getattr(rxd, param['geometry']['class'])(**param['geometry']['args'])
+                    geometry = param['geometry']['hObj']
             except:
-                print('  Error creating %s Region geometry using %s class'%(label, param['geometry']['class'])) 
-            
+                print('  Error creating %s Region geometry using %s class'%(label, param['geometry']['class']))
+        elif isinstance(param['geometry'], str):
+            geometry = getattr(rxd, param['geometry'])()
+
             # List of allowed geometry classes: 
             # class neuron.rxd.geometry.FixedCrossSection(cross_area, surface_area=0) 
             # class neuron.rxd.geometry.FractionalVolume(volume_fraction=1, surface_fraction=0, neighbor_areas_fraction=None) 
@@ -145,20 +149,20 @@ def _addRegions(self, params):
                         nrnSecs.append(sec['hObj'])
 
         # call rxd method to create Region
-        if param['geometry'] == 'rxd.membrane()':
-            self.rxd['regions'][label]['hObj'] = rxd.Region(secs=nrnSecs, 
-                                                    nrn_region=param['nrn_region'], 
-                                                    geometry=rxd.membrane(), 
-                                                    dimension=param['dimension'], 
-                                                    dx=param['dx'], 
-                                                    name=label)
-        else:
-            self.rxd['regions'][label]['hObj'] = rxd.Region(secs=nrnSecs, 
-                                                    nrn_region=param['nrn_region'], 
-                                                    geometry=geometry, 
-                                                    dimension=param['dimension'], 
-                                                    dx=param['dx'], 
-                                                    name=label)
+        # if param['geometry'] == 'rxd.membrane()':
+        #     self.rxd['regions'][label]['hObj'] = rxd.Region(secs=nrnSecs, 
+        #                                             nrn_region=param['nrn_region'], 
+        #                                             geometry=rxd.membrane(), 
+        #                                             dimension=param['dimension'], 
+        #                                             dx=param['dx'], 
+        #                                             name=label)
+        # else:
+        self.rxd['regions'][label]['hObj'] = rxd.Region(secs=nrnSecs, 
+                                                nrn_region=param['nrn_region'], 
+                                                geometry=geometry, 
+                                                dimension=param['dimension'], 
+                                                dx=param['dx'], 
+                                                name=label)
         print('  Created Region %s'%(label))
 
 
@@ -431,7 +435,9 @@ def _addReactions(self, params, multicompartment=False):
         if 'custom_dynamics' not in param:
             param['custom_dynamics'] = False
 
-        #import IPython; IPython.embed()
+        # membrane_flux
+        if 'membrane_flux' not in param:
+            param['membrane_flux'] = False
 
         self.rxd[reactionDictKey][label]['hObj'] = getattr(rxd, reactionStr)(dynamicVars['reactant'],
                                                                             dynamicVars['product'], 
@@ -439,7 +445,8 @@ def _addReactions(self, params, multicompartment=False):
                                                                             rate_b=dynamicVars['rate_b'] if 'rate_b' in dynamicVars else rate_b, 
                                                                             regions=nrnRegions, 
                                                                             custom_dynamics=param['custom_dynamics'],
-                                                                            membrane=nrnMembraneRegion)
+                                                                            membrane=nrnMembraneRegion,
+                                                                            membrane_flux=param['membrane_flux'])
 
         print('  Created %s %s'%(reactionStr, label))
 

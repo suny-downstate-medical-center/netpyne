@@ -1,3 +1,4 @@
 """
-Functions for code testing
+Package handling code testing
+
 """

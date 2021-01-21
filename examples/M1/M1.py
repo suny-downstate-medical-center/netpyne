@@ -1,11 +1,9 @@
 """
-params.py 
+params.py
 
 netParams is a dict containing a set of network parameters using a standardized structure
 
 simConfig is a dict containing a set of simulation configurations using a standardized structure
-
-Contributors: salvadordura@gmail.com
 """
 
 from netpyne import specs
@@ -29,15 +27,15 @@ simConfig.dt = 0.1 # Internal integration timestep to use
 simConfig.seeds = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
 simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
 simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
-simConfig.verbose = 0 # Whether to write diagnostic information on events 
+simConfig.verbose = 0 # Whether to write diagnostic information on events
 simConfig.oneSynPerNetcon = False
 
-# Recording 
-simConfig.recordCells = []  # list of cells to record from 
+# Recording
+simConfig.recordCells = []  # list of cells to record from
 simConfig.recordTraces = {'V':{'sec':'soma','loc':0.5,'var':'v'}} # 'V':{'sec':'soma','loc':0.5,'var':'v'}}
-    #'V':{'sec':'soma','loc':0.5,'var':'v'}, 
-    #'u':{'sec':'soma', 'pointp':'Izhi2007b_0', 'var':'u'}, 
-    #'I':{'sec':'soma', 'pointp':'Izhi2007b_0', 'var':'i'}, 
+    #'V':{'sec':'soma','loc':0.5,'var':'v'},
+    #'u':{'sec':'soma', 'pointp':'Izhi2007b_0', 'var':'u'},
+    #'I':{'sec':'soma', 'pointp':'Izhi2007b_0', 'var':'i'},
     #'AMPA_i': {'sec':'soma', 'loc':'0.5', 'synMech':'AMPA', 'var':'i'},
     #'NMDA_i': {'sec':'soma', 'loc':'0.5', 'synMech':'NMDA', 'var':'iNMDA'}}  # Dict of traces to record
 simConfig.recordStim = False  # record spikes of cell stims
@@ -51,10 +49,10 @@ simConfig.saveJson = False # save to json file
 simConfig.saveMat = False # save to mat file
 simConfig.saveTxt = False # save to txt file
 simConfig.saveDpk = False # save to .dpk pickled file
-simConfig.saveHDF5 = False # save to HDF5 file 
+simConfig.saveHDF5 = False # save to HDF5 file
 
 
-# Analysis and plotting 
+# Analysis and plotting
 simConfig.addAnalysis('plotRaster', True) # Whether or not to plot a raster
 simConfig.addAnalysis('plotTraces', {'include': [('IT_L23',0), ('PT_L5B',1), ('PV_L23',2), ('SOM_L5',3)]}) # plot recorded traces for this list of cells
 simConfig.addAnalysis('plot2Dnet', {'showConns': False})
@@ -77,7 +75,7 @@ netParams.defaultDelay = 2.0 # default conn delay (ms)
 netParams.propVelocity = 100.0 # propagation velocity (um/ms)
 netParams.probLambda = 100.0  # length constant (lambda) for connection probability decay (um)
 
-## create list of populations, where each item contains a dict with the pop params     
+## create list of populations, where each item contains a dict with the pop params
 netParams.popParams['IT_L23'] = {'cellModel': 'Izhi', 'cellType': 'IT',  'ynormRange': [0.12, 0.31], 'density': 80e3} #  L2/3 IT
 netParams.popParams['IT_L4'] =  {'cellModel': 'Izhi', 'cellType': 'IT',  'ynormRange': [0.31, 0.41], 'density': 80e3} #  L4 IT
 netParams.popParams['IT_L5A'] = {'cellModel': 'Izhi', 'cellType': 'IT',  'ynormRange': [0.41, 0.52], 'density': 80e3} #  L5A IT
@@ -104,35 +102,35 @@ izhiParams['FS'] = {'mod':'Izhi2007b', 'C':0.2, 'k':1.0, 'vr':-55, 'vt':-40, 'vp
 cellRule = {'conds': {'cellType': 'IT'}, 'secs': {}}
 cellRule['secs']['soma'] = {'geom': {}, 'pointps':{}}  #  soma
 cellRule['secs']['soma']['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
-cellRule['secs']['soma']['pointps']['Izhi'] = izhiParams['RS'] 
+cellRule['secs']['soma']['pointps']['Izhi'] = izhiParams['RS']
 netParams.cellParams['IT'] = cellRule  # add dict to list of cell properties
 
 ## PT cell params
 cellRule = {'conds': {'cellType': 'PT'}, 'secs': {}}
 cellRule['secs']['soma'] = {'geom': {}, 'pointps':{}}  #  soma
 cellRule['secs']['soma']['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
-cellRule['secs']['soma']['pointps']['Izhi'] = izhiParams['IB'] 
+cellRule['secs']['soma']['pointps']['Izhi'] = izhiParams['IB']
 netParams.cellParams['PT'] = cellRule  # add dict to list of cell properties
 
 ## CT cell params
 cellRule = {'conds': {'cellType': 'CT'}, 'secs': {}}
 cellRule['secs']['soma'] = {'geom': {}, 'pointps':{}}  #  soma
 cellRule['secs']['soma']['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
-cellRule['secs']['soma']['pointps']['Izhi'] = izhiParams['RS'] 
+cellRule['secs']['soma']['pointps']['Izhi'] = izhiParams['RS']
 netParams.cellParams['CT'] = cellRule  # add dict to list of cell properties
 
 ## SOM cell params
 cellRule = { 'conds': {'cellType': 'SOM'}, 'secs': {}}
 cellRule['secs']['soma'] = {'geom': {}, 'pointps':{}}  #  soma
 cellRule['secs']['soma']['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
-cellRule['secs']['soma']['pointps']['Izhi'] = izhiParams['LTS'] 
-netParams.cellParams['SOM'] = cellRule  # add dict to list of cell properties 
+cellRule['secs']['soma']['pointps']['Izhi'] = izhiParams['LTS']
+netParams.cellParams['SOM'] = cellRule  # add dict to list of cell properties
 
 ## PV cell params
 cellRule = {'conds': {'cellType': 'PV'}, 'secs': {}}
 cellRule['secs']['soma'] = {'geom': {}, 'pointps':{}}  #  soma
 cellRule['secs']['soma']['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
-cellRule['secs']['soma']['pointps']['Izhi'] = izhiParams['FS'] 
+cellRule['secs']['soma']['pointps']['Izhi'] = izhiParams['FS']
 netParams.cellParams['PV'] = cellRule  # add dict to list of cell properties
 
 # Synaptic mechanism parameters
@@ -146,19 +144,19 @@ netParams.synMechParams['GABAB'] = {'mod': 'Exp2Syn', 'tau1': 0.07, 'tau2': 9.1,
 netParams.stimSourceParams['background_E']  = {'type': 'NetStim', 'rate': 20, 'noise': 0.5} # background inputs to Exc
 netParams.stimSourceParams['background_I']  = {'type': 'NetStim', 'rate': 20, 'noise': 0.5} # background inputs to Inh
 
-netParams.stimTargetParams['bgE->IT,CT'] = {'source': 'background_E', 'conds': {'cellType': ['IT','CT']}, 
-                                            'synMech': 'NMDA', 'weight': 0.1, 'delay': 'normal(5,3)'}  
-netParams.stimTargetParams['bgE->PT'] = {'source': 'background_E', 'conds': {'cellType': ['PT']}, 
-                                            'synMech': 'NMDA', 'weight': 0.1, 'delay': 'normal(5,3)'}  
-netParams.stimTargetParams['bgI->PV'] = {'source': 'background_E', 'conds': {'cellType': ['PV']}, 
-                                            'synMech': 'NMDA', 'weight': 0.05, 'delay': 'normal(5,3)'}  
-netParams.stimTargetParams['bgI->SOM'] = {'source': 'background_E', 'conds': {'cellType': ['SOM']}, 
-                                            'synMech': 'NMDA', 'weight': 0.03, 'delay': 'normal(5,3)'}  
+netParams.stimTargetParams['bgE->IT,CT'] = {'source': 'background_E', 'conds': {'cellType': ['IT','CT']},
+                                            'synMech': 'NMDA', 'weight': 0.1, 'delay': 'normal(5,3)'}
+netParams.stimTargetParams['bgE->PT'] = {'source': 'background_E', 'conds': {'cellType': ['PT']},
+                                            'synMech': 'NMDA', 'weight': 0.1, 'delay': 'normal(5,3)'}
+netParams.stimTargetParams['bgI->PV'] = {'source': 'background_E', 'conds': {'cellType': ['PV']},
+                                            'synMech': 'NMDA', 'weight': 0.05, 'delay': 'normal(5,3)'}
+netParams.stimTargetParams['bgI->SOM'] = {'source': 'background_E', 'conds': {'cellType': ['SOM']},
+                                            'synMech': 'NMDA', 'weight': 0.03, 'delay': 'normal(5,3)'}
 
 # List of connectivity rules/params
 netParams.ItoIweight = 0.5
 
-# Generated using importConnFromExcel() function in params/utils.py 
+# Generated using importConnFromExcel() function in params/utils.py
 netParams.addConnParams(None, {'preConds': {'cellType': ['IT','CT'], 'ynorm': [0.1,0.2]},
 'postConds': {'cellType': 'IT', 'ynorm': [0.1,0.2]},
 'synMech': 'AMPA',
@@ -1950,5 +1948,3 @@ netParams.addConnParams(None, {'preConds': {'pop': 'PV_L6'},
 
 # Dictionary of annotations
 netParams.annots = {}
-
-

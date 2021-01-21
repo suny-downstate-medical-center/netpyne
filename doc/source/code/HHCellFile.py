@@ -46,8 +46,8 @@ class Cell(object):
         return nc
 
 
-class HHCellClass(Cell): 
-    """HH cell: A soma with active channels""" 
+class HHCellClass(Cell):
+    """HH cell: A soma with active channels"""
     def createSections(self):
         """Create the sections of the cell."""
         self.soma = h.Section(name='soma', cell=self)
@@ -62,7 +62,7 @@ class HHCellClass(Cell):
         self.dend.L = 200.0
         self.dend.diam = 1.0
         self.dend.Ra = 100.0
-    
+
     def defineBiophysics(self):
         """Assign the membrane properties across the cell."""
         # Insert active Hodgkin-Huxley current in the soma
@@ -71,7 +71,7 @@ class HHCellClass(Cell):
         self.soma.gkbar_hh = 0.036  # Potassium conductance in S/cm2
         self.soma.gl_hh = 0.003    # Leak conductance in S/cm2
         self.soma.el_hh = -70       # Reversal potential in mV
-        
+
         self.dend.insert('pas')
         self.dend.g_pas = 0.001  # Passive conductance in S/cm2
         self.dend.e_pas = -65    # Leak reversal potential mV
@@ -79,7 +79,3 @@ class HHCellClass(Cell):
 
     def buildTopology(self):
         self.dend.connect(self.soma(1))
-
-
-
-

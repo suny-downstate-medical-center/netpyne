@@ -1,10 +1,10 @@
 from neuron import h
-from math import sqrt, pi 
+from math import sqrt, pi
 import os
 from Cell3D import *
 
 ####################################################################
-# Setting up params             
+# Setting up params
 ####################################################################
 Vrest       = -94.5896010066
 h.v_init = -94.5896010066
@@ -21,7 +21,7 @@ p_ek          = -104
 p_ena         = 42
 
 # h-current - based on Kole 2006, but parameterized for opt
-h.erev_ih = h_erev = -37.0 
+h.erev_ih = h_erev = -37.0
 h_gbar      = 6.18831640879e-06 # mho/cm^2
 h_ascale = 0.00643
 h_bscale = 0.193
@@ -30,7 +30,7 @@ h_aslope = 11.9
 h_bslope = 33.1
 
 # spiking currents
-nax_gbar    = 0.0153130368342 
+nax_gbar    = 0.0153130368342
 nax_gbar_axonm = nax_gbar_somam = 5
 
 kdr_gbar    = 0.0084715576279
@@ -51,7 +51,7 @@ calginc = 1.0
 kBK_gpeak = 7.67842640257e-05 # original value of 268e-4 too high for this model
 kBK_caVhminShift = 45.0 # shift upwards to get lower effect on subthreshold
 cadad_depth = 0.102468419281 # original 1; reduced for tighter coupling of ica and cai
-cadad_taur = 16.0181691392 
+cadad_taur = 16.0181691392
 
 nap_gbar = 0.0
 ican_gbar = 0.0
@@ -115,16 +115,16 @@ class ITcell (Cell3D):
       # lambda_f takes in the current section
       sec.nseg = int((sec.L/(d_lambda*self.lambda_f(sec))+0.9)/2)*2 + 1
     for sec in self.all:
-      after += sec.nseg 
+      after += sec.nseg
     print("geom_nseg: changed from ", before, " to ", after, " total segments")
 
-  def lambda_f(self, section): 
+  def lambda_f(self, section):
     # these are reasonable values for most models
     freq = 100      # Hz, frequency at which AC length constant will be computed
     d_lambda = 0.1
     # The lowest number of n3d() is 2
     if (section.n3d() < 2):
-      return 1e5*sqrt(section.diam/(4*pi*freq*section.Ra*section.cm)) 
+      return 1e5*sqrt(section.diam/(4*pi*freq*section.Ra*section.cm))
       # above was too inaccurate with large variation in 3d diameter
       # so now we use all 3-d points to get a better approximate lambda
     x1 = section.arc3d(0)
@@ -135,7 +135,7 @@ class ITcell (Cell3D):
       x2 = section.arc3d(i)
       d2 = section.diam3d(i)
       self.lam += (x2 - x1)/sqrt(d1 + d2)
-      x1 = x2   
+      x1 = x2
       d1 = d2
     #  length of the section in units of lambda
     self.lam *= sqrt(2) * 1e-5*sqrt(4*pi*freq*section.Ra*section.cm)
@@ -147,19 +147,19 @@ class ITcell (Cell3D):
     for sec in self.all:
       sec.Ra = rall
       sec.cm = cap
-    for i in range(2,len(self.apic),1): 
+    for i in range(2,len(self.apic),1):
       self.apic[i].cm = spinecapfactor * self.apic[i].cm  	 # spinecapfactor * cm
       self.apic[i].g_pas = spinecapfactor / rm  # spinecapfactor * (1.0/rm)
-    for sec in self.dend:  
+    for sec in self.dend:
       sec.cm = spinecapfactor * sec.cm
       sec.g_pas = spinecapfactor / rm
     # optimize # of segments per section (do this afer setting Ra, cm)
     self.geom_nseg()
-		
-  def init_once (self): 
+
+  def init_once (self):
     if self.fmorph.endswith('BS0409.ASC') or self.fmorph.endswith('BS0284.ASC'):
       # NB: paste-on axon if using SPI morphology (eg for comparing morph effect on dynamics)
-      self.axon = [] 
+      self.axon = []
       self.add_axon()
     for sec in self.all: #forall within an object just accesses the sections belonging to the object
       sec.insert('pas')   # passive
@@ -174,10 +174,10 @@ class ITcell (Cell3D):
     self.apicchanprop()
     self.addbasalchan()
     self.basalchanprop()
-    for i in range(2,len(self.apic),1): 
+    for i in range(2,len(self.apic),1):
       self.apic[i].cm = spinecapfactor * self.apic[i].cm  	 # spinecapfactor * cm
       self.apic[i].g_pas = spinecapfactor / rm  # spinecapfactor * (1.0/rm)
-    for sec in self.dend:  
+    for sec in self.dend:
       sec.cm = spinecapfactor * sec.cm
       sec.g_pas = spinecapfactor / rm
     self.optimize_nseg()
@@ -191,7 +191,7 @@ class ITcell (Cell3D):
       sec.insert('cal')
       sec.insert('cat')
       sec.insert('can')
-      sec.insert('kBK')	
+      sec.insert('kBK')
       sec.insert('ican') # can_sidi.mod
       sec.insert('nap') # nap_sidi.mod
     self.setsomag()
@@ -237,9 +237,9 @@ class ITcell (Cell3D):
       sec.gbar_kdr    = kdr_gbar
       # K-A current
       sec.gbar_kap    = kap_gbar
-      sec.vhalfn_kap  = kap_vhalfn 
-      sec.vhalfl_kap  = kap_vhalfl   
-      sec.tq_kap      = kap_tq     
+      sec.vhalfn_kap  = kap_vhalfn
+      sec.vhalfl_kap  = kap_vhalfl
+      sec.tq_kap      = kap_tq
       # reversal potentials
       sec.ena         = p_ena
       sec.ek          = p_ek
@@ -319,20 +319,20 @@ class ITcell (Cell3D):
       # properties from subthreshold fits
       cap = 1.08061102459
       kBK_gpeak = 1.01857671029e-08
-      h_gbar = 1.52895460186e-05 
-      h_bslope = 28.4924968486 
-      rall = 169.820315809 
-      rm = 34458.8500812 
+      h_gbar = 1.52895460186e-05
+      h_bslope = 28.4924968486
+      rall = 169.820315809
+      rm = 34458.8500812
       h_bscale = 0.158315912545
-      h_ashift = 119.088497469 
+      h_ashift = 119.088497469
       h_ascale = 0.00755591656239
       kBK_caVhminShift = 74.643306075
-      spinecapfactor = 1.00000193943 
-      h_aslope = 7.82783295634 
-      Vrest = -93.4020509612 
+      spinecapfactor = 1.00000193943
+      h_aslope = 7.82783295634
+      Vrest = -93.4020509612
       h.v_init = -93.4020509612
-      nap_gbar = 0.0 
-      ican_gbar = 0.0 
+      nap_gbar = 0.0
+      ican_gbar = 0.0
 
       # properties from evolution
       kap_gbar = 0.0648939943904
@@ -351,19 +351,19 @@ class ITcell (Cell3D):
       # properties from subthreshold fits
       cap = 0.950146286173
       kBK_gpeak = 1.00322132792e-08
-      h_gbar = 1.472090636e-05 
-      h_bslope = 39.0877074693 
+      h_gbar = 1.472090636e-05
+      h_bslope = 39.0877074693
       rall = 138.886815548
-      rm = 58383.8130966 
+      rm = 58383.8130966
       h_bscale = 0.239679949446
-      h_ashift = 106.353947441 
+      h_ashift = 106.353947441
       h_ascale = 0.00600855548467
       kBK_caVhminShift = 61.4360979639
-      spinecapfactor = 1.00093462207 
-      h_aslope = 5.84695325827 
-      Vrest = -79.2637828106 
+      spinecapfactor = 1.00093462207
+      h_aslope = 5.84695325827
+      Vrest = -79.2637828106
       h.v_init = -79.2637828106
-      nap_gbar = 0.0 
+      nap_gbar = 0.0
       ican_gbar = 0.0
 
       # properties from evolution
@@ -378,5 +378,3 @@ class ITcell (Cell3D):
       kdr_gbar = 0.00382910493766
 
       return os.environ['SITE']+'/nrniv/local/morph/BS1579.ASC'
-
-

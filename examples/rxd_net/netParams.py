@@ -44,25 +44,25 @@ netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'cellType':
 netParams.connParams['E->all'] = {
   'preConds': {'cellType': 'E'}, 'postConds': {'y': [50,500]},  #  E -> all (100-1000 um)
   'probability': 0.1,                  # probability of connection
-  'weight': '0.04*post_ynorm',         # synaptic weight 
+  'weight': '0.04*post_ynorm',         # synaptic weight
   'delay': 'dist_3D/propVelocity',      # transmission delay (ms)
-  'sec': ['Adend1', 'Adend2', 'Adend3'], 
-  'synMech': 'exc'}                     # synaptic mechanism 
+  'sec': ['Adend1', 'Adend2', 'Adend3'],
+  'synMech': 'exc'}                     # synaptic mechanism
 
 netParams.connParams['I->E'] = {
   'preConds': {'cellType': 'I'}, 'postConds': {'pop': ['E2','E4','E5']},       #  I -> E
   'probability': '0.3*exp(-dist_3D/probLengthConst)',   # probability of connection
-  'weight': 0.01,                                      # synaptic weight 
-  'delay': 'dist_3D/propVelocity',                      # transmission delay (ms) 
-  'sec': ['soma','Bdend'], 
-  'synMech': 'inh'}                                     # synaptic mechanism 
+  'weight': 0.01,                                      # synaptic weight
+  'delay': 'dist_3D/propVelocity',                      # transmission delay (ms)
+  'sec': ['soma','Bdend'],
+  'synMech': 'inh'}                                     # synaptic mechanism
 
 
 #------------------------------------------------------------------------------
 ## RxD params
 
 ### constants
-constants = {'ip3_init': cfg.ip3_init,  # initial ip3 concentration 
+constants = {'ip3_init': cfg.ip3_init,  # initial ip3 concentration
             'caDiff': 0.08,  # calcium diffusion coefficient
             'ip3Diff': 1.41,  # ip3 diffusion coefficient
             'caci_init': 1e-5,  # intracellular calcium initial concentration
@@ -76,7 +76,7 @@ constants = {'ip3_init': cfg.ip3_init,  # initial ip3 concentration
             'ip3rtau': 2000,  # ip3 receptors time constant
             'fc': 0.8,  # fraction of cytosol
             'fe': 0.2,  # fraction of ER
-            'margin': 20}  # extracellular volume additional margin 
+            'margin': 20}  # extracellular volume additional margin
 
 netParams.rxdParams['constants'] = constants
 
@@ -86,13 +86,13 @@ regions['cyt'] = {'cells': 'all', 'secs': 'all', 'nrn_region': 'i', 'geometry': 
 regions['er'] = {'cells': 'all', 'secs': 'all', 'geometry': {'class': 'FractionalVolume', 'args': {'volume_fraction': constants['fe']}}}
 regions['cyt_er_membrane'] = {'cells': 'all', 'secs': 'all', 'geometry': {'class': 'ScalableBorder', 'args': {'scale': 1, 'on_cell_surface': False}}}
 
-margin = 20  # extracellular volume additional margin 
+margin = 20  # extracellular volume additional margin
 x, y, z = [0-margin, 100+margin], [-500-margin, 0+margin], [0-margin, 100+margin]
-regions['ecs'] = {'extracellular': True, 'xlo': x[0], 'ylo': y[0], 'zlo': z[0], 'xhi': x[1], 'yhi': y[1], 'zhi': z[1], 'dx': 5, 'volume_fraction': 0.2, 'tortuosity': 1.6} 
+regions['ecs'] = {'extracellular': True, 'xlo': x[0], 'ylo': y[0], 'zlo': z[0], 'xhi': x[1], 'yhi': y[1], 'zhi': z[1], 'dx': 5, 'volume_fraction': 0.2, 'tortuosity': 1.6}
 
 netParams.rxdParams['regions'] = regions
 
-### species 
+### species
 species = {}
 species['ca'] = {'regions': ['cyt', 'er', 'ecs'], 'd': constants['caDiff'], 'charge': 2,
                 'initial': 'caco_init if isinstance(node,rxd.node.NodeExtracellular) else (0.0017 - caci_init * fc) / fe if node.region == er else caci_init'}
@@ -115,4 +115,3 @@ netParams.rxdParams['multicompartmentReactions'] = mcReactions
 
 ### rates
 netParams.rxdParams['rates'] = {'ip3rg': {'species': h_gate, 'rate': '(1. / (1 + 1000. * ca[cyt] / (0.3)) - %s) / ip3rtau'%(h_gate)}}
-

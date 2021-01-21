@@ -1,5 +1,6 @@
 """
-Functions for dealing with network models
+Package for dealing with network models
+
 """
 
 from __future__ import unicode_literals

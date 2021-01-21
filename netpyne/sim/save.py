@@ -1,10 +1,8 @@
 """
-sim/save.py
+Module related to saving
 
-Functions related to saving 
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
@@ -32,6 +30,23 @@ from . import utils
 # Save JSON (Python 2/3 compatible)
 #------------------------------------------------------------------------------
 def saveJSON(fileName, data):
+    """
+    Function for/to <short description of `netpyne.sim.save.saveJSON`>
+
+    Parameters
+    ----------
+    fileName : <type>
+        <Short description of fileName>
+        **Default:** *required*
+
+    data : <type>
+        <Short description of data>
+        **Default:** *required*
+
+
+    """
+
+
     import json, io
     from .utils import NpSerializer
 
@@ -46,7 +61,26 @@ def saveJSON(fileName, data):
 #------------------------------------------------------------------------------
 # Save data
 #------------------------------------------------------------------------------
-def saveData (include = None, filename = None):
+def saveData(include = None, filename = None):
+    """
+    Function for/to <short description of `netpyne.sim.save.saveData`>
+
+    Parameters
+    ----------
+    include : <``None``?>
+        <Short description of include>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+
+    filename : <``None``?>
+        <Short description of filename>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+
+
+    """
+
+
     from .. import sim
 
     if sim.rank == 0 and not getattr(sim.net, 'allCells', None): needGather = True
@@ -94,9 +128,9 @@ def saveData (include = None, filename = None):
 
         dataSave['netpyne_version'] = sim.version(show=False)
         dataSave['netpyne_changeset'] = sim.gitChangeset(show=False)
-        
+
         if getattr(sim.net.params, 'version', None): dataSave['netParams_version'] = sim.net.params.version
-        if 'netParams' in include: 
+        if 'netParams' in include:
             sim.net.params.__dict__.pop('_labelid', None)
             net['params'] = utils.replaceFuncObj(sim.net.params.__dict__)
         if 'net' in include: include.extend(['netPops', 'netCells'])
@@ -104,9 +138,9 @@ def saveData (include = None, filename = None):
         if 'netPops' in include: net['pops'] = sim.net.allPops
         if net: dataSave['net'] = net
         if 'simConfig' in include: dataSave['simConfig'] = sim.cfg.__dict__
-        if 'simData' in include: 
-            if 'LFP' in sim.allSimData: 
-                sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist() 
+        if 'simData' in include:
+            if 'LFP' in sim.allSimData:
+                sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist()
             dataSave['simData'] = sim.allSimData
 
 
@@ -116,13 +150,13 @@ def saveData (include = None, filename = None):
                 timestampStr = '-' + datetime.fromtimestamp(timestamp).strftime('%Y%m%d_%H%M%S')
             else:
                 timestampStr = ''
-            
+
             filePath = sim.cfg.filename + timestampStr
             # Save to pickle file
             if sim.cfg.savePickle:
                 import pickle
                 dataSave = utils.replaceDictODict(dataSave)
-                print(('Saving output as %s ... ' % (filePath+'.pkl')))
+                print(('Saving output as %s ... ' % (filePath + '.pkl')))
                 with open(filePath+'.pkl', 'wb') as fileObj:
                     pickle.dump(dataSave, fileObj)
                 print('Finished saving!')
@@ -209,6 +243,13 @@ def saveData (include = None, filename = None):
 # Save distributed data using HDF5 (only conns for now)
 #------------------------------------------------------------------------------
 def distributedSaveHDF5():
+    """
+    Function for/to <short description of `netpyne.sim.save.distributedSaveHDF5`>
+
+
+    """
+
+
     from .. import sim
     import h5py
 
@@ -216,7 +257,7 @@ def distributedSaveHDF5():
 
     sim.compactConnFormat()
     conns = [[cell.gid]+conn for cell in sim.net.cells for conn in cell.conns]
-    conns = sim.copyRemoveItemObj(conns, keystart='h', newval=[]) 
+    conns = sim.copyRemoveItemObj(conns, keystart='h', newval=[])
     connFormat = ['postGid']+sim.cfg.compactConnFormat
     with h5py.File(sim.cfg.filename+'.h5', 'w') as hf:
         hf.create_dataset('conns', data = conns)
@@ -226,9 +267,16 @@ def distributedSaveHDF5():
 
 
 #------------------------------------------------------------------------------
-# Convert connections in long dict format to compact list format 
+# Convert connections in long dict format to compact list format
 #------------------------------------------------------------------------------
 def compactConnFormat():
+    """
+    Function for/to <short description of `netpyne.sim.save.compactConnFormat`>
+
+
+    """
+
+
     from .. import sim
 
     if type(sim.cfg.compactConnFormat) is not list:
@@ -236,42 +284,55 @@ def compactConnFormat():
             sim.cfg.compactConnFormat = ['preGid', 'preLabel', 'sec', 'loc', 'synMech', 'weight', 'delay']
         else:
             sim.cfg.compactConnFormat = ['preGid', 'sec', 'loc', 'synMech', 'weight', 'delay']
-    
+
 
     connFormat = sim.cfg.compactConnFormat
     for cell in sim.net.cells:
         newConns = [[conn[param] for param in connFormat] for conn in cell.conns]
         del cell.conns
-        cell.conns = newConns 
+        cell.conns = newConns
 
 #------------------------------------------------------------------------------
 # Gathers data in master and saves it mid run
 #------------------------------------------------------------------------------
-def intervalSave (t):
+def intervalSave(t):
+    """
+    Function for/to <short description of `netpyne.sim.save.intervalSave`>
+
+    Parameters
+    ----------
+    t : <type>
+        <Short description of t>
+        **Default:** *required*
+
+
+    """
+
+
     from .. import sim
     from ..specs import Dict
     import pickle, os
     import numpy as np
 
-    sim.pc.barrier()    
+    sim.pc.barrier()
 
     # create folder if missing
     if sim.rank == 0:
         if hasattr(sim.cfg, 'intervalFolder'):
             targetFolder = sim.cfg.intervalFolder
-        else: 
+        else:
             targetFolder = os.path.dirname(sim.cfg.filename)
-        
+
         if targetFolder and not os.path.exists(targetFolder):
             try:
                 os.mkdir(targetFolder)
             except OSError:
                 print(' Could not create target folder: %s' % (targetFolder))
-    
+
     gatherLFP=True
     simDataVecs = ['spkt','spkid','stims']+list(sim.cfg.recordTraces.keys())
     singleNodeVecs = ['t']
-        
+
     netPopsCellGids = {popLabel: list(pop.cellGids) for popLabel,pop in sim.net.pops.items()}
 
     # gather only sim data
@@ -314,7 +375,7 @@ def intervalSave (t):
                     sim.allSimData[key] += np.array(val)
                 elif key not in singleNodeVecs:
                     sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
-        
+
         if len(sim.allSimData['spkt']) > 0:
             sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
             sim.allSimData['spkt'], sim.allSimData['spkid'] = list(sim.allSimData['spkt']), list(sim.allSimData['spkid'])
@@ -337,18 +398,42 @@ def intervalSave (t):
     for k, v in sim.simData.items():
         if k in ['spkt', 'spkid', 'stims']:
             v.resize(0)
-    
+
     if hasattr(sim.cfg, 'saveWeights'):
         if sim.cfg.saveWeights:
             sim.allWeights = []
-    
-    
+
+
 #------------------------------------------------------------------------------
 # Save data in each node
 #------------------------------------------------------------------------------
 def saveInNode(gatherLFP=True, include=None, filename=None):
+    """
+    Function for/to <short description of `netpyne.sim.save.saveInNode`>
+
+    Parameters
+    ----------
+    gatherLFP : bool
+        <Short description of gatherLFP>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+
+    include : <``None``?>
+        <Short description of include>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+
+    filename : <``None``?>
+        <Short description of filename>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+
+
+    """
+
+
     from .. import sim
-    from ..specs import Dict, ODict    
+    from ..specs import Dict, ODict
 
     #This first part should be split to a separate function in gather.py
 
@@ -366,8 +451,8 @@ def saveInNode(gatherLFP=True, include=None, filename=None):
     # Store conns in a compact list format instead of a long dict format (cfg.compactConnFormat contains list of keys to include)
     elif sim.cfg.compactConnFormat:
         sim.compactConnFormat()
-            
-    # remove data structures used to calculate LFP 
+
+    # remove data structures used to calculate LFP
     if gatherLFP and sim.cfg.recordLFP and hasattr(sim.net, 'compartCells') and sim.cfg.createNEURONObj:
         for cell in sim.net.compartCells:
             try:
@@ -411,7 +496,7 @@ def saveInNode(gatherLFP=True, include=None, filename=None):
 
     if filename: sim.cfg.filename = filename
 
-    
+
     sim.timing('start', 'saveTime')
     import os
 
@@ -450,9 +535,9 @@ def saveInNode(gatherLFP=True, include=None, filename=None):
 
     dataSave['netpyne_version'] = sim.version(show=False)
     dataSave['netpyne_changeset'] = sim.gitChangeset(show=False)
-    
+
     if getattr(sim.net.params, 'version', None): dataSave['netParams_version'] = sim.net.params.version
-    if 'netParams' in include: 
+    if 'netParams' in include:
         sim.net.params.__dict__.pop('_labelid', None)
         net['params'] = utils.replaceFuncObj(sim.net.params.__dict__)
     if 'net' in include: include.extend(['netPops', 'netCells'])
@@ -460,9 +545,9 @@ def saveInNode(gatherLFP=True, include=None, filename=None):
     if 'netPops' in include: net['pops'] = sim.net.allPops
     if net: dataSave['net'] = net
     if 'simConfig' in include: dataSave['simConfig'] = sim.cfg.__dict__
-    if 'simData' in include: 
-        if 'LFP' in saveData: 
-            saveData['LFP'] = saveData['LFP'].tolist() 
+    if 'simData' in include:
+        if 'LFP' in saveData:
+            saveData['LFP'] = saveData['LFP'].tolist()
         dataSave['simData'] = saveData
 
 
@@ -472,13 +557,13 @@ def saveInNode(gatherLFP=True, include=None, filename=None):
             timestampStr = '-' + datetime.fromtimestamp(timestamp).strftime('%Y%m%d_%H%M%S')
         else:
             timestampStr = ''
-        
+
         filePath = sim.cfg.filename + timestampStr
         # Save to pickle file
         if sim.cfg.savePickle:
             import pickle
             dataSave = utils.replaceDictODict(dataSave)
-            print(('Saving output as %s ... ' % (filePath+'.pkl')))
+            print(('Saving output as %s ... ' % (filePath + '.pkl')))
             with open(filePath+'.pkl', 'wb') as fileObj:
                 pickle.dump(dataSave, fileObj)
             print('Finished saving!')
@@ -561,12 +646,36 @@ def saveInNode(gatherLFP=True, include=None, filename=None):
 #------------------------------------------------------------------------------
 # Save data in each node
 #------------------------------------------------------------------------------
-def saveSimDataInNode(filename=None):
+def saveSimDataInNode(filename=None, saveLFP=True, removeTraces=False):
+    """
+    Function for/to <short description of `netpyne.sim.save.saveSimDataInNode`>
+
+    Parameters
+    ----------
+    filename : <``None``?>
+        <Short description of filename>
+        **Default:** ``None``
+        **Options:** ``<option>`` <description of option>
+
+    saveLFP : bool
+        <Short description of saveLFP>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+
+    removeTraces : bool
+        <Short description of removeTraces>
+        **Default:** ``False``
+        **Options:** ``<option>`` <description of option>
+
+
+    """
+
+
     from .. import sim
-    from ..specs import Dict, ODict    
+    from ..specs import Dict, ODict
 
     #This first part should be split to a separate function in gather.py
-    
+
     sim.timing('start', 'saveInNodeTime')
     import os
 
@@ -587,10 +696,17 @@ def saveSimDataInNode(filename=None):
     simDataVecs = ['spkt','spkid','stims']+list(sim.cfg.recordTraces.keys())
     singleNodeVecs = ['t']
 
-    saveSimData =  {}
-    for k in list(sim.simData.keys()):  # initialize all keys of allSimData dict
-        saveSimData[k] =  {}
-    for key,val in sim.simData.items():  # update simData dics of dics of h.Vector
+    saveSimData = {}
+
+    if saveLFP:
+        simData = sim.simData
+    else:
+        simData = {k: v for k, v in sim.simData.items() if k not in ['LFP']}
+
+    for k in list(simData.keys()):  # initialize all keys of allSimData dict
+        saveSimData[k] = {}
+
+    for key,val in simData.items():  # update simData dics of dics of h.Vector
             if key in simDataVecs+singleNodeVecs:          # simData dicts that contain Vectors
                 if isinstance(val,dict):
                     for cell,val2 in val.items():
@@ -607,6 +723,10 @@ def saveSimDataInNode(filename=None):
 
     dataSave['simData'] = saveSimData
 
+    if removeTraces:
+        for k in sim.cfg.recordTraces.keys():
+            del sim.simData[k]
+
     if getattr(sim.net.params, 'version', None): dataSave['netParams_version'] = sim.net.params.version
 
     if dataSave:
@@ -615,14 +735,14 @@ def saveSimDataInNode(filename=None):
             timestampStr = '-' + datetime.fromtimestamp(timestamp).strftime('%Y%m%d_%H%M%S')
         else:
             timestampStr = ''
-        
+
         filePath = sim.cfg.filename + timestampStr
         # Save to pickle file
         if sim.cfg.savePickle:
             import pickle
             dataSave = utils.replaceDictODict(dataSave)
             print(('Saving output as %s ... ' % (filePath+str(sim.rank)+'.pkl')))
-            with open(filePath+str(sim.rank)+'.pkl', 'wb') as fileObj:
+            with open(filePath+'_node'+str(sim.rank)+'.pkl', 'wb') as fileObj:
                 pickle.dump(dataSave, fileObj)
             print('Finished saving!')
 
@@ -633,7 +753,6 @@ def saveSimDataInNode(filename=None):
             #dataSave = utils.replaceDictODict(dataSave)  # not required since json saves as dict
             sim.saveJSON(filePath+ str(sim.rank) + '.json', dataSave)
             print('Finished saving!')
-            print('Finished saving!')
 
         # Save timing
         if sim.rank == 0:
@@ -643,4 +762,3 @@ def saveSimDataInNode(filename=None):
             if sim.cfg.timing and sim.cfg.saveTiming:
                 import pickle
                 with open('timing.pkl', 'wb') as file: pickle.dump(sim.timing, file)
-

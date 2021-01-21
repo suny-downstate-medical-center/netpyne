@@ -1,10 +1,8 @@
 """
-cell/NML2Cell.py 
+Module containing a NeuroML2 cell class
 
-Contains pointCell class 
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
@@ -21,15 +19,19 @@ from ..specs import Dict
 
 ###############################################################################
 #
-# NeuroML2 CELL CLASS 
+# NeuroML2 CELL CLASS
 #
 ###############################################################################
 
 class NML2Cell (CompartCell):
-    ''' Class for NeuroML2 neuron models: No different than CompartCell '''
-    
+    """
+    Class for/to <short description of `netpyne.cell.NML2Cell.NML2Cell`>
+
+    """
+
     ''' Might this be useful to show better name for cell when psection() called?
     def __str__():
         return "%s"%self.tags['cellType']
     '''
-        
+
+    pass

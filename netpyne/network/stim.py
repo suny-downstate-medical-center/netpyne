@@ -1,11 +1,9 @@
 
 """
-stim.py 
+Module for adding stimulations to networks
 
-Methods to create stims in the network
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
@@ -23,16 +21,29 @@ except NameError:
 # -----------------------------------------------------------------------------
 #  Add stims
 # -----------------------------------------------------------------------------
-def addStims (self):
+def addStims(self):
+    """
+    Function for/to <short description of `netpyne.network.stim.addStims`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+
+    """
+
+
     from .. import sim
 
     sim.timing('start', 'stimsTime')
     if self.params.stimSourceParams and self.params.stimTargetParams:
-        if sim.rank==0: 
+        if sim.rank==0:
             print('Adding stims...')
-            
-        if sim.nhosts > 1: # Gather tags from all cells 
-            allCellTags = sim._gatherAllCellTags()  
+
+        if sim.nhosts > 1: # Gather tags from all cells
+            allCellTags = sim._gatherAllCellTags()
         else:
             allCellTags = {cell.gid: cell.tags for cell in self.cells}
         # allPopTags = {i: pop.tags for i,pop in enumerate(self.pops)}  # gather tags from pops so can connect NetStim pops
@@ -41,8 +52,8 @@ def addStims (self):
 
         for targetLabel, target in self.params.stimTargetParams.items():  # for each target parameter set
             if 'sec' not in target: target['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
-            if 'loc' not in target: target['loc'] = None  # if location not specified, make None 
-            
+            if 'loc' not in target: target['loc'] = None  # if location not specified, make None
+
             source = sources.get(target['source'])
 
             postCellsTags = allCellTags
@@ -51,20 +62,20 @@ def addStims (self):
                     postCellsTags = {gid: tags for (gid,tags) in postCellsTags.items() if condValue[0] <= tags.get(condKey, None) < condValue[1]}  # dict with post Cell objects}  # dict with pre cell tags
                 elif condKey == 'cellList':
                     pass
-                elif isinstance(condValue, list): 
+                elif isinstance(condValue, list):
                     postCellsTags = {gid: tags for (gid,tags) in postCellsTags.items() if tags.get(condKey, None) in condValue}  # dict with post Cell objects
                 else:
                     postCellsTags = {gid: tags for (gid,tags) in postCellsTags.items() if tags.get(condKey, None) == condValue}  # dict with post Cell objects
-            
-            # subset of cells from selected pops (by relative indices)                     
+
+            # subset of cells from selected pops (by relative indices)
             if 'cellList' in target['conds']:
                 orderedPostGids = sorted(postCellsTags.keys())
                 gidList = [orderedPostGids[i] for i in target['conds']['cellList']]
                 postCellsTags = {gid: tags for (gid,tags) in postCellsTags.items() if gid in gidList}
 
             # initialize randomizer in case used in string-based function (see issue #89 for more details)
-            self.rand.Random123(sim.hashStr('stim_'+source['type']), 
-                                sim.hashList(sorted(postCellsTags)), 
+            self.rand.Random123(sim.hashStr('stim_'+source['type']),
+                                sim.hashList(sorted(postCellsTags)),
                                 sim.cfg.seeds['stim'])
 
             # calculate params if string-based funcs
@@ -73,7 +84,7 @@ def addStims (self):
             # loop over postCells and add stim target
             for postCellGid in postCellsTags:  # for each postsyn cell
                 if postCellGid in self.gid2lid:  # check if postsyn is in this node's list of gids
-                    postCell = self.cells[sim.net.gid2lid[postCellGid]]  # get Cell object 
+                    postCell = self.cells[sim.net.gid2lid[postCellGid]]  # get Cell object
 
                     # stim target params
                     params = {}
@@ -81,7 +92,7 @@ def addStims (self):
                     params['source'] = target['source']
                     params['sec'] = strParams['secList'][postCellGid] if 'secList' in strParams else target['sec']
                     params['loc'] = strParams['locList'][postCellGid] if 'locList' in strParams else target['loc']
-                     
+
                     if source['type'] == 'NetStim': # for NetStims add weight+delay or default values
                         params['weight'] = strParams['weightList'][postCellGid] if 'weightList' in strParams else target.get('weight', 1.0)
                         params['delay'] = strParams['delayList'][postCellGid] if 'delayList' in strParams else target.get('delay', 1.0)
@@ -90,8 +101,8 @@ def addStims (self):
                         for p in ['Weight', 'Delay', 'loc']:
                             if 'synMech'+p+'Factor' in target:
                                 params['synMech'+p+'Factor'] = target.get('synMech'+p+'Factor')
-                        
-                    
+
+
                     if 'originalFormat' in source and source['originalFormat'] == 'NeuroML2':
                         if 'weight' in target:
                             params['weight'] = target['weight']
@@ -115,7 +126,7 @@ def addStims (self):
 # -----------------------------------------------------------------------------
 # Set parameters and add stim
 # -----------------------------------------------------------------------------
-def _addCellStim (self, stimParam, postCell):
+def _addCellStim(self, stimParam, postCell):
 
     # convert synMech param to list (if not already)
     if not isinstance(stimParam.get('synMech'), list):
@@ -137,8 +148,8 @@ def _addCellStim (self, stimParam, postCell):
 
         params = {k: stimParam.get(k) for k,v in stimParam.items()}
 
-        params['synMech'] = synMech 
-        params['loc'] = finalParam['locSynMech'] 
+        params['synMech'] = synMech
+        params['loc'] = finalParam['locSynMech']
         params['weight'] = finalParam['weightSynMech']
         params['delay'] = finalParam['delaySynMech']
 
@@ -149,26 +160,26 @@ def _addCellStim (self, stimParam, postCell):
 # -----------------------------------------------------------------------------
 # Convert stim param string to function
 # -----------------------------------------------------------------------------
-def _stimStrToFunc (self, postCellsTags, sourceParams, targetParams):
+def _stimStrToFunc(self, postCellsTags, sourceParams, targetParams):
 
     # list of params that have a function passed in as a string
     #params = sourceParams+targetParams
     params = sourceParams.copy()
     params.update(targetParams)
 
-    paramsStrFunc = [param for param in self.stimStringFuncParams+self.connStringFuncParams 
-        if param in params and isinstance(params[param], basestring) and params[param] not in ['variable']]  
+    paramsStrFunc = [param for param in self.stimStringFuncParams+self.connStringFuncParams
+        if param in params and isinstance(params[param], basestring) and params[param] not in ['variable']]
 
     # dict to store correspondence between string and actual variable
-    dictVars = {}   
-    dictVars['post_x']      = lambda postConds: postConds['x'] 
-    dictVars['post_y']      = lambda postConds: postConds['y'] 
-    dictVars['post_z']      = lambda postConds: postConds['z'] 
-    dictVars['post_xnorm']  = lambda postConds: postConds['xnorm'] 
-    dictVars['post_ynorm']  = lambda postConds: postConds['ynorm'] 
-    dictVars['post_znorm']  = lambda postConds: postConds['znorm'] 
+    dictVars = {}
+    dictVars['post_x']      = lambda postConds: postConds['x']
+    dictVars['post_y']      = lambda postConds: postConds['y']
+    dictVars['post_z']      = lambda postConds: postConds['z']
+    dictVars['post_xnorm']  = lambda postConds: postConds['xnorm']
+    dictVars['post_ynorm']  = lambda postConds: postConds['ynorm']
+    dictVars['post_znorm']  = lambda postConds: postConds['znorm']
     dictVars['rand']        = lambda unused1: self.rand
-     
+
     # add netParams variables
     for k,v in self.params.__dict__.items():
         if isinstance(v, Number):
@@ -180,19 +191,16 @@ def _stimStrToFunc (self, postCellsTags, sourceParams, targetParams):
         strFunc = params[paramStrFunc]  # string containing function
         for randmeth in self.stringFuncRandMethods: strFunc = strFunc.replace(randmeth, 'rand.'+randmeth)  # append rand. to h.Random() methods
         strVars = [var for var in list(dictVars.keys()) if var in strFunc and var+'norm' not in strFunc]  # get list of variables used (eg. post_ynorm or dist_xyz)
-        lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function 
+        lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function
         lambdaFunc = eval(lambdaStr)
 
         # store lambda function and func vars in connParam (for weight, delay and synsPerConn since only calculated for certain conns)
         params[paramStrFunc+'Func'] = lambdaFunc
-        params[paramStrFunc+'FuncVars'] = {strVar: dictVars[strVar] for strVar in strVars} 
+        params[paramStrFunc+'FuncVars'] = {strVar: dictVars[strVar] for strVar in strVars}
 
 
         # replace lambda function (with args as dict of lambda funcs) with list of values
-        strParams[paramStrFunc+'List'] = {postGid: params[paramStrFunc+'Func'](**{k:v if isinstance(v, Number) else v(postCellTags) for k,v in params[paramStrFunc+'FuncVars'].items()})  
+        strParams[paramStrFunc+'List'] = {postGid: params[paramStrFunc+'Func'](**{k:v if isinstance(v, Number) else v(postCellTags) for k,v in params[paramStrFunc+'FuncVars'].items()})
                 for postGid,postCellTags in sorted(postCellsTags.items())}
 
     return strParams
-
-
-

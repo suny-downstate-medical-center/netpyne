@@ -18,7 +18,7 @@ from random import uniform, seed, sample, randint
 [SH,EL] = [X,Y] = [0,1]
 [SH_EXT, SH_FLEX, EL_EXT, EL_FLEX] = [0,1,2,3]
 
-  
+
 class Arm:
     #%% init
     def __init__(self, anim, graphs): # initialize variables
@@ -36,19 +36,19 @@ class Arm:
         y = armPos[1]
         l1 = armLen[0]
         l2 = armLen[1]
-        elang = abs(2*arctan(sqrt(((l1 + l2)**2 - (x**2 + y**2))/((x**2 + y**2) - (l1 - l2)**2)))); 
-        phi = arctan2(y,x); 
+        elang = abs(2*arctan(sqrt(((l1 + l2)**2 - (x**2 + y**2))/((x**2 + y**2) - (l1 - l2)**2))));
+        phi = arctan2(y,x);
         psi = arctan2(l2 * sin(elang), l1 + (l2 * cos(elang)));
-        shang = phi - psi; 
+        shang = phi - psi;
         return [shang,elang]
 
     # convert joint angles to cartesian position
-    def angles2pos(self, armAng, armLen):        
+    def angles2pos(self, armAng, armLen):
         elbowPosx = armLen[0] * cos(armAng[0]) # end of elbow
         elbowPosy = armLen[0] * sin(armAng[0])
         wristPosx = elbowPosx + armLen[1] * cos(+armAng[0]+armAng[1]) # wrist=arm position
         wristPosy = elbowPosy + armLen[1] * sin(+armAng[0]+armAng[1])
-        return [wristPosx,wristPosy] 
+        return [wristPosx,wristPosy]
 
     #%% setTargetByID
     def setTargetByID(self, id, startAng, targetDist, armLen):
@@ -106,7 +106,7 @@ class Arm:
         self.error = 0 # error signal (eg. difference between )
         self.critic = 0 # critic signal (1=reward; -1=punishment)
         self.initArmMovement = self.initArmMovement + f.testTime
-        
+
     #%% plot motor commands
     def RLcritic(self, t):
         if t > self.initArmMovement: # do not calculate critic signal in between trials
@@ -117,19 +117,19 @@ class Arm:
                 diff = self.error - mean(self.errorAll[-RLsteps:-1]) # difference between error at t and at t-(RLdt/dt) eg. t-50/5 = t-10steps
             else:
                 diff = 0
-            if diff < -self.minRLerror: # if error negative: LTP 
+            if diff < -self.minRLerror: # if error negative: LTP
                 self.critic = 1 # return critic signal to model.py so can update synaptic weights
             elif diff > self.minRLerror: # if error positive: LTD
                 self.critic = -1
             else: # if difference not significant: no weight change
                 self.critic = 0
-        else: # if 
+        else: # if
             self.critic = 0
         return self.critic
 
     #%% plot joint angles
     def plotTraj(self):
-        fig = figure() 
+        fig = figure()
         l = 1.1*sum(self.armLen)
         ax = fig.add_subplot(111, autoscale_on=False, xlim=(-l/2, +l), ylim=(-l/2, +l)) # create subplot
         posX, posY = list(zip(*[self.angles2pos([x[SH],x[EL]], self.armLen) for x in self.angAll]))
@@ -143,7 +143,7 @@ class Arm:
 
     #%% plot joint angles
     def plotAngs(self):
-        fig = figure() 
+        fig = figure()
         ax = fig.add_subplot(111) # create subplot
         sh = [x[SH] for x in self.angAll]
         el = [x[EL] for x in self.angAll]
@@ -160,7 +160,7 @@ class Arm:
 
     #%% plot motor commands
     def plotMotorCmds(self):
-        fig = figure() 
+        fig = figure()
         ax = fig.add_subplot(111) # create subplot
         shext = [x[SH_EXT] for x in self.motorCmdAll]
         elext = [x[EL_EXT] for x in self.motorCmdAll]
@@ -177,7 +177,7 @@ class Arm:
 
     #%% plot RL critic signal and error
     def plotRL(self):
-        fig = figure() 
+        fig = figure()
         ax = fig.add_subplot(111) # create subplot
         ax.plot(self.errorAll, 'r', label='error')
         ax.plot((array(self.criticAll)+1.0) * max(self.errorAll) / 2.0, 'b', label='RL critic')
@@ -189,12 +189,12 @@ class Arm:
     ################################
     ### SETUP
     ################################
-    def setup(self, f):#, nduration, loopstep, RLinterval, pc, scale, popnumbers, p): 
+    def setup(self, f):#, nduration, loopstep, RLinterval, pc, scale, popnumbers, p):
         self.duration = f.cfg.duration#/1000.0 # duration in msec
-        self.interval = f.updateInterval #/1000.0 # interval between arm updates in ,sec       
+        self.interval = f.updateInterval #/1000.0 # interval between arm updates in ,sec
         self.RLinterval = f.RLinterval # interval between RL updates in msec
         self.minRLerror = f.minRLerror # minimum error change for RL (m)
-        self.armLen = f.armLen # elbow - shoulder from MSM;radioulnar - elbow from MSM;  
+        self.armLen = f.armLen # elbow - shoulder from MSM;radioulnar - elbow from MSM;
         self.handPos = [0,0] # keeps track of hand (end-effector) x,y position
         self.handPosAll = [] # list with all handPos
         self.handVel = [0,0] # keeps track of hand (end-effector) x,y velocity
@@ -233,12 +233,12 @@ class Arm:
         angInterval = (self.maxPval - self.minPval) / (self.numPcells - 1) # angle interval (times 2 because shoulder+elbow)
 
         cellPranges = {}
-        currentPval = f.minPval  
-        for cellGid in f.pop_sh: # set angle range of each cell tuned to shoulder 
+        currentPval = f.minPval
+        for cellGid in f.pop_sh: # set angle range of each cell tuned to shoulder
             cellPranges[cellGid] = [currentPval, currentPval + angInterval]
             currentPval += angInterval
 
-        for cell in [c for c in f.net.cells if c.gid in f.pop_sh]: # set angle range of each cell tuned to shoulder 
+        for cell in [c for c in f.net.cells if c.gid in f.pop_sh]: # set angle range of each cell tuned to shoulder
             cell.prange = cellPranges[cell.gid]
 
         cellPranges = {}
@@ -247,20 +247,20 @@ class Arm:
             cellPranges[cellGid] = [currentPval, currentPval + angInterval]
             currentPval += angInterval
 
-        for cell in [c for c in f.net.cells if c.gid in f.pop_el]: # set angle range of each cell tuned to shoulder 
+        for cell in [c for c in f.net.cells if c.gid in f.pop_el]: # set angle range of each cell tuned to shoulder
             cell.prange = cellPranges[cell.gid]
 
-        # initialize dummy or musculoskeletal arm 
-        if f.rank == 0: 
+        # initialize dummy or musculoskeletal arm
+        if f.rank == 0:
             self.setupDummyArm() # setup dummyArm (eg. graph animation)
-         
-    ################################          
-    ### RUN     
+
+    ################################
+    ### RUN
     ################################
     def run(self, t, f):
 
         # Append to list the the value of relevant variables for this time step (only worker0)
-        if f.rank == 0:     
+        if f.rank == 0:
             self.handPosAll.append(list(self.handPos)) # list with all handPos
             self.handVelAll.append(list(self.handVel))  # list with all handVel
             self.angAll.append(list(self.ang)) # list with all ang
@@ -289,15 +289,15 @@ class Arm:
                             stim['hObj'].interval = 1000.0 / self.origMotorBackgroundRate # interval in ms as a function of rate
                             break
             f.timeoflastexplor = t
-            if f.rank==0 and f.cfg.verbose: 
-                print('Exploratory movement, muscle:', self.randMus, 'rate:',self.randRate,' duration:', self.randDur)   
+            if f.rank==0 and f.cfg.verbose:
+                print('Exploratory movement, muscle:', self.randMus, 'rate:',self.randRate,' duration:', self.randDur)
 
 
         # Reset arm and set target after every trial -start from center etc
-        if f.trialReset and t-f.timeoflastreset >= f.testTime: 
+        if f.trialReset and t-f.timeoflastreset >= f.testTime:
             self.resetArm(f, t)
             f.targetid = f.trialTargets[self.trial] # set target based on trial number
-            self.targetPos = self.setTargetByID(f.targetid, self.startAng, self.targetDist, self.armLen) 
+            self.targetPos = self.setTargetByID(f.targetid, self.startAng, self.targetDist, self.armLen)
             # reset explor movs
             for cell in [c for c in f.net.cells if c.gid in [gid for sublist in f.motorCmdCellRange for gid in sublist]]:
                 for stim in cell.stims:
@@ -309,7 +309,7 @@ class Arm:
 
         # Calculate output motor command (after initial period)
         if t > self.initArmMovement:
-            # Gather spikes from all vectors to then calculate motor command 
+            # Gather spikes from all vectors to then calculate motor command
             for i in range(f.nMuscles):
                 spktvec = array(f.simData['spkt'])
                 spkgids = array(f.simData['spkid'])
@@ -319,11 +319,11 @@ class Arm:
                 cmdVecs = array([spkt for spkt,spkid in zip(spktvec, spkgids) if spkid in f.motorCmdCellRange[i]]) # CK: same outcome, but much slower: cmdVecs = array([spkt for spkt,spkid in zip(f.simData['spkt'], f.simData['spkid']) if spkid in f.motorCmdCellRange[i]])
                 self.motorCmd[i] = len(cmdVecs[(cmdVecs < t) * (cmdVecs > t-self.cmdtimewin)])
                 f.pc.allreduce(self.vec.from_python([self.motorCmd[i]]), 1) # sum
-                self.motorCmd[i] = self.vec.to_python()[0]        
-         
-            # Calculate final motor command 
-            if f.rank==0:  
-                self.motorCmd = [x / self.cmdmaxrate for x in self.motorCmd]  # normalize motor command 
+                self.motorCmd[i] = self.vec.to_python()[0]
+
+            # Calculate final motor command
+            if f.rank==0:
+                self.motorCmd = [x / self.cmdmaxrate for x in self.motorCmd]  # normalize motor command
                 if f.antagInh: # antagonist inhibition
                     if self.motorCmd[SH_EXT] > self.motorCmd[SH_FLEX]: # sh ext > sh flex
                         self.motorCmd[SH_FLEX] =  self.motorCmd[SH_FLEX]**2 / self.motorCmd[SH_EXT] / f.antagInh
@@ -333,17 +333,17 @@ class Arm:
                         self.motorCmd[EL_FLEX] = self.motorCmd[EL_FLEX]**2 / self.motorCmd[EL_EXT] / f.antagInh
                     elif self.motorCmd[EL_EXT] < self.motorCmd[EL_FLEX]: # el ext > el flex
                         self.motorCmd[EL_EXT] = self.motorCmd[EL_EXT]**2 / self.motorCmd[EL_FLEX] / f.antagInh
-     
 
-        # Receive proprioceptive feedback (angles) from virtual arm and broadcaststo other workers.  
+
+        # Receive proprioceptive feedback (angles) from virtual arm and broadcaststo other workers.
         if f.rank == 0:
             dataReceived = self.runDummyArm(self.motorCmd) # run dummyArm
             n = f.pc.broadcast(self.vec.from_python(dataReceived), 0) # convert python list to hoc vector for broadcast data received from arm
         else: # other workers
             n = f.pc.broadcast(self.vec, 0)  # receive shoulder and elbow angles from worker0 so can compare with cells in this worker
-            dataReceived = self.vec.to_python()  
+            dataReceived = self.vec.to_python()
         [self.ang[SH], self.ang[EL], self.angVel[SH], self.angVel[EL], self.handPos[SH], self.handPos[EL]] = dataReceived # map data received to shoulder and elbow angles
-        
+
         # Update cells response based on virtual arm proprioceptive feedback (angles)
         for cell in [c for c in f.net.cells if c.gid in f.pop_sh]:   # shoulder
             if (self.ang[SH] >= cell.prange[0] and self.ang[SH] < cell.prange[1]):  # in angle in range -> high firing rate
@@ -370,17 +370,17 @@ class Arm:
                         break
 
 
-        # Calculate error between hand and target for interval between RL updates 
+        # Calculate error between hand and target for interval between RL updates
         if f.rank == 0 and self.initArmMovement: # do not update between trials
             self.error = sqrt((self.handPos[X] - self.targetPos[X])**2 + (self.handPos[Y] - self.targetPos[Y])**2)
-            
+
         return self.critic
 
 
     ################################
     ### CLOSE
     ################################
-    def close(self, f):             
+    def close(self, f):
         # if f.explorMovs: # remove explor movs related noise to cells
         #     for cell in [c for c in f.net.cells if c.gid in [gid for sublist in f.motorCmdCellRange for gid in sublist]]:
         #         for stim in cell.stims:
@@ -392,11 +392,11 @@ class Arm:
             self.initArmMovement = int(f.initArmMovement)
 
         if f.rank == 0:
-            print('\nClosing dummy virtual arm ...') 
+            print('\nClosing dummy virtual arm ...')
 
             if self.anim:
                 ioff() # turn interactive mode off
-                close(self.fig) # close arm animation graph 
+                close(self.fig) # close arm animation graph
             if self.graphs: # plot graphs
                 self.plotTraj()
                 self.plotAngs()
@@ -404,9 +404,3 @@ class Arm:
                 self.plotRL()
                 ion()
                 show()
-    
-        
-
-
-    
-    

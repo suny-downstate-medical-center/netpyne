@@ -1,6 +1,172 @@
+# Version 0.9.9
+
+**New features**
+
+- Plot current source density (CSD) from local field potential (LFP) simulated data 
+
+- Additional customization of 3D shape plot: show voltage as color, change proportions, include axis labels
+
+**Bug fixes** 
+
+- Made rate_b be positional instead of keyword argument in rxd multiCompartmentReaction
+
+- Check if _morphSegCoords exists in population before using
+
+- Fixed bug to avoid recursive creating of synMechs when loading with cfg.oneSynPerNetcon=True
+
+# Version 0.9.8
+
+**New features**
+
+- analysis.plotLFP can now be applied to external data
+
+- Evolutionary and Optuna optimization can now read results from .pkl files
+
+- Enabled recording of stimulus variables (e.g. SEClamp i)
+
+- Added options in load func to avoid instantiating cells, conns, stims and/or rxd 
+
+- Analysis and plotting of rate vs current (f-I) curve for single cell tuning
+
+- Recording and plotting of current dipoles in arbitrary subset of populations
+
+- Added option to plot LFP spectrogram with log y-axis 
+
+- Added option to plot the log of connectivity in plotConn
+
+- Enabled random distribution of multiple synapses with synsPerConn>1 and connRandomSecFromList=True 
+
+- Added lineWidth option to plot2Dnet (thanks Eric!)
+
+- Updated Travis Continuous Integration to use NEURON 7.8.1 (from 7.6.2)
+
+- Removed trailing white space from all Python files in the repository
+
+
+**Bug fixes**
+
+- Fixed bug when using index with recordTraces
+
+- Fixed axes values in plotRxDConcentration and iplotRxDConcentration
+
+- Added links to necessary mod files in the importing cell models tutorial
+
+- Added aux_fun.inc to doc/source/code/mod as it's needed for some examples
+
+- Blocked terminal output from Git when no repository is found (i.e. with pip install netpyne)
+
+- Avoid adding section-based weightNorm values to point neurons (was affecting tut_import.py)
+
+- Prevent error when loading pointCell params from json by converting Dict to dict
+
+- Fixed bug in plotShape (thanks Eric!)
+
+- Updated setup.py so PyPI website renders the README as markdown
+
+- Fixed expected numSpikes in test of M1detailed example
+
+- Merged GUI branch into development branch
+
+- Fixed bug in iplotConn
+
+- Fixed bug and coloring in iplotSpikeStats with different themes
+
+
 # Version 0.9.7
 
+**New features**
+
+- Added optimization using Optuna (optuna.org)
+
+- Simplified cellParams to use dict key as 'cellType' and make 'conds' optional
+
+- Added netParams method addCellParamsTemplate() to create predefined cell templates 
+
+- Calculation of population avg rates now accepts multiple time intervals
+
+- Optional index argument to record from synMech
+
+- Added scale bar location option to plotTraces scalebar
+
+- Added evolutionary optimization for cell
+
+- Added support for reading pkl files in evol batches
+
+- Added plotfI func to netpyne
+
+- Added calculation of fI to gather.py
+
+- Added module imports to netpyne import
+
+- Added adaptive stochastic descent (ASD) 
+
+- Added ability to set theme and palette for iplots
+
+- Added netParams method addCellParamsTemplate() to create predefined cell templates
+
+- Added sizing-mode to iplots
+
+- Added Bokeh to NetPyNE requirements
+
+- Added theme for gui to analysis/utils, iplots can now use custom theme
+
+- Added t variable to plotLFP output data
+
+- Cleaned up plotRxD, added saving, added plot options, scalebar
+
+- Added interactive plot: iplotRxDConcentration
+
+- Added interactive plot: iplot2Dnet
+
+- Added interactive plot: iplotRatePSD
+
+- Added interactive plot: iplotSpikeStats
+
+- Cleaned up iplotLFP and improved color-handling with themes
+
+
+**Documentation improvements**
+
+- Updated and tested online tutorials
+
+- Changed all triple single-quoted docstrings to triple double-quoted
+
+- Improved many docstrings
+
+- Created a complete package index (http://netpyne.org/package_index.html) which is automatically generated from the human-readable docstrings in the codebase
+
+- Documented the process to release a new version and automated the html building process
+
+- Removed old unused Makefile for docs
+
+
+**Bug fixes** 
+
 - Fixed bug importing cells (avoid reading __docstring__)
+
+- Fixed bug when recording LFP with recordStep <1.0ms
+
+- Fixed net_lfp.py example
+
+- Fixed bug in plotSpikeStats
+
+- Fixed bug in plotSpikeHist
+
+- Fixed bugs in plotTraces scalebar
+
+- Fixed travis test issues
+
+- Fixed tut3 travis issue
+
+- Fixed bug in spikes.py
+
+- Fixed bug in plotRaster
+
+- Fix minor bug in iplotRaster()
+
+- Fixed problems with NeuroML
+
+
 
 # Version 0.9.6
 

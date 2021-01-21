@@ -11,33 +11,33 @@ pip install autodocsumm
 
 
 Here are the steps to release a new version of NetPyNE
-(step 9 is completed by this file):
+(step 10 is completed by executing this file):
 
 1) Go through Pull Requests and merge acceptable ones into Development
 2) Ensure all tests pass after the last commit
 3) Ensure all new features are described in the documentation
-4) Update CHANGES.md 
+4) Update CHANGES.md
 5) Update the __init__.py version number
-6) Commit with the message “VERSION #.#.#”
-7) Create a Pull Request from Development to Master 
-    7a) Title it “PR from development to master - VERSION #.#.#”
-    7b) Ensure the Pull Request passes all tests
-    7c) Merge the Pull Request
-8) Start a new Release on GitHub 
-    8a) Title it and tag it “v#.#.#”
-    8b) Copy the text in CHANGES.md into the Release description
-    8c) Publish the Release
-9) Rebuild the documentation (execute build.py to accomplish these steps)
-    9a) Delete the old build directory
-    9b) Delete any old .rst files except those listed
-    9c) Generate new .rst files for the API (package index)
-    9d) Fix the Package Index file
-    9e) Build the html files
-10) Update the version number in the Sphinx documentation (netpyne/doc/source/conf.py)
+6) Update the version number in the Sphinx documentation (netpyne/doc/source/conf.py)
+7) Commit with the message “VERSION #.#.#”
+8) Create a Pull Request from Development to Master
+    8a) Title it “PR from development to master - VERSION #.#.#”
+    8b) Ensure the Pull Request passes all tests
+    8c) Merge the Pull Request
+9) Start a new Release on GitHub
+    9a) Title it and tag it “v#.#.#”
+    9b) Copy the text in CHANGES.md into the Release description
+    9c) Publish the Release
+10) Rebuild the documentation (execute build.py to accomplish these steps)
+    10a) It will delete the old build directory
+    10b) It will delete any old .rst files except those listed
+    10c) It will generate new .rst files for the API (package index)
+    10d) It will fix the Package Index file
+    10e) It will build the html files
 11) Post the documentation
-    11a) ssh gkaue9v7ctjf@107.180.3.236 “rm -r ~/public_html”
+    11a) ssh gkaue9v7ctjf@107.180.3.236 "rm -r ~/public_html"
     11b) scp -r build gkaue9v7ctjf@107.180.3.236:///home/gkaue9v7ctjf/public_html
-    11c) ssh gkaue9v7ctjf@107.180.3.236 “cp -r ~/redirect_html/. ~/public_html/”
+    11c) ssh gkaue9v7ctjf@107.180.3.236 "cp -r ~/redirect_html/. ~/public_html/"
 12) Update PYPI (pip) with the latest release
     12a) cd netpyne
     12b) python setup.py bdist_wheel --universal
@@ -54,7 +54,7 @@ Here are the steps to release a new version of NetPyNE
     13d) Announce on Slack in #netpyne channel
     13e) Announce on Twitter
          Username: _netpyne_
-18) Bask in the glory that is NetPyNE
+14) Bask in the glory that is NetPyNE
 """
 
 import shutil
@@ -96,4 +96,3 @@ with open('source/package_index.rst', 'w') as f:
 # Generate the html files
 print('Building html files.')
 os.system('sphinx-build source ./build')
-

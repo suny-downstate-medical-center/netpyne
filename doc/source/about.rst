@@ -1,10 +1,7 @@
 About NetPyNE
 =======================================
 
-What is NetPyNE?
-----------------
-
-NetPyNE (**Net**\ works using **Py**\ thon and **NE**\ URON) is a Python package to facilitate the development, simulation, parallelization, and analysis of biological neuronal networks using the NEURON simulator.
+NetPyNE (**Net**\ works using **Py**\ thon and **NE**\ URON) is a Python package to facilitate the development, simulation, parallelization, analysis, and optimization of biological neuronal networks using the NEURON simulator.
 
 Although NEURON already enables multiscale simulations ranging from the molecular to the network level, using NEURON for network simulations requires substantial programming, and often requires parallel simulations. NetPyNE greatly facilitates the development and parallel simulation of biological neuronal networks in NEURON for students and experimentalists. NetPyNE is also intended for experienced modelers, providing powerful features to incorporate complex anatomical and physiological data into models.
 
@@ -12,13 +9,15 @@ For a more detailed overview of NetPyNE see:
 
 - Our `NetPyNE article <https://elifesciences.org/articles/44494>`_ in the journal `eLife <https://elifesciences.org/>`_
 
-- Our `NetPyNE presentation slides <http://it.neurosim.downstate.edu/salvadord/netpyne.pdf>`_ from `CNS*2017 <https://www.cnsorg.org/cns-2017>`_
+- Our `NetPyNE tutorial <https://yale.zoom.us/rec/play/tMAkcrr8-jo3HNCU4wSDUaR8W427LaKs1HAW_aUPzkmzUSJRO1WnY7cXZep77NjtCLWqwFVD6Ya8aNTL?continueMode=true&_x_zm_rtaid=J63YcHJGT9CUEjhkklHizQ.1598553844678.e87215956b2d8a50ef33ec4d6479b3b2&_x_zm_rhtaid=388>`_ from `CNS*2020 <https://www.cnsorg.org/cns-2020>`_ (presentation slides `here <http://bit.ly/cns20-netpyne>`_)
 
 |
 
 .. image:: figs/schematic.png
-    :width: 90%	
+    :width: 95%	
     :align: center
+
+|
 
 Major Features
 --------------
@@ -86,14 +85,14 @@ Major Features
     * Used by `Open Source Brain <www.opensourcebrain.org>`_ to run parallel simulation of NeuroML-based NEURON models
     * Available to run simulations on XSEDE supercomputers via the `Neuroscience Gateway <www.nsgportal.org>`_
 
-Questions, suggestions and contributions
+Questions, suggestions, and contributions
 -----------------------------------------
 
-NetPyNE is open source and available at https://github.com/Neurosim-lab/netpyne 
+NetPyNE is open-source and available at `github.com/Neurosim-lab/netpyne <https://github.com/Neurosim-lab/netpyne>`_.
 
-For questions or suggestions please use the `Google NetPyNE Q&A forum <https://groups.google.com/forum/#!forum/netpyne-forum>`_ , the `NEURON NetPyNE forum <https://www.neuron.yale.edu/phpBB/viewforum.php?f=45>`_  or add an `Issue to GitHub <https://github.com/Neurosim-lab/netpyne/issues>`_. 
+For questions or suggestions please use the `NetPyNE forum <https://groups.google.com/forum/#!forum/netpyne-forum>`_ , the `NEURON+NetPyNE forum <https://www.neuron.yale.edu/phpBB/viewforum.php?f=45>`_  or `submit an issue to GitHub <https://github.com/Neurosim-lab/netpyne/issues>`_. 
 
-For contributions (which are more than welcome!) please fork the repository and make a Pull Request with your changes. See our contributors guide for more details: `Contributors Guide <https://github.com/Neurosim-lab/netpyne/blob/development/CONTRIBUTING.md>`_.
+Contributions are gladly welcomed!  Please fork the repository and make a Pull Request with your changes.  See our `Contributors Guide <https://github.com/Neurosim-lab/netpyne/blob/development/CONTRIBUTING.md>`_ for more details.
 
 For further information please contact: salvadordura@gmail.com.
 
@@ -109,7 +108,7 @@ We as members, contributors, and leaders pledge to make participation in our com
 
 We pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community.
 
-Please read the `full Code of Conduct <https://github.com/Neurosim-lab/netpyne/blob/development/CODE_OF_CONDUCT.md>`_.
+Please read the full `Code of Conduct <https://github.com/Neurosim-lab/netpyne/blob/development/CODE_OF_CONDUCT.md>`_.
 
 
 Publications
@@ -133,40 +132,58 @@ About NetPyNE
 - Dura-Bernal S, Suter BA, Neymotin SA, Quintana AJ, Gleeson P, Shepherd GMG, Lytton WW. **Normalized cortical depth (NCD) as a primary coordinate system for cell connectivity in cortex: experiment and model.** *Society for Neuroscience (SFN), 2015.*
 
 
-Make use of and/or cite NetPyNE
+Make use of NetPyNE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Metzner C, Mäki-Marttunen T, Karni G, McMahon-Cole H, Steuber V.  **The Effect of Alterations of Schizophrenia-Associated Genes on Gamma Band Oscillations.** `bioRxiv 2020.09.28.316737 <https://doi.org/10.1101/2020.09.28.316737>`_. *2020*
+
+- Gao P, Graham J,  Zhou W, Jang J, Angulo S, Dura-Bernal S, Hines ML, Lytton WW, and Antic S  **Local Glutamate-Mediated Dendritic Plateau Potentials Change the State of the Cortical Pyramidal Neuron.** *Journal of Neurophysiology (In Press). 2020*
+
+- Dura-Bernal S, Griffith EY, Barczak A, O’Connell MN, McGinnis T, Anwar H, Lytton WW, Lakatos p, Neymotin SA. **Biophysically-detailed multiscale model of macaque auditory thalamocortical circuits reproduces physiological oscillations.** *Computational Neurosience (CNS), 2020.* 
+
+- Sivagnanam S, Gorman W, Doherty D, Neymotin S, Hovhannisyan H, Fang S, Lytton W, Dura-Bernal S **Simulating large-scale models of brain neuronal circuits using Google Cloud Platform**. *Practice and Experience in Advanced Research Computing, PEARC2020. 2020*
+
+- Neymotin, S.A., Daniels, D.S., Caldwell, B., McDougal, R.A., Carnevale, N.T., Jas, M., Moore, C.I., Hines, M.L., Hamalainen, M. and Jones, S.R., **Human Neocortical Neurosolver (HNN), a new software tool for interpreting the cellular and network origin of human MEG/EEG data.** `eLife, 9, p.e51214. <https://elifesciences.org/articles/51214>`_ *2020*
+
+- Lytton WW, Sherif MA, Dura-Bernal S, Neymotin S. **Multiscale modeling of a “mental” disease.** *Virtual Physiological Human Conference, VHP2020. 2020*
+
+- Griffith EY, Dura-Bernal S, Barczak A, O’connell MN, Mcginnis TM, Lytton WW, Lakatos P, Neymotin SA. **Data-driven model of auditory thalamocortical system rhythms.** *Society for Neuroscience (SfN). *2019*.
+
+- Doherty DW, Dura-Bernal S, Lytton WW. **Computer models of mouse area M1 show avalanches for full model and subcircuits defined by layer or cell type.** *Society for Neuroscience (SfN), 2019*.
+
+- Dura-Bernal S, Neymotin SA, Suter BA, Shepherd GMG, Lytton WW. **Multiscale dynamics and information flow in a data-driven model of the primary motor cortex microcircuit.** `bioRxiv 201707 <https://www.biorxiv.org/content/10.1101/201707v3>`_ , *2019.*
+
+- Gerkin, R.C., Birgiolas, J., Jarvis, R.J., Omar, C. and Crook, S.M.. **NeuronUnit: A package for data-driven validation of neuron models using SciUnit.** *bioRxiv, p.665331. 2019*
+
+- Gleeson P, Cantarelli M, Quintana A, Earnsah M, Piasini E, Birgiolas J, Cannon RC, Cayco- Gajic A, Crook S, Davison AP, Dura-Bernal S, et al. **Open Source Brain: a collaborative resource for visualizing, analyzing, simulating and developing standardized models of neurons and circuits.** `Neuron, 10.1016/j.neuron.2019.05.019 <https://www.cell.com/neuron/fulltext/S0896-6273(19)30444-1>`_. *2019*
+
+- Dai K, Hernando J, Billeh JN, Gratiy SL, Planas J, Davison AP, Dura-Bernal S, Gleeson P, Devresse A, Gevaert M, King JG, Van Geit WAH, Povolotsky AV, Muller E, Courcol J-D, Arkhipov A . **The SONATA Data Format for Efficient Description of Large-Scale Network Models.** `bioRxiv, 625491 [Preprint] <https://www.biorxiv.org/content/10.1101/625491v2>`_. *Under review in PLoS Computational Biology. 2019*
+
+- Dura-Bernal S, Neymotin SA, Suter BA, Shepherd GMG, Lytton WW **Long-range inputs and H-current regulate different modes of operation in a multiscale model of mouse M1 microcircuits.** `bioRxiv 201707 <https://www.biorxiv.org/content/10.1101/201707v3>`_ , *2018.*
+
+- Dura-Bernal S, Menzies RS, McLauchlan C, van Albada SJ, Kedziora DJ, Neymotin SA, Lytton WW, Kerr CC. **Effect of network size on computational capacity.** *Computational Neuroscience (CNS), 2016.*
+
+- Romaro C, Araujo Najman F, Dura-Bernal S, Roque AC. **Implementation of the Potjans-Diesmann cortical microcircuit model in NetPyNE/NEURON with rescaling option.** *Computational Neuroscience (CNS), 2018.*
+
+- Rodriguez F. **Dentate gyrus network model.** *Computational Neuroscience (CNS), 2018.*
+
+
+Cite NetPyNE
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Amsalem, O., Eyal, G., Rogozinski, N., Gevaert, M., Kumbhar, P., Schürmann, F. and Segev, I., **An efficient analytical reduction of detailed nonlinear neuron models.** `Nature Communications, 11(1), pp.1-13 <https://www.nature.com/articles/s41467-019-13932-6>`_. *2020*
 
 - Billeh, Y.N., Cai, B., Gratiy, S.L., Dai, K., Iyer, R., Gouwens, N.W., Abbasi-Asl, R., Jia, X., Siegle, J.H., Olsen, S.R. and Koch, C.,. **Systematic integration of structural and functional data into multi-scale models of mouse primary visual cortex.** `Neuron (In Press) NEURON-D-19-01027 <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3416643>`_. *2020*
 
-- Neymotin, S.A., Daniels, D.S., Caldwell, B., McDougal, R.A., Carnevale, N.T., Jas, M., Moore, C.I., Hines, M.L., Hamalainen, M. and Jones, S.R., **Human Neocortical Neurosolver (HNN), a new software tool for interpreting the cellular and network origin of human MEG/EEG data.** `eLife, 9, p.e51214. <https://elifesciences.org/articles/51214>`_ *2020*
-
-- Tran, H., Ranta, R., Le Cam, S. and Louis-Dorr, V., **Fast simulation of extracellular action potential signatures based on a morphological filtering approximation. Journal of Computational Neuroscience**, pp.1-20. *2020*
-
-- Gerkin, R.C., Birgiolas, J., Jarvis, R.J., Omar, C. and Crook, S.M.. **NeuronUnit: A package for data-driven validation of neuron models using SciUnit.** *bioRxiv, p.665331. 2019*
+- Tran, H., Ranta, R., Le Cam, S. and Louis-Dorr, V., **Fast simulation of extracellular action potential signatures based on a morphological filtering approximation.** *Journal of Computational Neuroscience**, pp.1-20. *2020*
 
 - Gast, R., Rose, D., Salomon, C., Möller, H.E., Weiskopf, N. and Knösche, T.R.. **PyRates—A Python framework for rate-based neural simulations.** *PLoS ONE, 14(12). 2019*
 
 - Tejada J, Roque AC, **Conductance-based models and the fragmentation problem: A case study based on hippocampal CA1 pyramidal cell models and epilepsy** `Epilepsy & Behavior, 106841 <http://www.sciencedirect.com/science/article/pii/S1525505019310819>`_ 2019.
 
-- Gleeson P, Cantarelli M, Quintana A, Earnsah M, Piasini E, Birgiolas J, Cannon RC, Cayco- Gajic A, Crook S, Davison AP, Dura-Bernal S, et al. **Open Source Brain: a collaborative resource for visualizing, analyzing, simulating and developing standardized models of neurons and circuits.** `Neuron, 10.1016/j.neuron.2019.05.019 <https://www.cell.com/neuron/fulltext/S0896-6273(19)30444-1>`_. *2019*
+- Kuhl E, Alber M, Tepole BA, Cannon WR, De S, Dura-Bernal S, Garikipati K, Karniadakis GE, Lytton WW, Perdikaris P, Petzold L. **Multiscale modeling meets machine learning: What can we learn?** `arXiv:1911.11958 <https://arxiv.org/abs/1911.11958>`_. [Preprint]. *Under review in Computer Methods in Applied Mechanics and Engineering. 2019*
 
-- Kuhl E, Alber M, Tepole BA, Cannon WR, De S, Dura-Bernal S, Garikipati K, Karniadakis GE, Lytton WW, Perdikaris P, Petzold L. (2019) **Multiscale modeling meets machine learning: What can we learn?** `arXiv:1911.11958 <https://arxiv.org/abs/1911.11958>`_. [Preprint]. *Under review in Computer Methods in Applied Mechanics and Engineering. 2019*
-
-- Dai K, Hernando J, Billeh JN, Gratiy SL, Planas J, Davison AP, Dura-Bernal S, Gleeson P, Devresse A, Gevaert M, King JG, Van Geit WAH, Povolotsky AV, Muller E, Courcol J-D, Arkhipov A . **The SONATA Data Format for Efficient Description of Large-Scale Network Models.** `bioRxiv, 625491 [Preprint] <https://www.biorxiv.org/content/10.1101/625491v2>`_. *Under review in PLoS Computational Biology. 2019*
-
-- Gao P, Graham J, Angulo S, Dura-Bernal S, Zhou W, Hines ML, Lytton WW, and Antic S  **Experimental measurements and computational model of glutamate mediated dendritic and somatic plateau potentials.** *bioRxiv, 828582 [Preprint]. Under review in Nature Communications. 2019*
-
-- Alber M, Buganza A, Cannon W, De S, Dura-Bernal S, Garikipati K, Karmiadakis G, Lytton W, Perdikaris P, Petzold L, Kuhl E. (2019) **Integrating Machine Learning and Multiscale Modeling: Perspectives, Challenges, and Opportunities in the Biological, Biomedical, and Behavioral Sciences.** `Nature Partner Journals (npj) Digital Medicine, 2, 115 <https://www.nature.com/articles/s41746-019-0193-y>`_. *2019*
-
-- Romaro C, Araujo Najman F, Dura-Bernal S, Roque AC. **Implementation of the Potjans-Diesmann cortical microcircuit model in NetPyNE/NEURON with rescaling option.** *Computational Neuroscience (CNS), 2018.*
-
-- Rodriguez F. **Dentate gyrus network model.** *Computational Neuroscience (CNS), 2018.*
-
-- Dura-Bernal S, Neymotin SA, Suter BA, Shepherd GMG, Lytton WW (2018) **Long-range inputs and H-current regulate different modes of operation in a multiscale model of mouse M1 microcircuits.** `bioRxiv 201707 <https://www.biorxiv.org/content/10.1101/201707v3>`_ , *2018.*
-
-- Dura-Bernal S, Menzies RS, McLauchlan C, van Albada SJ, Kedziora DJ, Neymotin SA, Lytton WW, Kerr CC. **Effect of network size on computational capacity.** *Computational Neuroscience (CNS), 2016.*
+- Alber M, Buganza A, Cannon W, De S, Dura-Bernal S, Garikipati K, Karmiadakis G, Lytton W, Perdikaris P, Petzold L, Kuhl E. **Integrating Machine Learning and Multiscale Modeling: Perspectives, Challenges, and Opportunities in the Biological, Biomedical, and Behavioral Sciences.** `Nature Partner Journals (npj) Digital Medicine, 2, 115 <https://www.nature.com/articles/s41746-019-0193-y>`_. *2019*
 
 
 Here is an `updated list from Google Scholar <https://scholar.google.com/scholar?oi=bibs&hl=en&cites=17032431079400790910&as_sdt=5>`_.
@@ -179,12 +196,12 @@ Courses
 Future
 ^^^^^^^^^^^^
 
-- June 2020: Building and simulating brain circuit models on Google Cloud, Google Office, NYC (To be confirmed)
+- June 2020: Building and simulating brain circuit models on Google Cloud, Google Office, NYC (delayed)
 
-- July 2020: `[CNS*2020] <https://www.cnsorg.org/cns-2020>`_ Tutorial on Multiscale Modeling using NEURON and NetPyNE, Melbourne, Australia
 
 Past
 ^^^^^^^^^
+- July 2020: `CNS*2020 <https://www.cnsorg.org/cns-2020>`_ Building mechanistic multiscale models: from molecules to networks using NEURON and NetPyNE, online conference
 
 - January 2020: VIII Latin American School on Computational Neuroscience (LASCON), Institute of Mathematics and Statistics, University of Sao Paulo, Brazil
 
@@ -247,7 +264,7 @@ Membership in the steering committee is a personal membership. Affiliations are 
 Project roadmap
 ---------------------
 
-The project roadmap for the following five years (2019-2023) includes four large categories: quality control, development of new features, GUI extension, and dissemination and community engagement. The main targets for each category, and the estimated period
+The five-year project roadmap (2019-2023) includes four large categories: quality control, development of new features, GUI extension, and dissemination and community engagement. The main targets for each category, and the estimated period
 
 - **Quality control**: robustness, reliability and reproducibility
 

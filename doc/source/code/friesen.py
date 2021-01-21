@@ -33,7 +33,7 @@ class FCELL:
     self.dend = h.Section()
     self.dend.nseg = 1
     self.dend.diam = 2
-    self.dend.L = 500 
+    self.dend.L = 500
     self.dend.Ra = 1
     self.dend.insert('pas')
     self.ampa = h.AMPA(0.5,sec=self.dend)
@@ -43,7 +43,7 @@ class FCELL:
   def initaxon (self):
     self.axon = h.Section()
     self.axon.nseg = 1
-    self.axon.diam = 1 
+    self.axon.diam = 1
     self.axon.L = 200
     self.axon.Ra = 1
     self.axon.insert('pas')
@@ -52,7 +52,7 @@ class FCELL:
     else:
       self.ofths = h.OFTH(0.5,sec=self.axon)
 
-  def doconnect (self):  
+  def doconnect (self):
     #h.connect(self.soma(0),self.axon(1)) #connect 0 end of soma to 0 end of axon
     self.soma.connect(self.axon,1,0)
     #h.connect(self.dend(0),self.soma(1)) #connect 0 end of dend to 1 end of soma
@@ -75,7 +75,7 @@ class FCELL:
 def MakeRSFCELL ():
   cell=FCELL(0,19)
   cell.setri(85,50,50)
-  # soma 
+  # soma
   cell.soma.insert('A')
   cell.soma.gmax_A = 145*0.1/cell.soma(0.5).area()
   cell.soma.VhlfMaxm_A = -24

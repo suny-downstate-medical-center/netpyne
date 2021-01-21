@@ -1,9 +1,7 @@
 """
-analysis.py 
+analysis.py
 
-Functions to read and plot figures from the batch simulation results. 
-
-Contributors: salvadordura@gmail.com
+Functions to read and plot figures from the batch simulation results.
 """
 
 import json
@@ -54,7 +52,7 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
         if p not in preorder: preorder.append(p)
     params = preorder
 
-    # read vars from all files - store in dict 
+    # read vars from all files - store in dict
     if b['method'] == 'grid':
         labelList, valuesList = list(zip(*[(p['label'], p['values']) for p in params]))
         valueCombinations = product(*(valuesList))
@@ -73,7 +71,7 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
                     with open(outFile, 'r') as fileObj:
                         output = json.load(fileObj, object_pairs_hook=OrderedDict)
                     # save output file in data dict
-                    data[iCombStr] = {}  
+                    data[iCombStr] = {}
                     data[iCombStr]['paramValues'] = pComb  # store param values
                     if not vars: vars = list(output.keys())
 
@@ -84,7 +82,7 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
                                 container = container[key[ikey]]
                             data[iCombStr][key[1]] = container[key[-1]]
 
-                        elif isinstance(key, str): 
+                        elif isinstance(key, str):
                             data[iCombStr][key] = output[key]
 
                 except:
@@ -103,7 +101,7 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
             dataSave = {'params': params, 'data': data}
             with open(filename, 'w') as fileObj:
                 json.dump(dataSave, fileObj)
-        
+
         return params, data
 
 #--------------------------------------------------------------------
@@ -116,8 +114,8 @@ def toPandas(params, data):
     else:
         rows = [list(d['paramValues'])+[s for s in list(d.values())] for d in list(data.values())]
         cols = [str(d['label']) for d in params]+[s for s in list(data[list(data.keys())[0]].keys())]
-    
-    df = pd.DataFrame(rows, columns=cols) 
+
+    df = pd.DataFrame(rows, columns=cols)
     df['simLabel'] = list(data.keys())
 
     colRename=[]
@@ -125,9 +123,9 @@ def toPandas(params, data):
         if col.startswith("[u'"):
             colName = col.replace(", u'","_'").replace("[u","").replace("'","").replace("]","").replace(", ","_")
             colRename.append(colName)
-        else: 
+        else:
             colRename.append(col)
-    print(colRename)
+    #print(colRename)
     df.columns = colRename
 
     return df
@@ -159,12 +157,12 @@ def plot2DRate(dataFolder, batchLabel, params, data, par1, par2, val, valLabel, 
 
     dfpop = df.iloc[:,0:5] # get param columns of all rows
     # dfpop['simLabel'] = df['simLabel']
-    for k in list(df.popRates[0].keys()): dfpop[k] = [r[k] for r in df.popRates] 
+    for k in list(df.popRates[0].keys()): dfpop[k] = [r[k] for r in df.popRates]
     #return dfpop
 
-    print(dfpop)
+    #print(dfpop)
     # if not valLabel: valLabel = val
-    dfsubset = dfpop[[par1,par2,val]] 
+    dfsubset = dfpop[[par1,par2,val]]
         # dfgroup = dfsubset.groupby(by=[par1,par2])
         # if groupStat=='first':
         #     dfgroup2 = dfgroup.first()
@@ -183,7 +181,7 @@ def plot2DRate(dataFolder, batchLabel, params, data, par1, par2, val, valLabel, 
     elif graphType=='line':
         setPlotFormat(numColors = len(dfpiv.columns))
         #dfpiv = dfpiv[['IT2','IT4','IT5A','IT5B','PT5B','IT6','CT6']]
-        dfpiv.plot(marker='o') 
+        dfpiv.plot(marker='o')
     try:
         if saveFile:
             plt.savefig(saveFile)
@@ -198,14 +196,13 @@ def plot2DRate(dataFolder, batchLabel, params, data, par1, par2, val, valLabel, 
 # Function to read batch data and plot figure
 #--------------------------------------------------------------------
 def readPlot():
-    dataFolder = 'tut8_data/'
+    dataFolder = 'tauWeight_data/'
     batchLabel = 'tauWeight'
-    
-    params, data = readBatchData(dataFolder, batchLabel, loadAll=0, saveAll=1, vars=None, maxCombs=None) 
+
+    params, data = readBatchData(dataFolder, batchLabel, loadAll=0, saveAll=1, vars=None, maxCombs=None)
     plot2DRate(dataFolder, batchLabel, params, data, 'synMechTau2', 'connWeight', 'M', "'M' pop rate (Hz)")
 
 
 # Main code
 if __name__ == '__main__':
     readPlot()
-    

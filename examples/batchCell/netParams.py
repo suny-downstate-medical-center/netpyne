@@ -1,10 +1,8 @@
 
 """
-netParams.py 
+netParams.py
 
 High-level specifications for M1 network model using NetPyNE
-
-Contributors: salvadordura@gmail.com
 """
 
 from netpyne import specs
@@ -33,9 +31,9 @@ cellRule = netParams.importCellParams(label='PT_6comp', conds={'cellType': 'PT',
 cellRule['secLists']['alldend'] = ['Bdend', 'Adend1', 'Adend2', 'Adend3']  # define section lists
 cellRule['secLists']['apicdend'] = ['Adend1', 'Adend2', 'Adend3']
 
-for secName,sec in cellRule['secs'].items(): 
+for secName,sec in cellRule['secs'].items():
     sec['vinit'] = -75.0413649414  # set vinit for all secs
-    if secName in cellRule['secLists']['alldend']:  
+    if secName in cellRule['secLists']['alldend']:
         sec['mechs']['nax']['gbar'] = cfg.dendNa  # set dend Na gmax for all dends
 
 
@@ -54,13 +52,13 @@ netParams.synMechParams['NMDA'] = {'mod': 'MyExp2SynNMDABB', 'tau1NMDA': cfg.tau
 ###############################################################################
 # Current inputs (IClamp)
 ###############################################################################
-if cfg.addIClamp:	
+if cfg.addIClamp:
      for iclabel in [k for k in dir(cfg) if k.startswith('IClamp')]:
         ic = getattr(cfg, iclabel, None)  # get dict with params
 
         # add stim source
         netParams.stimSourceParams[iclabel] = {'type': 'IClamp', 'delay': ic['start'], 'dur': ic['dur'], 'amp': ic['amp']}
-        
+
         # connect stim source to target
         netParams.stimTargetParams[iclabel+'_'+ic['pop']] = \
             {'source': iclabel, 'conds': {'pop': ic['pop']}, 'sec': ic['sec'], 'loc': ic['loc']}
@@ -74,7 +72,7 @@ if cfg.addNetStim:
         ns = getattr(cfg, nslabel, None)
 
         # add stim source
-        netParams.stimSourceParams[nslabel] = {'type': 'NetStim', 'start': ns['start'], 'interval': ns['interval'], 
+        netParams.stimSourceParams[nslabel] = {'type': 'NetStim', 'start': ns['start'], 'interval': ns['interval'],
                                                'noise': ns['noise'], 'number': ns['number']}
 
         # connect stim source to target

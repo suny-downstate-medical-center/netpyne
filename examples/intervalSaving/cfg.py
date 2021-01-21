@@ -1,15 +1,13 @@
 """
-cfg.py 
+cfg.py
 
 Simulation configuration for M1 model (using NetPyNE)
-
-Contributors: salvadordura@gmail.com
 """
 
 from netpyne import specs
 import pickle
 
-cfg = specs.SimConfig()  
+cfg = specs.SimConfig()
 
 #------------------------------------------------------------------------------
 #
@@ -21,7 +19,7 @@ cfg = specs.SimConfig()
 # These cfg options relate specifically to the intervalSaving example
 #------------------------------------------------------------------------------
 cfg.saveInterval = 100 # define how often the data is saved, this can be used with interval run if you want to update the weights more often than you save
-cfg.intervalFolder = 'temporary' #specify the location to save the interval data 
+cfg.intervalFolder = 'temporary' #specify the location to save the interval data
 
 
 #------------------------------------------------------------------------------
@@ -29,11 +27,11 @@ cfg.intervalFolder = 'temporary' #specify the location to save the interval data
 #------------------------------------------------------------------------------
 cfg.duration = 0.5*1e3
 cfg.dt = 0.05
-cfg.seeds = {'conn': 4321, 'stim': 1234, 'loc': 4321} 
-cfg.hParams = {'celsius': 34, 'v_init': -80}  
+cfg.seeds = {'conn': 4321, 'stim': 1234, 'loc': 4321}
+cfg.hParams = {'celsius': 34, 'v_init': -80}
 cfg.verbose = 0
 cfg.createNEURONObj = True
-cfg.createPyStruct = True  
+cfg.createPyStruct = True
 cfg.cvode_active = False
 cfg.cvode_atol = 1e-6
 cfg.cache_efficient = True
@@ -45,14 +43,14 @@ cfg.printPopAvgRates = True
 cfg.checkErrors = False
 
 #------------------------------------------------------------------------------
-# Recording 
+# Recording
 #------------------------------------------------------------------------------
 allpops = ['IT2','PV2','SOM2','IT4','IT5A','PV5A','SOM5A','IT5B','PT5B','PV5B','SOM5B','IT6','CT6','PV6','SOM6']
 
 cfg.recordTraces = {'V_soma': {'sec':'soma', 'loc':0.5, 'var':'v'}}
 
 cfg.recordStim = False
-cfg.recordTime = False  
+cfg.recordTime = False
 cfg.recordStep = 0.1
 
 #------------------------------------------------------------------------------
@@ -63,22 +61,22 @@ cfg.saveFolder = '.'
 cfg.savePickle = False
 cfg.saveJson = True
 cfg.saveDataInclude = ['simData', 'simConfig', 'netParams']#, 'net']
-cfg.backupCfgFile = None #['cfg.py', 'backupcfg/'] 
+cfg.backupCfgFile = None #['cfg.py', 'backupcfg/']
 cfg.gatherOnlySimData = False
 cfg.saveCellSecs = True
 cfg.saveCellConns = True
 
 #------------------------------------------------------------------------------
-# Analysis and plotting 
+# Analysis and plotting
 #------------------------------------------------------------------------------
 with open('cells/popColors.pkl', 'rb') as fileObj: popColors = pickle.load(fileObj)['popColors']
-cfg.analysis['plotTraces'] = {'include': [('IT5A',0), ('PT5B',00)], 'timeRange': [0,500], 'oneFigPer': 'cell', 'figSize': (10,4), 'saveFig': True, 'showFig': False} 
+cfg.analysis['plotTraces'] = {'include': [('IT5A',0), ('PT5B',00)], 'timeRange': [0,500], 'oneFigPer': 'cell', 'figSize': (10,4), 'saveFig': True, 'showFig': False}
 
-cfg.analysis['plotRaster'] = {'include': allpops, 'saveFig': True, 'showFig': False, 'labels': 'overlay', 'popRates': True, 'orderInverse': True, 
-							'timeRange': [0,500], 'popColors': popColors, 'figSize': (6,6), 'lw': 0.3, 'markerSize':10, 'marker': '.', 'dpi': 300} 
+cfg.analysis['plotRaster'] = {'include': allpops, 'saveFig': True, 'showFig': False, 'labels': 'overlay', 'popRates': True, 'orderInverse': True,
+							'timeRange': [0,500], 'popColors': popColors, 'figSize': (6,6), 'lw': 0.3, 'markerSize':10, 'marker': '.', 'dpi': 300}
 
 cfg.analysis['plotSpikeHist'] = {'include': ['IT2','IT4','IT5A','IT5B','PT5B','IT6','CT6'], 'timeRange': [0,500],
-								'saveFig': True, 'showFig': False, 'popColors': popColors, 'figSize': (10,4), 'dpi': 300} 
+								'saveFig': True, 'showFig': False, 'popColors': popColors, 'figSize': (10,4), 'dpi': 300}
 
 cfg.analysis['plotConn'] = {'includePre': ['IT2','IT4','IT5A','IT5B','PT5B','IT6','CT6'], 'includePost': ['IT2','IT4','IT5A','IT5B','PT5B','IT6','CT6'], 'feature': 'strength', 'figSize': (10,10), 'groupBy': 'pop', \
  						'graphType': 'matrix', 'synOrConn': 'conn', 'synMech': None, 'saveData': None, 'saveFig': 1, 'showFig': 0}
@@ -124,7 +122,7 @@ cfg.synsperconn = {'HH_full': 5, 'HH_reduced': 1, 'HH_simple': 1}
 cfg.AMPATau2Factor = 1.0
 
 #------------------------------------------------------------------------------
-# Network 
+# Network
 #------------------------------------------------------------------------------
 cfg.singleCellPops = 0  # Create pops with 1 single cell (to debug)
 cfg.weightNormThreshold = 4.0  # weight normalization factor threshold
@@ -141,7 +139,7 @@ cfg.EIGain = 1.0
 cfg.IEGain = 1.0
 cfg.IIGain = 1.0
 
-cfg.IEdisynapticBias = None  # increase prob of I->Ey conns if Ex->I and Ex->Ey exist 
+cfg.IEdisynapticBias = None  # increase prob of I->Ey conns if Ex->I and Ex->Ey exist
 
 #------------------------------------------------------------------------------
 ## E->I gains
@@ -191,7 +189,7 @@ cfg.pulse = {'pop': 'None', 'start': 1000, 'end': 1200, 'rate': 20, 'noise': 0.5
 
 
 #------------------------------------------------------------------------------
-# Current inputs 
+# Current inputs
 #------------------------------------------------------------------------------
 cfg.addIClamp = 0
 
@@ -199,7 +197,7 @@ cfg.IClamp1 = {'pop': 'IT5B', 'sec': 'soma', 'loc': 0.5, 'start': 0, 'dur': 1000
 
 
 #------------------------------------------------------------------------------
-# NetStim inputs 
+# NetStim inputs
 #------------------------------------------------------------------------------
 cfg.addNetStim = 0
 

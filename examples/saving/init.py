@@ -1,9 +1,7 @@
 """
-init.py 
+init.py
 
 Example of saving different network components to file
-
-Contributors: salvadordura@gmail.com
 """
 
 from netpyne import sim
@@ -16,7 +14,7 @@ sim.createSimulateAnalyze(netParams, cfg)
 # Saving different network components to file
 sim.cfg.saveJson = True
 
-# save network params (rules) 
+# save network params (rules)
 sim.saveData(include=['netParams'], filename='out_netParams')
 
 # save network instance
@@ -38,5 +36,3 @@ sim.saveData(include=['net'], filename='out_netInstanceCompact')
 
 # check model output
 sim.checkOutput('saving')
-
-

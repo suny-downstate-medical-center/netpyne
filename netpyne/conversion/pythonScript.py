@@ -1,10 +1,8 @@
 """
-conversion/pythonScript.py 
+Module for exporting models as Python scripts
 
-Contains functions to export a model as a python script   
-
-Contributors: salvadordura@gmail.com
 """
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
@@ -14,14 +12,35 @@ from builtins import open
 from future import standard_library
 standard_library.install_aliases()
 def createPythonScript(fname, netParams, simConfig):
+    """
+    Function for/to <short description of `netpyne.conversion.pythonScript.createPythonScript`>
+
+    Parameters
+    ----------
+    fname : <type>
+        <Short description of fname>
+        **Default:** *required*
+
+    netParams : <type>
+        <Short description of netParams>
+        **Default:** *required*
+
+    simConfig : <type>
+        <Short description of simConfig>
+        **Default:** *required*
+
+
+    """
+
+
     import sys
     import json
     from netpyne import specs
-    
+
     def replace(string):
         # convert bools and null from json to python
         return string.replace('true', 'True').replace('false', 'False').replace('null', '""')
-    
+
     def remove(dictionary):
         # remove reserved keys such as __str__, __dict__
         if isinstance(dictionary, dict):
@@ -30,7 +49,7 @@ def createPythonScript(fname, netParams, simConfig):
                     dictionary.pop(key)
                 else:
                     remove(value)
-    
+
     def addAttrToScript(attr, value, obj_name, class_instance, file):
         # write line of netpyne code if is different from default value
         if not hasattr(class_instance, attr) or value!=getattr(class_instance, attr):
@@ -54,7 +73,7 @@ def createPythonScript(fname, netParams, simConfig):
     params =  ['popParams' , 'cellParams', 'synMechParams']
     params += ['connParams', 'stimSourceParams', 'stimTargetParams']
 
-    try : 
+    try :
         with open(fname if fname.endswith('.py') else fname+'.py', 'w') as file:
             file.write('from netpyne import specs, sim\n')
             file.write(header('documentation'))

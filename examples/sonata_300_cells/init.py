@@ -2,9 +2,6 @@
 init.py
 
 Initial script to import, simulate and plot raster of SONATA example 300_cells
-
-
-Contributors: salvadordura@gmail.com
 """
 
 from netpyne import sim
@@ -41,7 +38,7 @@ if saveForGUI:
     sim.cfg.saveJson = True
     #for k,v in sim.net.params.popParams.items():
     #    v['numCells'] = 20
-    sim.cfg.saveDataInclude = ['netParams', 'net'] # 'simConfig', 
+    sim.cfg.saveDataInclude = ['netParams', 'net'] # 'simConfig',
     newCells = [c for c in sim.net.cells if c.gid not in sim.net.pops['external_virtual_100'].cellGids]  # if c.gid == 1
     sim.net.cells = newCells
     del sim.net.pops['external_virtual_100']
@@ -92,10 +89,10 @@ if saveJsonConns:
     import json
     data = {}
     data_wrong = []
-    
+
     from neuron import h
     conns = list(h.List('NetCon'))
-    
+
     for conn in conns:
         try:
             preGid = conn.precell().gid
@@ -122,7 +119,7 @@ if runPlot:
     sim.cfg.recordCells = range(9)
     sim.cfg.analysis['plotTraces'] = {}  # needed for 9 cell example
     sim.cfg.cache_efficient = True
- 
+
     sim.setupRecording()
     sim.simulate()
     includePops = [p for p in sim.net.pops if p not in ['external_virtual_100']]
@@ -144,8 +141,8 @@ if compareRaster:
     # load spiks from bmtk HDF5
     dataFile=rootFolder+'output/spikes.h5'
     h5data = h5py.File(dataFile, 'r')
-    bmtkSpkt = np.array(h5data['spikes']['timestamps']) 
-    bmtkSpkid = np.array(h5data['spikes']['gids']) 
+    bmtkSpkt = np.array(h5data['spikes']['timestamps'])
+    bmtkSpkid = np.array(h5data['spikes']['gids'])
 
     # plot both spike times overlayed
     recordStep = sim.cfg.recordStep
@@ -239,12 +236,12 @@ if saveSpikesToBMTK:
 
 if plotSpikesUsingBMTK:
     from bmtk.analyzer.spike_trains import raster_plot
-    
+
     raster_plot(rootFolder + '/network/internal_nodes.h5', rootFolder + '/network/internal_node_types.csv', rootFolder + '/output/spikes.h5', group_key='node_type_id', title='Simulator: NEURON via BMTK', save_as=None, show=0)
     ax = plt.gcf().get_axes()[0]
     ax.get_legend().remove()
     plt.savefig('bmtk_300_cells_raster.png', dpi=300)
-    
+
     raster_plot(rootFolder + '/network/internal_nodes.h5', rootFolder + '/network/internal_node_types.csv', 'netpyne_spikes.h5', group_key='node_type_id', title='Simulator: NEURON via NetPyNE', save_as=None, show=0)
     ax = plt.gcf().get_axes()[0]
     ax.get_legend().remove()

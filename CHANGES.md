@@ -6,6 +6,8 @@
 
 - Additional customization of 3D shape plot: show voltage as color, change proportions, include axis labels
 
+- Updated netrxd.py and network.py to include RxD's Parameter class, naming of States and Regions, and specification of Region geometries that do not require arguments like 'membrane' and 'inside'
+
 **Bug fixes** 
 
 - Made rate_b be positional instead of keyword argument in rxd multiCompartmentReaction

@@ -373,6 +373,10 @@ def plotSyncs(include=['allCells', 'eachPop'], timeRanges=None, timeRangeLabels=
 # -------------------------------------------------------------------------------------------------------------------
 ## Raster plot
 # -------------------------------------------------------------------------------------------------------------------
+from .. import sim
+
+plotRaster = sim.plotting.plotRaster
+
 @exception
 def prepareRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid', orderInverse=False, labels='legend', popRates=False, spikeHist=None, spikeHistBin=5, syncLines=False, popColors=None, saveData=None, **kwargs):
     """

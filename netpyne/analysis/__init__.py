@@ -34,7 +34,7 @@ from .network import plotConn, _plotConnCalculateFromSim, _plotConnCalculateFrom
 # -------------------------------------------------------------------------------------------------------------------
 # Import spike-related functions
 # -------------------------------------------------------------------------------------------------------------------
-from .spikes import calculateRate, plotRates, plotSyncs, prepareRaster, plotSpikeHist, plotSpikeStats, \
+from .spikes import calculateRate, plotRates, plotSyncs, plotRaster, prepareRaster, plotSpikeHist, plotSpikeStats, \
     plotRatePSD, plotRateSpectrogram, popAvgRates, plotfI, calculatefI
 
 

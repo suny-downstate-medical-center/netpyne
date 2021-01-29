@@ -42,6 +42,13 @@ class GeneralPlotter:
 
         """
 
+        print('\n General kwargs\n======')
+        print(kwargs)
+        print('\nkwarg\n=====')
+        for kwarg in kwargs:
+            print(kwarg, kwargs[kwarg])
+
+
         self.data = data
         self.axis = axis
 
@@ -52,19 +59,28 @@ class GeneralPlotter:
         self.figSize = [6.4, 4.8]
         self.fontSize = 10
 
-        print('kwargs\n======')
-        print(kwargs)
-        print('kwarg\n=====')
-        for kwarg in kwargs:
-            print(kwarg, kwargs[kwarg])
-
         if self.axis is None:
             self.fig, self.axis = plt.subplots(figsize=self.figSize)
         else:
             self.fig = plt.gcf()
 
+
+
     def saveData(self):
         pass
+
+    def formatAxis(self, **kwargs):
+        
+        if 'title' in kwargs:
+            self.axis.set_title(kwargs['title'], fontdict=None, loc=None, pad=None, y=None)
+
+        if 'xlabel' in kwargs:
+            self.axis.set_xlabel(kwargs['xlabel'], fontdict=None, loc=None, labelpad=None)
+
+        if 'ylabel' in kwargs:
+            self.axis.set_ylabel(kwargs['ylabel'], fontdict=None, loc=None, labelpad=None)
+
+
 
     def saveFig(self):
         pass
@@ -81,6 +97,12 @@ class ScatterPlotter(GeneralPlotter):
     def __init__(self, data, axis=None, **kwargs):
         
         super().__init__(data=data, axis=axis, **kwargs)
+
+        print('\nScatter kwargs\n======')
+        print(kwargs)
+        print('\nkwarg\n=====')
+        for kwarg in kwargs:
+            print(kwarg, kwargs[kwarg])
 
         self.x = data.get('x')
         self.y = data.get('y')

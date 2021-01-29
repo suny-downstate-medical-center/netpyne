@@ -3,6 +3,8 @@ plt.ion()
 
 from netpyne import specs, sim
 
+from netpyne import sim
+
 # Network parameters
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
@@ -57,7 +59,7 @@ simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces
 simConfig.filename = 'example'         # Set file output name
 simConfig.savePickle = False        # Save params, network and sim output to pickle file
 
-#simConfig.analysis['plotRaster'] = {'saveFig': True}                  # Plot a raster
+simConfig.analysis['plotRaster'] = {'saveFig': True}                  # Plot a raster
 #simConfig.analysis['plotTraces'] = {'include': [1], 'saveFig': True}  # Plot recorded traces for this list of cells
 #simConfig.analysis['plot2Dnet'] = {'saveFig': True}                   # plot 2D cell positions and connections
 

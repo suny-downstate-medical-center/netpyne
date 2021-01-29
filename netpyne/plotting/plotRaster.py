@@ -27,9 +27,15 @@ def plotRaster(rasterData=None, axis=None, **kwargs):
         if kwarg in scatterData:
             scatterData[kwarg] = kwargs[kwarg]
 
+    axisArgs = {}
+    axisArgs['title'] = 'Raster Plot of Spiking'
+    axisArgs['xlabel'] = 'Time (ms)'
+    axisArgs['ylabel'] = 'Cells'
 
-    rasterPlotter = sim.plotting.ScatterPlotter(data=scatterData, axis=axis, **kwargs)
 
+    rasterPlotter = sim.plotting.ScatterPlotter(data=scatterData, axis=axis, **axisArgs, **kwargs)
+
+    rasterPlotter.formatAxis(**axisArgs)
     rasterPlotter.plot()
 
     return rasterPlotter

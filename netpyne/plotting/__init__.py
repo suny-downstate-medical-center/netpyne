@@ -13,6 +13,12 @@ standard_library.install_aliases()
 import warnings
 warnings.filterwarnings("ignore")
 
+from .plotter import GeneralPlotter, ScatterPlotter
+from .plotRaster import plotRaster
+
+
+
+"""
 # -------------------------------------------------------------------------------------------------------------------
 ## Wrapper to run analysis functions in simConfig
 # -------------------------------------------------------------------------------------------------------------------
@@ -34,7 +40,7 @@ from .network import plotConn, _plotConnCalculateFromSim, _plotConnCalculateFrom
 # -------------------------------------------------------------------------------------------------------------------
 # Import spike-related functions
 # -------------------------------------------------------------------------------------------------------------------
-from .spikes import calculateRate, plotRates, plotSyncs, prepareRaster, plotSpikeHist, plotSpikeStats, \
+from .spikes import calculateRate, plotRates, plotSyncs, plotRaster, plotSpikeHist, plotSpikeStats, \
     plotRatePSD, plotRateSpectrogram, popAvgRates, plotfI, calculatefI
 
 
@@ -76,3 +82,4 @@ except:
 # Import CSD-related functions
 # -------------------------------------------------------------------------------------------------------------------
 from .csd import getCSD, plotCSD
+"""

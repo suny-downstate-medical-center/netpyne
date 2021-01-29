@@ -28,3 +28,4 @@ from netpyne import sim
 from netpyne import specs
 from netpyne import support
 from netpyne import tests
+from netpyne import plotting

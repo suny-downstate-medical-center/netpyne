@@ -374,9 +374,9 @@ def plotSyncs(include=['allCells', 'eachPop'], timeRanges=None, timeRangeLabels=
 ## Raster plot
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid', orderInverse=False, labels='legend', popRates=False, spikeHist=None, spikeHistBin=5, syncLines=False, lw=2, marker='|', markerSize=5, popColors=None, figSize=(10, 8), fontSize=12, dpi=100, saveData=None, saveFig=None, showFig=True):
+def prepareRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid', orderInverse=False, labels='legend', popRates=False, spikeHist=None, spikeHistBin=5, syncLines=False, popColors=None, saveData=None, **kwargs):
     """
-    Function for/to <short description of `netpyne.analysis.spikes.plotRaster`>
+    Function to prepare data for creating a raster plot
 
     Parameters
     ----------
@@ -444,39 +444,9 @@ def plotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid
         **Default:** ``False``
         **Options:** ``<option>`` <description of option>
 
-    lw : int
-        Line width for each spike.
-        **Default:** ``2``
-        **Options:** ``<option>`` <description of option>
-
-    marker : str
-        Marker for each spike.
-        **Default:** ``'|'``
-        **Options:** ``<option>`` <description of option>
-
-    markerSize : int
-        Size of marker for each spike.
-        **Default:** ``5``
-        **Options:** ``<option>`` <description of option>
-
     popColors : dict
         Dictionary with custom color (value) used for each population (key).
         **Default:** ``None`` uses standard colors
-        **Options:** ``<option>`` <description of option>
-
-    figSize : list [width, height]
-        Size of figure in inches.
-        **Default:** ``(10, 8)``
-        **Options:** ``<option>`` <description of option>
-
-    fontSize : int
-        Font size on figure.
-        **Default:** ``12``
-        **Options:** ``<option>`` <description of option>
-
-    dpi : int
-        Resolution of figure in dots per inch.
-        **Default:** ``100``
         **Options:** ``<option>`` <description of option>
 
     saveData : bool or str
@@ -485,26 +455,16 @@ def plotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid
         **Options:** ``True`` autosaves the data,
         ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
 
-    saveFig : bool or str
-        Whether and where to save the figure.
-        **Default:** ``False``
-        **Options:** ``True`` autosaves the figure,
-        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
-
-    showFig : bool
-        Shows the figure if ``True``.
-        **Default:** ``True``
-        **Options:** ``<option>`` <description of option>
-
     Returns
     -------
+    figData : dict
+        A dictionary containing the data necessary to generate a raster plot.  The keys include: 'spkTimes', 'spkInds', 'spkColors', 'cellGids', 'sortedGids', 'numNetStims', 'include', 'timeRange', 'maxSpikes', 'orderBy', 'orderInverse', 'spikeHist', 'syncLines'
 
-
-"""
+    """
 
     from .. import sim
 
-    print('Plotting raster...')
+    print('Preparing raster...')
 
     # Select cells to include
     cells, cellGids, netStimLabels = getCellsInclude(include)
@@ -552,13 +512,11 @@ def plotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid
         df['gidColor'] = df['pop'].map(popColors)
         df.set_index('gid', inplace=True)
 
-
     # Order by
     if len(df) > 0:
         ylabelText = 'Cells (ordered by %s)'%(orderBy)
         df = df.sort_values(by=orderBy)
         sel['spkind'] = sel['spkid'].apply(df.index.get_loc)
-
     else:
         sel = pd.DataFrame(columns=['spkt', 'spkid', 'spkind'])
         ylabelText = ''
@@ -613,20 +571,6 @@ def plotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid
         histoT = histo[1][:-1]+spikeHistBin/2
         histoCount = histo[0]
 
-    # Plot spikes
-    # set font size
-    plt.rcParams.update({'font.size': fontSize})
-
-    fig,ax1 = plt.subplots(figsize=figSize)
-    fontsiz = fontSize
-
-    if spikeHist == 'subplot':
-        gs = gridspec.GridSpec(2, 1,height_ratios=[2,1])
-        ax1=plt.subplot(gs[0])
-    sel['spkt'] = sel['spkt'].apply(pd.to_numeric)
-    sel.plot.scatter(ax=ax1, x='spkt', y='spkind', lw=lw, s=markerSize, marker=marker, c=sel['spkgidColor'].tolist()) # Create raster
-    ax1.set_xlim(timeRange)
-
     # Plot stats
     gidPops = df['pop'].tolist()
     popNumCells = [float(gidPops.count(pop)) for pop in popLabels] if numCellSpks else [0] * len(popLabels)
@@ -649,84 +593,13 @@ def plotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid
             popNumCells[-1] = numNetStims
             avgRates['NetStims'] = len([spkid for spkid in sel['spkind'].iloc[numCellSpks:]])/numNetStims/tsecs
 
-    # Plot synchrony lines
-    if syncLines:
-        for spkt in sel['spkt'].tolist():
-            ax1.plot((spkt, spkt), (0, len(cells)+numNetStims), 'r-', linewidth=0.1)
-        plt.title('cells=%i   syns/cell=%0.1f   rate=%0.1f Hz   sync=%0.2f' % (numCells,connsPerCell,firingRate,syncMeasure()), fontsize=fontsiz)
-    else:
-        plt.title('cells=%i   syns/cell=%0.1f   rate=%0.1f Hz' % (numCells,connsPerCell,firingRate), fontsize=fontsiz)
-    # Axis
-    ax1.set_xlabel('Time (ms)', fontsize=fontsiz)
-    ax1.set_ylabel(ylabelText, fontsize=fontsiz)
-    ax1.set_xlim(timeRange)
-    ax1.set_ylim(-1, len(cells)+numNetStims+1)
-
-    # Add legend
-    if popRates:
-        popLabelRates = [popLabel + ' (%.3g Hz)' % (avgRates[popLabel]) for popLabel in popLabels if popLabel in avgRates]
-
-    if labels == 'legend':
-        for ipop,popLabel in enumerate(popLabels):
-            label = popLabelRates[ipop] if popRates else popLabel
-            plt.plot(0,0,color=popColors[popLabel],label=label)
-        plt.legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
-        maxLabelLen = max([len(l) for l in popLabels])
-        rightOffset = 0.85 if popRates else 0.9
-        plt.subplots_adjust(right=(rightOffset-0.012*maxLabelLen))
-
-    elif labels == 'overlay':
-        ax = plt.gca()
-        tx = 1.01
-        margin = 1.0/numCells/2
-        minSpacing = float(fontsiz) * 1.1 / float((0.8*figSize[1]*dpi))
-        tys = [(float(popLen)/numCells)*(1-2*margin) for popLen in popNumCells]
-        tysOffset = list(scipy.cumsum(tys))[:-1]
-        tysOffset = [tysOffset[0]] +[tysOffset[i] + max(tysOffset[i+1]-tysOffset[i], minSpacing) for i in range(len(tysOffset)-1)]
-        tysOffset.insert(0, 0)
-        labels = popLabelRates if popRates else popLabels
-        for ipop,(ty, tyOffset, popLabel) in enumerate(zip(tys, tysOffset, popLabels)):
-            label = popLabelRates[ipop] if popRates else popLabel
-            if orderInverse:
-                finalty = 1.0 - (tyOffset + ty/2.0 + 0.01)
-            else:
-                finalty = tyOffset + ty/2.0 - 0.01
-            plt.text(tx, finalty, label, transform=ax.transAxes, fontsize=fontsiz, color=popColors[popLabel])
-        maxLabelLen = min(6, max([len(l) for l in labels]))
-        plt.subplots_adjust(right=(0.95-0.011*maxLabelLen))
-
-    # Plot spike hist
-    if spikeHist == 'overlay':
-        ax2 = ax1.twinx()
-        ax2.plot (histoT, histoCount, linewidth=0.5)
-        ax2.set_ylabel('Spike count', fontsize=fontsiz) # add yaxis label in opposite side
-        ax2.set_xlim(timeRange)
-    elif spikeHist == 'subplot':
-        ax2=plt.subplot(gs[1])
-        ax2.plot (histoT, histoCount, linewidth=1.0)
-        ax2.set_xlabel('Time (ms)', fontsize=fontsiz)
-        ax2.set_ylabel('Spike count', fontsize=fontsiz)
-        ax2.set_xlim(timeRange)
-
-    if orderInverse: plt.gca().invert_yaxis()
+    figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'spkColors': sel['spkgidColor'].tolist(), 'cellGids': cellGids, 'sortedGids': df.index.tolist(), 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'orderInverse': orderInverse, 'spikeHist': spikeHist, 'syncLines': syncLines}
 
     # save figure data
     if saveData:
-        figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'spkColors': sel['spkgidColor'].tolist(), 'cellGids': cellGids, 'sortedGids': df.index.tolist(), 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'orderInverse': orderInverse, 'spikeHist': spikeHist, 'syncLines': syncLines}
         _saveFigData(figData, saveData, 'raster')
 
-    # save figure
-    if saveFig:
-        if isinstance(saveFig, basestring):
-            filename = saveFig
-        else:
-            filename = sim.cfg.filename + '_raster_' + str(orderBy) + '.png'
-        plt.savefig(filename, dpi=dpi)
-
-    # show fig
-    if showFig: _showFigure()
-
-    return fig, {'include': include, 'spkts': spkts, 'spkinds': sel['spkind'].tolist(), 'timeRange': timeRange}
+    return figData
 
 
 # -------------------------------------------------------------------------------------------------------------------

@@ -101,6 +101,14 @@ class SimConfig(object):
         # Analysis and plotting
         self.analysis = ODict()
 
+        # Plotting options
+        self.plotting = {}
+        self.plotting['saveData'] = False
+        self.plotting['showFig'] = False 
+        self.plotting['saveFig'] = True
+        self.plotting['figSize'] = [6.4, 4.8]
+        self.plotting['fontSize'] = 10
+
         # fill in params from dict passed as argument
         if simConfigDict:
             for k,v in simConfigDict.items():

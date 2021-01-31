@@ -35,7 +35,8 @@ def plotRaster(rasterData=None, axis=None, **kwargs):
 
     rasterPlotter = sim.plotting.ScatterPlotter(data=scatterData, axis=axis, **axisArgs, **kwargs)
 
-    rasterPlotter.formatAxis(**axisArgs)
-    rasterPlotter.plot()
+    rasterPlotter.type = 'raster'
+
+    rasterPlotter.plot(**axisArgs)
 
     return rasterPlotter

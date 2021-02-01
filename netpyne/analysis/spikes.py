@@ -377,8 +377,8 @@ from .. import sim
 
 plotRaster = sim.plotting.plotRaster
 
-@exception
-def prepareRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid', orderInverse=False, labels='legend', popRates=False, spikeHist=None, spikeHistBin=5, syncLines=False, popColors=None, saveData=None, **kwargs):
+#@exception
+def prepareRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid', orderInverse=False, addLegend=True, popRates=True, spikeHist=None, spikeHistBin=5, syncLines=False, popColors=None, saveData=None, **kwargs):
     """
     Function to prepare data for creating a raster plot
 
@@ -597,7 +597,10 @@ def prepareRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='
             popNumCells[-1] = numNetStims
             avgRates['NetStims'] = len([spkid for spkid in sel['spkind'].iloc[numCellSpks:]])/numNetStims/tsecs
 
-    figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'spkColors': sel['spkgidColor'].tolist(), 'cellGids': cellGids, 'sortedGids': df.index.tolist(), 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'orderInverse': orderInverse, 'spikeHist': spikeHist, 'syncLines': syncLines}
+    popLabelRates = [popLabel + ' (%.3g Hz)' % (avgRates[popLabel]) for popLabel in popLabels if popLabel in avgRates]
+
+    figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'spkColors': sel['spkgidColor'].tolist(), 'cellGids': cellGids, 'sortedGids': df.index.tolist(), 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'orderInverse': orderInverse, 'spikeHist': spikeHist, 'syncLines': syncLines, 'popLabels': popLabels, 'popLabelRates': popLabelRates, 'popColors': popColors}
+    
 
     # save figure data
     if saveData:

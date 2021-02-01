@@ -11,6 +11,8 @@ try:
 except NameError:
     basestring = str
 
+legendParams = ['loc', 'bbox_to_anchor', 'fontsize', 'numpoints', 'scatterpoints', 'scatteryoffsets', 'markerscale', 'markerfirst', 'frameon', 'fancybox', 'shadow', 'framealpha', 'facecolor', 'edgecolor', 'mode', 'bbox_transform', 'title', 'title_fontsize', 'borderpad', 'labelspacing', 'handlelength', 'handletextpad', 'borderaxespad', 'columnspacing', 'handler_map']
+
 
 class GeneralPlotter:
     """A class used for plotting"""
@@ -52,6 +54,7 @@ class GeneralPlotter:
         self.data = data
         self.axis = axis
         self.options = sim.cfg.plotting
+        self.options['addLegend'] = False
 
         for option in options:
             if option in self.options:
@@ -75,13 +78,13 @@ class GeneralPlotter:
         else:
             fileName = fileName + fileExt
 
-        if fileName.endswith('.pkl'): # save to pickle
+        if fileName.endswith('.pkl'):
             import pickle
             print(('Saving figure data as %s ... ' % (fileName)))
             with open(fileName, 'wb') as fileObj:
                 pickle.dump(self.data, fileObj)
 
-        elif fileName.endswith('.json'):  # save to json
+        elif fileName.endswith('.json'):
             print(('Saving figure data as %s ... ' % (fileName)))
             sim.saveJSON(fileName, self.data)
         else:
@@ -127,17 +130,31 @@ class GeneralPlotter:
         self.fig.show()
 
 
+    def addLegend(self, handles=None, labels=None, **kwargs):
+
+        legendKwargs = {}
+        for kwarg in kwargs:
+            if kwarg in legendParams:
+                legendKwargs[kwarg] = kwargs[kwarg]
+
+        self.axis.legend(handles, labels, **legendKwargs)
+        
+
 
     def finishFig(self, **kwargs):
 
         if self.options['saveData']:
             self.saveData(**kwargs)
+        if self.options['addLegend']:
+            self.addLegend(**kwargs)
         if self.options['saveFig']:
             self.saveFig(**kwargs)
         if self.options['showFig']:
             self.showFig(**kwargs)
         else:
             plt.close(self.fig)
+        
+                
 
     
 
@@ -166,9 +183,10 @@ class ScatterPlotter(GeneralPlotter):
 
         self.formatAxis(**kwargs)
 
-        self.axis.scatter(x=self.x, y=self.y, s=self.s, c=self.c, marker=self.marker, linewidth=self.linewidth, cmap=self.cmap, norm=self.norm, alpha=self.alpha, linewidths=self.linewidths)
+        scatterPlot = self.axis.scatter(x=self.x, y=self.y, s=self.s, c=self.c, marker=self.marker, linewidth=self.linewidth, cmap=self.cmap, norm=self.norm, alpha=self.alpha, linewidths=self.linewidths)
 
         self.finishFig(**kwargs)
+
 
         return self.fig
 

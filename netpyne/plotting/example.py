@@ -59,7 +59,7 @@ simConfig.recordStep = 1            # Step size in ms to save data (eg. V traces
 simConfig.filename = 'example'         # Set file output name
 simConfig.savePickle = False        # Save params, network and sim output to pickle file
 
-simConfig.analysis['plotRaster'] = {'saveFig': True}                  # Plot a raster
+#simConfig.analysis['plotRaster'] = {'saveFig': True}                  # Plot a raster
 #simConfig.analysis['plotTraces'] = {'include': [1], 'saveFig': True}  # Plot recorded traces for this list of cells
 #simConfig.analysis['plot2Dnet'] = {'saveFig': True}                   # plot 2D cell positions and connections
 
@@ -69,10 +69,12 @@ sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)
    
 rasterData = sim.analysis.prepareRaster()
 
-rasterPlotter = sim.plotting.plotRaster(rasterData, marker='o')
+rasterPlotter = sim.plotting.plotRaster(rasterData, marker='o', popRates=True)
 #rasterPlotter = sim.plotting.plotRaster(marker='o') # it also works without data input
 
+rp = rasterPlotter
 
+rp.showFig()
 
 
 

@@ -124,7 +124,7 @@ def calculateRate (include = ['allCells', 'eachPop'], peakBin = 5, timeRange = N
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot avg and peak rates at different time periods
 # -------------------------------------------------------------------------------------------------------------------
-@exception
+#@exception
 def plotRates (include =['allCells', 'eachPop'], peakBin = 5, timeRanges = None, timeRangeLabels = None, colors = None, figSize = ((5,5)), saveData = None, ylim = None, saveFig = None, showFig = True):
     """
     Function for/to <short description of `netpyne.analysis.spikes.plotRates`>

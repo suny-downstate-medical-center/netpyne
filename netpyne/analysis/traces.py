@@ -23,12 +23,15 @@ if __gui__:
 import numpy as np
 from .utils import colorList, _showFigure, _saveFigData, exception, getCellsInclude
 
+from .. import sim
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot recorded cell traces (V, i, g, etc.)
 # -------------------------------------------------------------------------------------------------------------------
+plotTraces = sim.plotting.plotTraces
+
 @exception
-def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, title=None, overlay=False, colors=None, ylim=None, axis=True, legend=True, scaleBarLoc=1, figSize = (10,8), fontSize=12, saveData=None, saveFig=None, showFig=True):
+def prepareTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, title=None, overlay=False, colors=None, ylim=None, axis=True, legend=True, scaleBarLoc=1, figSize = (10,8), fontSize=12, saveData=None, saveFig=None, showFig=True):
     """
     Function for/to <short description of `netpyne.analysis.traces.plotTraces`>
 
@@ -131,7 +134,7 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
     from .. import sim
     from ..support.scalebar import add_scalebar
 
-    print('Plotting recorded cell traces ...', oneFigPer)
+    print('Preparing recorded cell traces ... per', oneFigPer)
 
     if include is None:  # if none, record from whatever was recorded
         if 'plotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['plotTraces']:
@@ -165,12 +168,7 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
 
     recordStep = sim.cfg.recordStep
 
-    figs = {}
     tracesData = []
-
-    # set font size
-    plt.rcParams.update({'font.size': fontSize})
-    fontsiz = fontSize
 
     # add scale bar
     def addScaleBar(timeRange=timeRange, loc=scaleBarLoc):
@@ -351,23 +349,8 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
 
         _saveFigData(figData, saveData, 'traces')
 
-    # save figure
-    if saveFig:
-        if isinstance(saveFig, basestring):
-            filename = saveFig
-        else:
-            filename = sim.cfg.filename + '_traces.png'
-        if len(figs) > 1:
-            for figLabel, figObj in figs.items():
-                plt.figure(figObj.number)
-                plt.savefig(filename[:-4] + '_' + figLabel + '_' + filename[-4:])
-        else:
-            plt.savefig(filename)
 
-    # show fig
-    if showFig: _showFigure()
-
-    return figs, {'tracesData': tracesData, 'include': include}
+    return figData
 
 # -------------------------------------------------------------------------------------------------------------------
 ## EPSPs amplitude

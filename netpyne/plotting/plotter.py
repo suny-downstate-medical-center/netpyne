@@ -191,7 +191,36 @@ class ScatterPlotter(GeneralPlotter):
         return self.fig
 
 
+class LinePlotter(GeneralPlotter):
+    """A class used for line plotting"""
 
+    def __init__(self, data, axis=None, options={}, **kwargs):
+        
+        super().__init__(data=data, axis=axis, **kwargs)
+
+        self.type       = 'scatter'
+        self.x          = data.get('x')
+        self.y          = data.get('y')
+        self.s          = data.get('s')
+        self.c          = data.get('c')
+        self.marker     = data.get('marker')
+        self.linewidth  = data.get('linewidth')
+        self.cmap       = data.get('cmap')
+        self.norm       = data.get('norm')
+        self.alpha      = data.get('alpha')
+        self.linewidths = data.get('linewidths')
+
+
+    def plot(self, **kwargs):
+
+        self.formatAxis(**kwargs)
+
+        scatterPlot = self.axis.scatter(x=self.x, y=self.y, s=self.s, c=self.c, marker=self.marker, linewidth=self.linewidth, cmap=self.cmap, norm=self.norm, alpha=self.alpha, linewidths=self.linewidths)
+
+        self.finishFig(**kwargs)
+
+
+        return self.fig
 
     """
 

@@ -13,8 +13,9 @@ standard_library.install_aliases()
 import warnings
 warnings.filterwarnings("ignore")
 
-from .plotter import GeneralPlotter, ScatterPlotter
+from .plotter import GeneralPlotter, ScatterPlotter, LinePlotter
 from .plotRaster import plotRaster
+from .plotTraces import plotTraces
 
 
 

@@ -180,7 +180,11 @@ class Cell (object):
 
                     # check if conditions met
                     if isinstance(condVal, list) and isinstance(condVal[0], Number):
-                        if compareTo < condVal[0] or compareTo > condVal[1]:
+                        if compareTo == self.gid:
+                            if compareTo not in condVal:
+                                conditionsMet = 0
+                                break
+                        elif compareTo < condVal[0] or compareTo > condVal[1]:
                             conditionsMet = 0
                             break
                     elif isinstance(condVal, list) and isinstance(condVal[0], basestring):

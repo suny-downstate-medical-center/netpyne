@@ -386,7 +386,7 @@ def _addReactions(self, params, multicompartment=False):
 
     for label, param in params.items():
 
-        dynamicVars = {'sim': sim , 'rxd' : rxd}
+        dynamicVars = {'sim': sim, 'rxdmath': rxdmath, 'rxd': rxd}
 
         # reactant
         if 'reactant' not in param:

@@ -8,6 +8,10 @@
 
 - Updated netrxd.py and network.py to include RxD's Parameter class, naming of States and Regions, and specification of Region geometries that do not require arguments like 'membrane' and 'inside'
 
+- Improved recordTraces such that the cond 'gid' can accept a list of numbers as well as a single number
+
+- Added a new tutorial going through use of NetPyNE with virtual environments and Jupyter notebooks
+
 **Bug fixes** 
 
 - Made rate_b be positional instead of keyword argument in rxd multiCompartmentReaction

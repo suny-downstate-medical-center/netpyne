@@ -8,6 +8,8 @@
 
 - Enable modifyConns based on properties of presynaptic neurons
 
+- Replaced -np with -n so compatible for all commands: mpiexec/mpirun/srun
+
 
 **Bug fixes** 
 

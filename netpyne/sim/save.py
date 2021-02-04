@@ -751,7 +751,7 @@ def saveSimDataInNode(filename=None, saveLFP=True, removeTraces=False):
             # Make it work for Python 2+3 and with Unicode
             print(('Saving output as %s ... ' % (filePath+str(sim.rank)+'.json ')))
             #dataSave = utils.replaceDictODict(dataSave)  # not required since json saves as dict
-            sim.saveJSON(filePath+ str(sim.rank) + '.json', dataSave)
+            sim.saveJSON(filePath+'_node'+str(sim.rank) + '.json', dataSave)
             print('Finished saving!')
 
         # Save timing

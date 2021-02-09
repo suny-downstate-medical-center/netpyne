@@ -6,18 +6,15 @@
 
 - Additional customization of 3D shape plot: show voltage as color, change proportions, include axis labels
 
-<<<<<<< HEAD
 - Enable modifyConns based on properties of presynaptic neurons
 
 - Replaced -np with -n so compatible for all commands: mpiexec/mpirun/srun
 
-=======
 - Updated netrxd.py and network.py to include RxD's Parameter class, naming of States and Regions, and specification of Region geometries that do not require arguments like 'membrane' and 'inside'
 
 - Improved recordTraces such that the cond 'gid' can accept a list of numbers as well as a single number
 
 - Added a new tutorial going through use of NetPyNE with virtual environments and Jupyter notebooks
->>>>>>> d2ea1b9a6d8e633bb71f57878a38817a23d854ae
 
 **Bug fixes** 
 

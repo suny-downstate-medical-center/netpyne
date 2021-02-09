@@ -225,7 +225,7 @@ def gridSearch(self, pc):
                     custom = self.runCfg.get('custom', '')
                     numproc = nodes*ppn
 
-                    command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
+                    command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
 
 
                     jobString = """#!/bin/bash
@@ -274,7 +274,7 @@ echo $PBS_O_WORKDIR
                         res = ''
 
                     numproc = nodes*coresPerNode
-                    command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
+                    command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
 
                     jobString = """#!/bin/bash
 #SBATCH --job-name=%s
@@ -319,7 +319,7 @@ wait
                     script = self.runCfg.get('script', 'init.py')
                     mpiCommand = self.runCfg.get('mpiCommand', 'mpirun')
 
-                    command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, cores, script, cfgSavePath, netParamsSavePath)
+                    command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, cores, script, cfgSavePath, netParamsSavePath)
 
                     print(command+'\n')
                     proc = Popen(command.split(' '), stdout=open(jobName+'.run','w'),  stderr=open(jobName+'.err','w'))

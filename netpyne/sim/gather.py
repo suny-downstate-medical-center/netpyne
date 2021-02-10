@@ -515,7 +515,10 @@ def mergeFiles(gatherLFP = True, targetFolder = None, saveFilename = None):
 
 
     # iterate through the saved files and concat their data
-    fileData = Dict()
+    if getattr(sim, 'rank', None) is None:
+        sim.initialize()
+
+    
     if sim.rank == 0:
         import re
         if not targetFolder:
@@ -526,13 +529,19 @@ def mergeFiles(gatherLFP = True, targetFolder = None, saveFilename = None):
 
         # find all individual sim labels whose files need to be gathered
         simLabels = [f.replace('_node0.pkl','') for f in os.listdir(targetFolder) if f.endswith('_node0.pkl')]
+        print(simLabels)
         for simLabel in simLabels:
             print('Merging files for simulation %s...' % (simLabel))
+            fileData = Dict()
+
             fileList = [f for f in os.listdir(targetFolder) if f.startswith(simLabel+'_node')]
+
+            # this has to be made recursive like in gatherData !!!            
             for f in fileList:
                 with open(targetFolder + '/' + f, 'rb') as data:
                     temp = pickle.load(data)
                     print('  Merging data file %s' % (f))
+                    print('current file:', len(temp['simData']['spkt']))
                     for k in temp.keys():
                         if k in fileData:
                             if isinstance(temp[k], list):
@@ -545,9 +554,8 @@ def mergeFiles(gatherLFP = True, targetFolder = None, saveFilename = None):
             simDataVecs = ['spkt','spkid','stims']+list(sim.cfg.recordTraces.keys())
             singleNodeVecs = ['t']
 
-            sim.allSimData = Dict()
-            sim.allSimData.update(fileData)
-
+            sim.loadAll('', data=fileData, instantiate=False)
+            
             if len(sim.allSimData['spkt']) > 0:
                 sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
                 sim.allSimData['spkt'], sim.allSimData['spkid'] = list(sim.allSimData['spkt']), list(sim.allSimData['spkid'])
@@ -641,7 +649,19 @@ def mergeFiles(gatherLFP = True, targetFolder = None, saveFilename = None):
                         item.clear()
                         del item
 
-            sim.saveData(filename=saveFilename)
+
+            # saveFilename
+            if not saveFilename:
+                saveFilename = targetFolder+'/'+simLabel+'_merged.pkl'
+                
+            if saveFilename.endswith('pkl'):
+                sim.cfg.savePickle = True
+                sim.cfg.saveJson = False
+            elif saveFilename.endswith('json'):
+                sim.cfg.savePickle = False
+                sim.cfg.saveJson = True
+
+            sim.saveData(filename=saveFilename[:-4])
             # SAVE TO SINGLE FILE!! option to save only parts of it
 
 

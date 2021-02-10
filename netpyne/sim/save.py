@@ -83,7 +83,7 @@ def saveData(include = None, filename = None):
 
     from .. import sim
 
-    if sim.rank == 0 and not getattr(sim.net, 'allCells', None): needGather = True
+    if sim.rank == 0 and not getattr(sim.net, 'allCells', None) and not getattr(sim, 'allSimData', None): needGather = True
     else: needGather = False
     if needGather: gather.gatherData()
 
@@ -134,8 +134,8 @@ def saveData(include = None, filename = None):
             sim.net.params.__dict__.pop('_labelid', None)
             net['params'] = utils.replaceFuncObj(sim.net.params.__dict__)
         if 'net' in include: include.extend(['netPops', 'netCells'])
-        if 'netCells' in include: net['cells'] = sim.net.allCells
-        if 'netPops' in include: net['pops'] = sim.net.allPops
+        if 'netCells' in include and hasattr(sim.net, 'allCells'): net['cells'] = sim.net.allCells
+        if 'netPops' in include and hasattr(sim.net, 'allPops'): net['pops'] = sim.net.allPops
         if net: dataSave['net'] = net
         if 'simConfig' in include: dataSave['simConfig'] = sim.cfg.__dict__
         if 'simData' in include:

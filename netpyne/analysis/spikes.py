@@ -28,8 +28,8 @@ from .utils import colorList, exception, getCellsInclude, getSpktSpkid
 import pandas as pd
 
 
-@exception
-def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8, orderBy='gid', orderInverse=False, addLegend=True, popRates=True, spikeHist=None, spikeHistBin=5, syncLines=False, popColors=None, saveData=None, **kwargs):
+#@exception
+def prepareRaster(popColors=None, include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8, orderBy='gid', orderInverse=False, popRates=True, saveData=None, **kwargs):
     """
     Function to prepare data for creating a raster plot
 
@@ -140,11 +140,6 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
         sel = sel.iloc[:maxSpikes]
         timeRange[1] =  sel['spkt'].max()
 
-    # Calculate spike histogram
-    if spikeHist:
-        histo = np.histogram(sel['spkt'].tolist(), bins = np.arange(timeRange[0], timeRange[1], spikeHistBin))
-        histoT = histo[1][:-1]+spikeHistBin/2
-        histoCount = histo[0]
 
     # Plot stats
     gidPops = df['pop'].tolist()
@@ -170,11 +165,15 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
 
     popLabelRates = [popLabel + ' (%.3g Hz)' % (avgRates[popLabel]) for popLabel in popLabels if popLabel in avgRates]
 
-    figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'spkColors': sel['spkgidColor'].tolist(), 'cellGids': cellGids, 'sortedGids': df.index.tolist(), 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'orderInverse': orderInverse, 'spikeHist': spikeHist, 'syncLines': syncLines, 'popLabels': popLabels, 'popLabelRates': popLabelRates, 'popColors': popColors}
+    # switch spkgidcolor to pop
+
+
+    figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'spkColors': sel['spkgidColor'].tolist(), 'cellGids': cellGids, 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'orderInverse': orderInverse, 'popLabels': popLabels, 'popLabelRates': popLabelRates}
     
 
     # save figure data
     if saveData:
+        # Need to replace _saveFigData
         _saveFigData(figData, saveData, 'raster')
 
     return figData

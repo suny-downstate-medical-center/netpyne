@@ -2,9 +2,9 @@
 
 import matplotlib.patches as mpatches
 
-from ..analysis.utils import exception
+from ..analysis.utils import colorList, exception
 
-@exception
+#@exception
 def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, **kwargs):
 
     from .plotter import ScatterPlotter
@@ -15,7 +15,7 @@ def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, **kwargs)
 
     print('Plotting raster...')
 
-    dataKeys = ['spkTimes', 'spkInds', 'spkColors', 'cellGids', 'sortedGids', 'numNetStims', 'include', 'timeRange', 'maxSpikes', 'orderBy', 'orderInverse', 'spikeHist', 'syncLines', 'popLabels', 'popLabelRates', 'popColors']
+    dataKeys = ['spkTimes', 'spkInds', 'spkColors', 'cellGids', 'numNetStims', 'include', 'timeRange', 'maxSpikes', 'orderBy', 'orderInverse', 'spikeHist', 'syncLines', 'popLabels', 'popLabelRates', 'popColors']
 
     scatterData = {}
     scatterData['x'] = rasterData['spkTimes']
@@ -47,12 +47,16 @@ def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, **kwargs)
     rasterPlot = rasterPlotter.plot(**axisArgs)
 
     if legend:
-        #rasterPlotter.options['addLegend'] = True
+
+        popLabels = rasterData['popLabels']
+        if popLabels:
+            popColors = {popLabel: colorList[ipop % len(colorList)] for ipop, popLabel in enumerate(popLabels)}
+
         labels = []
         handles = []
-        for ipop, popLabel in enumerate(rasterData['popLabels']):
+        for ipop, popLabel in enumerate(popLabels):
             labels.append(rasterData['popLabelRates'][ipop] if popRates else popLabel)
-            handles.append(mpatches.Rectangle((0,0),1,1,fc=rasterData['popColors'][popLabel]))
+            handles.append(mpatches.Rectangle((0,0),1,1,fc=popColors[popLabel]))
 
         legendKwargs = {}
         legendKwargs['bbox_to_anchor'] = (1.025, 1)
@@ -67,5 +71,6 @@ def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, **kwargs)
         maxLabelLen = max([len(label) for label in rasterData['popLabels']])
         rasterPlotter.fig.subplots_adjust(right=(rightOffset-0.012*maxLabelLen))
 
+    rasterPlot = rasterPlotter.plot(**axisArgs)
 
     return rasterPlotter

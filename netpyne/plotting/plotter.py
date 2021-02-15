@@ -26,35 +26,12 @@ class GeneralPlotter:
         axis : matplotlib axis
             The axis to plot into.  If axis is set to None, a new figure and axis are created and plotted into.  If plotting into an existing axis, more options are available: xtwin, ytwin,
         
-        kwargs
-        ------
-        xtwin : bool
-
-        ytwin : bool
-
-        title : str
-
-        xlabel : str
-
-        ylabel : str
-
-        legend : bool 
-
-        xlim : array
-
-        ylim : array
-
-
-        TODO: 
-          adjust fontSize
-
-
         """
 
         self.data = data
         self.axis = axis
         self.options = sim.cfg.plotting
-        self.options['addLegend'] = False
+        #self.options['addLegend'] = False
 
         for option in options:
             if option in self.options:
@@ -137,6 +114,13 @@ class GeneralPlotter:
             if kwarg in legendParams:
                 legendKwargs[kwarg] = kwargs[kwarg]
 
+        cur_handles, cur_labels = self.axis.get_legend_handles_labels()
+
+        if not handles:
+            handles = cur_handles
+        if not labels:
+            labels = cur_labels
+
         self.axis.legend(handles, labels, **legendKwargs)
         
 
@@ -145,8 +129,6 @@ class GeneralPlotter:
 
         if self.options['saveData']:
             self.saveData(**kwargs)
-        if self.options['addLegend']:
-            self.addLegend(**kwargs)
         if self.options['saveFig']:
             self.saveFig(**kwargs)
         if self.options['showFig']:
@@ -218,7 +200,6 @@ class LinePlotter(GeneralPlotter):
         scatterPlot = self.axis.scatter(x=self.x, y=self.y, s=self.s, c=self.c, marker=self.marker, linewidth=self.linewidth, cmap=self.cmap, norm=self.norm, alpha=self.alpha, linewidths=self.linewidths)
 
         self.finishFig(**kwargs)
-
 
         return self.fig
 

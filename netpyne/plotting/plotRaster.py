@@ -2,11 +2,15 @@
 
 import matplotlib.patches as mpatches
 
+from ..analysis.utils import exception
+
+@exception
 def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, **kwargs):
 
-    from .. import sim
+    from .plotter import ScatterPlotter
 
     if rasterData is None:
+        from .. import sim
         rasterData = sim.analysis.prepareRaster(**kwargs)
 
     print('Plotting raster...')
@@ -35,7 +39,8 @@ def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, **kwargs)
     axisArgs['ylabel'] = 'Cells'
 
 
-    rasterPlotter = sim.plotting.ScatterPlotter(data=scatterData, axis=axis, **axisArgs, **kwargs)
+    #rasterPlotter = sim.plotting.ScatterPlotter(data=scatterData, axis=axis, **axisArgs, **kwargs)
+    rasterPlotter = ScatterPlotter(data=scatterData, axis=axis, **axisArgs, **kwargs)
 
     rasterPlotter.type = 'raster'
 

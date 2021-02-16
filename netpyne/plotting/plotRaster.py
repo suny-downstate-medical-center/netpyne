@@ -5,7 +5,7 @@ from ..analysis.utils import colorList, exception
 from .plotter import ScatterPlotter
 
 #@exception
-def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, **kwargs):
+def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, orderInverse=False, **kwargs):
 
     if rasterData is None:
         from .. import sim
@@ -64,6 +64,9 @@ def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, **kwargs)
         rightOffset = 0.8 if popRates else 0.9
         maxLabelLen = max([len(label) for label in rasterData['popLabels']])
         rasterPlotter.fig.subplots_adjust(right=(rightOffset-0.012*maxLabelLen))
+
+    if orderInverse: 
+        rasterPlotter.axis.invert_yaxis()
 
     rasterPlot = rasterPlotter.plot(**axisArgs)
 

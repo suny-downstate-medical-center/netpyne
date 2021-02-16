@@ -30,6 +30,7 @@ class GeneralPlotter:
         if not sim:
             from .. import sim
 
+        self.sim = sim
         self.data = data
         self.axis = axis
         self.options = sim.cfg.plotting
@@ -76,7 +77,7 @@ class GeneralPlotter:
         if isinstance(fileName, basestring):
             fileName = fileName + filespec
         else:
-            fileName = sim.cfg.filename + '_' + self.type + filespec + '.png'
+            fileName = self.sim.cfg.filename + '_' + self.type + filespec + '.png'
         
         self.fig.savefig(fileName)
 

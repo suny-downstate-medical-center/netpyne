@@ -176,7 +176,7 @@ def getSpktSpkid(cellGids=[], timeRange=None, sim=None):
     (selection, spkt, spkid)
         A tuple consisting of the subset in a Pandas dataframe, a list of spike times, and a list of spike GIDs
 
-"""
+    """
 
     if not sim:
         from .. import sim

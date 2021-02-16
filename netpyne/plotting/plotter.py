@@ -50,6 +50,9 @@ class GeneralPlotter:
 
         from ..analysis import saveData as saveFigData
 
+        if fileDesc is None:
+            fileDesc = self.type + '_data'
+
         saveFigData(self.data, fileName=fileName, fileDesc=fileDesc, fileType=fileType, sim=sim, **kwargs)
     
 
@@ -68,18 +71,44 @@ class GeneralPlotter:
 
 
 
-    def saveFig(self, fileName=None, fileSpec=None, **kwargs):
-        
-        filespec = ''
-        if fileSpec is not None:
-            filespec = '_' + str(fileSpec)
+    def saveFig(self, fileName=None, fileDesc=None, fileType='png', **kwargs):
+        """
+        'eps': 'Encapsulated Postscript',
+        'jpg': 'Joint Photographic Experts Group',
+        'jpeg': 'Joint Photographic Experts Group',
+        'pdf': 'Portable Document Format',
+        'pgf': 'PGF code for LaTeX',
+        'png': 'Portable Network Graphics',
+        'ps': 'Postscript',
+        'raw': 'Raw RGBA bitmap',
+        'rgba': 'Raw RGBA bitmap',
+        'svg': 'Scalable Vector Graphics',
+        'svgz': 'Scalable Vector Graphics',
+        'tif': 'Tagged Image File Format',
+        'tiff': 'Tagged Image File Format'
+        """
 
-        if isinstance(fileName, basestring):
-            fileName = fileName + filespec
+        if fileDesc is not None:
+            fileDesc = '_' + str(fileDesc)
         else:
-            fileName = self.sim.cfg.filename + '_' + self.type + filespec + '.png'
+            fileDesc = '_' + self.type
+
+        if fileType not in self.fig.canvas.get_supported_filetypes():
+            raise Exception('fileType not recognized in saveFig')
+        else:
+            fileExt = '.' + fileType
+
+        if not fileName or not isinstance(fileName, basestring):
+            fileName = self.sim.cfg.filename + fileDesc + fileExt
+        else:
+            if fileName.endswith(fileExt):
+                fileName = fileName.split(fileExt)[0] + fileDesc + fileExt
+            else:
+                fileName = fileName + fileDesc + fileExt
         
         self.fig.savefig(fileName)
+
+        return fileName
 
 
 

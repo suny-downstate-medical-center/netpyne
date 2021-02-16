@@ -4,7 +4,7 @@ Package for analysis and plotting
 """
 
 # Import utils methods
-from .utils import exception, getCellsInclude, plotData
+from .utils import exception, getCellsInclude, plotData, saveData
 
 # Import connectivity-related functions
 #from .network import plotConn, _plotConnCalculateFromSim, _plotConnCalculateFromFile, plot2Dnet, plotShape, calculateDisynaptic

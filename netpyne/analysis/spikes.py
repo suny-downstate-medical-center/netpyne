@@ -24,8 +24,9 @@ try:
 except NameError:
     basestring = str
 
-from .utils import colorList, exception, getCellsInclude, getSpktSpkid
 import pandas as pd
+from numbers import Number
+from .utils import colorList, exception, getCellsInclude, getSpktSpkid
 
 
 #@exception
@@ -132,7 +133,6 @@ def prepareRaster(popColors=None, include=['allCells'], sim=None, timeRange=None
     else:
         sel = sel.query('spkt >= @timeRange[0] and spkt <= @timeRange[1]')
 
-
     # Limit to maxSpikes
     if (len(sel)>maxSpikes):
         print(('  Showing only the first %i out of %i spikes' % (maxSpikes, len(sel)))) # Limit num of spikes
@@ -140,7 +140,6 @@ def prepareRaster(popColors=None, include=['allCells'], sim=None, timeRange=None
             sel = sel.sort_values(by='spkt')
         sel = sel.iloc[:maxSpikes]
         timeRange[1] =  sel['spkt'].max()
-
 
     # Plot stats
     gidPops = df['pop'].tolist()
@@ -181,7 +180,7 @@ def prepareRaster(popColors=None, include=['allCells'], sim=None, timeRange=None
 
 
 @exception
-def prepareSpikeHist(include=['eachPop', 'allCells'], timeRange=None, binSize=5, overlay=True, graphType='line', measure='rate', norm=False, smooth=None, filtFreq=None, filtOrder=3, axis=True, popColors=None, figSize=(10,8), dpi=100, saveData=None, saveFig=None, showFig=True, **kwargs):
+def prepareSpikeHist(include=['eachPop', 'allCells'], sim=None, timeRange=None, binSize=5, overlay=True, graphType='line', measure='rate', norm=False, smooth=None, filtFreq=None, filtOrder=3, axis=True, popColors=None, figSize=(10,8), dpi=100, saveData=None, saveFig=None, showFig=True, **kwargs):
     """
     Function for/to <short description of `netpyne.analysis.spikes.plotSpikeHist`>
 
@@ -293,11 +292,13 @@ def prepareSpikeHist(include=['eachPop', 'allCells'], timeRange=None, binSize=5,
 
 
 """
-
-    from .. import sim
+    
+    if not sim:
+        from .. import sim
+    
     from ..support.scalebar import add_scalebar
 
-    print('Plotting spike histogram...')
+    print('Preparing spike histogram...')
 
     # Replace 'eachPop' with list of pops
     if 'eachPop' in include:

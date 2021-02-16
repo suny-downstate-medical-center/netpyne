@@ -285,7 +285,7 @@ def saveData(data, fileName=None, fileDesc=None, fileType='pkl', sim=None, **kwa
         raise Exception('fileType not recognized in saveData')
 
     if fileDesc is None:
-        fileDesc = ''
+        fileDesc = '_data'
     else:
         fileDesc = '_' + str(fileDesc)
 

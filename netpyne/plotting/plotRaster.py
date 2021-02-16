@@ -1,13 +1,11 @@
 # Generate a raster plot
 
 import matplotlib.patches as mpatches
-
 from ..analysis.utils import colorList, exception
+from .plotter import ScatterPlotter
 
 #@exception
 def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, **kwargs):
-
-    from .plotter import ScatterPlotter
 
     if rasterData is None:
         from .. import sim
@@ -38,12 +36,8 @@ def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, **kwargs)
     axisArgs['xlabel'] = 'Time (ms)'
     axisArgs['ylabel'] = 'Cells'
 
-
-    #rasterPlotter = sim.plotting.ScatterPlotter(data=scatterData, axis=axis, **axisArgs, **kwargs)
     rasterPlotter = ScatterPlotter(data=scatterData, axis=axis, **axisArgs, **kwargs)
-
     rasterPlotter.type = 'raster'
-
     rasterPlot = rasterPlotter.plot(**axisArgs)
 
     if legend:

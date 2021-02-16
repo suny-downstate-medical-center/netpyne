@@ -4,7 +4,6 @@ Module for plotting analyses
 """
 
 import matplotlib.pyplot as plt
-from .. import sim
 
 try:
     basestring
@@ -17,7 +16,7 @@ legendParams = ['loc', 'bbox_to_anchor', 'fontsize', 'numpoints', 'scatterpoints
 class GeneralPlotter:
     """A class used for plotting"""
 
-    def __init__(self, data, axis=None, options={}, **kwargs):
+    def __init__(self, data, axis=None, sim=None, options={}, **kwargs):
         """
         Parameters
         ----------
@@ -27,6 +26,9 @@ class GeneralPlotter:
             The axis to plot into.  If axis is set to None, a new figure and axis are created and plotted into.  If plotting into an existing axis, more options are available: xtwin, ytwin,
         
         """
+
+        if not sim:
+            from .. import sim
 
         self.data = data
         self.axis = axis
@@ -43,29 +45,11 @@ class GeneralPlotter:
             self.fig = plt.gcf()
 
 
-    def saveData(self, fileName=None, fileType='pkl', **kwargs):
+    def saveData(self, fileName=None, fileDesc=None, fileType='pkl', sim=None, **kwargs):
 
-        if fileType in ['pkl', 'pickle', '.pkl']:
-            fileExt = '.pkl'
-        elif fileType in ['json', '.json']:
-            fileExt = '.json'
+        from ..analysis import saveData as saveFigData
 
-        if not fileName or not isinstance(fileName, basestring):
-            fileName = sim.cfg.filename + '_' + self.type + fileExt
-        else:
-            fileName = fileName + fileExt
-
-        if fileName.endswith('.pkl'):
-            import pickle
-            print(('Saving figure data as %s ... ' % (fileName)))
-            with open(fileName, 'wb') as fileObj:
-                pickle.dump(self.data, fileObj)
-
-        elif fileName.endswith('.json'):
-            print(('Saving figure data as %s ... ' % (fileName)))
-            sim.saveJSON(fileName, self.data)
-        else:
-            print('File extension to save figure data not recognized')
+        saveFigData(self.data, fileName=fileName, fileDesc=fileDesc, fileType=fileType, sim=sim, **kwargs)
     
 
     def formatAxis(self, **kwargs):
@@ -168,7 +152,6 @@ class ScatterPlotter(GeneralPlotter):
         scatterPlot = self.axis.scatter(x=self.x, y=self.y, s=self.s, c=self.c, marker=self.marker, linewidth=self.linewidth, cmap=self.cmap, norm=self.norm, alpha=self.alpha, linewidths=self.linewidths)
 
         self.finishFig(**kwargs)
-
 
         return self.fig
 

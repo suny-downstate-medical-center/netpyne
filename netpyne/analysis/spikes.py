@@ -29,7 +29,7 @@ import pandas as pd
 
 
 #@exception
-def prepareRaster(popColors=None, include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8, orderBy='gid', orderInverse=False, popRates=True, saveData=None, **kwargs):
+def prepareRaster(popColors=None, include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8, orderBy='gid', popRates=True, saveData=None, **kwargs):
     """
     Function to prepare data for creating a raster plot
 
@@ -168,7 +168,7 @@ def prepareRaster(popColors=None, include=['allCells'], sim=None, timeRange=None
     # switch spkgidcolor to pop
 
 
-    figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'spkColors': sel['spkgidColor'].tolist(), 'cellGids': cellGids, 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'orderInverse': orderInverse, 'popLabels': popLabels, 'popLabelRates': popLabelRates}
+    figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'spkColors': sel['spkgidColor'].tolist(), 'cellGids': cellGids, 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'popLabels': popLabels, 'popLabelRates': popLabelRates}
     
 
     # save figure data

@@ -27,6 +27,8 @@ except NameError:
 import functools
 import sys
 import pandas as pd
+import pickle
+
 
 
 
@@ -243,3 +245,70 @@ def plotData(sim=None):
             print('\nEnd time: ', datetime.now())
         except:
             pass
+
+
+def saveData(data, fileName=None, fileDesc=None, fileType='pkl', sim=None, **kwargs):
+    """
+    Function to save data to a file
+    
+    Parameters
+    ----------
+    data : data object
+        **Required**
+
+    fileName : str
+        **Default:** ``None`` uses sim.cfg.fileName
+
+    fileDesc : str
+        **Default:** ``None``
+        If fileDesc is a string, it will be added to the file name after an underscore
+
+    fileType : str
+        **Default:** 'pkl' saves the data as a Python Pickle file
+        **Options:** 'json' saves the data in a .json file
+
+    sim : NetPyNE sim object
+        **Default:** ``None`` uses the current NetPyNE sim object
+
+    Returns
+    -------
+    fileName : str
+        The complete name, with extension, of the file saved
+
+    """
+
+    if fileType in ['pkl', 'pickle', '.pkl']:
+        fileExt = '.pkl'
+    elif fileType in ['json', '.json']:
+        fileExt = '.json'
+    else:
+        raise Exception('fileType not recognized in saveData')
+
+    if fileDesc is None:
+        fileDesc = ''
+    else:
+        fileDesc = '_' + str(fileDesc)
+
+    if not fileName or not isinstance(fileName, basestring):
+        if not sim:
+            from .. import sim
+        fileName = sim.cfg.filename + fileDesc + fileExt
+    else:
+        if fileName.endswith(fileExt):
+            fileName = fileName.split(fileExt)[0] + fileDesc + fileExt
+        else:
+            fileName = fileName + fileDesc + fileExt
+
+    if fileName.endswith('.pkl'):
+        print(('Saving data as %s ... ' % (fileName)))
+        with open(fileName, 'wb') as fileObj:
+            pickle.dump(data, fileObj)
+
+    elif fileName.endswith('.json'):
+        print(('Saving data as %s ... ' % (fileName)))
+        sim.saveJSON(fileName, data)
+    else:
+        print('File extension to save data not recognized')
+
+    return fileName
+

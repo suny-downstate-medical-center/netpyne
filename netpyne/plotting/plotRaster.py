@@ -5,9 +5,9 @@ from ..analysis.utils import exception
 from .plotter import colorList, ScatterPlotter
 
 @exception
-def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabels=None, colorList=colorList, orderInverse=False, returnPlotter=False, **kwargs):
+def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabels=None, colorList=None, orderInverse=False, returnPlotter=False, **kwargs):
     """
-    Function to produce a raster plot of cell spiking grouped by population
+    Function to produce a raster plot of cell spiking, grouped by population
 
 
     Parameters
@@ -35,7 +35,7 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
 
     colorList : list
         A list of colors to draw from in plotting.
-        **Default:** NetPyNE default colorList
+        **Default:** ``None`` uses the default NetPyNE colorList
 
     orderInverse : bool
         Whether or not to invert the y axis (useful if populations are defined top-down).
@@ -46,22 +46,22 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
         **Default:** ``False`` returns the figure
 
 
-    NetPyNE kwargs
-    --------------
+    Keyword Arguments
+    -----------------
     sim : NetPyNE sim object
         **Default:** ``None`` uses the current NetPyNE sim object
 
-    include : str, int, list
+    include : string, int, list
         Cells and/or NetStims to return information for
-        **Default:** 'allCells' includes all cells
+        **Default:** ``'allCells'`` includes all cells
         **Options:** 
-        (1) 'all' includes all cells and all NetStims, 
-        (2) 'allNetStims' includes all NetStims but no cells, 
+        (1) ``'all'`` includes all cells and all NetStims, 
+        (2) ``'allNetStims'`` includes all NetStims but no cells, 
         (3) a string which matches a pop name includes all cells in that pop,
         (4) a string which matches a NetStim name includes that NetStim, 
         (5) an int includes the cell with that global identifier (GID), 
         (6) a list of ints includes the cells with those GIDS,
-        (7) a list with two items, the first of which is a string matching a pop name and the second of which is an int or a list of ints, includes the relative cell(s) from that population (e.g. ('popName', [0, 1]) includes the first two cells in popName, which are not likely to be the cells with GID 0 and 1)
+        (7) a list with two items, the first of which is a string matching a pop name and the second of which is an int or a list of ints, includes the relative cell(s) from that population (e.g. (``'popName', [0, 1]``) includes the first two cells in popName, which are not likely to be the cells with GID 0 and 1)
 
     timeRange : list
         Time range to include in the raster: [min, max]
@@ -78,9 +78,9 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
 
     popRates : bool
         Whether to include the spiking rates in the plot title/legend
-         **Default:** ``True`` includes detailed pop information on plot
-         **Options:** ``False`` only includes pop names,
-         ``'minimal'`` includes only spiking rates on legend
+        **Default:** ``True`` includes detailed pop information on plot
+        **Options:** ``False`` only includes pop names,
+        ``'minimal'`` includes only spiking rates on legend
 
     saveData : bool
         Whether to save to a file the data used to create the figure
@@ -100,23 +100,21 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
         **Options:** ``pkl`` saves the file in Python Pickle format
 
 
-    Axis kwargs
-    -----------
+    Other Parameters
+    ----------------
     title : str
-        **Default:** 'Raster Plot of Spiking'
+        Axis title
+        **Default:** ``'Raster Plot of Spiking'``
     
     xlabel : str
-        **Default:** 'Time (ms)'
+        **Default:** ``'Time (ms)'``
     
     ylabel : str
-        **Default:** 'Cells'
-    
+        **Default:** ``'Cells'``
 
-    Plot kwargs
-    -----------
     s : int
         Marker size
-        **Default:** 5
+        **Default:** ``5``
 
     marker : str
         Marker symbol
@@ -138,15 +136,13 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
     linewidths
         **Default:** ``None``
 
-
-    Legend kwargs
-    -------------
     title : str
+        Legend title
         **Default:** ``'Populations'``
         **Options:** ``None`` don't add a legend title
 
     bbox_to_anchor : tuple
-        **Default:** (1.025, 1)
+        **Default:** ``(1.025, 1)``
 
     loc : int, str
         **Default:** ``2``
@@ -158,18 +154,18 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
         **Default:** ``0.5``
 
     fontsize: int, str
-        **Default:** ``small``
+        **Default:** ``'small'``
 
 
     Returns
     -------
     rasterPlot : matplotlib figure
-        Returns the NetPyNE plotter object used if returnPlotter is True
+        By default, returns the figure.  If ``returnPlotter`` is ``True``, instead returns the NetPyNE plotter object used.
 
 
     Examples
     --------
-
+    There are many options available in plotRaster.
     
 
     """
@@ -204,6 +200,7 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
         if 'popLabels' in rasterData:
             popLabels = rasterData['popLabels']
         elif indPops:
+            # get a unique set of popLabels which maintain their order
             popLabels = list(dict.fromkeys(indPops))
         else:
             popLabels = ['Population']
@@ -215,6 +212,8 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
         indPops = [popLabels[indPopLabels.index(indPop)] for indPop in indPops]
 
     # dict with color for each pop
+    if not colorList:
+        from .plotter import colorList    
     popColorsTemp = {popLabel: colorList[ipop%len(colorList)] for ipop, popLabel in enumerate(popLabels)} 
     if popColors: 
         popColorsTemp.update(popColors)

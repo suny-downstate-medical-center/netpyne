@@ -100,7 +100,7 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
 
     # add legend
     if legend:
-
+        
         if popLabels:
             if not popColors:
                 colorList = colorList

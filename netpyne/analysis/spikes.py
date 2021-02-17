@@ -164,11 +164,19 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
             popNumCells[-1] = numNetStims
             avgRates['NetStims'] = len([spkid for spkid in sel['spkind'].iloc[numCellSpks:]])/numNetStims/tsecs
 
-        legendLabels = [popLabel + '\n  cells: %i\n  syn/cell: %0.1f\n  rate: %.3g Hz' % (popNumCells[popIndex], popConnsPerCell[popIndex], avgRates[popLabel]) for popIndex, popLabel in enumerate(popLabels) if popLabel in avgRates]
+        if popRates == 'minimal':
+            legendLabels = [popLabel + ' (%.3g Hz)' % (avgRates[popLabel]) for popIndex, popLabel in enumerate(popLabels) if popLabel in avgRates]
+            title = 'Raster Plot of Spiking'
+        else:
+            legendLabels = [popLabel + '\n  cells: %i\n  syn/cell: %0.1f\n  rate: %.3g Hz' % (popNumCells[popIndex], popConnsPerCell[popIndex], avgRates[popLabel]) for popIndex, popLabel in enumerate(popLabels) if popLabel in avgRates]
+            title = 'cells: %i   syn/cell: %0.1f   rate: %0.1f Hz' % (numCells, connsPerCell, firingRate)
+
+        if 'title' in kwargs:
+            title = kwargs['title']
 
     axisArgs = {'xlabel': 'Time (ms)', 
                 'ylabel': ylabelText, 
-                'title': 'cells: %i   syn/cell: %0.1f   rate: %0.1f Hz' % (numCells, connsPerCell, firingRate)}
+                'title': title}
 
     figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'indPop': gidPops, 'popLabels': popLabels, 'cellGids': cellGids, 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'axisArgs': axisArgs, 'legendLabels': legendLabels}
 

@@ -70,17 +70,19 @@ def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, orderInve
     if legend:
 
         legendLabels = rasterData['legendLabels']
-        if legendLabels:
-            popLabels = legendLabels
-        else:
-            popLabels = rasterData['popLabels']
+        popLabels = rasterData['popLabels']
+
         if popLabels:
-            popColors = {popLabel: colorList[ipop % len(colorList)] for ipop, popLabel in enumerate(popLabels)}
+            if not popColors:
+                popColors = {popLabel: colorList[ipop % len(colorList)] for ipop, popLabel in enumerate(popLabels)}
 
         labels = []
         handles = []
         for ipop, popLabel in enumerate(popLabels):
-            labels.append(popLabel)
+            if legendLabels:
+                labels.append(legendLabels[ipop])
+            else:
+                labels.append(popLabel)
             handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=popColors[popLabel]))
 
         legendKwargs = {}

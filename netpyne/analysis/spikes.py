@@ -69,10 +69,10 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
         keep.append(orderBy)
 
     df = df[keep]
-
+        
     # preserves original ordering:
     popLabels = [pop for pop in sim.net.allPops if pop in df['pop'].unique()] 
-    
+
     if netStimLabels: 
         popLabels.append('NetStims')
     
@@ -164,7 +164,7 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
             popNumCells[-1] = numNetStims
             avgRates['NetStims'] = len([spkid for spkid in sel['spkind'].iloc[numCellSpks:]])/numNetStims/tsecs
 
-        legendLabels = [popLabel + '\n  cells: %i\n  syn/cell: %0.1f\n  rate: %.3g Hz' % (popNumCells[popIndex], popConnsPerCell[popIndex], avgRates[popLabel])  for popIndex, popLabel in enumerate(popLabels) if popLabel in avgRates]
+        legendLabels = [popLabel + '\n  cells: %i\n  syn/cell: %0.1f\n  rate: %.3g Hz' % (popNumCells[popIndex], popConnsPerCell[popIndex], avgRates[popLabel]) for popIndex, popLabel in enumerate(popLabels) if popLabel in avgRates]
 
     axisArgs = {'xlabel': 'Time (ms)', 
                 'ylabel': ylabelText, 

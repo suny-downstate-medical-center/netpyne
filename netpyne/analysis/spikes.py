@@ -93,7 +93,7 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
         df = df.sort_values(by=orderBy)
         sel['spkind'] = sel['spkid'].apply(df.index.get_loc)
     else:
-        sel = pd.DataFrame(columns=['spkt', 'spkid', 'spkind', 'popind'])
+        sel = pd.DataFrame(columns=['spkt', 'spkid', 'spkind'])
         ylabelText = ''
 
     # Add NetStim spikes
@@ -111,9 +111,7 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
             ns['spkgidColor'] = popColors['netStims']
             sel = pd.concat([sel, ns])
             numNetStims += 1
-        else:
-            pass
-            #print netStimLabel+' produced no spikes'
+        
     if len(cellGids)>0 and numNetStims:
         ylabelText = ylabelText + ' and NetStims (at the end)'
     elif numNetStims:
@@ -163,7 +161,9 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
 
     popLabelRates = [popLabel + ' (%.3g Hz)' % (avgRates[popLabel]) for popLabel in popLabels if popLabel in avgRates]
 
-    figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'cellGids': cellGids, 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'popLabels': popLabels, 'popLabelRates': popLabelRates, 'gidPops': gidPops}
+    axisArgs = {'xlabel': 'Time (ms)', 'ylabel': ylabelText, 'title': 'Raster plot of spiking'}
+
+    figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'cellGids': cellGids, 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'popLabels': popLabels, 'popLabelRates': popLabelRates, 'gidPops': gidPops, 'axisArgs': axisArgs}
     
 
     if saveData:

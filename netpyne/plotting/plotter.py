@@ -141,6 +141,7 @@ class GeneralPlotter:
 
     def finishFig(self, **kwargs):
 
+        self.formatAxis(**kwargs)
         if self.options['saveData']:
             self.saveData(**kwargs)
         if self.options['saveFig']:
@@ -176,8 +177,6 @@ class ScatterPlotter(GeneralPlotter):
 
 
     def plot(self, **kwargs):
-
-        self.formatAxis(**kwargs)
 
         scatterPlot = self.axis.scatter(x=self.x, y=self.y, s=self.s, c=self.c, marker=self.marker, linewidth=self.linewidth, cmap=self.cmap, norm=self.norm, alpha=self.alpha, linewidths=self.linewidths)
 

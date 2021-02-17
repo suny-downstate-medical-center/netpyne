@@ -13,13 +13,12 @@ def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, orderInve
 
     print('Plotting raster...')
 
-    dataKeys = ['spkTimes', 'spkInds', 'cellGids', 'numNetStims', 'include', 'timeRange', 'maxSpikes', 'orderBy', 'popLabels', 'popLabelRates', 'gidPops']
+    dataKeys = ['spkTimes', 'spkInds', 'cellGids', 'numNetStims', 'include', 'timeRange', 'maxSpikes', 'orderBy', 'popLabels', 'popLabelRates', 'gidPops', 'axisArgs']
 
     popLabels = rasterData['popLabels']
     spkInds = rasterData['spkInds']
     spkTimes = rasterData['spkTimes']
     spkColors = None
-
 
     # dict with color for each pop
     popColorsTmp = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} 
@@ -28,12 +27,10 @@ def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, orderInve
     popColors = popColorsTmp
     
     if len(rasterData['cellGids']) > 0:
-        
         cellGids = rasterData['cellGids']
         gidPops = rasterData['gidPops']
         gidColors = {cellGid: popColors[gidPops[cellGid]] for cellGid in cellGids}  
         spkColors = [gidColors[spkInd] for spkInd in spkInds]
-
 
     scatterData = {}
     scatterData['x'] = spkTimes
@@ -51,14 +48,24 @@ def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, orderInve
         if kwarg in scatterData:
             scatterData[kwarg] = kwargs[kwarg]
 
-    axisArgs = {}
-    axisArgs['title'] = 'Raster Plot of Spiking'
-    axisArgs['xlabel'] = 'Time (ms)'
-    axisArgs['ylabel'] = 'Cells'
+    axisArgs = rasterData['axisArgs']
+
+    if not axisArgs:
+        axisArgs = {}
+        axisArgs['title'] = 'Raster Plot of Spiking'
+        axisArgs['xlabel'] = 'Time (ms)'
+        axisArgs['ylabel'] = 'Cells'
+
+    kwargDels = []
+    for kwarg in kwargs:
+        if kwarg in axisArgs.keys():
+            axisArgs[kwarg] = kwargs[kwarg]
+            kwargDels.append(kwarg)
+    for kwargDel in kwargDels:
+        kwargs.pop(kwargDel)
 
     rasterPlotter = ScatterPlotter(data=scatterData, axis=axis, **axisArgs, **kwargs)
     rasterPlotter.type = 'raster'
-    rasterPlot = rasterPlotter.plot(**axisArgs)
 
     if legend:
 
@@ -90,4 +97,4 @@ def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, orderInve
 
     rasterPlot = rasterPlotter.plot(**axisArgs)
 
-    return rasterPlotter
+    return rasterPlot

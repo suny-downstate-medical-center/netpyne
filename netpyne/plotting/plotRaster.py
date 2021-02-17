@@ -5,7 +5,13 @@ from ..analysis.utils import exception
 from .plotter import colorList, ScatterPlotter
 
 #@exception
-def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, orderInverse=False, popColors=None, colorList=colorList, returnPlotter=False, **kwargs):
+def plotRaster(rasterData=None, axis=None, legend=True, popLabels=None, popColors=None, colorList=colorList, orderInverse=False, returnPlotter=False, **kwargs):
+    """
+    prepare Raster
+    ['include', 'sim', 'timeRange', 'maxSpikes', 'orderBy', 'popRates', 'saveData', 'fileName', 'fileDesc', 'fileType']
+
+    include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8, orderBy='gid', popRates=True, saveData=False, fileName=None, fileDesc=None, fileType=None
+    """
 
     if rasterData is None:
         from .. import sim
@@ -13,24 +19,34 @@ def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, orderInve
 
     print('Plotting raster...')
 
-    dataKeys = ['spkTimes', 'spkInds', 'cellGids', 'numNetStims', 'include', 'timeRange', 'maxSpikes', 'orderBy', 'popLabels', 'gidPops', 'axisArgs', 'legendLabels']
+    dataKeys = ['spkTimes', 'spkInds', 'spkPops', 'cellGids', 'numNetStims', 'include', 'timeRange', 'maxSpikes', 'orderBy', 'popLabels', 'axisArgs', 'legendLabels']
 
-    popLabels = rasterData['popLabels']
-    spkInds = rasterData['spkInds']
     spkTimes = rasterData['spkTimes']
-    spkColors = None
+    spkInds = rasterData['spkInds']
+    spkPops = rasterData.get('spkPops')
 
+    if not popLabels:
+        if 'popLabels' in rasterData:
+            popLabels = rasterData['popLabels']
+        elif spkPops:
+            popLabels = [str(spkPop) for spkPop in list(set(spkPops))]
+        else:
+            popLabels = ['Population']
+            spkPops = ['Population' for spkInd in spkInds]
+    
     # dict with color for each pop
     popColorsTemp = {popLabel: colorList[ipop%len(colorList)] for ipop, popLabel in enumerate(popLabels)} 
     if popColors: 
         popColorsTemp.update(popColors)
     popColors = popColorsTemp
     
-    if len(rasterData['cellGids']) > 0:
-        cellGids = rasterData['cellGids']
-        gidPops = rasterData['gidPops']
-        gidColors = {cellGid: popColors[gidPops[cellGid]] for cellGid in cellGids}  
-        spkColors = [gidColors[spkInd] for spkInd in spkInds]
+    cellGids = rasterData.get('cellGids')
+    if not cellGids:
+        cellGids = list(set(spkInds))
+
+    #spkColors = [popColors[0] for spkInd in spkInds]
+    gidColors = {cellGid: popColors[spkPops[cellGid]] for cellGid in cellGids}  
+    spkColors = [gidColors[spkInd] for spkInd in spkInds]
 
     scatterData = {}
     scatterData['x'] = spkTimes
@@ -48,14 +64,14 @@ def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, orderInve
         if kwarg in scatterData:
             scatterData[kwarg] = kwargs[kwarg]
 
-    axisArgs = rasterData['axisArgs']
-
+    axisArgs = rasterData.get('axisArgs')
     if not axisArgs:
         axisArgs = {}
         axisArgs['title'] = 'Raster Plot of Spiking'
         axisArgs['xlabel'] = 'Time (ms)'
         axisArgs['ylabel'] = 'Cells'
 
+    # check kwargs for axis arguments
     kwargDels = []
     for kwarg in kwargs:
         if kwarg in axisArgs.keys():
@@ -64,17 +80,18 @@ def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, orderInve
     for kwargDel in kwargDels:
         kwargs.pop(kwargDel)
 
+    # create plotter object
     rasterPlotter = ScatterPlotter(data=scatterData, axis=axis, **axisArgs, **kwargs)
     rasterPlotter.type = 'raster'
 
+    # add legend
     if legend:
 
-        legendLabels = rasterData['legendLabels']
-        popLabels = rasterData['popLabels']
+        legendLabels = rasterData.get('legendLabels')
 
         if popLabels:
             if not popColors:
-                colorList = rasterPlotter.colorList
+                colorList = colorList
                 popColors = {popLabel: colorList[ipop % len(colorList)] for ipop, popLabel in enumerate(popLabels)}
 
         labels = []
@@ -96,8 +113,13 @@ def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, orderInve
 
         rasterPlotter.addLegend(handles, labels, **legendKwargs)
 
-        rightOffset = 0.8 if popRates else 0.9
-        maxLabelLen = max([len(label) for label in rasterData['popLabels']])
+        popRates = False
+        if 'popRates' in kwargs:
+            popRates = kwargs['popRates']
+    
+        #rightOffset = 0.8 if popRates else 0.9
+        rightOffset = 0.8
+        maxLabelLen = max([len(label) for label in popLabels])
         rasterPlotter.fig.subplots_adjust(right=(rightOffset-0.012*maxLabelLen))
 
     if orderInverse: 

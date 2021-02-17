@@ -1,11 +1,11 @@
 # Generate a raster plot
 
 import matplotlib.patches as mpatches
-from ..analysis.utils import colorList, exception
-from .plotter import ScatterPlotter
+from ..analysis.utils import exception
+from .plotter import colorList, ScatterPlotter
 
 #@exception
-def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, orderInverse=False, popColors=None, **kwargs):
+def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, orderInverse=False, popColors=None, colorList=colorList, returnPlotter=False, **kwargs):
 
     if rasterData is None:
         from .. import sim
@@ -74,6 +74,7 @@ def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, orderInve
 
         if popLabels:
             if not popColors:
+                colorList = rasterPlotter.colorList
                 popColors = {popLabel: colorList[ipop % len(colorList)] for ipop, popLabel in enumerate(popLabels)}
 
         labels = []
@@ -103,4 +104,7 @@ def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, orderInve
 
     rasterPlot = rasterPlotter.plot(**axisArgs)
 
-    return rasterPlot
+    if returnPlotter:
+        return rasterPlotter
+    else:
+        return rasterPlot

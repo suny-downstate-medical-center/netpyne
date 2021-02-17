@@ -26,7 +26,7 @@ except NameError:
 
 import pandas as pd
 from numbers import Number
-from .utils import colorList, exception, getCellsInclude, getSpktSpkid, saveData
+from .utils import exception, getCellsInclude, getSpktSpkid, saveData
 
 
 #@exception

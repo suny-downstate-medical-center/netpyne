@@ -51,7 +51,7 @@ class GeneralPlotter:
             self.fig = plt.gcf()
 
 
-    def saveData(self, fileName=None, fileDesc=None, fileType='pkl', sim=None, **kwargs):
+    def saveData(self, fileName=None, fileDesc=None, fileType='json', sim=None, **kwargs):
 
         from ..analysis import saveData as saveFigData
 

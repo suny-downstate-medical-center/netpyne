@@ -4,13 +4,165 @@ import matplotlib.patches as mpatches
 from ..analysis.utils import exception
 from .plotter import colorList, ScatterPlotter
 
-#@exception
+@exception
 def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabels=None, colorList=colorList, orderInverse=False, returnPlotter=False, **kwargs):
     """
-    prepare Raster
-    ['include', 'sim', 'timeRange', 'maxSpikes', 'orderBy', 'popRates', 'saveData', 'fileName', 'fileDesc', 'fileType']
+    Function to produce a raster plot of cell spiking, optionally grouped by population
 
-    include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8, orderBy='gid', popRates=True, saveData=False, fileName=None, fileDesc=None, fileType=None
+    Parameters
+    ----------
+    rasterData : list, tuple, dict
+        The data necessary to plot the raster.  If a list or a tuple, the first item should be a list of spike times and the second item should be a list the same length of spike indices (the id of the cell corresponding to the spike time).  Optionally, the third item may be a list with of string population labels corresponding to the list index (this list must be at least as long as the largest spike index).
+        If rasterData is a dictionary, it must have keys 'spkTimes' and 'spkInds' and may optionally have 'indPops'.
+        **Default:** ``None`` uses analysis.prepareRaster to produce rasterData using the current sim.
+
+    axis : matplotlib axis
+        The axis to plot into, allowing overlaying of plots.
+        **Default:** ``None`` produces a new figure and axis
+
+    legend : bool
+        Whether or not to add a legend to the plot.
+        **Default:** ``True`` adds a legend
+
+    popColors : list
+        A list of colors to use for the populations.  Must be the same length as the number of populations (i.e. the number of unique strings in indPop).
+        **Default:** ``None`` draws from the NetPyNE default colorList
+
+    popLabels : list
+        A list of strings with alternate names for the populations.  Must be the same length as the number of populations (i.e. the number of unique strings in indPop).
+        **Default:** ``None`` uses the names from indPop
+
+    colorList : list
+        A list of colors to draw from in plotting.
+        **Default:** NetPyNE default colorList
+
+    orderInverse : bool
+        Whether or not to invert the y axis (useful if populations are defined top-down).
+        **Default:** ``False`` does not invert the y axis
+
+    returnPlotter : bool
+        Whether to return the figure or the NetPyNE plotter object.
+        **Default:** ``False`` returns the figure
+
+    NetPyNE kwargs
+    --------------
+    sim : NetPyNE sim object
+        **Default:** ``None`` uses the current NetPyNE sim object
+
+    include : str, int, list
+        Cells and/or NetStims to return information for
+        **Default:** 'allCells' includes all cells
+        **Options:** 
+        (1) 'all' includes all cells and all NetStims, 
+        (2) 'allNetStims' includes all NetStims but no cells, 
+        (3) a string which matches a pop name includes all cells in that pop,
+        (4) a string which matches a NetStim name includes that NetStim, 
+        (5) an int includes the cell with that global identifier (GID), 
+        (6) a list of ints includes the cells with those GIDS,
+        (7) a list with two items, the first of which is a string matching a pop name and the second of which is an int or a list of ints, includes the relative cell(s) from that population (e.g. ('popName', [0, 1]) includes the first two cells in popName, which are not likely to be the cells with GID 0 and 1)
+
+    timeRange : list
+        Time range to include in the raster: [min, max]
+        **Default:** ``None`` uses the entire simulation
+
+    maxSpikes : int
+        The maximum number of spikes to include (by reducing the max time range)
+        **Default:** ``1e8``
+
+    orderBy : str
+        How to order the cells along the y axis
+        **Default:** ``'gid'``
+        **Options:** any NetPyNe cell tag, e.g. 'pop', 'x', 'ynorm' 
+
+    popRates : bool
+        Whether to include the spiking rates in the plot title/legend
+         **Default:** ``True`` includes detailed pop information on plot
+         **Options:** ``False`` only includes pop names,
+         ``'minimal'`` includes only spiking rates on legend
+
+    saveData : bool
+        Whether to save to a file the data used to create the figure
+        **Default:** ``False`` does not save the data to file
+
+    fileName : str
+        If saveData is True, this is the name of the saved file
+        **Default:** ``None`` a file name is automatically generated
+
+    fileDesc : str
+        An additional string to include in the file name just before the file extension
+        **Default:** ``None``
+
+    fileType : str
+        The type of file to save the data to
+        **Default:** ``json`` saves the file in JSON format
+        **Options:** ``pkl`` saves the file in Python Pickle format
+
+    Axis kwargs
+    -----------
+    title : str
+        **Default:** 'Raster Plot of Spiking'
+    xlabel : str
+        **Default:** 'Time (ms)'
+    ylabel : str
+        **Default:** 'Cells'
+    
+    Plot kwargs
+    -----------
+    s : int
+        Marker size
+        **Default:** 5
+
+    marker : str
+        Marker symbol
+        **Default:** ``'|'``
+
+    linewidth : int
+        Line width
+        **Default:** ``2``
+
+    cmap
+        **Default:** ``None``
+    
+    norm
+        **Default:** ``None``
+    
+    alpha
+        **Default:** ``None``
+    
+    linewidths
+        **Default:** ``None``
+
+    Legend kwargs
+    -------------
+    title : str
+        **Default:** ``'Populations'``
+        **Options:** ``None`` don't add a legend title
+
+    bbox_to_anchor : tuple
+        **Default:** (1.025, 1)
+
+    loc : int, str
+        **Default:** ``2``
+
+    borderaxespad : float
+        **Default:** ``0.0``
+
+    handlelength : float
+        **Default:** ``0.5``
+
+    fontsize: int, str
+        **Default:** ``small``
+
+    Returns
+    -------
+    rasterPlot : matplotlib figure
+        Returns the NetPyNE plotter object used if returnPlotter is True
+
+    Examples
+    --------
+
+    
+
     """
 
     if rasterData is None:
@@ -133,6 +285,7 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
     
         rightOffset = 0.8
         maxLabelLen = max([len(label) for label in popLabels])
+        # Need to improve offset:
         rasterPlotter.fig.subplots_adjust(right=(rightOffset-0.012*maxLabelLen))
 
     if orderInverse: 

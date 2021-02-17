@@ -18,6 +18,8 @@
 
 - Added cfg.use_fast_imem to enable recording membrane voltage via seg.i_membrane_
 
+- Added swc import ability to importCell (and thus importCellParams)
+
 **Bug fixes** 
 
 - Made rate_b be positional instead of keyword argument in rxd multiCompartmentReaction
@@ -25,6 +27,8 @@
 - Check if _morphSegCoords exists in population before using
 
 - Fixed bug to avoid recursive creating of synMechs when loading with cfg.oneSynPerNetcon=True
+
+- Fixed an issue with running rxd code twice
 
 # Version 0.9.8
 

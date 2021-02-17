@@ -161,10 +161,11 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
 
     popLabelRates = [popLabel + ' (%.3g Hz)' % (avgRates[popLabel]) for popLabel in popLabels if popLabel in avgRates]
 
-    axisArgs = {'xlabel': 'Time (ms)', 'ylabel': ylabelText, 'title': 'Raster plot of spiking'}
+    axisArgs = {'xlabel': 'Time (ms)', 
+                'ylabel': ylabelText, 
+                'title': 'cells=%i   syns/cell=%0.1f   rate=%0.1f Hz' % (numCells, connsPerCell, firingRate)}
 
     figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'cellGids': cellGids, 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'popLabels': popLabels, 'popLabelRates': popLabelRates, 'gidPops': gidPops, 'axisArgs': axisArgs}
-    
 
     if saveData:
         saveData(figData, fileName=fileName, fileDesc=fileDesc, fileType=fileType, sim=sim)

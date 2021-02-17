@@ -16,6 +16,8 @@
 
 - Added a new tutorial going through use of NetPyNE with virtual environments and Jupyter notebooks
 
+- Added cfg.use_fast_imem to enable recording membrane voltage via seg.i_membrane_
+
 **Bug fixes** 
 
 - Made rate_b be positional instead of keyword argument in rxd multiCompartmentReaction

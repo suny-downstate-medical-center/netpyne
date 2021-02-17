@@ -41,6 +41,7 @@ def preRun():
     sim.cvode.active(int(sim.cfg.cvode_active))
     sim.cvode.cache_efficient(int(sim.cfg.cache_efficient))
     sim.cvode.atol(sim.cfg.cvode_atol)
+    sim.cvode.use_fast_imem(sim.cfg.use_fast_imem)
 
     # set h global params
     sim.setGlobals()

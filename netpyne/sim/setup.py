@@ -324,7 +324,8 @@ def setupRecordLFP():
             cell.imembPtr.ptr_update_callback(cell.setImembPtr)   # used for gathering an array of  i_membrane values from the pointer vector
             cell.imembVec = h.Vector(nseg)
 
-        sim.cvode.use_fast_imem(1)   # make i_membrane_ a range variable
+        sim.cvode.use_fast_imem(True)   # make i_membrane_ a range variable
+        sim.cfg.use_fast_imem = True
 
 
 #------------------------------------------------------------------------------

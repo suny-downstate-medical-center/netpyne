@@ -30,6 +30,8 @@
 
 - Fixed an issue with running rxd code twice
 
+- Wait until all subprocesses have ended before completing mpi_bulletin batches 
+
 # Version 0.9.8
 
 **New features**

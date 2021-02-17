@@ -48,7 +48,7 @@ pc = h.ParallelContext() # use bulletin board master/slave
 # -------------------------------------------------------------------------------
 
 # func needs to be outside of class
-def runJob(script, cfgSavePath, netParamsSavePath):
+def runJob(script, cfgSavePath, netParamsSavePath, processes):
     """
     Function for/to <short description of `netpyne.batch.grid.runJob`>
 
@@ -75,6 +75,7 @@ def runJob(script, cfgSavePath, netParamsSavePath):
     print(command+'\n')
     proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
     print(proc.stdout.read().decode())
+    processes.append(proc)
 
 
 
@@ -166,6 +167,8 @@ def gridSearch(self, pc):
     if self.runCfg.get('type', None) == 'mpi_bulletin':
         for iworker in range(int(pc.nhost())):
             pc.runworker()
+
+    processes = []
 
     for iCombG, pCombG in zip(indexCombGroups, valueCombGroups):
         for iCombNG, pCombNG in zip(indexCombinations, valueCombinations):
@@ -332,7 +335,7 @@ wait
                     jobName = self.saveFolder+'/'+simLabel
                     print('Submitting job ',jobName)
                     # master/slave bulletin board schedulling of jobs
-                    pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath)
+                    pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath, processes)
 
                 else:
                     print(self.runCfg)
@@ -346,3 +349,7 @@ wait
     print("-" * 80)
     while pc.working():
         sleep(sleepInterval)
+    
+    while any([proc.poll() is None for proc in processes]):
+        sleep(sleepInterval)
+    

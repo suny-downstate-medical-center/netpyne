@@ -43,17 +43,15 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
         if 'popLabels' in rasterData:
             popLabels = rasterData['popLabels']
         elif indPops:
-            #popLabels = [str(spkPop) for spkPop in list(set(indPops))]
             popLabels = list(dict.fromkeys(indPops))
         else:
             popLabels = ['Population']
             indPops = ['Population' for spkInd in spkInds]
     elif indPops:
-        spkPopLabels = list(set([indPop for indPop in indPops]))
-        #print(spkPopLabels)
-        #list(dict.fromkeys(items))
-        #spkPopLabels = list(set(indPops))
-        indPops = [popLabels[spkPopLabels.index(spkPop)] for spkPop in indPops]
+        indPopLabels = list(dict.fromkeys(indPops))
+        if len(indPopLabels) != len(popLabels):
+            raise Exception('In plotRaster, the length of popLabels must equal the number of unique pops in indPops.')
+        indPops = [popLabels[indPopLabels.index(indPop)] for indPop in indPops]
 
     # dict with color for each pop
     popColorsTemp = {popLabel: colorList[ipop%len(colorList)] for ipop, popLabel in enumerate(popLabels)} 

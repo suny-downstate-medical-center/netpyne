@@ -13,7 +13,7 @@ def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, orderInve
 
     print('Plotting raster...')
 
-    dataKeys = ['spkTimes', 'spkInds', 'cellGids', 'numNetStims', 'include', 'timeRange', 'maxSpikes', 'orderBy', 'popLabels', 'popLabelRates', 'gidPops', 'axisArgs']
+    dataKeys = ['spkTimes', 'spkInds', 'cellGids', 'numNetStims', 'include', 'timeRange', 'maxSpikes', 'orderBy', 'popLabels', 'gidPops', 'axisArgs', 'legendLabels']
 
     popLabels = rasterData['popLabels']
     spkInds = rasterData['spkInds']
@@ -21,7 +21,7 @@ def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, orderInve
     spkColors = None
 
     # dict with color for each pop
-    popColorsTmp = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} 
+    popColorsTmp = {popLabel: colorList[ipop%len(colorList)] for ipop, popLabel in enumerate(popLabels)} 
     if popColors: 
         popColorsTmp.update(popColors)
     popColors = popColorsTmp
@@ -69,15 +69,19 @@ def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, orderInve
 
     if legend:
 
-        popLabels = rasterData['popLabels']
+        legendLabels = rasterData['legendLabels']
+        if legendLabels:
+            popLabels = legendLabels
+        else:
+            popLabels = rasterData['popLabels']
         if popLabels:
             popColors = {popLabel: colorList[ipop % len(colorList)] for ipop, popLabel in enumerate(popLabels)}
 
         labels = []
         handles = []
         for ipop, popLabel in enumerate(popLabels):
-            labels.append(rasterData['popLabelRates'][ipop] if popRates else popLabel)
-            handles.append(mpatches.Rectangle((0,0),1,1,fc=popColors[popLabel]))
+            labels.append(popLabel)
+            handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=popColors[popLabel]))
 
         legendKwargs = {}
         legendKwargs['bbox_to_anchor'] = (1.025, 1)

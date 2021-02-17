@@ -146,6 +146,7 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
     firingRate = float(totalSpikes)/(numCells+numNetStims)/(timeRange[1]-timeRange[0])*1e3 if totalSpikes>0 else 0
     connsPerCell = totalConnections/float(numCells) if numCells>0 else 0
 
+    legendLabels = []
     if popRates:
         avgRates = {}
         tsecs = (timeRange[1]-timeRange[0])/1e3
@@ -159,13 +160,13 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
             popNumCells[-1] = numNetStims
             avgRates['NetStims'] = len([spkid for spkid in sel['spkind'].iloc[numCellSpks:]])/numNetStims/tsecs
 
-    popLabelRates = [popLabel + ' (%.3g Hz)' % (avgRates[popLabel]) for popLabel in popLabels if popLabel in avgRates]
+        legendLabels = [popLabel + ' (%.3g Hz)' % (avgRates[popLabel]) for popLabel in popLabels if popLabel in avgRates]
 
     axisArgs = {'xlabel': 'Time (ms)', 
                 'ylabel': ylabelText, 
                 'title': 'cells=%i   syns/cell=%0.1f   rate=%0.1f Hz' % (numCells, connsPerCell, firingRate)}
 
-    figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'cellGids': cellGids, 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'popLabels': popLabels, 'popLabelRates': popLabelRates, 'gidPops': gidPops, 'axisArgs': axisArgs}
+    figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'cellGids': cellGids, 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'popLabels': popLabels, 'gidPops': gidPops, 'axisArgs': axisArgs, 'legendLabels': legendLabels}
 
     if saveData:
         saveData(figData, fileName=fileName, fileDesc=fileDesc, fileType=fileType, sim=sim)

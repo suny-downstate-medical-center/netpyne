@@ -21,10 +21,10 @@ def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, orderInve
     spkColors = None
 
     # dict with color for each pop
-    popColorsTmp = {popLabel: colorList[ipop%len(colorList)] for ipop, popLabel in enumerate(popLabels)} 
+    popColorsTemp = {popLabel: colorList[ipop%len(colorList)] for ipop, popLabel in enumerate(popLabels)} 
     if popColors: 
-        popColorsTmp.update(popColors)
-    popColors = popColorsTmp
+        popColorsTemp.update(popColors)
+    popColors = popColorsTemp
     
     if len(rasterData['cellGids']) > 0:
         cellGids = rasterData['cellGids']
@@ -87,11 +87,12 @@ def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, orderInve
             handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=popColors[popLabel]))
 
         legendKwargs = {}
+        legendKwargs['title'] = 'Populations'
         legendKwargs['bbox_to_anchor'] = (1.025, 1)
         legendKwargs['loc'] = 2
         legendKwargs['borderaxespad'] = 0.0
-        legendKwargs['handlelength'] = 1.0
-        legendKwargs['fontsize'] = 'medium'
+        legendKwargs['handlelength'] = 0.5
+        legendKwargs['fontsize'] = 'small'
 
         rasterPlotter.addLegend(handles, labels, **legendKwargs)
 

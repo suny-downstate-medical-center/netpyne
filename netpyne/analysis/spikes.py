@@ -112,12 +112,12 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
             sel = pd.concat([sel, ns])
             numNetStims += 1
         
-    if len(cellGids)>0 and numNetStims:
+    if len(cellGids) > 0 and numNetStims:
         ylabelText = ylabelText + ' and NetStims (at the end)'
     elif numNetStims:
         ylabelText = ylabelText + 'NetStims'
 
-    if numCellSpks+numNetStims == 0:
+    if numCellSpks + numNetStims == 0:
         print('No spikes available to plot raster')
         return None
 
@@ -139,18 +139,22 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
 
     # Plot stats
     gidPops = df['pop'].tolist()
+    conns = df['conns'].tolist()
     popNumCells = [float(gidPops.count(pop)) for pop in popLabels] if numCellSpks else [0] * len(popLabels)
     totalSpikes = len(sel)
+    cellNumConns = [len(conn) for conn in conns]
+    popNumConns = [sum([cellNumConn for cellIndex, cellNumConn in enumerate(cellNumConns) if gidPops[cellIndex] == pop]) for pop in popLabels]
     totalConnections = sum([len(conns) for conns in df['conns']])
     numCells = len(cells)
     firingRate = float(totalSpikes)/(numCells+numNetStims)/(timeRange[1]-timeRange[0])*1e3 if totalSpikes>0 else 0
     connsPerCell = totalConnections/float(numCells) if numCells>0 else 0
+    popConnsPerCell = [popNumConns[popIndex]/popNumCells[popIndex] for popIndex, pop in enumerate(popLabels)]
 
     legendLabels = []
     if popRates:
         avgRates = {}
         tsecs = (timeRange[1]-timeRange[0])/1e3
-        for i,(pop, popNum) in enumerate(zip(popLabels, popNumCells)):
+        for i, (pop, popNum) in enumerate(zip(popLabels, popNumCells)):
             if numCells > 0 and pop != 'NetStims':
                 if numCellSpks == 0:
                     avgRates[pop] = 0
@@ -160,11 +164,11 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
             popNumCells[-1] = numNetStims
             avgRates['NetStims'] = len([spkid for spkid in sel['spkind'].iloc[numCellSpks:]])/numNetStims/tsecs
 
-        legendLabels = [popLabel + ' (%.3g Hz)' % (avgRates[popLabel]) for popLabel in popLabels if popLabel in avgRates]
+        legendLabels = [popLabel + '\n  cells: %i\n  syn/cell: %0.1f\n  rate: %.3g Hz' % (popNumCells[popIndex], popConnsPerCell[popIndex], avgRates[popLabel])  for popIndex, popLabel in enumerate(popLabels) if popLabel in avgRates]
 
     axisArgs = {'xlabel': 'Time (ms)', 
                 'ylabel': ylabelText, 
-                'title': 'cells=%i   syns/cell=%0.1f   rate=%0.1f Hz' % (numCells, connsPerCell, firingRate)}
+                'title': 'cells: %i   syn/cell: %0.1f   rate: %0.1f Hz' % (numCells, connsPerCell, firingRate)}
 
     figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'cellGids': cellGids, 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'popLabels': popLabels, 'gidPops': gidPops, 'axisArgs': axisArgs, 'legendLabels': legendLabels}
 

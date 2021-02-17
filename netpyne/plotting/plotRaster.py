@@ -7,7 +7,8 @@ from .plotter import colorList, ScatterPlotter
 @exception
 def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabels=None, colorList=colorList, orderInverse=False, returnPlotter=False, **kwargs):
     """
-    Function to produce a raster plot of cell spiking, optionally grouped by population
+    Function to produce a raster plot of cell spiking grouped by population
+
 
     Parameters
     ----------
@@ -43,6 +44,7 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
     returnPlotter : bool
         Whether to return the figure or the NetPyNE plotter object.
         **Default:** ``False`` returns the figure
+
 
     NetPyNE kwargs
     --------------
@@ -97,15 +99,19 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
         **Default:** ``json`` saves the file in JSON format
         **Options:** ``pkl`` saves the file in Python Pickle format
 
+
     Axis kwargs
     -----------
     title : str
         **Default:** 'Raster Plot of Spiking'
+    
     xlabel : str
         **Default:** 'Time (ms)'
+    
     ylabel : str
         **Default:** 'Cells'
     
+
     Plot kwargs
     -----------
     s : int
@@ -132,6 +138,7 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
     linewidths
         **Default:** ``None``
 
+
     Legend kwargs
     -------------
     title : str
@@ -153,10 +160,12 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
     fontsize: int, str
         **Default:** ``small``
 
+
     Returns
     -------
     rasterPlot : matplotlib figure
         Returns the NetPyNE plotter object used if returnPlotter is True
+
 
     Examples
     --------

@@ -19,12 +19,12 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
 
     print('Plotting raster...')
 
-    dataKeys = ['spkTimes', 'spkInds', 'spkPops', 'cellGids', 'numNetStims', 'include', 'timeRange', 'maxSpikes', 'orderBy', 'popLabels', 'axisArgs', 'legendLabels']
+    dataKeys = ['spkTimes', 'spkInds', 'indPop', 'cellGids', 'numNetStims', 'include', 'timeRange', 'maxSpikes', 'orderBy', 'popLabels', 'axisArgs', 'legendLabels']
 
     if type(rasterData) == dict:
         spkTimes = rasterData['spkTimes']
         spkInds = rasterData['spkInds']
-        spkPops = rasterData.get('spkPops')
+        indPop = rasterData.get('indPop')
         cellGids = rasterData.get('cellGids')
         axisArgs = rasterData.get('axisArgs')
         legendLabels = rasterData.get('legendLabels')
@@ -32,9 +32,9 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
         spkTimes = rasterData[0]
         spkInds = rasterData[1]
         try:
-            spkPops = rasterData[2]
+            indPop = rasterData[2]
         except:
-            spkPops = None
+            indPop = None
         cellGids = None
         axisArgs = None
         legendLabels = None
@@ -42,14 +42,14 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
     if not popLabels:
         if 'popLabels' in rasterData:
             popLabels = rasterData['popLabels']
-        elif spkPops:
-            popLabels = [str(spkPop) for spkPop in list(set(spkPops))]
+        elif indPop:
+            popLabels = [str(spkPop) for spkPop in list(set(indPop))]
         else:
             popLabels = ['Population']
-            spkPops = ['Population' for spkInd in spkInds]
-    elif spkPops:
-        spkPopLabels = list(set(spkPops))
-        spkPops = [popLabels[spkPopLabels.index(spkPop)] for spkPop in spkPops]
+            indPop = ['Population' for spkInd in spkInds]
+    elif indPop:
+        spkPopLabels = list(set(indPop))
+        indPop = [popLabels[spkPopLabels.index(spkPop)] for spkPop in indPop]
 
     # dict with color for each pop
     popColorsTemp = {popLabel: colorList[ipop%len(colorList)] for ipop, popLabel in enumerate(popLabels)} 
@@ -60,7 +60,7 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
     if not cellGids:
         cellGids = list(set(spkInds))
 
-    gidColors = {cellGid: popColors[spkPops[cellGid]] for cellGid in cellGids}  
+    gidColors = {cellGid: popColors[indPop[cellGid]] for cellGid in cellGids}  
     spkColors = [gidColors[spkInd] for spkInd in spkInds]
 
     scatterData = {}

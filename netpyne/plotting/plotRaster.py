@@ -2,7 +2,7 @@
 
 import matplotlib.patches as mpatches
 from ..analysis.utils import exception
-from .plotter import colorList, ScatterPlotter
+from .plotter import ScatterPlotter
 
 @exception
 def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabels=None, colorList=None, orderInverse=False, returnPlotter=False, **kwargs):
@@ -275,6 +275,7 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
                 labels.append(legendLabels[ipop])
             else:
                 labels.append(popLabel)
+            # legend uses rectangles instead of markers because some markers don't show up well:
             handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=popColors[popLabel]))
 
         legendKwargs = {}
@@ -286,10 +287,6 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
         legendKwargs['fontsize'] = 'small'
 
         rasterPlotter.addLegend(handles, labels, **legendKwargs)
-
-        popRates = False
-        if 'popRates' in kwargs:
-            popRates = kwargs['popRates']
     
         rightOffset = 0.8
         maxLabelLen = max([len(label) for label in popLabels])

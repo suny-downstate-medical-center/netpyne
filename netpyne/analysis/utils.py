@@ -198,8 +198,11 @@ def getSpktSpkid(cellGids=[], timeRange=None, sim=None):
         sel = df[min:max]
     else:
         sel = df[min:max].query('spkid in @cellGids')
+
+    spktList = sel['spkt'].tolist()
+    spkidList = sel['spkid'].tolist()
     
-    return sel, sel['spkt'].tolist(), sel['spkid'].tolist()
+    return sel, spktList, spkidList
 
 
 

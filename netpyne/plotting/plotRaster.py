@@ -5,7 +5,7 @@ from ..analysis.utils import colorList, exception
 from .plotter import ScatterPlotter
 
 #@exception
-def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, orderInverse=False, **kwargs):
+def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, orderInverse=False, popColors=None, **kwargs):
 
     if rasterData is None:
         from .. import sim
@@ -13,12 +13,32 @@ def plotRaster(rasterData=None, axis=None, legend=True, popRates=True, orderInve
 
     print('Plotting raster...')
 
-    dataKeys = ['spkTimes', 'spkInds', 'spkColors', 'cellGids', 'numNetStims', 'include', 'timeRange', 'maxSpikes', 'orderBy', 'orderInverse', 'spikeHist', 'syncLines', 'popLabels', 'popLabelRates', 'popColors']
+    dataKeys = ['spkTimes', 'spkInds', 'cellGids', 'numNetStims', 'include', 'timeRange', 'maxSpikes', 'orderBy', 'popLabels', 'popLabelRates', 'gidPops']
+
+    popLabels = rasterData['popLabels']
+    spkInds = rasterData['spkInds']
+    spkTimes = rasterData['spkTimes']
+    spkColors = None
+
+
+    # dict with color for each pop
+    popColorsTmp = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} 
+    if popColors: 
+        popColorsTmp.update(popColors)
+    popColors = popColorsTmp
+    
+    if len(rasterData['cellGids']) > 0:
+        
+        cellGids = rasterData['cellGids']
+        gidPops = rasterData['gidPops']
+        gidColors = {cellGid: popColors[gidPops[cellGid]] for cellGid in cellGids}  
+        spkColors = [gidColors[spkInd] for spkInd in spkInds]
+
 
     scatterData = {}
-    scatterData['x'] = rasterData['spkTimes']
-    scatterData['y'] = rasterData['spkInds']
-    scatterData['c'] = rasterData['spkColors']
+    scatterData['x'] = spkTimes
+    scatterData['y'] = spkInds
+    scatterData['c'] = spkColors
     scatterData['s'] = 5
     scatterData['marker'] = '|'
     scatterData['linewidth'] = 2

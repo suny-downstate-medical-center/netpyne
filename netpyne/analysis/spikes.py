@@ -26,11 +26,11 @@ except NameError:
 
 import pandas as pd
 from numbers import Number
-from .utils import colorList, exception, getCellsInclude, getSpktSpkid
+from .utils import colorList, exception, getCellsInclude, getSpktSpkid, saveData
 
 
 #@exception
-def prepareRaster(popColors=None, include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8, orderBy='gid', popRates=True, saveData=None, **kwargs):
+def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8, orderBy='gid', popRates=True, saveData=False, fileName=None, fileDesc=None, fileType=None, **kwargs):
     """
     Function to prepare data for creating a raster plot
 
@@ -70,14 +70,13 @@ def prepareRaster(popColors=None, include=['allCells'], sim=None, timeRange=None
 
     df = df[keep]
 
-    popLabels = [pop for pop in sim.net.allPops if pop in df['pop'].unique()] # preserves original ordering
+    # preserves original ordering:
+    popLabels = [pop for pop in sim.net.allPops if pop in df['pop'].unique()] 
+    
     if netStimLabels: 
         popLabels.append('NetStims')
-    popColorsTmp = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
-    if popColors: popColorsTmp.update(popColors)
-    popColors = popColorsTmp
+    
     if len(cellGids) > 0:
-        gidColors = {cell['gid']: popColors[cell['tags']['pop']] for cell in cells}  # dict with color for each gid
         try:
             sel, spkts, spkgids = getSpktSpkid(cellGids=[] if include == ['allCells'] else cellGids, timeRange=timeRange) # using [] is faster for all cells
         except:
@@ -85,8 +84,7 @@ def prepareRaster(popColors=None, include=['allCells'], sim=None, timeRange=None
             print((sys.exc_info()))
             spkgids, spkts = [], []
             sel = pd.DataFrame(columns=['spkt', 'spkid'])
-        sel['spkgidColor'] = sel['spkid'].map(gidColors)
-        df['gidColor'] = df['pop'].map(popColors)
+        
         df.set_index('gid', inplace=True)
 
     # Order by
@@ -95,7 +93,7 @@ def prepareRaster(popColors=None, include=['allCells'], sim=None, timeRange=None
         df = df.sort_values(by=orderBy)
         sel['spkind'] = sel['spkid'].apply(df.index.get_loc)
     else:
-        sel = pd.DataFrame(columns=['spkt', 'spkid', 'spkind'])
+        sel = pd.DataFrame(columns=['spkt', 'spkid', 'spkind', 'popind'])
         ylabelText = ''
 
     # Add NetStim spikes
@@ -134,7 +132,7 @@ def prepareRaster(popColors=None, include=['allCells'], sim=None, timeRange=None
         sel = sel.query('spkt >= @timeRange[0] and spkt <= @timeRange[1]')
 
     # Limit to maxSpikes
-    if (len(sel)>maxSpikes):
+    if (len(sel) > maxSpikes):
         print(('  Showing only the first %i out of %i spikes' % (maxSpikes, len(sel)))) # Limit num of spikes
         if numNetStims: # sort first if have netStims
             sel = sel.sort_values(by='spkt')
@@ -147,8 +145,8 @@ def prepareRaster(popColors=None, include=['allCells'], sim=None, timeRange=None
     totalSpikes = len(sel)
     totalConnections = sum([len(conns) for conns in df['conns']])
     numCells = len(cells)
-    firingRate = float(totalSpikes)/(numCells+numNetStims)/(timeRange[1]-timeRange[0])*1e3 if totalSpikes>0 else 0 # Calculate firing rate
-    connsPerCell = totalConnections/float(numCells) if numCells>0 else 0 # Calculate the number of connections per cell
+    firingRate = float(totalSpikes)/(numCells+numNetStims)/(timeRange[1]-timeRange[0])*1e3 if totalSpikes>0 else 0
+    connsPerCell = totalConnections/float(numCells) if numCells>0 else 0
 
     if popRates:
         avgRates = {}
@@ -165,21 +163,17 @@ def prepareRaster(popColors=None, include=['allCells'], sim=None, timeRange=None
 
     popLabelRates = [popLabel + ' (%.3g Hz)' % (avgRates[popLabel]) for popLabel in popLabels if popLabel in avgRates]
 
-    # switch spkgidcolor to pop
-
-    figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'spkColors': sel['spkgidColor'].tolist(), 'cellGids': cellGids, 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'popLabels': popLabels, 'popLabelRates': popLabelRates}
+    figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'cellGids': cellGids, 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'popLabels': popLabels, 'popLabelRates': popLabelRates, 'gidPops': gidPops}
     
 
-    # save figure data
     if saveData:
-        # Need to replace _saveFigData
-        _saveFigData(figData, saveData, 'raster')
-
+        saveData(figData, fileName=fileName, fileDesc=fileDesc, fileType=fileType, sim=sim)
+    
     return figData
 
 
 
-@exception
+#@exception
 def prepareSpikeHist(include=['eachPop', 'allCells'], sim=None, timeRange=None, binSize=5, overlay=True, graphType='line', measure='rate', norm=False, smooth=None, filtFreq=None, filtOrder=3, axis=True, popColors=None, figSize=(10,8), dpi=100, saveData=None, saveFig=None, showFig=True, **kwargs):
     """
     Function for/to <short description of `netpyne.analysis.spikes.plotSpikeHist`>

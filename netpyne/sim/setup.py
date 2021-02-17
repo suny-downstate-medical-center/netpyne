@@ -334,8 +334,6 @@ def setupRecordLFP():
 def setupRecording():
     """
     Function for/to <short description of `netpyne.sim.setup.setupRecording`>
-
-
     """
 
 
@@ -380,6 +378,10 @@ def setupRecording():
 
     # intrinsic cell variables recording
     if sim.cfg.recordTraces:
+
+        # Set cvode use_fast_imem since might be needed to record i_membrane_ 
+        sim.cvode.use_fast_imem(sim.cfg.use_fast_imem)
+
         # if have rxd objects need to run h.finitialize() before setting up recording so pointers available
         if len(sim.net.params.rxdParams) > 0:
             h.finitialize()

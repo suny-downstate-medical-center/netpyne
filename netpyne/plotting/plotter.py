@@ -64,13 +64,13 @@ class GeneralPlotter:
     def formatAxis(self, **kwargs):
         
         if 'title' in kwargs:
-            self.axis.set_title(kwargs['title'], fontdict=None, loc=None, pad=None, y=None)
+            self.axis.set_title(kwargs['title'])
 
         if 'xlabel' in kwargs:
-            self.axis.set_xlabel(kwargs['xlabel'], fontdict=None, loc=None, labelpad=None)
+            self.axis.set_xlabel(kwargs['xlabel'])
 
         if 'ylabel' in kwargs:
-            self.axis.set_ylabel(kwargs['ylabel'], fontdict=None, loc=None, labelpad=None)
+            self.axis.set_ylabel(kwargs['ylabel'])
 
         # Set fontSize
 
@@ -151,6 +151,9 @@ class GeneralPlotter:
             self.saveData(**kwargs)
         if self.options['saveFig']:
             self.saveFig(**kwargs)
+        if 'saveFig' in kwargs:
+            if kwargs['saveFig']:
+                self.saveFig(**kwargs)
         if self.options['showFig']:
             self.showFig(**kwargs)
         else:

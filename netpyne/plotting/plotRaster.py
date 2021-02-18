@@ -4,7 +4,7 @@ import matplotlib.patches as mpatches
 from ..analysis.utils import exception
 from .plotter import ScatterPlotter
 
-@exception
+#@exception
 def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabels=None, colorList=None, orderInverse=False, returnPlotter=False, **kwargs):
     """
     Function to produce a raster plot of cell spiking, grouped by population

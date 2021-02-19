@@ -159,7 +159,7 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,spacing_u
     # time step used in simulation recording 
     if dt is None:
       dt = sim.cfg.recordStep                         # units: ms 
-    print('dt = ' + str(dt))
+    print('dt = ' + str(dt) + ' (units: ms)')
 
 
     sim_data_categories = sim.allSimData.keys()
@@ -174,7 +174,7 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,spacing_u
 
     # Sampling rate of data recording during the simulation 
     if sampr is None:
-      sampr = 1./sim.cfg.recordStep
+      sampr = 1./(sim.cfg.recordStep/1000.0) # divide by 1000.0 to turn denominator from units of ms to s
 
 
     # Spacing between electrodes --> convert from micron to mm 
@@ -213,7 +213,7 @@ def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,spacing_u
       csd_data[i] = {}        # e.g. csd['json_input_data'] = {}
 
       if sampr is None:
-        csd_data[i]['sampr'] = 1./data[i]['simConfig']['recordStep']
+        csd_data[i]['sampr'] = 1./((data[i]['simConfig']['recordStep'])/1000.0) # assumes that data[i]['simConfig']['recordStep'] is in units of ms
         sampr = csd_data[i]['sampr']
       else:
         csd_data[i]['sampr'] = sampr
@@ -493,6 +493,7 @@ def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=
   xmin = int(X[0])
   xmax = int(X[-1]) + 1  #int(sim.allSimData['t'][-1])
   ymin = 0
+  #ymax = 21
   ## DEALT WITH ymax IN ALL CONDITIONS ABOVE  
   extent_xy = [xmin, xmax, ymax, ymin]
 

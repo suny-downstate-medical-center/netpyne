@@ -3,14 +3,17 @@ Module for plotting analyses
 
 """
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
+from copy import deepcopy
+import pickle, json
+import os
 
 try:
     basestring
 except NameError:
     basestring = str
 
-legendParams = ['loc', 'bbox_to_anchor', 'fontsize', 'numpoints', 'scatterpoints', 'scatteryoffsets', 'markerscale', 'markerfirst', 'frameon', 'fancybox', 'shadow', 'framealpha', 'facecolor', 'edgecolor', 'mode', 'bbox_transform', 'title', 'title_fontsize', 'borderpad', 'labelspacing', 'handlelength', 'handletextpad', 'borderaxespad', 'columnspacing', 'handler_map']
 
 colorList = [[0.42, 0.67, 0.84], [0.90, 0.76, 0.00], [0.42, 0.83, 0.59], [0.90, 0.32, 0.00],
              [0.34, 0.67, 0.67], [0.90, 0.59, 0.00], [0.42, 0.82, 0.83], [1.00, 0.85, 0.00],
@@ -21,44 +24,66 @@ colorList = [[0.42, 0.67, 0.84], [0.90, 0.76, 0.00], [0.42, 0.83, 0.59], [0.90, 
 class GeneralPlotter:
     """A class used for plotting"""
 
-    def __init__(self, data, axis=None, sim=None, options={}, **kwargs):
+    def __init__(self, data, axis=None, sim=None, rcParams=None, **kwargs):
         """
         Parameters
         ----------
-        data : dict?
+        data : dict, str
 
         axis : matplotlib axis
             The axis to plot into.  If axis is set to None, a new figure and axis are created and plotted into.  If plotting into an existing axis, more options are available: xtwin, ytwin,
         
         """
 
+        if type(data) == str:
+            if os.path.isfile(data):
+                self.data = self.loadData(data)
+            else:
+                raise Exception('In Plotter, if data is a string, it must be the path to a data file.')
+
         if not sim:
             from .. import sim
-
+        
         self.sim = sim
-        self.data = data
         self.axis = axis
-        self.options = sim.cfg.plotting
-        #self.options['addLegend'] = False
 
-        for option in options:
-            if option in self.options:
-                self.options[option] = options[option]
+        # Make a copy of the current matplotlib rcParams and update them
+        self.orig_rcParams = None
+        if rcParams:
+            self.orig_rcParams = deepcopy(mpl.rcParams)
 
+            for rcParam in rcParams:
+                if rcParam in mpl.rcParams:
+                    mpl.rcParams[rcParam] = rcParams[rcParam]
+                else:
+                    print(rcParam, 'not found in matplotlib.rcParams')
+
+        # If an axis is input, plot there; therwise make a new figure and axis
         if self.axis is None:
-            self.fig, self.axis = plt.subplots(figsize=self.options['figSize'])
+            if 'figSize' in kwargs:
+                figSize = kwargs['figSize']
+            else:
+                figSize = rcParams['figure.figsize']
+            self.fig, self.axis = plt.subplots(figsize=figSize)
         else:
             self.fig = plt.gcf()
 
 
-    def saveData(self, fileName=None, fileDesc=None, fileType='json', sim=None, **kwargs):
+    def loadData(self, fileName, fileDir=None, sim=None):
+        
+        from ..analysis import loadData
+        self.data = loadData(fileName=fileName, fileDir=fileDir, sim=None)
+        
+
+
+    def saveData(self, fileName=None, fileDesc=None, fileType='json', fileDir=None, sim=None, **kwargs):
 
         from ..analysis import saveData as saveFigData
 
         if fileDesc is None:
             fileDesc = self.type + '_data'
 
-        saveFigData(self.data, fileName=fileName, fileDesc=fileDesc, fileType=fileType, sim=sim, **kwargs)
+        saveFigData(self.data, fileName=fileName, fileDesc=fileDesc, fileType=fileType, fileDir=fileDir, sim=sim, **kwargs)
     
 
     def formatAxis(self, **kwargs):
@@ -76,7 +101,7 @@ class GeneralPlotter:
 
 
 
-    def saveFig(self, fileName=None, fileDesc=None, fileType='png', **kwargs):
+    def saveFig(self, fileName=None, fileDesc=None, fileType='png', fileDir=None, **kwargs):
         """
         'eps': 'Encapsulated Postscript',
         'jpg': 'Joint Photographic Experts Group',
@@ -110,8 +135,12 @@ class GeneralPlotter:
                 fileName = fileName.split(fileExt)[0] + fileDesc + fileExt
             else:
                 fileName = fileName + fileDesc + fileExt
+
+        if fileDir is not None:
+            fileName = os.path.join(fileDir, fileName)
         
         self.fig.savefig(fileName)
+        self.fileName = fileName
 
         return fileName
 
@@ -127,6 +156,8 @@ class GeneralPlotter:
 
 
     def addLegend(self, handles=None, labels=None, **kwargs):
+
+        legendParams = ['loc', 'bbox_to_anchor', 'fontsize', 'numpoints', 'scatterpoints', 'scatteryoffsets', 'markerscale', 'markerfirst', 'frameon', 'fancybox', 'shadow', 'framealpha', 'facecolor', 'edgecolor', 'mode', 'bbox_transform', 'title', 'title_fontsize', 'borderpad', 'labelspacing', 'handlelength', 'handletextpad', 'borderaxespad', 'columnspacing', 'handler_map']
 
         legendKwargs = {}
         for kwarg in kwargs:
@@ -147,27 +178,30 @@ class GeneralPlotter:
     def finishFig(self, **kwargs):
 
         self.formatAxis(**kwargs)
-        if self.options['saveData']:
-            self.saveData(**kwargs)
-        if self.options['saveFig']:
-            self.saveFig(**kwargs)
+        
+        if 'saveData' in kwargs:
+            if kwargs['saveData']:
+                self.saveData(**kwargs)
+        
         if 'saveFig' in kwargs:
             if kwargs['saveFig']:
                 self.saveFig(**kwargs)
-        if self.options['showFig']:
-            self.showFig(**kwargs)
+        
+        if 'showFig' in kwargs:
+            if kwargs['showFig']:   
+                self.showFig(**kwargs)
         else:
             plt.close(self.fig)
+
+        # Reset the matplotlib rcParams to their original settings
+        mpl.style.use(self.orig_rcParams)
         
                 
-
-    
-
 
 class ScatterPlotter(GeneralPlotter):
     """A class used for scatter plotting"""
 
-    def __init__(self, data, axis=None, options={}, **kwargs):
+    def __init__(self, data, axis=None, **kwargs):
         
         super().__init__(data=data, axis=axis, **kwargs)
 
@@ -222,6 +256,9 @@ class LinePlotter(GeneralPlotter):
         self.finishFig(**kwargs)
 
         return self.fig
+
+
+
 
     """
 

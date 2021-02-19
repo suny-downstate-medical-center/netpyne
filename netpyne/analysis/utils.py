@@ -27,7 +27,8 @@ except NameError:
 import functools
 import sys
 import pandas as pd
-import pickle
+import pickle, json
+import os
 
 
 
@@ -244,7 +245,7 @@ def plotData(sim=None):
             pass
 
 
-def saveData(data, fileName=None, fileDesc=None, fileType='pkl', sim=None, **kwargs):
+def saveData(data, fileName=None, fileDesc=None, fileType=None, fileDir=None, sim=None, **kwargs):
     """
     Function to save data to a file
     
@@ -261,8 +262,11 @@ def saveData(data, fileName=None, fileDesc=None, fileType='pkl', sim=None, **kwa
         If fileDesc is a string, it will be added to the file name after an underscore
 
     fileType : str
-        **Default:** 'pkl' saves the data as a Python Pickle file
-        **Options:** 'json' saves the data in a .json file
+        **Default:** ``None`` saves the data as a Python Pickle file
+        **Options:** ``'json'`` saves the data in a .json file
+
+    fileDir : str
+        **Default:** ``None`` saves to the current directory
 
     sim : NetPyNE sim object
         **Default:** ``None`` uses the current NetPyNE sim object
@@ -270,11 +274,14 @@ def saveData(data, fileName=None, fileDesc=None, fileType='pkl', sim=None, **kwa
     Returns
     -------
     fileName : str
-        The complete name, with extension, of the file saved
+        The complete name, with extension and path, of the file saved
 
     """
 
-    if fileType in ['pkl', 'pickle', '.pkl']:
+    if not sim:
+        from .. import sim
+
+    if not fileType or fileType in ['pkl', 'pickle', '.pkl']:
         fileExt = '.pkl'
     elif fileType in ['json', '.json']:
         fileExt = '.json'
@@ -287,14 +294,15 @@ def saveData(data, fileName=None, fileDesc=None, fileType='pkl', sim=None, **kwa
         fileDesc = '_' + str(fileDesc)
 
     if not fileName or not isinstance(fileName, basestring):
-        if not sim:
-            from .. import sim
         fileName = sim.cfg.filename + fileDesc + fileExt
     else:
         if fileName.endswith(fileExt):
             fileName = fileName.split(fileExt)[0] + fileDesc + fileExt
         else:
             fileName = fileName + fileDesc + fileExt
+
+    if fileDir is not None:
+        fileName = os.path.join(fileDir, fileName)
 
     if fileName.endswith('.pkl'):
         print(('Saving data as %s ... ' % (fileName)))
@@ -309,3 +317,42 @@ def saveData(data, fileName=None, fileDesc=None, fileType='pkl', sim=None, **kwa
 
     return fileName
 
+
+def loadData(fileName, fileDir=None, sim=None):
+    """
+    Function to load data from a file (JSON or Python Pickle)
+    
+    Parameters
+    ----------
+    fileName : str
+        **Required**
+
+    fileDir : str
+        The directory to load the data file from
+        **Default:** ``None`` loads from the current directory
+
+    sim : NetPyNE sim object
+        **Default:** ``None`` uses the current NetPyNE sim object
+
+    Returns
+    -------
+    data : dict
+        The data from the file
+
+    """
+    
+    if fileDir is not None:
+        fileName = os.path.join(fileName, fileDir)
+
+    if fileName.endswith('.pkl'):
+        with open(fileName, 'rb') as input_file:
+            data = pickle.load(input_file)
+
+    elif fileName.endswith('.json'):
+        with open(fileName) as input_file:
+            data = json.load(input_file)
+    
+    else:
+        raise Exception('loadData can only load JSON (.json) or Python Pickle (.pkl) files')
+
+    return data

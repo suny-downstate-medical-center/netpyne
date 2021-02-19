@@ -26,11 +26,11 @@ except NameError:
 
 import pandas as pd
 from numbers import Number
-from .utils import exception, getCellsInclude, getSpktSpkid, saveData
-
+from .utils import exception, getCellsInclude, getSpktSpkid
+from .utils import saveData as saveFigData
 
 #@exception
-def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8, orderBy='gid', popRates=True, saveData=False, fileName=None, fileDesc=None, fileType=None, **kwargs):
+def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8, orderBy='gid', popRates=True, saveData=False, fileName=None, fileDesc=None, fileType=None, fileDir=None, **kwargs):
     """
     Function to prepare data for creating a raster plot
 
@@ -181,7 +181,7 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
     figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'indPops': gidPops, 'popLabels': popLabels, 'cellGids': cellGids, 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'axisArgs': axisArgs, 'legendLabels': legendLabels}
 
     if saveData:
-        saveData(figData, fileName=fileName, fileDesc=fileDesc, fileType=fileType, sim=sim)
+        saveFigData(figData, fileName=fileName, fileDesc='raster_data', fileType=fileType, fileDir=fileDir, sim=sim)
     
     return figData
 

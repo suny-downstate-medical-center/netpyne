@@ -1,8 +1,9 @@
 # Generate a raster plot
 
 import matplotlib.patches as mpatches
-from ..analysis.utils import exception
+from ..analysis.utils import exception, loadData
 from .plotter import ScatterPlotter
+
 
 #@exception
 def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabels=None, colorList=None, orderInverse=False, returnPlotter=False, **kwargs):
@@ -12,9 +13,10 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
 
     Parameters
     ----------
-    rasterData : list, tuple, dict
+    rasterData : list, tuple, dict, str
         The data necessary to plot the raster.  If a list or a tuple, the first item should be a list of spike times and the second item should be a list the same length of spike indices (the id of the cell corresponding to the spike time).  Optionally, the third item may be a list with of string population labels corresponding to the list index (this list must be at least as long as the largest spike index).
         If rasterData is a dictionary, it must have keys 'spkTimes' and 'spkInds' and may optionally have 'indPops'.
+        If rasterData is a string representing a file path, rasterData is loaded from the file.
         **Default:** ``None`` uses analysis.prepareRaster to produce rasterData using the current sim.
 
     axis : matplotlib axis
@@ -178,6 +180,10 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
 
     dataKeys = ['spkTimes', 'spkInds', 'indPops', 'cellGids', 'numNetStims', 'include', 'timeRange', 'maxSpikes', 'orderBy', 'popLabels', 'axisArgs', 'legendLabels']
 
+    # If input is a file name, load data from the file
+    if type(rasterData) == str:
+        rasterData = loadData(rasterData)
+
     if type(rasterData) == dict:
         spkTimes = rasterData['spkTimes']
         spkInds = rasterData['spkInds']
@@ -296,7 +302,7 @@ def plotRaster(rasterData=None, axis=None, legend=True, popColors=None, popLabel
     if orderInverse: 
         rasterPlotter.axis.invert_yaxis()
 
-    rasterPlot = rasterPlotter.plot(**axisArgs)
+    rasterPlot = rasterPlotter.plot(**axisArgs, **kwargs)
 
     if returnPlotter:
         return rasterPlotter

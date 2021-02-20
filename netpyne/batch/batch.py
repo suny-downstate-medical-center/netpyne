@@ -97,10 +97,10 @@ class Batch(object):
     """
 
 
-
-    def __init__(self, cfgFile='cfg.py', netParamsFile='netParams.py', params=None, groupedParams=None, initCfg={}, seed=None):
+    def __init__(self, cfgFile='cfg.py', netParamsFile='netParams.py', cfg=None, params=None, groupedParams=None, initCfg={}, seed=None):
         self.batchLabel = 'batch_'+str(datetime.date.today())
         self.cfgFile = cfgFile
+        self.cfg = cfg
         self.initCfg = initCfg
         self.netParamsFile = netParamsFile
         self.saveFolder = '/'+self.batchLabel
@@ -184,20 +184,22 @@ class Batch(object):
             if not self.seed: self.seed = int(time())
             seed_file.write(str(self.seed))
 
-        # import cfg
-        cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
+        # set cfg
+        if self.cfg is None:
+            # import cfg
+            cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
 
-        try:  # py3
-            loader = importlib.machinery.SourceFileLoader(cfgModuleName, self.cfgFile)
-            cfgModule = types.ModuleType(loader.name)
-            loader.exec_module(cfgModule)
-        except:  # py2
-            cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
+            try:  # py3
+                loader = importlib.machinery.SourceFileLoader(cfgModuleName, self.cfgFile)
+                cfgModule = types.ModuleType(loader.name)
+                loader.exec_module(cfgModule)
+            except:  # py2
+                cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
 
-        if hasattr(cfgModule, 'cfg'):
-            self.cfg = cfgModule.cfg
-        else:
-            self.cfg = cfgModule.simConfig
+            if hasattr(cfgModule, 'cfg'):
+                self.cfg = cfgModule.cfg
+            else:
+                self.cfg = cfgModule.simConfig
 
         self.cfg.checkErrors = False  # avoid error checking during batch
 

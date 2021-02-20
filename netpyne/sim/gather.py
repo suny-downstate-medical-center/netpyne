@@ -771,6 +771,7 @@ def _aggregateDipoles ():
         sim.simData['dipole'][k] = sim.h.Vector((sim.cfg.duration/sim.cfg.recordStep)+1)
 
     for cell in sim.net.compartCells:
-        for k, v in sim.cfg.recordDipoles.items():
-            if cell.tags['pop'] in v:
-                sim.simData['dipole'][k].add(cell.dipole['hRec'])
+        if hasattr(cell, 'dipole'):
+            for k, v in sim.cfg.recordDipoles.items():
+                if cell.tags['pop'] in v:
+                    sim.simData['dipole'][k].add(cell.dipole['hRec'])

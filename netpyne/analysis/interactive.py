@@ -483,10 +483,10 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False, 
 
     # convert units from fAm to nAm, rescale and smooth
     for key in dpl.keys():
-        dpl[key] *= 1e-6 * sim.cfg.dipole_scalefctr
+        dpl[key] *= 1e-6 * sim.cfg.hnn_params['dipole_scalefctr']
 
-        if sim.cfg.dipole_smooth_win > 0:
-            dpl[key] = hammfilt(dpl[key], sim.cfg.dipole_smooth_win/sim.cfg.dt)
+        if sim.cfg.hnn_params['dipole_smooth_win'] > 0:
+            dpl[key] = hammfilt(dpl[key], sim.cfg.hnn_params['dipole_smooth_win']/sim.cfg.dt)
 
         # Set index 0 to 0
         dpl[key][0] = 0.0
@@ -629,10 +629,10 @@ def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minF
 
     # convert units from fAm to nAm, rescale and smooth
     for key in dpl.keys():
-        dpl[key] *= 1e-6 * sim.cfg.dipole_scalefctr
+        dpl[key] *= 1e-6 * sim.cfg.hnn_params['dipole_scalefctr']
 
-        if sim.cfg.dipole_smooth_win > 0:
-            dpl[key] = hammfilt(dpl[key], sim.cfg.dipole_smooth_win/sim.cfg.dt)
+        if sim.cfg.hnn_params['dipole_smooth_win'] > 0:
+            dpl[key] = hammfilt(dpl[key], sim.cfg.hnn_params['dipole_smooth_win']/sim.cfg.dt)
 
         # Set index 0 to 0
         dpl[key][0] = 0.0
@@ -822,10 +822,10 @@ def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1,
 
     # convert units from fAm to nAm, rescale and smooth
     for key in dpl.keys():
-        dpl[key] *= 1e-6 * sim.cfg.dipole_scalefctr
+        dpl[key] *= 1e-6 * sim.cfg.hnn_params['dipole_scalefctr']
 
-        if sim.cfg.dipole_smooth_win > 0:
-            dpl[key] = hammfilt(dpl[key], sim.cfg.dipole_smooth_win/sim.cfg.dt)
+        if sim.cfg.hnn_params['dipole_smooth_win'] > 0:
+            dpl[key] = hammfilt(dpl[key], sim.cfg.hnn_params['dipole_smooth_win']/sim.cfg.dt)
 
         # Set index 0 to 0
         dpl[key][0] = 0.0

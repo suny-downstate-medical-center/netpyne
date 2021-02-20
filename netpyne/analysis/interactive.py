@@ -431,7 +431,7 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False, 
         # ad hoc postprocessing of dipole signal in orig HNN model L2 and L5
         if 'L2' in dpl and 'L5' in dpl:
             # N_pyr cells in grid. This is PER LAYER
-            N_pyr = sim.cfg.N_pyr_x * sim.cfg.N_pyr_y
+            N_pyr = sim.cfg.hnn_params['N_pyr_x'] * sim.cfg.hnn_params['N_pyr_y']
             # dipole offset calculation: increasing number of pyr cells (L2 and L5, simultaneously)
             # with no inputs resulted in an aggregate dipole over the interval [50., 1000.] ms that
             # eventually plateaus at -48 fAm. The range over this interval is something like 3 fAm
@@ -574,7 +574,7 @@ def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minF
     # renormalize the dipole and save
     def baseline_renormalize():
         # N_pyr cells in grid. This is PER LAYER
-        N_pyr = sim.cfg.N_pyr_x * sim.cfg.N_pyr_y
+        N_pyr = sim.cfg.hnn_params['N_pyr_x'] * sim.cfg.hnn_params['N_pyr_y']
         # dipole offset calculation: increasing number of pyr cells (L2 and L5, simultaneously)
         # with no inputs resulted in an aggregate dipole over the interval [50., 1000.] ms that
         # eventually plateaus at -48 fAm. The range over this interval is something like 3 fAm
@@ -767,7 +767,7 @@ def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1,
     # renormalize the dipole and save
     def baseline_renormalize():
         # N_pyr cells in grid. This is PER LAYER
-        N_pyr = sim.cfg.N_pyr_x * sim.cfg.N_pyr_y
+        N_pyr = sim.cfg.hnn_params['N_pyr_x'] * sim.cfg.hnn_params['N_pyr_y']
         # dipole offset calculation: increasing number of pyr cells (L2 and L5, simultaneously)
         # with no inputs resulted in an aggregate dipole over the interval [50., 1000.] ms that
         # eventually plateaus at -48 fAm. The range over this interval is something like 3 fAm

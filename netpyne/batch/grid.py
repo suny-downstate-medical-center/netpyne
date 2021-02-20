@@ -100,7 +100,6 @@ def gridSearch(self, pc):
     """
 
 
-
     createFolder(self.saveFolder)
 
     # save Batch dict as json
@@ -116,16 +115,18 @@ def gridSearch(self, pc):
     os.system('cp ' + self.netParamsFile + ' ' + netParamsSavePath)
 
     # import cfg
-    cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
+    if self.cfg is None:
+        cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
 
-    try:
-        loader = importlib.machinery.SourceFileLoader(cfgModuleName, self.cfgFile)
-        cfgModule = types.ModuleType(loader.name)
-        loader.exec_module(cfgModule)
-    except:
-        cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
+        try:
+            loader = importlib.machinery.SourceFileLoader(cfgModuleName, self.cfgFile)
+            cfgModule = types.ModuleType(loader.name)
+            loader.exec_module(cfgModule)
+        except:
+            cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
 
-    self.cfg = cfgModule.cfg
+        self.cfg = cfgModule.cfg
+    
     self.cfg.checkErrors = False  # avoid error checking during batch
 
     # set initial cfg initCfg

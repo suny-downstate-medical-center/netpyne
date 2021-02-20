@@ -127,7 +127,9 @@ class Batch(object):
         # make dir
         createFolder(folder)
 
-        odict = deepcopy(self.__dict__)
+        # make copy of batch object to save it; but skip cfg (since instance of SimConfig and can't be copied)
+        odict = deepcopy({k:v for k,v in self.__dict__.items() if k != 'cfg'})  
+
         if 'evolCfg' in odict:
             odict['evolCfg']['fitnessFunc'] = 'removed'
         if 'optimCfg' in odict:

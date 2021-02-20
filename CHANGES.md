@@ -32,6 +32,8 @@
 
 - Wait until all subprocesses have ended before completing mpi_bulletin batches 
 
+- Fixed repeated rxd simulation issue for rates and reactions
+
 # Version 0.9.8
 
 **New features**

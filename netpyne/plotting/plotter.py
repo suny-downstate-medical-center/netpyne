@@ -9,6 +9,8 @@ from copy import deepcopy
 import pickle, json
 import os
 
+plt.ion()
+
 try:
     basestring
 except NameError:
@@ -48,22 +50,25 @@ class GeneralPlotter:
         self.axis = axis
 
         # Make a copy of the current matplotlib rcParams and update them
-        self.orig_rcParams = None
-        if rcParams:
-            self.orig_rcParams = deepcopy(mpl.rcParams)
+        self.orig_rcParams = deepcopy(mpl.rcParams)
 
+        if rcParams:
             for rcParam in rcParams:
                 if rcParam in mpl.rcParams:
                     mpl.rcParams[rcParam] = rcParams[rcParam]
                 else:
                     print(rcParam, 'not found in matplotlib.rcParams')
+            self.rcParams = rcParams
+        else:
+            self.rcParams = self.orig_rcParams
+
 
         # If an axis is input, plot there; therwise make a new figure and axis
         if self.axis is None:
             if 'figSize' in kwargs:
                 figSize = kwargs['figSize']
             else:
-                figSize = rcParams['figure.figsize']
+                figSize = self.rcParams['figure.figsize']
             self.fig, self.axis = plt.subplots(figsize=figSize)
         else:
             self.fig = plt.gcf()

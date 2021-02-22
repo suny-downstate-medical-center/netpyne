@@ -58,7 +58,7 @@ def exception(function):
 
 
 
-def getCellsInclude(include='allCells', sim=None):
+def getInclude(include='allCells', sim=None):
     """
     Function to return the cells indicated by the include list
 
@@ -94,6 +94,9 @@ def getCellsInclude(include='allCells', sim=None):
     cellGids = []
     cells = []
     netStimLabels = []
+
+    if type(include) == str:
+        include = [include]
     
     for condition in include:
 

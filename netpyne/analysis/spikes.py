@@ -26,7 +26,7 @@ except NameError:
 
 import pandas as pd
 from numbers import Number
-from .utils import exception, getCellsInclude, getSpktSpkid
+from .utils import exception, getInclude, getSpktSpkid
 from .utils import saveData as saveFigData
 
 #@exception
@@ -42,10 +42,13 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
         from .. import sim
 
     # Select cells to include
-    cells, cellGids, netStimLabels = getCellsInclude(include)
+    cells, cellGids, netStimLabels = getInclude(include)
+    print(cellGids)
+    print(netStimLabels)
 
     df = pd.DataFrame.from_records(cells)
     df = pd.concat([df.drop('tags', axis=1), pd.DataFrame.from_records(df['tags'].tolist())], axis=1)
+
 
     keep = ['pop', 'gid', 'conns']
 
@@ -100,8 +103,11 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
     numCellSpks = len(sel)
     numNetStims = 0
     for netStimLabel in netStimLabels:
-        netStimSpks = [spk for cell,stims in sim.allSimData['stims'].items() \
-            for stimLabel,stimSpks in stims.items() for spk in stimSpks if stimLabel == netStimLabel]
+        print(netStimLabel)
+        stims = sim.allSimData['stims'].items()
+        print(stims)
+        netStimSpks = [spk for cell, stims in sim.allSimData['stims'].items() for stimLabel, stimSpks in stims.items() for spk in stimSpks if stimLabel == netStimLabel]
+        print(netStimSpks)
         if len(netStimSpks) > 0:
             # lastInd = max(spkinds) if len(spkinds)>0 else 0
             lastInd = sel['spkind'].max() if len(sel['spkind']) > 0 else 0
@@ -122,10 +128,10 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
         return None
 
     # Time Range
-    if timeRange == [0,sim.cfg.duration]:
+    if timeRange == [0, sim.cfg.duration]:
         pass
     elif timeRange is None:
-        timeRange = [0,sim.cfg.duration]
+        timeRange = [0, sim.cfg.duration]
     else:
         sel = sel.query('spkt >= @timeRange[0] and spkt <= @timeRange[1]')
 
@@ -167,6 +173,7 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
 
         if popRates == 'minimal':
             legendLabels = [popLabel + ' (%.3g Hz)' % (avgRates[popLabel]) for popIndex, popLabel in enumerate(popLabels) if popLabel in avgRates]
+            title = 'cells: %i   syn/cell: %0.1f   rate: %0.1f Hz' % (numCells, connsPerCell, firingRate)
         else:
             legendLabels = [popLabel + '\n  cells: %i\n  syn/cell: %0.1f\n  rate: %.3g Hz' % (popNumCells[popIndex], popConnsPerCell[popIndex], avgRates[popLabel]) for popIndex, popLabel in enumerate(popLabels) if popLabel in avgRates]
             title = 'cells: %i   syn/cell: %0.1f   rate: %0.1f Hz' % (numCells, connsPerCell, firingRate)
@@ -341,9 +348,9 @@ def prepareSpikeHist(include=['eachPop', 'allCells'], sim=None, timeRange=None, 
     # Plot separate line for each entry in include
     for iplot,subset in enumerate(include):
         if isinstance(subset, list):
-            cells, cellGids, netStimLabels = getCellsInclude(subset)
+            cells, cellGids, netStimLabels = getInclude(subset)
         else:
-            cells, cellGids, netStimLabels = getCellsInclude([subset])
+            cells, cellGids, netStimLabels = getInclude([subset])
         numNetStims = 0
 
         # Select cells to include

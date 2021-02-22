@@ -153,11 +153,12 @@ class GeneralPlotter:
 
     def showFig(self, **kwargs):
 
-        dummy = plt.figure()
+        plt.close(self.fig)
+        dummy = plt.figure(figsize=self.rcParams['figure.figsize'])
         new_manager = dummy.canvas.manager
         new_manager.canvas.figure = self.fig
         self.fig.set_canvas(new_manager.canvas)
-        self.fig.show()
+        self.fig.show(block=False)
 
 
     def addLegend(self, handles=None, labels=None, **kwargs):

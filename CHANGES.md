@@ -20,6 +20,8 @@
 
 - Added swc import ability to importCell (and thus importCellParams)
 
+- Batch now polls processes, prints their output and terminates them once completed
+
 **Bug fixes** 
 
 - Made rate_b be positional instead of keyword argument in rxd multiCompartmentReaction

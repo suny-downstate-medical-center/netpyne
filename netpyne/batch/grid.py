@@ -170,6 +170,7 @@ def gridSearch(self, pc):
             pc.runworker()
 
     processes = []
+    processFiles = []
 
     for iCombG, pCombG in zip(indexCombGroups, valueCombGroups):
         for iCombNG, pCombNG in zip(indexCombinations, valueCombinations):
@@ -327,8 +328,8 @@ wait
 
                     print(command+'\n')
                     proc = Popen(command.split(' '), stdout=open(jobName+'.run','w'),  stderr=open(jobName+'.err','w'))
-                    #print proc.stdout.read()
-
+                    processes.append(proc)
+                    processFiles.append(jobName+'.run')
 
                 # pc bulletin board job submission (master/slave) via mpi
                 # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
@@ -351,6 +352,22 @@ wait
     while pc.working():
         sleep(sleepInterval)
     
+    outfiles = []
+    for procFile in processFiles:
+        outfiles.append(open(procFile, 'r'))
+        
     while any([proc.poll() is None for proc in processes]):
+        for i, proc in enumerate(processes):
+                newline = outfiles[i].readline()
+                if len(newline) > 1:
+                    print(newline, end='')
+                
         sleep(sleepInterval)
     
+    # attempt to terminate completed processes
+    
+    for proc in processes:
+        try:
+            proc.terminate()
+        except:
+            pass

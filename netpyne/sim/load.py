@@ -151,17 +151,17 @@ def loadSimCfg(filename, data=None, setLoaded=True):
         <Short description of data>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     setLoaded : bool
         <Short description of setLoaded>
         **Default:** ``True``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
 
-    if not data: 
+    if not data:
         data = _loadFile(filename)
     print('Loading simConfig...')
     if 'simConfig' in data:
@@ -191,12 +191,12 @@ def loadNetParams(filename, data=None, setLoaded=True):
         <Short description of data>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     setLoaded : bool
         <Short description of setLoaded>
         **Default:** ``True``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -231,17 +231,17 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
         <Short description of data>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     instantiate : bool
         <Short description of instantiate>
         **Default:** ``True``
         **Options:** ``<option>`` <description of option>
- 
+
     compactConnFormat : bool
         <Short description of compactConnFormat>
         **Default:** ``False``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -253,8 +253,8 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
         if sim.rank == 0:
             sim.timing('start', 'loadNetTime')
             print('Loading net...')
-            if compactConnFormat: 
-                compactToLongConnFormat(data['net']['cells'], compactConnFormat) # convert loaded data to long format 
+            if compactConnFormat:
+                compactToLongConnFormat(data['net']['cells'], compactConnFormat) # convert loaded data to long format
             sim.net.allPops = data['net']['pops']
             sim.net.allCells = data['net']['cells']
         if instantiate:
@@ -341,7 +341,7 @@ def loadSimData(filename, data=None):
         <Short description of data>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -375,28 +375,28 @@ def loadAll(filename, data=None, instantiate=True, createNEURONObj=True):
         <Short description of data>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     instantiate : bool
         <Short description of instantiate>
         **Default:** ``True``
         **Options:** ``<option>`` <description of option>
- 
+
     createNEURONObj : bool
         <Short description of createNEURONObj>
         **Default:** ``True``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
 
-    from .. import sim 
+    from .. import sim
 
     if not data: data = _loadFile(filename)
     loadSimCfg(filename, data=data)
     sim.cfg.createNEURONObj = createNEURONObj  # set based on argument
     loadNetParams(filename, data=data)
-    if hasattr(sim.cfg, 'compactConnFormat'): 
+    if hasattr(sim.cfg, 'compactConnFormat'):
         connFormat = sim.cfg.compactConnFormat
     else:
         print('Error: no connFormat provided in simConfig')
@@ -426,7 +426,7 @@ def compactToLongConnFormat(cells, connFormat):
     """
 
 
-    
+
     formatIndices = {key: connFormat.index(key) for key in connFormat}
     try:
         for cell in cells:
@@ -471,7 +471,7 @@ def loadHDF5(filename):
 
 
 #------------------------------------------------------------------------------
-# Load cell tags and conns using ijson (faster!) 
+# Load cell tags and conns using ijson (faster!)
 #------------------------------------------------------------------------------
 def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, loadConns=True, tagFormat=None, connFormat=None, saveTags=None, saveConns=None):
     """
@@ -487,42 +487,42 @@ def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, lo
         <Short description of tagsGidRange>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     connsGidRange : <``None``?>
         <Short description of connsGidRange>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     loadTags : bool
         <Short description of loadTags>
         **Default:** ``True``
         **Options:** ``<option>`` <description of option>
- 
+
     loadConns : bool
         <Short description of loadConns>
         **Default:** ``True``
         **Options:** ``<option>`` <description of option>
- 
+
     tagFormat : <``None``?>
         <Short description of tagFormat>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     connFormat : <``None``?>
         <Short description of connFormat>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     saveTags : <``None``?>
         <Short description of saveTags>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     saveConns : <``None``?>
         <Short description of saveConns>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -564,7 +564,7 @@ def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, lo
                 tags.update({int(cell['gid']): [cell['tags'][param] for param in tagFormat] for cell in objs if tagsGidRange==None or cell['gid'] in tagsGidRange})
             else:
                 tags.update({int(cell['gid']): cell['tags'] for cell in objs if tagsGidRange==None or cell['gid'] in tagsGidRange})
-        elif loadConns:             
+        elif loadConns:
             print('Storing conns...')
             if connFormat:
                 conns.update({int(cell['gid']): [[conn[param] for param in connFormat] for conn in cell['conns']] for cell in objs if connsGidRange==None or cell['gid'] in connsGidRange})
@@ -579,13 +579,10 @@ def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, lo
     if saveTags and tags:
         outFilename = saveTags if isinstance(saveTags, basestring) else 'filename'[:-4]+'_tags.json'
         print('Saving tags to %s ...' % (outFilename))
-        sim.saveJSON(outFilename, {'tags': tags})         
+        sim.saveJSON(outFilename, {'tags': tags})
     if saveConns and conns:
         outFilename = saveConns if isinstance(saveConns, basestring) else 'filename'[:-4]+'_conns.json'
         print('Saving conns to %s ...' % (outFilename))
         sim.saveJSON(outFilename, {'conns': conns})
 
     return tags, conns
-
-
-

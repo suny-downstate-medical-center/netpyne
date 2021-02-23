@@ -71,3 +71,8 @@ try:
 except:
     print('Warning: could not import interactive plotting functions; make sure the "bokeh" package is installed.')
 
+
+# -------------------------------------------------------------------------------------------------------------------
+# Import CSD-related functions
+# -------------------------------------------------------------------------------------------------------------------
+from .csd import getCSD, plotCSD

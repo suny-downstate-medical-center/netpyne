@@ -41,6 +41,7 @@ def preRun():
     sim.cvode.active(int(sim.cfg.cvode_active))
     sim.cvode.cache_efficient(int(sim.cfg.cache_efficient))
     sim.cvode.atol(sim.cfg.cvode_atol)
+    sim.cvode.use_fast_imem(sim.cfg.use_fast_imem)
 
     # set h global params
     sim.setGlobals()
@@ -60,14 +61,14 @@ def preRun():
     # handler for printing out time during simulation run
     if sim.rank == 0 and sim.cfg.printRunTime:
         def printRunTime():
-            print('%.1fs' % (h.t/1000.0))   
+            print('%.1fs' % (h.t/1000.0))
             sim.cvode.event(h.t + int(sim.cfg.printRunTime*1000.0), sim.printRunTime)
 
         sim.printRunTime = printRunTime
         sim.fih.append(h.FInitializeHandler(1, sim.printRunTime))
 
     # set global index used by all instances of the Random123 instances of Random
-    if sim.cfg.rand123GlobalIndex is not None: 
+    if sim.cfg.rand123GlobalIndex is not None:
         rand = h.Random()
         rand.Random123_globalindex(int(sim.cfg.rand123GlobalIndex))
 
@@ -116,12 +117,12 @@ def runSim(skipPreRun=False):
         <Short description of skipPreRun>
         **Default:** ``False``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
 
-  
+
     from .. import sim
 
     sim.pc.barrier()
@@ -136,7 +137,7 @@ def runSim(skipPreRun=False):
 
     if not skipPreRun:
         preRun()
-    
+
     h.finitialize(float(sim.cfg.hParams['v_init']))
 
     if sim.rank == 0: print('\nRunning simulation for %s ms...'%sim.cfg.duration)
@@ -181,7 +182,7 @@ def runSimWithIntervalFunc(interval, func):
     while round(h.t) < sim.cfg.duration:
         sim.pc.psolve(min(sim.cfg.duration, h.t+interval))
         func(h.t) # function to be called at intervals
-    
+
     sim.pc.barrier() # Wait for all hosts to get to this point
     sim.timing('stop', 'runTime')
     if sim.rank==0:
@@ -190,7 +191,7 @@ def runSimWithIntervalFunc(interval, func):
 
 
 #------------------------------------------------------------------------------
-# Calculate LFP (fucntion called at every time step)      
+# Calculate LFP (fucntion called at every time step)
 #------------------------------------------------------------------------------
 def calculateLFP():
     """
@@ -201,12 +202,12 @@ def calculateLFP():
 
 
     from .. import sim
-    
-    # Set pointers to i_membrane in each cell (required form LFP calc )        
+
+    # Set pointers to i_membrane in each cell (required form LFP calc )
     for cell in sim.net.compartCells:
         cell.setImembPtr()
 
-    # compute 
+    # compute
     saveStep = int(np.floor(h.t / sim.cfg.recordStep))
     for cell in sim.net.compartCells: # compute ecp only from the biophysical cells
         gid = cell.gid
@@ -214,14 +215,14 @@ def calculateLFP():
         tr = sim.net.recXElectrode.getTransferResistance(gid)  # in MOhm
         ecp = np.dot(tr, im)  # in mV (= R * I = MOhm * nA)
 
-        if sim.cfg.saveLFPCells: 
+        if sim.cfg.saveLFPCells:
             sim.simData['LFPCells'][gid][saveStep - 1,:] = ecp  # contribution of individual cells (stored optionally)
-        
-        sim.simData['LFP'][saveStep - 1,:] += ecp  # sum of all cells
-        
-    
 
-    
+        sim.simData['LFP'][saveStep - 1,:] += ecp  # sum of all cells
+
+
+
+
 #------------------------------------------------------------------------------
 # Calculate and print load balance
 #------------------------------------------------------------------------------
@@ -235,7 +236,7 @@ def loadBalance(printNodeTimes = False):
         <Short description of printNodeTimes>
         **Default:** ``False``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -250,7 +251,7 @@ def loadBalance(printNodeTimes = False):
 
     if printNodeTimes:
         print('node:',sim.rank,' comp_time:',computation_time)
-    
+
     if sim.rank==0:
         print('max_comp_time:', max_comp_time)
         print('min_comp_time:', min_comp_time)
@@ -259,4 +260,3 @@ def loadBalance(printNodeTimes = False):
         print('\nspike exchange time (run_time-comp_time): ', sim.timingData['runTime'] - max_comp_time)
 
     return [max_comp_time, min_comp_time, avg_comp_time, load_balance]
-

@@ -1,7 +1,7 @@
 """
 analysis/filter.py
 
-signal filtering functions copied to NetPyNE from ObsPy by Sam Neymotin (NKI) 
+signal filtering functions copied to NetPyNE from ObsPy by Sam Neymotin (NKI)
 
  ------------------------------------------------------------------
  Filename: filter.py
@@ -409,4 +409,3 @@ def lowpass_cheby_2(data, freq, df, maxorder=12, ba=False,
 if __name__ == '__main__':
     import doctest
     doctest.testmod(exclude_empty=True)
-

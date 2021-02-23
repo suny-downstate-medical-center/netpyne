@@ -65,7 +65,7 @@ def load(filename, fileformat=None, cell=None, use_axon=True, xshift=0, yshift=0
     """
 
     if cell is None:
-        cell = Cell(name=string.join(filename.split('.')[:-1]))
+        cell = Cell(name='.'.join(filename.split('.')[:-1]))
 
     if fileformat is None:
         fileformat = filename.split('.')[-1]
@@ -104,7 +104,7 @@ def load(filename, fileformat=None, cell=None, use_axon=True, xshift=0, yshift=0
         # use it... or if is_subsidiary
         if (not(use_axon) and cell_part == 2) or swc_sec.is_subsidiary:
             continue
-        
+
         # figure out the name of the new section
         if cell_part not in name_form:
             raise Exception('unsupported point type')
@@ -112,7 +112,7 @@ def load(filename, fileformat=None, cell=None, use_axon=True, xshift=0, yshift=0
 
         # create the section
         sec = h.Section(name=name)
-        
+
         # connect to parent, if any
         if swc_sec.parentsec is not None:
             sec.connect(real_secs[swc_sec.parentsec.hname()](swc_sec.parentx))
@@ -139,8 +139,8 @@ def load(filename, fileformat=None, cell=None, use_axon=True, xshift=0, yshift=0
             for x, y, z, d in zip(xx, yy, zz, dd):
                 h.pt3dadd(x + xshift, y + yshift, z + zshift, d, sec=sec)
 
-        # store the section in the appropriate list in the cell and lookup table               
-        sec_list[cell_part].append(sec)    
+        # store the section in the appropriate list in the cell and lookup table
+        sec_list[cell_part].append(sec)
         real_secs[swc_sec.hname()] = sec
 
     cell.all = cell.soma + cell.apic + cell.dend + cell.axon
@@ -150,33 +150,33 @@ def sequential_spherical(xyz):
     """
     Converts sequence of cartesian coordinates into a sequence of
     line segments defined by spherical coordinates.
-    
+
     Args:
         xyz = 2d numpy array, each row specifies a point in
               cartesian coordinates (x,y,z) tracing out a
               path in 3D space.
-    
+
     Returns:
         r = lengths of each line segment (1D array)
         theta = angles of line segments in XY plane (1D array)
         phi = angles of line segments down from Z axis (1D array)
     """
     d_xyz = np.diff(xyz,axis=0)
-    
+
     r = np.linalg.norm(d_xyz,axis=1)
     theta = np.arctan2(d_xyz[:,1], d_xyz[:,0])
     hyp = d_xyz[:,0]**2 + d_xyz[:,1]**2
     phi = np.arctan2(np.sqrt(hyp), d_xyz[:,2])
-    
+
     return (r,theta,phi)
 
 def spherical_to_cartesian(r,theta,phi):
     """
     Simple conversion of spherical to cartesian coordinates
-    
+
     Args:
         r,theta,phi = scalar spherical coordinates
-    
+
     Returns:
         x,y,z = scalar cartesian coordinates
     """
@@ -211,31 +211,31 @@ def find_coord(targ_length,xyz,rcum,theta,phi):
 def interpolate_jagged(xyz,nseg):
     """
     Interpolates along a jagged path in 3D
-    
+
     Args:
         xyz = section path specified in cartesian coordinates
         nseg = number of segment paths in section path
-        
+
     Returns:
         interp_xyz = interpolated path
     """
-    
+
     # Spherical coordinates specifying the angles of all line
     # segments that make up the section path
     (r,theta,phi) = sequential_spherical(xyz)
-    
+
     # cumulative length of section path at each coordinate
     rcum = np.append(0,np.cumsum(r))
 
     # breakpoints for segment paths along section path
     breakpoints = np.linspace(0,rcum[-1],nseg+1)
     np.delete(breakpoints,0)
-    
+
     # Find segment paths
     seg_paths = []
     for a in range(nseg):
         path = []
-        
+
         # find (x,y,z) starting coordinate of path
         if a == 0:
             start_coord = xyz[0,:]
@@ -257,7 +257,7 @@ def interpolate_jagged(xyz,nseg):
 
         # Append path to list of segment paths
         seg_paths.append(np.array(path))
-    
+
     # Return all segment paths
     return seg_paths
 
@@ -295,16 +295,16 @@ def shapeplot(h,ax,sections=None,order='pre',cvals=None,\
     Returns:
         lines = list of line objects making up shapeplot
     """
-    
-    # Default is to plot all sections. 
+
+    # Default is to plot all sections.
     if sections is None:
         if order == 'pre':
             sections = allsec_preorder(h) # Get sections in "pre-order"
         else:
             sections = list(h.allsec())
-    
+
     # Determine color limits
-    if cvals is not None and clim is None: 
+    if cvals is not None and clim is None:
         clim = [np.nanmin(cvals), np.nanmax(cvals)]
 
     # Plot each segement as a line
@@ -322,7 +322,7 @@ def shapeplot(h,ax,sections=None,order='pre',cvals=None,\
         seg_paths = interpolate_jagged(xyz,sec.nseg)
         diams = allDiams[isec]  # represent diams as linewidths
         linewidths = diams # linewidth is in points so can use actual diams to plot
-        # linewidths = [min(d/meanDiams*meanLineWidth, maxLineWidth) for d in diams]  # use if want to scale size 
+        # linewidths = [min(d/meanDiams*meanLineWidth, maxLineWidth) for d in diams]  # use if want to scale size
 
         for (j,path) in enumerate(seg_paths):
             line, = plt.plot(path[:,0], path[:,1], path[:,2], '-k', **kwargs)
@@ -469,7 +469,7 @@ def add_pre(h,sec_list,section,order_list=None,branch_order=None):
         order_list.append(branch_order)
         if len(sref.child) > 1:
             branch_order += 1
-    
+
     for next_node in sref.child:
         add_pre(h,sec_list,next_node,order_list,branch_order)
 
@@ -539,7 +539,7 @@ def branch_precedence(h):
 
     for r in roots:
         secdict[r] = 0
-    
+
     precedence = 1
     while len(leaves)>0:
         # build list of distances of all paths to remaining leaves
@@ -548,7 +548,7 @@ def branch_precedence(h):
             p = []
             dist = dist_to_mark(h, leaf, secdict, path=p)
             d.append((dist,[pp for pp in p]))
-        
+
         # longest path index
         i = np.argmax([ dd[0] for dd in d ])
         leaves.pop(i) # this leaf will be marked
@@ -564,5 +564,3 @@ def branch_precedence(h):
     #prec = secdict.values()
     #return [0 if p is None else 1 for p in prec], d[i][1]
     return [ secdict[sec] for sec in seclist ]
-
-

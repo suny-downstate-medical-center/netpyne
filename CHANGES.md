@@ -1,3 +1,41 @@
+# Version 0.9.9
+
+**New features**
+
+- Plot current source density (CSD) from local field potential (LFP) simulated data 
+
+- Additional customization of 3D shape plot: show voltage as color, change proportions, include axis labels
+
+- Enable modifyConns based on properties of presynaptic neurons
+
+- Replaced -np with -n so compatible for all commands: mpiexec/mpirun/srun
+
+- Updated netrxd.py and network.py to include RxD's Parameter class, naming of States and Regions, and specification of Region geometries that do not require arguments like 'membrane' and 'inside'
+
+- Improved recordTraces such that the cond 'gid' can accept a list of numbers as well as a single number
+
+- Added a new tutorial going through use of NetPyNE with virtual environments and Jupyter notebooks
+
+- Added cfg.use_fast_imem to enable recording membrane voltage via seg.i_membrane_
+
+- Added swc import ability to importCell (and thus importCellParams)
+
+- Batch now polls processes, prints their output and terminates them once completed
+
+**Bug fixes** 
+
+- Made rate_b be positional instead of keyword argument in rxd multiCompartmentReaction
+
+- Check if _morphSegCoords exists in population before using
+
+- Fixed bug to avoid recursive creating of synMechs when loading with cfg.oneSynPerNetcon=True
+
+- Fixed an issue with running rxd code twice
+
+- Wait until all subprocesses have ended before completing mpi_bulletin batches 
+
+- Fixed repeated rxd simulation issue for rates and reactions
+
 # Version 0.9.8
 
 **New features**
@@ -18,6 +56,14 @@
 
 - Added option to plot the log of connectivity in plotConn
 
+- Enabled random distribution of multiple synapses with synsPerConn>1 and connRandomSecFromList=True 
+
+- Added lineWidth option to plot2Dnet (thanks Eric!)
+
+- Updated Travis Continuous Integration to use NEURON 7.8.1 (from 7.6.2)
+
+- Removed trailing white space from all Python files in the repository
+
 
 **Bug fixes**
 
@@ -32,6 +78,21 @@
 - Blocked terminal output from Git when no repository is found (i.e. with pip install netpyne)
 
 - Avoid adding section-based weightNorm values to point neurons (was affecting tut_import.py)
+
+- Prevent error when loading pointCell params from json by converting Dict to dict
+
+- Fixed bug in plotShape (thanks Eric!)
+
+- Updated setup.py so PyPI website renders the README as markdown
+
+- Fixed expected numSpikes in test of M1detailed example
+
+- Merged GUI branch into development branch
+
+- Fixed bug in iplotConn
+
+- Fixed bug and coloring in iplotSpikeStats with different themes
+
 
 # Version 0.9.7
 

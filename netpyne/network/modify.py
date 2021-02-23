@@ -33,7 +33,7 @@ def modifyCells(self, params, updateMasterAllCells=False):
         <Short description of updateMasterAllCells>
         **Default:** ``False``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -42,7 +42,7 @@ def modifyCells(self, params, updateMasterAllCells=False):
 
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'modifyCellsTime')
-    if sim.rank==0: 
+    if sim.rank==0:
         print('Modfying cell parameters...')
 
     for cell in self.cells:
@@ -76,7 +76,7 @@ def modifySynMechs(self, params, updateMasterAllCells=False):
         <Short description of updateMasterAllCells>
         **Default:** ``False``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -85,7 +85,7 @@ def modifySynMechs(self, params, updateMasterAllCells=False):
 
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'modifySynMechsTime')
-    if sim.rank==0: 
+    if sim.rank==0:
         print('Modfying synaptic mech parameters...')
 
     for cell in self.cells:
@@ -119,7 +119,7 @@ def modifyConns(self, params, updateMasterAllCells=False):
         <Short description of updateMasterAllCells>
         **Default:** ``False``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -128,7 +128,7 @@ def modifyConns(self, params, updateMasterAllCells=False):
 
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'modifyConnsTime')
-    if sim.rank==0: 
+    if sim.rank==0:
         print('Modfying connection parameters...')
 
     for cell in self.cells:
@@ -162,16 +162,16 @@ def modifyStims(self, params, updateMasterAllCells=False):
         <Short description of updateMasterAllCells>
         **Default:** ``False``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
 
     from .. import sim
-    
+
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'modifyStimsTime')
-    if sim.rank==0: 
+    if sim.rank==0:
         print('Modfying stimulation parameters...')
 
     for cell in self.cells:
@@ -182,5 +182,3 @@ def modifyStims(self, params, updateMasterAllCells=False):
 
     sim.timing('stop', 'modifyStimsTime')
     if sim.rank == 0 and sim.cfg.timing: print(('  Done; stims modification time = %0.2f s.' % sim.timingData['modifyStimsTime']))
-
-

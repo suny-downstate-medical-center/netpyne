@@ -6,7 +6,7 @@ print("********************\n*\n*  Note: setting noise to 1, since noise can onl
 np.stimSourceParams['background_E']['noise'] = 1
 np.stimSourceParams['background_I']['noise'] = 1
 
-sim.createExportNeuroML2(netParams = np, 
+sim.createExportNeuroML2(netParams = np,
                        simConfig = M1.simConfig,
                        reference = 'M1',
                        connections=True,

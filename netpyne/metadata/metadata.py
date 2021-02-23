@@ -173,7 +173,7 @@ metadata = {
                 "help": "Scale factor multiplier for number of cells (default: 1)",
                 "suggestions": "",
                 "hintText": "",
-                "default": "1",
+                "default": 1,
                 "type": "float"
             },
             "shape": {
@@ -194,7 +194,7 @@ metadata = {
                 "help": "x-dimension (horizontal length) network size in um (default: 100)",
                 "suggestions": "",
                 "hintText": "",
-                "default": "100",
+                "default": 100,
                 "type": "float"
             },
             "sizeY": {
@@ -202,7 +202,7 @@ metadata = {
                 "help": "y-dimension (horizontal length) network size in um (default: 100)",
                 "suggestions": "",
                 "hintText": "",
-                "default": "100",
+                "default": 100,
                 "type": "float"
             },
             "sizeZ": {
@@ -210,7 +210,7 @@ metadata = {
                 "help": "z-dimension (horizontal length) network size in um (default: 100)",
                 "suggestions": "",
                 "hintText": "",
-                "default": "100",
+                "default": 100,
                 "type": "float"
             },
             "rotateCellsRandomly": {
@@ -225,7 +225,7 @@ metadata = {
                 "help": "Default connection weight (default: 1)",
                 "suggestions": "",
                 "hintText": "",
-                "default": "1",
+                "default": 1,
                 "type": "float"
             },
             "defaultDelay": {
@@ -233,7 +233,7 @@ metadata = {
                 "help": "Default connection delay, in ms (default: 1)",
                 "suggestions": "",
                 "hintText": "",
-                "default": "1",
+                "default": 1,
                 "type": "float"
             },
             "propVelocity": {
@@ -241,7 +241,7 @@ metadata = {
                 "help": "Conduction velocity in um/ms (e.g. 500 um/ms = 0.5 m/s) (default: 500)",
                 "suggestions": "",
                 "hintText": "",
-                "default": "500",
+                "default": 500,
                 "type": "float"
             },
             "scaleConnWeight": {
@@ -249,7 +249,7 @@ metadata = {
                 "help": "Connection weight scale factor (excludes NetStims) (default: 1)",
                 "suggestions": "",
                 "hintText": "",
-                "default": "1",
+                "default": 1,
                 "type": "float"
             },
             "scaleConnWeightNetStims": {
@@ -257,7 +257,7 @@ metadata = {
                 "help": "Connection weight scale factor for NetStims (default: 1)",
                 "suggestions": "",
                 "hintText": "",
-                "default": "1",
+                "default": 1,
                 "type": "float"
             },
             "scaleConnWeightModels": {
@@ -819,6 +819,7 @@ metadata = {
                         "help": "Point process used as stimulator; allowed values: 'IClamp', 'VClamp', 'SEClamp', 'NetStim' and 'AlphaSynapse'. Note that NetStims can be added both using this method, or by creating a population of 'cellModel': 'NetStim' and adding the appropriate connections.",
                         "suggestions": "",
                         "hintText": "",
+                        "default": "IClamp",
                         "type": "str"
                     },
                     "dur": {
@@ -1174,14 +1175,14 @@ metadata = {
                 "label": "Duration (ms)",
                 "help": "Simulation duration in ms (default: 1000)",
                 "suggestions": "",
-                "default": "1000",
+                "default": 1000,
                 "type": "float"
             },
             "dt": {
                 "label": "Time step, dt",
                 "help": "Simulation time step in ms (default: 0.1)",
                 "suggestions": "",
-                "default": "0.025",
+                "default": 0.025,
                 "type": "float"
             },
             "seeds": {
@@ -1292,7 +1293,7 @@ metadata = {
                 "help": "List of cells from which to record traces. Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. NOTE: All cells selected in the include argument of simConfig.analysis['plotTraces'] will be automatically included in recordCells. (default: []).",
                 "suggestions": "",
                 "type": "list(float)"
-            },    
+            },
             "recordTraces": {
                 "label": "Traces to record from cells",
                 "help": "Dict of traces to record (default: {} ; example: {'V_soma': {'sec':'soma','loc':0.5,'var':'v'} }).",
@@ -1346,7 +1347,7 @@ metadata = {
                 "label": "Time step for data recording (ms)",
                 "help": "Step size in ms for data recording (default: 0.1).",
                 "suggestions": "",
-                "default": "0.1",
+                "default": 0.1,
                 "type": "float"
             },
             "printRunTime": {

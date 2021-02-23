@@ -34,6 +34,8 @@ import sys
 # -------------------------------------------------------------------------------------------------------------------
 # Define list of colors
 # -------------------------------------------------------------------------------------------------------------------
+from bokeh.themes import built_in_themes
+
 colorListType = 'alternate'  # 'graded'
 
 if colorListType == 'alternate':
@@ -45,7 +47,7 @@ elif colorListType == 'graded' and __gui__:
     import matplotlib
     cmap = matplotlib.cm.get_cmap('jet')
     colorList = [cmap(x) for x in np.linspace(0,1,12)]
-    
+
 # -------------------------------------------------------------------------------------------------------------------
 ## Exception decorator
 # -------------------------------------------------------------------------------------------------------------------
@@ -65,11 +67,11 @@ def exception(function):
         try:
             return function(*args, **kwargs)
         except Exception as e:
-            # print 
+            # print
             err = "There was an exception in %s():"%(function.__name__)
             print(("  %s \n    %s \n    %s"%(err,e,sys.exc_info())))
             return -1
- 
+
     return wrapper
 
 
@@ -77,7 +79,7 @@ def exception(function):
 ## Round to n sig figures
 # -------------------------------------------------------------------------------------------------------------------
 def _roundFigures(x, n):
-    return round(x, -int(np.floor(np.log10(abs(x)))) + (n - 1)) 
+    return round(x, -int(np.floor(np.log10(abs(x)))) + (n - 1))
 
 # -------------------------------------------------------------------------------------------------------------------
 ## show figure
@@ -107,7 +109,7 @@ def _saveFigData(figData, fileName=None, type=''):
     elif fileName.endswith('.json'):  # save to json
         print(('Saving figure data as %s ... ' % (fileName)))
         sim.saveJSON(fileName, figData)
-    else: 
+    else:
         print('File extension to save figure data not recognized')
 
 
@@ -189,7 +191,7 @@ def getCellsInclude(include, sim = None):
         <Short description of sim>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -204,34 +206,34 @@ def getCellsInclude(include, sim = None):
     cells = []
     netStimLabels = []
     for condition in include:
-        if condition == 'all':  # all cells + Netstims 
+        if condition == 'all':  # all cells + Netstims
             cellGids = [c['gid'] for c in allCells]
             cells = list(allCells)
             netStimLabels = list(allNetStimLabels)
             return cells, cellGids, netStimLabels
 
-        elif condition == 'allCells':  # all cells 
+        elif condition == 'allCells':  # all cells
             cellGids = [c['gid'] for c in allCells]
             cells = list(allCells)
 
-        elif condition == 'allNetStims':  # all cells + Netstims 
+        elif condition == 'allNetStims':  # all cells + Netstims
             netStimLabels = list(allNetStimLabels)
 
-        elif isinstance(condition, int):  # cell gid 
+        elif isinstance(condition, int):  # cell gid
             cellGids.append(condition)
-        
+
         elif isinstance(condition, basestring):  # entire pop
             if condition in allNetStimLabels:
                 netStimLabels.append(condition)
             else:
                 cellGids.extend([c['gid'] for c in allCells if c['tags']['pop']==condition])
-        
+
         # subset of a pop with relative indices
         # when load from json gets converted to list (added as exception)
-        elif (isinstance(condition, (list,tuple))  
-        and len(condition)==2 
-        and isinstance(condition[0], basestring) 
-        and isinstance(condition[1], (list,int))):  
+        elif (isinstance(condition, (list,tuple))
+        and len(condition)==2
+        and isinstance(condition[0], basestring)
+        and isinstance(condition[1], (list,int))):
             cellsPop = [c['gid'] for c in allCells if c['tags']['pop']==condition[0]]
             if isinstance(condition[1], list):
                 cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
@@ -240,9 +242,9 @@ def getCellsInclude(include, sim = None):
 
         elif isinstance(condition, (list,tuple)):  # subset
             for subcond in condition:
-                if isinstance(subcond, int):  # cell gid 
+                if isinstance(subcond, int):  # cell gid
                     cellGids.append(subcond)
-        
+
                 elif isinstance(subcond, basestring):  # entire pop
                     if subcond in allNetStimLabels:
                         netStimLabels.append(subcond)
@@ -277,7 +279,7 @@ def getCellsIncludeTags(include, tags, tagsFormat=None):
         <Short description of tagsFormat>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -286,21 +288,21 @@ def getCellsIncludeTags(include, tags, tagsFormat=None):
     cellGids = []
 
     # using list with indices
-    if tagsFormat or 'format' in allCells: 
+    if tagsFormat or 'format' in allCells:
         if not tagsFormat: tagsFormat = allCells.pop('format')
         popIndex = tagsFormat.index('pop')
 
         for condition in include:
-            if condition in  ['all', 'allCells']:  # all cells 
+            if condition in  ['all', 'allCells']:  # all cells
                 cellGids = list(allCells.keys())
                 return cellGids
 
-            elif isinstance(condition, int):  # cell gid 
+            elif isinstance(condition, int):  # cell gid
                 cellGids.append(condition)
-            
+
             elif isinstance(condition, basestring):  # entire pop
                 cellGids.extend([gid for gid,c in allCells.items() if c[popIndex]==condition])
-            
+
             elif isinstance(condition, tuple):  # subset of a pop with relative indices
                 cellsPop = [gid for gid,c in allCells.items() if c[popIndex]==condition[0]]
                 if isinstance(condition[1], list):
@@ -310,18 +312,18 @@ def getCellsIncludeTags(include, tags, tagsFormat=None):
 
     # using dict with keys
     else:
-    
+
         for condition in include:
-            if condition in  ['all', 'allCells']:  # all cells 
+            if condition in  ['all', 'allCells']:  # all cells
                 cellGids = list(allCells.keys())
                 return cellGids
 
-            elif isinstance(condition, int):  # cell gid 
+            elif isinstance(condition, int):  # cell gid
                 cellGids.append(condition)
-            
+
             elif isinstance(condition, basestring):  # entire pop
                 cellGids.extend([gid for gid,c in allCells.items() if c['pop']==condition])
-            
+
             elif isinstance(condition, tuple):  # subset of a pop with relative indices
                 cellsPop = [gid for gid,c in allCells.items() if c['pop']==condition[0]]
                 if isinstance(condition[1], list):
@@ -347,12 +349,12 @@ def syncMeasure():
 
     from .. import sim
 
-    t0=-1 
-    width=1 
+    t0=-1
+    width=1
     cnt=0
     for spkt in sim.allSimData['spkt']:
-        if (spkt>=t0+width): 
-            t0=spkt 
+        if (spkt>=t0+width):
+            t0=spkt
             cnt+=1
     return 1-cnt/(sim.cfg.duration/width)
 
@@ -391,31 +393,31 @@ def getSpktSpkid(cellGids=[], timeRange=None, sim = None):
         <Short description of cellGids>
         **Default:** ``[]``
         **Options:** ``<option>`` <description of option>
- 
+
     timeRange : <``None``?>
         <Short description of timeRange>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     sim : <``None``?>
         <Short description of sim>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
 """
 
     if not sim:
         from .. import sim
-    
+
     import pandas as pd
-    
+
     try: # Pandas 0.24 and later
         from pandas import _lib as pandaslib
     except: # Pandas 0.23 and earlier
         from pandas import lib as pandaslib
     df = pd.DataFrame(pandaslib.to_object_array([sim.allSimData['spkt'], sim.allSimData['spkid']]).transpose(), columns=['spkt', 'spkid'])
     #df = pd.DataFrame(pd.lib.to_object_array([sim.allSimData['spkt'], sim.allSimData['spkid']]).transpose(), columns=['spkt', 'spkid'])
-    
+
     if timeRange:
         min, max = [int(df['spkt'].searchsorted(timeRange[i])) for i in range(2)] # binary search faster than query
     else: # timeRange None or empty list means all times
@@ -431,8 +433,8 @@ def getSpktSpkid(cellGids=[], timeRange=None, sim = None):
 ## Default NetPyNE Bokeh theme -- based on dark_minimal
 # -------------------------------------------------------------------------------------------------------------------
 
-# Note: The Bokeh plotting APIs defaults override some theme properties. Namely: fill_alpha, 
-# fill_color, line_alpha, line_color, text_alpha and text_color. Those properties should 
+# Note: The Bokeh plotting APIs defaults override some theme properties. Namely: fill_alpha,
+# fill_color, line_alpha, line_color, text_alpha and text_color. Those properties should
 # therefore be set explicitly when using the plotting API.
 
 _guiTheme = {

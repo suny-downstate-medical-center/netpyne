@@ -42,12 +42,11 @@ cellRule = {'conds': {'cellType': 'I'}, 'diversityFraction': 0.2, 'secs': {}}  #
 cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}                              # soma params dict
 cellRule['secs']['soma']['geom'] = {'diam': 10.0, 'L': 9.0, 'Ra': 110.0}                  # soma geometry
 cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.11, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanism
-netParams.cellParams['I2rule'] = cellRule       
+netParams.cellParams['I2rule'] = cellRule
 
 
 # Simulation options
 simConfig = specs.SimConfig()        # object of class SimConfig to store simulation configuration
 
 # Create network and run simulation
-sim.create(netParams = netParams, simConfig = simConfig)    
-
+sim.create(netParams = netParams, simConfig = simConfig)

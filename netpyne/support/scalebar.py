@@ -12,7 +12,7 @@ standard_library.install_aliases()
 from matplotlib.offsetbox import AnchoredOffsetbox
 class AnchoredScaleBar(AnchoredOffsetbox):
     def __init__(self, transform, sizex=0, sizey=0, labelx=None, labely=None, loc=4,
-                 pad=0.1, borderpad=0.1, sep=2, prop=None, barcolor="black", barwidth=None, 
+                 pad=0.1, borderpad=0.1, sep=2, prop=None, barcolor="black", barwidth=None,
                  **kwargs):
         """
         Draw a horizontal and/or vertical  bar with the size in data coordinate
@@ -43,7 +43,7 @@ class AnchoredScaleBar(AnchoredOffsetbox):
         AnchoredOffsetbox.__init__(self, loc, pad=pad, borderpad=borderpad,
                                    child=bars, prop=prop, frameon=False, **kwargs)
 
-        
+
 def add_scalebar(ax, matchx=True, matchy=True, hidex=True, hidey=True, unitsx='', unitsy='', scalex=1, scaley=1, **kwargs):
     """ Add scalebars to axes
     Adds a set of scale bars to *ax*, matching the size to the ticks of the plot
@@ -58,8 +58,8 @@ def add_scalebar(ax, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=''
     def f(axis):
         l = axis.get_majorticklocs()
         return len(l)>1 and (l[1] - l[0])
-    
-    if matchx: kwargs['sizex'] = f(ax.xaxis)      
+
+    if matchx: kwargs['sizex'] = f(ax.xaxis)
     if matchy: kwargs['sizey'] = f(ax.yaxis)
 
     if 'labelx' not in kwargs or kwargs['labelx'] is None:

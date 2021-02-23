@@ -36,11 +36,11 @@ def createPythonScript(fname, netParams, simConfig):
     import sys
     import json
     from netpyne import specs
-    
+
     def replace(string):
         # convert bools and null from json to python
         return string.replace('true', 'True').replace('false', 'False').replace('null', '""')
-    
+
     def remove(dictionary):
         # remove reserved keys such as __str__, __dict__
         if isinstance(dictionary, dict):
@@ -49,7 +49,7 @@ def createPythonScript(fname, netParams, simConfig):
                     dictionary.pop(key)
                 else:
                     remove(value)
-    
+
     def addAttrToScript(attr, value, obj_name, class_instance, file):
         # write line of netpyne code if is different from default value
         if not hasattr(class_instance, attr) or value!=getattr(class_instance, attr):
@@ -73,7 +73,7 @@ def createPythonScript(fname, netParams, simConfig):
     params =  ['popParams' , 'cellParams', 'synMechParams']
     params += ['connParams', 'stimSourceParams', 'stimTargetParams']
 
-    try : 
+    try :
         with open(fname if fname.endswith('.py') else fname+'.py', 'w') as file:
             file.write('from netpyne import specs, sim\n')
             file.write(header('documentation'))

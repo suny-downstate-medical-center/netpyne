@@ -9,9 +9,9 @@ from pylab import radians, inf, ceil
 # Set up Network
 ###############################################################################
 
-sim.initialize(                
-      simConfig = params.simConfig, 
-      netParams = params.netParams)  
+sim.initialize(
+      simConfig = params.simConfig,
+      netParams = params.netParams)
 sim.net.createPops()                  # instantiate network populations
 sim.net.createCells()                 # instantiate network cells based on defined populations
 sim.net.connectCells()                # create connections between cells based on params
@@ -29,7 +29,7 @@ sim.animArm = 1  # show arm animation
 sim.graphsArm = 1  #  plot arm graphs
 sim.updateInterval = 20  # delay between arm updated (ms)
 sim.initArmMovement = 50  # time at which to start moving arm (ms)
-sim.armLen = [0.4634 - 0.173, 0.7169 - 0.4634] # elbow - shoulder from MSM;radioulnar - elbow from MSM;  
+sim.armLen = [0.4634 - 0.173, 0.7169 - 0.4634] # elbow - shoulder from MSM;radioulnar - elbow from MSM;
 sim.startAng = [0.62,1.53] # starting shoulder and elbow angles (rad) = natural rest position
 sim.targetDist = 0.15 # target distance from center (15 cm)
 
@@ -37,7 +37,7 @@ sim.targetDist = 0.15 # target distance from center (15 cm)
 allCellTags = sim._gatherAllCellTags()
 sim.pop_sh = [gid for gid,tags in allCellTags.items() if tags['pop'] == 'Psh']
 sim.pop_el = [gid for gid,tags in allCellTags.items() if tags['pop'] == 'Pel']
-sim.minPval = radians(-30) 
+sim.minPval = radians(-30)
 sim.maxPval = radians(135)
 sim.minPrate = 0.01
 sim.maxPrate = 100
@@ -56,7 +56,7 @@ sim.useRL = 1
 sim.timeoflastRL = -1
 sim.RLinterval = 50
 sim.minRLerror = 0.002 # minimum error change for RL (m)
-sim.targetid = 1 # initial target 
+sim.targetid = 1 # initial target
 sim.allWeights = [] # list to store weights
 sim.weightsfilename = 'weights.txt'  # file to store weights
 sim.plotWeights = 1  # plot weights
@@ -90,7 +90,7 @@ if sim.useArm:
 
 # Function to run at intervals during simulation
 def runArm(t):
-    # turn off RL and explor movs for last testing trial 
+    # turn off RL and explor movs for last testing trial
     if t >= sim.trainTime:
         sim.useRL = False
         sim.explorMovs = False
@@ -103,7 +103,7 @@ def runArm(t):
         if sim.rank == 0:
             critic = sim.arm.RLcritic(h.t) # get critic signal (-1, 0 or 1)
             sim.pc.broadcast(vec.from_python([critic]), 0) # convert python list to hoc vector for broadcast data received from arm
-            
+
         else: # other workers
             sim.pc.broadcast(vec, 0)
             critic = vec.to_python()[0]
@@ -122,8 +122,8 @@ def runArm(t):
                 if 'hSTDP' in conn:
                     sim.allWeights[-1].append(float(conn['hObj'].weight[0])) # save weight only for STDP conns
 
-    
-    
+
+
 def saveWeights(sim):
     ''' Save the weights for each plastic synapse '''
     with open(sim.weightsfilename,'w') as fid:
@@ -131,7 +131,7 @@ def saveWeights(sim):
             fid.write('%0.0f' % weightdata[0]) # Time
             for i in range(1,len(weightdata)): fid.write('\t%0.8f' % weightdata[i])
             fid.write('\n')
-    print(('Saved weights as %s' % sim.weightsfilename))    
+    print(('Saved weights as %s' % sim.weightsfilename))
 
 
 def plotWeights():
@@ -149,18 +149,18 @@ def plotWeights():
     ylabel('Synaptic connection id')
     colorbar()
     show()
-    
+
 
 ###############################################################################
 # Run Network with virtual arm
 ###############################################################################
 
-sim.runSimWithIntervalFunc(sim.updateInterval, runArm)        # run parallel Neuron simulation  
+sim.runSimWithIntervalFunc(sim.updateInterval, runArm)        # run parallel Neuron simulation
 sim.gatherData()                  # gather spiking data and cell info from each node
 sim.saveData()                    # save params, cell info and sim output to file (pickle,mat,txt,etc)
 sim.analysis.plotData()               # plot spike raster
 sim.arm.close(sim)
 
 if sim.plotWeights:
-    saveWeights(sim) 
-    plotWeights() 
+    saveWeights(sim)
+    plotWeights()

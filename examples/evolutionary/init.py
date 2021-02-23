@@ -1,4 +1,4 @@
-import matplotlib; matplotlib.use('Agg') 
+import matplotlib; matplotlib.use('Agg')
 from netpyne import sim
 
 # read cfg and netParams from command line arguments if available; otherwise use default

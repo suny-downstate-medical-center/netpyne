@@ -1266,6 +1266,7 @@ def plotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=Non
                 elif stat in ['sync', 'pairsync']:
                     try:
                         import pyspike
+                        import numpy as np
                     except:
                         print("Error: plotSpikeStats() requires the PySpike python package \
                             to calculate synchrony (try: pip install pyspike)")

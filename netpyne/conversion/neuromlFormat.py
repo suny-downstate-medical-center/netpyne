@@ -84,7 +84,7 @@ def _convertNetworkRepresentation(net, gids_vs_pop_indices):
 ###############################################################################
 ### Get stimulations in representation as used in NeuroML2
 ###############################################################################
-def _convertStimulationRepresentation(net,gids_vs_pop_indices, nml_doc):
+def _convertStimulationRepresentation(net,gids_vs_pop_indices, nml_doc, populations_vs_components):
 
     stims = {}
 
@@ -96,30 +96,50 @@ def _convertStimulationRepresentation(net,gids_vs_pop_indices, nml_doc):
                     pop, index = gids_vs_pop_indices[cell.gid]
                     #print("    Cell %s:\n    Tags:  %s\n    Pop:   %s[%i]\n    Stims: %s\n    Conns: %s\n"%(cell.gid,cell.tags,pop, index,cell.stims,cell.conns))
                     for stim in cell.stims:
-                        ref = stim['source']
-                        rate = stim['rate']
-                        noise = stim['noise']
+                        if stim['type']=='IClamp':
+                            il_id = '%s__%s'%(stim['label'],pop)
+                            #print('      adding IClamp stim %s: %s '%(il_id,stim))
+                            input_list = None
+                            for ii in nml_doc.networks[0].input_lists:
+                                if ii.id == il_id:
+                                    input_list = ii
+                            if not input_list:
+                                input_list = neuroml.InputList(id=il_id,
+                                               component=stim['source'],
+                                               populations=pop)
+                                nml_doc.networks[0].input_lists.append(input_list)
 
-                        netstim_found = False
-                        for conn in cell.conns:
-                            if conn['preGid'] == 'NetStim' and conn['preLabel'] == ref:
-                                assert(not netstim_found)
-                                netstim_found = True
-                                synMech = conn['synMech']
-                                #threshold = conn['threshold']
-                                delay = conn['delay']
-                                weight = conn['weight']
+                            input = neuroml.Input(id=len(input_list.input),
+                                      target="../%s/%i/%s"%(pop, index, populations_vs_components[pop]),
+                                      destination="synapses")
+                            input_list.input.append(input)
 
-                        assert(netstim_found)
-                        name_stim = 'NetStim_%s_%s_%s_%s_%s'%(ref,pop,rate,noise,synMech)
+                        elif stim['type']=='NetStim':
+                            #print('      adding NetStim stim: %s'%stim)
 
-                        stim_info = (name_stim, pop, rate, noise,synMech)
-                        if not stim_info in list(stims.keys()):
-                            stims[stim_info] = []
+                            ref = stim['source']
+                            rate = stim['rate']
+                            noise = stim['noise']
 
+                            netstim_found = False
+                            for conn in cell.conns:
+                                if conn['preGid'] == 'NetStim' and conn['preLabel'] == ref:
+                                    assert(not netstim_found)
+                                    netstim_found = True
+                                    synMech = conn['synMech']
+                                    #threshold = conn['threshold']
+                                    delay = conn['delay']
+                                    weight = conn['weight']
 
-                        stims[stim_info].append({'index':index,'weight':weight,'delay':delay})
-                        #stims[stim_info].append({'index':index,'weight':weight,'delay':delay,'threshold':threshold})
+                            assert(netstim_found)
+                            name_stim = 'NetStim_%s_%s_%s_%s_%s'%(ref,pop,rate,noise,synMech)
+
+                            stim_info = (name_stim, pop, rate, noise,synMech)
+                            if not stim_info in list(stims.keys()):
+                                stims[stim_info] = []
+
+                            stims[stim_info].append({'index':index,'weight':weight,'delay':delay})
+                            #stims[stim_info].append({'index':index,'weight':weight,'delay':delay,'threshold':threshold})
 
     #print(stims)
     return stims
@@ -285,14 +305,12 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
     """
 
 
-
     from .. import sim
 
     net = sim.net
 
     import random
     myrandom = random.Random(12345)
-
 
     print("Exporting network to NeuroML 2, reference: %s"%reference)
 
@@ -311,8 +329,13 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
 
     cells_added = []
 
-    for np_pop in list(net.pops.values()):
-        if sim.cfg.verbose: print("-- Adding population: %s"%np_pop.tags)
+    sim.cfg.verbose = False
+
+    chans_added = []
+
+    for np_pop_id in net.pops:
+        np_pop = net.pops[np_pop_id]
+        if sim.cfg.verbose: print("-- Adding a population %s: %s"%(np_pop_id,np_pop.tags))
 
         cell_param_set = {}
 
@@ -320,7 +343,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
             cell_param_set0 = net.params.cellParams[cell_name]
             someMatches = False
             someMisMatches = False
-            if sim.cfg.verbose: print("  -- Comparing conds: %s"%cell_param_set0)
+            if sim.cfg.verbose: print("  -- Checking whether pop %s matches %s: %s"%(np_pop_id,cell_name,cell_param_set0))
             if 'conds' in cell_param_set0:
                 for cond in cell_param_set0['conds']:
                     if len(cell_param_set0['conds'][cond])>0:
@@ -335,8 +358,21 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                 cell_param_set.update(cell_param_set0)
 
         if 'cellModel' in np_pop.tags and not np_pop.tags['cellModel'] == 'NetStim' and len(cell_param_set)==0:
-            print("Error, could not find cellParams for %s"%np_pop.tags)
-            exit(-1)
+
+            print('Is %s in %s...?'%(np_pop_id, net.params.cellParams.keys()))
+            if np_pop_id in net.params.cellParams:
+                print('Proceeding with assumption %s defines which cellParams...'%np_pop)
+                cell_param_set0 = net.params.cellParams[np_pop_id]
+                cell_param_set.update(cell_param_set0)
+                cell_param_set['conds'] = {}
+                cell_param_set['conds']['cellType'] = np_pop.tags['cellType']
+                cell_param_set['conds']['cellModel'] = np_pop.tags['cellModel']
+                print('Now cell params for %s are: %s...'%(np_pop_id,cell_param_set))
+
+            else:
+
+                print("Error, could not find cellParams for %s"%np_pop.tags)
+                exit(-1)
 
         if 'cellModel' in np_pop.tags and not np_pop.tags['cellModel'] == 'NetStim':
             if not 'cellModel' in cell_param_set['conds'] or cell_param_set['conds']['cellModel']=={}:
@@ -400,7 +436,6 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
 
                 import neuroml.nml.nml
                 chans_doc = neuroml.nml.nml.parseString(hh_nml2_chans)
-                chans_added = []
 
                 nml_segs = {}
 
@@ -417,9 +452,10 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                     if 'topol' in np_sec and len(np_sec['topol'])>0:
                         parent_seg = nml_segs[np_sec['topol']['parentSec']]
                         nml_seg.parent = neuroml.SegmentParent(segments=parent_seg.id)
-
-                        if not (np_sec['topol']['parentX'] == 1.0 and  np_sec['topol']['childX'] == 0):
-                            print("Currently only support cell topol with parentX == 1.0 and childX == 0")
+                        if np_sec['topol']['parentX'] == 0:
+                            nml_seg.fract_along = 0
+                        if not ((np_sec['topol']['parentX'] == 1.0 or np_sec['topol']['parentX'] == 0.0) and  np_sec['topol']['childX'] == 0.0):
+                            print("Currently only support cell topol with (parentX == 1 or 0) and childX == 0")
                             exit(1)
 
                     if not ( ('pt3d' not in np_sec['geom']) or len(np_sec['geom']['pt3d'])==0 or len(np_sec['geom']['pt3d'])==2 ):
@@ -482,17 +518,26 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                     if isinstance(vinit,dict) and len(vinit)==0:
                         vinit = -65
 
-                    mp.init_memb_potentials.append(neuroml.InitMembPotential(value="%s mV"%vinit))
+                    if len(mp.init_memb_potentials)==0:
+                        mp.init_memb_potentials.append(neuroml.InitMembPotential(value="%s mV"%vinit))
 
-                    mp.spike_threshes.append(neuroml.SpikeThresh(value="%s mV"%sim.net.params.defaultThreshold))
+                    if len(mp.spike_threshes)==0:
+                        mp.spike_threshes.append(neuroml.SpikeThresh(value="%s mV"%sim.net.params.defaultThreshold))
+
+                    # While testing HNN...
+                    mechs_to_ignore = ['dipole','ar_hnn','ca_hnn','cat_hnn','cad','kca','km']
+                    mechs_to_ignore = []
 
                     for mech_name in list(np_sec['mechs'].keys()):
                         mech = np_sec['mechs'][mech_name]
-                        if mech_name == 'hh':
+                        if mech_name in mechs_to_ignore:
+                            print('Ignoring mechanism: %s'%mechs_to_ignore)
+                        elif mech_name == 'hh' or mech_name == 'hh2':
 
                             for chan in chans_doc.ion_channel_hhs:
                                 if (chan.id == 'leak_hh' or chan.id == 'na_hh' or chan.id == 'k_hh'):
                                     if not chan.id in chans_added:
+                                        print(" > Adding %s since it's not in %s"%(chan.id, chans_added))
                                         nml_doc.ion_channel_hhs.append(chan)
                                         chans_added.append(chan.id)
 
@@ -549,8 +594,19 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
         type = 'populationList'
         if 'cellModel' in np_pop.tags and not np_pop.tags['cellModel'] ==  'NetStim':
             comp_id = populations_vs_components[np_pop.tags['pop']]
+            #print(net.params.cellParams)
+            if np_pop.tags['pop'] in net.params.cellParams:
+                cell_param_set = net.params.cellParams[np_pop.tags['pop']]
+            else:
+                cell_param_set = net.params.cellParams[np_pop.tags['cellType']]
+
+            print('Population (%s) has comp: %s (%s)'%(np_pop.tags,comp_id, cell_param_set))
+
             pop = neuroml.Population(id=np_pop.tags['pop'],component=comp_id, type=type)
-            pop.properties.append(neuroml.Property('radius',default_cell_radius))
+
+            # Is it an abstract cell? If so set radius...
+            if 'pointps' in cell_param_set['secs']['soma'] and len(cell_param_set['secs']['soma']['pointps']) == 1:
+                pop.properties.append(neuroml.Property('radius',default_cell_radius))
 
             pop.properties.append(neuroml.Property('color','%s %s %s'%(myrandom.random(),myrandom.random(),myrandom.random())))
 
@@ -652,12 +708,24 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
 
 
     if stimulations:
-        stims = _convertStimulationRepresentation(net, gids_vs_pop_indices, nml_doc)
+        for ssp in net.params.stimSourceParams:
+            ss = net.params.stimSourceParams[ssp]
+            print('Adding the stim source: %s = %s'%(ssp,ss))
+            if ss['type']=='IClamp':
+                pg = neuroml.PulseGenerator(id=ssp,
+                                    delay="%sms"%ss['del'],
+                                    duration="%sms"%ss['dur'],
+                                    amplitude="%f nA"%ss['amp'])
+
+                nml_doc.pulse_generators.append(pg)
+
+
+        stims = _convertStimulationRepresentation(net, gids_vs_pop_indices, nml_doc, populations_vs_components)
 
         for stim_info in list(stims.keys()):
             name_stim, post_pop, rate, noise, synMech = stim_info
 
-            if sim.cfg.verbose: print("Adding stim: %s"%[stim_info])
+            if sim.cfg.verbose: print("Adding a NetStim stim: %s"%[stim_info])
 
             if noise==0:
                 source = neuroml.SpikeGenerator(id=name_stim,period="%ss"%(1./rate))
@@ -666,7 +734,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                 source = neuroml.SpikeGeneratorPoisson(id=name_stim,average_rate="%s Hz"%(rate))
                 nml_doc.spike_generator_poissons.append(source)
             else:
-                raise Exception("Noise = %s is not yet supported!"%noise)
+                raise Exception("Noise = %s in a spike generator is not yet supported for NeuroML export!"%noise)
 
 
             stim_pop = neuroml.Population(id='Pop_%s'%name_stim,component=source.id,size=len(stims[stim_info]))

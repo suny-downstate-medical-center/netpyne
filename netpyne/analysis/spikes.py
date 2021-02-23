@@ -43,12 +43,9 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
 
     # Select cells to include
     cells, cellGids, netStimLabels = getInclude(include)
-    print(cellGids)
-    print(netStimLabels)
 
     df = pd.DataFrame.from_records(cells)
     df = pd.concat([df.drop('tags', axis=1), pd.DataFrame.from_records(df['tags'].tolist())], axis=1)
-
 
     keep = ['pop', 'gid', 'conns']
 
@@ -186,7 +183,7 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
                 'title': title}
 
     # Create popsDict from gidPops
-    
+
 
     figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'indPops': gidPops, 'popLabels': popLabels, 'cellGids': cellGids, 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'axisArgs': axisArgs, 'legendLabels': legendLabels}
 

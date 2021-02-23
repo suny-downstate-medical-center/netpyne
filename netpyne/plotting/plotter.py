@@ -42,6 +42,8 @@ class GeneralPlotter:
                 self.data = self.loadData(data)
             else:
                 raise Exception('In Plotter, if data is a string, it must be the path to a data file.')
+        else:
+            self.data = data
 
         if not sim:
             from .. import sim
@@ -158,8 +160,7 @@ class GeneralPlotter:
         new_manager = dummy.canvas.manager
         new_manager.canvas.figure = self.fig
         self.fig.set_canvas(new_manager.canvas)
-        self.fig.show(block=False)
-
+        self.fig.show()
 
     def addLegend(self, handles=None, labels=None, **kwargs):
 

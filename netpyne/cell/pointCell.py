@@ -171,8 +171,7 @@ class PointCell (Cell):
                 patternType = self.params['spikePattern'].get('type', None)
                 rand = h.Random()
 
-                # if sync, don't initialize randomizer based on gid
-                if self.params.get('sync', False):
+                if self.params['spikePattern'].get('sync', False):
                     rand.Random123(sim.hashStr('vecstim_spikePattern'), self.params['seed'])
                 else:
                     rand.Random123(sim.hashStr('vecstim_spikePattern'), self.gid, self.params['seed'])

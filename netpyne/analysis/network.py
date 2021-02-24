@@ -1031,7 +1031,7 @@ def plot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, t
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot cell shape
 # -------------------------------------------------------------------------------------------------------------------
-@exception
+#@exception
 def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElectrodes=False, synStyle='.', synSize=3, dist=0.6, elev=90, azim=-90, cvar=None, cvals=None, iv=False, ivprops=None, includeAxon=True, bkgColor=None, axis='auto', axisLabels=False, figSize=(10,8), fontSize=12, saveData=None, dpi=300, saveFig=None, showFig=True):
     """
     Function for/to <short description of `netpyne.analysis.network.plotShape`>

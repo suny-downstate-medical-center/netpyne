@@ -36,6 +36,8 @@
 
 - Fixed repeated rxd simulation issue for rates and reactions
 
+- Fixed pointNeuron spikePattern 'sync' option
+
 # Version 0.9.8
 
 **New features**

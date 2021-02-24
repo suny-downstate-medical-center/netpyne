@@ -32,7 +32,7 @@ cellRule = netParams.importCellParams(
     conds={'cellType': 'PYR', 'cellModel': 'HH3D_hoc'},
     fileName='geom.hoc', 
     cellName='E21', 
-    importSynMechs=True,
+    importSynMechs=False,
     )
 cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}
 for secName in cellRule['secs']:

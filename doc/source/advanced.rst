@@ -38,15 +38,19 @@ Additionally, we provide an example NetPyNE file (:download:`tut_import.py <code
 Hodgkin-Huxley model
 ^^^^^^^^^^^^^^^^^^^^
 
-*Description:* A 2-compartment (soma and dendrite) cell with ``hh`` and ``pas`` mechanisms, and synaptic mechanisms. Defined as python class.
+*Description:* A 2-compartment (soma and dendrite) cell with ``hh`` and ``pas`` mechanisms, and synaptic mechanisms. Defined as a Python class.
 
 *Required files:*
 :download:`HHCellFile.py <code/HHCellFile.py>`
 
 *NetPyNE Code* ::
 
-	netParams.importCellParams(label='PYR_HH_rule', conds={'cellType': 'PYR', 'cellModel': 'HH'},
-		fileName='HHCellFile.py', cellName='HHCellClass', importSynMechs=True)
+	netParams.importCellParams(
+		label='PYR_HH_rule', 
+		conds={'cellType': 'PYR', 'cellModel': 'HH'},
+		fileName='HHCellFile.py', 
+		cellName='HHCellClass', 
+		importSynMechs=True)
 
 
 .. _import_HH3D_hoc:
@@ -61,9 +65,15 @@ Hodgkin-Huxley model with 3D geometry (from .hoc)
 
 *NetPyNE Code:* ::
 
-	cellRule = netParams.importCellParams(label='PYR_HH3D_hoc', conds={'cellType': 'PYR', 'cellModel': 'HH3D'}, 
-		fileName='geom.hoc', cellName='E21', importSynMechs=True)
-	cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  	# soma hh mechanism
+	cellRule = netParams.importCellParams(
+		label='PYR_HH3D_hoc', 
+		conds={'cellType': 'PYR', 'cellModel': 'HH3D'}, 
+		fileName='geom.hoc', 
+		cellName='E21', 
+		importSynMechs=False)
+	
+	cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70} # soma hh mechanism
+	
 	for secName in cellRule['secs']:
 	 	cellRule['secs'][secName]['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
 	 	cellRule['secs'][secName]['geom']['cm'] = 1
@@ -77,18 +87,24 @@ Hodgkin-Huxley model with 3D geometry (from .swc)
 
 Importing a morphology into NetPyNE from an SWC file is simple, but NetPyNE does no testing or validation of morphologies, so you should ensure your morphology file is accurate and valid before using it in NetPyNE.
 
-The following example loads a morphology from a SWC file, adds a Hodgkin-Huxley mechanism to the soma, and creates a population using the cell model.
-
 *Required files:*
 :download:`BS0284.swc <code/BS0284.swc>`
 
 *NetPyNE Code:* ::
 
-	cellRule = netParams.importCellParams(label='PYR_HH3D_swc', conds={'cellType': 'PYR', 'cellModel': 'HH3D'}, fileName='BS0284.swc', cellName='swc_cell')
-	cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  	# soma hh mechanism
+	cellRule = netParams.importCellParams(
+		label='PYR_HH3D_swc', 
+		conds={'cellType': 'PYR', 'cellModel': 'HH3D'}, 
+		fileName='BS0284.swc', 
+		cellName='swc_cell')
+	
+	netParams.renameCellParamsSec('PYR_HH3D_swc_rule', 'soma_0', 'soma')  # rename imported section 'soma_0' to 'soma'
+	
 	for secName in cellRule['secs']:
 	 	cellRule['secs'][secName]['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
 	 	cellRule['secs'][secName]['geom']['cm'] = 1
+	 	if secName.startswith('soma'):
+			cellRule['secs'][secName]['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}
 
 
 .. _import_Traub:
@@ -117,9 +133,14 @@ ModelDB link: http://senselab.med.yale.edu/ModelDB/showmodel.cshtml?model=20756
 
 *NetPyNE Code:* ::
 
-	cellRule = netParams.importCellParams(label='PYR_Traub_rule', conds= {'cellType': 'PYR', 'cellModel': 'Traub'}, 
-		fileName='pyr3_traub.hoc', cellName='pyr3')
+	cellRule = netParams.importCellParams(
+		label='PYR_Traub_rule', 
+		conds= {'cellType': 'PYR', 'cellModel': 'Traub'}, 
+		fileName='pyr3_traub.hoc', 
+		cellName='pyr3')
+	
 	somaSec = cellRule['secLists']['Soma'][0] 
+	
 	cellRule['secs'][somaSec]['spikeGenLoc'] = 0.5
 
 
@@ -143,8 +164,11 @@ ModelDB link: http://senselab.med.yale.edu/ModelDB/showModel.cshtml?model=2488 (
 
 *NetPyNE Code:* ::
 
-	netParams.importCellParams(label='PYR_Mainen_rule', conds={'cellType': 'PYR', 'cellModel': 'Mainen'}, 
-		fileName='mainen.py', cellName='PYR2')
+	netParams.importCellParams(
+		label='PYR_Mainen_rule', 
+		conds={'cellType': 'PYR', 'cellModel': 'Mainen'}, 
+		fileName='mainen.py', 
+		cellName='PYR2')
 
 
 .. _import_Friesen:
@@ -167,8 +191,12 @@ Friesen model
 
 *NetPyNE Code:* ::
 
-	cellRule = netParams.importCellParams(label='PYR_Friesen_rule', conds={'cellType': 'PYR', 'cellModel': 'Friesen'}, 
-		fileName='friesen.py', cellName='MakeRSFCELL')
+	cellRule = netParams.importCellParams(
+		label='PYR_Friesen_rule', 
+		conds={'cellType': 'PYR', 'cellModel': 'Friesen'}, 
+		fileName='friesen.py', 
+		cellName='MakeRSFCELL')
+	
 	cellRule['secs']['axon']['spikeGenLoc'] = 0.5  # spike generator location.
 
 .. _import_Izhi03a:
@@ -186,8 +214,13 @@ Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 
 *NetPyNE Code:* ::
 
-	cellRule = netParams.importCellParams(label='PYR_Izhi03a_rule', conds={'cellType': 'PYR', 'cellModel':'Izhi2003a'},
-		fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking', 'host':'dummy'})
+	cellRule = netParams.importCellParams(
+		label='PYR_Izhi03a_rule', 
+		conds={'cellType': 'PYR', 'cellModel':'Izhi2003a'},
+		fileName='izhi2003Wrapper.py', 
+		cellName='IzhiCell',  
+		cellArgs={'type':'tonic spiking', 'host':'dummy'})
+
 	cellRule['secs']['soma']['pointps']['Izhi2003a_0']['vref'] = 'V' # specify that uses its own voltage V
 
 
@@ -206,8 +239,12 @@ Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 
 *NetPyNE Code:* ::
 
-	netParams.importCellParams(label='PYR_Izhi03b_rule', conds={'cellType': 'PYR', 'cellModel':'Izhi2003b'},
-		fileName='izhi2003Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'tonic spiking'})
+	netParams.importCellParams(
+		label='PYR_Izhi03b_rule', 
+		conds={'cellType': 'PYR', 'cellModel':'Izhi2003b'},
+		fileName='izhi2003Wrapper.py', 
+		cellName='IzhiCell',  
+		cellArgs={'type':'tonic spiking'})
 
 
 .. _import_Izhi07a:
@@ -225,9 +262,15 @@ Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 
 *NetPyNE Code:* ::
 
-	cellRule = netParams.importCellParams(label='PYR_Izhi07a_rule', conds={'cellType': 'PYR', 'cellModel':'Izhi2007a'}, 
-		fileName='izhi2007Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'RS', 'host':'dummy'})
+	cellRule = netParams.importCellParams(
+		label='PYR_Izhi07a_rule', 
+		conds={'cellType': 'PYR', 'cellModel':'Izhi2007a'}, 
+		fileName='izhi2007Wrapper.py', 
+		cellName='IzhiCell',  
+		cellArgs={'type':'RS', 'host':'dummy'})
+	
 	cellRule['secs']['soma']['pointps']['Izhi2007a_0']['vref'] = 'V' # specify that uses its own voltage V
+	
 	cellRule['secs']['soma']['pointps']['Izhi2007a_0']['synList'] = ['AMPA', 'NMDA', 'GABAA', 'GABAB']  # specify its own synapses
 
 
@@ -246,8 +289,12 @@ Modeldb link: https://senselab.med.yale.edu/modeldb/showModel.cshtml?model=39948
 
 *NetPyNE Code:* ::
 
-	netParams.importCellParams(label='PYR_Izhi07b_rule', conds={'cellType': 'PYR', 'cellModel':'Izhi2007b'},
-		fileName='izhi2007Wrapper.py', cellName='IzhiCell',  cellArgs={'type':'RS'})
+	netParams.importCellParams(
+		label='PYR_Izhi07b_rule', 
+		conds={'cellType': 'PYR', 'cellModel':'Izhi2007b'},
+		fileName='izhi2007Wrapper.py', 
+		cellName='IzhiCell',  
+		cellArgs={'type':'RS'})
 
 
 The full code to import all cell models above and create a network with them is available here: :download:`tut_import.py <code/tut_import.py>`.

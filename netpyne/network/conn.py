@@ -775,8 +775,10 @@ def _addCellConn(self, connParam, preCellGid, postCellGid):
         'synsPerConn': finalParam['synsPerConn']}
 
         # if 'threshold' in connParam: params['threshold'] = connParam.get('threshold')  # deprecated, use threshold in preSyn cell sec
-        if 'shape' in connParam: params['shape'] = connParam.get('shape')
+        if 'shape' in connParam: params['shape'] = connParam.get('shape')    
         if 'plast' in connParam: params['plast'] = connParam.get('plast')
+        if 'weightIndex' in connParam: params['weightIndex'] = connParam.get('weightIndex')        
+
         if 'gapJunction' in connParam:
             params['gapJunction'] = connParam.get('gapJunction')
             params['preLoc'] = connParam.get('preLoc')

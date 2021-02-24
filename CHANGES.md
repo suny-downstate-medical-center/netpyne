@@ -22,6 +22,10 @@
 
 - Batch now polls processes, prints their output and terminates them once completed
 
+- Updated web documentation to explain importing SWC files and add Recording Configuration section
+
+- Added link to Jupyter notebook tutorial and video to website front page
+
 **Bug fixes** 
 
 - Made rate_b be positional instead of keyword argument in rxd multiCompartmentReaction

@@ -150,7 +150,6 @@ if 'PT5B_full' not in loadCellParams:
     # Remove Na (TTX)
     if cfg.removeNa:
         for secName in cellRule['secs']: cellRule['secs'][secName]['mechs']['nax']['gbar'] = 0.0
-
     # Temporary fix: reduce size of axon for viewing purposes
     cellRule['secs']['axon']['geom']['pt3d'] = cellRule['secs']['axon']['geom']['pt3d'][0:1]
 
@@ -190,7 +189,6 @@ if 'SOM_simple' not in loadCellParams:
     cellRule['secLists']['spiny'] = ['soma', 'dend']
     netParams.addCellParamsWeightNorm('SOM_simple', 'conn/SOM_simple_weightNorm.pkl', threshold=cfg.weightNormThreshold)
     netParams.saveCellParamsRule(label='SOM_simple', fileName='cells/SOM_simple_cellParams.pkl')
-
 
 
 #------------------------------------------------------------------------------
@@ -358,7 +356,6 @@ if cfg.addConn and cfg.EEGain > 0.0:
                         'delay': 'defaultDelay+dist_3D/propVelocity',
                         'synsPerConn': cfg.synsperconn[cellModel],
                         'sec': 'spiny'}
-
 
 #------------------------------------------------------------------------------
 ## E -> I

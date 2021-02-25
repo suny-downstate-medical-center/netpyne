@@ -1,14 +1,12 @@
 COMMENT
-kca.mod
+km.mod
 
-Calcium-dependent potassium channel
-Based on
-Pennefather (1990) -- sympathetic ganglion cells
-taken from
-Reuveni et al (1993) -- neocortical cells
+Potassium channel, Hodgkin-Huxley style kinetics
+Based on I-M (muscarinic K channel)
+Slow, noninactivating
 
 Author: Zach Mainen, Salk Institute, 1995, zach@salk.edu
-
+	
 26 Ago 2002 Modification of original channel to allow 
 variable time step and to correct an initialization error.
 Done by Michael Hines(michael.hines@yale.e) and 
@@ -16,8 +14,8 @@ Ruggero Scorcioni(rscorcio@gmu.edu) at EU Advance Course
 in Computational Neuroscience. Obidos, Portugal
 
 20110202 made threadsafe by Ted Carnevale
-20120105 SOLVE switched to derivimplicit from euler - TMM
-20120106 SOLVE switched back to cnexp because ode linear in n -TMM
+20120514 fixed singularity in PROCEDURE rates
+
 Special comment:
 
 This mechanism was designed to be run at a single operating 
@@ -49,18 +47,14 @@ constants were originally determined) to tadj*gbar at the
 "operating temperature" celsius.
 ENDCOMMENT
 
-INDEPENDENT {t FROM 0 TO 1 WITH 1 (ms)}
-
 NEURON {
     THREADSAFE
-	SUFFIX kca
+	SUFFIX km
 	USEION k READ ek WRITE ik
-	USEION ca READ cai
 	RANGE n, gk, gbar
 	RANGE ninf, ntau
-	GLOBAL Ra, Rb, caix
-	GLOBAL q10, temp, vmin, vmax
-	RANGE tadj
+	GLOBAL Ra, Rb
+	GLOBAL q10, temp, tadj, vmin, vmax
 }
 
 UNITS {
@@ -72,15 +66,14 @@ UNITS {
 
 PARAMETER {
 	gbar = 10   	(pS/um2)	: 0.03 mho/cm2
-	v 		(mV)
-	cai  		(mM)
-	caix = 1	
-									
-	Ra   = 0.01	(/ms)		: max act rate  
-	Rb   = 0.02	(/ms)		: max deact rate 
+								
+	tha  = -30	(mV)		: v 1/2 for inf
+	qa   = 9	(mV)		: inf slope		
+	
+	Ra   = 0.001	(/ms)		: max act rate  (slow)
+	Rb   = 0.001	(/ms)		: max deact rate  (slow)
 
-	dt		(ms)
-	celsius		(degC)
+:	dt		(ms)
 	temp = 23	(degC)		: original temp 	
 	q10  = 2.3			: temperature sensitivity
 
@@ -90,21 +83,25 @@ PARAMETER {
 
 
 ASSIGNED {
+	v 		(mV)
+	celsius		(degC)
 	a		(/ms)
 	b		(/ms)
 	ik 		(mA/cm2)
 	gk		(pS/um2)
 	ek		(mV)
 	ninf
-	ntau 		(ms)	
+	ntau (ms)	
 	tadj
 }
  
 
 STATE { n }
 
-INITIAL { 
-	rates(cai)
+INITIAL {
+    tadj = q10^((celsius - temp)/(10 (degC))) : make all threads calculate tadj at initialization
+
+	trates(v)
 	n = ninf
 }
 
@@ -117,39 +114,55 @@ BREAKPOINT {
 LOCAL nexp
 
 DERIVATIVE states {   :Computes state variable n 
-        rates(cai)      :             at the current v and dt.
-        n' =  (ninf-n)/ntau
+        trates(v)      :             at the current v and dt.
+        n' = (ninf-n)/ntau
 
 }
 
-PROCEDURE rates(cai(mM)) {  
+PROCEDURE trates(v (mV)) {  :Computes rate and other constants at current v.
+                      :Call once from HOC to initialize inf at resting v.
+    TABLE ninf, ntau
+    DEPEND celsius, temp, Ra, Rb, tha, qa
+    FROM vmin TO vmax WITH 199
 
-        
+	rates(v): not consistently executed from here if usetable_hh == 1
 
-        a = Ra * cai^caix
-        b = Rb
-
-        tadj = q10^((celsius - temp)/10)
-
-        ntau = 1/tadj/(a+b)
-	ninf = a/(a+b)
-
- 
 :        tinc = -dt * tadj
 :        nexp = 1 - exp(tinc/ntau)
 }
-<<<<<<< HEAD
+
+UNITSOFF
+PROCEDURE rates(v (mV)) {  :Computes rate and other constants at current v.
+                      :Call once from HOC to initialize inf at resting v.
+
+    : singular when v = tha
+:    a = Ra * (v - tha) / (1 - exp(-(v - tha)/qa))
+:    a = Ra * qa*((v - tha)/qa) / (1 - exp(-(v - tha)/qa))
+:    a = Ra * qa*(-(v - tha)/qa) / (exp(-(v - tha)/qa) - 1)
+    a = Ra * qa * efun(-(v - tha)/qa)
+
+    : singular when v = tha
+:    b = -Rb * (v - tha) / (1 - exp((v - tha)/qa))
+:    b = -Rb * qa*((v - tha)/qa) / (1 - exp((v - tha)/qa))
+:    b = Rb * qa*((v - tha)/qa) / (exp((v - tha)/qa) - 1)
+    b = Rb * qa * efun((v - tha)/qa)
+
+        tadj = q10^((celsius - temp)/10)
+        ntau = 1/tadj/(a+b)
+	ninf = a/(a+b)
+}
+UNITSON
+
+FUNCTION efun(z) {
+	if (fabs(z) < 1e-4) {
+		efun = 1 - z/2
+	}else{
+		efun = z/(exp(z) - 1)
+	}
+}
 
 
 
 
 
 
-=======
-
-
-
-
-
-
->>>>>>> origin_netpyne/coreneuron

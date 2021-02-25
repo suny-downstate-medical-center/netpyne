@@ -42,6 +42,7 @@ class SimConfig(object):
         self.hParams = Dict({'celsius': 6.3, 'v_init': -65.0, 'clamp_resist': 0.001})  # parameters of h module
         self.cache_efficient = False  # use CVode cache_efficient option to optimize load when running on many cores
         self.cvode_active = False  # Use CVode variable time step
+        self.use_fast_imem = False  # use CVode fast_imem to record membrane voltage via i_membrane_
         self.cvode_atol = 0.001  # absolute error tolerance
         self.seeds = Dict({'conn': 1, 'stim': 1, 'loc': 1}) # Seeds for randomizers (connectivity, input stimulation and cell locations)
         self.rand123GlobalIndex = None  # Sets the global index used by all instances of the Random123 instances of Random

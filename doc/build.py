@@ -3,12 +3,15 @@ This is a script to build the NetPyNE html documentation
 
 All steps should be executed from netpyne/doc
 
-The following is required:
-Autodoc summary table: https://autodocsumm.readthedocs.io/en/latest/index.html
+The following are required:
+1) Sphinx Documentation Generator: https://www.sphinx-doc.org/en/master/
+2) Sphinx RTD Theme
+3) Autodoc summary table: https://autodocsumm.readthedocs.io/en/latest/index.html
 
 Which can be installed with:
-pip install autodocsumm
-
+python3 -m pip install -U sphinx
+python3 -m pip install -U sphinx_rtd_theme
+python3 -m pip install -U autodocsumm
 
 Here are the steps to release a new version of NetPyNE
 (step 10 is completed by executing this file):

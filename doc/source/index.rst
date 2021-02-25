@@ -13,6 +13,8 @@ To make NetPyNE more accessible, we have released a (beta version) graphical use
 For a detailed overview of NetPyNE, including an interactive tutorial utilizing the GUI, please see our `CNS*2020 <https://www.cnsorg.org/cns-2020>`_
 tutorial: **Building mechanistic multiscale models: from molecules to networks using NEURON and NetPyNE**.  The complete video is available `here <https://yale.zoom.us/rec/play/tMAkcrr8-jo3HNCU4wSDUaR8W427LaKs1HAW_aUPzkmzUSJRO1WnY7cXZep77NjtCLWqwFVD6Ya8aNTL?continueMode=true&_x_zm_rtaid=J63YcHJGT9CUEjhkklHizQ.1598553844678.e87215956b2d8a50ef33ec4d6479b3b2&_x_zm_rhtaid=388>`_ and slides are available `here <http://bit.ly/cns20-netpyne>`_.
 
+Check out our latest tutorial: **Virtual Environments, Jupyter Notebooks, and NetPyNE basics**.  The video is available `here <https://youtu.be/TV7ipuDHBd0>`_ and the notebook is available `here <https://github.com/Neurosim-lab/netpyne/blob/development/netpyne/tutorials/netpyne_tut1/netpyne_tut1.ipynb>`_ .
+
 Join our `NetPyNE mailing list <https://groups.google.com/forum/#!forum/netpyne-mailing>`_ to receive updates on version releases and other major announcements.  Get your questions answered and participate in the NetPyNE community at the `NetPyNE forum <https://groups.google.com/forum/#!forum/netpyne-forum>`_ or the `NetPyNE section of the NEURON forum <https://www.neuron.yale.edu/phpBB/viewforum.php?f=45>`_.
 
 The NetPyNE source code is available on `GitHub <https://github.com/Neurosim-lab/netpyne>`_.

@@ -181,11 +181,9 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
     axisArgs = {'xlabel': 'Time (ms)', 
                 'ylabel': ylabelText, 
                 'title': title}
+    
 
-    # Create popsDict from gidPops
-
-
-    figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'indPops': gidPops, 'popLabels': popLabels, 'cellGids': cellGids, 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'axisArgs': axisArgs, 'legendLabels': legendLabels}
+    figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'popNumCells': popNumCells, 'popLabels': popLabels, 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'axisArgs': axisArgs, 'legendLabels': legendLabels}
 
     if saveData:
         saveFigData(figData, fileName=fileName, fileDesc='raster_data', fileType=fileType, fileDir=fileDir, sim=sim)

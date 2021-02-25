@@ -2,7 +2,7 @@
 
 NEURON {
         SUFFIX cadyn
-        USEION ca READ ica WRITE cai 
+        USEION ca READ cai,ica WRITE cai 
         RANGE ca 
 	GLOBAL depth,cainf,taur 
      
@@ -21,16 +21,16 @@ PARAMETER {
        depth	= .1	(um)		
         taur =  200 (ms)	: rate of calcium removal for stress conditions
 	cainf	= 50e-6(mM)	:changed oct2
+	cai		(mM)
 }
 
 ASSIGNED {
 	ica		(mA/cm2)
 	drive_channel	(mM/ms)
-        cai             (mM)
 }
 
 STATE {
-	ca		(mM)
+	ca		(mM) 
 }
 
  

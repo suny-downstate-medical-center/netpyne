@@ -3,21 +3,23 @@ TITLE K-A channel from Klee Ficker and Heinemann
 : to account for Hoffman et al 1997 proximal region kinetics
 : used only in soma and sections located < 100 microns from the soma
 
+
 NEURON {
-	SUFFIX kapcb
-	USEION k READ ko, ki WRITE ik		:Changed from READ ek, 23/04/2010,Nassi
+	SUFFIX kapin
+	USEION k READ ek WRITE ik
         RANGE gkabar, ik
         :GLOBAL ninf,linf,taul,taun,lmin
-        RANGE qt
 }
 
 UNITS {
 	(mA) = (milliamp)
 	(mV) = (millivolt)
+
 }
 
 
 PARAMETER {                       :parameters that can be entered when function is called in cell-setup
+
        	gkabar = 0      (mho/cm2) :initialized conductance
         vhalfn = 11     (mV)      :activation half-potential
         vhalfl = -56    (mV) 	  :inactivation half-potential
@@ -34,9 +36,11 @@ PARAMETER {                       :parameters that can be entered when function 
 	tq = -40	(mV)
 	qq = 5		(mV)
 	q10 = 5                   :temperature sensitivity
-
 }
 
+
+
+ 
 ASSIGNED {       :parameters needed to solve DE
 	v               (mV)
         ek              (mV)      :K reversal potential  (reset in cell-setup.hoc)
@@ -46,16 +50,14 @@ ASSIGNED {       :parameters needed to solve DE
         linf      
         taul            (ms)
         taun            (ms)
-	ko		(mM)
-	ki		(mM)
-        qt
 }
+
 
 STATE {          :the unknown parameters to be solved in the DEs 
 	n l
 }
 
-:LOCAL qt
+LOCAL qt
 
 INITIAL {		:initialize the following parameter using rates()
         qt = q10^((celsius-24)/10(degC))         : temprature adjustment factor
@@ -66,7 +68,7 @@ INITIAL {		:initialize the following parameter using rates()
 
 BREAKPOINT {
 	SOLVE states METHOD cnexp
-	ek=25*log(ko/ki)			:Changed, added, 23/04/2010, Nassi
+:	ik = gkabar*n*l*(v+70)
 	ik = gkabar*n*l*(v-ek)
 }
 

@@ -9,6 +9,7 @@ NEURON {
 	USEION k READ ek WRITE ik
         RANGE gkabar, ik
         :GLOBAL ninf,linf,taul,taun,lmin
+        RANGE qt
 }
 
 UNITS {
@@ -50,6 +51,7 @@ ASSIGNED {       :parameters needed to solve DE
         linf      
         taul            (ms)
         taun            (ms)
+        qt
 }
 
 
@@ -57,7 +59,7 @@ STATE {          :the unknown parameters to be solved in the DEs
 	n l
 }
 
-LOCAL qt
+:LOCAL qt
 
 INITIAL {		:initialize the following parameter using rates()
         qt = q10^((celsius-24)/10(degC))         : temprature adjustment factor

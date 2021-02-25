@@ -138,18 +138,9 @@ PROCEDURE rates(cai(mM)) {
 :        tinc = -dt * tadj
 :        nexp = 1 - exp(tinc/ntau)
 }
-<<<<<<< HEAD
 
 
 
 
 
 
-=======
-
-
-
-
-
-
->>>>>>> origin_netpyne/coreneuron

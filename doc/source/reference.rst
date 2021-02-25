@@ -760,8 +760,8 @@ Recording configuration
 
 You can record a wide variety of traces from any or all cells.  In order to record traces from cells, there are two parameters that must be set in the simConfig: ``recordCells`` and ``recordTraces``.
 
-recordCells
-^^^^^^^^^^^
+simConfig.recordCells
+^^^^^^^^^^^^^^^^^^^^^
 
 The ``recordCells`` list specifies which cells to attempt to record traces from.  ``recordCells`` can include cell gids and/or population labels in any combination, or it can be set to ``['all']`` to record from all cells.  Only cells specified in this list will have any traces recorded from them.  (Note that any cells specified in the ``include`` parameter of ``simConfig.analysis['plotTraces']`` are automatically added to ``recordCells`` for convenience.)
 
@@ -786,8 +786,8 @@ The ``recordCells`` list specifies which cells to attempt to record traces from.
 
 Once you have specified the cells to record from, you need to specify what to record.
 
-recordTraces
-^^^^^^^^^^^^
+simConfig.recordTraces
+^^^^^^^^^^^^^^^^^^^^^^
 
 The ``recordTraces`` dictionary specifies which traces to record (and, if using 'conditions', which subset of cells in ``recordCells`` to record the traces from).  Each entry in ``recordTraces`` is also a dictionary, whose key is the name of the trace (an arbitrary string you may choose) and whose value is a dictionary with the specifications of the desired trace.
 
@@ -869,12 +869,12 @@ From a specific section and location, you can record section variables such as v
 	# soma(0.5).hh._ref_gna in NEURON.
 	simConfig.recordTraces['gNa'] = {'sec': 'soma', 'loc': 0.5, 'mech': 'hh', 'var': 'gna'}  
 	
-	# record the 'g' variable (conductance) in the 'AMPA” synaptic mechanism located at the 
+	# record the 'g' variable (conductance) in the 'AMPA' synaptic mechanism located at the 
 	# distal end of the 'dend' section.  This is equivalent to recording 
 	# dend(1.0).AMPA._ref_g in NEURON.
 	simConfig.recordTraces['gAMPA'] = {'sec': 'dend', 'loc': 1.0, 'synMech': 'AMPA', 'var': 'g'}  
 	
-	# record the 'i' variable (current) from the 'IClamp0” stimulation source located in the 
+	# record the 'i' variable (current) from the 'IClamp0' stimulation source located in the 
 	# middle of the 'soma' section in cell 0.  This is equivalent to recording 
 	# cells[0].stims[0]['hObj'].i in NEURON.
 	simConfig.recordTraces['iStim'] = {'sec': 'soma', 'loc': 0.5, 'stim': 'IClamp0', 'var': 'i', 'conds': {'gid': 0}}  

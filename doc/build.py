@@ -4,14 +4,18 @@ This is a script to build the NetPyNE html documentation
 All steps should be executed from netpyne/doc
 
 The following are required:
-1) Sphinx Documentation Generator: https://www.sphinx-doc.org/en/master/
+1) Sphinx documentation generator: https://www.sphinx-doc.org/en/master/
 2) Sphinx RTD Theme
 3) Autodoc summary table: https://autodocsumm.readthedocs.io/en/latest/index.html
+4) Wheel packager: https://wheel.readthedocs.io/en/stable/
+5) Twine packager: https://twine.readthedocs.io/en/latest/
 
 Which can be installed with:
 python3 -m pip install -U sphinx
 python3 -m pip install -U sphinx_rtd_theme
 python3 -m pip install -U autodocsumm
+python3 -m pip install -U wheel
+python3 -m pip install -U twine
 
 Here are the steps to release a new version of NetPyNE
 (step 10 is completed by executing this file):
@@ -43,7 +47,7 @@ Here are the steps to release a new version of NetPyNE
     11c) ssh gkaue9v7ctjf@107.180.3.236 "cp -r ~/redirect_html/. ~/public_html/"
 12) Update PYPI (pip) with the latest release
     12a) cd netpyne
-    12b) python setup.py bdist_wheel --universal
+    12b) python3 setup.py bdist_wheel --universal
     12c) python setup.py upload_via_twine
          Username: salvadord
 13) Announce the new release

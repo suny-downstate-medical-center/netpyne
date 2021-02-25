@@ -41,6 +41,9 @@ class SimConfig(object):
         self.dt = 0.025 # Internal integration timestep to use
         self.hParams = Dict({'celsius': 6.3, 'v_init': -65.0, 'clamp_resist': 0.001})  # parameters of h module
         self.cache_efficient = False  # use CVode cache_efficient option to optimize load when running on many cores
+        self.coreneuron = False  # use CoreNEURON to run the simulation (beta version)
+        self.gpu = False  # enable GPU execution in CoreNEURON
+        self.prcellstate = -1  # enable prcellstate for cell defined (-1 for none)
         self.cvode_active = False  # Use CVode variable time step
         self.use_fast_imem = False  # use CVode fast_imem to record membrane voltage via i_membrane_
         self.cvode_atol = 0.001  # absolute error tolerance

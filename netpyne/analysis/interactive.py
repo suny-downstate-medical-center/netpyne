@@ -372,7 +372,7 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive dipole
 # -------------------------------------------------------------------------------------------------------------------
-#@exception
+@exception
 def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=None, t=None,  showFig=False, **kwargs):
     """
     Function for/to <short description of `netpyne.analysis.interactive.iplotDipole`>

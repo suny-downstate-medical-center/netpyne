@@ -30,7 +30,7 @@
 
 - Made rate_b be positional instead of keyword argument in rxd multiCompartmentReaction
 
-- Check if _morphSegCoords exists in population before using
+- Check if \_morphSegCoords exists in population before using
 
 - Fixed bug to avoid recursive creating of synMechs when loading with cfg.oneSynPerNetcon=True
 

@@ -29,7 +29,7 @@ from numbers import Number
 from .utils import exception, getInclude, getSpktSpkid
 from .utils import saveData as saveFigData
 
-#@exception
+@exception
 def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8, orderBy='gid', popRates=True, saveData=False, fileName=None, fileDesc=None, fileType=None, fileDir=None, **kwargs):
     """
     Function to prepare data for creating a raster plot

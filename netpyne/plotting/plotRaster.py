@@ -169,13 +169,13 @@ def plotRaster(rasterData=None, popNumCells=None, popLabels=None, popColors=None
         a *dict* containing any or all legend kwargs.  These include ``'title'``, ``'loc'``, ``'fontsize'``, ``'bbox_to_anchor'``, ``'borderaxespad'``, and ``'handlelength'``.
 
     rcParams : dict
-        a *dict* containing any or all matplotlib rcParams.  To see all options, execute `import matplotlib; print(matplotlib.rcParams)` in Python.  Any options in this dict will be used for this current figure and then returned to their prior settings.  
+        a *dict* containing any or all matplotlib rcParams.  To see all options, execute ``import matplotlib; print(matplotlib.rcParams)`` in Python.  Any options in this *dict* will be used for this current figure and then returned to their prior settings.  
 
 
     Returns
     -------
     rasterPlot : *matplotlib figure*
-        By default, returns the figure.  If ``returnPlotter`` is ``True``, instead returns the NetPyNE Plotter object used.
+        By default, returns the figure.  If ``returnPlotter`` is ``True``, instead returns the NetPyNE *Plotter object* used.
 
 
     Examples

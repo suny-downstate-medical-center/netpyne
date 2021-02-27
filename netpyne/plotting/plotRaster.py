@@ -14,14 +14,14 @@ def plotRaster(rasterData=None, popNumCells=None, popLabels=None, popColors=None
     rasterData : list, tuple, dict, str
         the data necessary to plot the raster (spike times and spike indices, at minimum).  
 
-        If a *list* or a *tuple*, the first item must be a *list* of spike times and the second item must be a *list* the same length of spike indices (the id of the cell corresponding to that spike time).  Optionally, a third item may be a *list* of *ints* representing the number of cells in each population (in lieu of ``popNumCells``).  Optionally, a fourth item may be a *list* of *strings* representing the population names (in lieu of ``popLabels``). 
+        *Default:* ``None`` uses ``analysis.prepareRaster`` to produce ``rasterData`` using the current sim object.
+
+        *Options:* if a *list* or a *tuple*, the first item must be a *list* of spike times and the second item must be a *list* the same length of spike indices (the id of the cell corresponding to that spike time).  Optionally, a third item may be a *list* of *ints* representing the number of cells in each population (in lieu of ``popNumCells``).  Optionally, a fourth item may be a *list* of *strs* representing the population names (in lieu of ``popLabels``). 
         
         If a *dict* it must have keys ``'spkTimes'`` and ``'spkInds'`` and may optionally include ``'popNumCells'`` and ``'popLabels'``.
         
         If a *str* it must represent a file path to previously saved data.
         
-        *Default:* ``None`` uses ``analysis.prepareRaster`` to produce ``rasterData`` using the current sim object.
-
     popNumCells : list
         a *list* of *ints* representing the number of cells in each population.
         
@@ -65,7 +65,7 @@ def plotRaster(rasterData=None, popNumCells=None, popLabels=None, popColors=None
 
     NetPyNE Options
     ---------------
-    include : string, int, list
+    include : str, int, list
         cells and/or NetStims to return information from
         
         *Default:* ``'allCells'`` includes all cells and no NetStims
@@ -116,7 +116,7 @@ def plotRaster(rasterData=None, popNumCells=None, popLabels=None, popColors=None
         *Default:* ``None`` a file name is automatically generated.
 
     fileDesc : str
-        an additional *string* to include in the file name just before the file extension.
+        an additional *str* to include in the file name just before the file extension.
 
         *Default:* ``None`` includes no extra text in the file name.
 
@@ -128,7 +128,7 @@ def plotRaster(rasterData=None, popNumCells=None, popLabels=None, popColors=None
         *Options:* ``pkl`` saves the file in Python Pickle format.
 
     sim : NetPyNE sim object
-        the sim object from which to get data.
+        the *sim object* from which to get data.
         
         *Default:* ``None`` uses the current NetPyNE sim object
     
@@ -175,12 +175,24 @@ def plotRaster(rasterData=None, popNumCells=None, popLabels=None, popColors=None
     Returns
     -------
     rasterPlot : *matplotlib figure*
-        By default, returns the figure.  If ``returnPlotter`` is ``True``, instead returns the NetPyNE *Plotter object* used.
+        By default, returns the *figure*.  If ``returnPlotter`` is ``True``, instead returns the NetPyNE *Plotter object* used.
 
 
     Examples
     --------
-    There are many options available in plotRaster.
+    There are many options available in plotRaster.  To run a variety of examples, enter the following::
+
+        from netpyne.plotting.examples import plotRasterSim, plotRasterExamples
+        sim = plotRasterSim()
+        
+
+    To see all examples at once, you can enter::
+
+        plotRasterExamples()
+
+    You can also execute plotRaster with any options by entering::
+
+        sim.plotting.plotRaster()        
     
 
     """

@@ -321,7 +321,38 @@ class CompartCell (Cell):
         # set the pp dipole's ztan value to the last value from y_diff
         dpp.ztan = y_diff[-1]
 
+    def __mechStrToFunc(sec, soma, mech,  values, strVars, strFunc, nseg = False):
+        '''
+            Function: Distribute channels in section as per string function
+            Input: seg -
+            function as tring for distribution of channels
+            Output: none
+        '''
 
+        if nseg:
+            sec.nseg = nseg
+
+        parentSec = h.SectionRef(sec=sec).parent
+
+        lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc
+        lambdaFunc = eval(lambdaStr)
+
+        # print( " applying exponential lambda function " + str([lambdaFunc(*values) for seg in dend]) )
+
+        # mechDistribution = [lambdaFunc(*values) for seg in sec]
+
+        for seg in sec:
+
+            for index, value in enumerate(values):
+                if value == 'pathDistFromSoma':
+                    values[index] = h.distance(seg.x, sec=soma)
+                elif value == 'pathDistFromParentSec':
+                    values[index] = h.distance(seg.x, sec=parentSec)
+
+            cmd = 'seg.x = lambdaFunc(*values)' % (mech)
+            exec(cmd)
+
+        return
 
     def createNEURONObj (self, prop):
         from .. import sim
@@ -369,16 +400,19 @@ class CompartCell (Cell):
                         if sim.cfg.verbose:
                             print('# Error inserting %s mechanims in %s section! (check mod files are compiled)'%(mechName, sectName))
                         continue
-                    for mechParamName,mechParamValue in mechParams.items():  # add params of the mechanism
-                        mechParamValueFinal = mechParamValue
-                        for iseg,seg in enumerate(sec['hObj']):  # set mech params for each segment
-                            if type(mechParamValue) in [list]:
-                                if len(mechParamValue) == 1:
-                                    mechParamValueFinal = mechParamValue[0]
-                                else:
-                                    mechParamValueFinal = mechParamValue[iseg]
-                            if mechParamValueFinal is not None:  # avoid setting None values
-                                setattr(getattr(seg, mechName), mechParamName,mechParamValueFinal)
+                    if mechName != 'distribution':
+                        for mechParamName,mechParamValue in mechParams.items():  # add params of the mechanism
+                            mechParamValueFinal = mechParamValue
+                            for iseg,seg in enumerate(sec['hObj']):  # set mech params for each segment
+                                if type(mechParamValue) in [list]:
+                                    if len(mechParamValue) == 1:
+                                        mechParamValueFinal = mechParamValue[0]
+                                    else:
+                                        mechParamValueFinal = mechParamValue[iseg]
+                                if mechParamValueFinal is not None:  # avoid setting None values
+                                    setattr(getattr(seg, mechName), mechParamName,mechParamValueFinal)
+                    else:
+                        __mechStrToFunc(sec, self.soma, mechName, mechParams["values"], mechParams["strVars"], mechParams["strFunc"], nseg = sec.nseg)
 
             # add ions
             if 'ions' in sectParams:
@@ -590,7 +624,7 @@ class CompartCell (Cell):
                 del nc # discard netcon
         sim.net.gid2lid[self.gid] = len(sim.net.gid2lid)
 
-    
+
     def addSynMech (self, synLabel, secLabel, loc):
         from .. import sim
 
@@ -1349,18 +1383,18 @@ class CompartCell (Cell):
 
         p3dsoma = self.getSomaPos()
         pop = self.tags['pop']
-        
+
         self._segCoords = {}
         p3dsoma = p3dsoma[np.newaxis].T  # trasnpose 1d array to enable matrix calculation
 
         if hasattr(sim.net.pops[pop], '_morphSegCoords'):
-            # rotated coordinates around z axis first then shift relative to the soma            
+            # rotated coordinates around z axis first then shift relative to the soma
             morphSegCoords = sim.net.pops[pop]._morphSegCoords
             self._segCoords['p0'] = p3dsoma + morphSegCoords['p0']
             self._segCoords['p1'] = p3dsoma + morphSegCoords['p1']
         else:
-            # rotated coordinates around z axis 
-            self._segCoords['p0'] = p3dsoma 
+            # rotated coordinates around z axis
+            self._segCoords['p0'] = p3dsoma
             self._segCoords['p1'] = p3dsoma
 
     def setImembPtr(self):

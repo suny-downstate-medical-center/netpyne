@@ -108,7 +108,7 @@ class GeneralPlotter:
 
 
 
-    def saveFig(self, fileName=None, fileDesc=None, fileType='png', fileDir=None, **kwargs):
+    def saveFig(self, fileName=None, fileDesc=None, fileType='png', fileDir=None, overwrite=True, **kwargs):
         """
         'eps': 'Encapsulated Postscript',
         'jpg': 'Joint Photographic Experts Group',
@@ -145,6 +145,18 @@ class GeneralPlotter:
 
         if fileDir is not None:
             fileName = os.path.join(fileDir, fileName)
+
+        if not overwrite:
+            while os.path.isfile(fileName):
+                try:
+                    fileNumStr = fileName.split(fileExt)[0].split('_')[-1]
+                    fileNumStrNew = str(int(fileNumStr) + 1).zfill(2)
+                    fileName = fileName.split('_' + fileNumStr)[0]
+                except:
+                    fileNumStr = fileNumStrNew = '01'
+                    fileName = fileName.split(fileExt)[0]
+                
+                fileName = fileName.split(fileNumStr)[0] + '_' + fileNumStrNew + fileExt   
         
         self.fig.savefig(fileName)
         self.fileName = fileName

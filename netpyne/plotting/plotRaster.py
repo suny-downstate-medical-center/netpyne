@@ -169,7 +169,15 @@ def plotRaster(rasterData=None, popNumCells=None, popLabels=None, popColors=None
         a *dict* containing any or all legend kwargs.  These include ``'title'``, ``'loc'``, ``'fontsize'``, ``'bbox_to_anchor'``, ``'borderaxespad'``, and ``'handlelength'``.
 
     rcParams : dict
-        a *dict* containing any or all matplotlib rcParams.  To see all options, execute ``import matplotlib; print(matplotlib.rcParams)`` in Python.  Any options in this *dict* will be used for this current figure and then returned to their prior settings.  
+        a *dict* containing any or all matplotlib rcParams.  To see all options, execute ``import matplotlib; print(matplotlib.rcParams)`` in Python.  Any options in this *dict* will be used for this current figure and then returned to their prior settings.
+
+    overwrite : bool
+        whether to overwrite existing figure files.
+
+        *Default:* ``True`` overwrites the figure file
+
+        *Options:* ``False`` adds a number to the file name to prevent overwriting
+
 
 
     Returns
@@ -257,7 +265,7 @@ def plotRaster(rasterData=None, popNumCells=None, popLabels=None, popColors=None
         
     # If there is info about pop numbers and labels, make sure they are the same size
     if len(popNumCells) != len(popLabels):
-        raise Exception('In plotRaster, popNumCells and popLabels must be the same size')
+        raise Exception('In plotRaster, popNumCells (' + str(len(popNumCells)) + ') and popLabels (' + str(len(popLabels)) + ') must be the same size')
 
     # Create a dictionary with the color for each pop
     if not colorList:

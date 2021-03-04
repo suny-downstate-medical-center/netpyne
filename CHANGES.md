@@ -1,3 +1,9 @@
+# Version 0.9.9.1
+
+**Bug fixes**
+
+- Fixed gathering of dipoles when running on multiple cores (uncommented lines that had been commented for debugging)
+
 # Version 0.9.9
 
 **New features**

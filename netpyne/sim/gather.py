@@ -113,8 +113,8 @@ def gatherData(gatherLFP = True):
                                         sim.allSimData[key].update(Dict({key2:Dict()}))
                                         for stim,val3 in val2.items():
                                             sim.allSimData[key][key2].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
-                                    #elif key == 'dipole':
-                                    #    sim.allSimData[key][key2] = np.add(sim.allSimData[key][key2],val2.as_numpy()) # add together dipole values from each node
+                                    elif key == 'dipole':
+                                        sim.allSimData[key][key2] = np.add(sim.allSimData[key][key2],val2.as_numpy()) # add together dipole values from each node
                                     else:
                                         sim.allSimData[key].update({key2:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                             else:
@@ -177,8 +177,8 @@ def gatherData(gatherLFP = True):
                                         sim.allSimData[key].update(Dict({key2:Dict()}))
                                         for stim,val3 in val2.items():
                                             sim.allSimData[key][key2].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
-                                    #elif key == 'dipole':
-                                    #    sim.allSimData[key][key2] = np.add(sim.allSimData[key][key2],val2.as_numpy()) # add together dipole values from each node
+                                    elif key == 'dipole':
+                                        sim.allSimData[key][key2] = np.add(sim.allSimData[key][key2],val2.as_numpy()) # add together dipole values from each node
                                     else:
                                         sim.allSimData[key].update({key2:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                             else:

@@ -482,6 +482,7 @@ def plotCSD(CSD_data=None,LFP_input_data=None,overlay=None,timeRange=None,sampr=
   ## INTERPOLATION ## 
   X = np.arange(timeRange[0], timeRange[1], dt)  # dt == sim.cfg.recordStep if data is from simulation 
   Y = np.arange(CSD_data.shape[0])
+
   CSD_spline=scipy.interpolate.RectBivariateSpline(Y, X, CSD_data)
   Y_plot = np.linspace(0,CSD_data.shape[0],num=1000) 
   Z = CSD_spline(Y_plot, X)

@@ -373,7 +373,7 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
 ## Plot interactive dipole
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False, **kwargs):
+def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=None, t=None,  showFig=False, **kwargs):
     """
     Function for/to <short description of `netpyne.analysis.interactive.iplotDipole`>
 
@@ -479,8 +479,17 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False, 
         return convolve(x,win,'same')
 
     # baseline renormalize
-    dpl = baseline_renormalize()
+    if dpl:
+        dpl = {k: np.array(v) for k, v in dpl.items()}
+    else:
+        dpl = baseline_renormalize()
 
+    if t is not None and len(t)>0:
+        t=np.array(t)
+    else:
+        t=sim.simData['t']
+
+        
     # convert units from fAm to nAm, rescale and smooth
     for key in dpl.keys():
         dpl[key] *= 1e-6 * sim.cfg.hnn_params['dipole_scalefctr']
@@ -492,11 +501,11 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False, 
         dpl[key][0] = 0.0
 
     # plot exp data
-    fig.line(expData['x'], expData['y'], color='black', legend=expData['label'])
+    #fig.line(expData['x'], expData['y'], color='black', legend=expData['label'])
 
     # plot recorded dipole data
     for i,(k,v) in enumerate(dpl.items()):
-        fig.line(sim.simData['t'], v, legend=k, color=colors[i], line_width=2.0)
+        fig.line(t, v, legend=k, color=colors[i], line_width=2.0)
 
     fig.legend.location = "top_right"
     fig.legend.click_policy = "hide"
@@ -507,14 +516,14 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False, 
     if showFig:
         show(fig)
 
-    return html
+    return html, dpl
 
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive dipole Spectrogram
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1, maxFreq = 80, stepFreq = 1, norm = True, showFig=False, **kwargs):
+def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=None, minFreq = 1, maxFreq = 80, stepFreq = 1, norm = True, showFig=False, **kwargs):
     """
     Function for/to <short description of `netpyne.analysis.interactive.iplotDipoleSpectrogram`>
 
@@ -624,18 +633,19 @@ def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minF
         win /= sum(win)
         return convolve(x,win,'same')
 
-    # baseline renormalize
-    dpl = baseline_renormalize()
+    if not dpl:
+        # baseline renormalize
+        dpl = baseline_renormalize()
 
-    # convert units from fAm to nAm, rescale and smooth
-    for key in dpl.keys():
-        dpl[key] *= 1e-6 * sim.cfg.hnn_params['dipole_scalefctr']
+        # convert units from fAm to nAm, rescale and smooth
+        for key in dpl.keys():
+            dpl[key] *= 1e-6 * sim.cfg.hnn_params['dipole_scalefctr']
 
-        if sim.cfg.hnn_params['dipole_smooth_win'] > 0:
-            dpl[key] = hammfilt(dpl[key], sim.cfg.hnn_params['dipole_smooth_win']/sim.cfg.dt)
+            if sim.cfg.hnn_params['dipole_smooth_win'] > 0:
+                dpl[key] = hammfilt(dpl[key], sim.cfg.hnn_params['dipole_smooth_win']/sim.cfg.dt)
 
-        # Set index 0 to 0
-        dpl[key][0] = 0.0
+            # Set index 0 to 0
+            dpl[key][0] = 0.0
 
 
     # plot recorded dipole data

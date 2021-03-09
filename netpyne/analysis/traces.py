@@ -185,6 +185,7 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
     def plotFigPerTrace(subGids):
         for itrace, trace in enumerate(tracesList):
             figs['_trace_'+str(trace)] = plt.figure(figsize=figSize) # Open a new figure
+
             for igid, gid in enumerate(subGids):
                 # print('recordStep',recordStep)
                 if 'cell_'+str(gid) in sim.allSimData[trace]:
@@ -339,7 +340,6 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
         allPopGids = invertDictMapping(gidPops)
         for popLabel, popGids in allPopGids.items():
             plotFigPerTrace(popGids)
-
 
     try:
         plt.tight_layout()

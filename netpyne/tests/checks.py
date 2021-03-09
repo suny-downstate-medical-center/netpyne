@@ -58,8 +58,8 @@ def checkOutput(modelName, verbose=False):
         expectedAll['numSpikes']['tut7'] = 332
 
         # tut_import expected output
-        expectedAll['numSyns']['tut_import'] = 365
-        expectedAll['numSpikes']['tut_import'] = 3023  # check Traub cell mismatch
+        expectedAll['numSyns']['tut_import'] = 372
+        expectedAll['numSpikes']['tut_import'] = 3135 
 
         # HHTut expected output
         expectedAll['numSyns']['HHTut'] = 1823

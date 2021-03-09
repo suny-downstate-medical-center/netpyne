@@ -1,8 +1,12 @@
 """
 Module containing a point cell class
 
-"""
+cell/pointCell.py 
 
+Contains pointCell class 
+
+Contributors: salvadordura@gmail.com, samnemo@gmail.com
+"""
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
@@ -31,7 +35,10 @@ class PointCell (Cell):
     """
     Class for/to <short description of `netpyne.cell.pointCell.PointCell`>
 
+
+    Point Neuron that doesn't use v from Section eg. NetStim, IntFire1, 
     """
+    
 
     def __init__ (self, gid, tags, create=True, associateGid=True):
         from .. import sim
@@ -171,8 +178,7 @@ class PointCell (Cell):
                 patternType = self.params['spikePattern'].get('type', None)
                 rand = h.Random()
 
-                # if sync, don't initialize randomizer based on gid
-                if self.params.get('sync', False):
+                if self.params['spikePattern'].get('sync', False):
                     rand.Random123(sim.hashStr('vecstim_spikePattern'), self.params['seed'])
                 else:
                     rand.Random123(sim.hashStr('vecstim_spikePattern'), self.gid, self.params['seed'])
@@ -339,7 +345,10 @@ class PointCell (Cell):
 
         # Weight
         weights = self._setConnWeights(params, netStimParams)
-        weightIndex = 0  # set default weight matrix index
+
+        if params.get('weightIndex') is None: params['weightIndex'] = 0 # set default weight matrix index   
+        weightIndex = params.get('weightIndex') # note that loop below will overwrite the weights value in weights[i]
+
 
         # Delays
         if isinstance(params['delay'],list):
@@ -377,11 +386,16 @@ class PointCell (Cell):
                 else:
                     netcon = sim.pc.gid_connect(params['preGid'], postTarget) # create Netcon between global gid and target
 
-                netcon.weight[weightIndex] = weights[i]  # set Netcon weight
+                
+                netcon.weight[weightIndex] = weights[i]  # set Netcon weight - note that this gets over-written in loop
                 netcon.delay = delays[i]  # set Netcon delay
                 #netcon.threshold = threshold # set Netcon threshold
                 self.conns[-1]['hObj'] = netcon  # add netcon object to dict in conns list
 
+                # Add plasticity 
+                if self.conns[-1].get('plast'):
+                     self.conns[-1]['dummySec'] = {'hObj':h.Section(name='dummySec',cell=self)}
+                     self._addConnPlasticity(self.conns[-1], self.conns[-1]['dummySec'], netcon, weightIndex)
 
                 # Add time-dependent weight shaping
                 if 'shape' in params and params['shape']:
@@ -438,6 +452,29 @@ class PointCell (Cell):
                 if sim.cfg.verbose:
                     print("Error: Function '%s' not yet implemented for Point Neurons" % name)
         return wrapper
+
+    def _addConnPlasticity (self, params, sec, netcon, weightIndex):
+        from .. import sim
+        plasticity = params.get('plast')
+        if plasticity and sim.cfg.createNEURONObj:
+            try:
+                plastMech = getattr(h, plasticity['mech'], None)(0, sec=sec['hObj'])  # create plasticity mechanism (eg. h.STDP)
+                for plastParamName,plastParamValue in plasticity['params'].items():  # add params of the plasticity mechanism
+                    setattr(plastMech, plastParamName, plastParamValue)
+                if plasticity['mech'] == 'STDP':  # specific implementation steps required for the STDP mech
+                    precon = sim.pc.gid_connect(params['preGid'], plastMech); precon.weight[0] = 1 # Send presynaptic spikes to the STDP adjuster
+                    pstcon = sim.pc.gid_connect(self.gid, plastMech); pstcon.weight[0] = -1 # Send postsynaptic spikes to the STDP adjuster
+                    h.setpointer(netcon._ref_weight[weightIndex], 'synweight', plastMech) # Associate the STDP adjuster with this weight
+                    #self.conns[-1]['hPlastSection'] = plastSection
+                    self.conns[-1]['hSTDP']         = plastMech
+                    self.conns[-1]['hSTDPprecon']   = precon
+                    self.conns[-1]['hSTDPpstcon']   = pstcon
+                    self.conns[-1]['STDPdata']      = {'preGid':params['preGid'], 'postGid': self.gid, 'receptor': weightIndex} # Not used; FYI only; store here just so it's all in one place
+                    if sim.cfg.verbose: print('  Added STDP plasticity to synaptic mechanism')
+            except:
+                print('Error: exception when adding plasticity using %s mechanism' % (plasticity['mech']))
+
+      
 
     # def modify (self):
     #     print 'Error: Function not yet implemented for Point Neurons'

@@ -133,6 +133,9 @@ class SimConfig(object):
             print(('Saving simConfig to %s ... ' % (filename)))
             sim.saveJSON(filename, dataSave)
 
+    def setParam(self, param, value):
+        self.__dict__[param] = value
+
     def addAnalysis(self, func, params):
         self.analysis[func] =  params
 

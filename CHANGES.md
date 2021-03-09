@@ -1,3 +1,9 @@
+# Version 0.9.9.1
+
+**Bug fixes**
+
+- Fixed gathering of dipoles when running on multiple cores (uncommented lines that had been commented for debugging)
+
 # Version 0.9.9
 
 **New features**
@@ -22,11 +28,15 @@
 
 - Batch now polls processes, prints their output and terminates them once completed
 
+- Updated web documentation to explain importing SWC files and add Recording Configuration section
+
+- Added link to Jupyter notebook tutorial and video to website front page
+
 **Bug fixes** 
 
 - Made rate_b be positional instead of keyword argument in rxd multiCompartmentReaction
 
-- Check if _morphSegCoords exists in population before using
+- Check if \_morphSegCoords exists in population before using
 
 - Fixed bug to avoid recursive creating of synMechs when loading with cfg.oneSynPerNetcon=True
 
@@ -35,6 +45,8 @@
 - Wait until all subprocesses have ended before completing mpi_bulletin batches 
 
 - Fixed repeated rxd simulation issue for rates and reactions
+
+- Fixed pointNeuron spikePattern 'sync' option
 
 # Version 0.9.8
 

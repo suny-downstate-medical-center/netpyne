@@ -673,13 +673,11 @@ The parameters of each dictionary follow the same structure as described in the 
 
 See usage examples: `RxD buffering example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/rxd_buffering>`_ and `RxD network example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/rxd_buffering>`_. 
 
+
 .. _sim_config: 
 
 Simulation configuration
 --------------------------
-
-.. - Want to have more control, customize sequence -- sim module related to sim; net module related to net
-.. - Other structures are possible (flexibiliyty) - e.g. can read simCfg or netparams from disk file; can load existing net etc
 
 Below is a list of all simulation configuration options (i.e. attributes of a ``SimConfig`` object) arranged by categories:
 
@@ -753,6 +751,138 @@ Related to plotting and analysis:
 	The simConfig object also includes the method ``addAnalysis(func, params)``, which has the advantage of checking the syntax of the parameters (e.g. ``simConfig.addAnalysis('plotRaster', {'include': ['PYR'], 'timeRage': [200,600]})``)
 
 	Available analysis functions include ``plotRaster``, ``plotSpikeHist``, ``plotTraces``, ``plotConn`` and ``plot2Dnet``. A full description of each function and its arguments is available here: :ref:`analysis_functions`.
+
+
+.. _rec_config: 
+
+Recording configuration
+--------------------------
+
+You can record a wide variety of traces from any or all cells.  In order to record traces from cells, there are two parameters that must be set in the simConfig: ``recordCells`` and ``recordTraces``.
+
+simConfig.recordCells
+^^^^^^^^^^^^^^^^^^^^^
+
+The ``recordCells`` list specifies which cells to attempt to record traces from.  ``recordCells`` can include cell gids and/or population labels in any combination, or it can be set to ``['all']`` to record from all cells.  Only cells specified in this list will have any traces recorded from them.  (Note that any cells specified in the ``include`` parameter of ``simConfig.analysis['plotTraces']`` are automatically added to ``recordCells`` for convenience.)
+
+**Examples** 
+
+.. code-block:: python
+	
+	# record from all cells
+	simConfig.recordCells = ['all']       
+	
+	# record from cell 0 and cell 20
+	simConfig.recordCells = [0, 20]       
+	
+	# record from all cells in the population 'S'
+	simConfig.recordCells = ['S']         
+	
+	# record from all cells in the population 'M' and cells 0 and 20
+	simConfig.recordCells = ['M', 0, 20]
+
+	# record from the first cell in populations 'M' and 'S'  
+	simConfig.recordCells = [('M', [0]), ('S', [0])]  
+
+Once you have specified the cells to record from, you need to specify what to record.
+
+simConfig.recordTraces
+^^^^^^^^^^^^^^^^^^^^^^
+
+The ``recordTraces`` dictionary specifies which traces to record (and, if using 'conditions', which subset of cells in ``recordCells`` to record the traces from).  Each entry in ``recordTraces`` is also a dictionary, whose key is the name of the trace (an arbitrary string you may choose) and whose value is a dictionary with the specifications of the desired trace.
+
+For each entry in ``recordTraces``, the key becomes the name of a trace, while the value is another dictionary that specifies the details of the trace to be recorded and optionally sets conditions on which cells to record the trace from.  
+
+**Format overview**
+
+* **Section variables** (e.g. ``soma(0.5).v``):
+
+.. code-block:: python 
+
+	{"sec": [string], "loc": [float], "var": [string]} 
+
+* **Distributed mechanism variables** (e.g. ``soma(0.5).hh.gna``):
+
+.. code-block:: python 
+
+	{"sec": [string], "loc": [float], "mech": [string], "var": [string]} 
+
+* **Synaptic mechanism variables** (e.g. ``dend(1.0).AMPA._ref_g``):
+
+.. code-block:: python 
+
+	{"sec": [string], "loc": [float], "synMech": [string], "var": [string]} 
+
+* **Stimulation variables** (e.g. ``cells[0].stims[0]['hObj'].i``):
+
+.. code-block:: python 
+
+	{"sec": [string], "loc": [float], "stim": [string], "var": [string]}
+
+* **Point process variables** (e.g. ``soma.myPP.i``):
+
+.. code-block:: python 
+	
+	{"sec": [string], "pointp": [string], "var": [string]}
+
+
+In general, you will need to specify a section ('sec'), a location in that section ('loc') and the NEURON variable to record at that location ('var').  For example, the following will record the voltage ('v' in NEURON) in the center of the soma: 
+
+**Examples** 
+
+.. code-block:: python 
+	
+	# record voltage at the center of the 'soma' section
+	simConfig.recordTraces['soma_voltage'] = { "sec": "soma", "loc": 0.5, "var": "v"}    
+	
+	# record the sodium concentration at the distal end of the 'dend' section
+	simConfig.recordTraces['dend_Na'] =  { "sec": "dend", "loc": 1.0, "var": "nai"}      
+	
+	# record the potassium current at the proximal end of the first 'branch' section (branch[0])
+	simConfig.recordTraces['branch0_iK'] = {"sec": "branch_0", "loc": 0.0, "var": "ik"}   
+
+
+The above examples will attempt to record a trace from all the cells in ``recordCells``.  If you want to record a trace from just a subset of the cells being recorded, you can set conditions by including a ``'conds'`` dictionary in a trace dictionary.  Available conditions include ``'gid'`` (cell global identification number), ``'pop'`` (name of population or list of names), ``'cellType'`` (string name of the type of cell), and ``'cellList'`` (a list of cell gids).
+
+**Examples of Conditions** 
+
+.. code-block:: python 
+
+	# only record this trace from cell 0
+	simConfig.recordTraces['trace_name'] = {'conds': {'gid': [0]}, ... } 
+	
+	# only record this trace from populations 'M' and 'S'
+	simConfig.recordTraces['trace_name'] = {'conds': {'pop': ['M', 'S']}, ... } 
+	
+	# only record this trace from cells tagged with cellType as 'pyr'
+	simConfig.recordTraces['trace_name'] = {'conds': {'cellType': ['pyr']}, ... }  
+
+
+From a specific section and location, you can record section variables such as voltages, currents, and concentrations.  You can also record variables from NEURON mechanisms ('mech'), synaptic mechanisms ('synMech') and stimulations ('stim').
+
+**Examples of recording from mechanisms** 
+
+.. code-block:: python 
+
+	# record the 'gna' variable (sodium conductance) in the 'hh' (Hodgkin-Huxley) mechanism 
+	# located in the middle of the 'soma' section.  This is equivalent to recording 
+	# soma(0.5).hh._ref_gna in NEURON.
+	simConfig.recordTraces['gNa'] = {'sec': 'soma', 'loc': 0.5, 'mech': 'hh', 'var': 'gna'}  
+	
+	# record the 'g' variable (conductance) in the 'AMPA' synaptic mechanism located at the 
+	# distal end of the 'dend' section.  This is equivalent to recording 
+	# dend(1.0).AMPA._ref_g in NEURON.
+	simConfig.recordTraces['gAMPA'] = {'sec': 'dend', 'loc': 1.0, 'synMech': 'AMPA', 'var': 'g'}  
+	
+	# record the 'i' variable (current) from the 'IClamp0' stimulation source located in the 
+	# middle of the 'soma' section in cell 0.  This is equivalent to recording 
+	# cells[0].stims[0]['hObj'].i in NEURON.
+	simConfig.recordTraces['iStim'] = {'sec': 'soma', 'loc': 0.5, 'stim': 'IClamp0', 'var': 'i', 'conds': {'gid': 0}}  
+	
+	# record the 'V' variable from the 'myPP' point process in the 'soma' section.  This 
+	# is equivalent to recording soma.myPP.V in NEURON. 
+	simConfig.recordTraces['VmyPP'] = {'sec': 'soma', 'pointp': 'myPP', 'var': 'V'} 
+
 
 .. _package_functions:
 

@@ -20,13 +20,13 @@ from ..specs import Dict
 #
 ###############################################################################
 
-class NML2SpikeSource (CompartCell):
+class NML2SpikeSource(CompartCell):
     """
     Class for/to <short description of `netpyne.cell.NML2SpikeSource.NML2SpikeSource`>
 
     """
 
-    def associateGid (self, threshold = 10.0):
+    def associateGid(self, threshold = 10.0):
         from .. import sim
 
         if sim.cfg.createNEURONObj:
@@ -53,3 +53,5 @@ class NML2SpikeSource (CompartCell):
         sim._init_stim_randomizer(rand, self.tags['pop'], self.tags['cellLabel'], seed)
         randContainer['hRandom'].negexp(1)
         #print("Created Random: %s with %s (%s)"%(rand,seed, sim.cfg.seeds))
+
+    pass

@@ -23,7 +23,7 @@ from ..specs import Dict
 #
 ###############################################################################
 
-class NML2Cell (CompartCell):
+class NML2Cell(CompartCell):
     """
     Class for/to <short description of `netpyne.cell.NML2Cell.NML2Cell`>
 

@@ -14,15 +14,12 @@ from .compartCell import CompartCell
 from ..specs import Dict
 
 
-###############################################################################
-#
+
 # NeuroML2 SPIKE SOURCE CLASS
-#
-###############################################################################
 
 class NML2SpikeSource(CompartCell):
     """
-    Class for/to <short description of `netpyne.cell.NML2SpikeSource.NML2SpikeSource`>
+    Class to deal with NeuroML2 spike sources
 
     """
 
@@ -53,5 +50,3 @@ class NML2SpikeSource(CompartCell):
         sim._init_stim_randomizer(rand, self.tags['pop'], self.tags['cellLabel'], seed)
         randContainer['hRandom'].negexp(1)
         #print("Created Random: %s with %s (%s)"%(rand,seed, sim.cfg.seeds))
-
-    pass

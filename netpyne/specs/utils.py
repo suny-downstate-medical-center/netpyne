@@ -1,7 +1,6 @@
 """
-specs/utils.py
+Module with helper functions for high-level specifications
 
-Helper functions for high-level specifications
 """
 
 from __future__ import unicode_literals

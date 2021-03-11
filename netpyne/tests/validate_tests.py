@@ -1,8 +1,6 @@
 """
+Module for validating tests
 
-test_validate.py
-
-Testing code for Validation class
 """
 
 from __future__ import unicode_literals

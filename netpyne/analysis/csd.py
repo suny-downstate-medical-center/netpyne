@@ -1,6 +1,6 @@
 """
-Functions to plot and extract CSD info from LFP data
-Contributors: Erica Y Griffith, Sam Neymotin, Salvador Dura-Bernal
+Module with functions to plot and extract CSD info from LFP data
+
 """
 
 from __future__ import print_function
@@ -42,7 +42,7 @@ from .utils import exception, _saveFigData
 ############################################
 
 # Bandpass filter  
-def getbandpass (lfps,sampr,minf=0.05,maxf=300):   # lfps should be a list or numpy array of LFPs arranged spatially in a column
+def getbandpass(lfps,sampr,minf=0.05,maxf=300):   # lfps should be a list or numpy array of LFPs arranged spatially in a column
   datband = []
   for i in range(len(lfps[0])): datband.append(bandpass(lfps[:,i],minf,maxf,df=sampr,zerophase=True))
   #lfps_transpose = np.transpose(lfps)
@@ -52,7 +52,7 @@ def getbandpass (lfps,sampr,minf=0.05,maxf=300):   # lfps should be a list or nu
 
 
 # Vaknin correction for CSD analysis (MS implementation)
-def Vaknin (x): ## Allows CSD to be performed on all N contacts instead of N-2 contacts (See Vaknin et al (1988) for more details)
+def Vaknin(x): ## Allows CSD to be performed on all N contacts instead of N-2 contacts (See Vaknin et al (1988) for more details)
   # Preallocate array with 2 more rows than input array
   x_new = np.zeros((x.shape[0]+2, x.shape[1]))
   # print(x_new.shape)
@@ -65,7 +65,7 @@ def Vaknin (x): ## Allows CSD to be performed on all N contacts instead of N-2 c
 
 
 # REMOVE MEAN 
-def removemean (x, ax=1):
+def removemean(x, ax=1):
   mean = np.mean(x, axis=ax, keepdims=True)
   x -= mean
   #print(np.mean(x, axis=ax, keepdims=True))
@@ -81,7 +81,7 @@ def removemean (x, ax=1):
 ################################################
 ######### GET CSD VALUES FROM LFP DATA #########
 ################################################
-def getCSD (LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,spacing_um=None,minf=0.05,maxf=300,norm=True,vaknin=True,save_to_sim=True,getAllData=False): # timeRange=None,
+def getCSD(LFP_input_data=None,LFP_input_file=None,sampr=None,dt=None,spacing_um=None,minf=0.05,maxf=300,norm=True,vaknin=True,save_to_sim=True,getAllData=False): # timeRange=None,
   """ Extracts CSD values from simulated LFP data 
 
       Parameters

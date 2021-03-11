@@ -1,8 +1,9 @@
 """
-analysis/filter.py
+Module for filtering data
 
-signal filtering functions copied to NetPyNE from ObsPy by Sam Neymotin (NKI) 
+Signal filtering functions copied to NetPyNE from ObsPy by Sam Neymotin (NKI)
 
+Originally:
  ------------------------------------------------------------------
  Filename: filter.py
   Purpose: Various Seismogram Filtering Functions
@@ -14,11 +15,9 @@ signal filtering functions copied to NetPyNE from ObsPy by Sam Neymotin (NKI)
 
 Various Seismogram Filtering Functions
 
-:copyright:
-    The ObsPy Development Team (devs@obspy.org)
-:license:
-    GNU Lesser General Public License, Version 3
-    (https://www.gnu.org/copyleft/lesser.html)
+copyright: The ObsPy Development Team (devs@obspy.org)
+license: GNU Lesser General Public License, Version 3
+(https://www.gnu.org/copyleft/lesser.html)
 
 """
 

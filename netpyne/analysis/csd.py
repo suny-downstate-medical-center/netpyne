@@ -1,6 +1,6 @@
 """
-Functions to plot and extract CSD info from LFP data
-Contributors: Erica Y Griffith, Sam Neymotin, Salvador Dura-Bernal
+Module with functions to plot and extract CSD info from LFP data
+
 """
 
 from __future__ import print_function

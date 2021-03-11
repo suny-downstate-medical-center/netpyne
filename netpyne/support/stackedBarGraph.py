@@ -1,3 +1,8 @@
+"""
+Module supporting use of stacked bar graphs
+
+"""
+
 #!/usr/bin/env python
 ###############################################################################
 #                                                                             #

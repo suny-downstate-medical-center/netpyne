@@ -1,3 +1,8 @@
+"""
+Module with support functions for morphology
+
+"""
+
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function

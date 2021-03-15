@@ -741,14 +741,12 @@ def saveSimDataInNode(filename=None, saveLFP=True, removeTraces=False):
             print(('Saving output as %s ... ' % (fileName)))
             with open(fileName, 'wb') as fileObj:
                 pickle.dump(dataSave, fileObj)
-            print('Finished saving!')
 
         # Save to json file
         if sim.cfg.saveJson:
             fileName = filePath + '_node_' + str(sim.rank) + '.json'
             print(('Saving output as %s ... ' % (fileName)))
             sim.saveJSON(fileName, dataSave)
-            print('Finished saving!')
 
         # Save timing
         if sim.rank == 0:

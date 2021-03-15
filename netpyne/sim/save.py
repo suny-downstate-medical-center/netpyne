@@ -648,33 +648,28 @@ def saveInNode(gatherLFP=True, include=None, filename=None):
 #------------------------------------------------------------------------------
 def saveSimDataInNode(filename=None, saveLFP=True, removeTraces=False):
     """
-    Function for/to <short description of `netpyne.sim.save.saveSimDataInNode`>
+    Function to save simulation data by node rather than as a whole
 
     Parameters
     ----------
-    filename : <``None``?>
-        <Short description of filename>
+    filename : str
+        The name to use for the saved files.
         **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
 
     saveLFP : bool
-        <Short description of saveLFP>
-        **Default:** ``True``
-        **Options:** ``<option>`` <description of option>
+        Whether to save any LFP data.
+        **Default:** ``True`` saves LFP data.
+        **Options:** ``False`` does not save LFP data.
 
     removeTraces : bool
-        <Short description of removeTraces>
-        **Default:** ``False``
-        **Options:** ``<option>`` <description of option>
-
+        Whether to remove traces data before saving.
+        **Default:** ``False`` does not remove the trace data.
+        **Options:** ``True`` removes the trace data.
 
     """
 
-
     from .. import sim
     from ..specs import Dict, ODict
-
-    #This first part should be split to a separate function in gather.py
 
     sim.timing('start', 'saveInNodeTime')
     import os
@@ -693,7 +688,7 @@ def saveSimDataInNode(filename=None, saveLFP=True, removeTraces=False):
     dataSave['netpyne_version'] = sim.version(show=False)
     dataSave['netpyne_changeset'] = sim.gitChangeset(show=False)
 
-    simDataVecs = ['spkt','spkid','stims']+list(sim.cfg.recordTraces.keys())
+    simDataVecs = ['spkt', 'spkid', 'stims'] + list(sim.cfg.recordTraces.keys())
     singleNodeVecs = ['t']
 
     saveSimData = {}
@@ -707,17 +702,17 @@ def saveSimDataInNode(filename=None, saveLFP=True, removeTraces=False):
         saveSimData[k] = {}
 
     for key,val in simData.items():  # update simData dics of dics of h.Vector
-            if key in simDataVecs+singleNodeVecs:          # simData dicts that contain Vectors
-                if isinstance(val,dict):
-                    for cell,val2 in val.items():
-                        if isinstance(val2,dict):
+            if key in simDataVecs + singleNodeVecs:          # simData dicts that contain Vectors
+                if isinstance(val, dict):
+                    for cell, val2 in val.items():
+                        if isinstance(val2, dict):
                             saveSimData[key].update({cell: {}})
-                            for stim,val3 in val2.items():
-                                saveSimData[key][cell].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
+                            for stim, val3 in val2.items():
+                                saveSimData[key][cell].update({stim: list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
                         else:
-                            saveSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
+                            saveSimData[key].update({cell: list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                 else:
-                    saveSimData[key] = list(saveSimData[key])+list(val) # udpate simData dicts which are Vectors
+                    saveSimData[key] = list(saveSimData[key]) + list(val) # udpate simData dicts which are Vectors
             else:
                 saveSimData[key] = val           # update simData dicts which are not Vectors
 
@@ -737,21 +732,22 @@ def saveSimDataInNode(filename=None, saveLFP=True, removeTraces=False):
             timestampStr = ''
 
         filePath = sim.cfg.filename + timestampStr
+        
         # Save to pickle file
         if sim.cfg.savePickle:
             import pickle
             dataSave = utils.replaceDictODict(dataSave)
-            print(('Saving output as %s ... ' % (filePath+str(sim.rank)+'.pkl')))
-            with open(filePath+'_node'+str(sim.rank)+'.pkl', 'wb') as fileObj:
+            fileName = filePath + '_node_' + str(sim.rank) + '.pkl'
+            print(('Saving output as %s ... ' % (fileName)))
+            with open(fileName, 'wb') as fileObj:
                 pickle.dump(dataSave, fileObj)
             print('Finished saving!')
 
         # Save to json file
         if sim.cfg.saveJson:
-            # Make it work for Python 2+3 and with Unicode
-            print(('Saving output as %s ... ' % (filePath+str(sim.rank)+'.json ')))
-            #dataSave = utils.replaceDictODict(dataSave)  # not required since json saves as dict
-            sim.saveJSON(filePath+'_node'+str(sim.rank) + '.json', dataSave)
+            fileName = filePath + '_node_' + str(sim.rank) + '.json'
+            print(('Saving output as %s ... ' % (fileName)))
+            sim.saveJSON(fileName, dataSave)
             print('Finished saving!')
 
         # Save timing

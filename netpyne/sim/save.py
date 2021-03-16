@@ -408,7 +408,7 @@ def intervalSave(t):
 #------------------------------------------------------------------------------
 # Save data in each node
 #------------------------------------------------------------------------------
-def saveDataInNode(filename=None, saveLFP=True, removeTraces=False, dataDir=None):
+def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, dataDir=None):
     """
     Function to save simulation data by node rather than as a whole
 
@@ -505,7 +505,9 @@ def saveDataInNode(filename=None, saveLFP=True, removeTraces=False, dataDir=None
         else:
             timestampStr = ''
 
-        filePath = sim.cfg.filename + timestampStr
+        if not filename:
+            filename = sim.cfg.filename
+        filePath = filename + timestampStr
         
         # Save to pickle file
         if sim.cfg.savePickle:

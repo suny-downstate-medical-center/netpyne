@@ -34,7 +34,7 @@ from .run import preRun, runSim, runSimWithIntervalFunc, loadBalance, calculateL
 from .gather import gatherData, _gatherAllCellTags, _gatherAllCellConnPreGids, _gatherCells, gatherDataFromFiles
 
 # import saving functions
-from .save import saveJSON, saveData, distributedSaveHDF5, compactConnFormat, intervalSave, saveDataInNode
+from .save import saveJSON, saveData, distributedSaveHDF5, compactConnFormat, intervalSave, saveDataInNodes
 
 # import loading functions
 from .load import loadSimCfg, loadNetParams, loadNet, loadSimData, loadAll, loadHDF5, ijsonLoad
@@ -46,7 +46,7 @@ from .utils import cellByGid, getCellsList, timing, version, gitChangeset, hashS
 from .utils import copyReplaceItemObj, copyRemoveItemObj, replaceFuncObj, replaceDictODict, rename, clearObj, clearAll
 
 # import wrapper functions
-from .wrappers import create, simulate, intervalSimulate, analyze, createSimulate, createSimulateAnalyze, intervalCreateSimulateAnalyze, load, loadSimulate, loadSimulateAnalyze, createExportNeuroML2, importNeuroML2SimulateAnalyze, gatherDataFromNodes
+from .wrappers import create, simulate, intervalSimulate, distributedSimulate, analyze, createSimulate, createSimulateAnalyze, createSimulateAnalyzeInterval, createSimulateAnalyzeDistributed, load, loadSimulate, loadSimulateAnalyze, createExportNeuroML2, importNeuroML2SimulateAnalyze, gatherDataFromNodes
 
 
 #------------------------------------------------------------------------------

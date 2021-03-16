@@ -2,6 +2,8 @@
 
 **New features**
 
+- Added distributed saving/loading ability (save/load data by MPI node)
+
 **Bug fixes**
 
 - Fixed bug in TupleToStr function

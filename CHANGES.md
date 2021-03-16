@@ -2,6 +2,8 @@
 
 **New features**
 
+- Added wrapper for distributed saving; can now simply replace 'sim.gatherData()' with 'sim.gatherDataFromNodes()'
+
 - Added distributed saving/loading ability (save/load data by MPI node)
 
 **Bug fixes**

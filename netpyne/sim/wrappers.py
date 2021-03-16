@@ -431,3 +431,19 @@ def importNeuroML2SimulateAnalyze(fileName, simConfig):
     from .. import sim
 
     return sim.importNeuroML2(fileName, simConfig, simulate=True, analyze=True)
+
+
+#------------------------------------------------------------------------------
+# Wrapper to save and gather data by node
+#------------------------------------------------------------------------------
+def gatherDataFromNodes():
+    """
+    Function for/to <short description of `netpyne.sim.wrappers.gatherDataFromNodes`>
+
+    """
+
+
+    from .. import sim
+
+    sim.saveDataInNode()
+    sim.gatherDataFromFiles()

@@ -40,7 +40,7 @@ from .setup import initialize, setNet, setNetParams, setSimCfg, createParallelCo
 from .run import preRun, runSim, runSimWithIntervalFunc, loadBalance, calculateLFP
 
 # import gather functions
-from .gather import gatherData, _gatherAllCellTags, _gatherAllCellConnPreGids, _gatherCells, fileGather, mergeFiles
+from .gather import gatherData, _gatherAllCellTags, _gatherAllCellConnPreGids, _gatherCells, gatherDataFromFiles
 
 # import saving functions
 from .save import saveJSON, saveData, distributedSaveHDF5, compactConnFormat, intervalSave, saveSimDataInNode, saveInNode

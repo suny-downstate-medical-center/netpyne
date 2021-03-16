@@ -19,6 +19,7 @@ try:
 except NameError:
     to_unicode = str
 
+import os
 from time import time
 from datetime import datetime
 import pickle as pk
@@ -678,10 +679,7 @@ def saveSimDataInNode(filename=None, saveLFP=True, removeTraces=False, dataDir=N
         dataDir = sim.cfg.filename + '_node_data'
 
     if not os.path.exists(dataDir):
-        try:
-            os.mkdirs(dataDir, exist_ok=True)
-        except:
-            print('Could not create output folder: %s' % (dataDir))
+        os.makedirs(dataDir, exist_ok=True)
 
     sim.pc.barrier()
     if sim.rank == 0:

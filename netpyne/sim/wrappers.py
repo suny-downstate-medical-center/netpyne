@@ -320,7 +320,7 @@ def createSimulateAnalyzeDistributed(netParams, simConfig, output=False, filenam
 #------------------------------------------------------------------------------
 def load(filename, simConfig=None, output=False, instantiate=True, instantiateCells=True, instantiateConns=True, instantiateStims=True, instantiateRxD=True, createNEURONObj=True):
     """
-    Function to load a simulation from file
+    Wrapper function to load a simulation from file
 
     Parameters
     ----------

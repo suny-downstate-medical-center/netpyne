@@ -62,7 +62,7 @@ def saveJSON(fileName, data):
 #------------------------------------------------------------------------------
 # Save data
 #------------------------------------------------------------------------------
-def saveData(include=None, fileName=None):
+def saveData(include=None, filename=None):
     """
     Function for/to <short description of `netpyne.sim.save.saveData`>
 
@@ -73,8 +73,8 @@ def saveData(include=None, fileName=None):
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
 
-    fileName : <``None``?>
-        <Short description of fileName>
+    filename : <``None``?>
+        <Short description of filename>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
 
@@ -88,7 +88,7 @@ def saveData(include=None, fileName=None):
     else: needGather = False
     if needGather: gather.gatherData()
 
-    if fileName: sim.cfg.filename = filename
+    if filename: sim.cfg.filename = filename
 
     if sim.rank == 0:
         sim.timing('start', 'saveTime')

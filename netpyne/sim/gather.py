@@ -399,7 +399,6 @@ def gatherDataFromFiles(gatherLFP=True, dataDir=None):
                 allSimData['spkt'], allSimData['spkid'] = zip(*sorted(zip(allSimData['spkt'], allSimData['spkid'])))
                 allSimData['spkt'], allSimData['spkid'] = list(allSimData['spkt']), list(allSimData['spkid'])
 
-            #sim.net.allCells = allCells
             sim.net.allCells =  sorted(allCells, key=lambda k: k['gid'])
             sim.net.allPops = allPops
             sim.allSimData = allSimData

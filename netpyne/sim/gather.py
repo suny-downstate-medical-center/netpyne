@@ -388,14 +388,9 @@ def gatherDataFromFiles(gatherLFP=True, dataDir=None):
                             allSimData[key] += np.array(value)
                         elif key not in singleNodeVecs:
                             allSimData[key].update(value)
-                    
-
-                    #print('file data keys:', fileData.keys())
-                    #print('sim data keys:', fileData['simData'].keys())
-                    #print('V_soma keys:', fileData['simData']['V_soma'].keys())
 
                     if file == fileList[0]:
-                        for key in singleNodeVecs:  # load single node vectors (eg. 't')
+                        for key in singleNodeVecs:
                             allSimData[key] = list(fileData['simData'][key])
                         allPopsCellGids = {popLabel: [] for popLabel in nodePopsCellGids}
                     else:
@@ -415,7 +410,6 @@ def gatherDataFromFiles(gatherLFP=True, dataDir=None):
 
     ## Print statistics
     sim.pc.barrier()
-    
     if sim.rank != 0:
         sim.pc.barrier()
     else:
@@ -437,12 +431,12 @@ def gatherDataFromFiles(gatherLFP=True, dataDir=None):
         sim.numCells = len(sim.net.allCells)
 
         if sim.totalSpikes > 0:
-            sim.firingRate = float(sim.totalSpikes)/sim.numCells/sim.cfg.duration*1e3 # Calculate firing rate
+            sim.firingRate = float(sim.totalSpikes)/sim.numCells/sim.cfg.duration*1e3 
         else:
             sim.firingRate = 0
         if sim.numCells > 0:
-            sim.connsPerCell = sim.totalConnections/float(sim.numCells) # Calculate the number of connections per cell
-            sim.synsPerCell = sim.totalSynapses/float(sim.numCells) # Calculate the number of connections per cell
+            sim.connsPerCell = sim.totalConnections/float(sim.numCells) 
+            sim.synsPerCell = sim.totalSynapses/float(sim.numCells) 
         else:
             sim.connsPerCell = 0
             sim.synsPerCell = 0
@@ -458,23 +452,13 @@ def gatherDataFromFiles(gatherLFP=True, dataDir=None):
             print(('  Run time: %0.2f s' % (sim.timingData['runTime'])))
 
             if sim.cfg.printPopAvgRates and not sim.cfg.gatherOnlySimData:
-
                 trange = sim.cfg.printPopAvgRates if isinstance(sim.cfg.printPopAvgRates, list) else None
                 sim.allSimData['popRates'] = sim.analysis.popAvgRates(tranges=trange)
 
             if 'plotfI' in sim.cfg.analysis:
-                sim.analysis.calculatefI()  # need to call here so data is saved to file
+                sim.analysis.calculatefI()
 
-            sim.allSimData['avgRate'] = sim.firingRate  # save firing rate
-
-
-    
-    
-
-
-
-
-
+            sim.allSimData['avgRate'] = sim.firingRate 
 
 
 #------------------------------------------------------------------------------

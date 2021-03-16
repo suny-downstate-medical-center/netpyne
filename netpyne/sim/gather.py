@@ -405,26 +405,63 @@ def gatherDataFromFiles(gatherLFP=True, dataDir=None):
 
             #netPopsCellGids = {popLabel: list(pop.cellGids) for popLabel,pop in sim.net.pops.items()}
 
-            
-
-
-
     ## Print statistics
     sim.pc.barrier()
-    if sim.rank == 0:
+    
+    if sim.rank != 0:
+        sim.pc.barrier()
+    else:
         sim.timing('stop', 'gatherTime')
         if sim.cfg.timing: print(('  Done; gather time = %0.2f s.' % sim.timingData['gatherTime']))
 
         print('\nAnalyzing...')
 
+        sim.totalSpikes = len(sim.allSimData['spkt'])
+        sim.totalSynapses = sum([len(cell['conns']) for cell in sim.net.allCells])
+        if sim.cfg.createPyStruct:
+            if sim.cfg.compactConnFormat:
+                preGidIndex = sim.cfg.compactConnFormat.index('preGid') if 'preGid' in sim.cfg.compactConnFormat else 0
+                sim.totalConnections = sum([len(set([conn[preGidIndex] for conn in cell['conns']])) for cell in sim.net.allCells])
+            else:
+                sim.totalConnections = sum([len(set([conn['preGid'] for conn in cell['conns']])) for cell in sim.net.allCells])
+        else:
+            sim.totalConnections = sim.totalSynapses
+        sim.numCells = len(sim.net.allCells)
+
+        if sim.totalSpikes > 0:
+            sim.firingRate = float(sim.totalSpikes)/sim.numCells/sim.cfg.duration*1e3 # Calculate firing rate
+        else:
+            sim.firingRate = 0
+        if sim.numCells > 0:
+            sim.connsPerCell = sim.totalConnections/float(sim.numCells) # Calculate the number of connections per cell
+            sim.synsPerCell = sim.totalSynapses/float(sim.numCells) # Calculate the number of connections per cell
+        else:
+            sim.connsPerCell = 0
+            sim.synsPerCell = 0
+
+        print(('  Cells: %i' % (sim.numCells) ))
+        print(('  Connections: %i (%0.2f per cell)' % (sim.totalConnections, sim.connsPerCell)))
+        if sim.totalSynapses != sim.totalConnections:
+            print(('  Synaptic contacts: %i (%0.2f per cell)' % (sim.totalSynapses, sim.synsPerCell)))
+
+        if 'runTime' in sim.timingData:
+            print(('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate)))
+            print(('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration/1e3, sim.nhosts)))
+            print(('  Run time: %0.2f s' % (sim.timingData['runTime'])))
+
+            if sim.cfg.printPopAvgRates and not sim.cfg.gatherOnlySimData:
+
+                trange = sim.cfg.printPopAvgRates if isinstance(sim.cfg.printPopAvgRates, list) else None
+                sim.allSimData['popRates'] = sim.analysis.popAvgRates(tranges=trange)
+
+            if 'plotfI' in sim.cfg.analysis:
+                sim.analysis.calculatefI()  # need to call here so data is saved to file
+
+            sim.allSimData['avgRate'] = sim.firingRate  # save firing rate
 
 
-    return
     
     
-
-
-
 
 
 

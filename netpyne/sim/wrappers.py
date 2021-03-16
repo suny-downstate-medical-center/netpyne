@@ -54,7 +54,7 @@ def create(netParams=None, simConfig=None, output=False):
     simData = sim.setupRecording()             # setup variables to record for each cell (spikes, V traces, etc)
 
     if output: 
-        return ``(pops, cells, conns, rxd, stims, simData)``
+        return (pops, cells, conns, rxd, stims, simData)
 
 
 #------------------------------------------------------------------------------
@@ -166,7 +166,7 @@ def createSimulate(netParams=None, simConfig=None, output=False):
     sim.simulate()
 
     if output: 
-        return ``(pops, cells, conns, stims, simData)``
+        return (pops, cells, conns, stims, simData)
 
 
 #------------------------------------------------------------------------------
@@ -203,7 +203,7 @@ def createSimulateAnalyze(netParams=None, simConfig=None, output=False):
     sim.simulate()
     sim.analyze()
     if output: 
-        return ``(pops, cells, conns, stims, simData)``
+        return (pops, cells, conns, stims, simData)
 
 #------------------------------------------------------------------------------
 # Wrapper to create, simulate, and analyse network, while saving to master in intervals
@@ -256,7 +256,7 @@ def createSimulateAnalyzeInterval(netParams, simConfig, output=False, interval=N
     sim.pc.barrier()
     sim.analyze()
     if output: 
-        return ``(pops, cells, conns, stims, simData)``
+        return (pops, cells, conns, stims, simData)
 
 
 #------------------------------------------------------------------------------
@@ -312,7 +312,7 @@ def createSimulateAnalyzeDistributed(netParams, simConfig, output=False, filenam
     sim.analysis.plotData()
 
     if output: 
-        return ``(pops, cells, conns, stims, simData)``
+        return (pops, cells, conns, stims, simData)
 
 
 #------------------------------------------------------------------------------

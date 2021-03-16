@@ -339,7 +339,7 @@ def gatherDataFromFiles(gatherLFP=True, dataDir=None):
 
             allSimData = Dict()
             allCells = []
-            allPops = []
+            allPops = ODict()
 
             print('\nGathering data from files for simulation: %s ...' % (simLabel)) 
 
@@ -362,7 +362,10 @@ def gatherDataFromFiles(gatherLFP=True, dataDir=None):
                     if 'cells' in data.keys():
                         allCells.extend([cell.__dict__ for cell in data['cells']])
                     if 'pops' in data.keys():
-                        allPops.extend(data['pops'])
+                        for popLabel, pop in sim.net.pops.items(): 
+                            allPops[popLabel] = pop.__getstate__()
+
+                    nodePopsCellGids = {popLabel: list(pop.cellGids) for popLabel, pop in sim.net.pops.items()}
 
                     for key, value in data['simData'].items():
                         
@@ -394,16 +397,21 @@ def gatherDataFromFiles(gatherLFP=True, dataDir=None):
                     if file == fileList[0]:
                         for key in singleNodeVecs:  # load single node vectors (eg. 't')
                             allSimData[key] = list(fileData['simData'][key])
+                        allPopsCellGids = {popLabel: [] for popLabel in nodePopsCellGids}
+                    else:
+                        for popLabel, popCellGids in nodePopsCellGids.items():
+                            allPopsCellGids[popLabel].extend(popCellGids)
 
             if len(allSimData['spkt']) > 0:
                 allSimData['spkt'], allSimData['spkid'] = zip(*sorted(zip(allSimData['spkt'], allSimData['spkid'])))
                 allSimData['spkt'], allSimData['spkid'] = list(allSimData['spkt']), list(allSimData['spkid'])
 
-            sim.net.allCells =  sorted(allCells, key=lambda k: k['gid'])
-            sim.net.allPops = allPops
             sim.allSimData = allSimData
+            sim.net.allCells =  sorted(allCells, key=lambda k: k['gid'])
+            for popLabel, pop in allPops.items():
+                pop['cellGids'] = sorted(allPopsCellGids[popLabel])
+            sim.net.allPops = allPops
 
-            #netPopsCellGids = {popLabel: list(pop.cellGids) for popLabel,pop in sim.net.pops.items()}
 
     ## Print statistics
     sim.pc.barrier()

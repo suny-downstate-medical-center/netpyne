@@ -645,7 +645,7 @@ def saveInNode(gatherLFP=True, include=None, filename=None):
 #------------------------------------------------------------------------------
 # Save data in each node
 #------------------------------------------------------------------------------
-def saveSimDataInNode(filename=None, saveLFP=True, removeTraces=False):
+def saveSimDataInNode(filename=None, saveLFP=True, removeTraces=False, dataDir=None):
     """
     Function to save simulation data by node rather than as a whole
 
@@ -674,12 +674,18 @@ def saveSimDataInNode(filename=None, saveLFP=True, removeTraces=False):
     import os
 
     # create folder if missing
-    targetFolder = os.path.dirname(sim.cfg.filename)
-    if targetFolder and not os.path.exists(targetFolder):
+    if not dataDir:
+        dataDir = sim.cfg.filename + '_node_data'
+
+    if not os.path.exists(dataDir):
         try:
-            os.mkdir(targetFolder)
-        except OSError:
-            print(' Could not create target folder: %s' % (targetFolder))
+            os.mkdirs(dataDir, exist_ok=True)
+        except:
+            print('Could not create output folder: %s' % (dataDir))
+
+    sim.pc.barrier()
+    if sim.rank == 0:
+        print('\nSaving an output file for each node in: %s' % (dataDir))
 
     # saving data
     dataSave = {}
@@ -720,6 +726,9 @@ def saveSimDataInNode(filename=None, saveLFP=True, removeTraces=False):
 
     dataSave['simData'] = saveSimData
 
+    dataSave['cells'] = sim.net.cells
+    dataSave['pops'] = sim.net.pops
+
     if removeTraces:
         for k in sim.cfg.recordTraces.keys():
             del sim.simData[k]
@@ -740,17 +749,18 @@ def saveSimDataInNode(filename=None, saveLFP=True, removeTraces=False):
             import pickle
             dataSave = utils.replaceDictODict(dataSave)
             fileName = filePath + '_node_' + str(sim.rank) + '.pkl'
-            print(('Saving output as %s ... ' % (fileName)))
-            with open(fileName, 'wb') as fileObj:
+            print(('  Saving output as: %s ... ' % (fileName)))
+            with open(os.path.join(dataDir, fileName), 'wb') as fileObj:
                 pickle.dump(dataSave, fileObj)
 
         # Save to json file
         if sim.cfg.saveJson:
             fileName = filePath + '_node_' + str(sim.rank) + '.json'
-            print(('Saving output as %s ... ' % (fileName)))
-            sim.saveJSON(fileName, dataSave)
+            print(('  Saving output as: %s ... ' % (fileName)))
+            sim.saveJSON(os.path.join(dataDir, fileName), dataSave)
 
         # Save timing
+        sim.pc.barrier()
         if sim.rank == 0:
             if sim.cfg.timing:
                 sim.timing('stop', 'saveInNodeTime')

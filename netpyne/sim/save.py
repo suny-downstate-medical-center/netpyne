@@ -61,7 +61,7 @@ def saveJSON(fileName, data):
 #------------------------------------------------------------------------------
 # Save data
 #------------------------------------------------------------------------------
-def saveData(include = None, filename = None):
+def saveData(include=None, fileName=None):
     """
     Function for/to <short description of `netpyne.sim.save.saveData`>
 
@@ -72,8 +72,8 @@ def saveData(include = None, filename = None):
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
 
-    filename : <``None``?>
-        <Short description of filename>
+    fileName : <``None``?>
+        <Short description of fileName>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
 
@@ -87,7 +87,7 @@ def saveData(include = None, filename = None):
     else: needGather = False
     if needGather: gather.gatherData()
 
-    if filename: sim.cfg.filename = filename
+    if fileName: sim.cfg.filename = filename
 
     if sim.rank == 0:
         sim.timing('start', 'saveTime')
@@ -431,11 +431,8 @@ def saveInNode(gatherLFP=True, include=None, filename=None):
 
     """
 
-
     from .. import sim
     from ..specs import Dict, ODict
-
-    #This first part should be split to a separate function in gather.py
 
     # flag to avoid saving sections data for each cell (saves gather time and space; cannot inspect cell secs or re-simulate)
     if not sim.cfg.saveCellSecs:
@@ -467,7 +464,7 @@ def saveInNode(gatherLFP=True, include=None, filename=None):
             except:
                 pass
 
-    simDataVecs = ['spkt','spkid','stims']+list(sim.cfg.recordTraces.keys())
+    simDataVecs = ['spkt', 'spkid', 'stims'] + list(sim.cfg.recordTraces.keys())
     singleNodeVecs = ['t']
 
     if sim.cfg.createNEURONObj:
@@ -475,7 +472,9 @@ def saveInNode(gatherLFP=True, include=None, filename=None):
     else:
         sim.net.allCells = [c.__dict__ for c in sim.net.cells]
     sim.net.allPops = ODict()
-    for popLabel,pop in sim.net.pops.items(): sim.net.allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
+    
+    for popLabel,pop in sim.net.pops.items(): 
+        sim.net.allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
     saveData = Dict()
     for k in list(sim.simData.keys()):  # initialize all keys of allSimData dict
         saveData[k] = Dict()
@@ -701,8 +700,8 @@ def saveSimDataInNode(filename=None, saveLFP=True, removeTraces=False):
     for k in list(simData.keys()):  # initialize all keys of allSimData dict
         saveSimData[k] = {}
 
-    for key,val in simData.items():  # update simData dics of dics of h.Vector
-            if key in simDataVecs + singleNodeVecs:          # simData dicts that contain Vectors
+    for key, val in simData.items():  # update simData dics of dics of h.Vector
+            if key in simDataVecs:          # simData dicts that contain Vectors
                 if isinstance(val, dict):
                     for cell, val2 in val.items():
                         if isinstance(val2, dict):
@@ -713,6 +712,9 @@ def saveSimDataInNode(filename=None, saveLFP=True, removeTraces=False):
                             saveSimData[key].update({cell: list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
                 else:
                     saveSimData[key] = list(saveSimData[key]) + list(val) # udpate simData dicts which are Vectors
+            elif key in singleNodeVecs:
+                if sim.rank == 0:
+                    saveSimData[key] = list(val)
             else:
                 saveSimData[key] = val           # update simData dicts which are not Vectors
 

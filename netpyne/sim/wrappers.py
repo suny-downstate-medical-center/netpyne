@@ -20,11 +20,11 @@ def create(netParams=None, simConfig=None, output=False):
 
     Parameters
     ----------
-    netParams : <``netParams object``>
+    netParams : ``netParams object``
         NetPyNE netParams object specifying network parameters.
         **Default:** *required*. 
 
-    simConfig : <``simConfig object``>
+    simConfig : ``simConfig object``
         NetPyNE simConfig object specifying simulation configuration.
         **Default:** *required*. 
 
@@ -36,7 +36,7 @@ def create(netParams=None, simConfig=None, output=False):
     Returns
     -------
     data : tuple
-        If ``output`` is ``True``, returns (pops, cells, conns, rxd, stims, simData)
+        If ``output`` is ``True``, returns ``(pops, cells, conns, rxd, stims, simData)``
 
     """
 
@@ -54,7 +54,7 @@ def create(netParams=None, simConfig=None, output=False):
     simData = sim.setupRecording()             # setup variables to record for each cell (spikes, V traces, etc)
 
     if output: 
-        return (pops, cells, conns, rxd, stims, simData)
+        return ``(pops, cells, conns, rxd, stims, simData)``
 
 
 #------------------------------------------------------------------------------
@@ -141,11 +141,11 @@ def createSimulate(netParams=None, simConfig=None, output=False):
 
     Parameters
     ----------
-    netParams : <``netParams object``>
+    netParams : ``netParams object``
         NetPyNE netParams object specifying network parameters.
         **Default:** *required*. 
 
-    simConfig : <``simConfig object``>
+    simConfig : ``simConfig object``
         NetPyNE simConfig object specifying simulation configuration.
         **Default:** *required*. 
 
@@ -157,7 +157,7 @@ def createSimulate(netParams=None, simConfig=None, output=False):
     Returns
     -------
     data : tuple
-        If ``output`` is ``True``, returns (pops, cells, conns, stims, simData)
+        If ``output`` is ``True``, returns ``(pops, cells, conns, stims, simData)``
 
     """
 
@@ -166,7 +166,7 @@ def createSimulate(netParams=None, simConfig=None, output=False):
     sim.simulate()
 
     if output: 
-        return (pops, cells, conns, stims, simData)
+        return ``(pops, cells, conns, stims, simData)``
 
 
 #------------------------------------------------------------------------------
@@ -178,11 +178,11 @@ def createSimulateAnalyze(netParams=None, simConfig=None, output=False):
 
     Parameters
     ----------
-    netParams : <``netParams object``>
+    netParams : ``netParams object``
         NetPyNE netParams object specifying network parameters.
         **Default:** *required*. 
 
-    simConfig : <``simConfig object``>
+    simConfig : ``simConfig object``
         NetPyNE simConfig object specifying simulation configuration.
         **Default:** *required*. 
 
@@ -194,7 +194,7 @@ def createSimulateAnalyze(netParams=None, simConfig=None, output=False):
     Returns
     -------
     data : tuple
-        If ``output`` is ``True``, returns (pops, cells, conns, stims, simData)
+        If ``output`` is ``True``, returns ``(pops, cells, conns, stims, simData)``
 
     """
 
@@ -203,7 +203,7 @@ def createSimulateAnalyze(netParams=None, simConfig=None, output=False):
     sim.simulate()
     sim.analyze()
     if output: 
-        return (pops, cells, conns, stims, simData)
+        return ``(pops, cells, conns, stims, simData)``
 
 #------------------------------------------------------------------------------
 # Wrapper to create, simulate, and analyse network, while saving to master in intervals
@@ -214,11 +214,11 @@ def createSimulateAnalyzeInterval(netParams, simConfig, output=False, interval=N
 
     Parameters
     ----------
-    netParams : <``netParams object``>
+    netParams : ``netParams object``
         NetPyNE netParams object specifying network parameters.
         **Default:** *required*. 
 
-    simConfig : <``simConfig object``>
+    simConfig : ``simConfig object``
         NetPyNE simConfig object specifying simulation configuration.
         **Default:** *required*. 
 
@@ -235,7 +235,7 @@ def createSimulateAnalyzeInterval(netParams, simConfig, output=False, interval=N
     Returns
     -------
     data : tuple
-        If ``output`` is ``True``, returns (pops, cells, conns, stims, simData)
+        If ``output`` is ``True``, returns ``(pops, cells, conns, stims, simData)``
 
     """
 
@@ -256,7 +256,7 @@ def createSimulateAnalyzeInterval(netParams, simConfig, output=False, interval=N
     sim.pc.barrier()
     sim.analyze()
     if output: 
-        return (pops, cells, conns, stims, simData)
+        return ``(pops, cells, conns, stims, simData)``
 
 
 #------------------------------------------------------------------------------
@@ -268,11 +268,11 @@ def createSimulateAnalyzeDistributed(netParams, simConfig, output=False, filenam
 
     Parameters
     ----------
-    netParams : <``netParams object``>
+    netParams : ``netParams object``
         NetPyNE netParams object specifying network parameters.
         **Default:** *required*. 
 
-    simConfig : <``simConfig object``>
+    simConfig : ``simConfig object``
         NetPyNE simConfig object specifying simulation configuration.
         **Default:** *required*. 
 
@@ -297,7 +297,7 @@ def createSimulateAnalyzeDistributed(netParams, simConfig, output=False, filenam
     Returns
     -------
     data : tuple
-        If ``output`` is ``True``, returns (pops, cells, conns, stims, simData)
+        If ``output`` is ``True``, returns ``(pops, cells, conns, stims, simData)``
 
     """
 
@@ -312,7 +312,7 @@ def createSimulateAnalyzeDistributed(netParams, simConfig, output=False, filenam
     sim.analysis.plotData()
 
     if output: 
-        return (pops, cells, conns, stims, simData)
+        return ``(pops, cells, conns, stims, simData)``
 
 
 #------------------------------------------------------------------------------
@@ -328,7 +328,7 @@ def load(filename, simConfig=None, output=False, instantiate=True, instantiateCe
         name of data file to load.
         **Default:** *required*.
 
-    simConfig : <``simConfig object``>
+    simConfig : ``simConfig object``
         NetPyNE simConfig object specifying simulation configuration.
         **Default:** ``None`` uses the current ``simConfig``. 
 
@@ -405,7 +405,7 @@ def loadSimulate(filename, simConfig=None, output=False):
         name of data file to load.
         **Default:** *required*.
 
-    simConfig : <``simConfig object``>
+    simConfig : ``simConfig object``
         NetPyNE simConfig object specifying simulation configuration.
         **Default:** ``None`` uses the current ``simConfig``. 
 
@@ -446,7 +446,7 @@ def loadSimulateAnalyze(filename, simConfig=None, output=False):
         name of data file to load.
         **Default:** *required*.
 
-    simConfig : <``simConfig object``>
+    simConfig : ``simConfig object``
         NetPyNE simConfig object specifying simulation configuration.
         **Default:** ``None`` uses the current ``simConfig``. 
 
@@ -458,7 +458,7 @@ def loadSimulateAnalyze(filename, simConfig=None, output=False):
     Returns
     -------
     data : tuple
-        If ``output`` is ``True``, returns (pops, cells, conns, stims, simData)
+        If ``output`` is ``True``, returns ``(pops, cells, conns, stims, simData)``
 
     """
 
@@ -484,11 +484,11 @@ def createExportNeuroML2(netParams=None, simConfig=None, output=False, reference
 
     Parameters
     ----------
-    netParams : <``netParams object``>
+    netParams : ``netParams object``
         NetPyNE netParams object specifying network parameters.
         **Default:** *required*. 
 
-    simConfig : <``simConfig object``>
+    simConfig : ``simConfig object``
         NetPyNE simConfig object specifying simulation configuration.
         **Default:** *required*. 
 
@@ -547,7 +547,7 @@ def createExportNeuroML2(netParams=None, simConfig=None, output=False, reference
 #------------------------------------------------------------------------------
 def importNeuroML2SimulateAnalyze(fileName, simConfig):
     """
-    Wrapper function to import, simulate, and analyze from a NeuroML2 file`>
+    Wrapper function to import, simulate, and analyze from a NeuroML2 file
 
     Parameters
     ----------
@@ -555,7 +555,7 @@ def importNeuroML2SimulateAnalyze(fileName, simConfig):
         name of data file to load.
         **Default:** *required*.
 
-    simConfig : <``simConfig object``>
+    simConfig : ``simConfig object``
         NetPyNE simConfig object specifying simulation configuration.
         **Default:** ``None`` uses the current ``simConfig``. 
 

@@ -83,12 +83,9 @@ class GeneralPlotter:
         
 
 
-    def saveData(self, fileName=None, fileDesc=None, fileType='json', fileDir=None, sim=None, **kwargs):
+    def saveData(self, fileName=None, fileDesc=None, fileType=None, fileDir=None, sim=None, **kwargs):
 
         from ..analysis import saveData as saveFigData
-
-        if fileDesc is None:
-            fileDesc = self.type + '_data'
 
         saveFigData(self.data, fileName=fileName, fileDesc=fileDesc, fileType=fileType, fileDir=fileDir, sim=sim, **kwargs)
     
@@ -173,6 +170,7 @@ class GeneralPlotter:
         new_manager.canvas.figure = self.fig
         self.fig.set_canvas(new_manager.canvas)
         self.fig.show()
+
 
     def addLegend(self, handles=None, labels=None, **kwargs):
 

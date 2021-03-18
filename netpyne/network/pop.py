@@ -491,6 +491,8 @@ class Pop (object):
         odict = self.__dict__.copy() # copy the dict since we change it
         odict = sim.replaceFuncObj(odict)  # replace h objects with None so can be pickled
         #odict['cellModelClass'] = str(odict['cellModelClass'])
-        del odict['cellModelClass']
-        del odict['rand']
+        if 'cellModelClass' in odict:
+            del odict['cellModelClass']
+        if 'rand' in odict:
+            del odict['rand']
         return odict

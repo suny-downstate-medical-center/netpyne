@@ -290,21 +290,10 @@ def gatherData(gatherLFP=True):
         return sim.allSimData
 
 
-
-
-
-
-
-
-
-
-
-
-
 #------------------------------------------------------------------------------
 # Gather data from files
 #------------------------------------------------------------------------------
-def gatherDataFromFiles(gatherLFP=True, dataDir=None):
+def gatherDataFromFiles(gatherLFP=True, dataDir=None, fileName=None, sim=None):
     """
     Function to gather data from multiple files (from distributed or interval saving)
 
@@ -321,19 +310,27 @@ def gatherDataFromFiles(gatherLFP=True, dataDir=None):
 
     """
 
-    from .. import sim
-    sim.timing('start', 'gatherTime')
+    if not sim:
+        from netpyne import sim
 
     if getattr(sim, 'rank', None) is None:
         sim.initialize()
-    
+    sim.timing('start', 'gatherTime')
+
     if sim.rank == 0:
+
+        if not fileName:
+            fileName = sim.cfg.filename
+            simLabels = None
+        else:
+            simLabels = [fileName]
         
         if not dataDir:
-            dataDir = sim.cfg.filename + '_node_data'
+            dataDir = fileName + '_node_data'
 
         # find all individual sim labels whose files need to be gathered
-        simLabels = [f.replace('_node_0.pkl', '') for f in os.listdir(dataDir) if f.endswith('_node_0.pkl')]
+        if not simLabels:
+            simLabels = [f.replace('_node_0.pkl', '') for f in os.listdir(dataDir) if f.endswith('_node_0.pkl')]
 
         for simLabel in simLabels:
 
@@ -362,10 +359,10 @@ def gatherDataFromFiles(gatherLFP=True, dataDir=None):
                     if 'cells' in data.keys():
                         allCells.extend([cell.__dict__ for cell in data['cells']])
                     if 'pops' in data.keys():
-                        for popLabel, pop in sim.net.pops.items(): 
+                        for popLabel, pop in data['pops'].items(): 
                             allPops[popLabel] = pop.__getstate__()
 
-                    nodePopsCellGids = {popLabel: list(pop.cellGids) for popLabel, pop in sim.net.pops.items()}
+                    nodePopsCellGids = {popLabel: list(pop.cellGids) for popLabel, pop in data['pops'].items()}
 
                     for key, value in data['simData'].items():
                         
@@ -445,9 +442,9 @@ def gatherDataFromFiles(gatherLFP=True, dataDir=None):
         print(('  Connections: %i (%0.2f per cell)' % (sim.totalConnections, sim.connsPerCell)))
         if sim.totalSynapses != sim.totalConnections:
             print(('  Synaptic contacts: %i (%0.2f per cell)' % (sim.totalSynapses, sim.synsPerCell)))
+        print(('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate)))
 
         if 'runTime' in sim.timingData:
-            print(('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate)))
             print(('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration/1e3, sim.nhosts)))
             print(('  Run time: %0.2f s' % (sim.timingData['runTime'])))
 

@@ -329,6 +329,13 @@ class CompartCell (Cell):
             Output: none
         '''
 
+        for paramStrFunc in paramsStrFunc:
+            strFunc = connParam[paramStrFunc]  # string containing function
+            for randmeth in self.stringFuncRandMethods: strFunc = strFunc.replace(randmeth, 'rand.'+randmeth) # append rand. to h.Random() methods
+            strVars = [var for var in list(dictVars.keys()) if var in strFunc and var+'norm' not in strFunc]  # get list of variables used (eg. post_ynorm or dist_xyz)
+            lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function
+            lambdaFunc = eval(lambdaStr)
+
         if nseg:
             sec.nseg = nseg
 
@@ -400,9 +407,33 @@ class CompartCell (Cell):
                         if sim.cfg.verbose:
                             print('# Error inserting %s mechanims in %s section! (check mod files are compiled)'%(mechName, sectName))
                         continue
-                    if mechName != 'distribution':
-                        for mechParamName,mechParamValue in mechParams.items():  # add params of the mechanism
-                            mechParamValueFinal = mechParamValue
+                    for mechParamName,mechParamValue in mechParams.items():  # add params of the mechanism
+
+                        # secs['soma']['mechs']['hh'] = {'gnabar': 'gna_constant_1 + gna_constant_2*pathDistFromParent', 'gkbar': 0.036, 'gl': 0.003, 'el': -70}
+                        #
+                        # netParams['gna_constant_1'] = 0.2
+                        # netParams['gna_constant_2'] = 1.0/11.0
+
+                        if isinstance(mechParamValue, basestring):
+                            print ( " string function ")
+                        #     paramsStrFunc = mechParamValue
+
+                            # dictVars[mechParamName]      = lambda postConds: postConds['x']
+
+                        #     strVars = [var for var in list(dictVars.keys())]  # get list of variables used (eg. post_ynorm or dist_xyz)
+                        #
+                        #     lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function
+                        #     lambdaFunc = eval(lambdaStr)
+                        #     for seg in sec:
+                        #         for index, value in enumerate(values):
+                        #             if value == 'pathDistFromSoma':
+                        #                 values[index] = h.distance(seg.x, sec=soma)
+                        #             elif value == 'pathDistFromParentSec':
+                        #                 values[index] = h.distance(seg.x, sec=parentSec)
+                        #             setattr(getattr(seg, mechName), mechParamName,mechParamValueFinal)
+                        #
+                        # else:
+                            # mechParamValueFinal = mechParamValue
                             for iseg,seg in enumerate(sec['hObj']):  # set mech params for each segment
                                 if type(mechParamValue) in [list]:
                                     if len(mechParamValue) == 1:
@@ -411,8 +442,9 @@ class CompartCell (Cell):
                                         mechParamValueFinal = mechParamValue[iseg]
                                 if mechParamValueFinal is not None:  # avoid setting None values
                                     setattr(getattr(seg, mechName), mechParamName,mechParamValueFinal)
-                    else:
-                        __mechStrToFunc(sec, self.soma, mechName, mechParams["values"], mechParams["strVars"], mechParams["strFunc"], nseg = sec.nseg)
+
+                    # else:
+                    #     __mechStrToFunc(sec, self.soma, mechName, mechParams["values"], mechParams["strVars"], mechParams["strFunc"], nseg = sec.nseg)
 
             # add ions
             if 'ions' in sectParams:

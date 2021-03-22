@@ -8,7 +8,19 @@ PYRcell = {'secs': {}}
 PYRcell['secs']['soma'] = {'geom': {}, 'mechs': {}}  # soma params dict
 PYRcell['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  # soma geometry
 PYRcell['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
-PYRcell['secs']['dend']['mechs']['distribution'] = {'nseg':7,'values': [4,5,'pathDistFromSoma', 0.1, 5.5, .04], 'vars': ['a4','a5','dist', 'a6', 'a7', 'g8'],'strFunc':'(a4 + a5*exp((dist-a6)/a7)) * g8'}      # soma hh mechanisms
+PYRcell['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}                                       # dend params dict
+PYRcell['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}                      # dend geometry
+PYRcell['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}                  # dend topology
+PYRcell['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
+secs['soma']['mechs']['hh'] = {'gnabar': 'gna_constant_1 + gna_constant_2*pathDistFromParent', 'gkbar': 0.036, 'gl': 0.003, 'el': -70}
+
+netParams['gna_constant_1'] = 0.2
+netParams['gna_constant_2'] = 1.0/11.0
+
+PYRcell['secs']['dend']['mechs']['distribution'] = {'nseg':7,
+'values': [4,5,'pathDistFromSoma', 0.1, 5.5, .04],
+ 'vars': ['a4','a5','dist', 'a6', 'a7', 'g8'],
+ 'strFunc':'(a4 + a5*exp((dist-a6)/a7)) * g8'}      # soma hh mechanisms
 netParams.cellParams['PYR'] = PYRcell
 
 ## Population parameters
@@ -54,4 +66,4 @@ sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty
 
 # check model output
-sim.checkOutput('tut2')
+# sim.checkOutput('tut2')

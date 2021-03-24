@@ -20,7 +20,7 @@ class curve:
     classification2 = ""
     classification3 = ""
     classification4 = ""
-"
+
 
     class rates:
         AsOfDate = datetime.datetime.now();

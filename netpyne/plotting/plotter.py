@@ -268,12 +268,49 @@ class LinePlotter(GeneralPlotter):
 
         self.formatAxis(**kwargs)
 
-        scatterPlot = self.axis.scatter(x=self.x, y=self.y, s=self.s, c=self.c, marker=self.marker, linewidth=self.linewidth, cmap=self.cmap, norm=self.norm, alpha=self.alpha, linewidths=self.linewidths)
+        linePlot = self.axis.plot(x=self.x, y=self.y, s=self.s, c=self.c, marker=self.marker, linewidth=self.linewidth, cmap=self.cmap, norm=self.norm, alpha=self.alpha, linewidths=self.linewidths)
 
         self.finishFig(**kwargs)
 
         return self.fig
 
+
+
+
+class HistPlotter(GeneralPlotter):
+    """A class used for histogram plotting"""
+
+    def __init__(self, data, axis=None, options={}, **kwargs):
+        
+        super().__init__(data=data, axis=axis, **kwargs)
+
+        self.type        = 'histogram'
+        self.x           = data.get('x')
+        self.bins        = data.get('bins', None) 
+        self.range       = data.get('range', None) 
+        self.density     = data.get('density', False) 
+        self.weights     = data.get('weights', None) 
+        self.cumulative  = data.get('cumulative', False) 
+        self.bottom      = data.get('bottom', None) 
+        self.histtype    = data.get('histtype', 'bar') 
+        self.align       = data.get('align', 'mid')
+        self.orientation = data.get('orientation', 'vertical') 
+        self.rwidth      = data.get('rwidth', None)
+        self.log         = data.get('log', False) 
+        self.color       = data.get('color', None)
+        self.label       = data.get('label', None)
+        self.stacked     = data.get('stacked', False)
+        self.data        = data.get('data', None)
+
+    def plot(self, **kwargs):
+
+        #self.formatAxis(**kwargs)
+
+        histPlot = self.axis.hist(self.x, bins=self.bins, range=self.range, density=self.density, weights=self.weights, cumulative=self.cumulative, bottom=self.bottom, histtype=self.histtype, align=self.align, orientation=self.orientation, rwidth=self.rwidth, log=self.log, color=self.color, label=self.label, stacked=self.stacked, data=self.data)
+
+        self.finishFig(**kwargs)
+
+        return self.fig
 
 
 

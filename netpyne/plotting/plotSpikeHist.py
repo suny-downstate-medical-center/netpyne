@@ -1,20 +1,48 @@
-# Generate a raster plot
+# Generate a spike histogram
 
+import numpy as np
 import matplotlib.patches as mpatches
 from ..analysis.utils import exception, loadData
-from .plotter import ScatterPlotter
+from .plotter import HistPlotter
 
 
-@exception
-def plotRaster(rasterData=None, popNumCells=None, popLabels=None, popColors=None, axis=None, legend=True, colorList=None, orderInverse=False, returnPlotter=False, **kwargs):
-    """Function to produce a raster plot of cell spiking, grouped by population
+#@exception
+def plotSpikeHist(
+    histData=None, 
+    popNumCells=None, 
+    popLabels=None, 
+    popColors=None, 
+    axis=None, 
+    legend=True, 
+    colorList=None, 
+    returnPlotter=False,
+
+
+    include=['eachPop', 'allCells'], 
+    timeRange=None, 
+    binSize=5, 
+    overlay=True, 
+    graphType='line', 
+    measure='rate', 
+    norm=False, 
+    smooth=None, 
+    filtFreq=None, 
+    filtOrder=3, 
+
+    saveData=None, 
+    saveFig=True, 
+    showFig=True, 
+    **kwargs):
+
+    #def plotRaster(rasterData=None, popNumCells=None, popLabels=None, popColors=None, axis=None, legend=True, colorList=None, orderInverse=False, returnPlotter=False, **kwargs):
+    """Function to produce a histogram of cell spiking, grouped by population
 
     Parameters
     ----------
-    rasterData : list, tuple, dict, str
-        the data necessary to plot the raster (spike times and spike indices, at minimum).  
+    histData : list, tuple, dict, str
+        the data necessary to plot the spike histogram (spike times and spike indices, at minimum).  
 
-        *Default:* ``None`` uses ``analysis.prepareRaster`` to produce ``rasterData`` using the current sim object.
+        *Default:* ``None`` uses ``analysis.prepareSpikeHist`` to produce ``histData`` using the current sim object.
 
         *Options:* if a *list* or a *tuple*, the first item must be a *list* of spike times and the second item must be a *list* the same length of spike indices (the id of the cell corresponding to that spike time).  Optionally, a third item may be a *list* of *ints* representing the number of cells in each population (in lieu of ``popNumCells``).  Optionally, a fourth item may be a *list* of *strs* representing the population names (in lieu of ``popLabels``). 
         
@@ -216,49 +244,49 @@ def plotRaster(rasterData=None, popNumCells=None, popLabels=None, popColors=None
     """
 
     # If there is no input data, get the data from the NetPyNE sim object
-    if rasterData is None:
+    if histData is None:
         if 'sim' not in kwargs:
             from .. import sim
         else:
             sim = kwargs['sim']
 
-        rasterData = sim.analysis.prepareRaster(legend=legend, popLabels=popLabels, **kwargs)
+        histData = sim.analysis.prepareSpikeHist(legend=legend, popLabels=popLabels, **kwargs)
 
-    print('Plotting raster...')
+    print('Plotting spike histogram...')
 
     # If input is a file name, load data from the file
-    if type(rasterData) == str:
-        rasterData = loadData(rasterData)
+    if type(histData) == str:
+        histData = loadData(histData)
 
     # If input is a dictionary, pull the data out of it
-    if type(rasterData) == dict:
+    if type(histData) == dict:
     
-        spkTimes = rasterData['spkTimes']
-        spkInds = rasterData['spkInds']
+        spkTimes = histData['spkTimes']
+        spkInds = histData['spkInds']
 
         if not popNumCells:
-            popNumCells = rasterData.get('popNumCells')
+            popNumCells = histData.get('popNumCells')
         if not popLabels:
-            popLabels = rasterData.get('popLabels')
+            popLabels = histData.get('popLabels')
 
-        axisArgs = rasterData.get('axisArgs')
-        legendLabels = rasterData.get('legendLabels')
+        axisArgs = histData.get('axisArgs')
+        legendLabels = histData.get('legendLabels')
     
     # If input is a list or tuple, the first item is spike times, the second is spike indices
-    elif type(rasterData) == list or type(rasterData) == tuple:
-        spkTimes = rasterData[0]
-        spkInds = rasterData[1]
+    elif type(histData) == list or type(histData) == tuple:
+        spkTimes = histData[0]
+        spkInds = histData[1]
         axisArgs = None
         legendLabels = None
         
         # If there is a third item, it should be popNumCells
         if not popNumCells:
-            try: popNumCells = rasterData[2]
+            try: popNumCells = histData[2]
             except: pass
         
         # If there is a fourth item, it should be popLabels 
         if not popLabels:
-            try: popLabels = rasterData[3]
+            try: popLabels = histData[3]
             except: pass
     
     # If there is no info about pops, generate info for a single pop
@@ -275,7 +303,13 @@ def plotRaster(rasterData=None, popNumCells=None, popLabels=None, popColors=None
         
     # If there is info about pop numbers and labels, make sure they are the same size
     if len(popNumCells) != len(popLabels):
-        raise Exception('In plotRaster, popNumCells (' + str(len(popNumCells)) + ') and popLabels (' + str(len(popLabels)) + ') must be the same size')
+        raise Exception('In plotSpikeHist, popNumCells (' + str(len(popNumCells)) + ') and popLabels (' + str(len(popLabels)) + ') must be the same size')
+
+    # Replace 'eachPop' with list of pops
+    if 'eachPop' in include:
+        include.remove('eachPop')
+        for popLabel in popLabels: 
+            include.append(popLabel)
 
     # Create a dictionary with the color for each pop
     if not colorList:
@@ -300,39 +334,51 @@ def plotRaster(rasterData=None, popNumCells=None, popLabels=None, popColors=None
     # Set the time range appropriately
     if 'timeRange' in kwargs:
         timeRange = kwargs['timeRange']
-    elif 'timeRange' in rasterData:
-        timeRange = rasterData['timeRange']
+    elif 'timeRange' in histData:
+        timeRange = histData['timeRange']
     else:
         timeRange = [0, np.ceil(max(spkTimes))]
 
-    # Create a dictionary with the inputs for a scatter plot
-    scatterData = {}
-    scatterData['x'] = spkTimes
-    scatterData['y'] = spkInds
-    scatterData['c'] = spkColors
-    scatterData['s'] = 5
-    scatterData['marker'] = '|'
-    scatterData['linewidth'] = 2
-    scatterData['cmap'] = None
-    scatterData['norm'] = None
-    scatterData['alpha'] = None
-    scatterData['linewidths'] = None
+    # Bin the data using Numpy
+    histoData = np.histogram(spkTimes, bins=np.arange(timeRange[0], timeRange[1], binSize))
+    histoBins = histoData[1][:-1] + binSize/2
+    histoCount = histoData[0]
+
+    # Create a dictionary with the inputs for a histogram plot
+    plotData = {}
+    plotData['x']           = spkTimes
+    plotData['bins']        = histoBins 
+    plotData['range']       = histData.get('range', None) 
+    plotData['density']     = histData.get('density', False) 
+    plotData['weights']     = histData.get('weights', None) 
+    plotData['cumulative']  = histData.get('cumulative', False) 
+    plotData['bottom']      = histData.get('bottom', None) 
+    plotData['histtype']    = histData.get('histtype', 'step') 
+    # 'bar', 'barstacked', 'step', 'stepfilled'
+    plotData['align']       = histData.get('align', 'mid')
+    plotData['orientation'] = histData.get('orientation', 'vertical') 
+    plotData['rwidth']      = histData.get('rwidth', None)
+    plotData['log']         = histData.get('log', False) 
+    plotData['color']       = histData.get('color', None)
+    plotData['label']       = histData.get('label', None)
+    plotData['stacked']     = histData.get('stacked', False)
+    plotData['data']        = histData.get('data', None)
 
     # If we use a kwarg, we add it to the list to be removed from kwargs
     kwargDels = []
 
-    # If a kwarg matches a scatter input key, use the kwarg value instead of the default
+    # If a kwarg matches a histogram input key, use the kwarg value instead of the default
     for kwarg in kwargs:
-        if kwarg in scatterData:
-            scatterData[kwarg] = kwargs[kwarg]
+        if kwarg in histData:
+            histData[kwarg] = kwargs[kwarg]
             kwargDels.append(kwarg)
 
     # Create a dictionary to hold axis inputs
     if not axisArgs:
         axisArgs = {}
-        axisArgs['title'] = 'Raster Plot of Spiking'
+        axisArgs['title'] = 'Histogram Plot of Spiking'
         axisArgs['xlabel'] = 'Time (ms)'
-        axisArgs['ylabel'] = 'Cells'
+        axisArgs['ylabel'] = 'Number of Spikes'
 
     # If a kwarg matches an axis input key, use the kwarg value instead of the default
     for kwarg in kwargs:
@@ -345,8 +391,8 @@ def plotRaster(rasterData=None, popNumCells=None, popLabels=None, popColors=None
         kwargs.pop(kwargDel)
 
     # create Plotter object
-    rasterPlotter = ScatterPlotter(data=scatterData, axis=axis, **axisArgs, **kwargs)
-    rasterPlotter.type = 'raster'
+    histPlotter = HistPlotter(data=plotData, axis=axis, **axisArgs, **kwargs)
+    histPlotter.type = 'histogram'
 
     # add legend
     if legend:
@@ -360,11 +406,18 @@ def plotRaster(rasterData=None, popNumCells=None, popLabels=None, popColors=None
         # (use rectangles instead of markers because some markers don't show up well)
         labels = []
         handles = []
+        if 'allCells' in include:
+            allCellsColor = 'black'
+            if 'allCellsColor' in kwargs:
+                allCellsColor = kwargs['allCellsColor']
+            histPlotter.color = [allCellsColor]
+            labels.append('All cells')
+            handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=allCellsColor))
         for ipop, popLabel in enumerate(popLabels):
             if legendLabels:
                 labels.append(legendLabels[ipop])
             else:
-                labels.append(popLabel)            
+                labels.append(popLabel)
             handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=popColors[popLabel]))
 
         # Set up the default legend settings
@@ -385,22 +438,19 @@ def plotRaster(rasterData=None, popNumCells=None, popLabels=None, popColors=None
                     legendKwargs[key] = value
             
         # Add the legend
-        rasterPlotter.addLegend(handles, labels, **legendKwargs)
+        histPlotter.addLegend(handles, labels, **legendKwargs)
         
         # Adjust the plot to make room for the legend
         rightOffset = 0.8
         maxLabelLen = max([len(label) for label in popLabels])
-        rasterPlotter.fig.subplots_adjust(right=(rightOffset - 0.012 * maxLabelLen))
+        histPlotter.fig.subplots_adjust(right=(rightOffset - 0.012 * maxLabelLen))
 
-    # It is often useful to invert the ordering of cells, so positions match the legend
-    if orderInverse: 
-        rasterPlotter.axis.invert_yaxis()
 
     # Generate the figure
-    rasterPlot = rasterPlotter.plot(**axisArgs, **kwargs)
+    histPlot = histPlotter.plot(**axisArgs, **kwargs)
 
     # Default is to return the figure, but you can also return the plotter
     if returnPlotter:
-        return rasterPlotter
+        return histPlotter
     else:
-        return rasterPlot
+        return histPlot

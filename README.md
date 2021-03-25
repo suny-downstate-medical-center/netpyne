@@ -4,7 +4,7 @@ NetPyNE is a Python package to facilitate the development, simulation, paralleli
 
 For more details, installation instructions, documentation, tutorials, forums, videos and more, please visit: www.netpyne.org
 
-This package is developed and maintained by the Neurosim lab (www.neurosimlab.org)
+This package is developed and maintained by the [Neurosim lab](www.neurosimlab.org)
 
 [![Build Status](https://travis-ci.org/Neurosim-lab/netpyne.svg?branch=development)](https://travis-ci.org/Neurosim-lab/netpyne)
 

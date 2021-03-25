@@ -9,6 +9,15 @@ from .plotter import HistPlotter
 #@exception
 def plotSpikeHist(
     histData=None, 
+    
+    histType='step', # 'bar', 'barstacked', 'step', 'stepfilled'
+    stacked=False,
+    cumulative=False,
+    log=False,
+    density=False,
+    alpha=1.0,
+    linewidth=5.0,
+
     popNumCells=None, 
     popLabels=None, 
     popColors=None, 
@@ -17,10 +26,10 @@ def plotSpikeHist(
     colorList=None, 
     returnPlotter=False,
 
-
-    include=['eachPop', 'allCells'], 
+    include=['eachPop', 'allCells'],   # ['eachPop', 'allCells']
     timeRange=None, 
-    binSize=5, 
+    binSize=50, 
+    
     overlay=True, 
     graphType='line', 
     measure='rate', 
@@ -28,6 +37,7 @@ def plotSpikeHist(
     smooth=None, 
     filtFreq=None, 
     filtOrder=3, 
+
 
     saveData=None, 
     saveFig=True, 
@@ -305,6 +315,10 @@ def plotSpikeHist(
     if len(popNumCells) != len(popLabels):
         raise Exception('In plotSpikeHist, popNumCells (' + str(len(popNumCells)) + ') and popLabels (' + str(len(popLabels)) + ') must be the same size')
 
+    # Ensure that include is a list
+    if type(include) != list:
+        include = [include]
+
     # Replace 'eachPop' with list of pops
     if 'eachPop' in include:
         include.remove('eachPop')
@@ -321,16 +335,15 @@ def plotSpikeHist(
 
     # Create a list to link cells to their populations
     indPop = []
+    popGids = []
     for popLabel, popNumCell in zip(popLabels, popNumCells):
+        popGids.append(np.arange(len(indPop), len(indPop) + int(popNumCell)))
         indPop.extend(int(popNumCell) * [popLabel])
 
-    # Create a dictionary to link cells to their population color
+    # Create a dictionary to link cells to their population
     cellGids = list(set(spkInds))
-    gidColors = {cellGid: popColors[indPop[cellGid]] for cellGid in cellGids}  
+    gidPops = {cellGid: indPop[cellGid] for cellGid in cellGids}  
     
-    # Create a list of spkColors to be fed into the scatter plot
-    spkColors = [gidColors[spkInd] for spkInd in spkInds]
-
     # Set the time range appropriately
     if 'timeRange' in kwargs:
         timeRange = kwargs['timeRange']
@@ -341,7 +354,7 @@ def plotSpikeHist(
 
     # Bin the data using Numpy
     histoData = np.histogram(spkTimes, bins=np.arange(timeRange[0], timeRange[1], binSize))
-    histoBins = histoData[1][:-1] + binSize/2
+    histoBins = histoData[1]#[:-1] + binSize/2
     histoCount = histoData[0]
 
     # Create a dictionary with the inputs for a histogram plot
@@ -349,19 +362,19 @@ def plotSpikeHist(
     plotData['x']           = spkTimes
     plotData['bins']        = histoBins 
     plotData['range']       = histData.get('range', None) 
-    plotData['density']     = histData.get('density', False) 
+    plotData['density']     = density
     plotData['weights']     = histData.get('weights', None) 
-    plotData['cumulative']  = histData.get('cumulative', False) 
+    plotData['cumulative']  = cumulative 
     plotData['bottom']      = histData.get('bottom', None) 
-    plotData['histtype']    = histData.get('histtype', 'step') 
-    # 'bar', 'barstacked', 'step', 'stepfilled'
+    plotData['histtype']    = histType 
     plotData['align']       = histData.get('align', 'mid')
     plotData['orientation'] = histData.get('orientation', 'vertical') 
     plotData['rwidth']      = histData.get('rwidth', None)
-    plotData['log']         = histData.get('log', False) 
+    plotData['log']         = log
     plotData['color']       = histData.get('color', None)
+    plotData['alpha']       = alpha
     plotData['label']       = histData.get('label', None)
-    plotData['stacked']     = histData.get('stacked', False)
+    plotData['stacked']     = stacked
     plotData['data']        = histData.get('data', None)
 
     # If we use a kwarg, we add it to the list to be removed from kwargs
@@ -406,16 +419,44 @@ def plotSpikeHist(
         # (use rectangles instead of markers because some markers don't show up well)
         labels = []
         handles = []
-        if 'allCells' in include:
+
+        # Remove the sum of all population spiking when stacking
+        if stacked or histType == 'barstacked':
+            if 'allCells' in include:
+                include.remove('allCells')
+
+
+        # Deal with the sum of all population spiking (allCells)
+        if 'allCells' not in include:
+            histPlotter.x = []
+            histPlotter.color = []
+        else:
+            histPlotter.x = [histPlotter.x]
             allCellsColor = 'black'
             if 'allCellsColor' in kwargs:
                 allCellsColor = kwargs['allCellsColor']
             histPlotter.color = [allCellsColor]
             labels.append('All cells')
             handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=allCellsColor))
-        for ipop, popLabel in enumerate(popLabels):
+
+
+        for popIndex, popLabel in enumerate(popLabels):
+            
+            # Get GIDs for this population
+            currentGids = popGids[popIndex]
+
+            # Use GIDs to get a spiketimes list for this population
+            spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in currentGids]))
+
+            # Append the population spiketimes list to histPlotter.x
+            histPlotter.x.append(spkts)
+
+            # Append the population color to histPlotter.color
+            histPlotter.color.append(popColors[popLabel])
+
+            # Append the legend labels and handles
             if legendLabels:
-                labels.append(legendLabels[ipop])
+                labels.append(legendLabels[popIndex])
             else:
                 labels.append(popLabel)
             handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=popColors[popLabel]))

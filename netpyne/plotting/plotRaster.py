@@ -277,6 +277,10 @@ def plotRaster(rasterData=None, popNumCells=None, popLabels=None, popColors=None
     if len(popNumCells) != len(popLabels):
         raise Exception('In plotRaster, popNumCells (' + str(len(popNumCells)) + ') and popLabels (' + str(len(popLabels)) + ') must be the same size')
 
+    # Ensure that include is a list
+    if type(include) != list:
+        include = [include]
+
     # Create a dictionary with the color for each pop
     if not colorList:
         from .plotter import colorList    
@@ -360,9 +364,9 @@ def plotRaster(rasterData=None, popNumCells=None, popLabels=None, popColors=None
         # (use rectangles instead of markers because some markers don't show up well)
         labels = []
         handles = []
-        for ipop, popLabel in enumerate(popLabels):
+        for popIndex, popLabel in enumerate(popLabels):
             if legendLabels:
-                labels.append(legendLabels[ipop])
+                labels.append(legendLabels[popIndex])
             else:
                 labels.append(popLabel)            
             handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=popColors[popLabel]))

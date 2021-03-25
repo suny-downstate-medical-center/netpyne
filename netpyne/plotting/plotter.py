@@ -298,6 +298,7 @@ class HistPlotter(GeneralPlotter):
         self.rwidth      = data.get('rwidth', None)
         self.log         = data.get('log', False) 
         self.color       = data.get('color', None)
+        self.alpha       = data.get('alpha', None)
         self.label       = data.get('label', None)
         self.stacked     = data.get('stacked', False)
         self.data        = data.get('data', None)
@@ -306,7 +307,7 @@ class HistPlotter(GeneralPlotter):
 
         #self.formatAxis(**kwargs)
 
-        histPlot = self.axis.hist(self.x, bins=self.bins, range=self.range, density=self.density, weights=self.weights, cumulative=self.cumulative, bottom=self.bottom, histtype=self.histtype, align=self.align, orientation=self.orientation, rwidth=self.rwidth, log=self.log, color=self.color, label=self.label, stacked=self.stacked, data=self.data)
+        histPlot = self.axis.hist(self.x, bins=self.bins, range=self.range, density=self.density, weights=self.weights, cumulative=self.cumulative, bottom=self.bottom, histtype=self.histtype, align=self.align, orientation=self.orientation, rwidth=self.rwidth, log=self.log, color=self.color, alpha=self.alpha, label=self.label, stacked=self.stacked, data=self.data)
 
         self.finishFig(**kwargs)
 

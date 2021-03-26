@@ -6,5 +6,7 @@ For more details, installation instructions, documentation, tutorials, forums, v
 
 This package is developed and maintained by the Neurosim lab (www.neurosimlab.org)
 
+For more tutorials please visit: netpyne > netpyne > tutorials
+
 [![Build Status](https://travis-ci.org/Neurosim-lab/netpyne.svg?branch=development)](https://travis-ci.org/Neurosim-lab/netpyne)
 

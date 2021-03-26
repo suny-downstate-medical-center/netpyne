@@ -39,7 +39,7 @@ def preRun():
 
     # cvode variables
     sim.cvode.active(int(sim.cfg.cvode_active))
-    sim.cvode.cache_efficient(int(sim.cfg.cache_efficient))
+    sim.cvode.cache_efficient(int(sim.cfg.cache_efficient or sim.cfg.coreneuron))
     sim.cvode.atol(sim.cfg.cvode_atol)
     sim.cvode.use_fast_imem(sim.cfg.use_fast_imem)
 
@@ -144,8 +144,6 @@ def runSim(skipPreRun=False):
 
     if sim.cfg.coreneuron == True:
         if sim.rank == 0: print('\nRunning simulation using CoreNEURON for %s ms...' % sim.cfg.duration)
-        sim.cfg.cache_efficient = True
-        sim.cvode.cache_efficient(1)
         from neuron import coreneuron
         coreneuron.enable = True
         if sim.cfg.gpu == True:

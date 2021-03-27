@@ -1122,8 +1122,6 @@ class SONATAImporter():
         "morphologies_dir": "$COMPONENT_DIR/morphologies",
         """
 
-        #print_v('Checking for %s in %s'%(substitutes.keys(),path))
-
         for s in sorted(self.substitutes, key=lambda k: len(k), reverse=True):
             if path.startswith(s):
                 path = path.replace(s,self.substitutes[s])

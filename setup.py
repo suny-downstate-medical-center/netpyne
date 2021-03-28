@@ -5,13 +5,14 @@ from setuptools import setup, find_packages
 #To use a consistent encoding
 from codecs import open
 from os import path,system
-
+# added import sys to the setup.py head section
+import sys
 here = path.abspath(path.dirname(__file__))
 
-#Get the long description from the README file
-with open(path.join(here, 'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
-
+if(path.exists(path.join(here, 'README.md'))):
+    #Get the long description from the README file
+    with open(path.join(here, 'README.md'), encoding='utf-8') as f:
+        long_description = f.read()
 
 # Get the version from the init file
 version = None
@@ -23,7 +24,6 @@ with open(path.join('netpyne', '__init__.py'), 'r') as fid:
 if version is None:
     raise RuntimeError('Could not determine version')
 
-import sys
 if 'upload_via_twine' in sys.argv:
     system('twine upload dist/netpyne-'+version+'-py2.py3-none-any.whl')
 elif 'upload_via_twine_testpypi' in sys.argv:

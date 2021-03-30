@@ -1,6 +1,30 @@
 # Generate a plot of traces
 
-def plotTraces(tracesData=None, axis=None, legend=True, **kwargs):
+def plotTrace(
+    traceData=None,
+    axis=None, 
+    legend=True, 
+    color=None, 
+    returnPlotter=False, 
+    **kwargs):
+    """Function to plot a recorded trace
+
+    """
+
+    pass
+
+
+
+def plotTraces(
+    tracesData=None, 
+    axis=None, 
+    legend=True,
+    colorList=None,
+    returnPlotter=False, 
+    **kwargs):
+    """Function to plot recorded traces
+
+    """
 
     from .. import sim
 

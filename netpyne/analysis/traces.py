@@ -82,6 +82,7 @@ def prepareTraces(
     tracesData = []
     traces = []
     cells = []
+    pops = []
 
     time = np.arange(timeRange[0], timeRange[1] + recordStep, recordStep)
 
@@ -90,15 +91,16 @@ def prepareTraces(
 
         for gid in cellGids:
             cellName = 'cell_' + str(gid)
-            cells.append(cellName)
 
             if cellName in sim.allSimData[trace]:
+                cells.append(cellName)
+                pops.append(gidPops[gid])
                 fullTrace = sim.allSimData[trace][cellName]
                 traceData = fullTrace[int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)] 
                 traceData = np.transpose(np.array(traceData))
                 tracesData.append(traceData)
                 
-    outputData = {'time': time, 'tracesData': tracesData, 'traces': traces, 'cells': cells}
+    outputData = {'time': time, 'tracesData': tracesData, 'traces': traces, 'cells': cells, 'pops': pops}
     
     if saveData:    
         saveFigData(outputData, fileName=fileName, fileDesc='traces_data', fileType=fileType, fileDir=fileDir, sim=sim)

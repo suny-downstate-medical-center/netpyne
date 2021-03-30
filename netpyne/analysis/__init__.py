@@ -13,6 +13,7 @@ from .utils import exception, getInclude, plotData, saveData, loadData
 from .spikes import prepareSpikeData
 from .spikes import prepareRaster
 from .spikes import prepareSpikeHist
+from .traces import prepareTraces
 from ..plotting import plotRaster
 from ..plotting import plotSpikeHist
 

@@ -6,7 +6,17 @@ from .plotter import ScatterPlotter
 
 
 @exception
-def plotRaster(rasterData=None, popNumCells=None, popLabels=None, popColors=None, axis=None, legend=True, colorList=None, orderInverse=False, returnPlotter=False, **kwargs):
+def plotRaster(
+    rasterData=None, 
+    popNumCells=None, 
+    popLabels=None, 
+    popColors=None, 
+    axis=None, 
+    legend=True, 
+    colorList=None, 
+    orderInverse=False, 
+    returnPlotter=False, 
+    **kwargs):
     """Function to produce a raster plot of cell spiking, grouped by population
 
     Parameters
@@ -14,7 +24,7 @@ def plotRaster(rasterData=None, popNumCells=None, popLabels=None, popColors=None
     rasterData : list, tuple, dict, str
         the data necessary to plot the raster (spike times and spike indices, at minimum).  
 
-        *Default:* ``None`` uses ``analysis.prepareRaster`` to produce ``rasterData`` using the current sim object.
+        *Default:* ``None`` uses ``analysis.prepareRaster`` to produce ``rasterData`` using the current NetPyNE sim object.
 
         *Options:* if a *list* or a *tuple*, the first item must be a *list* of spike times and the second item must be a *list* the same length of spike indices (the id of the cell corresponding to that spike time).  Optionally, a third item may be a *list* of *ints* representing the number of cells in each population (in lieu of ``popNumCells``).  Optionally, a fourth item may be a *list* of *strs* representing the population names (in lieu of ``popLabels``). 
         
@@ -61,6 +71,52 @@ def plotRaster(rasterData=None, popNumCells=None, popLabels=None, popColors=None
         whether to return the figure or the NetPyNE Plotter object.
         
         *Default:* ``False`` returns the figure.
+
+
+    Plot Options
+    ------------
+    title : str
+        the axis title.
+
+        *Default:* ``'Raster Plot of Spiking'``
+    
+    xlabel : str
+        label for x-axis.
+
+        *Default:* ``'Time (ms)'``
+    
+    ylabel : str
+        label for y-axis.
+        
+        *Default:* ``'Cells'``
+
+    s : int
+        marker size.
+
+        *Default:* ``5``
+
+    marker : str
+        marker symbol.
+
+        *Default:* ``'|'``
+
+    linewidth : int
+        line width (affects other sizes).
+        
+        *Default:* ``2``
+
+    legendKwargs : dict
+        a *dict* containing any or all legend kwargs.  These include ``'title'``, ``'loc'``, ``'fontsize'``, ``'bbox_to_anchor'``, ``'borderaxespad'``, and ``'handlelength'``.
+
+    rcParams : dict
+        a *dict* containing any or all matplotlib rcParams.  To see all options, execute ``import matplotlib; print(matplotlib.rcParams)`` in Python.  Any options in this *dict* will be used for this current figure and then returned to their prior settings.
+
+    overwrite : bool
+        whether to overwrite existing figure files.
+
+        *Default:* ``True`` overwrites the figure file
+
+        *Options:* ``False`` adds a number to the file name to prevent overwriting
 
 
     NetPyNE Options
@@ -127,58 +183,16 @@ def plotRaster(rasterData=None, popNumCells=None, popLabels=None, popColors=None
 
         *Options:* ``pkl`` saves the file in Python Pickle format.
 
+    fileDir : str
+        the directory to save the data to.
+
+        *Default:* ``None`` saves to the current directory.
+
     sim : NetPyNE sim object
         the *sim object* from which to get data.
         
         *Default:* ``None`` uses the current NetPyNE sim object
     
-
-    Plot Options
-    ------------
-    title : str
-        the axis title.
-
-        *Default:* ``'Raster Plot of Spiking'``
-    
-    xlabel : str
-        label for x-axis.
-
-        *Default:* ``'Time (ms)'``
-    
-    ylabel : str
-        label for y-axis.
-        
-        *Default:* ``'Cells'``
-
-    s : int
-        marker size.
-
-        *Default:* ``5``
-
-    marker : str
-        marker symbol.
-
-        *Default:* ``'|'``
-
-    linewidth : int
-        line width (affects other sizes).
-        
-        *Default:* ``2``
-
-    legendKwargs : dict
-        a *dict* containing any or all legend kwargs.  These include ``'title'``, ``'loc'``, ``'fontsize'``, ``'bbox_to_anchor'``, ``'borderaxespad'``, and ``'handlelength'``.
-
-    rcParams : dict
-        a *dict* containing any or all matplotlib rcParams.  To see all options, execute ``import matplotlib; print(matplotlib.rcParams)`` in Python.  Any options in this *dict* will be used for this current figure and then returned to their prior settings.
-
-    overwrite : bool
-        whether to overwrite existing figure files.
-
-        *Default:* ``True`` overwrites the figure file
-
-        *Options:* ``False`` adds a number to the file name to prevent overwriting
-
-
 
     Returns
     -------
@@ -276,10 +290,6 @@ def plotRaster(rasterData=None, popNumCells=None, popLabels=None, popColors=None
     # If there is info about pop numbers and labels, make sure they are the same size
     if len(popNumCells) != len(popLabels):
         raise Exception('In plotRaster, popNumCells (' + str(len(popNumCells)) + ') and popLabels (' + str(len(popLabels)) + ') must be the same size')
-
-    # Ensure that include is a list
-    if type(include) != list:
-        include = [include]
 
     # Create a dictionary with the color for each pop
     if not colorList:

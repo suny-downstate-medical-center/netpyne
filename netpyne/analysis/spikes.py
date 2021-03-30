@@ -32,7 +32,7 @@ from .utils import saveData as saveFigData
 from ..support.scalebar import add_scalebar
 
 
-#@exception
+@exception
 def prepareSpikeData(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8, orderBy='gid', popRates=True, saveData=False, fileName=None, fileDesc=None, fileType=None, fileDir=None, **kwargs):
     """
     Function to prepare data for creating a raster plot, a spike histogram plot, ...

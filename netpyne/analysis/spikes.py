@@ -35,7 +35,7 @@ from ..support.scalebar import add_scalebar
 @exception
 def prepareSpikeData(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8, orderBy='gid', popRates=True, saveData=False, fileName=None, fileDesc=None, fileType=None, fileDir=None, **kwargs):
     """
-    Function to prepare data for creating a raster plot, a spike histogram plot, ...
+    Function to prepare data for creating spike-related plots
 
     """
 
@@ -109,7 +109,6 @@ def prepareSpikeData(include=['allCells'], sim=None, timeRange=None, maxSpikes=1
         netStimSpks = [spk for cell, stims in sim.allSimData['stims'].items() for stimLabel, stimSpks in stims.items() for spk in stimSpks if stimLabel == netStimLabel]
         print(netStimSpks)
         if len(netStimSpks) > 0:
-            # lastInd = max(spkinds) if len(spkinds)>0 else 0
             lastInd = sel['spkind'].max() if len(sel['spkind']) > 0 else 0
             spktsNew = netStimSpks
             spkindsNew = [lastInd+1+i for i in range(len(netStimSpks))]
@@ -143,7 +142,7 @@ def prepareSpikeData(include=['allCells'], sim=None, timeRange=None, maxSpikes=1
         sel = sel.iloc[:maxSpikes]
         timeRange[1] =  sel['spkt'].max()
 
-    # Plot stats
+    # Calculate plot statistics
     gidPops = df['pop'].tolist()
     conns = df['conns'].tolist()
     popNumCells = [float(gidPops.count(pop)) for pop in popLabels] if numCellSpks else [0] * len(popLabels)
@@ -159,6 +158,7 @@ def prepareSpikeData(include=['allCells'], sim=None, timeRange=None, maxSpikes=1
     title = 'Raster plot of spiking'
     legendLabels = []
     
+    # Add population spiking info to plot
     if popRates:
         avgRates = {}
         tsecs = (timeRange[1]-timeRange[0])/1e3
@@ -203,13 +203,7 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
 
     figData = prepareSpikeData(include=include, sim=sim, timeRange=timeRange, maxSpikes=maxSpikes, orderBy=orderBy, popRates=popRates, saveData=saveData, fileName=fileName, fileDesc=fileDesc, fileType=fileType, fileDir=fileDir, **kwargs)
 
-    # figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'popNumCells': popNumCells, 'popLabels': popLabels, 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'axisArgs': axisArgs, 'legendLabels': legendLabels}
-
     return figData
-
-
-
-
 
 
 
@@ -237,171 +231,11 @@ def prepareSpikeHist(
     **kwargs):
     """
     Function to prepare data for creating a spike histogram plot
-
     """
 
     figData = prepareSpikeData(include=include, sim=sim, timeRange=timeRange, maxSpikes=maxSpikes, orderBy='gid', popRates=popRates, saveData=saveData, fileName=fileName, fileDesc=fileDesc, fileType=fileType, fileDir=fileDir, **kwargs)
 
-    # figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'popNumCells': popNumCells, 'popLabels': popLabels, 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'axisArgs': axisArgs, 'legendLabels': legendLabels}
-
-    # axisArgs = {'xlabel': 'Time (ms)', 
-    #             'ylabel': ylabelText, 
-    #             'title': title}
-
-    #figData['axisArgs']['title'] = 'Spike histogram plot'
     figData['axisArgs']['ylabel'] = 'Number of spikes'
 
     return figData
-
-
-
-
-
-
-
-
-
-#@exception
-def prepareSpikeHist_OLD(
-    include=['eachPop', 'allCells'], 
-    sim=None, 
-    timeRange=None,
-    maxSpikes=1e8,
-    saveData=False,
-    fileName=None, 
-    fileDesc=None, 
-    fileType=None, 
-    fileDir=None,
-
-    binSize=5, 
-    overlay=True, 
-    graphType='line', 
-    measure='rate', 
-    norm=False, 
-    smooth=None, 
-    filtFreq=None, 
-    filtOrder=3, 
-     
-    **kwargs):
-    """
-    Function to prepare data for creating a spike histogram plot
-
-    """
-    
-    if not sim:
-        from .. import sim
-    
-    
-
-
-    # Replace 'eachPop' with list of pops
-    if 'eachPop' in include:
-        include.remove('eachPop')
-        for pop in sim.net.allPops: 
-            include.append(pop)
-
-    # Measure
-    if measure == 'rate':
-        if norm:
-            ylabelText = 'Normalized firing rate'
-        else:
-            ylabelText = 'Avg cell firing rate (Hz)'
-    elif measure == 'count':
-        if norm:
-            ylabelText = 'Normalized spike count'
-        else:
-            ylabelText = 'Spike count'
-    else:
-        print('Invalid measure: %s', (measure))
-        return
-
-    # time range
-    if timeRange is None:
-        timeRange = [0, sim.cfg.duration]
-
-    histoData = []
-
-    # Plot separate line for each entry in include
-    for iplot, subset in enumerate(include):
-        if isinstance(subset, list):
-            cells, cellGids, netStimLabels = getInclude(subset)
-        else:
-            cells, cellGids, netStimLabels = getInclude([subset])
-        numNetStims = 0
-
-        # Select cells to include
-        if len(cellGids) > 0:
-            try:
-                spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(sim.allSimData['spkid'], sim.allSimData['spkt']) if spkgid in cellGids]))
-            except:
-                spkinds, spkts = [], []
-        else:
-            spkinds, spkts = [], []
-
-        # Add NetStim spikes
-        spkts, spkinds = list(spkts), list(spkinds)
-        numNetStims = 0
-        if 'stims' in sim.allSimData:
-            for netStimLabel in netStimLabels:
-                netStimSpks = [spk for cell,stims in sim.allSimData['stims'].items() \
-                for stimLabel,stimSpks in stims.items() for spk in stimSpks if stimLabel == netStimLabel]
-                if len(netStimSpks) > 0:
-                    lastInd = max(spkinds) if len(spkinds)>0 else 0
-                    spktsNew = netStimSpks
-                    spkindsNew = [lastInd+1+i for i in range(len(netStimSpks))]
-                    spkts.extend(spktsNew)
-                    spkinds.extend(spkindsNew)
-                    numNetStims += 1
-
-        histo = np.histogram(spkts, bins=np.arange(timeRange[0], timeRange[1], binSize))
-        histoT = histo[1][:-1]+binSize/2
-        histoCount = histo[0]
-
-        if measure == 'rate':
-            histoCount = histoCount * (1000.0 / binSize) / (len(cellGids)+numNetStims) # convert to firing rate
-
-        if filtFreq:
-            from scipy import signal
-            fs = 1000.0/binSize
-            nyquist = fs/2.0
-            if isinstance(filtFreq, list): # bandpass
-                Wn = [filtFreq[0]/nyquist, filtFreq[1]/nyquist]
-                b, a = signal.butter(filtOrder, Wn, btype='bandpass')
-            elif isinstance(filtFreq, Number): # lowpass
-                Wn = filtFreq/nyquist
-                b, a = signal.butter(filtOrder, Wn)
-            histoCount = signal.filtfilt(b, a, histoCount)
-
-        if norm:
-            histoCount /= max(histoCount)
-
-        if smooth:
-            histoCount = _smooth1d(histoCount, smooth)[:len(histoT)]
-
-        histoData.append(histoCount)
-
-    legendLabels = []
-    title = 'Histogram Plot of Spiking'
-    if 'title' in kwargs:
-            title = kwargs['title']
-
-    figData = {'histoData': histoData, 'histoT': histoT, 'include': include, 'timeRange': timeRange, 'binSize': binSize}
-
-    axisArgs = {'xlabel': 'Time (ms)', 
-                'ylabel': ylabelText, 
-                'title': title}
-
-    if saveData:
-        saveFigData(figData, fileName=fileName, fileDesc='hist_data', fileType=fileType, fileDir=fileDir, sim=sim)
-    
-    return figData
-
-
-
-
-
-
-
-
-
 

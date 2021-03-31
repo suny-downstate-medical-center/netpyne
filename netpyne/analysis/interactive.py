@@ -250,7 +250,8 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
         ylabelText = ylabelText + 'NetStims'
 
     if numCellSpks+numNetStims == 0:
-        print('No spikes available to plot raster')
+        print('Raster cannot be plotted since spiked are not available. Changing text here just to make a pull request')
+        print('Pull Request by Harshit Bokadia')
         return None
 
     # Time Range

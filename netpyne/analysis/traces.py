@@ -45,7 +45,7 @@ def prepareTraces(
 
     """
 
-    print('Preparing recorded cell traces...')
+    print('Preparing traces...')
 
     if not sim:
         from .. import sim
@@ -84,21 +84,23 @@ def prepareTraces(
     cells = []
     pops = []
 
-    time = np.arange(timeRange[0], timeRange[1] + recordStep, recordStep)
+    time = np.arange(timeRange[0], timeRange[1], recordStep)
 
     for trace in tracesList:
-        traces.append(trace)
-
+        
         for gid in cellGids:
             cellName = 'cell_' + str(gid)
 
             if cellName in sim.allSimData[trace]:
                 cells.append(cellName)
                 pops.append(gidPops[gid])
+                traces.append(trace)
                 fullTrace = sim.allSimData[trace][cellName]
                 traceData = fullTrace[int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)] 
-                traceData = np.transpose(np.array(traceData))
+                #traceData = np.transpose(np.array(traceData))
                 tracesData.append(traceData)
+
+    tracesData = np.transpose(np.array(tracesData))
                 
     outputData = {'time': time, 'tracesData': tracesData, 'traces': traces, 'cells': cells, 'pops': pops}
     

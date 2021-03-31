@@ -16,6 +16,7 @@ from .spikes import prepareSpikeHist
 from .traces import prepareTraces
 from ..plotting import plotRaster
 from ..plotting import plotSpikeHist
+from ..plotting import plotTraces
 
 # Import traces-related functions
 #from .traces import plotTraces, plotEPSPAmp

@@ -1,6 +1,6 @@
 from netpyne import specs, sim
 
-def plotRasterSim():
+def spikeSim():
 
     netParams = specs.NetParams()
 
@@ -63,9 +63,12 @@ def plotRasterSim():
     simConfig.duration = 1*1e3
     simConfig.dt = 0.025
     simConfig.verbose = False
-    simConfig.recordTraces = {'V_soma': {'sec':'soma', 'loc':0.5, 'var':'v'}}
+    simConfig.recordTraces = {}
+    simConfig.recordTraces['V_soma'] = {'sec': 'soma', 'loc': 0.5, 'var': 'v'}
+    simConfig.recordTraces['V_dend'] = {'sec': 'dend', 'loc': 1.0, 'var': 'v'}
+    simConfig.recordCells = [('Pop_1', [0]), ('Pop_2', [0]), ('Pop_3', [0]), ('Pop_4', [0])]
     simConfig.recordStep = 1
-    simConfig.filename = 'raster_example'
+    simConfig.filename = 'simple_example'
     simConfig.savePickle = False
 
     simConfig.saveDataInclude = ['netParams', 'netCells', 'netPops', 'simConfig', 'simData', 'net']

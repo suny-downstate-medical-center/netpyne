@@ -1,22 +1,8 @@
 # Generate a plot of traces
 
-def plotTrace(
-    traceData=None,
-    axis=None, 
-    legend=True, 
-    color=None, 
-    returnPlotter=False, 
-    **kwargs):
-    """Function to plot a recorded trace
-
-    """
-
-    pass
-
-
-
 def plotTraces(
     tracesData=None, 
+    timeRange=None,
     axis=None, 
     legend=True,
     colorList=None,
@@ -26,63 +12,78 @@ def plotTraces(
 
     """
 
-    from .. import sim
+    # Ensure that include is a list if it is in kwargs
+    include = None
+    if 'include' in kwargs:
+        include = kwargs['include']
+        kwargs.pop('include')
+        if type(include) != list:
+            include = [include]
 
+    # If there is no input data, get the data from the NetPyNE sim object
     if tracesData is None:
-        tracesData = sim.analysis.prepareTraces(**kwargs)
+        if 'sim' not in kwargs:
+            from .. import sim
+        else:
+            sim = kwargs['sim']
 
-    print('Plotting recorded cell traces ...')
+        tracesData = sim.analysis.prepareTraces(include=include, sim=sim, timeRange=timeRange, **kwargs)
 
-    dataKeys = ['spkTimes', 'spkInds', 'spkColors', 'cellGids', 'sortedGids', 'numNetStims', 'include', 'timeRange', 'maxSpikes', 'orderBy', 'orderInverse', 'spikeHist', 'syncLines', 'popLabels', 'popLabelRates', 'popColors']
+    time = tracesData['time']
+    traceData = tracesData['tracesData']
+    traces = tracesData['traces']
+    cells = tracesData['cells']
+    pops = tracesData['pops']
 
-    scatterData = {}
-    scatterData['x'] = rasterData['spkTimes']
-    scatterData['y'] = rasterData['spkInds']
-    scatterData['c'] = rasterData['spkColors']
-    scatterData['s'] = 5
-    scatterData['marker'] = '|'
-    scatterData['linewidth'] = 2
-    scatterData['cmap'] = None
-    scatterData['norm'] = None
-    scatterData['alpha'] = None
-    scatterData['linewidths'] = None
+    print('traces:', traces)
+    print('cells:', cells)
+    print('pops:', pops)
+
+
+    print('Plotting traces ...')
+
+    lineData = {}
+    lineData['x'] = time
+    lineData['y'] = traceData
+    lineData['color'] = None
+    lineData['marker'] = None
+    lineData['markersize'] = None
+    lineData['linewidth'] = None
+    lineData['alpha'] = None
 
     for kwarg in kwargs:
-        if kwarg in scatterData:
-            scatterData[kwarg] = kwargs[kwarg]
+        if kwarg in lineData:
+            lineData[kwarg] = kwargs[kwarg]
 
     axisArgs = {}
-    axisArgs['title'] = 'Raster Plot of Spiking'
+    axisArgs['title'] = 'Traces Plot'
     axisArgs['xlabel'] = 'Time (ms)'
-    axisArgs['ylabel'] = 'Cells'
+    axisArgs['ylabel'] = 'Measure'
 
 
-    rasterPlotter = sim.plotting.ScatterPlotter(data=scatterData, axis=axis, **axisArgs, **kwargs)
+    linePlotter = sim.plotting.LinePlotter(data=lineData, axis=axis, **axisArgs, **kwargs)
 
-    rasterPlotter.type = 'raster'
+    tracesPlot = linePlotter.plot(**axisArgs)
 
-    rasterPlot = rasterPlotter.plot(**axisArgs)
+    # if legend:
+    #     labels = []
+    #     handles = []
+    #     for ipop, popLabel in enumerate(rasterData['popLabels']):
+    #         labels.append(rasterData['popLabelRates'][ipop] if popRates else popLabel)
+    #         handles.append(mpatches.Rectangle((0,0),1,1,fc=rasterData['popColors'][popLabel]))
 
-    if legend:
-        #rasterPlotter.options['addLegend'] = True
-        labels = []
-        handles = []
-        for ipop, popLabel in enumerate(rasterData['popLabels']):
-            labels.append(rasterData['popLabelRates'][ipop] if popRates else popLabel)
-            handles.append(mpatches.Rectangle((0,0),1,1,fc=rasterData['popColors'][popLabel]))
+    #     legendKwargs = {}
+    #     legendKwargs['bbox_to_anchor'] = (1.025, 1)
+    #     legendKwargs['loc'] = 2
+    #     legendKwargs['borderaxespad'] = 0.0
+    #     legendKwargs['handlelength'] = 1.0
+    #     legendKwargs['fontsize'] = 'medium'
 
-        legendKwargs = {}
-        legendKwargs['bbox_to_anchor'] = (1.025, 1)
-        legendKwargs['loc'] = 2
-        legendKwargs['borderaxespad'] = 0.0
-        legendKwargs['handlelength'] = 1.0
-        legendKwargs['fontsize'] = 'medium'
+    #     rasterPlotter.addLegend(handles, labels, **legendKwargs)
 
-        rasterPlotter.addLegend(handles, labels, **legendKwargs)
-
-        rightOffset = 0.8 if popRates else 0.9
-        maxLabelLen = max([len(label) for label in rasterData['popLabels']])
-        rasterPlotter.fig.subplots_adjust(right=(rightOffset-0.012*maxLabelLen))
+    #     rightOffset = 0.8 if popRates else 0.9
+    #     maxLabelLen = max([len(label) for label in rasterData['popLabels']])
+    #     rasterPlotter.fig.subplots_adjust(right=(rightOffset-0.012*maxLabelLen))
 
 
-    return rasterPlotter
+    return linePlotter

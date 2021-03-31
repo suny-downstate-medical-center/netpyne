@@ -5,6 +5,7 @@ Module for plotting analyses
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
 from copy import deepcopy
 import pickle, json
 import os
@@ -251,24 +252,21 @@ class LinePlotter(GeneralPlotter):
         
         super().__init__(data=data, axis=axis, **kwargs)
 
-        self.type       = 'scatter'
-        self.x          = data.get('x')
-        self.y          = data.get('y')
-        self.s          = data.get('s')
-        self.c          = data.get('c')
+        self.type       = 'line'
+        self.x          = np.array(data.get('x'))
+        self.y          = np.array(data.get('y'))
+        self.color      = data.get('color')
         self.marker     = data.get('marker')
+        self.markersize = data.get('markersize')
         self.linewidth  = data.get('linewidth')
-        self.cmap       = data.get('cmap')
-        self.norm       = data.get('norm')
         self.alpha      = data.get('alpha')
-        self.linewidths = data.get('linewidths')
 
 
     def plot(self, **kwargs):
 
         self.formatAxis(**kwargs)
 
-        linePlot = self.axis.plot(x=self.x, y=self.y, s=self.s, c=self.c, marker=self.marker, linewidth=self.linewidth, cmap=self.cmap, norm=self.norm, alpha=self.alpha, linewidths=self.linewidths)
+        linePlot = self.axis.plot(self.x, self.y, color=self.color, marker=self.marker, markersize=self.markersize, linewidth=self.linewidth, alpha=self.alpha)
 
         self.finishFig(**kwargs)
 

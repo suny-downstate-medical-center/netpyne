@@ -390,7 +390,8 @@ def granger(cells1=[], cells2=[], spks1=None, spks2=None, label1='spkTrain1', la
         plt.plot(F, Fx2y[0], 'r', label = label1 + ' -> ' + label2)
         plt.xlabel('Frequency (Hz)')
         plt.ylabel('Granger Causality')
-        plt.legend()
+        plt.legend(loc='upper right')#to show the legend at the upper right corner for better visibility
+        plt.grid(True)# to add the grid
 
         # save figure data
         if saveData:
@@ -404,7 +405,7 @@ def granger(cells1=[], cells2=[], spks1=None, spks2=None, label1='spkTrain1', la
             if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
-                filename = sim.cfg.filename+'_granger.png'
+                filename = sim.cfg.filename+'_granger.eps'
             plt.savefig(filename)
 
         # show fig

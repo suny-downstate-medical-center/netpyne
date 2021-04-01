@@ -1,0 +1,43 @@
+# Netpyne circleci testing script
+defaults: &defaults
+  working_directory: ~/markovmodel/PyEMMA
+  docker:
+    - image: continuumio/miniconda3
+
+
+inst_conda_bld: &inst_conda_bld
+  - run: conda config --add channels conda-forge
+  - run: conda config --set always_yes true
+  - run: conda config --set quiet true
+  - run: conda install conda-build
+
+version: 2
+
+jobs:
+  build:
+    <<: *defaults
+
+    parallelism: 1
+    #environment:
+    #  TRAVIS_BUILD_DIR: `pwd`
+    #  NEURON_HOME: ~/neuron
+    #  PATH: $PATH:$NEURON_HOME/x86_64/bin
+    #  PYTHONPATH: $PYTHONPATH:$TRAVIS_BUILD_DIR:$NEURON_HOME/lib/python/
+
+    steps:
+      - checkout
+      # Use BASH instead of DASH! see: https://ubuntuforums.org/showthread.php?t=1932504
+      - run: git fetch --unshallow || true
+      - run: apt-get update
+      - run: apt-get install -y sudo # https://discuss.circleci.com/t/sudo-command-not-found/14208/4
+      - run: ls -al /bin/sh && sudo rm /bin/sh && sudo ln -s /bin/bash /bin/sh && ls -al /bin/sh
+
+      - run: apt-get install -y python-tk python-sympy python-tables locales
+      - run: apt-get install -y wget gcc g++ build-essential libncurses-dev
+      - run: apt-get install -y libpython-dev cython libx11-dev git flex
+      - run: apt-get install -y automake
+      - run: apt-get install -y libtool
+      - run: apt-get install -y libxext-dev
+      - run: apt-get install -y libncurses-dev
+      - run: apt-get install -y make
+      - run: bash build.sh

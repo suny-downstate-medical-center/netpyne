@@ -18,16 +18,10 @@ jobs:
     <<: *defaults
 
     parallelism: 1
-    #environment:
-    #  TRAVIS_BUILD_DIR: `pwd`
-    #  NEURON_HOME: ~/neuron
-    #  PATH: $PATH:$NEURON_HOME/x86_64/bin
-    #  PYTHONPATH: $PYTHONPATH:$TRAVIS_BUILD_DIR:$NEURON_HOME/lib/python/
-
     steps:
       - checkout
       # Use BASH instead of DASH! see: https://ubuntuforums.org/showthread.php?t=1932504
-      - run: git fetch --unshallow || true
+      #- run: git fetch --unshallow || true
       - run: apt-get update
       - run: apt-get install -y sudo # https://discuss.circleci.com/t/sudo-command-not-found/14208/4
       - run: ls -al /bin/sh && sudo rm /bin/sh && sudo ln -s /bin/bash /bin/sh && ls -al /bin/sh

@@ -21,7 +21,7 @@ jobs:
     steps:
       - checkout
       # Use BASH instead of DASH! see: https://ubuntuforums.org/showthread.php?t=1932504
-      #- run: git fetch --unshallow || true
+      - run: git fetch --unshallow || true
       - run: apt-get update
       - run: apt-get install -y sudo # https://discuss.circleci.com/t/sudo-command-not-found/14208/4
       - run: ls -al /bin/sh && sudo rm /bin/sh && sudo ln -s /bin/bash /bin/sh && ls -al /bin/sh
@@ -34,4 +34,4 @@ jobs:
       - run: apt-get install -y libxext-dev
       - run: apt-get install -y libncurses-dev
       - run: apt-get install -y make
-      - run: bash build.sh
+      - run: bash tox_ci_build.sh

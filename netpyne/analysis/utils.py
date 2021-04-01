@@ -110,6 +110,10 @@ def _saveFigData(figData, fileName=None, type=''):
         print(('Saving figure data as %s ... ' % (fileName)))
         sim.saveJSON(fileName, figData)
         
+    elif fileName.endswith('.txt'):  # save to txt
+        print(('Saving figure data as %s ... ' % (fileName)))
+        sim.saveJSON(fileName, figData)
+
     elif fileName.find('.')== -1:  # file name without extention will be saved as json
         fileName=fileName+'.json'
         print(('Saving figure data as %s ... ' % (fileName)))

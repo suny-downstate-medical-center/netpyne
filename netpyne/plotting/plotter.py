@@ -102,7 +102,13 @@ class GeneralPlotter:
         if 'ylabel' in kwargs:
             self.axis.set_ylabel(kwargs['ylabel'])
 
-        # Set fontSize
+        if 'xlim' in kwargs:
+            if kwargs['xlim'] is not None:
+                self.axis.set_xlim(kwargs['xlim'])
+
+        if 'ylim' in kwargs:
+            if kwargs['ylim'] is not None:
+                self.axis.set_ylim(kwargs['ylim'])
 
 
 

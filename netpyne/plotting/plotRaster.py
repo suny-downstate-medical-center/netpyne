@@ -204,25 +204,17 @@ def plotRaster(
     --------
     There are many options available in plotRaster.  To run a variety of examples, enter the following::
 
-        from netpyne.plotting.examples import plotRasterSim, plotRasterExamples
-        sim = plotRasterSim()
+        from netpyne.plotting import plotRaster
+        from netpyne.plotting.examples import spikeSim
+        sim = spikeSim()
         
+    First, let's just use mostly the default settings, though we will save the figure and the data.  If ``rasterData`` is ``None`` (default), NetPyNE uses ``analysis.prepareRaster`` to generate the ``rasterData`` used in the plot::
 
-    To see all examples at once, you can enter::
-
-        plotRasterExamples()
-
-    Let's make plotRaster easier to call::
-
-        plotRaster = sim.plotting.plotRaster
-
-    First, let's just use mostly the default settings.  If ``rasterData`` is ``None`` (default), NetPyNE uses ``analysis.prepareRaster`` to generate the ``rasterData`` used in the plot::
-
-        rp0 = plotRaster(showFig=True, saveFig=True, overwrite=False)
+        plot = plotRaster(showFig=True, saveData=True)
 
     Because we will just be looking at data from one example simulation, we don't need to reprocess the data every time.  Let's save the output data, and then we can use that to generate more plots::
 
-        rp1 = plotRaster(showFig=True, saveFig=True overwrite=True, saveData=True)
+        plot = plotRaster(showFig=True, saveFig=True overwrite=True, saveData=True)
 
     This will save a data file with the raster data.           
     

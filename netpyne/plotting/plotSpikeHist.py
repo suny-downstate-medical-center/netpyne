@@ -371,6 +371,8 @@ def plotSpikeHist(
         axisArgs['title'] = 'Histogram Plot of Spiking'
         axisArgs['xlabel'] = 'Time (ms)'
         axisArgs['ylabel'] = 'Number of Spikes'
+        axisArgs['xlim']   = timeRange
+        axisArgs['ylim']   = None
 
     # If a kwarg matches an axis input key, use the kwarg value instead of the default
     for kwarg in kwargs:

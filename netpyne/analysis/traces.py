@@ -27,7 +27,7 @@ from ..support.scalebar import add_scalebar
 
 
 
-#@exception
+@exception
 def prepareTraces(
     include=None, 
     sim=None, 
@@ -87,7 +87,6 @@ def prepareTraces(
     time = np.arange(timeRange[0], timeRange[1], recordStep)
 
     for trace in tracesList:
-        
         for gid in cellGids:
             cellName = 'cell_' + str(gid)
 
@@ -95,9 +94,9 @@ def prepareTraces(
                 cells.append(cellName)
                 pops.append(gidPops[gid])
                 traces.append(trace)
+                
                 fullTrace = sim.allSimData[trace][cellName]
                 traceData = fullTrace[int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)] 
-                #traceData = np.transpose(np.array(traceData))
                 tracesData.append(traceData)
 
     tracesData = np.transpose(np.array(tracesData))

@@ -109,6 +109,11 @@ def _saveFigData(figData, fileName=None, type=''):
     elif fileName.endswith('.json'):  # save to json
         print(('Saving figure data as %s ... ' % (fileName)))
         sim.saveJSON(fileName, figData)
+        
+    elif fileName.find('.')== -1:  # file name without extention will be saved as json
+        fileName=fileName+'.json'
+        print(('Saving figure data as %s ... ' % (fileName)))
+        sim.saveJSON(fileName, figData)
     else:
         print('File extension to save figure data not recognized')
 

@@ -37,7 +37,29 @@ def getbandpass(lfps, sampr, minf=0.05, maxf=300):
     """
     Function to bandpass filter data
 
-    lfps should be a list or numpy array of LFPs arranged spatially in a column.
+    Parameters
+    ----------
+    lfps : list or array 
+        LFP signal data arranged spatially in a column.
+        **Default:** *required*
+
+    sampr : float
+        The data sampling rate.
+        **Default:** *required*
+
+    minf : float
+        The high-pass filter frequency (Hz).
+        **Default:** ``0.05``
+
+    maxf : float
+        The low-pass filter frequency (Hz).
+        **Default:** ``300``
+
+
+    Returns
+    -------
+    data : array
+        The bandpass-filtered data.
 
     """
 
@@ -54,6 +76,18 @@ def Vaknin(x):
     Function to perform the Vaknin correction for CSD analysis
 
     Allows CSD to be performed on all N contacts instead of N-2 contacts (see Vaknin et al (1988) for more details).
+
+    Parameters
+    ----------
+    x : array 
+        Data to be corrected.
+        **Default:** *required*
+
+
+    Returns
+    -------
+    data : array
+        The corrected data.
 
     """
 
@@ -73,6 +107,22 @@ def Vaknin(x):
 def removemean(x, ax=1):
     """
     Function to subtract the mean from an array or list
+
+    Parameters
+    ----------
+    x : array 
+        Data to be processed.
+        **Default:** *required*
+
+    ax : int
+        The axis to remove the mean across.
+        **Default:** ``1``
+
+
+    Returns
+    -------
+    data : array
+        The processed data.
 
     """
   

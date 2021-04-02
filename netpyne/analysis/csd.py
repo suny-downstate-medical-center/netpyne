@@ -335,7 +335,7 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
 @exception
 def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sampr=None, stim_start_time=None, spacing_um=None, ymax=None, dt=None, hlines=False, layer_lines=False, layer_bounds=None, smooth=None, fontSize=12, figSize=(10,10),dpi=200, saveFig=True, showFig=True): 
     """
-    Plots CSD values extracted from simulated LFP data 
+    Function to plot CSD values extracted from simulated LFP data 
       
     Parameters
     ----------

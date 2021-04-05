@@ -430,9 +430,15 @@ def getSpktSpkid(cellGids=[], timeRange=None, sim = None):
 
 
 
-def checkAvailablePlots():
+def checkAvailablePlots(requireCfg=False):
     """
     Function to check which plots are available for the GUI 
+
+    Returns
+    ----------
+        requireCfg : <Bool>
+        <Whether a plot configuration in sim.cfg.analysis is required to return True for each plot>
+        **Default:** False
 
     Returns
     ----------
@@ -453,7 +459,7 @@ def checkAvailablePlots():
              'plotRxDConcentration': False}
 
     # plot conn
-    if hasattr(sim, 'net') and hasattr(sim.net, 'allCells') and len(sim.net.allCells > 0):
+    if hasattr(sim, 'net') and hasattr(sim.net, 'allCells') and len(sim.net.allCells) > 0:
         avail['plotConn'] = True
         avail['plot2Dnet'] = True
 
@@ -461,35 +467,37 @@ def checkAvailablePlots():
     traces = list(sim.cfg.recordTraces.keys())
     if len(traces)>0 and hasattr(sim, 'allSimData'):
         for trace in traces:
-            if sim.allSimData.has_key(trace) and len(sim.allSimData.get(trace)):
+            if trace in sim.allSimData and len(sim.allSimData.get(trace)):
                 avail['plotTraces'] = True
                 break
     
     # raster, spike hist, spike stats, rate psd and granger 
-    if hasattr(sim, 'allSimData') and sim.allSimData.has_key('spkid') \
-        and sim.allSimData.has_key('spkid') and sim.allSimData.has_key('spkt') \
+    if hasattr(sim, 'allSimData') and 'spkid' in sim.allSimData and 'spkt' in sim.allSimData \
         and len(sim.allSimData['spkid']) > 0 and len(sim.allSimData['spkt']) > 0:
 
         avail['plotRaster'] = True
         avail['plotSpikeHist'] = True
         avail['plotSpikeStats'] = True
         avail['plotRatePSD'] = True
-
-        if 'granger' in sim.analysis:
-            avail['granger'] = True
+        avail['granger'] = True
 
 
     # plot lfp 
-    if hasattr(sim, 'allSimData') and sim.allSimData.has_key('LFP') and len(sim.allSimData['LFP']) > 0:
+    if hasattr(sim, 'allSimData') and 'LFP' in sim.allSimData and len(sim.allSimData['LFP']) > 0:
 
         avail['plotLFP'] = True
 
     # rxd concentation 
-    if hasattr(sim, 'net') and hasattr(sim.net, 'rxd') and sim.net.rxd.has_key('species') and sim.net.rxd.has_key('regions') \
+    if hasattr(sim, 'net') and hasattr(sim.net, 'rxd') and 'species' in sim.net.rxd and 'regions' in sim.net.rxd \
         and len(sim.net.rxd['species']) > 0 and len(sim.net.rxd['regions']) > 0: 
 
         avail['plotRxDConcentration'] = True
 
+    # require config of plots in sim.cfg.analysis
+    if requireCfg:
+        for k in avail:
+            if k not in sim.cfg.analysis:
+                avail[k] = False
 
     return avail
 

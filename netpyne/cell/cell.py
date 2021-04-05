@@ -164,6 +164,9 @@ class Cell (object):
 
 
     def recordTraces (self):
+        """
+        Function for/to <short description of recordTraces function>
+        """
         from .. import sim
 
         # set up voltagse recording; recdict will be taken from global context

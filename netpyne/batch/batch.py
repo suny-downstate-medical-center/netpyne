@@ -75,13 +75,7 @@ def tupleToStr(obj):
         for item in obj:
             if type(item) in [list, dict]:
                 tupleToStr(item)
-    elif type(obj) == dict:
-        # for key,val in obj.items():
-        #     if type(val) in [list, dict]:
-        #         tupleToStr(val)
-        #     if type(key) == tuple:
-        #         obj[str(key)] = obj.pop(key)
-        
+    elif type(obj) == dict:        
         for key in list(obj.keys()):
             if type(obj[key]) in [list, dict]:
                 tupleToStr(obj[key])

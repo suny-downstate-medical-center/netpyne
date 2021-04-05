@@ -429,6 +429,72 @@ def getSpktSpkid(cellGids=[], timeRange=None, sim = None):
     return sel, sel['spkt'].tolist(), sel['spkid'].tolist() # will want to return sel as well for further sorting
 
 
+
+def checkAvailablePlots():
+    """
+    Function to check which plots are available for the GUI 
+
+    Returns
+    ----------
+    dict
+        <Keys indicate the name of the analysis function and values whether they are available or not (Boolean)>
+
+"""
+    from .. import sim
+
+    avail = {'plotConn': False,
+             'plot2Dnet':  False,
+             'plotTraces': False,
+             'plotRaster': False,
+             'plotSpikeHist': False,
+             'plotSpikeStats': False,
+             'plotLFP': False,
+             'granger': False,
+             'plotRxDConcentration': False}
+
+    # plot conn
+    if hasattr(sim, 'net') and hasattr(sim.net, 'allCells') and len(sim.net.allCells > 0):
+        avail['plotConn'] = True
+        avail['plot2Dnet'] = True
+
+    # plot traces
+    traces = list(sim.cfg.recordTraces.keys())
+    if len(traces)>0 and hasattr(sim, 'allSimData'):
+        for trace in traces:
+            if sim.allSimData.has_key(trace) and len(sim.allSimData.get(trace)):
+                avail['plotTraces'] = True
+                break
+    
+    # raster, spike hist, spike stats, rate psd and granger 
+    if hasattr(sim, 'allSimData') and sim.allSimData.has_key('spkid') \
+        and sim.allSimData.has_key('spkid') and sim.allSimData.has_key('spkt') \
+        and len(sim.allSimData['spkid']) > 0 and len(sim.allSimData['spkt']) > 0:
+
+        avail['plotRaster'] = True
+        avail['plotSpikeHist'] = True
+        avail['plotSpikeStats'] = True
+        avail['plotRatePSD'] = True
+
+        if 'granger' in sim.analysis:
+            avail['granger'] = True
+
+
+    # plot lfp 
+    if hasattr(sim, 'allSimData') and sim.allSimData.has_key('LFP') and len(sim.allSimData['LFP']) > 0:
+
+        avail['plotLFP'] = True
+
+    # rxd concentation 
+    if hasattr(sim, 'net') and hasattr(sim.net, 'rxd') and sim.net.rxd.has_key('species') and sim.net.rxd.has_key('regions') \
+        and len(sim.net.rxd['species']) > 0 and len(sim.net.rxd['regions']) > 0: 
+
+        avail['plotRxDConcentration'] = True
+
+
+    return avail
+
+
+
 # -------------------------------------------------------------------------------------------------------------------
 ## Default NetPyNE Bokeh theme -- based on dark_minimal
 # -------------------------------------------------------------------------------------------------------------------

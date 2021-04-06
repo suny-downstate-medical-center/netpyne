@@ -98,36 +98,9 @@ def gridSearch(self, pc):
 
 
     """
-
-
-    createFolder(self.saveFolder)
-
-    # save Batch dict as json
-    targetFile = self.saveFolder+'/'+self.batchLabel+'_batch.json'
-    self.save(targetFile)
-
-    # copy this batch script to folder
-    targetFile = self.saveFolder+'/'+self.batchLabel+'_batchScript.py'
-    os.system('cp ' + os.path.realpath(__file__) + ' ' + targetFile)
-
-    # copy netParams source to folder
-    netParamsSavePath = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
-    os.system('cp ' + self.netParamsFile + ' ' + netParamsSavePath)
-
-    # import cfg
-    if self.cfg is None:
-        cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
-
-        try:
-            loader = importlib.machinery.SourceFileLoader(cfgModuleName, self.cfgFile)
-            cfgModule = types.ModuleType(loader.name)
-            loader.exec_module(cfgModule)
-        except:
-            cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
-
-        self.cfg = cfgModule.cfg
-    
-    self.cfg.checkErrors = False  # avoid error checking during batch
+    # create main sim directory and save scripts
+    self.saveScripts()
+    netParamsSavePath = self.netParamsSavePath
 
     # set initial cfg initCfg
     if len(self.initCfg) > 0:

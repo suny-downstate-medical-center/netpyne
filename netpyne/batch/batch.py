@@ -179,13 +179,11 @@ class Batch(object):
 
         # if user provided a netParams object as input argument
         if self.netParams:
-            print('HERE!!')
             self.netParamsSavePath = self.saveFolder+'/'+self.batchLabel+'_netParams.json'
             self.netParams.save(self.netParamsSavePath)
 
         # if not, use netParamsFile           
         else:
-            print('HERE 2')
             self.netParamsSavePath = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
             os.system('cp ' + self.netParamsFile + ' ' + self.netParamsSavePath)
 

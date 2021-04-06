@@ -1826,7 +1826,7 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
 
         hover = HoverTool(tooltips=[('Time', '@x'), ('Value', '@y')], mode='vline')
         figs['timeSeries'].add_tools(hover)
-        figs['timeSeries'].legend.click_policy="hide"
+        figs['timeSeries'].legend.click_policy = "hide"
 
         ydisp = np.absolute(lfp).max() * separation
         offset = 1.0*ydisp
@@ -1847,7 +1847,7 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
                 color = colors[i%len(colors)]
 
             legend=str(elec)
-            figs['timeSeries'].line(t, lfpPlot+(i*ydisp), color=color, name=str(elec), legend=legend)
+            figs['timeSeries'].line(t, lfpPlot+(i*ydisp), color=color, name=str(elec), legend_label=legend)
 
         data['lfpPlot'] = lfpPlot
         data['ydisp'] =  ydisp

@@ -48,7 +48,7 @@ class Cell (object):
         if sim.net.params.correctBorder:
             self.calculateCorrectBorderDist()
 
-
+    #records the spikes in stimulation
     def recordStimSpikes (self):
         from .. import sim
 

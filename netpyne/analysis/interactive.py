@@ -1847,7 +1847,7 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
                 color = colors[i%len(colors)]
 
             legend=str(elec)
-            figs['timeSeries'].line(t, lfpPlot+(i*ydisp), color=color, name=str(elec), legend=legend)
+            figs['timeSeries'].line(t, lfpPlot+(i*ydisp), color=color, name=str(elec), legend_label=legend)
 
         data['lfpPlot'] = lfpPlot
         data['ydisp'] =  ydisp

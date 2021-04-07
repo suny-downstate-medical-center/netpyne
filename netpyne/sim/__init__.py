@@ -17,49 +17,36 @@ import sys
 if '-nogui' in sys.argv:
     import netpyne
     netpyne.__gui__ = False
-
-
-# import NEURON module
 from neuron import h
 
-# Initialize MPI try:
-# try:
-#     h.nrnmpi_init()
-# except:
-#     pass
 
 #------------------------------------------------------------------------------
 # Import simulation-related functions from this subpackage (/sim)
 #------------------------------------------------------------------------------
 
 # import setup functions
-from .setup import initialize, setNet, setNetParams, setSimCfg, createParallelContext, \
-	readCmdLineArgs, setupRecording, setupRecordLFP, setGlobals
+from .setup import initialize, setNet, setNetParams, setSimCfg, createParallelContext, readCmdLineArgs, setupRecording, setupRecordLFP, setGlobals
 
 # import run functions
 from .run import preRun, runSim, runSimWithIntervalFunc, loadBalance, calculateLFP
 
 # import gather functions
-from .gather import gatherData, _gatherAllCellTags, _gatherAllCellConnPreGids, _gatherCells, fileGather, mergeFiles
+from .gather import gatherData, _gatherAllCellTags, _gatherAllCellConnPreGids, _gatherCells, gatherDataFromFiles
 
 # import saving functions
-from .save import saveJSON, saveData, distributedSaveHDF5, compactConnFormat, intervalSave, saveSimDataInNode, saveInNode
+from .save import saveJSON, saveData, distributedSaveHDF5, compactConnFormat, intervalSave, saveDataInNodes
 
 # import loading functions
 from .load import loadSimCfg, loadNetParams, loadNet, loadSimData, loadAll, loadHDF5, ijsonLoad
 
 # import utils functions (general)
-from .utils import cellByGid, getCellsList, timing, version, gitChangeset, hashStr, hashList,\
-	_init_stim_randomizer, unique, checkMemory
+from .utils import cellByGid, getCellsList, timing, version, gitChangeset, hashStr, hashList, _init_stim_randomizer, unique, checkMemory
 
 # import utils functions to manipulate objects
-from .utils import copyReplaceItemObj, copyRemoveItemObj, replaceFuncObj, replaceDictODict, \
-	rename, clearObj, clearAll
+from .utils import copyReplaceItemObj, copyRemoveItemObj, replaceFuncObj, replaceDictODict, rename, clearObj, clearAll
 
 # import wrapper functions
-from .wrappers import create, simulate, intervalSimulate, analyze, createSimulate, \
-	createSimulateAnalyze, intervalCreateSimulateAnalyze, load, loadSimulate, loadSimulateAnalyze, \
-	createExportNeuroML2, importNeuroML2SimulateAnalyze
+from .wrappers import create, simulate, intervalSimulate, distributedSimulate, analyze, createSimulate, createSimulateAnalyze, createSimulateAnalyzeInterval, createSimulateAnalyzeDistributed, load, loadSimulate, loadSimulateAnalyze, createExportNeuroML2, importNeuroML2SimulateAnalyze, gatherDataFromNodes
 
 
 #------------------------------------------------------------------------------

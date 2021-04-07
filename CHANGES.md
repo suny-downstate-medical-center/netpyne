@@ -1,3 +1,16 @@
+# Version 1.0.0
+
+**New features**
+
+- Added wrapper for distributed saving; can now simply replace 'sim.gatherData()' with 'sim.gatherDataFromNodes()'
+
+- Added distributed saving/loading ability (save/load data by MPI node)
+
+**Bug fixes**
+
+- Fixed bug in TupleToStr function
+
+
 # Version 0.9.9.1
 
 **Bug fixes**

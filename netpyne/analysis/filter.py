@@ -1,8 +1,9 @@
 """
-analysis/filter.py
+Module for filtering data
 
-signal filtering functions copied to NetPyNE from ObsPy by Sam Neymotin (NKI) 
+Signal filtering functions copied to NetPyNE from ObsPy by Sam Neymotin (NKI)
 
+Originally:
  ------------------------------------------------------------------
  Filename: filter.py
   Purpose: Various Seismogram Filtering Functions
@@ -14,11 +15,9 @@ signal filtering functions copied to NetPyNE from ObsPy by Sam Neymotin (NKI)
 
 Various Seismogram Filtering Functions
 
-:copyright:
-    The ObsPy Development Team (devs@obspy.org)
-:license:
-    GNU Lesser General Public License, Version 3
-    (https://www.gnu.org/copyleft/lesser.html)
+copyright: The ObsPy Development Team (devs@obspy.org)
+license: GNU Lesser General Public License, Version 3
+(https://www.gnu.org/copyleft/lesser.html)
 
 """
 
@@ -51,16 +50,33 @@ def bandpass(data, freqmin, freqmax, df, corners=4, zerophase=True):
     The filter uses :func:`scipy.signal.iirfilter` (for design)
     and :func:`scipy.signal.sosfilt` (for applying the filter).
 
-    :type data: numpy.ndarray
-    :param data: Data to filter.
-    :param freqmin: Pass band low corner frequency.
-    :param freqmax: Pass band high corner frequency.
-    :param df: Sampling rate in Hz.
-    :param corners: Filter corners / order.
-    :param zerophase: If True, apply filter once forwards and once backwards.
-        This results in twice the filter order but zero phase shift in
-        the resulting filtered trace.
-    :return: Filtered data.
+    Parameters
+    ----------
+    data : array
+        Data to filter.
+
+    freqmin : float 
+        Pass band low corner frequency.
+    
+    freqmax : float
+        Pass band high corner frequency.
+    
+    df : float
+        Sampling rate in Hz.
+    
+    corners : int
+        Filter corners / order.
+        **Default:** ``4``
+
+    zerophase : bool
+        If True, apply filter once forwards and once backwards. This results in twice the filter order but zero phase shift in the resulting filtered trace.
+        **Default:** ``True``
+
+    Returns
+    -------
+    data : array
+        Filtered data.
+
     """
     fe = 0.5 * df
     low = freqmin / fe
@@ -95,17 +111,35 @@ def bandstop(data, freqmin, freqmax, df, corners=4, zerophase=False):
     The filter uses :func:`scipy.signal.iirfilter` (for design)
     and :func:`scipy.signal.sosfilt` (for applying the filter).
 
-    :type data: numpy.ndarray
-    :param data: Data to filter.
-    :param freqmin: Stop band low corner frequency.
-    :param freqmax: Stop band high corner frequency.
-    :param df: Sampling rate in Hz.
-    :param corners: Filter corners / order.
-    :param zerophase: If True, apply filter once forwards and once backwards.
-        This results in twice the number of corners but zero phase shift in
-        the resulting filtered trace.
-    :return: Filtered data.
+    Parameters
+    ----------
+    data : array
+        Data to filter.
+
+    freqmin : float 
+        Stop band low corner frequency.
+    
+    freqmax : float
+        Stop band high corner frequency.
+    
+    df : float
+        Sampling rate in Hz.
+    
+    corners : int
+        Filter corners / order.
+        **Default:** ``4``
+
+    zerophase : bool
+        If True, apply filter once forwards and once backwards. This results in twice the filter order but zero phase shift in the resulting filtered trace.
+        **Default:** ``False``
+
+    Returns
+    -------
+    data : array
+        Filtered data.
+        
     """
+
     fe = 0.5 * df
     low = freqmin / fe
     high = freqmax / fe
@@ -137,16 +171,32 @@ def lowpass(data, freq, df, corners=4, zerophase=False):
     The filter uses :func:`scipy.signal.iirfilter` (for design)
     and :func:`scipy.signal.sosfilt` (for applying the filter).
 
-    :type data: numpy.ndarray
-    :param data: Data to filter.
-    :param freq: Filter corner frequency.
-    :param df: Sampling rate in Hz.
-    :param corners: Filter corners / order.
-    :param zerophase: If True, apply filter once forwards and once backwards.
-        This results in twice the number of corners but zero phase shift in
-        the resulting filtered trace.
-    :return: Filtered data.
+    Parameters
+    ----------
+    data : array
+        Data to filter.
+
+    freq : float 
+        Filter corner frequency.
+    
+    df : float
+        Sampling rate in Hz.
+    
+    corners : int
+        Filter corners / order.
+        **Default:** ``4``
+
+    zerophase : bool
+        If True, apply filter once forwards and once backwards. This results in twice the filter order but zero phase shift in the resulting filtered trace.
+        **Default:** ``False``
+
+    Returns
+    -------
+    data : array
+        Filtered data.
+
     """
+
     fe = 0.5 * df
     f = freq / fe
     # raise for some bad scenarios
@@ -174,16 +224,32 @@ def highpass(data, freq, df, corners=4, zerophase=False):
     The filter uses :func:`scipy.signal.iirfilter` (for design)
     and :func:`scipy.signal.sosfilt` (for applying the filter).
 
-    :type data: numpy.ndarray
-    :param data: Data to filter.
-    :param freq: Filter corner frequency.
-    :param df: Sampling rate in Hz.
-    :param corners: Filter corners / order.
-    :param zerophase: If True, apply filter once forwards and once backwards.
-        This results in twice the number of corners but zero phase shift in
-        the resulting filtered trace.
-    :return: Filtered data.
+    Parameters
+    ----------
+    data : array
+        Data to filter.
+
+    freq : float 
+        Filter corner frequency.
+    
+    df : float
+        Sampling rate in Hz.
+    
+    corners : int
+        Filter corners / order.
+        **Default:** ``4``
+
+    zerophase : bool
+        If True, apply filter once forwards and once backwards. This results in twice the filter order but zero phase shift in the resulting filtered trace.
+        **Default:** ``False``
+
+    Returns
+    -------
+    data : array
+        Filtered data.
+
     """
+
     fe = 0.5 * df
     f = freq / fe
     # raise for some bad scenarios
@@ -209,10 +275,18 @@ def envelope(data):
     and then taking the square-root. (See [Kanasewich1981]_)
     The envelope at the start/end should not be taken too seriously.
 
-    :type data: numpy.ndarray
-    :param data: Data to make envelope of.
-    :return: Envelope of input data.
+    Parameters
+    ----------
+    data : array
+        Data to make envelope of.
+
+    Returns
+    -------
+    data : array
+        Envelope of input data.
+
     """
+
     hilb = hilbert(data)
     data = (data ** 2 + hilb ** 2) ** 0.5
     return data
@@ -222,21 +296,31 @@ def remez_fir(data, freqmin, freqmax, df):
     """
     The minimax optimal bandpass using Remez algorithm. (experimental)
 
-    .. warning:: This is experimental code. Use with caution!
-
-    :type data: numpy.ndarray
-    :param data: Data to filter.
-    :param freqmin: Low corner frequency.
-    :param freqmax: High corner frequency.
-    :param df: Sampling rate in Hz.
-    :return: Filtered data.
-
     Finite impulse response (FIR) filter whose transfer function minimizes
     the maximum error between the desired gain and the realized gain in the
     specified bands using the Remez exchange algorithm.
 
-    .. versionadded:: 0.6.2
+    Parameters
+    ----------
+    data : array
+        Data to filter.
+
+    freqmin : float 
+        Low corner frequency.
+    
+    freqmax : float 
+        High corner frequency.
+
+    df : float
+        Sampling rate in Hz.
+    
+    Returns
+    -------
+    data : array
+        Filtered data.
+
     """
+    
     # Remez filter description
     # ========================
     #
@@ -283,6 +367,7 @@ def remez_fir(data, freqmin, freqmax, df):
     #         eve/forums/a/tpc/f/6330927813/m/175006289731
     #
     # take 10% of freqmin and freqmax as """corners"""
+    
     flt = freqmin - 0.1 * freqmin
     fut = freqmax + 0.1 * freqmax
     # bandpass between freqmin and freqmax
@@ -295,20 +380,30 @@ def lowpass_fir(data, freq, df, winlen=2048):
     """
     FIR-Lowpass Filter. (experimental)
 
-    .. warning:: This is experimental code. Use with caution!
-
     Filter data by passing data only below a certain frequency.
 
-    :type data: numpy.ndarray
-    :param data: Data to filter.
-    :param freq: Data below this frequency pass.
-    :param df: Sampling rate in Hz.
-    :param winlen: Window length for filter in samples, must be power of 2;
-        Default 2048
-    :return: Filtered data.
+    Parameters
+    ----------
+    data : array
+        Data to filter.
 
-    .. versionadded:: 0.6.2
+    freq : float 
+        Data below this frequency pass.
+    
+    df : float
+        Sampling rate in Hz.
+
+    winlen : int
+        Window length for filter in samples, must be power of 2.
+        **Default:** ``2048``
+    
+    Returns
+    -------
+    data : array
+        Filtered data.
+    
     """
+    
     # Source: Travis Oliphant
     # https://mail.scipy.org/pipermail/scipy-user/2004-February/002628.html
     #
@@ -339,14 +434,23 @@ def integer_decimation(data, decimation_factor):
 
     Make sure that no signal is present in frequency bands above the new
     Nyquist frequency (samp_rate/2/decimation_factor), e.g. by applying a
-    lowpass filter beforehand!
-    New sampling rate is old sampling rate divided by decimation_factor.
+    lowpass filter beforehand! New sampling rate is old sampling rate divided by decimation_factor.
 
-    :type data: numpy.ndarray
-    :param data: Data to filter.
-    :param decimation_factor: Integer decimation factor
-    :return: Downsampled data (array length: old length / decimation_factor)
+    Parameters
+    ----------
+    data : array
+        Data to filter.
+
+    decimation_factor : int
+        Integer decimation factor.
+    
+    Returns
+    -------
+    data : array
+        Downsampled data (array length: old length / decimation_factor)
+
     """
+
     if not isinstance(decimation_factor, int):
         msg = "Decimation_factor must be an integer!"
         raise TypeError(msg)
@@ -356,31 +460,47 @@ def integer_decimation(data, decimation_factor):
     return data
 
 
-def lowpass_cheby_2(data, freq, df, maxorder=12, ba=False,
-                    freq_passband=False):
+def lowpass_cheby_2(data, freq, df, maxorder=12, ba=False, freq_passband=False):
     """
     Cheby2-Lowpass Filter
 
     Filter data by passing data only below a certain frequency.
     The main purpose of this cheby2 filter is downsampling.
-    #318 shows some plots of this filter design itself.
-
     This method will iteratively design a filter, whose pass
     band frequency is determined dynamically, such that the
     values above the stop band frequency are lower than -96dB.
 
-    :type data: numpy.ndarray
-    :param data: Data to filter.
-    :param freq: The frequency above which signals are attenuated
-        with 95 dB
-    :param df: Sampling rate in Hz.
-    :param maxorder: Maximal order of the designed cheby2 filter
-    :param ba: If True return only the filter coefficients (b, a) instead
-        of filtering
-    :param freq_passband: If True return additionally to the filtered data,
-        the iteratively determined pass band frequency
-    :return: Filtered data.
+    Parameters
+    ----------
+    data : array
+        Data to filter.
+
+    freq : float 
+        The frequency above which signals are attenuated with 95 dB.
+    
+    df : float
+        Sampling rate in Hz.
+
+    maxorder : int
+        Maximal order of the designed cheby2 filter.
+        **Default:** ``12``
+
+    ba : bool
+        If True return only the filter coefficients (b, a) instead of filtering.
+        **Default:** ``False``
+
+    freq_passband : bool
+        If True return additionally to the filtered data, the iteratively determined pass band frequency.
+        **Default:** ``False``
+
+    
+    Returns
+    -------
+    data : array
+        Filtered data.
+    
     """
+    
     nyquist = df * 0.5
     # rp - maximum ripple of passband, rs - attenuation of stopband
     rp, rs, order = 1, 96, 1e99
@@ -404,9 +524,3 @@ def lowpass_cheby_2(data, freq, df, maxorder=12, ba=False,
     if freq_passband:
         return sosfilt(sos, data), wp * nyquist
     return sosfilt(sos, data)
-
-
-if __name__ == '__main__':
-    import doctest
-    doctest.testmod(exclude_empty=True)
-

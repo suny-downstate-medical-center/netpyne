@@ -682,7 +682,8 @@ def plotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid
         minSpacing = float(fontsiz) * 1.1 / float((0.8*figSize[1]*dpi))
         tys = [(float(popLen)/numCells)*(1-2*margin) for popLen in popNumCells]
         tysOffset = list(scipy.cumsum(tys))[:-1]
-        tysOffset = [tysOffset[0]] +[tysOffset[i] + max(tysOffset[i+1]-tysOffset[i], minSpacing) for i in range(len(tysOffset)-1)]
+        if len(tysOffset):
+            tysOffset = [tysOffset[0]] +[tysOffset[i] + max(tysOffset[i+1]-tysOffset[i], minSpacing) for i in range(len(tysOffset)-1)]
         tysOffset.insert(0, 0)
         labels = popLabelRates if popRates else popLabels
         for ipop,(ty, tyOffset, popLabel) in enumerate(zip(tys, tysOffset, popLabels)):

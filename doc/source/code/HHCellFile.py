@@ -55,13 +55,13 @@ class HHCellClass(Cell):
 
     def defineGeometry(self):
         """Set the 3D geometry of the cell."""
-        self.soma.L = 18.8
-        self.soma.diam = 18.8
-        self.soma.Ra = 123.0
+        self.soma.L = 18.8 	# length of the entire section in microns
+        self.soma.diam = 18.8 	# Soma's diameter in microns
+        self.soma.Ra = 123.0 	# Soma's axial resistivity in ohm-cm
 
-        self.dend.L = 200.0
-        self.dend.diam = 1.0
-        self.dend.Ra = 100.0
+        self.dend.L = 200.0 	# length of the entire section in microns
+        self.dend.diam = 1.0	# Dendrite's diameter in microns
+        self.dend.Ra = 100.0 	# Dendrite's axial resistivity in ohm-cm
 
     def defineBiophysics(self):
         """Assign the membrane properties across the cell."""

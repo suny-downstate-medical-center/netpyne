@@ -4,6 +4,7 @@
 # To make this script executable, enter: chmod u+x netpyne_tut0.sh
 # To execute this script, enter: ./netpyne_tut0.sh
 
+rm -fr netpyne_tuts &&
 mkdir netpyne_tuts &&
 cd netpyne_tuts &&
 export PATH=/bin:/usr/bin &&

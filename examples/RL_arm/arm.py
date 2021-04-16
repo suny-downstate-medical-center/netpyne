@@ -4,7 +4,6 @@ MSARM
 Code to connect a virtual arm (simple kinematic arm implemented in python) to the M1 model
 Adapted from arm.hoc in arm2dms
 
-
 Version: 2015jan28 by salvadordura@gmail.com
 """
 

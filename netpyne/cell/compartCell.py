@@ -416,7 +416,7 @@ class CompartCell (Cell):
                         # simConfig.gk_constant_2 = 0.7
                         # simConfig.gk_constant_3 = 0.99
 
-                        # {'gnabar': 'gnabar_constant_1 + gnabar_constant_2*pathDistFromParent',
+                        # {'gnabar': 'cfg.gnabar_constant_1 + cfg.gnabar_constant_2*pathDistFromParent',
                         # 'gkbar': 'gk_constant_1*gk_constant_2 - np.exp(gk_constant_3*pathDistFromSoma)',
 
                         mechParamValueFinal = mechParamValue

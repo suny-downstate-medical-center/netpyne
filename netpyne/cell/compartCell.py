@@ -438,7 +438,7 @@ class CompartCell (Cell):
                             lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function
                             lambdaFunc = eval(lambdaStr)
                             for seg in sec:
-                                setattr(getattr(seg, mechName), mechParamName,lambdaFunc( mechParamVars[strVar] for strVar in strVars} ))
+                                setattr(getattr(seg, mechName), mechParamName,lambdaFunc( eval("simConfig.strVar") for strVar in strVars} ))
 
                         else:
 

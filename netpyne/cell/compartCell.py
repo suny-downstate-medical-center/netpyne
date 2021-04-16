@@ -393,10 +393,10 @@ class CompartCell (Cell):
                         x = y = z = 0
                     for pt3d in sectParams['geom']['pt3d']:
                         h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hObj'])
-
             # add distributed mechanisms
             if 'mechs' in sectParams:
                 mechsInclude = {k: v for k,v in sectParams['mechs'].items() if k not in excludeMechs}
+                # mechParamVars = {k: v for k,v in sectParams['mechParamVars'].items() if k not in excludeMechs}
                 for mechName, mechParams in mechsInclude.items():
                     if mechName not in sec['mechs']:
                         sec['mechs'][mechName] = Dict()
@@ -408,32 +408,40 @@ class CompartCell (Cell):
                             print('# Error inserting %s mechanims in %s section! (check mod files are compiled)'%(mechName, sectName))
                         continue
                     for mechParamName,mechParamValue in mechParams.items():  # add params of the mechanism
-
-                        # secs['soma']['mechs']['hh'] = {'gnabar': 'gna_constant_1 + gna_constant_2*pathDistFromParent', 'gkbar': 0.036, 'gl': 0.003, 'el': -70}
+                        # mcehcparamname - gna
+                        # simConfig.gnabar_constant_1 = 0.2
+                        # simConfig.gnabar_constant_2 = 0.4
                         #
-                        # netParams['gna_constant_1'] = 0.2
-                        # netParams['gna_constant_2'] = 1.0/11.0
+                        # simConfig.gk_constant_1 = 8.2
+                        # simConfig.gk_constant_2 = 0.7
+                        # simConfig.gk_constant_3 = 0.99
 
+                        # {'gnabar': 'gnabar_constant_1 + gnabar_constant_2*pathDistFromParent',
+                        # 'gkbar': 'gk_constant_1*gk_constant_2 - np.exp(gk_constant_3*pathDistFromSoma)',
+
+                        mechParamValueFinal = mechParamValue
                         if isinstance(mechParamValue, basestring):
                             print ( " string function ")
-                        #     paramsStrFunc = mechParamValue
+                            paramsStrFunc = mechParamValue
 
-                            # dictVars[mechParamName]      = lambda postConds: postConds['x']
+                            # dictVars[mechParamName] = lambda postConds: postConds['x']
+                            # find sim config vars that are starting with machparamname
+                            # Check all simfig vars that start with mechparamname_
+                            # 'gnabar': 'gnabar_constant_1 + gnabar_constant_2*pathDistFromParent'
+                            strVars = [var for var in list(simConfig.strVars) if var.startswith(mechParamName) + "_"]
+                            for index, value in enumerate(strVars):
+                                if value == 'pathDistFromSoma':
+                                    strVars[index] = h.distance(seg.x, sec=soma)
+                                elif value == 'pathDistFromParentSec':
+                                    strVars[index] = h.distance(seg.x, sec=parentSec)
+                             # this picks out gnabar_constant1 and gnabar_constant2
+                            lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function
+                            lambdaFunc = eval(lambdaStr)
+                            for seg in sec:
+                                setattr(getattr(seg, mechName), mechParamName,lambdaFunc( mechParamVars[strVar] for strVar in strVars} ))
 
-                        #     strVars = [var for var in list(dictVars.keys())]  # get list of variables used (eg. post_ynorm or dist_xyz)
-                        #
-                        #     lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function
-                        #     lambdaFunc = eval(lambdaStr)
-                        #     for seg in sec:
-                        #         for index, value in enumerate(values):
-                        #             if value == 'pathDistFromSoma':
-                        #                 values[index] = h.distance(seg.x, sec=soma)
-                        #             elif value == 'pathDistFromParentSec':
-                        #                 values[index] = h.distance(seg.x, sec=parentSec)
-                        #             setattr(getattr(seg, mechName), mechParamName,mechParamValueFinal)
-                        #
-                        # else:
-                            # mechParamValueFinal = mechParamValue
+                        else:
+
                             for iseg,seg in enumerate(sec['hObj']):  # set mech params for each segment
                                 if type(mechParamValue) in [list]:
                                     if len(mechParamValue) == 1:

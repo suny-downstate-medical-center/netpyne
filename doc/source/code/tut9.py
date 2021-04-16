@@ -12,15 +12,20 @@ PYRcell['secs']['dend'] = {'geom': {}, 'topol': {}, 'mechs': {}}                
 PYRcell['secs']['dend']['geom'] = {'diam': 5.0, 'L': 150.0, 'Ra': 150.0, 'cm': 1}                      # dend geometry
 PYRcell['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}                  # dend topology
 PYRcell['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
-secs['soma']['mechs']['hh'] = {'gnabar': 'gna_constant_1 + gna_constant_2*pathDistFromParent', 'gkbar': 0.036, 'gl': 0.003, 'el': -70}
+PYRcell['secs']['soma']['mechs']['hh'] =
+{'gnabar': 'gna_constant_1 + gna_constant_2*pathDistFromParent',
+'gkbar': 'gk_constant_1*gk_constant_2 - np.exp(gk_constant_3*pathDistFromSoma)',
+'gnabar_vars':{'gna_constant_1': 0.2,'gna_constant_2':1.0/11.0},
+'gkbar': 0.036, 'gl': 0.003, 'el': -70}
 
-netParams['gna_constant_1'] = 0.2
-netParams['gna_constant_2'] = 1.0/11.0
+# PYRcell['secs']['soma']['mechParamVars'] = {'gna_constant_1': 0.2,'gna_constant_2':1.0/11.0}
+# netParams['gna_constant_1'] = 0.2
+# netParams['gna_constant_2'] = 1.0/11.0
 
-PYRcell['secs']['dend']['mechs']['distribution'] = {'nseg':7,
-'values': [4,5,'pathDistFromSoma', 0.1, 5.5, .04],
- 'vars': ['a4','a5','dist', 'a6', 'a7', 'g8'],
- 'strFunc':'(a4 + a5*exp((dist-a6)/a7)) * g8'}      # soma hh mechanisms
+# PYRcell['secs']['dend']['mechs']['distribution'] = {'nseg':7,
+# 'values': [4,5,'pathDistFromSoma', 0.1, 5.5, .04],
+#  'vars': ['a4','a5','dist', 'a6', 'a7', 'g8'],
+#  'strFunc':'(a4 + a5*exp((dist-a6)/a7)) * g8'}      # soma hh mechanisms
 netParams.cellParams['PYR'] = PYRcell
 
 ## Population parameters
@@ -55,6 +60,16 @@ simConfig.recordStep = 0.1          # Step size in ms to save data (eg. V traces
 simConfig.filename = 'tut2'  # Set file output name
 simConfig.savePickle = False        # Save params, network and sim output to pickle file
 simConfig.saveJson = True
+
+simConfig.gnabar_constant_1 = 0.2
+simConfig.gnabar_constant_2 = 0.4
+
+simConfig.gk_constant_1 = 8.2
+simConfig.gk_constant_2 = 0.7
+simConfig.gk_constant_3 = 0.99
+
+# {'gnabar': 'gna_constant_1 + gna_constant_2*pathDistFromParent',
+# 'gkbar': 'gk_constant_1*gk_constant_2 - np.exp(gk_constant_3*pathDistFromSoma
 
 simConfig.analysis['plotRaster'] = {'saveFig': True}                  # Plot a raster
 simConfig.analysis['plotTraces'] = {'include': [1], 'saveFig': True}  # Plot recorded traces for this list of cells

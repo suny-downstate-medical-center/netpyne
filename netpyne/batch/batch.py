@@ -46,10 +46,12 @@ from .asd_parallel import asdOptim
 try:
     from .optuna_parallel import optunaOptim
 except:
-    print('Warning: Could not import "optuna" package...')
+    pass
+    # print('Warning: Could not import "optuna" package...')
+
 
 pc = h.ParallelContext() # use bulletin board master/slave
-if pc.id()==0: pc.master_works_on_jobs(0) 
+if pc.id()==0: pc.master_works_on_jobs(0)
 
 
 # -------------------------------------------------------------------------------
@@ -78,19 +80,18 @@ def tupleToStr(obj):
     """
 
 
-
-    #print '\nbefore:', obj
     if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict]:
                 tupleToStr(item)
-    elif type(obj) == dict:
-        for key,val in obj.items():
-            if type(val) in [list, dict]:
-                tupleToStr(val)
+    elif type(obj) == dict:        
+        for key in list(obj.keys()):
+            if type(obj[key]) in [list, dict]:
+                tupleToStr(obj[key])
             if type(key) == tuple:
-                obj[str(key)] = obj.pop(key) 
-    #print 'after:', obj
+                obj[str(key)] = obj.pop(key)
+    
+    
     return obj
 
 
@@ -105,10 +106,10 @@ class Batch(object):
     """
 
 
-
-    def __init__(self, cfgFile='cfg.py', netParamsFile='netParams.py', params=None, groupedParams=None, initCfg={}, seed=None):
+    def __init__(self, cfgFile='cfg.py', netParamsFile='netParams.py', cfg=None, params=None, groupedParams=None, initCfg={}, seed=None):
         self.batchLabel = 'batch_'+str(datetime.date.today())
         self.cfgFile = cfgFile
+        self.cfg = cfg
         self.initCfg = initCfg
         self.netParamsFile = netParamsFile
         self.saveFolder = '/'+self.batchLabel
@@ -123,7 +124,7 @@ class Batch(object):
         if groupedParams:
             for p in self.params:
                 if p['label'] in groupedParams: p['group'] = True
-    
+
 
     def save(self, filename):
         import os
@@ -131,11 +132,13 @@ class Batch(object):
         basename = os.path.basename(filename)
         folder = filename.split(basename)[0]
         ext = basename.split('.')[1]
-        
+
         # make dir
         createFolder(folder)
 
-        odict = deepcopy(self.__dict__)
+        # make copy of batch object to save it; but skip cfg (since instance of SimConfig and can't be copied)
+        odict = deepcopy({k:v for k,v in self.__dict__.items() if k != 'cfg'})  
+
         if 'evolCfg' in odict:
             odict['evolCfg']['fitnessFunc'] = 'removed'
         if 'optimCfg' in odict:
@@ -143,7 +146,7 @@ class Batch(object):
 
         odict['initCfg'] = tupleToStr(odict['initCfg'])
         dataSave = {'batch': tupleToStr(odict)}
-        
+
         if ext == 'json':
             from .. import sim
             #from json import encoder
@@ -170,43 +173,45 @@ class Batch(object):
 
         # create Folder to save simulation
         createFolder(self.saveFolder)
-        
+
         # save Batch dict as json
         targetFile = self.saveFolder+'/'+self.batchLabel+'_batch.json'
         self.save(targetFile)
 
         # copy this batch script to folder
         targetFile = self.saveFolder+'/'+self.batchLabel+'_batchScript.py'
-        os.system('cp ' + os.path.realpath(__file__) + ' ' + targetFile) 
+        os.system('cp ' + os.path.realpath(__file__) + ' ' + targetFile)
 
         # copy this batch script to folder, netParams and simConfig
         #os.system('cp ' + self.netParamsFile + ' ' + self.saveFolder + '/netParams.py')
 
         netParamsSavePath = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
-        os.system('cp ' + self.netParamsFile + ' ' + netParamsSavePath) 
-        
+        os.system('cp ' + self.netParamsFile + ' ' + netParamsSavePath)
+
         os.system('cp ' + os.path.realpath(__file__) + ' ' + self.saveFolder + '/batchScript.py')
-        
+
         # save initial seed
         with open(self.saveFolder + '/_seed.seed', 'w') as seed_file:
             if not self.seed: self.seed = int(time())
             seed_file.write(str(self.seed))
-            
-        # import cfg
-        cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
 
-        try:  # py3
-            loader = importlib.machinery.SourceFileLoader(cfgModuleName, self.cfgFile)
-            cfgModule = types.ModuleType(loader.name)
-            loader.exec_module(cfgModule)
-        except:  # py2
-            cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
-        
-        if hasattr(cfgModule, 'cfg'):
-            self.cfg = cfgModule.cfg
-        else:
-            self.cfg = cfgModule.simConfig
-            
+        # set cfg
+        if self.cfg is None:
+            # import cfg
+            cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
+
+            try:  # py3
+                loader = importlib.machinery.SourceFileLoader(cfgModuleName, self.cfgFile)
+                cfgModule = types.ModuleType(loader.name)
+                loader.exec_module(cfgModule)
+            except:  # py2
+                cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
+
+            if hasattr(cfgModule, 'cfg'):
+                self.cfg = cfgModule.cfg
+            else:
+                self.cfg = cfgModule.simConfig
+
         self.cfg.checkErrors = False  # avoid error checking during batch
 
 

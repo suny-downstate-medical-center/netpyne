@@ -30,18 +30,17 @@ from .. import conversion
 
 class PopParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.PopParams`>
-
+    Class to hold population parameters
 
     """
 
 
     def setParam(self, label, param, value):
-        if label in self: 
+        if label in self:
             d = self[label]
         else:
             return False
-        
+
         dimParams = ['numCells', 'density', 'gridSpacing']
         if param in dimParams:
             for removeParam in dimParams: d.pop(removeParam, None)  # remove other properties
@@ -57,17 +56,16 @@ class PopParams(ODict):
 # ----------------------------------------------------------------------------
 # CellParams class
 # ----------------------------------------------------------------------------
-    
+
 class CellParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.CellParams`>
-
+    Class to hold cell parameters
 
     """
 
 
     def setParam(self, label, param, value):
-        if label in self: 
+        if label in self:
             d = self[label]
         else:
             return False
@@ -84,7 +82,7 @@ class CellParams(ODict):
             if isinstance(label, (list, tuple)) and 'secs' in self[label[0]]:
                 d = self[label[0]]
                 for sec in list(d['secs'].values()):  # replace appearences in topol
-                    if sec['topol'].get('parentSec') == old: 
+                    if sec['topol'].get('parentSec') == old:
                         sec['topol']['parentSec'] = new
             return success
         except:
@@ -97,14 +95,13 @@ class CellParams(ODict):
 
 class ConnParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.ConnParams`>
-
+    Class to hold connectivity parameters
 
     """
 
 
     def setParam(self, label, param, value):
-        if label in self: 
+        if label in self:
             d = self[label]
         else:
             return False
@@ -123,14 +120,13 @@ class ConnParams(ODict):
 
 class SynMechParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.SynMechParams`>
-
+    Class to hold synaptic mechanism parameters
 
     """
 
 
     def setParam(self, label, param, value):
-        if label in self: 
+        if label in self:
             d = self[label]
         else:
             return False
@@ -149,14 +145,13 @@ class SynMechParams(ODict):
 
 class SubConnParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.SubConnParams`>
-
+    Class to hold subcellular connectivity parameters
 
     """
 
 
     def setParam(self, label, param, value):
-        if label in self: 
+        if label in self:
             d = self[label]
         else:
             return False
@@ -175,14 +170,13 @@ class SubConnParams(ODict):
 
 class StimSourceParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.StimSourceParams`>
-
+    Class to hold stimulation source parameters
 
     """
 
 
     def setParam(self, label, param, value):
-        if label in self: 
+        if label in self:
             d = self[label]
         else:
             return False
@@ -201,14 +195,13 @@ class StimSourceParams(ODict):
 
 class StimTargetParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.StimTargetParams`>
-
+    Class to hold stimulation target parameters
 
     """
 
 
     def setParam(self, label, param, value):
-        if label in self: 
+        if label in self:
             d = self[label]
         else:
             return False
@@ -227,14 +220,13 @@ class StimTargetParams(ODict):
 
 class RxDParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.RxDParams`>
-
+    Class to hold reaction-diffusion (RxD) parameters
 
     """
 
 
     def setParam(self, label, param, value):
-        if label in self: 
+        if label in self:
             d = self[label]
         else:
             return False
@@ -252,8 +244,7 @@ class RxDParams(ODict):
 
 class NetParams(object):
     """
-    Class for/to <short description of `netpyne.specs.netParams.NetParams`>
-
+    Class to hold all network parameters
 
     """
 
@@ -269,7 +260,7 @@ class NetParams(object):
         self.shape = 'cuboid' # network shape ('cuboid', 'cylinder' or 'ellipsoid')
         self.rotateCellsRandomly = False # random rotation of cells around y-axis [min,max] radians, e.g. [0, 3.0]
         self.defineCellShapes = False # convert stylized cell geometries to 3d points (calls h.define_shape)
-        self.correctBorder = False  # distance (um) from which to correct connectivity border effect, [x,y,z] eg. [100,150,150] 
+        self.correctBorder = False  # distance (um) from which to correct connectivity border effect, [x,y,z] eg. [100,150,150]
 
         ## General connectivity parameters
         self.scaleConnWeight = 1 # Connection weight scale factor (NetStims not included)
@@ -411,8 +402,9 @@ class NetParams(object):
                 midpoint = int(len(soma3d)/2)
                 somaX, somaY, somaZ = soma3d[midpoint][0:3]
                 for sec in list(cellRule['secs'].values()):
-                    for i,pt3d in enumerate(sec['geom']['pt3d']):
-                        sec['geom']['pt3d'][i] = (pt3d[0] - somaX, pt3d[1] - somaY, pt3d[2] - somaZ, pt3d[3])
+                    if 'pt3d' in sec['geom']:
+                        for i,pt3d in enumerate(sec['geom']['pt3d']):
+                            sec['geom']['pt3d'][i] = (pt3d[0] - somaX, pt3d[1] - somaY, pt3d[2] - somaZ, pt3d[3])
 
         self.addCellParams(label, cellRule)
 
@@ -456,7 +448,7 @@ class NetParams(object):
                         secList.append(secName)
                 elif somaDistY:
                     if y >= somaDistY[0] and y <= somaDistY[1]:
-                        secList.append(secName)                    
+                        secList.append(secName)
 
             else:
                 print('Error adding secList: Sections do not contain 3d points')
@@ -519,21 +511,21 @@ class NetParams(object):
         if label in self.cellParams:
             print('CellParams key %s already exists...' % (label))
         secs = {}
-        
+
         if template == 'Simple_HH':
             secs['soma'] = {'geom': {}, 'mechs': {}}
-            secs['soma']['geom'] = {'diam': 20, 'L': 20, 'Ra': 100.0, 'cm': 1}  	 									
+            secs['soma']['geom'] = {'diam': 20, 'L': 20, 'Ra': 100.0, 'cm': 1}
             secs['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.0003, 'el': -54.3}
 
         elif template == 'BallStick_HH':
             secs['soma'] = {'geom': {}, 'mechs': {}}
-            secs['soma']['geom'] = {'diam': 12, 'L': 12, 'Ra': 100.0, 'cm': 1}  	 									
-            secs['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.0003, 'el': -54.3} 		
+            secs['soma']['geom'] = {'diam': 12, 'L': 12, 'Ra': 100.0, 'cm': 1}
+            secs['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.0003, 'el': -54.3}
 
             secs['dend'] = {'geom': {}, 'mechs': {}}
             secs['dend']['geom'] = {'diam': 1.0, 'L': 200.0, 'Ra': 100.0, 'cm': 1}
-            secs['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}										
-            secs['dend']['mechs']['pas'] = {'g': 0.001, 'e': -70} 		 	
+            secs['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}
+            secs['dend']['mechs']['pas'] = {'g': 0.001, 'e': -70}
 
         self.cellParams[label] = ({'conds': conds, 'secs': secs})
 
@@ -569,7 +561,7 @@ class NetParams(object):
         elif ext == 'json':
             with open(fileName, 'rb') as fileObj:
                 cellRule = json.load(fileObj)
-        
+
         self.cellParams[label] = cellRule
 
     def loadCellParams(self, label, fileName):

@@ -1,8 +1,9 @@
 """
-analysis/filter.py
+Module with support functions for filtering data
 
-signal filtering functions copied to NetPyNE from ObsPy by Sam Neymotin (NKI) 
+Signal filtering functions copied to NetPyNE from ObsPy by Sam Neymotin (NKI)
 
+Originally:
  ------------------------------------------------------------------
  Filename: filter.py
   Purpose: Various Seismogram Filtering Functions
@@ -14,11 +15,9 @@ signal filtering functions copied to NetPyNE from ObsPy by Sam Neymotin (NKI)
 
 Various Seismogram Filtering Functions
 
-:copyright:
-    The ObsPy Development Team (devs@obspy.org)
-:license:
-    GNU Lesser General Public License, Version 3
-    (https://www.gnu.org/copyleft/lesser.html)
+copyright: The ObsPy Development Team (devs@obspy.org)
+license: GNU Lesser General Public License, Version 3
+(https://www.gnu.org/copyleft/lesser.html)
 
 """
 
@@ -409,4 +408,3 @@ def lowpass_cheby_2(data, freq, df, maxorder=12, ba=False,
 if __name__ == '__main__':
     import doctest
     doctest.testmod(exclude_empty=True)
-

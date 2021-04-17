@@ -7,7 +7,7 @@ from model import cfg, netParams
 # Network clamp options
 #------------------------------------------------------------------------------
 
-cfg.netClampConnsFile = 'model_output.json'  # previously saved file containing network conns and cell tags 
+cfg.netClampConnsFile = 'model_output.json'  # previously saved file containing network conns and cell tags
 cfg.netClampSpikesFile = 'model_output.json'  # previously saved file containing network spikes
 cfg.netClampGid = 5  # gid of cell to net clamp
 cfg.netClampPop = 'E2'  # population of cell to net clamp
@@ -26,16 +26,16 @@ try:
     netParams = specs.NetParams()
     netParams.cellParams = origCellParams
     netParams.synMechParams = origSynMechParams
-    
+
     netParams.popParams[cfg.netClampPop + '_netClamp'] = targetPop
     netParams.popParams[cfg.netClampPop + '_netClamp']['numCells'] = 1
-         
+
 except:
     print('Error modifying netParams!')
 
 # Save to different filename and plot traces of netclamped cell
 cfg.filename = cfg.filename + '_netClamp'
-cfg.analysis.plotTraces = {'include': [cfg.netClampPop + '_netClamp']}  
+cfg.analysis.plotTraces = {'include': [cfg.netClampPop + '_netClamp']}
 
 # read data
 with open(cfg.netClampConnsFile, 'r') as fileObj:
@@ -61,14 +61,14 @@ spkids,spkts,spkpops = zip(*[(spkid,spkt,tags[int(spkid)][popIndex]) for spkid,s
 # group by prepops
 prePops = list(set(spkpops))
 
-# create all conns (even if no input spikes)    
+# create all conns (even if no input spikes)
 prePops = list(set([tag[popIndex] for tag in tags.values()]))
 for prePop in prePops:
     # get spkTimes for preGid
     spkGids = [spkid for spkid,spkpop in zip(spkids,spkpops) if spkpop == prePop]
 
     if len(spkGids) > 0:
-        # get list of cell gids in this pop 
+        # get list of cell gids in this pop
         popGids = list(set(spkGids))
 
         # set key/label of pop
@@ -76,7 +76,7 @@ for prePop in prePops:
 
         # create 1 vectstim pop per conn (cellLabel=cell gid -- so can reference later)
         cellsList = []
-        for popGid in popGids: 
+        for popGid in popGids:
             spkTimes = [spkt for spkid,spkt in zip(spkids,spkts) if spkid == popGid]
             if len(spkTimes) > 0:
                 cellsList.append({'cellLabel': int(popGid), 'spkTimes': spkTimes})
@@ -86,13 +86,13 @@ for prePop in prePops:
                 preConns = [conn for conn in conns if conn['preGid'] == popGid]
 
                 for i,preConn in enumerate(preConns):
-                    netParams.connParams[key+'_'+str(int(popGid))+'_'+str(i)] = { 
-                            'preConds': {'cellLabel': preConn['preGid']},  # cellLabel corresponds to gid 
+                    netParams.connParams[key+'_'+str(int(popGid))+'_'+str(i)] = {
+                            'preConds': {'cellLabel': preConn['preGid']},  # cellLabel corresponds to gid
                             'postConds': {'pop': cfg.netClampPop + '_netClamp'},
                             'synMech': str(preConn['synMech']),
-                            'weight': float(preConn['weight']), 
+                            'weight': float(preConn['weight']),
                             'delay': float(preConn['delay']),
-                            'sec': str(preConn['sec']), 
+                            'sec': str(preConn['sec']),
                             'loc': str(preConn['loc'])}
 
 
@@ -110,18 +110,16 @@ if 'cell_'+str(int(cfg.netClampGid)) in data['simData']['stims']:
         # create conns from stim pop to cell
         preConn = next(conn for conn in conns if 'preLabel' in conn and conn['preLabel'] == prePop)
 
-        netParams.connParams[key+'_'+str(int(popGid))+'_'+str(i)] = { 
-                'preConds': {'pop': prePop},  # cellLabel corresponds to gid 
+        netParams.connParams[key+'_'+str(int(popGid))+'_'+str(i)] = {
+                'preConds': {'pop': prePop},  # cellLabel corresponds to gid
                 'postConds': {'pop': cfg.netClampPop + '_netClamp'},
                 'synMech': str(preConn['synMech']),
-                'weight': float(preConn['weight']), 
+                'weight': float(preConn['weight']),
                 'delay': float(preConn['delay']),
-                'sec': str(preConn['sec']), 
+                'sec': str(preConn['sec']),
                 'loc': str(preConn['loc'])}
 
 #------------------------------------------------------------------------------
 # Run model with network clamp
 #------------------------------------------------------------------------------
 sim.createSimulateAnalyze(netParams = netParams, simConfig = cfg)
-
-

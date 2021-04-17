@@ -1,5 +1,5 @@
 """
-params.py 
+params.py
 
 Example of saving different network components to file
 
@@ -15,9 +15,9 @@ netParams = specs.NetParams()   # object of class NetParams to store the network
 # -----------------------------------------------------------------------------
 
 # Population parameters
-netParams.popParams['Epop'] = {'cellType': 'E', 'cellModel': 'HH', 'numCells': 80}  # add dict with params for this pop 
-netParams.popParams['RSpop'] = {'cellType': 'RS', 'cellModel': 'HH', 'numCells': 30}  # add dict with params for this pop 
-netParams.popParams['FSpop'] = {'cellType': 'FS', 'cellModel': 'HH', 'numCells': 30}  # add dict with params for this pop 
+netParams.popParams['Epop'] = {'cellType': 'E', 'cellModel': 'HH', 'numCells': 80}  # add dict with params for this pop
+netParams.popParams['RSpop'] = {'cellType': 'RS', 'cellModel': 'HH', 'numCells': 30}  # add dict with params for this pop
+netParams.popParams['FSpop'] = {'cellType': 'FS', 'cellModel': 'HH', 'numCells': 30}  # add dict with params for this pop
 
 
 # Cell parameters
@@ -55,26 +55,25 @@ netParams.stimTargetParams['bkg->PYR1'] = {'source': 'bkg', 'conds': {'pop': 'Ep
 
 # Connectivity parameters (rules)
 netParams.connParams['E->RS'] = {
-    'preConds': {'pop': 'Epop'}, 
+    'preConds': {'pop': 'Epop'},
     'postConds': {'pop': 'RSpop'},
     'probability': 0.1,
-    'weight': 0.02,                    
+    'weight': 0.02,
     'delay': 5,
-    'synMech': 'AMPA'}   
+    'synMech': 'AMPA'}
 
 netParams.connParams['E->FS'] = {
-    'preConds': {'pop': 'Epop'}, 
+    'preConds': {'pop': 'Epop'},
     'postConds': {'cellType': 'FS'},
     'probability': 0.1,
-    'weight': 0.02,                    
+    'weight': 0.02,
     'delay': 5,
-    'synMech': 'AMPA'}   
+    'synMech': 'AMPA'}
 
 netParams.connParams['I->E'] = {
-    'preConds': {'cellType': ['RS','FS']}, 
+    'preConds': {'cellType': ['RS','FS']},
     'postConds': {'pop': 'Epop'},
     'probability': 0.2,
-    'weight': 0.1,                    
+    'weight': 0.1,
     'delay': 5,
-    'synMech': 'GABA'}   
-
+    'synMech': 'GABA'}

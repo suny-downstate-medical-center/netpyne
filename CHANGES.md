@@ -1,3 +1,66 @@
+# Version 1.0.0
+
+**New features**
+
+- Added wrapper for distributed saving; can now simply replace 'sim.gatherData()' with 'sim.gatherDataFromNodes()'
+
+- Added distributed saving/loading ability (save/load data by MPI node)
+
+**Bug fixes**
+
+- Fixed bug in TupleToStr function
+
+
+# Version 0.9.9.1
+
+**Bug fixes**
+
+- Fixed gathering of dipoles when running on multiple cores (uncommented lines that had been commented for debugging)
+
+# Version 0.9.9
+
+**New features**
+
+- Plot current source density (CSD) from local field potential (LFP) simulated data 
+
+- Additional customization of 3D shape plot: show voltage as color, change proportions, include axis labels
+
+- Enable modifyConns based on properties of presynaptic neurons
+
+- Replaced -np with -n so compatible for all commands: mpiexec/mpirun/srun
+
+- Updated netrxd.py and network.py to include RxD's Parameter class, naming of States and Regions, and specification of Region geometries that do not require arguments like 'membrane' and 'inside'
+
+- Improved recordTraces such that the cond 'gid' can accept a list of numbers as well as a single number
+
+- Added a new tutorial going through use of NetPyNE with virtual environments and Jupyter notebooks
+
+- Added cfg.use_fast_imem to enable recording membrane voltage via seg.i_membrane_
+
+- Added swc import ability to importCell (and thus importCellParams)
+
+- Batch now polls processes, prints their output and terminates them once completed
+
+- Updated web documentation to explain importing SWC files and add Recording Configuration section
+
+- Added link to Jupyter notebook tutorial and video to website front page
+
+**Bug fixes** 
+
+- Made rate_b be positional instead of keyword argument in rxd multiCompartmentReaction
+
+- Check if \_morphSegCoords exists in population before using
+
+- Fixed bug to avoid recursive creating of synMechs when loading with cfg.oneSynPerNetcon=True
+
+- Fixed an issue with running rxd code twice
+
+- Wait until all subprocesses have ended before completing mpi_bulletin batches 
+
+- Fixed repeated rxd simulation issue for rates and reactions
+
+- Fixed pointNeuron spikePattern 'sync' option
+
 # Version 0.9.8
 
 **New features**
@@ -14,13 +77,46 @@
 
 - Recording and plotting of current dipoles in arbitrary subset of populations
 
--  Added h.nrnmpi_init() at initialization so can run mpi sims via python instead of nrniv -mpi
+- Added option to plot LFP spectrogram with log y-axis 
+
+- Added option to plot the log of connectivity in plotConn
+
+- Enabled random distribution of multiple synapses with synsPerConn>1 and connRandomSecFromList=True 
+
+- Added lineWidth option to plot2Dnet (thanks Eric!)
+
+- Updated Travis Continuous Integration to use NEURON 7.8.1 (from 7.6.2)
+
+- Removed trailing white space from all Python files in the repository
+
 
 **Bug fixes**
 
 - Fixed bug when using index with recordTraces
 
 - Fixed axes values in plotRxDConcentration and iplotRxDConcentration
+
+- Added links to necessary mod files in the importing cell models tutorial
+
+- Added aux_fun.inc to doc/source/code/mod as it's needed for some examples
+
+- Blocked terminal output from Git when no repository is found (i.e. with pip install netpyne)
+
+- Avoid adding section-based weightNorm values to point neurons (was affecting tut_import.py)
+
+- Prevent error when loading pointCell params from json by converting Dict to dict
+
+- Fixed bug in plotShape (thanks Eric!)
+
+- Updated setup.py so PyPI website renders the README as markdown
+
+- Fixed expected numSpikes in test of M1detailed example
+
+- Merged GUI branch into development branch
+
+- Fixed bug in iplotConn
+
+- Fixed bug and coloring in iplotSpikeStats with different themes
 
 
 # Version 0.9.7

@@ -21,14 +21,15 @@ from future import standard_library
 standard_library.install_aliases()
 import copy
 try:
-    from neuron.crxd import rxdmath 
+    from neuron.crxd import rxdmath
 except:
     print('Warning: Could not import rxdmath module')
 
 # -----------------------------------------------------------------------------
 # Add RxD
 # -----------------------------------------------------------------------------
-def addRxD(self):
+
+def addRxD (self, nthreads=None):
     """
     Function for/to <short description of `netpyne.network.netrxd.addRxD`>
 
@@ -49,6 +50,9 @@ def addRxD(self):
             global rxd
             from neuron import crxd as rxd 
             sim.net.rxd = {'species': {}, 'regions': {}}  # dictionary for rxd  
+            if nthreads:
+                rxd.nthread(nthreads)
+                print('Using %d threads for RxD' % (nthreads))
         except:
             print('cRxD module not available')
             return -1
@@ -58,7 +62,7 @@ def addRxD(self):
 
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'rxdTime')
-    if sim.rank==0: 
+    if sim.rank==0:
         print('Adding RxD...')
 
     # make copy of Python structure
@@ -78,6 +82,8 @@ def addRxD(self):
             self._addStates(rxdParams['states'])
         if 'reactions' in rxdParams:
             self._addReactions(rxdParams['reactions'])
+        if 'parameters' in rxdParams:
+            self._addParameters(rxdParams['parameters'])
         if 'multicompartmentReactions' in rxdParams:
             self._addReactions(rxdParams['multicompartmentReactions'], multicompartment=True)
         if 'rates' in rxdParams:
@@ -111,23 +117,27 @@ def _addRegions(self, params):
         if 'secs' not in param:
             param['secs'] = ['all']
         if not isinstance(param['secs'], list):
-            param['secs'] = [param['secs']] 
-        
+            param['secs'] = [param['secs']]
+
         # nrn_region
         if 'nrn_region' not in param:
             param['nrn_region'] = None
-        
+
         # geomery
         if 'geometry' not in param:
             param['geometry'] = None
-            geometry = param['geometry']
-        if isinstance(param['geometry'], dict):
+        geometry = param['geometry']
+        # import IPython; IPython.embed()
+        if isinstance(geometry, dict):
             try:
-                param['geometry']['hObj'] = getattr(rxd, param['geometry']['class'])(**param['geometry']['args'])
-                geometry = param['geometry']['hObj']
+                if 'args' in geometry:
+                    geometry['hObj'] = getattr(rxd, param['geometry']['class'])(**param['geometry']['args'])
+                    geometry = geometry['hObj']
             except:
-                print('  Error creating %s Region geometry using %s class'%(label, param['geometry']['class'])) 
-            
+                print('  Error creating %s Region geometry using %s class'%(label, param['geometry']['class']))
+        elif isinstance(param['geometry'], str):
+            geometry = getattr(rxd, param['geometry'])()
+
             # List of allowed geometry classes: 
             # class neuron.rxd.geometry.FixedCrossSection(cross_area, surface_area=0) 
             # class neuron.rxd.geometry.FractionalVolume(volume_fraction=1, surface_fraction=0, neighbor_areas_fraction=None) 
@@ -137,7 +147,7 @@ def _addRegions(self, params):
         # geomery
         if 'dimension' not in param:
             param['dimension'] = None
-        
+
         # geomery
         if 'dx' not in param:
             param['dx'] = None
@@ -150,17 +160,18 @@ def _addRegions(self, params):
             nrnSecs = []
             for cell in cells:
                 for secName,sec in cell.secs.items():
-                    if 'all' in param['secs'] or secName in param['secs']: 
+                    if 'all' in param['secs'] or secName in param['secs']:
                         nrnSecs.append(sec['hObj'])
 
         # call rxd method to create Region
-        if nrnSecs: self.rxd['regions'][label]['hObj'] = rxd.Region(secs=nrnSecs, 
-                                                                   nrn_region=param['nrn_region'], 
-                                                                   geometry=geometry, 
-                                                                   dimension=param['dimension'], 
-                                                                   dx=param['dx'], 
+        if nrnSecs: self.rxd['regions'][label]['hObj'] = rxd.Region(secs=nrnSecs,
+                                                                   nrn_region=param['nrn_region'],
+                                                                   geometry=geometry,
+                                                                   dimension=param['dimension'],
+                                                                   dx=param['dx'],
                                                                    name=label)
         else: self.rxd['regions'][label]['hObj'] = None
+
         print('  Created Region %s'%(label))
 
 
@@ -212,18 +223,18 @@ def _addSpecies(self, params):
 
         except:
            print('  Error creating Species %s: could not find regions %s'%(label, param['regions']))
-        
+
         # d
         if 'd' not in param:
             param['d'] = 0
-        
+
         # charge
         if 'charge' not in param:
             param['charge'] = 0
-        
+
         # initial
         if 'initial' not in param:
-            param['initial'] == None
+            param['initial'] = None
         if isinstance(param['initial'], basestring):  # string-based func
             funcStr = self._replaceRxDStr(param['initial'], constants=True, regions=True, species=False)
 
@@ -232,26 +243,37 @@ def _addSpecies(self, params):
             afterDefStr = 'sim.net.rxd["species"]["%s"]["initialFunc"] = initial' % (label)
             funcStr = 'def initial (node): \n%s \n return %s \n%s' % (importStr, funcStr, afterDefStr) # convert to lambda function
             try:
-                exec(funcStr, {'rxd': rxd}, {'sim': sim})        
+                exec(funcStr, {'rxd': rxd}, {'sim': sim})
                 initial = sim.net.rxd["species"][label]["initialFunc"]
             except:
                 print('  Error creating Species %s: cannot evaluate "initial" expression -- "%s"'%(label, param['initial']))
                 continue
         else:
             initial = param['initial']
-        
+
+        # ecs boundary condition 
+        if 'ecs_boundary_conditions' not in param:
+            param['ecs_boundary_conditions'] = None
+
         # atolscale
         if 'atolscale' not in param:
             param['atolscale'] = 1
 
-        # call rxd method to create Region
+        if 'name' not in param:
+            name = label
+        else:
+            name = param['name']
+
+        # call rxd method to create Species
         if nrnRegions: self.rxd['species'][label]['hObj'] = rxd.Species(regions=nrnRegions, 
-                                                                       d=param['d'], 
-                                                                       charge=param['charge'], 
-                                                                       initial=initial, 
-                                                                       atolscale=param['atolscale'], 
-                                                                       name=label)
+                                                            d=param['d'], 
+                                                            charge=param['charge'], 
+                                                            initial=initial, 
+                                                            atolscale=param['atolscale'], 
+                                                            name=name,
+                                                            ecs_boundary_conditions=param['ecs_boundary_conditions'])
         else: self.rxd['species'][label]['hObj'] = None
+
         print('  Created Species %s'%(label))
 
 
@@ -272,10 +294,10 @@ def _addStates(self, params):
             nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions'] if self.rxd['regions'][region]['hObj'] != None]
         except:
            print('  Error creating State %s: could not find regions %s'%(label, param['regions']))
-        
+
         # initial
         if 'initial' not in param:
-            param['initial'] == None
+            param['initial'] = None ## looks like a typo
         if isinstance(param['initial'], basestring):  # string-based func
             funcStr = self._replaceRxDStr(param['initial'], constants=True, regions=True, species=False)
 
@@ -284,20 +306,74 @@ def _addStates(self, params):
             afterDefStr = 'sim.net.rxd["states"]["%s"]["initialFunc"] = initial' % (label)
             funcStr = 'def initial (node): \n%s \n return %s \n%s' % (importStr, funcStr, afterDefStr) # convert to lambda function
             try:
-                exec(funcStr, {'rxd': rxd}, {'sim': sim})        
+                exec(funcStr, {'rxd': rxd}, {'sim': sim})
                 initial = sim.net.rxd["species"][label]["initialFunc"]
             except:
                 print('  Error creating State %s: cannot evaluate "initial" expression -- "%s"'%(label, param['initial']))
                 continue
         else:
             initial = param['initial']
+
+        if 'name' not in param:
+            name = label
+        else:
+            name = param['name']
         
         # call rxd method to create Region
         if nrnRegions: self.rxd['states'][label]['hObj'] = rxd.State(regions=nrnRegions, 
-                                                                    initial=initial)
+                                                    initial=initial, name=name)
         else: self.rxd['states'][label]['hObj'] = None
+
         print('  Created State %s'%(label))
 
+# -----------------------------------------------------------------------------
+# Add RxD parameters
+# -----------------------------------------------------------------------------
+def _addParameters(self, params):
+    from .. import sim
+
+    for label, param in params.items():
+        # regions
+        if 'regions' not in param:
+            print('  Error creating State %s: "regions" parameter was missing'%(label))
+            continue
+        if not isinstance(param['regions'], list):
+            param['regions'] = [param['regions']]
+        try:
+            nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions']]
+        except:
+           print('  Error creating State %s: could not find regions %s'%(label, param['regions']))
+
+        if 'name' not in param:
+            param['name'] = None
+        
+        if 'charge' not in param:
+            param['charge'] = 0
+
+        if 'value' not in param:
+            param['value'] = 0
+        if isinstance(param['value'], basestring):
+            funcStr = self._replaceRxDStr(param['value'], constants=True, regions=True, species=True)
+
+            # create final function dynamically from string
+            importStr = ' from neuron import crxd as rxd \n from netpyne import sim'
+            afterDefStr = 'sim.net.rxd["parameters"]["%s"]["initialFunc"] = value' % (label)
+            funcStr = 'def value (node): \n%s \n return %s \n%s' % (importStr, funcStr, afterDefStr) # convert to lambda function
+            try:
+                exec(funcStr, {'rxd': rxd}, {'sim': sim})        
+                value = sim.net.rxd["parameters"][label]["initialFunc"]
+            except:
+                print('  Error creating Parameter %s: cannot evaluate "value" expression -- "%s"'%(label, param['value']))
+                continue
+        else:
+            value = param['value']
+        
+        # call rxd method to create Region
+        self.rxd['parameters'][label]['hObj'] = rxd.Parameter(regions=nrnRegions, 
+                                                    value=value,
+                                                    charge=param['charge'],
+                                                    name=param['name'])
+        print('  Created Parameter %s'%(label))
 
 # -----------------------------------------------------------------------------
 # Add RxD reactions
@@ -309,7 +385,9 @@ def _addReactions(self, params, multicompartment=False):
     reactionDictKey = 'multicompartmentReactions' if multicompartment else 'reactions'
 
     for label, param in params.items():
-        dynamicVars = {'sim': sim, 'rxdmath': rxdmath}
+
+        dynamicVars = {'sim': sim , 'rxd' : rxd}
+
         # reactant
         if 'reactant' not in param:
             print('  Error creating %s %s: "reactant" parameter was missing'%(reactionStr,label))
@@ -318,7 +396,7 @@ def _addReactions(self, params, multicompartment=False):
         try:
             exec('reactant = ' + reactantStr, dynamicVars)
         except TypeError:
-            continue 
+            continue
         if 'reactant' not in dynamicVars: dynamicVars['reactant']  # fix for python 2
 
         # product
@@ -326,6 +404,8 @@ def _addReactions(self, params, multicompartment=False):
             print('  Error creating %s %s: "product" parameter was missing'%(reactionStr,label))
             continue
         productStr = self._replaceRxDStr(param['product'])
+        #from IPython import embed
+        #embed()
         exec('product = ' + productStr, dynamicVars)
         if 'product' not in dynamicVars: dynamicVars['product']  # fix for python 2
 
@@ -335,14 +415,16 @@ def _addReactions(self, params, multicompartment=False):
             continue
         if isinstance(param['rate_f'], basestring):
             rate_fStr = self._replaceRxDStr(param['rate_f'])
+            #import IPython; IPython.embed()
             exec('rate_f = ' + rate_fStr, dynamicVars)
             if 'rate_f' not in dynamicVars: dynamicVars['rate_f']  # fix for python 2
         else:
             rate_f = param['rate_f']
 
         # rate_b
+        rate_b = None
         if 'rate_b' not in param:
-            param['rate_b'] = None 
+            param['rate_b'] = None
         if isinstance(param['rate_b'], basestring):
             rate_bStr = self._replaceRxDStr(param['rate_b'])
             exec('rate_b = ' + rate_bStr, dynamicVars)
@@ -352,19 +434,18 @@ def _addReactions(self, params, multicompartment=False):
 
         # regions
         if 'regions' not in param:
-            param['regions'] = None
-            nrnRegions = None
+            param['regions'] = [None]
         elif not isinstance(param['regions'], list):
             param['regions'] = [param['regions']]
-            try:
-                nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions'] if self.rxd['regions'][region]['hObj'] != None]
-            except:
-               print('  Error creating %s %s: could not find regions %s'%(reactionStr, label, param['regions']))
+        try:
+            nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions'] if region is not None and self.rxd['regions'][region]['hObj'] != None]
+        except:
+            print('  Error creating %s %s: could not find regions %s'%(reactionStr, label, param['regions']))
 
         # membrane
         if 'membrane' not in param:
             param['membrane'] = None
-        if param['membrane'] in self.rxd['regions']:   
+        if param['membrane'] in self.rxd['regions']:
             nrnMembraneRegion = self.rxd['regions'][param['membrane']]['hObj']
         else:
             nrnMembraneRegion = None
@@ -373,19 +454,33 @@ def _addReactions(self, params, multicompartment=False):
         if 'custom_dynamics' not in param:
             param['custom_dynamics'] = False
         if 'membrane_flux' not in param:
-            param['membrane_flux'] = False 
+            param['membrane_flux'] = False
 
+        # membrane_flux
+        if 'membrane_flux' not in param:
+            param['membrane_flux'] = False
 
-        #import IPython; IPython.embed()
-
-        self.rxd[reactionDictKey][label]['hObj'] = getattr(rxd, reactionStr)(dynamicVars['reactant'],
-                                                                            dynamicVars['product'], 
-                                                                            dynamicVars['rate_f'] if 'rate_f' in dynamicVars else rate_f, 
-                                                                            rate_b=dynamicVars['rate_b'] if 'rate_b' in dynamicVars else rate_b, 
-                                                                            regions=nrnRegions, 
+        if rate_b is None and dynamicVars.get('rate_b', None) is None:
+            # omit positional argument 'rate_b'
+            self.rxd[reactionDictKey][label]['hObj'] = getattr(rxd, reactionStr)(dynamicVars['reactant'],
+                                                                            dynamicVars['product'],
+                                                                            dynamicVars['rate_f'] if 'rate_f' in dynamicVars else rate_f,
+                                                                            regions=nrnRegions,
                                                                             custom_dynamics=param['custom_dynamics'],
                                                                             membrane_flux=param['membrane_flux'],
                                                                             membrane=nrnMembraneRegion)
+
+        else:
+            # include positional argument 'rate_b'
+            self.rxd[reactionDictKey][label]['hObj'] = getattr(rxd, reactionStr)(dynamicVars['reactant'],
+                                                                            dynamicVars['product'],
+                                                                            dynamicVars['rate_f'] if 'rate_f' in dynamicVars else rate_f,
+                                                                            dynamicVars['rate_b'] if 'rate_b' in dynamicVars else rate_b,
+                                                                            regions=nrnRegions,
+                                                                            custom_dynamics=param['custom_dynamics'],
+                                                                            membrane_flux=param['membrane_flux'],
+                                                                            membrane=nrnMembraneRegion)
+
 
         print('  Created %s %s'%(reactionStr, label))
 
@@ -396,7 +491,9 @@ def _addRates(self, params):
     from .. import sim
 
     for label, param in params.items():
-        dynamicVars = {'sim': sim, 'rxdmath': rxdmath}
+
+        dynamicVars = {'sim': sim , 'rxd' : rxd}
+
         # species
         if 'species' not in param:
             print('  Error creating Rate %s: "species" parameter was missing'%(label))
@@ -420,22 +517,21 @@ def _addRates(self, params):
 
         # regions
         if 'regions' not in param:
-            param['regions'] = None
-            nrnRegions = None
+            param['regions'] = [None]
         elif not isinstance(param['regions'], list):
             param['regions'] = [param['regions']]
-            try:
-                nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions']]
-            except:
-               print('  Error creating Rate %s: could not find regions %s'%(label, param['regions']))
+        try:
+             nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions'] if region is not None and self.rxd['regions'][region]['hObj'] != None]
+        except:
+           print('  Error creating Rate %s: could not find regions %s'%(label, param['regions']))
 
         # membrane_flux
         if 'membrane_flux' not in param:
             param['membrane_flux'] = False
 
         self.rxd['rates'][label]['hObj'] = rxd.Rate(dynamicVars['species'],
-                                                    dynamicVars['rate'], 
-                                                    regions=nrnRegions, 
+                                                    dynamicVars['rate'],
+                                                    regions=nrnRegions,
                                                     membrane_flux=param['membrane_flux'])
 
         print('  Created Rate %s'%(label))
@@ -443,18 +539,18 @@ def _addRates(self, params):
 # -----------------------------------------------------------------------------
 # Replace RxD param strings with expression
 # -----------------------------------------------------------------------------
-def _replaceRxDStr(self, origStr, constants=True, regions=True, species=True):
+def _replaceRxDStr(self, origStr, constants=True, regions=True, species=True, parameters=True):
     import re
     replacedStr = str(origStr)
-    
+
     mapping = {}
 
     # replace constants
     if constants and 'constants' in self.rxd:
-        constantsList = [c for c in self.params.rxdParams['constants'] if c in origStr]  # get list of variables used (eg. post_ynorm or dist_xyz)  
+        constantsList = [c for c in self.params.rxdParams['constants'] if c in origStr]  # get list of variables used (eg. post_ynorm or dist_xyz)
         for constantLabel in constantsList:
             mapping[constantLabel] = 'sim.net.rxd["constants"]["%s"]'%(constantLabel)
-            
+
     # replace regions
     if regions and 'regions' in self.rxd:
         for regionLabel in self.rxd['regions']:
@@ -464,9 +560,14 @@ def _replaceRxDStr(self, origStr, constants=True, regions=True, species=True):
     if species and 'species' in self.rxd:
         for speciesLabel in self.rxd['species']:
             mapping[speciesLabel] = 'sim.net.rxd["species"]["%s"]["hObj"]'%(speciesLabel)
+
     if species and 'states' in self.rxd:
         for statesLabel in self.rxd['states']:
             mapping[statesLabel] = 'sim.net.rxd["states"]["%s"]["hObj"]'%(statesLabel)
+
+    if parameters and 'parameters' in self.rxd:
+        for paramLabel in self.rxd['parameters']:
+            mapping[paramLabel] = 'sim.net.rxd["parameters"]["%s"]["hObj"]' % (paramLabel)
 
     # Place longer ones first to keep shorter substrings from matching where the longer ones should take place
     substrs = sorted(mapping, key=len, reverse=True)
@@ -476,6 +577,5 @@ def _replaceRxDStr(self, origStr, constants=True, regions=True, species=True):
 
     # For each match, look up the new string in the mapping
     replacedStr = regexp.sub(lambda match: mapping[match.group(0)], replacedStr)
-    
-    return replacedStr
 
+    return replacedStr

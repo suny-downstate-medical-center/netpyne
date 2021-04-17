@@ -3,12 +3,19 @@ This is a script to build the NetPyNE html documentation
 
 All steps should be executed from netpyne/doc
 
-The following is required:
-Autodoc summary table: https://autodocsumm.readthedocs.io/en/latest/index.html
+The following are required:
+1) Sphinx documentation generator: https://www.sphinx-doc.org/en/master/
+2) Sphinx RTD Theme
+3) Autodoc summary table: https://autodocsumm.readthedocs.io/en/latest/index.html
+4) Wheel packager: https://wheel.readthedocs.io/en/stable/
+5) Twine packager: https://twine.readthedocs.io/en/latest/
 
 Which can be installed with:
-pip install autodocsumm
-
+python3 -m pip install -U sphinx
+python3 -m pip install -U sphinx_rtd_theme
+python3 -m pip install -U autodocsumm
+python3 -m pip install -U wheel
+python3 -m pip install -U twine
 
 Here are the steps to release a new version of NetPyNE
 (step 10 is completed by executing this file):
@@ -16,15 +23,15 @@ Here are the steps to release a new version of NetPyNE
 1) Go through Pull Requests and merge acceptable ones into Development
 2) Ensure all tests pass after the last commit
 3) Ensure all new features are described in the documentation
-4) Update CHANGES.md 
+4) Update CHANGES.md
 5) Update the __init__.py version number
 6) Update the version number in the Sphinx documentation (netpyne/doc/source/conf.py)
 7) Commit with the message “VERSION #.#.#”
-8) Create a Pull Request from Development to Master 
+8) Create a Pull Request from Development to Master
     8a) Title it “PR from development to master - VERSION #.#.#”
     8b) Ensure the Pull Request passes all tests
     8c) Merge the Pull Request
-9) Start a new Release on GitHub 
+9) Start a new Release on GitHub
     9a) Title it and tag it “v#.#.#”
     9b) Copy the text in CHANGES.md into the Release description
     9c) Publish the Release
@@ -40,7 +47,7 @@ Here are the steps to release a new version of NetPyNE
     11c) ssh gkaue9v7ctjf@107.180.3.236 "cp -r ~/redirect_html/. ~/public_html/"
 12) Update PYPI (pip) with the latest release
     12a) cd netpyne
-    12b) python setup.py bdist_wheel --universal
+    12b) python3 setup.py bdist_wheel --universal
     12c) python setup.py upload_via_twine
          Username: salvadord
 13) Announce the new release
@@ -96,4 +103,3 @@ with open('source/package_index.rst', 'w') as f:
 # Generate the html files
 print('Building html files.')
 os.system('sphinx-build source ./build')
-

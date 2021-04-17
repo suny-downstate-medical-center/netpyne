@@ -37,17 +37,17 @@ def initialize(netParams = None, simConfig = None, net = None):
         <Short description of netParams>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     simConfig : <``None``?>
         <Short description of simConfig>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     net : <``None``?>
         <Short description of net>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -100,7 +100,7 @@ def initialize(netParams = None, simConfig = None, net = None):
             simTestObj.runTests()
         except:
             print("\nAn exception occurred during the error checking process...")
-            
+
     sim.timing('stop', 'initialTime')
 
 
@@ -220,11 +220,11 @@ def readCmdLineArgs(simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
     simConfigDefault : str
         <Short description of simConfigDefault>
         **Options:** ``<option>`` <description of option>
- 
+
     netParamsDefault : str
         <Short description of netParamsDefault>
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -232,7 +232,7 @@ def readCmdLineArgs(simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
     from .. import sim
     import imp, importlib, types
     import __main__
-    
+
 
     if len(sys.argv) > 1:
         print('\nReading command line arguments using syntax: python file.py [simConfig=filepath] [netParams=filepath]')
@@ -272,6 +272,8 @@ def readCmdLineArgs(simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
             __main__.cfg = cfg
         except:
             print('\nWarning: Could not load cfg from command line path or from default cfg.py')
+            print('This usually occurs when cfg.py crashes.  Please ensure that your cfg.py file')
+            print('completes successfully on its own (i.e. execute "python cfg.py" and fix any bugs).')
             cfg = None
 
     if not netParamsPath:
@@ -286,6 +288,8 @@ def readCmdLineArgs(simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
             netParams = netParamsModule.netParams
         except:
             print('\nWarning: Could not load netParams from command line path or from default netParams.py')
+            print('This usually occurs when netParams.py crashes.  Please ensure that your netParams.py file')
+            print('completes successfully on its own (i.e. execute "python netParams.py" and fix any bugs).')
             netParams = None
 
     return cfg, netParams
@@ -304,18 +308,18 @@ def setupRecordLFP():
 
     from .. import sim
     from netpyne.support.recxelectrode import RecXElectrode
-    
+
     nsites = len(sim.cfg.recordLFP)
     saveSteps = int(np.ceil(sim.cfg.duration/sim.cfg.recordStep))
     sim.simData['LFP'] = np.zeros((saveSteps, nsites))
     if sim.cfg.saveLFPCells:
         for c in sim.net.cells:
             sim.simData['LFPCells'][c.gid] = np.zeros((saveSteps, nsites))
-    
+
     if not sim.net.params.defineCellShapes: sim.net.defineCellShapes()  # convert cell shapes (if not previously done already)
     sim.net.calcSegCoords()  # calculate segment coords for each cell
     sim.net.recXElectrode = RecXElectrode(sim)  # create exctracellular recording electrode
-    
+
     if sim.cfg.createNEURONObj:
         for cell in sim.net.compartCells:
             nseg = cell._segCoords['p0'].shape[1]
@@ -324,8 +328,9 @@ def setupRecordLFP():
             cell.imembPtr.ptr_update_callback(cell.setImembPtr)   # used for gathering an array of  i_membrane values from the pointer vector
             cell.imembVec = h.Vector(nseg)
 
-        sim.cvode.use_fast_imem(1)   # make i_membrane_ a range variable
-        
+        sim.cvode.use_fast_imem(True)   # make i_membrane_ a range variable
+        sim.cfg.use_fast_imem = True
+
 
 #------------------------------------------------------------------------------
 # Setup Recording
@@ -333,8 +338,6 @@ def setupRecordLFP():
 def setupRecording():
     """
     Function for/to <short description of `netpyne.sim.setup.setupRecording`>
-
-
     """
 
 
@@ -359,7 +362,7 @@ def setupRecording():
                 if item in netStimLabels:
                     sim.cfg.recordStim = True
                     break
-    
+
 
     if 'plotSpikeHist' in sim.cfg.analysis:
         if sim.cfg.analysis['plotSpikeHist']==True:
@@ -379,6 +382,10 @@ def setupRecording():
 
     # intrinsic cell variables recording
     if sim.cfg.recordTraces:
+
+        # Set cvode use_fast_imem since might be needed to record i_membrane_ 
+        sim.cvode.use_fast_imem(sim.cfg.use_fast_imem)
+
         # if have rxd objects need to run h.finitialize() before setting up recording so pointers available
         if len(sim.net.params.rxdParams) > 0:
             h.finitialize()
@@ -395,7 +402,7 @@ def setupRecording():
         cellsRecord = utils.getCellsList(sim.cfg.recordCells)+cellsPlot
 
         for key in list(sim.cfg.recordTraces.keys()): sim.simData[key] = Dict()  # create dict to store traces
-        for cell in cellsRecord: 
+        for cell in cellsRecord:
             cell.recordTraces()  # call recordTraces function for each cell
 
         # record h.t
@@ -426,7 +433,7 @@ def setupRecording():
     if sim.cfg.recordLFP:
         setupRecordLFP()
 
-    
+
     sim.timing('stop', 'setrecordTime')
 
     return sim.simData
@@ -461,7 +468,7 @@ def setGlobals():
                         print("\nWarning: global variable %s=%s differs from that defined (not used) in the 'globals' of cellParams rule %s: %s" % (k, str(cellGlobs[k]), cellRuleName, str(v)))
                 else:
                     print("\nWarning: global variable %s=%s differs from that defined (not used) in the 'globals' of cellParams rule %s: %s" % (k, str(cellGlobs[k]), cellRuleName, str(v)))
-    
+
     # add tstop as global (for ease of transition with standard NEURON)
     cellGlobs['tstop'] = float(sim.cfg.duration)
 
@@ -474,4 +481,3 @@ def setGlobals():
             if sim.cfg.verbose: print(('  h.%s = %s' % (key, str(val))))
         except:
             print('\nError: could not set global %s = %s' % (key, str(val)))
-

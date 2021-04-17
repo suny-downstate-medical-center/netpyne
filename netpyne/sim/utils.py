@@ -70,7 +70,7 @@ def getCellsList(include, returnGids=False):
         <Short description of returnGids>
         **Default:** ``False``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -156,7 +156,7 @@ def version(show=True):
         <Short description of show>
         **Default:** ``True``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -180,21 +180,22 @@ def gitChangeset(show=True):
         <Short description of show>
         **Default:** ``True``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
 
-    import netpyne, os, subprocess 
-    
+    import netpyne, os, subprocess
+
     currentPath = os.getcwd()
     try:
         netpynePath = os.path.dirname(netpyne.__file__)
         os.chdir(netpynePath)
         if show: os.system('git log -1')
         # get changeset (need to remove initial tag+num and ending '\n')
-        changeset = subprocess.check_output(["git", "describe"]).split('-')[2][1:-1]
-    except: 
+        #changeset = subprocess.check_output(["git", "describe"]).split('-')[2][1:-1]
+        changeset = subprocess.check_output(["git", "describe"], stderr=subprocess.DEVNULL).split('-')[2][1:-1]
+    except:
         changeset = ''
 
     os.chdir(currentPath)
@@ -275,7 +276,7 @@ def unique(seq):
 
 
 #------------------------------------------------------------------------------
-# Check memory 
+# Check memory
 #------------------------------------------------------------------------------
 def checkMemory():
     """
@@ -286,7 +287,7 @@ def checkMemory():
 
 
     from .. import sim
-    
+
     # print memory diagnostic info
     if sim.rank == 0: # and checkMemory:
         import resource
@@ -300,7 +301,7 @@ def checkMemory():
         print('\n Memory usage: %s \n' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
         # import objgraph
         # objgraph.show_most_common_types()
-        print('--------------------------------\n')  
+        print('--------------------------------\n')
 
 
 #------------------------------------------------------------------------------
@@ -328,12 +329,12 @@ def copyReplaceItemObj(obj, keystart, newval, objCopy='ROOT', exclude_list=[]):
         <Short description of objCopy>
         **Default:** ``'ROOT'``
         **Options:** ``<option>`` <description of option>
- 
+
     exclude_list : list
         <Short description of exclude_list>
         **Default:** ``[]``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -389,12 +390,12 @@ def copyRemoveItemObj(obj, keystart,  objCopy='ROOT', exclude_list=[]):
         <Short description of objCopy>
         **Default:** ``'ROOT'``
         **Options:** ``<option>`` <description of option>
- 
+
     exclude_list : list
         <Short description of exclude_list>
         **Default:** ``[]``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -454,7 +455,7 @@ def replaceItemObj(obj, keystart, newval, exclude_list=[]):
         <Short description of exclude_list>
         **Default:** ``[]``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -640,7 +641,7 @@ def rename(obj, old, new, label=None):
         <Short description of label>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
 
     """
 
@@ -757,7 +758,7 @@ def clearObj(obj):
 #------------------------------------------------------------------------------
 # Support funcs to load from mat
 #------------------------------------------------------------------------------
-def _mat2dict(obj): 
+def _mat2dict(obj):
     """
     A recursive function which constructs from matobjects nested dictionaries
     Enforce lists for conns, synMechs and stims even if 1 element (matlab converts to dict otherwise)
@@ -860,10 +861,12 @@ def clearAll():
     if sim.rank == 0:
         if hasattr(sim.net, 'allCells'):
             sim.clearObj([cell.__dict__ if hasattr(cell, '__dict__') else cell for cell in sim.net.allCells])
-        if hasattr(sim, 'allSimData') and 'stims' in list(sim.allSimData.keys()):
-            sim.clearObj([stim for stim in sim.allSimData['stims']])
-
-        for key in list(sim.allSimData.keys()): del sim.allSimData[key]
+        if hasattr(sim, 'allSimData'):
+            for key in list(sim.allSimData.keys()): del sim.allSimData[key]
+            
+            if 'stims' in list(sim.allSimData.keys()):
+                sim.clearObj([stim for stim in sim.allSimData['stims']])
+        
         for c in sim.net.allCells: del c
         for p in sim.net.allPops: del p
         del sim.net.allCells
@@ -876,7 +879,7 @@ def clearAll():
     del sim.net
 
     import gc; gc.collect()
-    
+
 #------------------------------------------------------------------------------
 # Create a subclass of json.JSONEncoder to convert numpy types in Python types
 #------------------------------------------------------------------------------

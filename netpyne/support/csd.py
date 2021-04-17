@@ -1,10 +1,10 @@
 """
-analysis/csd.py
+Module with support for current source density (CSD)
 
-current source density approximation using second spatial derivative of local field potential
+Current source density approximation using second spatial derivative of local field potential
 
- Written by Sam Neymotin (NKI)
- Vaknin function written by Max Sherman (Brown University)
+Written by Sam Neymotin (NKI)
+Vaknin function written by Max Sherman (Brown University)
 """
 
 from __future__ import print_function
@@ -38,7 +38,7 @@ def getCSD(lfps,sampr,minf=0.05,maxf=300,norm=True,vaknin=False,spacing=1.0):
     get current source density approximation using set of local field potentials with equidistant spacing
     first performs a lowpass filter
     lfps is a list or numpy array of LFPs arranged spatially by column
-    spacing is in microns   
+    spacing is in microns
     """
     datband = getbandpass(lfps,sampr,minf,maxf)
     if datband.shape[0] > datband.shape[1]: # take CSD along smaller dimension

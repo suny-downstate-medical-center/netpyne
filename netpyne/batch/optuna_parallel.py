@@ -88,7 +88,7 @@ def runJob(nrnCommand, script, cfgSavePath, netParamsSavePath, simDataPath):
 
     with open(simDataPath+'.run', 'w') as outf, open(simDataPath+'.err', 'w') as errf:
         pid = Popen(command.split(' '), stdout=outf, stderr=errf, preexec_fn=os.setsid).pid
-    
+
     with open('./pids.pid', 'a') as file:
         file.write(str(pid) + ' ')
 
@@ -125,7 +125,7 @@ def optunaOptim(self, pc):
 
         # options slurm, mpi
         type = args.get('type', 'mpi_direct')
-        
+
         # params
         paramLabels = args.get('paramLabels', [])
         minVals = args.get('minVals', [])
@@ -135,14 +135,14 @@ def optunaOptim(self, pc):
         script = args.get('script', 'init.py')
         netParamsSavePath =  args.get('netParamsSavePath')
         genFolderPath = self.saveFolder + '/trial_' + str(ngen)
-        
+
         # mpi command setup
         nodes = args.get('nodes', 1)
         coresPerNode = args.get('coresPerNode', 1)
         mpiCommand = args.get('mpiCommand', 'mpiexec')
         nrnCommand = args.get('nrnCommand', 'nrniv -python -mpi')
         numproc = nodes*coresPerNode
-        
+
         # slurm setup
         custom = args.get('custom', '')
         folder = args.get('folder', '.')
@@ -155,10 +155,10 @@ def optunaOptim(self, pc):
         fitnessFunc = args.get('fitnessFunc')
         fitnessFuncArgs = args.get('fitnessFuncArgs')
         maxFitness = args.get('maxFitness')
-        
+
         # read params or set defaults
         sleepInterval = args.get('sleepInterval', 0.2)
-        
+
         # create folder if it does not exist
         createFolder(genFolderPath)
 
@@ -171,12 +171,12 @@ def optunaOptim(self, pc):
         # remember pids and jobids in a list
         pids = []
         jobids = {}
-        
+
         # create a job for the candidate
         candidate_index = 0
 
         sleep(sleepInterval)  # required for slurm
-        
+
         # name and path
         jobName = "trial_" + str(ngen)
         jobPath = genFolderPath + '/' + jobName
@@ -185,22 +185,22 @@ def optunaOptim(self, pc):
         if len(self.initCfg) > 0:
             for paramLabel, paramVal in self.initCfg.items():
                 self.setCfgNestedParam(paramLabel, paramVal)
-        
+
         # modify cfg instance with candidate values
         #print(paramLabels, candidate)
         for label, value in zip(paramLabels, candidate):
             print('set %s=%s' % (label, value))
             self.setCfgNestedParam(label, value)
-        
+
         #self.setCfgNestedParam("filename", jobPath)
         self.cfg.simLabel = jobName
         self.cfg.saveFolder = genFolderPath
 
         # save cfg instance to file
-        cfgSavePath = jobPath + '_cfg.json' 
+        cfgSavePath = jobPath + '_cfg.json'
         self.cfg.save(cfgSavePath)
-        
-        
+
+
         if type=='mpi_bulletin':
             # ----------------------------------------------------------------------
             # MPI master-slaves
@@ -215,15 +215,15 @@ def optunaOptim(self, pc):
             if mpiCommand == '':
                 command = '%s %s simConfig=%s netParams=%s ' % (nrnCommand, script, cfgSavePath, netParamsSavePath)
             else:
-                command = '%s -np %d %s %s simConfig=%s netParams=%s ' % (mpiCommand, numproc,  nrnCommand, script, cfgSavePath, netParamsSavePath)
-            
+                command = '%s -n %d %s %s simConfig=%s netParams=%s ' % (mpiCommand, numproc,  nrnCommand, script, cfgSavePath, netParamsSavePath)
+
             # ----------------------------------------------------------------------
             # run on local machine with <nodes*coresPerNode> cores
             # ----------------------------------------------------------------------
             if type=='mpi_direct':
                 executer = '/bin/bash'
                 jobString = bashTemplate('mpi_direct') %(custom, folder, command)
-            
+
             # ----------------------------------------------------------------------
             # run on HPC through slurm
             # ----------------------------------------------------------------------
@@ -231,7 +231,7 @@ def optunaOptim(self, pc):
                 executer = 'sbatch'
                 res = '#SBATCH --res=%s' % (reservation) if reservation else ''
                 jobString = bashTemplate('hpc_slurm') % (jobName, allocation, walltime, nodes, coresPerNode, jobPath, jobPath, email, res, custom, folder, command)
-            
+
             # ----------------------------------------------------------------------
             # run on HPC through PBS
             # ----------------------------------------------------------------------
@@ -240,18 +240,18 @@ def optunaOptim(self, pc):
                 queueName = args.get('queueName', 'default')
                 nodesppn = 'nodes=%d:ppn=%d' % (nodes, coresPerNode)
                 jobString = bashTemplate('hpc_torque') % (jobName, walltime, queueName, nodesppn, jobPath, jobPath, custom, command)
-            
+
             # ----------------------------------------------------------------------
             # save job and run
             # ----------------------------------------------------------------------
             print('Submitting job ', jobName)
             print(jobString)
             print('-'*80)
-            # save file 
+            # save file
             batchfile = '%s.sbatch' % (jobPath)
             with open(batchfile, 'w') as text_file:
                 text_file.write("%s" % jobString)
-            
+
             if type == 'mpi_direct':
                 with open(jobPath+'.run', 'a+') as outf, open(jobPath+'.err', 'w') as errf:
                     pids.append(Popen([executer, batchfile], stdout=outf, stderr=errf, preexec_fn=os.setsid).pid)
@@ -261,11 +261,11 @@ def optunaOptim(self, pc):
 
             #proc = Popen(command.split([executer, batchfile]), stdout=PIPE, stderr=PIPE)
             sleep(0.1)
-            #read = proc.stdout.read()  
+            #read = proc.stdout.read()
 
             if type == 'mpi_direct':
                 with open('./pids.pid', 'a') as file:
-                    file.write(str(pids))                          
+                    file.write(str(pids))
             else:
                 with open(jobPath+'.jobid', 'r') as outf:
                     read=outf.readline()
@@ -289,7 +289,7 @@ def optunaOptim(self, pc):
                 #pc.done()
             except:
                 pass
-                
+
         num_iters = 0
         jobs_completed = 0
         fitness = [None]  # just 1 candidate
@@ -301,7 +301,7 @@ def optunaOptim(self, pc):
             unfinished = [i for i, x in enumerate(fitness) if x is None ]
             for candidate_index in unfinished:
                 try: # load simData and evaluate fitness
-                    jobNamePath = genFolderPath + "/trial_" + str(ngen) 
+                    jobNamePath = genFolderPath + "/trial_" + str(ngen)
                     if os.path.isfile(jobNamePath+'.json'):
                         with open('%s.json'% (jobNamePath)) as file:
                             simData = json.load(file)['simData']
@@ -319,26 +319,26 @@ def optunaOptim(self, pc):
                     print(("%s \n %s"%(err,e)))
             num_iters += 1
             print('completed: %d' %(jobs_completed))
-            if num_iters >= args.get('maxiter_wait', 5000): 
+            if num_iters >= args.get('maxiter_wait', 5000):
                 print("Max iterations reached, the %d unfinished jobs will be canceled and set to default fitness" % (len(unfinished)))
                 for canditade_index in unfinished:
-                    fitness[canditade_index] = maxFitness # rerun those that didn't complete; 
+                    fitness[canditade_index] = maxFitness # rerun those that didn't complete;
                     jobs_completed += 1
-                    try:   
+                    try:
                         if 'scancelUser' in kwargs:
                             os.system('scancel -u %s'%(kwargs['scancelUser']))
-                        else:              
+                        else:
                             os.system('scancel %d' % (jobids[candidate_index]))  # terminate unfinished job (resubmitted jobs not terminated!)
                     except:
                         pass
             sleep(args.get('time_sleep', 1))
-        
+
         # kill all processes
         if type == 'mpi_bulletin':
             try:
                 with open("./pids.pid", 'r') as file: # read pids for mpi_bulletin
                     pids = [int(i) for i in file.read().split(' ')[:-1]]
-                
+
                 with open("./pids.pid", 'w') as file: # delete content
                     pass
                 for pid in pids:
@@ -348,9 +348,9 @@ def optunaOptim(self, pc):
                         pass
             except:
                 pass
-        
+
         elif type == 'mpi_direct':
-            
+
             import psutil
 
             PROCNAME = "nrniv"
@@ -362,15 +362,15 @@ def optunaOptim(self, pc):
                         proc.kill()
                 except:
                     pass
-            
-        # don't want to to this for hpcs since jobs are running on compute nodes not master 
+
+        # don't want to to this for hpcs since jobs are running on compute nodes not master
 
         print("-" * 80)
         print("  Completed a generation  ")
         print("-" * 80)
-        
+
         return fitness[0] # single candidate for now
-        
+
 
 
     # -------------------------------------------------------------------------------
@@ -385,7 +385,7 @@ def optunaOptim(self, pc):
         comm = MPI.COMM_WORLD
         size = comm.Get_size()
         rank = comm.Get_rank()
-    except:  
+    except:
         size = 1
         rank = 0
 
@@ -398,9 +398,9 @@ def optunaOptim(self, pc):
     # gather **kwargs
 
     args = {}
-    args['popsize'] = self.optimCfg.get('popsize', 1) 
+    args['popsize'] = self.optimCfg.get('popsize', 1)
     args['minVals'] = [x['values'][0] for x in self.params]
-    args['maxVals'] = [x['values'][1] for x in self.params]    
+    args['maxVals'] = [x['values'][1] for x in self.params]
     args['cfg'] = self.cfg  # include here args/params to pass to evaluator function
     args['paramLabels'] = [x['label'] for x in self.params]
     args['netParamsSavePath'] = self.saveFolder + '/' + self.batchLabel + '_netParams.py'
@@ -412,11 +412,11 @@ def optunaOptim(self, pc):
     args['time_sleep'] = self.optimCfg['time_sleep']
     args['maxFitness'] = self.optimCfg.get('maxFitness', 1000)
     args['direction'] = self.optimCfg['direction'] if 'direction' in self.optimCfg else 'minimize'
-      
-    for key, value in self.optimCfg.items(): 
+
+    for key, value in self.optimCfg.items():
         args[key] = value
-    
-    for key, value in self.runCfg.items(): 
+
+    for key, value in self.runCfg.items():
         args[key] = value
 
 
@@ -427,8 +427,8 @@ def optunaOptim(self, pc):
 
     # -------------------------------------------------------------------------------
     # Run algorithm
-    # ------------------------------------------------------------------------------- 
-    
+    # -------------------------------------------------------------------------------
+
     sleep(rank) # each process wiats a different time to avoid saturating sqlite database
     study = optuna.create_study(study_name=self.batchLabel, storage='sqlite:///%s/%s_storage.db' % (self.saveFolder, self.batchLabel),
                                 load_if_exists=True, direction=args['direction'])
@@ -444,20 +444,20 @@ def optunaOptim(self, pc):
         importance = optuna.importance.get_param_importances(study=study)
 
         print('\nBest trial: ', study.best_trial)
-        print('\nParameter importance: ', dict(importance)) 
-        
+        print('\nParameter importance: ', dict(importance))
+
         print('\nBest Solution with fitness = %.4g: \n' % (study.best_value), study.best_params)
 
         print('\nSaving to output.pkl...\n')
         output = {'study': study, 'df': df, 'importance': importance}
         with open('%s/%s_output.pkl' % (self.saveFolder, self.batchLabel), 'wb') as f:
             pickle.dump(output, f)
-        
+
         sleep(1)
 
         print("-" * 80)
         print("   Completed Optuna parameter optimization   ")
         print("-" * 80)
-        
+
 
     sys.exit()

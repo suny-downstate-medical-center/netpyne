@@ -1,7 +1,13 @@
+"""
+Module with RecXElectrode from Allen Brain Institute
+
+"""
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
+
 # Allen Institute Software License - This software license is the 2-clause BSD license plus clause a third
 # clause that prohibits redistribution for commercial purposes without further permission.
 #
@@ -30,7 +36,7 @@ from __future__ import absolute_import
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # Adapted to NetPyNE by salvadordura@gmail.com
-# 
+#
 
 from builtins import range
 from future import standard_library
@@ -46,7 +52,7 @@ class RecXElectrode(object):
     def __init__(self, sim):
         """Create an array"""
         self.cfg = sim.cfg
-        
+
         try:
             self.pos = np.array(sim.cfg.recordLFP).T      # convert coordinates to ndarray, The first index is xyz and the second is the channel number
             assert len(self.pos.shape) == 2
@@ -60,25 +66,25 @@ class RecXElectrode(object):
 
         self.nsites = self.pos.shape[1]
         self.transferResistances = {}   # V_e = transfer_resistance*Im
-    
+
     def getTransferResistance(self, gid):
         return self.transferResistances[gid]
-    
+
     def calcTransferResistance(self, gid, seg_coords):
         """Precompute mapping from segment to electrode locations"""
-        sigma = 0.3  # mS/mm 
+        sigma = 0.3  # mS/mm
 
         # Value used in NEURON extracellular recording example ("extracellular_stim_and_rec")
-        # rho = 35.4  # ohm cm, squid axon cytoplasm = 2.8249e-2 S/cm = 0.028 S/cm = 0.0028 S/mm = 2.8 mS/mm 
+        # rho = 35.4  # ohm cm, squid axon cytoplasm = 2.8249e-2 S/cm = 0.028 S/cm = 0.0028 S/mm = 2.8 mS/mm
                     # rho_um = 35.4 * 0.01 = 35.4 / 1e6 * 1e4 = 0.354 Mohm um ~= 3 uS / um = 3000 uS / mm = 3 mS /mm
-                    # equivalent sigma value (~3) is 10x larger than Allen (0.3) 
+                    # equivalent sigma value (~3) is 10x larger than Allen (0.3)
                     # if use same sigma value, results are consistent
 
         r05 = (seg_coords['p0'] + seg_coords['p1'])/2
         dl = seg_coords['p1'] - seg_coords['p0']
-        
+
         nseg = r05.shape[1]
-        
+
         tr = np.zeros((self.nsites,nseg))
         # tr_NEURON = np.zeros((self.nsites,nseg))  # used to compare with NEURON extracellular example
 
@@ -86,7 +92,7 @@ class RecXElectrode(object):
             rel = np.expand_dims(self.pos[:, j], axis=1)   # coordinates of a j-th site on the electrode
             rel_05 = rel - r05  # distance between electrode and segment centers
             r2 = np.einsum('ij,ij->j', rel_05, rel_05)    # compute dot product column-wise, the resulting array has as many columns as original
-            
+
             rlldl = np.einsum('ij,ij->j', rel_05, dl)    # compute dot product column-wise, the resulting array has as many columns as original
             dlmag = np.linalg.norm(dl, axis=0)  # length of each segment
             rll = abs(rlldl/dlmag)   # component of r parallel to the segment axis it must be always positive

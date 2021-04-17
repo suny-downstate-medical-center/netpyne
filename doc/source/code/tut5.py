@@ -45,23 +45,23 @@ netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'cellType':
 netParams.connParams['E->all'] = {
     'preConds': {'cellType': 'E'}, 'postConds': {'y': [100,1000]},  #  E -> all (100-1000 um)
     'probability': 0.1 ,                  # probability of connection
-    'weight': '0.005*post_ynorm',         # synaptic weight 
-    'delay': 'dist_3D/propVelocity',      # transmission delay (ms) 
-    'synMech': 'exc'}                     # synaptic mechanism 
+    'weight': '0.005*post_ynorm',         # synaptic weight
+    'delay': 'dist_3D/propVelocity',      # transmission delay (ms)
+    'synMech': 'exc'}                     # synaptic mechanism
 
 netParams.connParams['I->E'] = {
     'preConds': {'cellType': 'I'}, 'postConds': {'pop': ['E2','E4','E5']},       #  I -> E
     'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
-    'weight': 0.001,                                      # synaptic weight 
-    'delay': 'dist_3D/propVelocity',                      # transmission delay (ms) 
-    'synMech': 'inh'}                                     # synaptic mechanism 
+    'weight': 0.001,                                      # synaptic weight
+    'delay': 'dist_3D/propVelocity',                      # transmission delay (ms)
+    'synMech': 'inh'}                                     # synaptic mechanism
 
 
 # Simulation options
 simConfig = specs.SimConfig()        # object of class SimConfig to store simulation configuration
 simConfig.duration = 1*1e3           # Duration of the simulation, in ms
 simConfig.dt = 0.025                 # Internal integration timestep to use
-simConfig.verbose = False            # Show detailed messages 
+simConfig.verbose = False            # Show detailed messages
 simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}}  # Dict with traces to record
 simConfig.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'tut5'          # Set file output name
@@ -70,13 +70,13 @@ simConfig.saveMat = False            # Save params, network and sim output to pi
 
 
 simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True, 'saveFig': True}         # Plot a raster
-simConfig.analysis['plotTraces'] = {'include': [('E2',0), ('E4', 0), ('E5', 5)], 'saveFig': True}  # Plot recorded traces for this list of cells
-simConfig.analysis['plot2Dnet'] = {'saveFig': True}                                                # plot 2D cell positions and connections
-simConfig.analysis['plotConn'] = {'saveFig': True}                                                 # plot connectivity matrix
-
+# simConfig.analysis['plotTraces'] = {'include': [('E2',0), ('E4', 0), ('E5', 5)], 'saveFig': True}  # Plot recorded traces for this list of cells
+# simConfig.analysis['plot2Dnet'] = {'saveFig': True}                                                # plot 2D cell positions and connections
+# simConfig.analysis['plotConn'] = {'saveFig': True}                                                 # plot connectivity matrix
+#simConfig.analysis['plot2Dfiring'] = {'saveFig': True, 'showFig': True}
 
 # Create network and run simulation
-sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
+sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)
 
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty
 

@@ -74,13 +74,13 @@ def runEvolJob(nrnCommand, script, cfgSavePath, netParamsSavePath, simDataPath):
     """
     import os
     print('\nJob in rank id: ',pc.id())
-        
+
     command = '%s %s simConfig=%s netParams=%s' % (nrnCommand, script, cfgSavePath, netParamsSavePath)
     print(command)
 
     with open(simDataPath+'.run', 'w') as outf, open(simDataPath+'.err', 'w') as errf:
         pid = Popen(command.split(' '), stdout=outf, stderr=errf, preexec_fn=os.setsid).pid
-    
+
     with open('./pids.pid', 'a') as file:
         file.write(str(pid) + ' ')
 
@@ -119,21 +119,21 @@ def evolOptim(self, pc):
 
         # options slurm, mpi
         type = args.get('type', 'mpi_direct')
-        
+
         # paths to required scripts
         script = args.get('script', 'init.py')
         netParamsSavePath =  args.get('netParamsSavePath')
         genFolderPath = self.saveFolder + '/gen_' + str(ngen)
-        
+
         # mpi command setup
         nodes = args.get('nodes', 1)
         paramLabels = args.get('paramLabels', [])
         coresPerNode = args.get('coresPerNode', 1)
         mpiCommand = args.get('mpiCommand', 'mpirun')
         nrnCommand = args.get('nrnCommand', 'nrniv')
-        
+
         numproc = nodes*coresPerNode
-        
+
         # slurm setup
         custom = args.get('custom', '')
         folder = args.get('folder', '.')
@@ -146,22 +146,22 @@ def evolOptim(self, pc):
         fitnessFunc = args.get('fitnessFunc')
         fitnessFuncArgs = args.get('fitnessFuncArgs')
         defaultFitness = args.get('defaultFitness')
-        
+
         # read params or set defaults
         sleepInterval = args.get('sleepInterval', 0.2)
-        
+
         # create folder if it does not exist
         createFolder(genFolderPath)
-        
+
         # remember pids and jobids in a list
         pids = []
         jobids = {}
-        
+
         # create a job for each candidate
         for candidate_index, candidate in enumerate(candidates):
             # required for slurm
             sleep(sleepInterval)
-            
+
             # name and path
             jobName = "gen_" + str(ngen) + "_cand_" + str(candidate_index)
             jobPath = genFolderPath + '/' + jobName
@@ -170,21 +170,21 @@ def evolOptim(self, pc):
             if len(self.initCfg) > 0:
                 for paramLabel, paramVal in self.initCfg.items():
                     self.setCfgNestedParam(paramLabel, paramVal)
-            
+
             # modify cfg instance with candidate values
             for label, value in zip(paramLabels, candidate):
                 print('set %s=%s' % (label, value))
                 self.setCfgNestedParam(label, value)
-            
+
             #self.setCfgNestedParam("filename", jobPath)
             self.cfg.simLabel = jobName
             self.cfg.saveFolder = genFolderPath
 
             # save cfg instance to file
-            cfgSavePath = jobPath + '_cfg.json' 
+            cfgSavePath = jobPath + '_cfg.json'
             self.cfg.save(cfgSavePath)
-            
-            
+
+
             if type=='mpi_bulletin':
                 # ----------------------------------------------------------------------
                 # MPI master-slaves
@@ -199,15 +199,15 @@ def evolOptim(self, pc):
                 if mpiCommand == '':
                     command = '%s %s simConfig=%s netParams=%s ' % (nrnCommand, script, cfgSavePath, netParamsSavePath)
                 else:
-                    command = '%s -np %d %s -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc, nrnCommand, script, cfgSavePath, netParamsSavePath)
-                
+                    command = '%s -n %d %s -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc, nrnCommand, script, cfgSavePath, netParamsSavePath)
+
                 # ----------------------------------------------------------------------
                 # run on local machine with <nodes*coresPerNode> cores
                 # ----------------------------------------------------------------------
                 if type=='mpi_direct':
                     executer = '/bin/bash'
                     jobString = bashTemplate('mpi_direct') %(custom, folder, command)
-                
+
                 # ----------------------------------------------------------------------
                 # run on HPC through slurm
                 # ----------------------------------------------------------------------
@@ -215,7 +215,7 @@ def evolOptim(self, pc):
                     executer = 'sbatch'
                     res = '#SBATCH --res=%s' % (reservation) if reservation else ''
                     jobString = bashTemplate('hpc_slurm') % (jobName, allocation, walltime, nodes, coresPerNode, jobPath, jobPath, email, res, custom, folder, command)
-                
+
                 # ----------------------------------------------------------------------
                 # run on HPC through PBS
                 # ----------------------------------------------------------------------
@@ -224,24 +224,24 @@ def evolOptim(self, pc):
                     queueName = args.get('queueName', 'default')
                     nodesppn = 'nodes=%d:ppn=%d' % (nodes, coresPerNode)
                     jobString = bashTemplate('hpc_torque') % (jobName, walltime, queueName, nodesppn, jobPath, jobPath, custom, command)
-                
+
                 # ----------------------------------------------------------------------
                 # save job and run
                 # ----------------------------------------------------------------------
                 print('Submitting job ', jobName)
                 print(jobString)
                 print('-'*80)
-                # save file 
+                # save file
                 batchfile = '%s.sbatch' % (jobPath)
                 with open(batchfile, 'w') as text_file:
                     text_file.write("%s" % jobString)
-                
+
                 #with open(jobPath+'.run', 'a+') as outf, open(jobPath+'.err', 'w') as errf:
                 with open(jobPath+'.jobid', 'w') as outf, open(jobPath+'.err', 'w') as errf:
                     pids.append(Popen([executer, batchfile], stdout=outf,  stderr=errf, preexec_fn=os.setsid).pid)
                 #proc = Popen(command.split([executer, batchfile]), stdout=PIPE, stderr=PIPE)
                 sleep(0.1)
-                #read = proc.stdout.read()                            
+                #read = proc.stdout.read()
                 with open(jobPath+'.jobid', 'r') as outf:
                     read=outf.readline()
                 print(read)
@@ -264,7 +264,7 @@ def evolOptim(self, pc):
                 #pc.done()
             except:
                 pass
-                
+
         num_iters = 0
         jobs_completed = 0
         fitness = [None for cand in candidates]
@@ -290,14 +290,14 @@ def evolOptim(self, pc):
                         jobs_completed += 1
                         print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
                 except Exception as e:
-                    # print 
+                    # print
                     err = "There was an exception evaluating candidate %d:"%(candidate_index)
                     print(("%s \n %s"%(err,e)))
                     #pass
                     #print 'Error evaluating fitness of candidate %d'%(candidate_index)
             num_iters += 1
             print('completed: %d' %(jobs_completed))
-            if num_iters >= args.get('maxiter_wait', 5000): 
+            if num_iters >= args.get('maxiter_wait', 5000):
                 print("Max iterations reached, the %d unfinished jobs will be canceled and set to default fitness" % (len(unfinished)))
                 for canditade_index in unfinished:
                     fitness[canditade_index] = defaultFitness
@@ -305,18 +305,18 @@ def evolOptim(self, pc):
                     try:
                         if 'scancelUser' in kwargs:
                             os.system('scancel -u %s'%(kwargs['scancelUser']))
-                        else:              
+                        else:
                             os.system('scancel %d'%(jobids[candidate_index]))  # terminate unfinished job (resubmitted jobs not terminated!)
                     except:
                         pass
             sleep(args.get('time_sleep', 1))
-        
+
         # kill all processes
         if type=='mpi_bulletin':
             try:
                 with open("./pids.pid", 'r') as file: # read pids for mpi_bulletin
                     pids = [int(i) for i in file.read().split(' ')[:-1]]
-                
+
                 with open("./pids.pid", 'w') as file: # delete content
                     pass
                 for pid in pids:
@@ -326,9 +326,9 @@ def evolOptim(self, pc):
                         pass
             except:
                 pass
-        # don't want to to this for hpcs since jobs are running on compute nodes not master 
-        # else: 
-        #     try: 
+        # don't want to to this for hpcs since jobs are running on compute nodes not master
+        # else:
+        #     try:
         #         for pid in pids: os.killpg(os.getpgid(pid), signal.SIGTERM)
         #     except:
         #         pass
@@ -337,7 +337,7 @@ def evolOptim(self, pc):
         print("  Completed a generation  ")
         print("-"*80)
         return fitness
-        
+
 
     # -------------------------------------------------------------------------------
     # Evolutionary optimization: Generation of first population candidates
@@ -372,7 +372,7 @@ def evolOptim(self, pc):
             else:
                 new_value = c - (c - lo) * (1.0 - random.random() ** strength)
             mutant[i] = new_value
-        
+
         return mutant
     # -------------------------------------------------------------------------------
     # Evolutionary optimization: Main code
@@ -383,20 +383,20 @@ def evolOptim(self, pc):
 
     global ngen
     ngen = -1
-    
-    # log for simulation      
+
+    # log for simulation
     logger = logging.getLogger('inspyred.ec')
     logger.setLevel(logging.DEBUG)
     file_handler = logging.FileHandler(self.saveFolder+'/inspyred.log', mode='a')
     file_handler.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)    
+    logger.addHandler(file_handler)
 
     # create randomizer instance
     rand = Random()
-    rand.seed(self.seed) 
-    
+    rand.seed(self.seed)
+
     # create file handlers for observers
     stats_file, ind_stats_file = self.openFiles2SaveStats()
 
@@ -410,13 +410,13 @@ def evolOptim(self, pc):
     kwargs['individuals_file'] = ind_stats_file
     kwargs['netParamsSavePath'] = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
 
-    for key, value in self.evolCfg.items(): 
+    for key, value in self.evolCfg.items():
         kwargs[key] = value
     if not 'maximize' in kwargs: kwargs['maximize'] = False
-    
-    for key, value in self.runCfg.items(): 
+
+    for key, value in self.runCfg.items():
         kwargs[key] = value
-    
+
     # if using pc bulletin board, initialize all workers
     if self.runCfg.get('type', None) == 'mpi_bulletin':
         for iworker in range(int(pc.nhost())):
@@ -429,55 +429,55 @@ def evolOptim(self, pc):
     if self.evolCfg['evolAlgorithm'] == 'custom':
         ea = EC.EvolutionaryComputation(rand)
         ea.selector = EC.selectors.tournament_selection
-        ea.variator = [EC.variators.uniform_crossover, nonuniform_bounds_mutation] 
+        ea.variator = [EC.variators.uniform_crossover, nonuniform_bounds_mutation]
         ea.replacer = EC.replacers.generational_replacement
         if not 'tournament_size' in kwargs: kwargs['tournament_size'] = 2
         if not 'num_selected' in kwargs: kwargs['num_selected'] = kwargs['pop_size']
-    
+
     # Genetic
     elif self.evolCfg['evolAlgorithm'] == 'genetic':
         ea = EC.GA(rand)
-    
+
     # Evolution Strategy
     elif self.evolCfg['evolAlgorithm'] == 'evolutionStrategy':
         ea = EC.ES(rand)
-    
+
     # Simulated Annealing
     elif self.evolCfg['evolAlgorithm'] == 'simulatedAnnealing':
         ea = EC.SA(rand)
-    
+
     # Differential Evolution
     elif self.evolCfg['evolAlgorithm'] == 'diffEvolution':
         ea = EC.DEA(rand)
-    
+
     # Estimation of Distribution
     elif self.evolCfg['evolAlgorithm'] == 'estimationDist':
         ea = EC.EDA(rand)
-    
+
     # Particle Swarm optimization
     elif self.evolCfg['evolAlgorithm'] == 'particleSwarm':
-        from inspyred import swarm 
+        from inspyred import swarm
         ea = swarm.PSO(rand)
         ea.topology = swarm.topologies.ring_topology
-    
+
     # Ant colony optimization (requires components)
     elif self.evolCfg['evolAlgorithm'] == 'antColony':
         from inspyred import swarm
         if not 'components' in kwargs: raise ValueError("%s requires components" %(self.evolCfg['evolAlgorithm']))
         ea = swarm.ACS(rand, self.evolCfg['components'])
         ea.topology = swarm.topologies.ring_topology
-    
+
     else:
         raise ValueError("%s is not a valid strategy" % (self.evolCfg['evolAlgorithm']))
-        
+
     ea.terminator = EC.terminators.generation_termination
     ea.observer = [EC.observers.stats_observer, EC.observers.file_observer]
 
 
     # -------------------------------------------------------------------------------
     # Run algorithm
-    # ------------------------------------------------------------------------------- 
-    final_pop = ea.evolve(generator=generator, 
+    # -------------------------------------------------------------------------------
+    final_pop = ea.evolve(generator=generator,
                         evaluator=evaluator,
                         bounder=EC.Bounder(kwargs['lower_bound'],kwargs['upper_bound']),
                         logger=logger,
@@ -486,7 +486,7 @@ def evolOptim(self, pc):
     # close file
     stats_file.close()
     ind_stats_file.close()
-    
+
     # print best and finish
     print(('Best Solution: \n{0}'.format(str(max(final_pop)))))
     print("-"*80)

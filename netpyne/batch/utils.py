@@ -31,7 +31,7 @@ def createFolder(folder):
 
 
     import os
-                
+
     if not os.path.exists(folder):
         try:
             os.mkdir(folder)
@@ -54,15 +54,15 @@ def bashTemplate(template):
         **Default:** *required*
 
 """
-    
+
     if template=='mpi_direct':
-        return """#!/bin/bash 
+        return """#!/bin/bash
 %s
 cd %s
 %s
         """
     elif template=='hpc_slurm':
-        return """#!/bin/bash 
+        return """#!/bin/bash
 #SBATCH --job-name=%s
 #SBATCH -A %s
 #SBATCH -t %s
@@ -80,7 +80,7 @@ cd %s
 wait
         """
     elif template=='hpc_torque':
-        return """#!/bin/bash 
+        return """#!/bin/bash
 #PBS -N %s
 #PBS -l walltime=%s
 #PBS -q %s
@@ -107,12 +107,12 @@ def cp(obj, verbose=True, die=True):
         <Short description of verbose>
         **Default:** ``True``
         **Options:** ``<option>`` <description of option>
- 
+
     die : bool
         <Short description of die>
         **Default:** ``True``
         **Options:** ``<option>`` <description of option>
- 
+
 '''
     try:
         output = copy.copy(obj)
@@ -137,12 +137,12 @@ def dcp(obj, verbose=True, die=False):
         <Short description of verbose>
         **Default:** ``True``
         **Options:** ``<option>`` <description of option>
- 
+
     die : bool
         <Short description of die>
         **Default:** ``False``
         **Options:** ``<option>`` <description of option>
- 
+
 '''
     import copy
 
@@ -171,22 +171,22 @@ def sigfig(X, sigfigs=5, SI=False, sep=False, keepints=False):
         <Short description of sigfigs>
         **Default:** ``5``
         **Options:** ``<option>`` <description of option>
- 
+
     SI : bool
         <Short description of SI>
         **Default:** ``False``
         **Options:** ``<option>`` <description of option>
- 
+
     sep : bool
         <Short description of sep>
         **Default:** ``False``
         **Options:** ``<option>`` <description of option>
- 
+
     keepints : bool
         <Short description of keepints>
         **Default:** ``False``
         **Options:** ``<option>`` <description of option>
- 
+
 '''
     output = []
 

@@ -11,7 +11,7 @@ here = path.abspath(path.dirname(__file__))
 #Get the long description from the README file
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
-    
+
 
 # Get the version from the init file
 version = None
@@ -29,16 +29,17 @@ if 'upload_via_twine' in sys.argv:
 elif 'upload_via_twine_testpypi' in sys.argv:
     system('twine upload --repository pypitest dist/netpyne_py3-'+version+'-py2.py3-none-any.whl')
 else:
-    
+
     setup(
         name = 'netpyne',
-        
+
         version = version,  # update this in netpyne/__init__.py; makes it accessible to python scripts too...
         description = 'A Python package to develop, simulate and analyse biological neuronal networks in NEURON.',
         long_description = long_description,
+        long_description_content_type = 'text/markdown',
 
         # python_requires='>=2.7, >=3.6', # removed since makes py2 install fail with universal wheel
-        
+
         # The project's main homepage.
         url = 'https://github.com/Neurosim-lab/netpyne',
 
@@ -72,8 +73,8 @@ else:
             'Programming Language :: Python :: 3.6',
             'Programming Language :: Python :: 3.7',
             ],
-        
-        # What does project relate to?    
+
+        # What does project relate to?
         keywords = ['neuron','network','developing','framework','biological', 'simulation'],
 
         # You can just specify the packages manually here if your project is
@@ -108,10 +109,5 @@ else:
         # pip to create the appropriate form of executable for the target platform.
         entry_points={},
 
-        
-        )
 
-        
-        
-        
-        
+        )

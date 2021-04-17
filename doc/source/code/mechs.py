@@ -31,6 +31,6 @@ def ptype():
                 propList[mechtype][msname[0]].append(propName[0])
     print(propList)
 
-            
+
 
 ptype()

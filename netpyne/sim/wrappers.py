@@ -8,34 +8,37 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
 
 #------------------------------------------------------------------------------
 # Wrapper to create network
 #------------------------------------------------------------------------------
-from future import standard_library
-standard_library.install_aliases()
 def create(netParams=None, simConfig=None, output=False):
     """
-    Function for/to <short description of `netpyne.sim.wrappers.create`>
+    Wrapper function to create a simulation
 
     Parameters
     ----------
-    netParams : <``None``?>
-        <Short description of netParams>
-        **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
- 
-    simConfig : <``None``?>
-        <Short description of simConfig>
-        **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
- 
+    netParams : ``netParams object``
+        NetPyNE netParams object specifying network parameters.
+        **Default:** *required*. 
+
+    simConfig : ``simConfig object``
+        NetPyNE simConfig object specifying simulation configuration.
+        **Default:** *required*. 
+
     output : bool
-        <Short description of output>
-        **Default:** ``False``
-        **Options:** ``<option>`` <description of option>
- 
-"""
+        Whether or not to return output from the simulation.
+        **Default:** ``False`` does not return anything.
+        **Options:** ``True`` returns output.
+
+    Returns
+    -------
+    data : tuple
+        If ``output`` is ``True``, returns ``(pops, cells, conns, rxd, stims, simData)``
+
+    """
 
     from .. import sim
     import __main__ as top
@@ -50,54 +53,83 @@ def create(netParams=None, simConfig=None, output=False):
     rxd = sim.net.addRxD()                    # add reaction-diffusion (RxD)
     simData = sim.setupRecording()             # setup variables to record for each cell (spikes, V traces, etc)
 
-    if output: return (pops, cells, conns, rxd, stims, simData)
-    
+    if output: 
+        return (pops, cells, conns, rxd, stims, simData)
+
 
 #------------------------------------------------------------------------------
 # Wrapper to simulate network
 #------------------------------------------------------------------------------
 def simulate():
     """
-    Function for/to <short description of `netpyne.sim.wrappers.simulate`>
+    Wrapper function to run a simulation and gather the data
 
-"""
+    """
 
     from .. import sim
-    sim.runSim()         
-    sim.gatherData()                  # gather spiking data and cell info from each node
-    
+    sim.runSim()
+    sim.gatherData()     # gather spiking data and cell info from each node
+
 #------------------------------------------------------------------------------
 # Wrapper to simulate network
 #------------------------------------------------------------------------------
 def intervalSimulate(interval):
     """
-    Function for/to <short description of `netpyne.sim.wrappers.intervalSimulate`>
+    Wrapper function to run a simulation at intervals and gather the data from files
 
     Parameters
     ----------
-    interval : <type>
-        <Short description of interval>
-        **Default:** *required*
+    interval : number
+        The time interval at which to save data files.
+        **Default:** *required*.
 
-"""
+    """
 
     from .. import sim
-    sim.runSimWithIntervalFunc(interval, sim.intervalSave)                      # run parallel Neuron simulation  
-    #this gather is justa merging of files
-    sim.fileGather()                  # gather spiking data and cell info from saved file
+    sim.runSimWithIntervalFunc(interval, sim.intervalSave) # run parallel Neuron simulation
+    sim.fileGather() # gather spiking data and cell info from saved file
+
+#------------------------------------------------------------------------------
+# Wrapper to simulate network
+#------------------------------------------------------------------------------
+def distributedSimulate(filename=None, dataDir=None, includeLFP=True):
+    """
+    Wrapper function to run a simulation and save/load data to/from files by node
+
+    Parameters
+    ----------
+    filename : str
+        name of saved data files.
+        **Default:** ``None`` uses the name of the simulation.
+
+    dataDir : str
+        name of directory to save data to and load data from.
+        **Default:** ``None`` uses the simulation name.
+
+    includeLFP : bool
+        whether or not to include LFP data
+        **Default:** ``True`` includes LFP data if available.
     
+    """
+
+    from .. import sim
+    sim.runSim()
+    sim.saveDataInNodes(filename=filename, saveLFP=includeLFP, removeTraces=False, dataDir=dataDir)
+    sim.gatherDataFromFiles(gatherLFP=includeLFP, dataDir=dataDir)
+    
+
 #------------------------------------------------------------------------------
 # Wrapper to analyze network
 #------------------------------------------------------------------------------
 def analyze():
     """
-    Function for/to <short description of `netpyne.sim.wrappers.analyze`>
+    Wrapper function to analyze and plot simulation data
 
-"""
+    """
 
     from .. import sim
-    sim.saveData()                      # run parallel Neuron simulation  
-    sim.analysis.plotData()                  # gather spiking data and cell info from each node
+    sim.saveData()           # run parallel Neuron simulation
+    sim.analysis.plotData()  # gather spiking data and cell info from each node
 
 
 #------------------------------------------------------------------------------
@@ -105,32 +137,36 @@ def analyze():
 #------------------------------------------------------------------------------
 def createSimulate(netParams=None, simConfig=None, output=False):
     """
-    Function for/to <short description of `netpyne.sim.wrappers.createSimulate`>
+    Wrapper function to create and run a simulation
 
     Parameters
     ----------
-    netParams : <``None``?>
-        <Short description of netParams>
-        **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
- 
-    simConfig : <``None``?>
-        <Short description of simConfig>
-        **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
- 
+    netParams : ``netParams object``
+        NetPyNE netParams object specifying network parameters.
+        **Default:** *required*. 
+
+    simConfig : ``simConfig object``
+        NetPyNE simConfig object specifying simulation configuration.
+        **Default:** *required*. 
+
     output : bool
-        <Short description of output>
-        **Default:** ``False``
-        **Options:** ``<option>`` <description of option>
- 
-"""
+        Whether or not to return output from the simulation.
+        **Default:** ``False`` does not return anything.
+        **Options:** ``True`` returns output.
+
+    Returns
+    -------
+    data : tuple
+        If ``output`` is ``True``, returns ``(pops, cells, conns, stims, simData)``
+
+    """
 
     from .. import sim
     (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
-    sim.simulate() 
+    sim.simulate()
 
-    if output: return (pops, cells, conns, stims, simData)    
+    if output: 
+        return (pops, cells, conns, stims, simData)
 
 
 #------------------------------------------------------------------------------
@@ -138,63 +174,70 @@ def createSimulate(netParams=None, simConfig=None, output=False):
 #------------------------------------------------------------------------------
 def createSimulateAnalyze(netParams=None, simConfig=None, output=False):
     """
-    Function for/to <short description of `netpyne.sim.wrappers.createSimulateAnalyze`>
+    Wrapper function run and analyze a simulation
 
     Parameters
     ----------
-    netParams : <``None``?>
-        <Short description of netParams>
-        **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
- 
-    simConfig : <``None``?>
-        <Short description of simConfig>
-        **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
- 
+    netParams : ``netParams object``
+        NetPyNE netParams object specifying network parameters.
+        **Default:** *required*. 
+
+    simConfig : ``simConfig object``
+        NetPyNE simConfig object specifying simulation configuration.
+        **Default:** *required*. 
+
     output : bool
-        <Short description of output>
-        **Default:** ``False``
-        **Options:** ``<option>`` <description of option>
- 
-"""
-    
+        Whether or not to return output from the simulation.
+        **Default:** ``False`` does not return anything.
+        **Options:** ``True`` returns output.
+
+    Returns
+    -------
+    data : tuple
+        If ``output`` is ``True``, returns ``(pops, cells, conns, stims, simData)``
+
+    """
+
     from .. import sim
     (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
-    sim.simulate() 
+    sim.simulate()
     sim.analyze()
-    if output: return (pops, cells, conns, stims, simData)
-    
+    if output: 
+        return (pops, cells, conns, stims, simData)
+
 #------------------------------------------------------------------------------
 # Wrapper to create, simulate, and analyse network, while saving to master in intervals
 #------------------------------------------------------------------------------
-def intervalCreateSimulateAnalyze(netParams=None, simConfig=None, output=False, interval=None):
+def createSimulateAnalyzeInterval(netParams, simConfig, output=False, interval=None):
     """
-    Function for/to <short description of `netpyne.sim.wrappers.intervalCreateSimulateAnalyze`>
+    Wrapper function to run a simulation saving data at time intervals
 
     Parameters
     ----------
-    netParams : <``None``?>
-        <Short description of netParams>
-        **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
- 
-    simConfig : <``None``?>
-        <Short description of simConfig>
-        **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
- 
+    netParams : ``netParams object``
+        NetPyNE netParams object specifying network parameters.
+        **Default:** *required*. 
+
+    simConfig : ``simConfig object``
+        NetPyNE simConfig object specifying simulation configuration.
+        **Default:** *required*. 
+
     output : bool
-        <Short description of output>
-        **Default:** ``False``
-        **Options:** ``<option>`` <description of option>
- 
-    interval : <``None``?>
-        <Short description of interval>
-        **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
- 
-"""
+        Whether or not to return output from the simulation.
+        **Default:** ``False`` does not return anything.
+        **Options:** ``True`` returns output.
+
+    interval : number
+        The time interval (in ms) to record for.
+        **Default:** ``None`` records the entire simulation in one file.
+        **Options:** ``number`` records the simulation into multiple files split at ``number`` ms.
+
+    Returns
+    -------
+    data : tuple
+        If ``output`` is ``True``, returns ``(pops, cells, conns, stims, simData)``
+
+    """
 
     import os
     from .. import sim
@@ -212,44 +255,118 @@ def intervalCreateSimulateAnalyze(netParams=None, simConfig=None, output=False, 
         return
     sim.pc.barrier()
     sim.analyze()
-    if output: return (pops, cells, conns, stims, simData)
-    
-    
+    if output: 
+        return (pops, cells, conns, stims, simData)
+
+
 #------------------------------------------------------------------------------
-# Wrapper to load all, ready for simulation
+# Wrapper to create, simulate, and analyse network, while saving to master in intervals
 #------------------------------------------------------------------------------
-def load(filename, simConfig=None, output=False, instantiate=True, instantiateCells=True, instantiateConns=True, instantiateStims=True,
-        instantiateRxD=True,createNEURONObj=True):
+def createSimulateAnalyzeDistributed(netParams, simConfig, output=False, filename=None, dataDir=None, includeLFP=True):
     """
-    Function for/to <short description of `netpyne.sim.wrappers.load`>
+    Wrapper function to run a simulation saving data in each node
 
     Parameters
     ----------
-    filename : <type>
-        <Short description of filename>
-        **Default:** *required*
+    netParams : ``netParams object``
+        NetPyNE netParams object specifying network parameters.
+        **Default:** *required*. 
 
-    simConfig : <``None``?>
-        <Short description of simConfig>
-        **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
- 
+    simConfig : ``simConfig object``
+        NetPyNE simConfig object specifying simulation configuration.
+        **Default:** *required*. 
+
     output : bool
-        <Short description of output>
-        **Default:** ``False``
-        **Options:** ``<option>`` <description of option>
- 
+        Whether or not to return output from the simulation.
+        **Default:** ``False`` does not return anything.
+        **Options:** ``True`` returns output.
+
+    filename : str
+        name of saved data files.
+        **Default:** ``None`` uses the name of the simulation.
+
+    dataDir : str
+        name of directory to save data to.
+        **Default:** ``None`` uses the simulation name.
+
+    includeLFP : bool
+        whether or not to include LFP data
+        **Default:** ``True`` includes LFP data if available.
+
+
+    Returns
+    -------
+    data : tuple
+        If ``output`` is ``True``, returns ``(pops, cells, conns, stims, simData)``
+
+    """
+
+    import os
+    from .. import sim
+    (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
+    
+    sim.runSim()
+    sim.saveDataInNodes(filename=filename, saveLFP=includeLFP, removeTraces=False, dataDir=dataDir)
+    sim.gatherDataFromFiles(gatherLFP=includeLFP, dataDir=dataDir)
+    sim.saveData()
+    sim.analysis.plotData()
+
+    if output: 
+        return (pops, cells, conns, stims, simData)
+
+
+#------------------------------------------------------------------------------
+# Wrapper to load all, ready for simulation
+#------------------------------------------------------------------------------
+def load(filename, simConfig=None, output=False, instantiate=True, instantiateCells=True, instantiateConns=True, instantiateStims=True, instantiateRxD=True, createNEURONObj=True):
+    """
+    Wrapper function to load a simulation from file
+
+    Parameters
+    ----------
+    filename : str
+        name of data file to load.
+        **Default:** *required*.
+
+    simConfig : ``simConfig object``
+        NetPyNE simConfig object specifying simulation configuration.
+        **Default:** ``None`` uses the current ``simConfig``. 
+
+    output : bool
+        whether or not to return output from the simulation.
+        **Default:** ``False`` does not return anything.
+        **Options:** ``True`` returns output.
+
     instantiate : bool
-        <Short description of instantiate>
-        **Default:** ``True``
-        **Options:** ``<option>`` <description of option>
- 
+        whether or not to instantiate the model.
+        **Default:** ``True`` instantiates the model.
+
+    instantiateCells : bool
+        whether or not to instantiate the cells.
+        **Default:** ``True`` instantiates the cells.
+
+    instantiateConns : bool
+        whether or not to instantiate the connections.
+        **Default:** ``True`` instantiates the connections.
+
+    instantiateStims: bool
+        whether or not to instantiate the stimulations.
+        **Default:** ``True`` instantiates the stimulations.
+
+    instantiateRxD : bool
+        whether or not to instantiate the reaction-diffusion.
+        **Default:** ``True`` instantiates the reaction-diffusion.
+
     createNEURONObj : bool
-        <Short description of createNEURONObj>
-        **Default:** ``True``
-        **Options:** ``<option>`` <description of option>
- 
-"""
+        whether or not to create NEURON objects for the simulation.
+        **Default:** ``True`` creates NEURON objects.
+
+    Returns
+    -------
+    data : tuple
+        If ``output`` is ``True``, returns (pops, cells, conns, stims, rxd, simData)
+
+    """
 
     from .. import sim
     sim.initialize()  # create network object and set cfg and net params
@@ -269,7 +386,7 @@ def load(filename, simConfig=None, output=False, instantiate=True, instantiateCe
 
     simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
 
-    if output: 
+    if output:
         try:
             return (pops, cells, conns, stims, rxd, simData)
         except:
@@ -280,24 +397,27 @@ def load(filename, simConfig=None, output=False, instantiate=True, instantiateCe
 #------------------------------------------------------------------------------
 def loadSimulate(filename, simConfig=None, output=False):
     """
-    Function for/to <short description of `netpyne.sim.wrappers.loadSimulate`>
+    Wrapper function to load a simulation from file and simulate it
 
     Parameters
     ----------
-    filename : <type>
-        <Short description of filename>
-        **Default:** *required*
+    filename : str
+        name of data file to load.
+        **Default:** *required*.
 
-    simConfig : <``None``?>
-        <Short description of simConfig>
-        **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
- 
+    simConfig : ``simConfig object``
+        NetPyNE simConfig object specifying simulation configuration.
+        **Default:** ``None`` uses the current ``simConfig``. 
+
     output : bool
-        <Short description of output>
-        **Default:** ``False``
-        **Options:** ``<option>`` <description of option>
- 
+        whether or not to return output from the simulation.
+        **Default:** ``False`` does not return anything.
+        **Options:** ``True`` returns output.
+
+    Returns
+    -------
+    data : tuple
+        If ``output`` is ``True``, returns (pops, cells, conns, stims, rxd, simData)
 
     """
 
@@ -306,7 +426,11 @@ def loadSimulate(filename, simConfig=None, output=False):
     sim.load(filename, simConfig)
     sim.simulate()
 
-    #if output: return (pops, cells, conns, stims, simData)
+    if output:
+        try:
+            return (pops, cells, conns, stims, rxd, simData)
+        except:
+            pass
 
 
 #------------------------------------------------------------------------------
@@ -314,24 +438,27 @@ def loadSimulate(filename, simConfig=None, output=False):
 #------------------------------------------------------------------------------
 def loadSimulateAnalyze(filename, simConfig=None, output=False):
     """
-    Function for/to <short description of `netpyne.sim.wrappers.loadSimulateAnalyze`>
+    Wrapper function to load a simulation from file and simulate and anlyze it
 
     Parameters
     ----------
-    filename : <type>
-        <Short description of filename>
-        **Default:** *required*
+    filename : str
+        name of data file to load.
+        **Default:** *required*.
 
-    simConfig : <``None``?>
-        <Short description of simConfig>
-        **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
- 
+    simConfig : ``simConfig object``
+        NetPyNE simConfig object specifying simulation configuration.
+        **Default:** ``None`` uses the current ``simConfig``. 
+
     output : bool
-        <Short description of output>
-        **Default:** ``False``
-        **Options:** ``<option>`` <description of option>
- 
+        whether or not to return output from the simulation.
+        **Default:** ``False`` does not return anything.
+        **Options:** ``True`` returns output.
+
+    Returns
+    -------
+    data : tuple
+        If ``output`` is ``True``, returns ``(pops, cells, conns, stims, simData)``
 
     """
 
@@ -341,54 +468,61 @@ def loadSimulateAnalyze(filename, simConfig=None, output=False):
     sim.simulate()
     sim.analyze()
 
-    #if output: return (pops, cells, conns, stims, simData)
-        
+    if output:
+        try:
+            return (pops, cells, conns, stims, rxd, simData)
+        except:
+            pass
+
 
 #------------------------------------------------------------------------------
 # Wrapper to create and export network to NeuroML2
 #------------------------------------------------------------------------------
-def createExportNeuroML2(netParams=None, simConfig=None, reference=None, connections=True, stimulations=True, output=False, format='xml'):
+def createExportNeuroML2(netParams=None, simConfig=None, output=False, reference=None, connections=True, stimulations=True, format='xml'):
     """
-    Function for/to <short description of `netpyne.sim.wrappers.createExportNeuroML2`>
+    Wrapper function create and export a NeuroML2 simulation
 
     Parameters
     ----------
-    netParams : <``None``?>
-        <Short description of netParams>
-        **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
- 
-    simConfig : <``None``?>
-        <Short description of simConfig>
-        **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
- 
+    netParams : ``netParams object``
+        NetPyNE netParams object specifying network parameters.
+        **Default:** *required*. 
+
+    simConfig : ``simConfig object``
+        NetPyNE simConfig object specifying simulation configuration.
+        **Default:** *required*. 
+
+    output : bool
+        Whether or not to return output from the simulation.
+        **Default:** ``False`` does not return anything.
+        **Options:** ``True`` returns output.
+
     reference : <``None``?>
         <Short description of reference>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
- 
+
     connections : bool
         <Short description of connections>
         **Default:** ``True``
         **Options:** ``<option>`` <description of option>
- 
+
     stimulations : bool
         <Short description of stimulations>
         **Default:** ``True``
         **Options:** ``<option>`` <description of option>
- 
-    output : bool
-        <Short description of output>
-        **Default:** ``False``
-        **Options:** ``<option>`` <description of option>
- 
+
     format : str
         <Short description of format>
         **Default:** ``'xml'``
         **Options:** ``<option>`` <description of option>
- 
-"""
+
+    Returns
+    -------
+    data : tuple
+        If ``output`` is ``True``, returns (pops, cells, conns, stims, rxd, simData)
+
+    """
 
     from .. import sim
     import __main__ as top
@@ -396,38 +530,72 @@ def createExportNeuroML2(netParams=None, simConfig=None, reference=None, connect
     if not simConfig: simConfig = top.simConfig
 
     sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
-    pops = sim.net.createPops()                  # instantiate network populations
-    cells = sim.net.createCells()                 # instantiate network cells based on defined populations
-    conns = sim.net.connectCells()                # create connections between cells based on params
-    stims = sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
-    rxd = sim.net.addRxD()                    # add reaction-diffusion (RxD)
-    simData = sim.setupRecording()              # setup variables to record for each cell (spikes, V traces, etc)
-    sim.exportNeuroML2(reference,connections,stimulations,format)     # export cells and connectivity to NeuroML 2 format
+    pops = sim.net.createPops()           # instantiate network populations
+    cells = sim.net.createCells()         # instantiate network cells based on defined populations
+    conns = sim.net.connectCells()        # create connections between cells based on params
+    stims = sim.net.addStims()            # add external stimulation to cells (IClamps etc)
+    rxd = sim.net.addRxD()                # add reaction-diffusion (RxD)
+    simData = sim.setupRecording()        # setup variables to record for each cell (spikes, V traces, etc)
+    sim.exportNeuroML2(reference, connections,  stimulations,format)     # export cells and connectivity to NeuroML 2 format
 
-    if output: return (pops, cells, conns, stims, rxd, simData)
-    
-    
+    if output: 
+        return (pops, cells, conns, stims, rxd, simData)
+
+
 #------------------------------------------------------------------------------
 # Wrapper to import network from NeuroML2
 #------------------------------------------------------------------------------
 def importNeuroML2SimulateAnalyze(fileName, simConfig):
     """
-    Function for/to <short description of `netpyne.sim.wrappers.importNeuroML2SimulateAnalyze`>
+    Wrapper function to import, simulate, and analyze from a NeuroML2 file
 
     Parameters
     ----------
-    fileName : <type>
-        <Short description of fileName>
-        **Default:** *required*
+    filename : str
+        name of data file to load.
+        **Default:** *required*.
 
-    simConfig : <type>
-        <Short description of simConfig>
-        **Default:** *required*
-
+    simConfig : ``simConfig object``
+        NetPyNE simConfig object specifying simulation configuration.
+        **Default:** ``None`` uses the current ``simConfig``. 
 
     """
 
 
     from .. import sim
-        
+
     return sim.importNeuroML2(fileName, simConfig, simulate=True, analyze=True)
+
+
+#------------------------------------------------------------------------------
+# Wrapper to save and gather data by node
+#------------------------------------------------------------------------------
+def gatherDataFromNodes(filename=None, dataDir=None, includeLFP=True, removeTraces=False):
+    """
+    Wrapper function to save data in a file for each node and gather data from files
+
+    Parameters
+    ----------
+    filename : str
+        name of data file to load.
+        **Default:** ``None`` uses the file name from the simulation configuration.
+
+    dataDir : str
+        name of directory to save data to and load data from.
+        **Default:** ``None`` uses the simulation name.
+
+    includeLFP : bool
+        whether or not to include LFP data
+        **Default:** ``True`` includes LFP data if available.
+
+    removeTraces : bool
+        whether to remove the trace data or not.
+        **Default:** ``False`` leaves any trace data in place.
+
+    """
+
+    from .. import sim
+
+    sim.saveDataInNodes(filename=filename, saveLFP=includeLFP, removeTraces=removeTraces, dataDir=dataDir)
+    sim.gatherDataFromFiles(gatherLFP=includeLFP, dataDir=dataDir)
+    

@@ -50,7 +50,7 @@ def getCells():
 
 	os.system('nrnivmodl ./E2/modfiles')
 
-# Generic function to return cell object containing sections 
+# Generic function to return cell object containing sections
 def Cell(path = None):
 	owd = os.getcwd()
 	os.chdir(path)

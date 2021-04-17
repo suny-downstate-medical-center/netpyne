@@ -31,14 +31,14 @@ cellTypes = ['IT', 'PT', 'CT', 'PV', 'SOM']
 density['Tsai09'] = [114858, 105269, 84396, 122616, 148408]
 
 # ------------------------------------------------------------------------------------------------------------------
-# 2) E/I ratio from Lefort09 (mouse S1) 
+# 2) E/I ratio from Lefort09 (mouse S1)
 # Avg for L2/3, L5A, L5B, L6 from fig 2D
 # overal 85:15 ratio consistent with Markram 2015 (87% +- 1% and 13% +- 1%)
 # -------------------------------------------------------------------------------------------------------------------
 ratioEI = {}
 ratioEI['Lefort09'] = [(0.193+0.11)/2, 0.09, 0.21, 0.21, 0.10]
-density[('M1','E')] = [round(density['Tsai09'][i]) * (1-ratioEI['Lefort09'][i]) for i in range(len(density['Tsai09']))] 
-density[('M1','I')] = [round(density['Tsai09'][i]) * ratioEI['Lefort09'][i] for i in range(len(density['Tsai09']))] 
+density[('M1','E')] = [round(density['Tsai09'][i]) * (1-ratioEI['Lefort09'][i]) for i in range(len(density['Tsai09']))]
+density[('M1','I')] = [round(density['Tsai09'][i]) * ratioEI['Lefort09'][i] for i in range(len(density['Tsai09']))]
 
 
 # ------------------------------------------------------------------------------------------------------------------
@@ -80,7 +80,7 @@ if plotPies:
 	layers['5A'] = {'IT': 636, 'SOM': 44, 'PV':90}
 	layers['5B'] = {'IT': 1155, 'PT': 1155, 'SOM': 202, 'PV':411}
 	layers['6'] = {'IT': 1465, 'CT': 1465, 'SOM': 107, 'PV':218}
-	
+
 	for layer,pops in layers.items():
 		# make a square figure and axes
 		figure(1, figsize=(6,6))
@@ -102,7 +102,7 @@ if plotPies:
 			colors = [popColors['PV6'], popColors['SOM6'], popColors['IT5A'], popColors['PT5B']]
 		mpl.rcParams['font.size'] = 20.0
 		mpl.rcParams['font.weight'] = 'bold'
-		
+
 		pie(fracs, labels=labels, autopct='%1.0f%%', pctdistance=0.8, labeldistance=1.1, shadow=True, startangle=0, colors=colors)
 		title('Layer '+str(layer))
 		savefig('../../data/cellDensity/layer_'+str(layer)+'_frac.png')
@@ -111,14 +111,14 @@ if plotPies:
 
 #  set colors for each population
 #popColors = {'IT2': [241, 148, 138], 'IT4': [231, 76, 60], 'IT5A': [176, 58, 46], 'IT5B': [120, 40, 31], 'IT6': [100, 30, 22]} # red tones [252,13,27]
-popColors = {'IT2': [252,13+100,27+100], 'IT4': [252,13+50,27+50], 'IT5A': [252,13,27], 'IT5B': [252-50,13,27], 'IT6': [252-100,13,27]} # red tones 
+popColors = {'IT2': [252,13+100,27+100], 'IT4': [252,13+50,27+50], 'IT5A': [252,13,27], 'IT5B': [252-50,13,27], 'IT6': [252-100,13,27]} # red tones
 popColors.update({'PT5B': [11,36,251], 'PT5B_1':[11,36,251], 'PT5B_ZD':[11,36,251], 'CT6':[23,162,66]}) # blue and green
 popColors.update({'PV2': [133, 193, 233], 'PV5A': [93, 173, 226], 'PV5B': [52, 152, 219], 'PV6': [46, 134, 193]}) # PV cyan tones
 popColors.update({'SOM2': [187, 143, 206], 'SOM5A': [165, 105, 189], 'SOM5B': [142, 68, 173], 'SOM6': [142, 68, 173]}) # SOM purple tones
 popColors.update({'PV2': [247, 220, 111], 'PV5A': [244, 208, 63], 'PV5B': [241, 196, 15], 'PV6': [212, 172, 13]}) # PV yellow tones
 popColors.update({'SOM2': [248, 196, 113], 'SOM5A': [245, 176, 65], 'SOM5B': [243, 156, 18], 'SOM6': [214, 137, 16]}) # SOM orange tones
 for pop,col in popColors.items(): popColors[pop]=[c/256.0 for c in col] #normalize
-with open('popColors.pkl', 'wb') as fileObj:        
+with open('popColors.pkl', 'wb') as fileObj:
         pickle.dump({'popColors': popColors}, fileObj)
 
 
@@ -129,9 +129,8 @@ saveMat = 0
 data = {'density': density}
 
 if savePickle:
-    with open('cellDensity.pkl', 'wb') as fileObj:        
+    with open('cellDensity.pkl', 'wb') as fileObj:
         pickle.dump(data, fileObj)
 
 if saveMat:
     savemat('conn.mat', data)
-

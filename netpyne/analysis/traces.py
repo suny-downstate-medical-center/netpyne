@@ -242,7 +242,9 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
                                      color=color, label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
                     plt.xlabel('Time (ms)', fontsize=fontsiz)
                     plt.xlim(timeRange)
-                    if ylim: plt.ylim(ylim)
+                    if ylim:
+                        if ylim[itrace]:
+                            plt.ylim(ylim[itrace])
                     plt.title('%s '%(trace))
                     
                     if not overlay:

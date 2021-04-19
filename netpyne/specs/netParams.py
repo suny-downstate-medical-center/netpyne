@@ -305,8 +305,17 @@ class NetParams(object):
 
         # fill in params from dict passed as argument
         if netParamsDict:
+            netParamsComponents = ['cellParams', 'popParams', 'synMechParams', 'connParams', 'subConnParams', 'stimSourceParams', 'stimTargetParams', 'rxdParams']
             for k,v in netParamsDict.items():
-                if isinstance(v, OrderedDict):
+                if k in netParamsComponents:
+                    for k2, v2 in netParamsDict[k].items():
+                        if isinstance(v2, OrderedDict):
+                            getattr(self, k)[k2] = ODict(v2)
+                        elif isinstance(v2, dict):
+                            getattr(self, k)[k2] = ODict(v2)
+                        else:
+                            getattr(self, k)[k2] = v2
+                elif isinstance(v, OrderedDict):
                     setattr(self, k, ODict(v))
                 elif isinstance(v, dict):
                     setattr(self, k, Dict(v))

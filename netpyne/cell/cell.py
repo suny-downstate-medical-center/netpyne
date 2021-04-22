@@ -298,7 +298,7 @@ class Cell (object):
                                     sim.cvode.record(ptr, sim.simData[key]['cell_'+str(self.gid)],
                                                      sim.simData['t'], 1)
                                 h.pop_section()
-                            else:
+                            else:                                
                                 sim.simData[key]['cell_'+str(self.gid)] = h.Vector(sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
                                 sim.simData[key]['cell_'+str(self.gid)].record(ptr, sim.cfg.recordStep)
                         if sim.cfg.verbose:

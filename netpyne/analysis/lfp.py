@@ -264,6 +264,7 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
 
     data = {'lfp': lfp}  # returned data
 
+
     # time series -----------------------------------------
     if 'timeSeries' in plots:
         ydisp = np.absolute(lfp).max() * separation
@@ -574,5 +575,6 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
 
     # show fig
     if showFig: _showFigure()
+
 
     return figs, outputData

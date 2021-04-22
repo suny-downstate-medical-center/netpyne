@@ -1,3 +1,22 @@
+# Version 1.0.0
+
+**New features**
+
+- Added wrapper for distributed saving; can now simply replace 'sim.gatherData()' with 'sim.gatherDataFromNodes()'
+
+- Added distributed saving/loading ability (save/load data by MPI node)
+
+**Bug fixes**
+
+- Fixed bug in TupleToStr function
+
+
+# Version 0.9.9.1
+
+**Bug fixes**
+
+- Fixed gathering of dipoles when running on multiple cores (uncommented lines that had been commented for debugging)
+
 # Version 0.9.9
 
 **New features**
@@ -6,15 +25,41 @@
 
 - Additional customization of 3D shape plot: show voltage as color, change proportions, include axis labels
 
+- Enable modifyConns based on properties of presynaptic neurons
+
+- Replaced -np with -n so compatible for all commands: mpiexec/mpirun/srun
+
 - Updated netrxd.py and network.py to include RxD's Parameter class, naming of States and Regions, and specification of Region geometries that do not require arguments like 'membrane' and 'inside'
+
+- Improved recordTraces such that the cond 'gid' can accept a list of numbers as well as a single number
+
+- Added a new tutorial going through use of NetPyNE with virtual environments and Jupyter notebooks
+
+- Added cfg.use_fast_imem to enable recording membrane voltage via seg.i_membrane_
+
+- Added swc import ability to importCell (and thus importCellParams)
+
+- Batch now polls processes, prints their output and terminates them once completed
+
+- Updated web documentation to explain importing SWC files and add Recording Configuration section
+
+- Added link to Jupyter notebook tutorial and video to website front page
 
 **Bug fixes** 
 
 - Made rate_b be positional instead of keyword argument in rxd multiCompartmentReaction
 
-- Check if _morphSegCoords exists in population before using
+- Check if \_morphSegCoords exists in population before using
 
 - Fixed bug to avoid recursive creating of synMechs when loading with cfg.oneSynPerNetcon=True
+
+- Fixed an issue with running rxd code twice
+
+- Wait until all subprocesses have ended before completing mpi_bulletin batches 
+
+- Fixed repeated rxd simulation issue for rates and reactions
+
+- Fixed pointNeuron spikePattern 'sync' option
 
 # Version 0.9.8
 

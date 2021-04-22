@@ -47,7 +47,7 @@ netParams.connParams['I->E'] = {
 
 # Simulation configuration
 simConfig = specs.SimConfig()        # object of class SimConfig to store simulation configuration
-simConfig.duration = 3.0*1e3           # Duration of the simulation, in ms
+simConfig.duration = 300 #3.0*1e3           # Duration of the simulation, in ms
 simConfig.dt = 0.1                # Internal integration timestep to use
 simConfig.verbose = False            # Show detailed messages
 simConfig.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
@@ -59,7 +59,7 @@ simConfig.recordLFP = [[-15, y, 1.0*netParams.sizeZ] for y in range(int(netParam
 simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'timeRange': [100,3000], 'saveFig': True} 
 #simConfig.analysis['getCSD'] = {'spacing_um': 200, 'timeRange': [100,3000], 'vaknin': True}
 #simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'timeRange':[100,900], 'minFreq': 10, 'maxFreq':60, 'norm':1, 'plots': ['spectrogram'], 'showFig': True} 
-simConfig.analysis['plotCSD'] = {'timeRange':[100,3000]}
+simConfig.analysis['plotCSD'] = {'timeRange':[100,200]}
 
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    

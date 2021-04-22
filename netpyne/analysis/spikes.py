@@ -39,8 +39,7 @@ def prepareSpikeData(
     timeRange=None, 
     maxSpikes=1e8, 
     orderBy='gid', 
-    popRates=True, 
-    
+    popRates=True,
     saveData=False, 
     fileName=None, 
     fileDesc=None, 
@@ -217,7 +216,6 @@ def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8,
     figData = prepareSpikeData(include=include, sim=sim, timeRange=timeRange, maxSpikes=maxSpikes, orderBy=orderBy, popRates=popRates, saveData=saveData, fileName=fileName, fileDesc=fileDesc, fileType=fileType, fileDir=fileDir, **kwargs)
 
     return figData
-
 
 
 def prepareSpikeHist(

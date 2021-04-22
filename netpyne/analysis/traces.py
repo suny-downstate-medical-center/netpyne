@@ -107,3 +107,4 @@ def prepareTraces(
         saveFigData(outputData, fileName=fileName, fileDesc='traces_data', fileType=fileType, fileDir=fileDir, sim=sim)
 
     return outputData
+  

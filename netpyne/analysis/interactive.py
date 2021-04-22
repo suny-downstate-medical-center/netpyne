@@ -299,8 +299,8 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
     fig = figure(
         title="Raster Plot",
         tools=TOOLS,
-        active_drag = None,
-        active_scroll = None,
+        active_drag = "auto",
+        active_scroll = "auto",
         tooltips=[('Cell GID', '@y'), ('Spike time', '@x')],
         x_axis_label="Time (ms)",
         y_axis_label=ylabelText,
@@ -373,7 +373,7 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
 ## Plot interactive dipole
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False, **kwargs):
+def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=None, t=None,  showFig=False, **kwargs):
     """
     Function for/to <short description of `netpyne.analysis.interactive.iplotDipole`>
 
@@ -431,7 +431,7 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False, 
         # ad hoc postprocessing of dipole signal in orig HNN model L2 and L5
         if 'L2' in dpl and 'L5' in dpl:
             # N_pyr cells in grid. This is PER LAYER
-            N_pyr = sim.cfg.N_pyr_x * sim.cfg.N_pyr_y
+            N_pyr = sim.cfg.hnn_params['N_pyr_x'] * sim.cfg.hnn_params['N_pyr_y']
             # dipole offset calculation: increasing number of pyr cells (L2 and L5, simultaneously)
             # with no inputs resulted in an aggregate dipole over the interval [50., 1000.] ms that
             # eventually plateaus at -48 fAm. The range over this interval is something like 3 fAm
@@ -479,24 +479,33 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False, 
         return convolve(x,win,'same')
 
     # baseline renormalize
-    dpl = baseline_renormalize()
+    if dpl:
+        dpl = {k: np.array(v) for k, v in dpl.items()}
+    else:
+        dpl = baseline_renormalize()
 
+    if t is not None and len(t)>0:
+        t=np.array(t)
+    else:
+        t=sim.simData['t']
+
+        
     # convert units from fAm to nAm, rescale and smooth
     for key in dpl.keys():
-        dpl[key] *= 1e-6 * sim.cfg.dipole_scalefctr
+        dpl[key] *= 1e-6 * sim.cfg.hnn_params['dipole_scalefctr']
 
-        if sim.cfg.dipole_smooth_win > 0:
-            dpl[key] = hammfilt(dpl[key], sim.cfg.dipole_smooth_win/sim.cfg.dt)
+        if sim.cfg.hnn_params['dipole_smooth_win'] > 0:
+            dpl[key] = hammfilt(dpl[key], sim.cfg.hnn_params['dipole_smooth_win']/sim.cfg.dt)
 
         # Set index 0 to 0
         dpl[key][0] = 0.0
 
     # plot exp data
-    fig.line(expData['x'], expData['y'], color='black', legend=expData['label'])
+    #fig.line(expData['x'], expData['y'], color='black', legend=expData['label'])
 
     # plot recorded dipole data
     for i,(k,v) in enumerate(dpl.items()):
-        fig.line(sim.simData['t'], v, legend=k, color=colors[i], line_width=2.0)
+        fig.line(t, v, legend=k, color=colors[i], line_width=2.0)
 
     fig.legend.location = "top_right"
     fig.legend.click_policy = "hide"
@@ -507,14 +516,14 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, showFig=False, 
     if showFig:
         show(fig)
 
-    return html
+    return html, dpl
 
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive dipole Spectrogram
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1, maxFreq = 80, stepFreq = 1, norm = True, showFig=False, **kwargs):
+def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=None, minFreq = 1, maxFreq = 80, stepFreq = 1, norm = True, showFig=False, **kwargs):
     """
     Function for/to <short description of `netpyne.analysis.interactive.iplotDipoleSpectrogram`>
 
@@ -574,7 +583,7 @@ def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minF
     # renormalize the dipole and save
     def baseline_renormalize():
         # N_pyr cells in grid. This is PER LAYER
-        N_pyr = sim.cfg.N_pyr_x * sim.cfg.N_pyr_y
+        N_pyr = sim.cfg.hnn_params['N_pyr_x'] * sim.cfg.hnn_params['N_pyr_y']
         # dipole offset calculation: increasing number of pyr cells (L2 and L5, simultaneously)
         # with no inputs resulted in an aggregate dipole over the interval [50., 1000.] ms that
         # eventually plateaus at -48 fAm. The range over this interval is something like 3 fAm
@@ -624,18 +633,19 @@ def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, minF
         win /= sum(win)
         return convolve(x,win,'same')
 
-    # baseline renormalize
-    dpl = baseline_renormalize()
+    if not dpl:
+        # baseline renormalize
+        dpl = baseline_renormalize()
 
-    # convert units from fAm to nAm, rescale and smooth
-    for key in dpl.keys():
-        dpl[key] *= 1e-6 * sim.cfg.dipole_scalefctr
+        # convert units from fAm to nAm, rescale and smooth
+        for key in dpl.keys():
+            dpl[key] *= 1e-6 * sim.cfg.hnn_params['dipole_scalefctr']
 
-        if sim.cfg.dipole_smooth_win > 0:
-            dpl[key] = hammfilt(dpl[key], sim.cfg.dipole_smooth_win/sim.cfg.dt)
+            if sim.cfg.hnn_params['dipole_smooth_win'] > 0:
+                dpl[key] = hammfilt(dpl[key], sim.cfg.hnn_params['dipole_smooth_win']/sim.cfg.dt)
 
-        # Set index 0 to 0
-        dpl[key][0] = 0.0
+            # Set index 0 to 0
+            dpl[key][0] = 0.0
 
 
     # plot recorded dipole data
@@ -767,7 +777,7 @@ def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1,
     # renormalize the dipole and save
     def baseline_renormalize():
         # N_pyr cells in grid. This is PER LAYER
-        N_pyr = sim.cfg.N_pyr_x * sim.cfg.N_pyr_y
+        N_pyr = sim.cfg.hnn_params['N_pyr_x'] * sim.cfg.hnn_params['N_pyr_y']
         # dipole offset calculation: increasing number of pyr cells (L2 and L5, simultaneously)
         # with no inputs resulted in an aggregate dipole over the interval [50., 1000.] ms that
         # eventually plateaus at -48 fAm. The range over this interval is something like 3 fAm
@@ -822,10 +832,10 @@ def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1,
 
     # convert units from fAm to nAm, rescale and smooth
     for key in dpl.keys():
-        dpl[key] *= 1e-6 * sim.cfg.dipole_scalefctr
+        dpl[key] *= 1e-6 * sim.cfg.hnn_params['dipole_scalefctr']
 
-        if sim.cfg.dipole_smooth_win > 0:
-            dpl[key] = hammfilt(dpl[key], sim.cfg.dipole_smooth_win/sim.cfg.dt)
+        if sim.cfg.hnn_params['dipole_smooth_win'] > 0:
+            dpl[key] = hammfilt(dpl[key], sim.cfg.hnn_params['dipole_smooth_win']/sim.cfg.dt)
 
         # Set index 0 to 0
         dpl[key][0] = 0.0
@@ -1477,8 +1487,8 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
             if overlay:
                 figs['_gid_' + str(gid)] = figure(title = "Cell {}, Pop {}".format(gid, gidPops[gid]),
                                                   tools = TOOLS,
-                                                  active_drag = None,
-                                                  active_scroll = None,
+                                                  active_drag = "auto",
+                                                  active_scroll = "auto",
                                                   x_axis_label="Time (ms)",
                                                   y_axis_label=y_axis_label
                                                   )
@@ -1508,8 +1518,8 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
                     else:
                         subfig = figure(title = "Cell {}, Pop {}".format(gid, gidPops[gid]),
                                         tools = TOOLS,
-                                        active_drag = None,
-                                        active_scroll = None,
+                                        active_drag = "auto",
+                                        active_scroll = "auto",
                                         x_axis_label="Time (ms)",
                                         y_axis_label=y_axis_label
                                         )
@@ -1530,8 +1540,8 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
             if overlay:
                 figs['_trace_' + str(trace)] = figure(title = str(trace),
                                                   tools = TOOLS,
-                                                  active_drag = None,
-                                                  active_scroll = None,
+                                                  active_drag = "auto",
+                                                  active_scroll = "auto",
                                                   x_axis_label="Time (ms)",
                                                   y_axis_label=y_axis_label
                                                   )
@@ -1561,8 +1571,8 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
                     else:
                         subfig = figure(title = str(trace),
                                         tools = TOOLS,
-                                        active_drag = None,
-                                        active_scroll = None,
+                                        active_drag = "auto",
+                                        active_scroll = "auto",
                                         x_axis_label="Time (ms)",
                                         y_axis_label=y_axis_label
                                         )
@@ -1803,8 +1813,8 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
         figs['timeSeries'] = figure(
             title="LFP Time Series Plot",
             tools=TOOLS,
-            active_drag = None,
-            active_scroll = None,
+            active_drag = "auto",
+            active_scroll = "auto",
             x_axis_label="Time (ms)",
             y_axis_label="LFP electrode",
             toolbar_location="above")
@@ -1877,8 +1887,8 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
         for i,elec in enumerate(electrodes):
             p = figure(title="Electrode {}".format(str(elec)),
                 tools=TOOLS,
-                active_drag = None,
-                active_scroll = None,
+                active_drag = "auto",
+                active_scroll = "auto",
                 x_axis_label="Frequency (Hz)",
                 y_axis_label="db/Hz",
                 toolbar_location="above")
@@ -1983,8 +1993,8 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
                 p = figure(
                     title="Electrode {}".format(str(elec)),
                     tools=TOOLS,
-                    active_drag = None,
-                    active_scroll = None,
+                    active_drag = "auto",
+                    active_scroll = "auto",
                     x_range=(0, timeRange[1]),
                     y_range=(0, maxFreq),
                     x_axis_label = "Time (ms)",
@@ -2022,8 +2032,8 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
                 p = figure(
                     title="Electrode {}".format(str(elec)),
                     tools=TOOLS,
-                    active_drag = None,
-                    active_scroll = None,
+                    active_drag = "auto",
+                    active_scroll = "auto",
                     x_range=(0, timeRange[1]),
                     y_range=(0, maxFreq),
                     x_axis_label = "Time (ms)",
@@ -2233,8 +2243,8 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
             x_range=pandas_data.columns.values,
             y_range=np.flip(pandas_data.index.values),
             tools = 'hover,save,pan,box_zoom,reset,wheel_zoom',
-            active_drag = None,
-            active_scroll = None,
+            active_drag = "auto",
+            active_scroll = "auto",
             tooltips=[('Pre', '@pre'), ('Post', '@post'), (feature, '@' + feature)],
             title='Connection ' + feature + ' matrix',
             toolbar_location='below',
@@ -2277,8 +2287,8 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
                 title='Connection ' + feature + ' stacked bar graph',
                 toolbar_location=None,
                 tools='hover,save,pan,box_zoom,reset,wheel_zoom',
-                active_drag= None,
-                active_scroll = None,
+                active_drag = "auto",
+                active_scroll = "auto",
                 tooltips=[('Pre', '$name'), ('Post', '@post'), (feature, '@$name')],
                 )
 
@@ -2504,8 +2514,8 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
     fig = figure(
         title="2D Network representation",
         tools=TOOLS,
-        active_drag = None,
-        active_scroll = None,
+        active_drag = "auto",
+        active_scroll = "auto",
         tooltips=[('y location', '@y'), ('x location', '@x')],
         x_axis_label="x (um)",
         y_axis_label='y (um)',
@@ -2693,8 +2703,8 @@ def iplotRxDConcentration(speciesLabel, regionLabel, plane='xy', saveFig=None, s
         title = 'RxD: ' + species.name + ' concentration',
         toolbar_location = 'above',
         tools = 'hover,save,pan,box_zoom,reset,wheel_zoom',
-        active_drag = None,
-        active_scroll = None,
+        active_drag = "auto",
+        active_scroll = "auto",
         tooltips = [("x", "$x"), ("y", "$y"), ("value", "@image")],
         match_aspect = True,
         x_axis_label = plane[0] + " location (um)",
@@ -3001,8 +3011,8 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
                 title = 'Spike statistics: ' + xlabels[stat],
                 toolbar_location = 'above',
                 tools = 'hover,save,pan,box_zoom,reset,wheel_zoom',
-                active_drag = None,
-                active_scroll = None,
+                active_drag = "auto",
+                active_scroll = "auto",
                 tooltips = [(stat, "$y")],
                 x_axis_label = 'Population',
                 y_axis_label = xlabel,

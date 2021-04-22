@@ -1,7 +1,6 @@
 """
-inputs.py
+Module with functions to create patterned spike inputs in cells
 
-Methods to create patterned spike inputs
 """
 
 from __future__ import print_function

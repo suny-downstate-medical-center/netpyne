@@ -1,3 +1,8 @@
+"""
+Module in support of NeuroML reader
+
+"""
+
 # Class borrowed from BMTK package
 
 class NMLTree(object):

@@ -861,10 +861,12 @@ def clearAll():
     if sim.rank == 0:
         if hasattr(sim.net, 'allCells'):
             sim.clearObj([cell.__dict__ if hasattr(cell, '__dict__') else cell for cell in sim.net.allCells])
-        if hasattr(sim, 'allSimData') and 'stims' in list(sim.allSimData.keys()):
-            sim.clearObj([stim for stim in sim.allSimData['stims']])
-
-        for key in list(sim.allSimData.keys()): del sim.allSimData[key]
+        if hasattr(sim, 'allSimData'):
+            for key in list(sim.allSimData.keys()): del sim.allSimData[key]
+            
+            if 'stims' in list(sim.allSimData.keys()):
+                sim.clearObj([stim for stim in sim.allSimData['stims']])
+        
         for c in sim.net.allCells: del c
         for p in sim.net.allPops: del p
         del sim.net.allCells

@@ -30,8 +30,7 @@ from .. import conversion
 
 class PopParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.PopParams`>
-
+    Class to hold population parameters
 
     """
 
@@ -60,8 +59,7 @@ class PopParams(ODict):
 
 class CellParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.CellParams`>
-
+    Class to hold cell parameters
 
     """
 
@@ -97,8 +95,7 @@ class CellParams(ODict):
 
 class ConnParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.ConnParams`>
-
+    Class to hold connectivity parameters
 
     """
 
@@ -123,8 +120,7 @@ class ConnParams(ODict):
 
 class SynMechParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.SynMechParams`>
-
+    Class to hold synaptic mechanism parameters
 
     """
 
@@ -149,8 +145,7 @@ class SynMechParams(ODict):
 
 class SubConnParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.SubConnParams`>
-
+    Class to hold subcellular connectivity parameters
 
     """
 
@@ -175,8 +170,7 @@ class SubConnParams(ODict):
 
 class StimSourceParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.StimSourceParams`>
-
+    Class to hold stimulation source parameters
 
     """
 
@@ -201,8 +195,7 @@ class StimSourceParams(ODict):
 
 class StimTargetParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.StimTargetParams`>
-
+    Class to hold stimulation target parameters
 
     """
 
@@ -227,8 +220,7 @@ class StimTargetParams(ODict):
 
 class RxDParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.RxDParams`>
-
+    Class to hold reaction-diffusion (RxD) parameters
 
     """
 
@@ -252,8 +244,7 @@ class RxDParams(ODict):
 
 class NetParams(object):
     """
-    Class for/to <short description of `netpyne.specs.netParams.NetParams`>
-
+    Class to hold all network parameters
 
     """
 
@@ -305,8 +296,17 @@ class NetParams(object):
 
         # fill in params from dict passed as argument
         if netParamsDict:
+            netParamsComponents = ['cellParams', 'popParams', 'synMechParams', 'connParams', 'subConnParams', 'stimSourceParams', 'stimTargetParams', 'rxdParams']
             for k,v in netParamsDict.items():
-                if isinstance(v, OrderedDict):
+                if k in netParamsComponents:
+                    for k2, v2 in netParamsDict[k].items():
+                        if isinstance(v2, OrderedDict):
+                            getattr(self, k)[k2] = ODict(v2)
+                        elif isinstance(v2, dict):
+                            getattr(self, k)[k2] = ODict(v2)
+                        else:
+                            getattr(self, k)[k2] = v2
+                elif isinstance(v, OrderedDict):
                     setattr(self, k, ODict(v))
                 elif isinstance(v, dict):
                     setattr(self, k, Dict(v))

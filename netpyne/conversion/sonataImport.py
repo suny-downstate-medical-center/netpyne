@@ -1,7 +1,6 @@
 """
-conversion/sonata.py
+Module with functions to import from and export to SONATA format
 
-Functions to import/export to SONATA format
 """
 
 import os

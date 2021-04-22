@@ -126,13 +126,13 @@ def _addRegions(self, params):
         # geomery
         if 'geometry' not in param:
             param['geometry'] = None
-            geometry = param['geometry']
+        geometry = param['geometry']
         # import IPython; IPython.embed()
-        if isinstance(param['geometry'], dict):
+        if isinstance(geometry, dict):
             try:
-                if 'args' in param['geometry']:
-                    param['geometry']['hObj'] = getattr(rxd, param['geometry']['class'])(**param['geometry']['args'])
-                    geometry = param['geometry']['hObj']
+                if 'args' in geometry:
+                    geometry['hObj'] = getattr(rxd, param['geometry']['class'])(**param['geometry']['args'])
+                    geometry = geometry['hObj']
             except:
                 print('  Error creating %s Region geometry using %s class'%(label, param['geometry']['class']))
         elif isinstance(param['geometry'], str):
@@ -434,14 +434,13 @@ def _addReactions(self, params, multicompartment=False):
 
         # regions
         if 'regions' not in param:
-            param['regions'] = None
-            nrnRegions = None
+            param['regions'] = [None]
         elif not isinstance(param['regions'], list):
             param['regions'] = [param['regions']]
-            try:
-                nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions'] if self.rxd['regions'][region]['hObj'] != None]
-            except:
-               print('  Error creating %s %s: could not find regions %s'%(reactionStr, label, param['regions']))
+        try:
+            nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions'] if region is not None and self.rxd['regions'][region]['hObj'] != None]
+        except:
+            print('  Error creating %s %s: could not find regions %s'%(reactionStr, label, param['regions']))
 
         # membrane
         if 'membrane' not in param:
@@ -518,14 +517,13 @@ def _addRates(self, params):
 
         # regions
         if 'regions' not in param:
-            param['regions'] = None
-            nrnRegions = None
+            param['regions'] = [None]
         elif not isinstance(param['regions'], list):
             param['regions'] = [param['regions']]
-            try:
-                nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions']]
-            except:
-               print('  Error creating Rate %s: could not find regions %s'%(label, param['regions']))
+        try:
+             nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions'] if region is not None and self.rxd['regions'][region]['hObj'] != None]
+        except:
+           print('  Error creating Rate %s: could not find regions %s'%(label, param['regions']))
 
         # membrane_flux
         if 'membrane_flux' not in param:

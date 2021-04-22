@@ -39,6 +39,11 @@ extensions = [
     'autodocsumm',
 ]
 
+napoleon_custom_sections = [('NetPyNE Options', 'params_style'), ('Plot Options', 'params_style')]
+napoleon_google_docstring = False
+napoleon_numpy_docstring = True
+napoleon_use_param = False
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 

@@ -13,6 +13,10 @@ try:
     from pyneuroml import pynml
     from . import neuromlFormat  # import NetPyNEBuilder
     from  netpyne.support.nml_reader  import NMLTree
+except ModuleNotFoundError as error:
+    print(error)
+    print('Note: You have to install `{}`'.format(error.name))
+    exit()
 except ImportError:
     from neuron import h
     pc = h.ParallelContext() # MPI: Initialize the ParallelContext class

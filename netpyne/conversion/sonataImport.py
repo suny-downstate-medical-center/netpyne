@@ -26,7 +26,7 @@ except ImportError as error:
             except ImportError as error:
                 needed.append(error.name)
         print('Note: SONATA import failed; import/export functions for SONATA will not be available.\n' +
-              '      To use this feature install those Python packages: ', needed)
+              '  To use this feature install those Python packages: ', needed)
 
 from . import neuronPyHoc
 from .. import sim, specs

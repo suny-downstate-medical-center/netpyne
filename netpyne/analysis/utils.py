@@ -34,7 +34,10 @@ import sys
 # -------------------------------------------------------------------------------------------------------------------
 # Define list of colors
 # -------------------------------------------------------------------------------------------------------------------
-from bokeh.themes import built_in_themes
+try:
+    from bokeh.themes import built_in_themes
+except:
+    pass
 
 colorListType = 'alternate'  # 'graded'
 

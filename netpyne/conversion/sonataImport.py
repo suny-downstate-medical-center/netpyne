@@ -13,7 +13,7 @@ try:
     from pyneuroml import pynml
     from . import neuromlFormat  # import NetPyNEBuilder
     from  netpyne.support.nml_reader  import NMLTree
-except ImportError as error:
+except ModuleNotFoundError as error:
     # soft-fail and suggest which packages to install
     from neuron import h
     pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
@@ -23,10 +23,16 @@ except ImportError as error:
             try:
                 if pkg not in needed:
                     __import__(pkg)
-            except ImportError as error:
+            except ModuleNotFoundError as error:
                 needed.append(error.name)
         print('Note: SONATA import failed; import/export functions for SONATA will not be available.\n' +
               '  To use this feature install those Python packages: ', needed)
+except ImportError as error:
+    from neuron import h
+    pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
+    if int(pc.id()) == 0:  # only print for master node
+        print('Note: SONATA import failed; import/export functions for SONATA will not be available.\n', error)
+
 
 from . import neuronPyHoc
 from .. import sim, specs

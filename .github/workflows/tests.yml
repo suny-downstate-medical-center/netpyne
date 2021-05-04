@@ -1,0 +1,34 @@
+name: GitHub Actions Demo
+on: [push]
+jobs:
+  Run-Tests:
+    runs-on: ubuntu-18.04
+
+    strategy:
+      matrix:
+        python-version: [3.7]
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Update apt-get
+        run: sudo apt-get update
+
+      - name: Install packages
+        run: sudo apt-get install python-tk python3-tables
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .
+
+      - name: Test with pytest
+        run: |
+          source tests/test.sh

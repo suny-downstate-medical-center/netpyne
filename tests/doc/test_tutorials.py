@@ -1,8 +1,8 @@
 import sys
 if '-nogui' not in sys.argv:
     sys.argv.append('-nogui')
-sys.path.push('doc/source/code/')
-sys.path.push('examples/HHTut/')
+sys.path.append('doc/source/code/')
+sys.path.append('examples/HHTut/')
 import netpyne
 
 

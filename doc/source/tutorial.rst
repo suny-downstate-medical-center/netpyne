@@ -924,7 +924,7 @@ The first example ( :download:`cell_lfp.py <../../examples/LFPrecording/cell_lfp
 	:width: 60%
 	:align: center
 
-The second example ( :download:`net_lfp.py <<../../examples/LFPrecording/net_lfp.py>`) shows LFP recording for a network very similar to that shown in Tutorial 5. However, in this case, the cells have been replaced with a more realistic model: a 6-compartment M1 corticostriatal neuron with multiple ionic channels. The cell parameters are loaded from a .json file. Cell receive NetStim inputs and include excitatory and inhibitory connections. Four LFP electrodes are placed at different cortical depths. The raster plot and LFP time-resolved signal, PSD, spectrogram and 3D locations of the electrodes are plotted:
+The second example ( :download:`net_lfp.py <../../examples/LFPrecording/net_lfp.py>`) shows LFP recording for a network very similar to that shown in Tutorial 5. However, in this case, the cells have been replaced with a more realistic model: a 6-compartment M1 corticostriatal neuron with multiple ionic channels. The cell parameters are loaded from a .json file. Cell receive NetStim inputs and include excitatory and inhibitory connections. Four LFP electrodes are placed at different cortical depths. The raster plot and LFP time-resolved signal, PSD, spectrogram and 3D locations of the electrodes are plotted:
 
 .. image:: figs/lfp_net.png
 	:width: 90%

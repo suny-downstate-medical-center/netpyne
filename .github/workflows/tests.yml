@@ -1,4 +1,4 @@
-name: GitHub Actions Demo
+name: Run NetPyNE tests
 on: [push]
 jobs:
   Run-Tests:

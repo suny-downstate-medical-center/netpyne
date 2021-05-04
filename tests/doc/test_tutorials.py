@@ -1,9 +1,10 @@
 import sys
-sys.argv.append('-nogui')
-import sys
-sys.path.insert(1, 'doc/source/code/')
-sys.path.insert(1, 'examples/HHTut/')
+if '-nogui' not in sys.argv:
+    sys.argv.append('-nogui')
+sys.path.push('doc/source/code/')
+sys.path.push('examples/HHTut/')
 import netpyne
+
 
 def test_tutorial_1():
     import tut1

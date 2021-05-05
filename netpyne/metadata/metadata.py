@@ -273,8 +273,8 @@ metadata = {
                 "suggestions": "",
                 "hintText": "",
                 "type": "list(float)"
-            }
-            "cellsVisualizationSpacingMultiplier" = {
+            },
+            "cellsVisualizationSpacingMultiplier": {
                 "label": "Cells visualization spacing multiplier (X, Y, Z)",
                 "help": "Multiplier for spacing in X,Y,Z axes during 3D visualization of cells (default: [1,1,1])",
                 "suggestions": "",

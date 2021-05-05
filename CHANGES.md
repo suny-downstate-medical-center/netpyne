@@ -8,6 +8,8 @@
 
 - Allowed to specify 'cellModel' and point neuron params in netParams.cellParams (not only in netParams.popParams) 
 
+- Added cellsVisualizationSpacingMultiplier property to netParams
+
 **Bug fixes**
 
 - Fixed bug in TupleToStr function

@@ -228,6 +228,7 @@ def gridSearch(self, pc):
                     queueName = self.runCfg.get('queueName', 'default')
                     nodesppn = 'nodes=%d:ppn=%d'%(nodes,ppn)
                     custom = self.runCfg.get('custom', '')
+                    printOutput = self.runCfg.get('printOutput', False)
                     numproc = nodes*ppn
 
                     command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
@@ -324,6 +325,7 @@ wait
                     folder = self.runCfg.get('folder', '.')
                     script = self.runCfg.get('script', 'init.py')
                     mpiCommand = self.runCfg.get('mpiCommand', 'mpirun')
+                    printOutput = self.runCfg.get('printOutput', False)
 
                     command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, cores, script, cfgSavePath, netParamsSavePath)
 
@@ -336,6 +338,7 @@ wait
                 # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
                 elif self.runCfg.get('type',None) == 'mpi_bulletin':
                     jobName = self.saveFolder+'/'+simLabel
+                    printOutput = self.runCfg.get('printOutput', False)
                     print('Submitting job ',jobName)
                     # master/slave bulletin board schedulling of jobs
                     pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath, processes)

@@ -360,12 +360,11 @@ wait
     for procFile in processFiles:
         outfiles.append(open(procFile, 'r'))
         
-    if printOutput:
-        while any([proc.poll() is None for proc in processes]):
-            for i, proc in enumerate(processes):
-                    newline = outfiles[i].readline()
-                    if len(newline) > 1:
-                        print(newline, end='')
+    while any([proc.poll() is None for proc in processes]):
+        for i, proc in enumerate(processes):
+                newline = outfiles[i].readline()
+                if len(newline) > 1:
+                    print(newline, end='')
                 
         #sleep(sleepInterval)
     

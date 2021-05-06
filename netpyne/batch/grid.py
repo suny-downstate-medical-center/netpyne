@@ -273,6 +273,7 @@ echo $PBS_O_WORKDIR
                     walltime = self.runCfg.get('walltime', '00:30:00')
                     reservation = self.runCfg.get('reservation', None)
                     custom = self.runCfg.get('custom', '')
+                    printOutput = self.runCfg.get('printOutput', False)
                     if reservation:
                         res = '#SBATCH --res=%s'%(reservation)
                     else:
@@ -356,16 +357,16 @@ wait
     for procFile in processFiles:
         outfiles.append(open(procFile, 'r'))
         
-    while any([proc.poll() is None for proc in processes]):
-        for i, proc in enumerate(processes):
-                newline = outfiles[i].readline()
-                if len(newline) > 1:
-                    print(newline, end='')
+    if printOutput:
+        while any([proc.poll() is None for proc in processes]):
+            for i, proc in enumerate(processes):
+                    newline = outfiles[i].readline()
+                    if len(newline) > 1:
+                        print(newline, end='')
                 
-        sleep(sleepInterval)
+        #sleep(sleepInterval)
     
     # attempt to terminate completed processes
-    
     for proc in processes:
         try:
             proc.terminate()

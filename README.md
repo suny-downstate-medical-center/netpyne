@@ -8,3 +8,4 @@ This package is developed and maintained by the Neurosim lab (www.neurosimlab.or
 
 [![Build Status](https://travis-ci.org/Neurosim-lab/netpyne.svg?branch=development)](https://travis-ci.org/Neurosim-lab/netpyne)
 
+![Build](https://github.com/github/docs/actions/workflows/main.yml/badge.svg)

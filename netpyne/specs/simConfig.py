@@ -28,8 +28,7 @@ from .dicts import Dict, ODict
 
 class SimConfig(object):
     """
-    Class for/to <short description of `netpyne.specs.simConfig.SimConfig`>
-
+    Class to hold simulation configuration parameters
 
     """
 

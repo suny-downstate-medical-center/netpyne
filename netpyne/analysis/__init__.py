@@ -22,13 +22,14 @@ from .wrapper import plotData
 # Import utils methods
 # -------------------------------------------------------------------------------------------------------------------
 from .utils import exception, _showFigure, _saveFigData, getCellsInclude, getCellsIncludeTags, _roundFigures, \
-     _smooth1d, syncMeasure, invertDictMapping
+     _smooth1d, syncMeasure, invertDictMapping, checkAvailablePlots
 
 
 # -------------------------------------------------------------------------------------------------------------------
 # Import connectivity-related functions
 # -------------------------------------------------------------------------------------------------------------------
-from .network import plotConn, _plotConnCalculateFromSim, _plotConnCalculateFromFile, plot2Dnet, plotShape, calculateDisynaptic
+from .network import plotConn, _plotConnCalculateFromSim, _plotConnCalculateFromFile, plot2Dnet, plotShape, calculateDisynaptic, \
+    plot2Dfiring
 
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -53,7 +54,7 @@ from .lfp import plotLFP
 # -------------------------------------------------------------------------------------------------------------------
 # Import information theory-related functions
 # -------------------------------------------------------------------------------------------------------------------
-from .info import nTE, granger
+from .info import nTE, granger, plotGranger
 
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -67,7 +68,7 @@ from .rxd import plotRxDConcentration
 # -------------------------------------------------------------------------------------------------------------------
 
 try:
-  from .interactive import iplotDipole, iplotDipoleSpectrogram, iplotDipolePSD, iplotRaster, iplotSpikeHist, iplotRatePSD, iplotTraces, iplotLFP, iplotConn, iplotRxDConcentration, iplot2Dnet, iplotSpikeStats
+  from .interactive import iplotDipole, iplotDipoleSpectrogram, iplotDipolePSD, iplotRaster, iplotSpikeHist, iplotRatePSD, iplotTraces, iplotLFP, iplotConn, iplotRxDConcentration, iplot2Dnet, iplotSpikeStats, iplotGranger
 except:
     print('Warning: could not import interactive plotting functions; make sure the "bokeh" package is installed.')
 

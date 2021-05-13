@@ -1,3 +1,9 @@
+"""
+Module supporting use of scale bars
+
+"""
+
+
 # -*- coding: utf-8 -*-
 # -*- mode: python -*-
 # Adapted from mpl_toolkits.axes_grid1

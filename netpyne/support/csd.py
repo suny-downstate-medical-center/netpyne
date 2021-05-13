@@ -1,10 +1,10 @@
 """
-analysis/csd.py
+Module with support for current source density (CSD)
 
-current source density approximation using second spatial derivative of local field potential
+Current source density approximation using second spatial derivative of local field potential
 
- Written by Sam Neymotin (NKI)
- Vaknin function written by Max Sherman (Brown University)
+Written by Sam Neymotin (NKI)
+Vaknin function written by Max Sherman (Brown University)
 """
 
 from __future__ import print_function

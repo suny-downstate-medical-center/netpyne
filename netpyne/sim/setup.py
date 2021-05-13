@@ -272,6 +272,8 @@ def readCmdLineArgs(simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
             __main__.cfg = cfg
         except:
             print('\nWarning: Could not load cfg from command line path or from default cfg.py')
+            print('This usually occurs when cfg.py crashes.  Please ensure that your cfg.py file')
+            print('completes successfully on its own (i.e. execute "python cfg.py" and fix any bugs).')
             cfg = None
 
     if not netParamsPath:
@@ -286,6 +288,8 @@ def readCmdLineArgs(simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
             netParams = netParamsModule.netParams
         except:
             print('\nWarning: Could not load netParams from command line path or from default netParams.py')
+            print('This usually occurs when netParams.py crashes.  Please ensure that your netParams.py file')
+            print('completes successfully on its own (i.e. execute "python netParams.py" and fix any bugs).')
             netParams = None
 
     return cfg, netParams

@@ -70,10 +70,10 @@ simConfig.saveMat = False            # Save params, network and sim output to pi
 
 
 simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True, 'saveFig': True}         # Plot a raster
-simConfig.analysis['plotTraces'] = {'include': [('E2',0), ('E4', 0), ('E5', 5)], 'saveFig': True}  # Plot recorded traces for this list of cells
-simConfig.analysis['plot2Dnet'] = {'saveFig': True}                                                # plot 2D cell positions and connections
-simConfig.analysis['plotConn'] = {'saveFig': True}                                                 # plot connectivity matrix
-
+# simConfig.analysis['plotTraces'] = {'include': [('E2',0), ('E4', 0), ('E5', 5)], 'saveFig': True}  # Plot recorded traces for this list of cells
+# simConfig.analysis['plot2Dnet'] = {'saveFig': True}                                                # plot 2D cell positions and connections
+# simConfig.analysis['plotConn'] = {'saveFig': True}                                                 # plot connectivity matrix
+#simConfig.analysis['plot2Dfiring'] = {'saveFig': True, 'showFig': True}
 
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)

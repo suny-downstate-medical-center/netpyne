@@ -299,8 +299,8 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
     fig = figure(
         title="Raster Plot",
         tools=TOOLS,
-        active_drag = None,
-        active_scroll = None,
+        active_drag = "auto",
+        active_scroll = "auto",
         tooltips=[('Cell GID', '@y'), ('Spike time', '@x')],
         x_axis_label="Time (ms)",
         y_axis_label=ylabelText,
@@ -1487,8 +1487,8 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
             if overlay:
                 figs['_gid_' + str(gid)] = figure(title = "Cell {}, Pop {}".format(gid, gidPops[gid]),
                                                   tools = TOOLS,
-                                                  active_drag = None,
-                                                  active_scroll = None,
+                                                  active_drag = "auto",
+                                                  active_scroll = "auto",
                                                   x_axis_label="Time (ms)",
                                                   y_axis_label=y_axis_label
                                                   )
@@ -1518,8 +1518,8 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
                     else:
                         subfig = figure(title = "Cell {}, Pop {}".format(gid, gidPops[gid]),
                                         tools = TOOLS,
-                                        active_drag = None,
-                                        active_scroll = None,
+                                        active_drag = "auto",
+                                        active_scroll = "auto",
                                         x_axis_label="Time (ms)",
                                         y_axis_label=y_axis_label
                                         )
@@ -1540,8 +1540,8 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
             if overlay:
                 figs['_trace_' + str(trace)] = figure(title = str(trace),
                                                   tools = TOOLS,
-                                                  active_drag = None,
-                                                  active_scroll = None,
+                                                  active_drag = "auto",
+                                                  active_scroll = "auto",
                                                   x_axis_label="Time (ms)",
                                                   y_axis_label=y_axis_label
                                                   )
@@ -1571,8 +1571,8 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
                     else:
                         subfig = figure(title = str(trace),
                                         tools = TOOLS,
-                                        active_drag = None,
-                                        active_scroll = None,
+                                        active_drag = "auto",
+                                        active_scroll = "auto",
                                         x_axis_label="Time (ms)",
                                         y_axis_label=y_axis_label
                                         )
@@ -1813,8 +1813,8 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
         figs['timeSeries'] = figure(
             title="LFP Time Series Plot",
             tools=TOOLS,
-            active_drag = None,
-            active_scroll = None,
+            active_drag = "auto",
+            active_scroll = "auto",
             x_axis_label="Time (ms)",
             y_axis_label="LFP electrode",
             toolbar_location="above")
@@ -1887,8 +1887,8 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
         for i,elec in enumerate(electrodes):
             p = figure(title="Electrode {}".format(str(elec)),
                 tools=TOOLS,
-                active_drag = None,
-                active_scroll = None,
+                active_drag = "auto",
+                active_scroll = "auto",
                 x_axis_label="Frequency (Hz)",
                 y_axis_label="db/Hz",
                 toolbar_location="above")
@@ -1993,8 +1993,8 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
                 p = figure(
                     title="Electrode {}".format(str(elec)),
                     tools=TOOLS,
-                    active_drag = None,
-                    active_scroll = None,
+                    active_drag = "auto",
+                    active_scroll = "auto",
                     x_range=(0, timeRange[1]),
                     y_range=(0, maxFreq),
                     x_axis_label = "Time (ms)",
@@ -2032,8 +2032,8 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
                 p = figure(
                     title="Electrode {}".format(str(elec)),
                     tools=TOOLS,
-                    active_drag = None,
-                    active_scroll = None,
+                    active_drag = "auto",
+                    active_scroll = "auto",
                     x_range=(0, timeRange[1]),
                     y_range=(0, maxFreq),
                     x_axis_label = "Time (ms)",
@@ -2243,8 +2243,8 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
             x_range=pandas_data.columns.values,
             y_range=np.flip(pandas_data.index.values),
             tools = 'hover,save,pan,box_zoom,reset,wheel_zoom',
-            active_drag = None,
-            active_scroll = None,
+            active_drag = "auto",
+            active_scroll = "auto",
             tooltips=[('Pre', '@pre'), ('Post', '@post'), (feature, '@' + feature)],
             title='Connection ' + feature + ' matrix',
             toolbar_location='below',
@@ -2287,8 +2287,8 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
                 title='Connection ' + feature + ' stacked bar graph',
                 toolbar_location=None,
                 tools='hover,save,pan,box_zoom,reset,wheel_zoom',
-                active_drag= None,
-                active_scroll = None,
+                active_drag = "auto",
+                active_scroll = "auto",
                 tooltips=[('Pre', '$name'), ('Post', '@post'), (feature, '@$name')],
                 )
 
@@ -2514,8 +2514,8 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
     fig = figure(
         title="2D Network representation",
         tools=TOOLS,
-        active_drag = None,
-        active_scroll = None,
+        active_drag = "auto",
+        active_scroll = "auto",
         tooltips=[('y location', '@y'), ('x location', '@x')],
         x_axis_label="x (um)",
         y_axis_label='y (um)',
@@ -2703,8 +2703,8 @@ def iplotRxDConcentration(speciesLabel, regionLabel, plane='xy', saveFig=None, s
         title = 'RxD: ' + species.name + ' concentration',
         toolbar_location = 'above',
         tools = 'hover,save,pan,box_zoom,reset,wheel_zoom',
-        active_drag = None,
-        active_scroll = None,
+        active_drag = "auto",
+        active_scroll = "auto",
         tooltips = [("x", "$x"), ("y", "$y"), ("value", "@image")],
         match_aspect = True,
         x_axis_label = plane[0] + " location (um)",
@@ -3011,8 +3011,8 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
                 title = 'Spike statistics: ' + xlabels[stat],
                 toolbar_location = 'above',
                 tools = 'hover,save,pan,box_zoom,reset,wheel_zoom',
-                active_drag = None,
-                active_scroll = None,
+                active_drag = "auto",
+                active_scroll = "auto",
                 tooltips = [(stat, "$y")],
                 x_axis_label = 'Population',
                 y_axis_label = xlabel,
@@ -3095,3 +3095,223 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
             outfile.close()
 
     return html
+
+
+
+# -------------------------------------------------------------------------------------------------------------------
+## Plot interactive Granger causality
+# -------------------------------------------------------------------------------------------------------------------
+@exception
+def iplotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, label2=None, timeRange=None, binSize=5, showFig=True, saveFig=False, **kwargs):
+    """
+    Function to plot the Granger Causality between two groups of cells
+
+    Parameters
+    ----------
+    cells1 : list
+        Subset of cells from which to obtain spike train 1.
+        **Default:** ``None``
+        **Options:**
+        ``['all']`` plots all cells and stimulations,
+        ``['allNetStims']`` plots just stimulations,
+        ``['popName1']`` plots a single population,
+        ``['popName1', 'popName2']`` plots multiple populations,
+        ``[120]`` plots a single cell,
+        ``[120, 130]`` plots multiple cells,
+        ``[('popName1', 56)]`` plots a cell from a specific population,
+        ``[('popName1', [0, 1]), ('popName2', [4, 5, 6])]``, plots cells from multiple populations
+
+    cells2 : list
+        Subset of cells from which to obtain spike train 2.
+        **Default:** ``None``
+        **Options:** same as for `cells1`
+
+    spks1 : list
+        Spike train 1; list of spike times; if omitted then obtains spikes from cells1.
+        **Default:** ``None``
+
+    spks2 : list
+        Spike train 2; list of spike times; if omitted then obtains spikes from cells2.
+        **Default:** ``None``
+
+    label1 : str
+        Label for spike train 1 to use in plot.
+        **Default:** ``None``
+
+    label2 : str
+        Label for spike train 2 to use in plot.
+        **Default:** ``None``
+
+    timeRange : list [min, max]
+        Range of time to calculate nTE in ms.
+        **Default:** ``None`` uses the entire simulation time range
+
+    binSize : int
+        Bin size used to convert spike times into histogram.
+        **Default:** ``5``
+
+    showFig : bool
+        Shows the figure if ``True``.
+        **Default:** ``True``
+
+    saveFig : bool or str
+        Whether and where to save the figure.
+        **Default:** ``False``
+        **Options:** ``True`` autosaves the figure,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
+        
+    """
+
+    from .. import sim
+    from netpyne.support.bsmart import pwcausalr
+    from bokeh.plotting import figure, show
+    from bokeh.resources import CDN
+    from bokeh.embed import file_html
+    from bokeh.layouts import layout
+
+    theme = None
+    from bokeh.colors import RGB
+
+    if not spks1:  
+        
+        if not cells1:
+            pops = list(sim.net.allPops.keys())
+            if len(pops) == 1:
+                cells1 = [0]
+                if not label1:
+                    label1 = 'cell_0'
+                if not cells2:
+                    cells2 = ['allCells']
+                    if not label2:
+                        label2 = 'all cells'
+            elif len(pops) > 1:
+                cells1 = [pops[0]]
+                if not label1:
+                    label1 = pops[0]
+                if not cells2:
+                    cells2 = [pops[1]]
+                    if not label2:
+                        label2 = pops[1]
+
+        cells, cellGids, netStimPops = getCellsInclude(cells1)
+        numNetStims = 0
+
+        # Select cells to include
+        if len(cellGids) > 0:
+            try:
+                spkts = [spkt for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]
+            except:
+                spkts = []
+        else:
+            spkts = []
+
+        # Add NetStim spikes
+        spkts = list(spkts)
+        numNetStims = 0
+        for netStimPop in netStimPops:
+            if 'stims' in sim.allSimData:
+                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].items() if netStimPop in cellStim]
+                if len(cellStims) > 0:
+                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
+                    spkts.extend(spktsNew)
+                    numNetStims += len(cellStims)
+
+        spks1 = list(spkts)
+
+    if not spks2:  # if doesnt contain a list of spk times, obtain from cells specified
+        
+        cells, cellGids, netStimPops = getCellsInclude(cells2)
+        numNetStims = 0
+
+        # Select cells to include
+        if len(cellGids) > 0:
+            try:
+                spkts = [spkt for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]
+            except:
+                spkts = []
+        else:
+            spkts = []
+
+        # Add NetStim spikes
+        spkts = list(spkts)
+        numNetStims = 0
+        for netStimPop in netStimPops:
+            if 'stims' in sim.allSimData:
+                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].items() if netStimPop in cellStim]
+                if len(cellStims) > 0:
+                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
+                    spkts.extend(spktsNew)
+                    numNetStims += len(cellStims)
+
+        spks2 = list(spkts)
+
+    # time range
+    if timeRange is None:
+        if getattr(sim, 'cfg', None):
+            timeRange = [0, sim.cfg.duration]
+        else:
+            timeRange = [0, max(spks1+spks2)]
+
+    histo1 = np.histogram(spks1, bins = np.arange(timeRange[0], timeRange[1], binSize))
+    histoCount1 = histo1[0]
+
+    histo2 = np.histogram(spks2, bins = np.arange(timeRange[0], timeRange[1], binSize))
+    histoCount2 = histo2[0]
+
+    fs = int(1000/binSize)
+    F, pp, cohe, Fx2y, Fy2x, Fxy = pwcausalr(np.array([histoCount1, histoCount2]), 1, len(histoCount1), 10, fs, int(fs/2))
+
+    if not label1:
+        label1='spkTrain1'
+    if not label2: 
+        label2='spkTrain2'
+    
+    if not 'palette' in kwargs:
+        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList]
+    else:
+        colors = kwargs['palette']
+
+    if 'theme' in kwargs:
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                from bokeh.themes import Theme
+                theme = Theme(json=_guiTheme)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
+
+    TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
+
+    fig = figure(title="Granger Causality", 
+                    tools=TOOLS, 
+                    toolbar_location='above', 
+                    x_axis_label="Frequency (Hz)", 
+                    y_axis_label="Granger Causality")
+
+    hover = HoverTool(tooltips=[('Frequency', '@x'), ('Causality', '@y')], mode='vline')
+    fig.add_tools(hover)
+
+    #fig.line(t, v, legend=k, color=colors[i], line_width=2.0)
+    fig.line(F, Fy2x[0], legend_label=label2+' --> '+label1, color=colors[0], line_width=2.0)
+    fig.line(F, Fx2y[0], legend_label=label1+' --> '+label2, color=colors[1], line_width=2.0)
+
+    fig.legend.location = "top_right"
+    fig.legend.click_policy = "hide"
+
+    plot_layout = layout(fig, sizing_mode='stretch_both')
+    html = file_html(plot_layout, CDN, title="Granger Causality Plot", theme=theme)
+
+    if showFig:
+        show(fig)
+
+    if saveFig:
+        if isinstance(saveFig, str):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename + '_granger.html'
+        outfile = open(filename, 'w')
+        outfile.write(html)
+        outfile.close()
+
+    return html
+

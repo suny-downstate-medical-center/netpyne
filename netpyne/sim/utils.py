@@ -834,8 +834,7 @@ def _dict2utf8(obj):
 #------------------------------------------------------------------------------
 def clearAll():
     """
-    Function for/to <short description of `netpyne.sim.utils.clearAll`>
-
+    Function to clear all sim objects in memory
 
     """
 
@@ -847,36 +846,46 @@ def clearAll():
     sim.pc.gid_clear()                    # clear previous gid settings
 
     # clean cells and simData in all nodes
-    sim.clearObj([cell.__dict__ if hasattr(cell, '__dict__') else cell for cell in sim.net.cells])
-    if 'stims' in list(sim.simData.keys()):
-        sim.clearObj([stim for stim in sim.simData['stims']])
+    if hasattr(sim, 'net'):
+        sim.clearObj([cell.__dict__ if hasattr(cell, '__dict__') else cell for cell in sim.net.cells])
+    if hasattr(sim, 'simData'):
+        if 'stims' in list(sim.simData.keys()):
+            sim.clearObj([stim for stim in sim.simData['stims']])
 
-    for key in list(sim.simData.keys()): del sim.simData[key]
-    for c in sim.net.cells: del c
-    for p in sim.net.pops: del p
-    del sim.net.params
+        for key in list(sim.simData.keys()): del sim.simData[key]
+    
+    if hasattr(sim, 'net'):
+        for c in sim.net.cells: del c
+        for p in sim.net.pops: del p
+        del sim.net.params
 
 
     # clean cells and simData gathered in master node
-    if sim.rank == 0:
-        if hasattr(sim.net, 'allCells'):
-            sim.clearObj([cell.__dict__ if hasattr(cell, '__dict__') else cell for cell in sim.net.allCells])
-        if hasattr(sim, 'allSimData'):
-            for key in list(sim.allSimData.keys()): del sim.allSimData[key]
+    if hasattr(sim, 'rank'):
+        if sim.rank == 0:
+            if hasattr(sim, 'net'):
+                if hasattr(sim.net, 'allCells'):
+                    sim.clearObj([cell.__dict__ if hasattr(cell, '__dict__') else cell for cell in sim.net.allCells])
+            if hasattr(sim, 'allSimData'):
+                for key in list(sim.allSimData.keys()): del sim.allSimData[key]
+                
+                if 'stims' in list(sim.allSimData.keys()):
+                    sim.clearObj([stim for stim in sim.allSimData['stims']])
             
-            if 'stims' in list(sim.allSimData.keys()):
-                sim.clearObj([stim for stim in sim.allSimData['stims']])
-        
-        for c in sim.net.allCells: del c
-        for p in sim.net.allPops: del p
-        del sim.net.allCells
-        del sim.allSimData
+            if hasattr(sim, 'net'):
+                for c in sim.net.allCells: del c
+                for p in sim.net.allPops: del p
+                del sim.net.allCells
+            
+            if hasattr(sim, 'allSimData'):
+                del sim.allSimData
 
-        import matplotlib
-        matplotlib.pyplot.clf()
-        matplotlib.pyplot.close('all')
+            import matplotlib
+            matplotlib.pyplot.clf()
+            matplotlib.pyplot.close('all')
 
-    del sim.net
+    if hasattr(sim, 'net'):
+        del sim.net
 
     import gc; gc.collect()
 

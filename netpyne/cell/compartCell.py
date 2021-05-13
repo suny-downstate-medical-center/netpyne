@@ -408,37 +408,29 @@ class CompartCell (Cell):
                             print('# Error inserting %s mechanims in %s section! (check mod files are compiled)'%(mechName, sectName))
                         continue
                     for mechParamName,mechParamValue in mechParams.items():  # add params of the mechanism
-                        # mcehcparamname - gna
-                        # simConfig.gnabar_constant_1 = 0.2
-                        # simConfig.gnabar_constant_2 = 0.4
-                        #
-                        # simConfig.gk_constant_1 = 8.2
-                        # simConfig.gk_constant_2 = 0.7
-                        # simConfig.gk_constant_3 = 0.99
-
-                        # {'gnabar': 'cfg.gnabar_constant_1 + cfg.gnabar_constant_2*pathDistFromParent',
-                        # 'gkbar': 'gk_constant_1*gk_constant_2 - np.exp(gk_constant_3*pathDistFromSoma)',
 
                         mechParamValueFinal = mechParamValue
                         if isinstance(mechParamValue, basestring):
                             print ( " string function ")
                             paramsStrFunc = mechParamValue
 
-                            # dictVars[mechParamName] = lambda postConds: postConds['x']
-                            # find sim config vars that are starting with machparamname
-                            # Check all simfig vars that start with mechparamname_
-                            # 'gnabar': 'gnabar_constant_1 + gnabar_constant_2*pathDistFromParent'
-                            strVars = [var for var in list(simConfig.strVars) if var.startswith(mechParamName) + "_"]
-                            for index, value in enumerate(strVars):
+                            # strVarMap = [var for var in list(simConfig.strVars) if var.startswith(mechParamName) + "_"]
+
+                            strVarMap = mechParams[mechParamName+ "_var"]
+                            strVarMapKeys= strVarMap.keys()
+                            print (" strVarMapKeys = " + str(strVarMapKeys))
+                            for index, value in enumerate(strVarMapKeys):
                                 if value == 'pathDistFromSoma':
-                                    strVars[index] = h.distance(seg.x, sec=soma)
+                                    strVarMapKeys[index] = h.distance(seg.x, sec=soma)
                                 elif value == 'pathDistFromParentSec':
-                                    strVars[index] = h.distance(seg.x, sec=parentSec)
+                                    strVarMapKeys[index] = h.distance(seg.x, sec=parentSec)
                              # this picks out gnabar_constant1 and gnabar_constant2
                             lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function
+                            print ( " lambdaStr " + lambdaStr)
                             lambdaFunc = eval(lambdaStr)
                             for seg in sec:
-                                setattr(getattr(seg, mechName), mechParamName,lambdaFunc( eval("simConfig.strVar") for strVar in strVars} ))
+                                print ( " before set attr " + str([strVarMap[x] for x in strVarMapKeys]))
+                                setattr(getattr(seg, mechName), mechParamName,lambdaFunc( [strVarMap[x] for x in strVarMapKeys] ))
 
                         else:
 

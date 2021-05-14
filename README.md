@@ -6,6 +6,4 @@ For more details, installation instructions, documentation, tutorials, forums, v
 
 This package is developed and maintained by the Neurosim lab (www.neurosimlab.org)
 
-[![Build Status](https://travis-ci.org/Neurosim-lab/netpyne.svg?branch=development)](https://travis-ci.org/Neurosim-lab/netpyne)
-
-![Build](https://github.com/Neurosim-lab/netpyne/actions/workflows/tests.yml/badge.svg)
+[![Build](https://github.com/Neurosim-lab/netpyne/actions/workflows/tests.yml/badge.svg)](https://github.com/Neurosim-lab/netpyne/actions/workflows/tests.yml)

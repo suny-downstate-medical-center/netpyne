@@ -2,10 +2,11 @@ name: Tests
 on: [push]
 jobs:
   Run-Tests:
-    runs-on: ubuntu-18.04
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: [2.7, 3.7]
 
     steps:

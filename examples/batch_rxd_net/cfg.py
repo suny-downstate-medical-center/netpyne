@@ -14,6 +14,8 @@ cfg.dt = 0.1                  # Internal integration timestep to use
 cfg.verbose = False            # Show detailed messages
 cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 cfg.filename = 'rxd_net'   # Set file output name
+cfg.saveJson = True
+cfg.saveDataInclude = ['simData', 'simConfig', 'netParams', 'net']
 
  # Network dimensions
 cfg.sizeX = 100

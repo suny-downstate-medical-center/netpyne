@@ -43,29 +43,24 @@ def runBatchComet(b, label):
 
 	b.run() # run batch
 
-
-def batchNa():
-	params = {'dendNa': [0.025, 0.03, 0.035, 0.4],
-			('IClamp1', 'amp'): list(np.arange(-2.0, 8.0, 0.5)/10.0)}
-	initCfg = {'duration': 1.1, 'tau1NMDA': 15}
-	b = Batch(params=params, initCfg=initCfg)
-	runBatch(b, 'batchNa', setup='mpi_bulletin')
-
-
-def batchNMDA():
-	params = {'tau1NMDA': [10, 15, 20, 25],
-	  		 ('NetStim1', 'weight'): list(np.arange(1.0, 10.0, 1.0)/1e4)}
-	initCfg = {'duration': 1.1}
-	b = Batch(params=params, initCfg=initCfg)
-	runBatch(b, 'batchNMDA', setup='mpi_bulletin')
-
+init_list = [0.0, 0.5, 1.0]
+gip3r_list = [12040 * 50, 12040 * 100, 12040 * 150]
 def batchRxd():
-	params = {'ip3_init' : [0.0, 0.5, 1.0],
-			'gip3r' : [12040 * 50, 12040 * 100, 12040 * 150]}
+	params = {'ip3_init' : init_list,
+			'gip3r' : gip3r_list}
 	initCfg = {'duration' : 1.0*1e3}
 	b = Batch(params=params, initCfg=initCfg)
 	runBatch(b, 'batchRxd', setup='mpi_bulletin')
 
 # Main code
 if __name__ == '__main__':
+	from neuron import h 
+	pc = h.ParallelContext()
+	pcid = pc.id()
 	batchRxd()
+
+	# ## analyze 
+	# if pcid === 0:
+	# 	import json
+	# 	for init_ind in range(len(init_list)):
+	# 		for gip3d_ind in range(len())

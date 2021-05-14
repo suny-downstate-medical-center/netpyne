@@ -2,6 +2,8 @@
 HHTut.py
 """
 
+cause a crash here
+
 from netpyne import specs, sim
 
 netParams = specs.NetParams()   # object of class NetParams to store the network parameters

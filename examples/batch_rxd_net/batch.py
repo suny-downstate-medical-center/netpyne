@@ -3,7 +3,8 @@ batch.py
 
 Batch simulation for M1 model using NetPyNE
 """
-
+import sys 
+sys.path.insert(0,'../../../netpyne/')
 from netpyne.batch import Batch
 import numpy as np
 

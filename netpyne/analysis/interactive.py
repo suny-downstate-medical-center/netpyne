@@ -505,7 +505,7 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=None, t=Non
 
     # plot recorded dipole data
     for i,(k,v) in enumerate(dpl.items()):
-        fig.line(t, v, legend=k, color=colors[i], line_width=2.0)
+        fig.line(t, v, legend_label=k, color=colors[i], line_width=2.0)
 
     fig.legend.location = "top_right"
     fig.legend.click_policy = "hide"
@@ -1801,7 +1801,7 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
                 color = colors[i%len(colors)]
 
             legend=str(elec)
-            figs['timeSeries'].line(t, lfpPlot+(i*ydisp), color=color, name=str(elec), legend=legend)
+            figs['timeSeries'].line(t, lfpPlot+(i*ydisp), color=color, name=str(elec), legend_label=legend)
 
         data['lfpPlot'] = lfpPlot
         data['ydisp'] =  ydisp

@@ -22,7 +22,7 @@ if __gui__:
     from matplotlib import mlab
     from matplotlib_scalebar import scalebar
 from numbers import Number
-from .utils import colorList, exception, getSpktSpkid, _showFigure, _saveFigData, getCellsInclude, syncMeasure, _smooth1d, _guiTheme
+from .utils import colorList, exception, getSpktSpkid, _showFigure, _saveFigData, getCellsInclude, syncMeasure, _smooth1d, _guiTheme, _guiBlack, _guiWhite
 
 import numpy as np
 import pandas as pd
@@ -32,7 +32,24 @@ from bokeh.io import curdoc
 from bokeh.palettes import Viridis256
 from bokeh.models import HoverTool
 
-bokeh_theme = curdoc().theme
+
+def applyTheme(kwargs):
+    theme = None
+    if 'theme' in kwargs:
+        from bokeh.themes import Theme
+        if kwargs['theme'] != 'default':
+            if kwargs['theme'] == 'gui':
+                theme = Theme(json=_guiTheme)
+            elif kwargs['theme'] == 'guiBlack':
+                theme = Theme(json=_guiBlack)
+            elif kwargs['theme'] == 'guiWhite':
+                theme = Theme(json=_guiWhite)
+            else:
+                theme = kwargs['theme']
+            curdoc().theme = theme
+
+    return theme
+
 
 
 
@@ -156,15 +173,7 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
 
     print('Plotting interactive raster ...')
 
-    theme = None
-    if 'theme' in kwargs:
-        if kwargs['theme'] != 'default':
-            if kwargs['theme'] == 'gui':
-                from bokeh.themes import Theme
-                theme = Theme(json=_guiTheme)
-            else:
-                theme = kwargs['theme']
-            curdoc().theme = theme
+    theme = applyTheme(kwargs)
 
     TOOLS = 'hover,save,pan,box_zoom,reset,wheel_zoom',
 
@@ -400,18 +409,9 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=None, t=Non
     from bokeh.resources import CDN
     from bokeh.embed import file_html
     from bokeh.layouts import layout
-
-    theme = None
     from bokeh.colors import RGB
 
-    if 'theme' in kwargs:
-        if kwargs['theme'] != 'default':
-            if kwargs['theme'] == 'gui':
-                from bokeh.themes import Theme
-                theme = Theme(json=_guiTheme)
-            else:
-                theme = kwargs['theme']
-            curdoc().theme = theme
+    theme = applyTheme(kwargs)
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
@@ -571,14 +571,7 @@ def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=
     from bokeh.embed import file_html
     from bokeh.layouts import layout
 
-    if 'theme' in kwargs:
-        if kwargs['theme'] != 'default':
-            if kwargs['theme'] == 'gui':
-                from bokeh.themes import Theme
-                theme = Theme(json=_guiTheme)
-            else:
-                theme = kwargs['theme']
-            curdoc().theme = theme
+    theme = applyTheme(kwargs)
 
     # renormalize the dipole and save
     def baseline_renormalize():
@@ -765,14 +758,7 @@ def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1,
     from bokeh.embed import file_html
     from bokeh.layouts import layout
 
-    if 'theme' in kwargs:
-        if kwargs['theme'] != 'default':
-            if kwargs['theme'] == 'gui':
-                from bokeh.themes import Theme
-                theme = Theme(json=_guiTheme)
-            else:
-                theme = kwargs['theme']
-            curdoc().theme = theme
+    theme = applyTheme(kwargs)
 
     # renormalize the dipole and save
     def baseline_renormalize():
@@ -983,15 +969,7 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
 
     print('Plotting interactive spike histogram...')
 
-    theme = None
-    if 'theme' in kwargs:
-        if kwargs['theme'] != 'default':
-            if kwargs['theme'] == 'gui':
-                from bokeh.themes import Theme
-                theme = Theme(json=_guiTheme)
-            else:
-                theme = kwargs['theme']
-            curdoc().theme = theme
+    theme = applyTheme(kwargs)
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
@@ -1215,15 +1193,7 @@ def iplotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, max
 
     print('Plotting interactive firing rate power spectral density (PSD) ...')
 
-    theme = None
-    if 'theme' in kwargs:
-        if kwargs['theme'] != 'default':
-            if kwargs['theme'] == 'gui':
-                from bokeh.themes import Theme
-                theme = Theme(json=_guiTheme)
-            else:
-                theme = kwargs['theme']
-            curdoc().theme = theme
+    theme = applyTheme(kwargs)
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
@@ -1439,15 +1409,7 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
 
     print('Plotting interactive recorded cell traces per', oneFigPer)
 
-    theme = None
-    if 'theme' in kwargs:
-        if kwargs['theme'] != 'default':
-            if kwargs['theme'] == 'gui':
-                from bokeh.themes import Theme
-                theme = Theme(json=_guiTheme)
-            else:
-                theme = kwargs['theme']
-            curdoc().theme = theme
+    theme = applyTheme(kwargs)
 
     TOOLS = 'save,pan,box_zoom,reset,wheel_zoom'
 
@@ -1592,7 +1554,7 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
                         subfig.legend.click_policy="hide"
                         figs['_trace_' + str(trace)].append(subfig)
 
-
+    html = None
     for figLabel, figObj in figs.items():
 
         if overlay:
@@ -1777,15 +1739,7 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
     print('Plotting interactive LFP ...')
 
     html = None
-    theme = None
-    if 'theme' in kwargs:
-        if kwargs['theme'] != 'default':
-            if kwargs['theme'] == 'gui':
-                from bokeh.themes import Theme
-                theme = Theme(json=_guiTheme)
-            else:
-                theme = kwargs['theme']
-            curdoc().theme = theme
+    theme = applyTheme(kwargs)
 
     if not 'palette' in kwargs:
         colors = [RGB(*[round(f * 255) for f in color]) for color in colorList]
@@ -1834,7 +1788,7 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
 
         avg_color = 'black'
         if 'theme' in kwargs:
-            if kwargs['theme'] == 'gui' or 'dark' in kwargs['theme']:
+            if kwargs['theme'] == 'gui' or 'dark' in kwargs['theme'] or 'lack' in kwargs['theme']:
                 avg_color = 'white'
 
         for i,elec in enumerate(electrodes[::-1]):
@@ -1881,7 +1835,7 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
 
         avg_color = 'black'
         if 'theme' in kwargs:
-            if kwargs['theme'] == 'gui' or 'dark' in kwargs['theme']:
+            if kwargs['theme'] == 'gui' or 'dark' in kwargs['theme'] or 'lack' in kwargs['theme']:
                 avg_color = 'white'
 
         for i,elec in enumerate(electrodes):
@@ -2185,15 +2139,7 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
 
     print('Plotting interactive connectivity matrix...')
 
-    theme = None
-    if 'theme' in kwargs:
-        if kwargs['theme'] != 'default':
-            if kwargs['theme'] == 'gui':
-                from bokeh.themes import Theme
-                theme = Theme(json=_guiTheme)
-            else:
-                theme = kwargs['theme']
-            curdoc().theme = theme
+    theme = applyTheme(kwargs)
 
     if connsFile and tagsFile:
         connMatrix, pre, post = network._plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile, removeWeightNorm)
@@ -2431,15 +2377,7 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
 
     print('Plotting interactive 2D representation of network cell locations and connections...')
 
-    theme = None
-    if 'theme' in kwargs:
-        if kwargs['theme'] != 'default':
-            if kwargs['theme'] == 'gui':
-                from bokeh.themes import Theme
-                theme = Theme(json=_guiTheme)
-            else:
-                theme = kwargs['theme']
-            curdoc().theme = theme
+    theme = applyTheme(kwargs)
 
     TOOLS = 'hover,save,pan,box_zoom,reset,wheel_zoom',
 
@@ -2643,15 +2581,8 @@ def iplotRxDConcentration(speciesLabel, regionLabel, plane='xy', saveFig=None, s
     from bokeh.models import ColorBar
 
     print('Plotting interactive RxD concentration ...')
-    theme = None
-    if 'theme' in kwargs:
-        if kwargs['theme'] != 'default':
-            if kwargs['theme'] == 'gui':
-                from bokeh.themes import Theme
-                theme = Theme(json=_guiTheme)
-            else:
-                theme = kwargs['theme']
-            curdoc().theme = theme
+    
+    theme = applyTheme(kwargs)
 
     if not 'palette' in kwargs:
         from bokeh.palettes import Viridis256
@@ -2874,21 +2805,9 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
     if timeRange is None:
         timeRange = [0, sim.cfg.duration]
 
-    theme = None
     for stat in stats:
 
-        if 'theme' in kwargs:
-            if kwargs['theme'] != 'default':
-                if kwargs['theme'] == 'gui':
-                    from bokeh.themes import Theme
-                    theme = Theme(json=_guiTheme)
-                else:
-                    theme = kwargs['theme']
-                curdoc().theme = theme
-            else:
-                curdoc().theme = bokeh_theme
-        else:
-            curdoc().theme = bokeh_theme
+        theme = applyTheme(kwargs)
 
         if not 'palette' in kwargs:
             colors = [RGB(*[round(f * 255) for f in color]) for color in colorList]
@@ -2991,7 +2910,7 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
             line_color = 'black'
             if 'theme' in kwargs:
                 if kwargs['theme'] is not None:
-                    if kwargs['theme'] == 'gui' or 'dark' in kwargs['theme'] or kwargs['theme'] == 'contrast':
+                    if kwargs['theme'] == 'gui' or 'dark' in kwargs['theme'] or kwargs['theme'] == 'contrast' or 'lack' in kwargs['theme']:
                         line_color = 'lightgray'
 
             labels = legendLabels if legendLabels else include
@@ -3271,14 +3190,7 @@ def iplotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, 
     else:
         colors = kwargs['palette']
 
-    if 'theme' in kwargs:
-        if kwargs['theme'] != 'default':
-            if kwargs['theme'] == 'gui':
-                from bokeh.themes import Theme
-                theme = Theme(json=_guiTheme)
-            else:
-                theme = kwargs['theme']
-            curdoc().theme = theme
+    theme = applyTheme(kwargs)
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 

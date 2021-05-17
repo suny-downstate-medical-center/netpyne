@@ -1,12 +1,13 @@
-name: Run NetPyNE tests
+name: Tests
 on: [push]
 jobs:
   Run-Tests:
-    runs-on: ubuntu-18.04
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        python-version: [3.7]
+        os: [ubuntu-latest]
+        python-version: [2.7, 3.7]
 
     steps:
       - name: Check out repository code

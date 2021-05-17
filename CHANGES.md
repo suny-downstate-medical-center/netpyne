@@ -1,3 +1,15 @@
+# Version 1.0.0.2
+
+- Release for use with GUI
+
+# Version 1.0.0.1
+
+**New features**
+
+- Added guiBlack and guiWhite themes, streamlined theming
+
+- Updated iplots to avoid Bokeh deprecation
+
 # Version 1.0.0
 
 **New features**

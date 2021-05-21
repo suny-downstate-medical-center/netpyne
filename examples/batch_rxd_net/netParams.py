@@ -1,7 +1,11 @@
 from netpyne import specs
 
 # from cfg import cfg
-from __main__ import cfg 
+try:
+    from __main__ import cfg  # import SimConfig object with params from parent module
+except:
+    from cfg import cfg  # if no simConfig in parent module, import directly from tut8_cfg module
+
 
 #------------------------------------------------------------------------------
 #

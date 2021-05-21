@@ -10,8 +10,7 @@ MPI usage:
     mpiexec -n 4 nrniv -python -mpi init.py
 """
 from netpyne import sim
-from netParams import netParams
-from cfg import cfg
+cfg, netParams = sim.readCmdLineArgs()	
 
 # --------------------------------
 # Instantiate network

@@ -1,3 +1,15 @@
+# Version 1.0.0.2
+
+- Release for use with GUI
+
+# Version 1.0.0.1
+
+**New features**
+
+- Added guiBlack and guiWhite themes, streamlined theming
+
+- Updated iplots to avoid Bokeh deprecation
+
 # Version 1.0.0
 
 **New features**
@@ -10,9 +22,23 @@
 
 - Added cellsVisualizationSpacingMultiplier property to netParams
 
+- Improved Granger plot, renamed it plotGranger
+
+- Added interactive Granger plot (iplotGranger)
+
+- Implemented testing in GitHub Actions with pytest (thanks Daniel!)
+
+- Improved sim.clearAll such that it works even before a sim is run
+
+- Properly formatted all module docstrings
+
 **Bug fixes**
 
 - Fixed bug in TupleToStr function
+
+- Fixed broken links in tutorials
+
+- Bokeh update required changing options from None to 'auto'
 
 
 # Version 0.9.9.1

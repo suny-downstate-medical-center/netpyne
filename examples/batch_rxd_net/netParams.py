@@ -1,6 +1,7 @@
 from netpyne import specs
 
-from cfg import cfg
+# from cfg import cfg
+from __main__ import cfg 
 
 #------------------------------------------------------------------------------
 #

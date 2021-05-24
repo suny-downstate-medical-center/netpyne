@@ -40,7 +40,7 @@ from .utils import colorList, exception, getCellsInclude, getSpktSpkid, _showFig
 @exception
 def calculateRate (include = ['allCells', 'eachPop'], peakBin = 5, timeRange = None):
     """
-    Function for/to <short description of `netpyne.analysis.spikes.calculateRate`>
+    Function to calculate firing rate for selected cells
 
     Parameters
     ----------

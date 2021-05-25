@@ -14,52 +14,100 @@ simConfig = specs.SimConfig()  # dictionary to store sets of simulation configur
 ###############################################################################
 # NETWORK PARAMETERS
 ###############################################################################
-
-# Population parameters
-netParams.popParams['PYR1'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 100} # pop of HH cells
-netParams.popParams['artif1'] = {'cellModel': 'NetStim', 'numCells': 100, 'rate': 50, 'noise': 0.8, 'start': 1, 'seed': 2}  # pop of NetStims
-netParams.popParams['artif2'] = {'cellModel': 'IntFire2', 'numCells': 100, 'ib': 0.0}  # pop of IntFire2
-netParams.popParams['artif3'] = {'cellModel': 'IntFire4', 'numCells': 100, 'taue': 1.0}  # pop of IntFire4
-netParams.popParams['artif4'] = {'cellModel': 'VecStim', 'numCells': 100, 'rate': 5, 'noise': 0.5, 'start': 50,
-    'pulses': [{'start': 200, 'end': 300, 'rate': 60, 'noise':0.2}, {'start': 500, 'end': 800, 'rate': 30, 'noise': 0.5}]}  # pop of Vecstims with 2 pulses
-
-# Synaptic mechanism parameters
-netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}
-
-
-# Stimulation parameters
-netParams.stimSourceParams['background'] = {'type': 'NetStim', 'interval': 100, 'number': 1e5, 'start': 500, 'noise': 0.5}  # stim using NetStims after 500ms
-netParams.stimTargetParams['bkg->PYR1'] = {'source': 'background', 'conds': {'pop': 'PYR1'}, 'sec':'soma', 'loc': 0.5, 'weight': 0.5, 'delay': 1}
-
-
 # Cell parameters
 ## PYR cell properties
 cellParams = Dict()
 cellParams.secs.soma.geom = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}
 cellParams.secs.soma.mechs.hh = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}
-cellParams.conds = {'cellType': 'PYR'}
 netParams.cellParams['PYR'] = cellParams
+
+## IntFire2 artificial cell
+netParams.cellParams['artif_IntFire2'] = {
+    'cellModel': 'IntFire2', 
+    'ib': 0.0}  
+
+## IntFire4 artificial cell
+netParams.cellParams['artif_IntFire4'] = {
+    'cellModel': 'IntFire4', 
+    'taue': 1.0}
+
+## NetStim artificial spike generator
+netParams.cellParams['artif_NetStim'] = {
+    'cellModel': 'NetStim'}
+    
+## VecStim artificial spike generator
+netParams.cellParams['artif_VecStim'] = {
+    'cellModel': 'VecStim'}  # pop of Vecstims with 2 pulses
+
+
+# Population parameters
+netParams.popParams['PYR1'] = {
+    'cellType': 'PYR', 
+    'numCells': 100} # pop of HH cells
+
+netParams.popParams['pop_IntFire2'] = {
+    'cellType': 'artif_IntFire2', 
+    'numCells': 100}  # pop of IntFire2
+
+netParams.popParams['pop_IntFire4'] = {
+    'cellType': 'artif_IntFire4', 
+    'numCells': 100}  # pop of IntFire4
+
+netParams.popParams['pop_NetStim'] = {
+    'cellType': 'artif_NetStim', 
+    'numCells': 100,
+    'rate': 10, 
+    'noise': 0.8, 
+    'start': 1, 
+    'seed': 2}  # pop of NEtSims
+
+netParams.popParams['pop_VecStim'] = {
+    'cellType': 'artif_VecStim', 
+    'numCells': 100, 
+    'rate': 5, 
+    'noise': 0.5, 
+    'start': 50,
+    'pulses': [{'start': 200, 'end': 300, 'rate': 60, 'noise':0.2}, 
+               {'start': 500, 'end': 800, 'rate': 30, 'noise': 0.5}]}  # pop of Vecstims with 2 pulses
+
+
+# Synaptic mechanism parameters
+netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}
 
 
 # Connections
-netParams.connParams['artif1->PYR1'] = {
-    'preConds': {'pop': 'artif1'}, 'postConds': {'pop': 'PYR1'},
-    'convergence': 8,
+netParams.connParams['NetStim->PYR1'] = {
+    'preConds': {'pop': 'pop_NetStim'}, 
+    'postConds': {'pop': 'PYR1'},
+    'convergence': 3,
+    'weight': 0.002,
+    'synMech': 'AMPA',
+    'delay': 'uniform(1,5)'}
+
+
+netParams.connParams['VecStim->PYR1'] = {
+    'preConds': {'pop': 'pop_VecStim'}, 
+    'postConds': {'pop': 'PYR1'},
+    'probability': 0.4,
     'weight': 0.005,
     'synMech': 'AMPA',
     'delay': 'uniform(1,5)'}
 
-netParams.connParams['PYR1->artif2'] = {
-    'preConds': {'pop': 'PYR1'}, 'postConds': {'pop': 'artif2'},
+netParams.connParams['PYR1->IntFire2'] = {
+    'preConds': {'pop': 'PYR1'}, 
+    'postConds': {'pop': 'pop_IntFire2'},
     'probability': 0.2,
-    'weight': 0.2,
+    'weight': 0.1,
+    'synMech': 'AMPA',
     'delay': 'uniform(1,5)'}
 
-netParams.addConnParams('artif2->artif3',
-    {'preConds': {'pop': 'artif2'}, 'postConds': {'pop': 'artif3'},
-    'divergence': 20,
-    'weight': 0.05,
-	'delay': 3})
+
+netParams.connParams['IntFire2->IntFire4'] = {
+    'preConds': {'pop': 'pop_IntFire2'}, 
+    'postConds': {'pop': 'pop_IntFire4'},
+    'probability': 0.1,
+    'weight': 0.2,
+    'delay': 'uniform(1,5)'}
 
 
 ###############################################################################
@@ -77,7 +125,7 @@ simConfig.verbose = 0 #False  # show detailed messages
 simConfig.recordTraces = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'}}
 
 # # Analysis and plotting
-simConfig.analysis['plotRaster'] = True
+simConfig.analysis['plotRaster'] = {'orderInverse': True}
 
 
 ###############################################################################

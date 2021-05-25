@@ -22,7 +22,7 @@ simConfig = specs.SimConfig()   # object of class SimConfig to store the simulat
 ###############################################################################
 
 # Simulation parameters
-simConfig.duration = 10*1e3 # Duration of the simulation, in ms
+simConfig.duration = 2*1e3 # Duration of the simulation, in ms
 simConfig.dt = 0.1 # Internal integration timestep to use
 simConfig.seeds = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
 simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
@@ -69,8 +69,8 @@ netParams.sizeY = 1350 # y-dimension (vertical height or cortical depth) size in
 netParams.sizeZ = 50 # z-dimension (horizontal depth) size in um
 
 ## General connectivity parameters
-netParams.scaleConnWeight = 0.05 # Connection weight scale factor
-netParams.scaleConnWeightNetStims = 1.0 # Connection weight scale factor for NetStims
+netParams.scaleConnWeight = 0.01 # Connection weight scale factor
+netParams.scaleConnWeightNetStims = 0.1 # Connection weight scale factor for NetStims
 netParams.defaultDelay = 2.0 # default conn delay (ms)
 netParams.propVelocity = 100.0 # propagation velocity (um/ms)
 netParams.probLambda = 100.0  # length constant (lambda) for connection probability decay (um)

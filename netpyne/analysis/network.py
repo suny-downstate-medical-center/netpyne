@@ -1169,6 +1169,8 @@ def plot2Dfiring(include=['allCells'], view='xy', popColors=None, timeRange=None
             
             sc.set_offsets(np.c_[posX,posY])
             sc.set_color(cellColors)
+            plt.gca().set_title('t = %d' % int(timeRange[0] + (i+1)*spikeBin))
+
 
 
     frames = int((timeRange[1]-timeRange[0]) / spikeBin)

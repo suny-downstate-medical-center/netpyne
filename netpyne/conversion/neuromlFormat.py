@@ -802,12 +802,9 @@ try:
 
     class NetPyNEBuilder(DefaultNetworkHandler):
         """
-        Short description of `netpyne.conversion.neuromlFormat.NetPyNEBuilder`
-
+        Works with libNeuroML's NeuroMLXMLParser and/or NeuroMLHdf5Parser to parse the NML & build equivalent in NetPyNE
 
         """
-
-
 
         cellParams = OrderedDict()
         popParams = OrderedDict()
@@ -894,7 +891,10 @@ try:
 
             popInfo=OrderedDict()
             popInfo['pop'] = population_id
-            popInfo['cellModel'] = component
+            #popInfo['cellModel'] = component
+
+            ## SIMPLE POP/CELLTYPE FORMAT
+            popInfo['cellType'] = component
             popInfo['originalFormat'] = 'NeuroML2' # This parameter is required to distinguish NML2 "point processes" from abstract cells
             popInfo['cellsList'] = []
             popInfo['numCells'] = size
@@ -908,12 +908,15 @@ try:
             from neuroml import Cell, BaseCell
             if isinstance(component_obj,Cell):
 
-                popInfo['cellType'] = component
+                #popInfo['cellType'] = component
 
                 cell = component_obj
+                '''
                 cellRule = {'conds':{'cellType': component,
                                         'cellModel': component},
                             'secs': {},
+                            'secLists':{}}'''
+                cellRule = {'secs': {},
                             'secLists':{}}
 
                 seg_ids_vs_segs = cell.get_segment_ids_vs_segments()
@@ -1221,9 +1224,9 @@ try:
 
                 self.pop_ids_vs_seg_ids_vs_segs[population_id] = seg_ids_vs_segs
 
-            else:
+            else: # Abstract cell
 
-                popInfo['cellType'] = component
+                #popInfo['cellType'] = component
 
                 if self.verbose: print("Abstract cell: %s"%(isinstance(component_obj,BaseCell)))
 
@@ -1239,8 +1242,6 @@ try:
                     popInfo['originalFormat'] = 'NeuroML2_SpikeSource'
 
                 cellRule = {'label': component,
-                            'conds': {'cellType': component,
-                                        'cellModel': component},
                             'secs': {}} # This parameter is required to distinguish NML2 "point processes" from artificial cells
 
                 soma = {'geom': {}, 'pointps':{}}  # soma properties
@@ -1444,46 +1445,27 @@ try:
     ###############################################################################
     def importNeuroML2(fileName, simConfig, simulate=True, analyze=True):
         """
-        Short description of `netpyne.conversion.neuromlFormat.importNeuroML2`
+        Import network from NeuroML2 and convert internally to NetPyNE format
 
         Parameters
         ----------
-        fileName :
-            Short description of fileName
-
+        fileName : str
+            The filename of the NeuroML file
             **Default:** ``Required``
 
-            **Options:**
-
-
-        simConfig :
-            Short description of simConfig
-
+        simConfig : ``simConfig object``
+            NetPyNE simConfig object specifying simulation configuration.
             **Default:** ``Required``
-
-            **Options:**
-
 
         simulate : bool
-            Short description of simulate
-
+            Go ahead and run a simulation of it already
             **Default:** ``True``
-
-            **Options:**
-
 
         analyze : bool
-            Short description of analyze
-
+            Run sim.saveData() and sim.analysis.plotData()
             **Default:** ``True``
 
-            **Options:**
-
-
-
         """
-
-
 
         from .. import sim
 
@@ -1496,7 +1478,7 @@ try:
 
         nmlHandler = None
 
-        verbose = False
+        verbose = True
 
         if fileName.endswith(".nml"):
 

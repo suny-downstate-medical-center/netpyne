@@ -556,7 +556,7 @@ def importNeuroML2SimulateAnalyze(fileName, simConfig):
 
     simConfig : ``simConfig object``
         NetPyNE simConfig object specifying simulation configuration.
-        **Default:** ``None`` uses the current ``simConfig``.
+        **Default:** *required*.
 
     """
 

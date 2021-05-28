@@ -18,7 +18,6 @@ import numpy as np
 from neuron import h, init # Import NEURON
 from . import utils
 
-import logging
 
 
 #------------------------------------------------------------------------------
@@ -32,7 +31,6 @@ def preRun():
     """
 
 
-    logging.info('prerun1')
     from .. import sim
 
 
@@ -49,7 +47,6 @@ def preRun():
     # set h global params
     sim.setGlobals()
 
-    logging.info('prerun2')
     # set h.dt
     h.dt = sim.cfg.dt
 
@@ -76,7 +73,6 @@ def preRun():
         rand = h.Random()
         rand.Random123_globalindex(int(sim.cfg.rand123GlobalIndex))
 
-    logging.info('prerun3')
     # reset all netstim randomizers so runs are always equivalent
     for cell in sim.net.cells:
         if cell.tags.get('cellModel') == 'NetStim':
@@ -98,7 +94,6 @@ def preRun():
                     if not isinstance(stim['hObj'].noiseFromRandom, dict):
                         stim['hObj'].noiseFromRandom(stim['hRandom'])
 
-    logging.info('prerun4')
     # handler for recording LFP
     if sim.cfg.recordLFP:
         def recordLFPHandler():
@@ -128,7 +123,6 @@ def runSim(skipPreRun=False):
     """
 
 
-    logging.info('run1')
 
     from .. import sim
 

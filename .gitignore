@@ -19,6 +19,7 @@ i386
 *.dll
 umac
 .DS_Store
+venv/
 
 /examples/HybridTut/*.nml
 /examples/HybridTut/*.mod

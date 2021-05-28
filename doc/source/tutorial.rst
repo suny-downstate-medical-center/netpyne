@@ -924,7 +924,7 @@ The first example ( :download:`cell_lfp.py <../../examples/LFPrecording/cell_lfp
 	:width: 60%
 	:align: center
 
-The second example ( :download:`net_lfp.py <<../../examples/LFPrecording/net_lfp.py>`) shows LFP recording for a network very similar to that shown in Tutorial 5. However, in this case, the cells have been replaced with a more realistic model: a 6-compartment M1 corticostriatal neuron with multiple ionic channels. The cell parameters are loaded from a .json file. Cell receive NetStim inputs and include excitatory and inhibitory connections. Four LFP electrodes are placed at different cortical depths. The raster plot and LFP time-resolved signal, PSD, spectrogram and 3D locations of the electrodes are plotted:
+The second example ( :download:`net_lfp.py <../../examples/LFPrecording/net_lfp.py>`) shows LFP recording for a network very similar to that shown in Tutorial 5. However, in this case, the cells have been replaced with a more realistic model: a 6-compartment M1 corticostriatal neuron with multiple ionic channels. The cell parameters are loaded from a .json file. Cell receive NetStim inputs and include excitatory and inhibitory connections. Four LFP electrodes are placed at different cortical depths. The raster plot and LFP time-resolved signal, PSD, spectrogram and 3D locations of the electrodes are plotted:
 
 .. image:: figs/lfp_net.png
 	:width: 90%
@@ -937,7 +937,7 @@ Tutorial 10: Network with Reaction-Diffusion (RxD)
 NetPyNE's high-level specifications also supports `NEURON's reaction-diffusion (RxD) <https://www.neuron.yale.edu/neuron/static/docs/rxd/index.html>`_  components. RxD enables to specify the diffusion of molecules (\eg\ calcium, potassium or IP3) intracellularly, subcellularly (by including organelles such as endoplasmic reticulum and mitochondria), and extracellularly is the context of signaling and enzymatic processing -- \eg\ metabolism, phosphorylation, buffering, second messenger cascades.
 This helps to couple molecular-level chemophysiology to the classical electrophysiology at subcellular, cellular and network scales. 
 
-The ``netParams.rxdParams`` dictionary can be used to define the different RxD components: ``regions``, ``species``, ``states``, ``reactions``, ``multicompartmentReactions`` and ``rates``. Example models that include RxD components in single cells and networks are included in the \examples folder: `RxD buffering example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/rxd_buffering>`_ and `RxD network example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/rxd_network>`_. RxD also works with parallel simulations.
+The ``netParams.rxdParams`` dictionary can be used to define the different RxD components: ``regions``, ``species``, ``states``, ``reactions``, ``multicompartmentReactions`` and ``rates``. Example models that include RxD components in single cells and networks are included in the \examples folder: `RxD buffering example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/rxd_buffering>`_ and `RxD network example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/rxd_net>`_. RxD also works with parallel simulations.
 
 
 

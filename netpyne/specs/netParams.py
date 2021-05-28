@@ -261,6 +261,7 @@ class NetParams(object):
         self.rotateCellsRandomly = False # random rotation of cells around y-axis [min,max] radians, e.g. [0, 3.0]
         self.defineCellShapes = False # convert stylized cell geometries to 3d points (calls h.define_shape)
         self.correctBorder = False  # distance (um) from which to correct connectivity border effect, [x,y,z] eg. [100,150,150]
+        self.cellsVisualizationSpacingMultiplier = [1, 1, 1]  # x,y,z scaling factor for spacing between cells during visualization
 
         ## General connectivity parameters
         self.scaleConnWeight = 1 # Connection weight scale factor (NetStims not included)

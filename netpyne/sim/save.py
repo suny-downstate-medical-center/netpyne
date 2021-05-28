@@ -215,6 +215,7 @@ def saveData(include=None, filename=None):
                         print(("Saving %i points of data on: %s:%s to %s"%(len(trace),ref,cellid,dat_file_name)))
                         for i in range(len(trace)):
                             dat_file.write('%s\t%s\n'%((i*sim.cfg.dt/1000),trace[i]/1000))
+                        dat_file.close()
 
                 print('Finished saving!')
 
@@ -508,7 +509,7 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, dataDir=Non
         if not filename:
             filename = sim.cfg.filename
         filePath = filename + timestampStr
-        
+
         # Save to pickle file
         if sim.cfg.savePickle:
             import pickle

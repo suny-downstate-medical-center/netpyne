@@ -8,3 +8,10 @@ np.stimSourceParams['bkg']['noise'] = 1
 sim.createExportNeuroML2(netParams = np,
                        simConfig = HybridTut.simConfig,
                        reference = 'HybridTut')  # create and export network to NeuroML 2
+
+
+###### Validate the NeuroML ######
+
+from neuroml.utils import validate_neuroml2
+
+validate_neuroml2('HybridTut.net.nml')

@@ -8,3 +8,9 @@ np.stimSourceParams['bkg']['noise'] = 1
 sim.createExportNeuroML2(netParams = np,
                        simConfig = HHTut.simConfig,
                        reference = 'HHTut')  # create and export network to NeuroML 2
+
+
+###### Validate the NeuroML ######
+
+from neuroml.utils import validate_neuroml2
+validate_neuroml2('HHTut.net.nml')

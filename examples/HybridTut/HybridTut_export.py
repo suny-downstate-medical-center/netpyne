@@ -14,4 +14,4 @@ sim.createExportNeuroML2(netParams = np,
 
 from neuroml.utils import validate_neuroml2
 
-validate_neuroml2('HybridTut.net.nml')
+#validate_neuroml2('HybridTut.net.nml')

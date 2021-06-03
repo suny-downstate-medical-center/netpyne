@@ -151,7 +151,7 @@ def runSim(skipPreRun=False):
             coreneuron.cell_permute = 2
         else:
             coreneuron.cell_permute = 0
-        sim.pc.nrnbbcore_write('coredat%d' % sim.nhosts)
+        #sim.pc.nrnbbcore_write('coredat%d' % sim.nhosts)
         if sim.cfg.prcellstate != -1:
             sim.pc.prcellstate(sim.cfg.prcellstate, 'corenrn_start')
     else:

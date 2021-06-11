@@ -201,6 +201,7 @@ def gridSearch(self, pc):
                     queueName = self.runCfg.get('queueName', 'default')
                     nodesppn = 'nodes=%d:ppn=%d'%(nodes,ppn)
                     custom = self.runCfg.get('custom', '')
+                    printOutput = self.runCfg.get('printOutput', False)
                     numproc = nodes*ppn
 
                     command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
@@ -246,6 +247,7 @@ echo $PBS_O_WORKDIR
                     walltime = self.runCfg.get('walltime', '00:30:00')
                     reservation = self.runCfg.get('reservation', None)
                     custom = self.runCfg.get('custom', '')
+                    printOutput = self.runCfg.get('printOutput', False)
                     if reservation:
                         res = '#SBATCH --res=%s'%(reservation)
                     else:
@@ -296,6 +298,7 @@ wait
                     folder = self.runCfg.get('folder', '.')
                     script = self.runCfg.get('script', 'init.py')
                     mpiCommand = self.runCfg.get('mpiCommand', 'mpirun')
+                    printOutput = self.runCfg.get('printOutput', False)
 
                     command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, cores, script, cfgSavePath, netParamsSavePath)
 
@@ -308,6 +311,7 @@ wait
                 # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
                 elif self.runCfg.get('type',None) == 'mpi_bulletin':
                     jobName = self.saveFolder+'/'+simLabel
+                    printOutput = self.runCfg.get('printOutput', False)
                     print('Submitting job ',jobName)
                     # master/slave bulletin board schedulling of jobs
                     pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath, processes)
@@ -335,10 +339,9 @@ wait
                 if len(newline) > 1:
                     print(newline, end='')
                 
-        sleep(sleepInterval)
+        #sleep(sleepInterval)
     
     # attempt to terminate completed processes
-    
     for proc in processes:
         try:
             proc.terminate()

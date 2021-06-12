@@ -39,7 +39,7 @@ from netpyne import specs
 
 from .utils import bashTemplate
 from .utils import createFolder
-from .grid import gridSearch
+from .grid import gridSearch, getParamCombinations, generateParamCombinations
 from .evol import evolOptim
 from .asd_parallel import asdOptim
 

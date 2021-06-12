@@ -77,31 +77,50 @@ def runJob(script, cfgSavePath, netParamsSavePath, processes):
     print(proc.stdout.read().decode())
     processes.append(proc)
 
+# -------------------------------------------------------------------------------
+# Get parameter combinations
+# -------------------------------------------------------------------------------
+def getParamCombinations(self):
+
+    indices = []
+    values = []
+    filenames = []
+
+    combData = {}
+
+    # generate param combinations
+    groupedParams, ungroupedParams, indexCombGroups, valueCombGroups, indexCombinations, valueCombinations, labelList, valuesList = generateParamCombinations(self)
+
+    for iCombG, pCombG in zip(indexCombGroups, valueCombGroups):
+        for iCombNG, pCombNG in zip(indexCombinations, valueCombinations):
+            if groupedParams and ungroupedParams: # temporary hack - improve
+                iComb = iCombG+iCombNG
+                pComb = pCombG+pCombNG
+            elif ungroupedParams:
+                iComb = iCombNG
+                pComb = pCombNG
+            elif groupedParams:
+                iComb = iCombG
+                pComb = pCombG
+            else:
+                iComb = []
+                pComb = []
+
+            # set simLabel and jobName
+            simLabel = self.batchLabel+''.join([''.join('_'+str(i)) for i in iComb])
+            jobName = self.saveFolder+'/'+simLabel
+
+            indices.append(iComb)
+            values.append(pComb)
+            filenames.append(jobName)
+
+    return {'indices': indices, 'values': values, 'labels': labelList, 'filenames': filenames}
 
 
 # -------------------------------------------------------------------------------
-# Grid Search optimization
+# Generate parameter combinations
 # -------------------------------------------------------------------------------
-def gridSearch(self, pc):
-    """
-    Function for/to <short description of `netpyne.batch.grid.gridSearch`>
-
-    Parameters
-    ----------
-    self : <type>
-        <Short description of self>
-        **Default:** *required*
-
-    pc : <type>
-        <Short description of pc>
-        **Default:** *required*
-
-
-    """
-    # create main sim directory and save scripts
-    self.saveScripts()
-    netParamsSavePath = self.netParamsSavePath
-
+def generateParamCombinations(self):
     # set initial cfg initCfg
     if len(self.initCfg) > 0:
         for paramLabel, paramVal in self.initCfg.items():
@@ -136,6 +155,35 @@ def gridSearch(self, pc):
         else:
             valueCombGroups = [(0,)] # this is a hack -- improve!
             indexCombGroups = [(0,)]
+
+    return groupedParams, ungroupedParams, indexCombGroups, valueCombGroups, indexCombinations, valueCombinations, labelList, valuesList
+
+
+# -------------------------------------------------------------------------------
+# Grid Search optimization
+# -------------------------------------------------------------------------------
+def gridSearch(self, pc):
+    """
+    Function for/to <short description of `netpyne.batch.grid.gridSearch`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+    pc : <type>
+        <Short description of pc>
+        **Default:** *required*
+
+
+    """
+    # create main sim directory and save scripts
+    self.saveScripts()
+    netParamsSavePath = self.netParamsSavePath
+
+    # generate param combinations
+    groupedParams, ungroupedParams, indexCombGroups, valueCombGroups, indexCombinations, valueCombinations, labelList, valuesList = generateParamCombinations(self)
 
     # if using pc bulletin board, initialize all workers
     if self.runCfg.get('type', None) == 'mpi_bulletin':

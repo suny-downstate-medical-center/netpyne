@@ -121,10 +121,6 @@ def getParamCombinations(self):
 # Generate parameter combinations
 # -------------------------------------------------------------------------------
 def generateParamCombinations(self):
-    # set initial cfg initCfg
-    if len(self.initCfg) > 0:
-        for paramLabel, paramVal in self.initCfg.items():
-            self.setCfgNestedParam(paramLabel, paramVal)
 
     # iterate over all param combinations
     if self.method == 'grid':
@@ -181,6 +177,11 @@ def gridSearch(self, pc):
     # create main sim directory and save scripts
     self.saveScripts()
     netParamsSavePath = self.netParamsSavePath
+
+    # set initial cfg initCfg
+    if len(self.initCfg) > 0:
+        for paramLabel, paramVal in self.initCfg.items():
+            self.setCfgNestedParam(paramLabel, paramVal)
 
     # generate param combinations
     groupedParams, ungroupedParams, indexCombGroups, valueCombGroups, indexCombinations, valueCombinations, labelList, valuesList = generateParamCombinations(self)

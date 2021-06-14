@@ -224,6 +224,9 @@ class Batch(object):
         individual.write('#gen  #ind  fitness  [candidate]\n')
         return stats, individual
 
+    def getParamCombinations(self):
+        if self.method in 'grid':
+            return getParamCombinations(self)
 
     def run(self):
 

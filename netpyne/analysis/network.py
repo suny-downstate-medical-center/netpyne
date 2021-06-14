@@ -692,6 +692,9 @@ def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderB
 
     print('Plotting connectivity matrix...')
 
+    if groupBy == 'cell' and feature == 'strength':
+        feature = 'weight'
+
     if connsFile and tagsFile:
         connMatrix, pre, post = _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile, removeWeightNorm, logPlot)
     else:

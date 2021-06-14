@@ -493,7 +493,7 @@ def _addRates(self, params):
 
     for label, param in params.items():
 
-        dynamicVars = {'sim': sim , 'rxd' : rxd}
+        dynamicVars = {'sim': sim , 'rxdmath': rxdmath', 'rxd' : rxd}
 
         # species
         if 'species' not in param:

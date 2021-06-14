@@ -16,7 +16,7 @@ def runBatch(b, label, setup='mpi_bulletin'):
     if setup == 'mpi_bulletin':
         b.runCfg = {'type': 'mpi_bulletin',
                     'script': 'init.py',
-                    'skip': True}
+                    'skip': False}
 
     elif setup == 'hpc_slurm_comet':
         b.runCfg = {'type': 'hpc_slurm',

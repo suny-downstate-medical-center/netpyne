@@ -48,7 +48,7 @@ pc = h.ParallelContext() # use bulletin board master/slave
 # -------------------------------------------------------------------------------
 
 # func needs to be outside of class
-def runJob(script, cfgSavePath, netParamsSavePath, processes):
+def runJob(script, cfgSavePath, netParamsSavePath, processes, jobName):
     """
     Function for/to <short description of `netpyne.batch.grid.runJob`>
 
@@ -73,8 +73,14 @@ def runJob(script, cfgSavePath, netParamsSavePath, processes):
     print('\nJob in rank id: ',pc.id())
     command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath)
     print(command+'\n')
-    proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
-    print(proc.stdout.read().decode())
+
+    stdout=open(jobName+'.run','w')
+    stderr=open(jobName+'.err','w')
+    proc = Popen(command.split(' '), stdout=stdout, stderr=stderr)
+
+    # proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
+    
+    #print(proc.stdout.read().decode())
     processes.append(proc)
 
 # -------------------------------------------------------------------------------
@@ -361,10 +367,12 @@ wait
                 elif self.runCfg.get('type',None) == 'mpi_bulletin':
                     jobName = self.saveFolder+'/'+simLabel
                     printOutput = self.runCfg.get('printOutput', False)
-                    print('Submitting job ',jobName)
+                    print('Submitting job ', jobName)
                     # master/slave bulletin board schedulling of jobs
-                    pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath, processes)
-
+                    pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath, processes, jobName)
+                    print('Saving output to: ', jobName+'.run')
+                    print('Saving errors to: ', jobName+'.err')
+                    print('')
                 else:
                     print(self.runCfg)
                     print("Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'")
@@ -372,6 +380,7 @@ wait
                     sys.exit(0)
 
             sleep(sleepInterval) # avoid saturating scheduler
+
     print("-"*80)
     print("   Finished submitting jobs for grid parameter exploration   ")
     print("-" * 80)

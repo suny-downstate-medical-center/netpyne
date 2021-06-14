@@ -1,5 +1,13 @@
 # Version 1.0.0.2
 
+**New features**
+
+- Added function to get list of batch grid search parameter combinations 
+
+- Save output of mpi_bulletin batches to .run and .err files
+
+# Version 1.0.0.2
+
 - Release for use with GUI
 
 # Version 1.0.0.1

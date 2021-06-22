@@ -136,6 +136,9 @@ def timing(mode, processName):
 
     from .. import sim
 
+    if not hasattr(sim, 'timingData'):
+        sim.timingData = {}
+
     if hasattr(sim, 'rank'):
 
         if sim.rank == 0 and sim.cfg.timing:

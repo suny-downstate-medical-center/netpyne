@@ -321,12 +321,14 @@ def intervalSave(t):
     if sim.rank == 0:
         if hasattr(sim.cfg, 'intervalFolder'):
             targetFolder = sim.cfg.intervalFolder
+        elif hasattr(sim.cfg, 'saveFolder'):
+            targetFolder = os.path.join(sim.cfg.saveFolder, 'interval_data')
         else:
-            targetFolder = os.path.dirname(sim.cfg.filename)
+            targetFolder = 'interval_data'
 
         if targetFolder and not os.path.exists(targetFolder):
             try:
-                os.mkdir(targetFolder)
+                os.makedirs(targetFolder)
             except OSError:
                 print(' Could not create target folder: %s' % (targetFolder))
 
@@ -381,7 +383,7 @@ def intervalSave(t):
             sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
             sim.allSimData['spkt'], sim.allSimData['spkid'] = list(sim.allSimData['spkt']), list(sim.allSimData['spkid'])
 
-        name = targetFolder + '/data_{:0.0f}.pkl'.format(t)
+        name = os.path.join(targetFolder, 'interval_data_{:0.0f}.pkl'.format(t))
         with open(name, 'wb') as f:
             pickle.dump(dict(sim.allSimData), f, protocol=2)
 
@@ -408,7 +410,7 @@ def intervalSave(t):
 #------------------------------------------------------------------------------
 # Save data in each node
 #------------------------------------------------------------------------------
-def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, dataDir=None):
+def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=None):
     """
     Function to save simulation data by node rather than as a whole
 
@@ -428,7 +430,7 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, dataDir=Non
         **Default:** ``False`` does not remove the trace data.
         **Options:** ``True`` removes the trace data.
 
-    dataDir : str
+    saveFolder : str
         Name of the directory where data files will be saved.
         **Default:** ``None`` saves to the default directory.
 
@@ -441,15 +443,18 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, dataDir=Non
     import os
 
     # create folder if missing
-    if not dataDir:
-        dataDir = sim.cfg.filename + '_node_data'
+    if not saveFolder:
+        if getattr(sim.cfg, 'saveFolder', None) is None:
+            saveFolder = 'node_data'
+        else:
+            saveFolder = os.path.join(sim.cfg.saveFolder, 'node_data')
 
-    if not os.path.exists(dataDir):
-        os.makedirs(dataDir, exist_ok=True)
+    if not os.path.exists(saveFolder):
+        os.makedirs(saveFolder, exist_ok=True)
 
     sim.pc.barrier()
     if sim.rank == 0:
-        print('\nSaving an output file for each node in: %s' % (dataDir))
+        print('\nSaving an output file for each node in: %s' % (saveFolder))
 
     # saving data
     dataSave = {}
@@ -506,7 +511,10 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, dataDir=Non
             timestampStr = ''
 
         if not filename:
-            filename = sim.cfg.filename
+            if hasattr(sim.cfg, 'simLabel'):
+                filename = sim.cfg.simLabel
+            else:
+                filename = sim.cfg.filename
         filePath = filename + timestampStr
         
         # Save to pickle file
@@ -515,14 +523,14 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, dataDir=Non
             dataSave = utils.replaceDictODict(dataSave)
             fileName = filePath + '_node_' + str(sim.rank) + '.pkl'
             print(('  Saving output as: %s ... ' % (fileName)))
-            with open(os.path.join(dataDir, fileName), 'wb') as fileObj:
+            with open(os.path.join(saveFolder, fileName), 'wb') as fileObj:
                 pickle.dump(dataSave, fileObj)
 
         # Save to json file
         if sim.cfg.saveJson:
             fileName = filePath + '_node_' + str(sim.rank) + '.json'
             print(('  Saving output as: %s ... ' % (fileName)))
-            sim.saveJSON(os.path.join(dataDir, fileName), dataSave)
+            sim.saveJSON(os.path.join(saveFolder, fileName), dataSave)
 
         # Save timing
         sim.pc.barrier()

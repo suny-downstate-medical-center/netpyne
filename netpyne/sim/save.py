@@ -153,7 +153,11 @@ def saveData(include=None, filename=None):
             else:
                 timestampStr = ''
 
-            filePath = sim.cfg.filename + timestampStr
+            if hasattr(sim.cfg, 'saveFolder') and hasattr(sim.cfg, 'simLabel'):
+                filePath = os.path.join(sim.cfg.saveFolder, sim.cfg.simLabel + '_data' + timestampStr)
+            else:
+                filePath = sim.cfg.filename + '_data' + timestampStr
+            
             # Save to pickle file
             if sim.cfg.savePickle:
                 import pickle

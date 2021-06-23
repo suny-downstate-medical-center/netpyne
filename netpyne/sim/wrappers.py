@@ -567,35 +567,3 @@ def importNeuroML2SimulateAnalyze(fileName, simConfig):
     return sim.importNeuroML2(fileName, simConfig, simulate=True, analyze=True)
 
 
-#------------------------------------------------------------------------------
-# Wrapper to save and gather data by node
-#------------------------------------------------------------------------------
-def gatherDataFromNodes(filename=None, dataDir=None, includeLFP=True, removeTraces=False):
-    """
-    Wrapper function to save data in a file for each node and gather data from files
-
-    Parameters
-    ----------
-    filename : str
-        name of data file to load.
-        **Default:** ``None`` uses the file name from the simulation configuration.
-
-    dataDir : str
-        name of directory to save data to and load data from.
-        **Default:** ``None`` uses the simulation name.
-
-    includeLFP : bool
-        whether or not to include LFP data
-        **Default:** ``True`` includes LFP data if available.
-
-    removeTraces : bool
-        whether to remove the trace data or not.
-        **Default:** ``False`` leaves any trace data in place.
-
-    """
-
-    from .. import sim
-
-    sim.saveDataInNodes(filename=filename, saveLFP=includeLFP, removeTraces=removeTraces, dataDir=dataDir)
-    sim.gatherDataFromFiles(gatherLFP=includeLFP, dataDir=dataDir)
-    

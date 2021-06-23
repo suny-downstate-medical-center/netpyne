@@ -25,6 +25,7 @@ from datetime import datetime
 import pickle as pk
 from . import gather
 from . import utils
+from ..specs import Dict, ODict
 
 
 #------------------------------------------------------------------------------
@@ -296,7 +297,7 @@ def compactConnFormat():
 #------------------------------------------------------------------------------
 # Gathers data in master and saves it mid run
 #------------------------------------------------------------------------------
-def intervalSave(t):
+def intervalSave(t, gatherLFP=True):
     """
     Function for/to <short description of `netpyne.sim.save.intervalSave`>
 
@@ -332,26 +333,109 @@ def intervalSave(t):
             except OSError:
                 print(' Could not create target folder: %s' % (targetFolder))
 
-    gatherLFP=True
-    simDataVecs = ['spkt','spkid','stims']+list(sim.cfg.recordTraces.keys())
+        include = sim.cfg.saveDataInclude
+    
     singleNodeVecs = ['t']
+    simDataVecs = ['spkt','spkid','stims']+list(sim.cfg.recordTraces.keys())
+    if sim.nhosts > 1:
 
-    netPopsCellGids = {popLabel: list(pop.cellGids) for popLabel,pop in sim.net.pops.items()}
+        netPopsCellGids = {popLabel: list(pop.cellGids) for popLabel,pop in sim.net.pops.items()}
 
-    # gather only sim data
-    nodeData = {'simData': sim.simData}
+        nodeData = {'netCells': [c.__getstate__() for c in sim.net.cells], 'netPopsCellGids': netPopsCellGids, 'simData': sim.simData}
+        data = [None]*sim.nhosts
+        data[0] = {}
+        for k,v in nodeData.items():
+            data[0][k] = v
+
+        #print data
+        gather = sim.pc.py_alltoall(data)
+        sim.pc.barrier()
+        if sim.rank == 0:
+            allCells = []
+            allPops = ODict()
+            for popLabel,pop in sim.net.pops.items(): allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
+            allPopsCellGids = {popLabel: [] for popLabel in netPopsCellGids}
+            sim.allSimData = Dict()
+
+            for k in list(gather[0]['simData'].keys()):  # initialize all keys of allSimData dict
+                if gatherLFP and k == 'LFP':
+                    sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
+                elif sim.cfg.recordDipoles and k == 'dipole':
+                    for dk in sim.cfg.recordDipoles:
+                        sim.allSimData[k][dk] = np.zeros(len(gather[0]['simData']['dipole'][dk]))
+                else:
+                    sim.allSimData[k] = {}
+
+            for key in singleNodeVecs:  # store single node vectors (eg. 't')
+                sim.allSimData[key] = list(nodeData['simData'][key])
+
+            # fill in allSimData taking into account if data is dict of h.Vector (code needs improvement to be more generic)
+            for node in gather:  # concatenate data from each node
+                allCells.extend(node['netCells'])  # extend allCells list
+                for popLabel,popCellGids in node['netPopsCellGids'].items():
+                    allPopsCellGids[popLabel].extend(popCellGids)
+
+                for key,val in node['simData'].items():  # update simData dics of dics of h.Vector
+                    if key in simDataVecs:          # simData dicts that contain Vectors
+                        if isinstance(val,dict):
+                            for key2,val2 in val.items():
+                                if isinstance(val2,dict):
+                                    sim.allSimData[key].update(Dict({key2:Dict()}))
+                                    for stim,val3 in val2.items():
+                                        sim.allSimData[key][key2].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
+                                elif key == 'dipole':
+                                    sim.allSimData[key][key2] = np.add(sim.allSimData[key][key2],val2.as_numpy()) # add together dipole values from each node
+                                else:
+                                    sim.allSimData[key].update({key2:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
+                        else:
+                            sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
+                    elif gatherLFP and key == 'LFP':
+                        sim.allSimData[key] += np.array(val)
+                    elif key not in singleNodeVecs:
+                        sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
+
+            if len(sim.allSimData['spkt']) > 0:
+                sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
+                sim.allSimData['spkt'], sim.allSimData['spkid'] = list(sim.allSimData['spkt']), list(sim.allSimData['spkid'])
+
+            sim.net.allCells =  sorted(allCells, key=lambda k: k['gid'])
+
+            for popLabel,pop in allPops.items():
+                pop['cellGids'] = sorted(allPopsCellGids[popLabel])
+            sim.net.allPops = allPops
+
+    else:  # if single node, save data in same format as for multiple nodes for consistency
+        if sim.cfg.createNEURONObj:
+            sim.net.allCells = [Dict(c.__getstate__()) for c in sim.net.cells]
+        else:
+            sim.net.allCells = [c.__dict__ for c in sim.net.cells]
+        sim.net.allPops = ODict()
+        for popLabel,pop in sim.net.pops.items(): sim.net.allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
+        sim.allSimData = Dict()
+        for k in list(sim.simData.keys()):  # initialize all keys of allSimData dict
+            sim.allSimData[k] = Dict()
+        for key,val in sim.simData.items():  # update simData dics of dics of h.Vector
+                if key in simDataVecs+singleNodeVecs:          # simData dicts that contain Vectors
+                    if isinstance(val,dict):
+                        for cell,val2 in val.items():
+                            if isinstance(val2,dict):
+                                sim.allSimData[key].update(Dict({cell:Dict()}))
+                                for stim,val3 in val2.items():
+                                    sim.allSimData[key][cell].update({stim:list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
+                            else:
+                                sim.allSimData[key].update({cell:list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
+                    else:
+                        sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
+                else:
+                    sim.allSimData[key] = val           # update simData dicts which are not Vectors
+
     if hasattr(sim.cfg, 'saveWeights'):
         if sim.cfg.saveWeights:
             nodeData['simData']['allWeights']= sim.allWeights
             simDataVecs = simDataVecs + ['allWeights']
-    data = [None]*sim.nhosts
-    data[0] = {}
-    for k,v in nodeData.items():
-        data[0][k] = v
-    gather = sim.pc.py_alltoall(data)
-    sim.pc.barrier()
+    
     if sim.rank == 0: # simData
-        print('  Gathering only sim data in master...')
+        print('  Saving data at intervals... {:0.0f} ms'.format(t))
         sim.allSimData = Dict()
         for k in list(gather[0]['simData'].keys()):  # initialize all keys of allSimData dict
             if gatherLFP and k == 'LFP':
@@ -362,6 +446,11 @@ def intervalSave(t):
             sim.allSimData[key] = list(nodeData['simData'][key])
         # fill in allSimData taking into account if data is dict of h.Vector (code needs improvement to be more generic)
         for node in gather:  # concatenate data from each node
+            
+            allCells.extend(node['netCells'])  # extend allCells list
+            for popLabel,popCellGids in node['netPopsCellGids'].items():
+                allPopsCellGids[popLabel].extend(popCellGids)
+
             for key,val in node['simData'].items():  # update simData dics of dics of h.Vector
                 if key in simDataVecs:          # simData dicts that contain Vectors
                     if isinstance(val, dict):
@@ -383,9 +472,48 @@ def intervalSave(t):
             sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
             sim.allSimData['spkt'], sim.allSimData['spkid'] = list(sim.allSimData['spkt']), list(sim.allSimData['spkid'])
 
-        name = os.path.join(targetFolder, 'interval_data_{:0.0f}.pkl'.format(t))
-        with open(name, 'wb') as f:
-            pickle.dump(dict(sim.allSimData), f, protocol=2)
+        sim.net.allCells =  sorted(allCells, key=lambda k: k['gid'])
+        for popLabel,pop in allPops.items():
+            pop['cellGids'] = sorted(allPopsCellGids[popLabel])
+        sim.net.allPops = allPops
+
+        # clean to avoid mem leaks
+        for node in gather:
+            if node:
+                node.clear()
+                del node
+        for item in data:
+            if item:
+                item.clear()
+                del item
+
+        name = os.path.join(targetFolder, 'interval_{:0.0f}.pkl'.format(t))
+        
+        dataSave = {}
+        net = {}
+
+        dataSave['netpyne_version'] = sim.version(show=False)
+        dataSave['netpyne_changeset'] = sim.gitChangeset(show=False)
+
+        if getattr(sim.net.params, 'version', None): dataSave['netParams_version'] = sim.net.params.version
+        if 'netParams' in include:
+            sim.net.params.__dict__.pop('_labelid', None)
+            net['params'] = utils.replaceFuncObj(sim.net.params.__dict__)
+        if 'net' in include: 
+            include.extend(['netPops', 'netCells'])
+        if 'netCells' in include and hasattr(sim.net, 'allCells'): net['cells'] = sim.net.allCells
+        if 'netPops' in include and hasattr(sim.net, 'allPops'): net['pops'] = sim.net.allPops
+        if net: dataSave['net'] = net
+        if 'simConfig' in include: dataSave['simConfig'] = sim.cfg.__dict__
+        if 'simData' in include:
+            if 'LFP' in sim.allSimData:
+                sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist()
+            dataSave['simData'] = dict(sim.allSimData)
+
+        dataSave = utils.replaceDictODict(dataSave)
+
+        with open(name, 'wb') as fileObj:
+            pickle.dump(dataSave, fileObj, protocol=2)
 
         # clean to avoid mem leaks
         for node in gather:

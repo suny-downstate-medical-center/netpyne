@@ -14,6 +14,8 @@ from future import standard_library
 standard_library.install_aliases()
 import numpy as np
 from ..specs import Dict, ODict
+from . import setup
+
 
 
 #------------------------------------------------------------------------------
@@ -369,6 +371,8 @@ def gatherDataFromFiles(gatherLFP=True, dataDir=None, fileName=None, sim=None):
                         if 'pops' in data.keys():
                             for popLabel, pop in data['pops'].items(): 
                                 allPops[popLabel] = pop['tags']  #pop.__getstate__()
+                        if 'simConfig' in data.keys():
+                            setup.setSimCfg(data['simConfig'])
 
                         nodePopsCellGids = {popLabel: list(pop['cellGids']) for popLabel, pop in data['pops'].items()}
 

@@ -621,6 +621,7 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
         else:
             saveSimData[key] = val           # update simData dicts which are not Vectors
 
+    dataSave['simConfig'] = sim.cfg.__dict__
     dataSave['simData'] = saveSimData
     dataSave['cells'] = [c.__getstate__() for c in sim.net.cells] #sim.net.cells
     dataSave['pops'] = {}

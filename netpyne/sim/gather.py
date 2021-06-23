@@ -326,7 +326,7 @@ def gatherDataFromFiles(gatherLFP=True, dataDir=None, fileName=None, sim=None):
             simLabels = [fileName]
         
         if not dataDir:
-            dataDir = fileName + '_node_data'
+            dataDir = os.path.join(fileName, '_node_data') #fileName + '_node_data'
 
         # find all individual sim labels whose files need to be gathered
         if not simLabels:
@@ -348,51 +348,63 @@ def gatherDataFromFiles(gatherLFP=True, dataDir=None, fileName=None, sim=None):
                 simDataVecs.append('dipole')
 
             fileData = {'simData': sim.simData}
-            fileList = sorted([f for f in os.listdir(dataDir) if f.startswith(simLabel + '_node')])
+            fileList = sorted([f for f in os.listdir(dataDir) if (f.startswith(simLabel + '_node') and f.endswith('.pkl'))])
+            fileType = 'pkl'
+            if not fileList:
+                fileList = sorted([f for f in os.listdir(dataDir) if (f.startswith(simLabel + '_node') and f.endswith('.json'))])
+                fileType = 'json'
 
             for file in fileList:
                 
-                with open(os.path.join(dataDir, file), 'rb') as openFile:
-                    data = pickle.load(openFile)
-                    print('  Merging data file: %s' % (file))
-                    
-                    if 'cells' in data.keys():
-                        allCells.extend([cell.__dict__ for cell in data['cells']])
-                    if 'pops' in data.keys():
-                        for popLabel, pop in data['pops'].items(): 
-                            allPops[popLabel] = pop.__getstate__()
+                print('  Merging data file: %s' % (file))
+                
+                if fileType == 'pkl':
 
-                    nodePopsCellGids = {popLabel: list(pop.cellGids) for popLabel, pop in data['pops'].items()}
-
-                    for key, value in data['simData'].items():
+                    with open(os.path.join(dataDir, file), 'rb') as openFile:
+                        data = pickle.load(openFile)
                         
-                        if key in simDataVecs:
+                        if 'cells' in data.keys():
+                            #allCells.extend([cell.__dict__ for cell in data['cells']])
+                            allCells.extend([cell.__getstate__() for cell in data['cells']])
+                        if 'pops' in data.keys():
+                            for popLabel, pop in data['pops'].items(): 
+                                allPops[popLabel] = pop['tags']  #pop.__getstate__()
+
+                        nodePopsCellGids = {popLabel: list(pop['cellGids']) for popLabel, pop in data['pops'].items()}
+
+                        for key, value in data['simData'].items():
                             
-                            if isinstance(value, dict):
-                                for key2, value2 in value.items():
-                                    if isinstance(value2, dict):
-                                        allSimData[key].update(Dict({key2: Dict()}))
-                                        for stim, value3 in value2.items():
-                                            allSimData[key][key2].update({stim: list(value3)}) 
-                                    elif key == 'dipole':
-                                        allSimData[key][key2] = np.add(allSimData[key][key2], value2.as_numpy()) 
-                                    else:
-                                        allSimData[key].update({key2: list(value2)})  
-                            else:
-                                allSimData[key] = list(allSimData[key]) + list(value)
+                            if key in simDataVecs:
+                                
+                                if isinstance(value, dict):
+                                    for key2, value2 in value.items():
+                                        if isinstance(value2, dict):
+                                            allSimData[key].update(Dict({key2: Dict()}))
+                                            for stim, value3 in value2.items():
+                                                allSimData[key][key2].update({stim: list(value3)}) 
+                                        elif key == 'dipole':
+                                            allSimData[key][key2] = np.add(allSimData[key][key2], value2.as_numpy()) 
+                                        else:
+                                            allSimData[key].update({key2: list(value2)})  
+                                else:
+                                    allSimData[key] = list(allSimData[key]) + list(value)
 
-                        elif gatherLFP and key == 'LFP':
-                            allSimData[key] += np.array(value)
-                        elif key not in singleNodeVecs:
-                            allSimData[key].update(value)
+                            elif gatherLFP and key == 'LFP':
+                                allSimData[key] += np.array(value)
+                            elif key not in singleNodeVecs:
+                                allSimData[key].update(value)
 
-                    if file == fileList[0]:
-                        for key in singleNodeVecs:
-                            allSimData[key] = list(fileData['simData'][key])
-                        allPopsCellGids = {popLabel: [] for popLabel in nodePopsCellGids}
-                    else:
-                        for popLabel, popCellGids in nodePopsCellGids.items():
-                            allPopsCellGids[popLabel].extend(popCellGids)
+                        if file == fileList[0]:
+                            for key in singleNodeVecs:
+                                allSimData[key] = list(fileData['simData'][key])
+                            allPopsCellGids = {popLabel: [] for popLabel in nodePopsCellGids}
+                        else:
+                            for popLabel, popCellGids in nodePopsCellGids.items():
+                                allPopsCellGids[popLabel].extend(popCellGids)
+
+                elif fileType == 'json':
+                    print('JSON loading not implemented yet.')
+                    return False
 
             if len(allSimData['spkt']) > 0:
                 allSimData['spkt'], allSimData['spkid'] = zip(*sorted(zip(allSimData['spkt'], allSimData['spkid'])))

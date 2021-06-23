@@ -567,3 +567,15 @@ def importNeuroML2SimulateAnalyze(fileName, simConfig):
     return sim.importNeuroML2(fileName, simConfig, simulate=True, analyze=True)
 
 
+
+def runSimIntervalSaving(interval=1000):
+    """
+    Wrapper function to run a simulation while saving data at intervals
+    """
+
+    from .. import sim
+
+    sim.runSimWithIntervalFunc(interval, sim.intervalSave)
+
+
+

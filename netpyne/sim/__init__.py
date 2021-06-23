@@ -46,7 +46,7 @@ from .utils import cellByGid, getCellsList, timing, version, gitChangeset, hashS
 from .utils import copyReplaceItemObj, copyRemoveItemObj, replaceFuncObj, replaceDictODict, rename, clearObj, clearAll
 
 # import wrapper functions
-from .wrappers import create, simulate, intervalSimulate, distributedSimulate, analyze, createSimulate, createSimulateAnalyze, createSimulateAnalyzeInterval, createSimulateAnalyzeDistributed, load, loadSimulate, loadSimulateAnalyze, createExportNeuroML2, importNeuroML2SimulateAnalyze
+from .wrappers import create, simulate, intervalSimulate, distributedSimulate, analyze, createSimulate, createSimulateAnalyze, createSimulateAnalyzeInterval, createSimulateAnalyzeDistributed, load, loadSimulate, loadSimulateAnalyze, createExportNeuroML2, importNeuroML2SimulateAnalyze, runSimIntervalSaving
 
 
 #------------------------------------------------------------------------------

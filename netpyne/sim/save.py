@@ -653,13 +653,13 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
         filePath = filename + timestampStr
         
         # Save to pickle file
-        if sim.cfg.savePickle:
-            import pickle
-            dataSave = utils.replaceDictODict(dataSave)
-            fileName = filePath + '_node_' + str(sim.rank) + '.pkl'
-            print(('  Saving output as: %s ... ' % (fileName)))
-            with open(os.path.join(saveFolder, fileName), 'wb') as fileObj:
-                pickle.dump(dataSave, fileObj)
+        #if sim.cfg.savePickle:
+        import pickle
+        dataSave = utils.replaceDictODict(dataSave)
+        fileName = filePath + '_node_' + str(sim.rank) + '.pkl'
+        print(('  Saving output as: %s ... ' % (fileName)))
+        with open(os.path.join(saveFolder, fileName), 'wb') as fileObj:
+            pickle.dump(dataSave, fileObj)
 
         # Save to json file
         if sim.cfg.saveJson:

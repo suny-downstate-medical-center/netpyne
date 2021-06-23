@@ -295,7 +295,7 @@ def gatherData(gatherLFP=True):
 #------------------------------------------------------------------------------
 # Gather data from files
 #------------------------------------------------------------------------------
-def gatherDataFromFiles(gatherLFP=True, dataDir=None, fileName=None, sim=None):
+def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None):
     """
     Function to gather data from multiple files (from distributed or interval saving)
 
@@ -306,7 +306,7 @@ def gatherDataFromFiles(gatherLFP=True, dataDir=None, fileName=None, sim=None):
         **Default:** ``True`` gathers LFP data if available.
         **Options:** ``False`` does not gather LFP data.
 
-    dataDir : str
+    saveFolder : str
         Name of the directory where data files are located.
         **Default:** ``None`` attempts to auto-locate the data directory.
 
@@ -321,18 +321,15 @@ def gatherDataFromFiles(gatherLFP=True, dataDir=None, fileName=None, sim=None):
 
     if sim.rank == 0:
 
-        if not fileName:
-            fileName = sim.cfg.filename
-            simLabels = None
-        else:
-            simLabels = [fileName]
+        if not simLabel:
+            simLabel = sim.cfg.simLabel
         
-        if not dataDir:
-            dataDir = os.path.join(fileName, '_node_data') #fileName + '_node_data'
+        if not saveFolder:
+            saveFolder = simLabel + '_data'
 
-        # find all individual sim labels whose files need to be gathered
-        if not simLabels:
-            simLabels = [f.replace('_node_0.pkl', '') for f in os.listdir(dataDir) if f.endswith('_node_0.pkl')]
+        nodeDataDir = os.path.join(saveFolder, 'node_data')
+
+        simLabels = [f.replace('_node_0.pkl', '') for f in os.listdir(nodeDataDir) if f.endswith('_node_0.pkl')]
 
         for simLabel in simLabels:
 
@@ -350,10 +347,10 @@ def gatherDataFromFiles(gatherLFP=True, dataDir=None, fileName=None, sim=None):
                 simDataVecs.append('dipole')
 
             fileData = {'simData': sim.simData}
-            fileList = sorted([f for f in os.listdir(dataDir) if (f.startswith(simLabel + '_node') and f.endswith('.pkl'))])
+            fileList = sorted([f for f in os.listdir(nodeDataDir) if (f.startswith(simLabel + '_node') and f.endswith('.pkl'))])
             fileType = 'pkl'
             if not fileList:
-                fileList = sorted([f for f in os.listdir(dataDir) if (f.startswith(simLabel + '_node') and f.endswith('.json'))])
+                fileList = sorted([f for f in os.listdir(nodeDataDir) if (f.startswith(simLabel + '_node') and f.endswith('.json'))])
                 fileType = 'json'
 
             for file in fileList:
@@ -362,7 +359,7 @@ def gatherDataFromFiles(gatherLFP=True, dataDir=None, fileName=None, sim=None):
                 
                 if fileType == 'pkl':
 
-                    with open(os.path.join(dataDir, file), 'rb') as openFile:
+                    with open(os.path.join(nodeDataDir, file), 'rb') as openFile:
                         data = pickle.load(openFile)
                         
                         if 'cells' in data.keys():

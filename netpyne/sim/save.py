@@ -604,26 +604,28 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
         saveSimData[k] = {}
 
     for key, val in simData.items():  # update simData dics of dics of h.Vector
-            if key in simDataVecs:          # simData dicts that contain Vectors
-                if isinstance(val, dict):
-                    for cell, val2 in val.items():
-                        if isinstance(val2, dict):
-                            saveSimData[key].update({cell: {}})
-                            for stim, val3 in val2.items():
-                                saveSimData[key][cell].update({stim: list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
-                        else:
-                            saveSimData[key].update({cell: list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
-                else:
-                    saveSimData[key] = list(saveSimData[key]) + list(val) # udpate simData dicts which are Vectors
-            elif key in singleNodeVecs:
-                if sim.rank == 0:
-                    saveSimData[key] = list(val)
+        if key in simDataVecs:          # simData dicts that contain Vectors
+            if isinstance(val, dict):
+                for cell, val2 in val.items():
+                    if isinstance(val2, dict):
+                        saveSimData[key].update({cell: {}})
+                        for stim, val3 in val2.items():
+                            saveSimData[key][cell].update({stim: list(val3)}) # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
+                    else:
+                        saveSimData[key].update({cell: list(val2)})  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
             else:
-                saveSimData[key] = val           # update simData dicts which are not Vectors
+                saveSimData[key] = list(saveSimData[key]) + list(val) # udpate simData dicts which are Vectors
+        elif key in singleNodeVecs:
+            if sim.rank == 0:
+                saveSimData[key] = list(val)
+        else:
+            saveSimData[key] = val           # update simData dicts which are not Vectors
 
     dataSave['simData'] = saveSimData
-    dataSave['cells'] = sim.net.cells
-    dataSave['pops'] = sim.net.pops
+    dataSave['cells'] = [c.__getstate__() for c in sim.net.cells] #sim.net.cells
+    dataSave['pops'] = {}
+    for popLabel, pop in sim.net.pops.items(): 
+        dataSave['pops'][popLabel] = pop.__getstate__()
 
     if removeTraces:
         for k in sim.cfg.recordTraces.keys():

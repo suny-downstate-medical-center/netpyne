@@ -1,3 +1,8 @@
+"""
+Module with support functions for morphology
+
+"""
+
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
@@ -65,7 +70,7 @@ def load(filename, fileformat=None, cell=None, use_axon=True, xshift=0, yshift=0
     """
 
     if cell is None:
-        cell = Cell(name=string.join(filename.split('.')[:-1]))
+        cell = Cell(name='.'.join(filename.split('.')[:-1]))
 
     if fileformat is None:
         fileformat = filename.split('.')[-1]

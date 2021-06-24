@@ -28,7 +28,7 @@ from .utils import colorList, _showFigure, _saveFigData, exception, getCellsIncl
 ## Plot recorded cell traces (V, i, g, etc.)
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, title=None, overlay=False, colors=None, ylim=None, axis=True, scaleBarLoc=1, figSize = (10,8), fontSize=12, saveData=None, saveFig=None, showFig=True):
+def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, title=None, subtitles=True, overlay=False, colors=None, ylim=None, axis=True, legend=True, scaleBarLoc=1, figSize = (10,8), fontSize=12, saveData=None, saveFig=None, showFig=True):
     """
     Function for/to <short description of `netpyne.analysis.traces.plotTraces`>
 
@@ -183,9 +183,9 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
 
     # Plot one fig per trace for given cell list
     def plotFigPerTrace(subGids):
-        fontsiz = 12
         for itrace, trace in enumerate(tracesList):
             figs['_trace_'+str(trace)] = plt.figure(figsize=figSize) # Open a new figure
+
             for igid, gid in enumerate(subGids):
                 # print('recordStep',recordStep)
                 if 'cell_'+str(gid) in sim.allSimData[trace]:
@@ -243,7 +243,8 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
                     plt.xlabel('Time (ms)', fontsize=fontsiz)
                     plt.xlim(timeRange)
                     if ylim: plt.ylim(ylim)
-                    plt.title('%s '%(trace))
+                    if subtitles:
+                        plt.title('%s '%(trace))
 
                     if not overlay:
                         if not axis or axis=='off':  # if no axis, add scalebar
@@ -256,7 +257,8 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
                     #maxLabelLen = 10
                     #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))
                     #plt.legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
-                    plt.legend()  # PUT BACK!!!!!!
+                    if legend:
+                        plt.legend()  # PUT BACK!!!!!!
 
 
 
@@ -312,9 +314,10 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
                     plt.ylabel(trace, fontsize=fontsiz)
                     plt.xlim(timeRange)
                     if ylim: plt.ylim(ylim)
-                    if itrace==0: plt.title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                    if itrace==0 and subtitles: 
+                        plt.title('Cell %d, Pop %s '%(int(gid), gidPops[gid]))
                     if not overlay:
-                        if not axis or axis=='off':  # if no axis, add scalebar
+                        if not axis or axis=='off' and itrace==0:  # if no axis, add scalebar
                             addScaleBar()
 
             if overlay:
@@ -322,7 +325,8 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
                     addScaleBar()
                 #maxLabelLen = 10
                 #plt.subplots_adjust(right=(0.9-0.012*maxLabelLen))
-                plt.legend() #fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
+                if legend:
+                    plt.legend() #fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
 
             if title:
                 figs['_gid_'+str(gid)].suptitle(cell['tags'][title])
@@ -336,7 +340,6 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
         allPopGids = invertDictMapping(gidPops)
         for popLabel, popGids in allPopGids.items():
             plotFigPerTrace(popGids)
-
 
     try:
         plt.tight_layout()

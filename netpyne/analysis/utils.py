@@ -34,7 +34,10 @@ import sys
 # -------------------------------------------------------------------------------------------------------------------
 # Define list of colors
 # -------------------------------------------------------------------------------------------------------------------
-from bokeh.themes import built_in_themes
+try:
+    from bokeh.themes import built_in_themes
+except:
+    pass
 
 colorListType = 'alternate'  # 'graded'
 
@@ -429,6 +432,80 @@ def getSpktSpkid(cellGids=[], timeRange=None, sim = None):
     return sel, sel['spkt'].tolist(), sel['spkid'].tolist() # will want to return sel as well for further sorting
 
 
+
+def checkAvailablePlots(requireCfg=False):
+    """
+    Function to check which plots are available for the GUI 
+
+    Returns
+    ----------
+        requireCfg : <Bool>
+        <Whether a plot configuration in sim.cfg.analysis is required to return True for each plot>
+        **Default:** False
+
+    Returns
+    ----------
+    dict
+        <Keys indicate the name of the analysis function and values whether they are available or not (Boolean)>
+
+"""
+    from .. import sim
+
+    avail = {'plotConn': False,
+             'plot2Dnet':  False,
+             'plotTraces': False,
+             'plotRaster': False,
+             'plotSpikeHist': False,
+             'plotSpikeStats': False,
+             'plotLFP': False,
+             'granger': False,
+             'plotRxDConcentration': False}
+
+    # plot conn
+    if hasattr(sim, 'net') and hasattr(sim.net, 'allCells') and len(sim.net.allCells) > 0:
+        avail['plotConn'] = True
+        avail['plot2Dnet'] = True
+
+    # plot traces
+    traces = list(sim.cfg.recordTraces.keys())
+    if len(traces)>0 and hasattr(sim, 'allSimData'):
+        for trace in traces:
+            if trace in sim.allSimData and len(sim.allSimData.get(trace)):
+                avail['plotTraces'] = True
+                break
+    
+    # raster, spike hist, spike stats, rate psd and granger 
+    if hasattr(sim, 'allSimData') and 'spkid' in sim.allSimData and 'spkt' in sim.allSimData \
+        and len(sim.allSimData['spkid']) > 0 and len(sim.allSimData['spkt']) > 0:
+
+        avail['plotRaster'] = True
+        avail['plotSpikeHist'] = True
+        avail['plotSpikeStats'] = True
+        avail['plotRatePSD'] = True
+        avail['granger'] = True
+
+
+    # plot lfp 
+    if hasattr(sim, 'allSimData') and 'LFP' in sim.allSimData and len(sim.allSimData['LFP']) > 0:
+
+        avail['plotLFP'] = True
+
+    # rxd concentation 
+    if hasattr(sim, 'net') and hasattr(sim.net, 'rxd') and 'species' in sim.net.rxd and 'regions' in sim.net.rxd \
+        and len(sim.net.rxd['species']) > 0 and len(sim.net.rxd['regions']) > 0: 
+
+        avail['plotRxDConcentration'] = True
+
+    # require config of plots in sim.cfg.analysis
+    if requireCfg:
+        for k in avail:
+            if k not in sim.cfg.analysis:
+                avail[k] = False
+
+    return avail
+
+
+
 # -------------------------------------------------------------------------------------------------------------------
 ## Default NetPyNE Bokeh theme -- based on dark_minimal
 # -------------------------------------------------------------------------------------------------------------------
@@ -508,3 +585,150 @@ _guiTheme = {
         }
     }
 }
+
+
+_guiBlack = {
+    "attrs": {
+        "Figure" : {
+            "background_fill_color": "#000000", 
+            "border_fill_color": "#434343", 
+            "outline_line_color": "#E0E0E0",
+            "outline_line_alpha": 0.25
+        },
+
+        "Grid": {
+            "grid_line_color": "#E0E0E0",
+            "grid_line_alpha": 0.25
+        },
+
+        "Axis": {
+            "major_tick_line_alpha": 0,
+            "major_tick_line_color": "#E0E0E0",
+
+            "minor_tick_line_alpha": 0,
+            "minor_tick_line_color": "#E0E0E0",
+
+            "axis_line_alpha": 0,
+            "axis_line_color": "#E0E0E0",
+
+            "major_label_text_color": "#E0E0E0",
+            "major_label_text_font": "Helvetica",
+            "major_label_text_font_size": "1.025em",
+
+            "axis_label_standoff": 10,
+            "axis_label_text_color": "#E0E0E0",
+            "axis_label_text_font": "Helvetica",
+            "axis_label_text_font_size": "1.25em",
+            "axis_label_text_font_style": "normal"
+        },
+
+        "Legend": {
+            "spacing": 8,
+            "glyph_width": 15,
+
+            "label_standoff": 8,
+            "label_text_color": "#E0E0E0",
+            "label_text_font": "Helvetica",
+            "label_text_font_size": "1.025em",
+
+            "border_line_alpha": 0,
+            "background_fill_alpha": 0.5, #0.25,
+            "background_fill_color": "#434343", #"#20262B"
+        },
+
+        "ColorBar": {
+            "title_text_color": "#E0E0E0",
+            "title_text_font": "Helvetica",
+            "title_text_font_size": "1.025em",
+            "title_text_font_style": "normal",
+
+            "major_label_text_color": "#E0E0E0",
+            "major_label_text_font": "Helvetica",
+            "major_label_text_font_size": "1.025em",
+
+            "background_fill_color": "#434343", #"#15191C",
+            "major_tick_line_alpha": 0,
+            "bar_line_alpha": 0
+        },
+
+        "Title": {
+            "text_color": "#E0E0E0",
+            "text_font": "Helvetica",
+            "text_font_size": "1.15em"
+        }
+    }
+}
+
+
+_guiWhite = {
+    "attrs": {
+        "Figure" : {
+            "background_fill_color": "#ffffff", #"#20262B",
+            "border_fill_color": "#434343", #"#15191C",
+            "outline_line_color": "#E0E0E0",
+            "outline_line_alpha": 0.25
+        },
+
+        "Grid": {
+            "grid_line_color": "#E0E0E0",
+            "grid_line_alpha": 0.25
+        },
+
+        "Axis": {
+            "major_tick_line_alpha": 0,
+            "major_tick_line_color": "#E0E0E0",
+
+            "minor_tick_line_alpha": 0,
+            "minor_tick_line_color": "#E0E0E0",
+
+            "axis_line_alpha": 0,
+            "axis_line_color": "#E0E0E0",
+
+            "major_label_text_color": "#E0E0E0",
+            "major_label_text_font": "Helvetica",
+            "major_label_text_font_size": "1.025em",
+
+            "axis_label_standoff": 10,
+            "axis_label_text_color": "#E0E0E0",
+            "axis_label_text_font": "Helvetica",
+            "axis_label_text_font_size": "1.25em",
+            "axis_label_text_font_style": "normal"
+        },
+
+        "Legend": {
+            "spacing": 8,
+            "glyph_width": 15,
+
+            "label_standoff": 8,
+            "label_text_color": "#E0E0E0",
+            "label_text_font": "Helvetica",
+            "label_text_font_size": "1.025em",
+
+            "border_line_alpha": 0,
+            "background_fill_alpha": 0.5, #0.25,
+            "background_fill_color": "#434343", #"#20262B"
+        },
+
+        "ColorBar": {
+            "title_text_color": "#E0E0E0",
+            "title_text_font": "Helvetica",
+            "title_text_font_size": "1.025em",
+            "title_text_font_style": "normal",
+
+            "major_label_text_color": "#E0E0E0",
+            "major_label_text_font": "Helvetica",
+            "major_label_text_font_size": "1.025em",
+
+            "background_fill_color": "#434343", #"#15191C",
+            "major_tick_line_alpha": 0,
+            "bar_line_alpha": 0
+        },
+
+        "Title": {
+            "text_color": "#E0E0E0",
+            "text_font": "Helvetica",
+            "text_font_size": "1.15em"
+        }
+    }
+}
+

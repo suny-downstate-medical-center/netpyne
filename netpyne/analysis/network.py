@@ -692,6 +692,9 @@ def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderB
 
     print('Plotting connectivity matrix...')
 
+    if groupBy == 'cell' and feature == 'strength':
+        feature = 'weight'
+
     if connsFile and tagsFile:
         connMatrix, pre, post = _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile, removeWeightNorm, logPlot)
     else:
@@ -836,7 +839,8 @@ def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderB
 ## Plot 2D representation of network cell positions and connections
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, tagsFile=None, figSize=(12,12), fontSize=12, saveData=None, saveFig=None, showFig=True, lineWidth=0.1):
+def plot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, tagsFile=None,
+    figSize=(12,12), fontSize=12, saveData=None, saveFig=None, showFig=True, lineWidth=0.1):
     """
     Function for/to <short description of `netpyne.analysis.network.plot2Dnet`>
 
@@ -1028,11 +1032,181 @@ def plot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, t
     return fig, {'include': include, 'posX': posX, 'posY': posY, 'posXpre': posXpre, 'posXpost': posXpost, 'posYpre': posYpre, 'posYpost': posYpost}
 
 
+
+# -------------------------------------------------------------------------------------------------------------------
+## Plot 2D representation of network activity 
+# -------------------------------------------------------------------------------------------------------------------
+@exception
+def plot2Dfiring(include=['allCells'], view='xy', popColors=None, timeRange=None, spikeBin=5, 
+    figSize=(12,12), fontSize=12, saveData=None, saveFig=None, showFig=True, lineWidth=0.1):
+    """
+    Function for/to <short description of `netpyne.analysis.network.plot2Dnet`>
+
+    Parameters
+    ----------
+    include : list
+        List of presynaptic cells to include.
+        **Default:** ``['allCells']``
+        **Options:**
+        ``['all']`` plots all cells and stimulations,
+        ``['allNetStims']`` plots just stimulations,
+        ``['popName1']`` plots a single population,
+        ``['popName1', 'popName2']`` plots multiple populations,
+        ``[120]`` plots a single cell,
+        ``[120, 130]`` plots multiple cells,
+        ``[('popName1', 56)]`` plots a cell from a specific population,
+        ``[('popName1', [0, 1]), ('popName2', [4, 5, 6])]``, plots cells from multiple populations
+
+    view : str
+        Perspective of view.
+        **Default:** ``'xy'`` front view,
+        **Options:** ``'xz'`` top-down view
+
+
+    popColors : dict
+        Dictionary with custom color (value) used for each population (key).
+        **Default:** ``None`` uses standard colors
+        **Options:** ``<option>`` <description of option>
+
+    figSize : list [width, height]
+        Size of figure in inches.
+        **Default:** ``(12, 12)``
+        **Options:** ``<option>`` <description of option>
+
+    fontSize : int
+        Font size on figure.
+        **Default:** ``12``
+        **Options:** ``<option>`` <description of option>
+
+    saveData : bool or str
+        Whether and where to save the data used to generate the plot.
+        **Default:** ``False``
+        **Options:** ``True`` autosaves the data,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
+
+    saveFig : bool or str
+        Whether and where to save the figure.
+        **Default:** ``False``
+        **Options:** ``True`` autosaves the figure,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
+
+    showFig : bool
+        Shows the figure if ``True``.
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+
+     lineWidth: float
+        Width of connection lines.
+        **Default:** ``0.1``
+        **Options:** ``<option>`` <description of option>
+
+    Returns
+    -------
+
+
+"""
+
+    from .. import sim
+    from matplotlib import animation
+
+    print('Plotting 2D representation of network cell locations and connections...')
+
+    fig = plt.figure(figsize=figSize)
+
+    # front view
+    if view == 'xy':
+        ycoord = 'y'
+    elif view == 'xz':
+        ycoord = 'z'
+
+    # get tags
+    cells, cellGids, _ = getCellsInclude(include)
+    selectedPops = [cell['tags']['pop'] for cell in cells]
+    popLabels = [pop for pop in sim.net.allPops if pop in selectedPops] # preserves original ordering
+
+    # pop and cell colors
+    popColorsTmp = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
+    if popColors: popColorsTmp.update(popColors)
+    popColors = popColorsTmp
+    cellColors = [popColors[cell['tags']['pop']] for cell in cells]
+
+    # cell locations
+    posX = [cell['tags']['x'] for cell in cells]  # get all x positions
+    posY = [cell['tags'][ycoord] for cell in cells]  # get all y positions
+
+    sc = plt.scatter(posX, posY, s=60, color=cellColors) # plot cell soma positions
+    posXpre, posYpre = [], []
+    posXpost, posYpost = [], []
+
+    plt.xlabel('x (um)')
+    plt.ylabel(ycoord+' (um)')
+    plt.xlim([min(posX)-0.05*max(posX),1.05*max(posX)])
+    plt.ylim([min(posY)-0.05*max(posY),1.05*max(posY)])
+    fontsiz = fontSize
+
+    for popLabel in popLabels:
+        plt.plot(0,0,color=popColors[popLabel],label=popLabel)
+    plt.legend(fontsize=fontsiz, bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0.)
+    ax = plt.gca()
+    ax.invert_yaxis()
+
+    # generate animation with time-resolved spiking activity
+    spktsAll = sim.allSimData['spkt']
+    spkidsAll = sim.allSimData['spkid']
+
+    if not isinstance(timeRange, list):  # True or None
+        timeRange = [0, sim.cfg.duration]
+
+    def animate(i, sc, timeRange, spikeBin, ycoord, spkidsAll, spktsAll, cells, cellGids, popColors):
+        timeInterval = [timeRange[0] + i*spikeBin, timeRange[0] + (i+1)*spikeBin]
+
+        out = list(zip(*[(spkid, spkt) for spkid, spkt in zip(spkidsAll, spktsAll) if timeInterval[0] <= spkt <= timeInterval[1]]))
+        if len(out) == 2:
+            spkids, spkts = out
+
+            spkids = [int(x) for x in list(set(spkids) & set(cellGids))]
+
+            posX = np.array([cells[gid]['tags']['x'] for gid in spkids])  # get all x positions
+            posY = np.array([cells[gid]['tags'][ycoord] for gid in spkids])  # get all y positions
+            cellColors = [popColors[cells[gid]['tags']['pop']] for gid in spkids]
+            
+            sc.set_offsets(np.c_[posX,posY])
+            sc.set_color(cellColors)
+            plt.gca().set_title('t = %d' % int(timeRange[0] + (i+1)*spikeBin))
+
+
+
+    frames = int((timeRange[1]-timeRange[0]) / spikeBin)
+    ani = animation.FuncAnimation(fig, animate, frames=frames, interval=100, repeat=True, fargs=(sc, timeRange, spikeBin, ycoord, spkidsAll, spktsAll, cells, cellGids, popColors,)) 
+
+
+    # save figure data
+    if saveData:
+        figData = {'posX': posX, 'posY': posY, 'posX': cellColors, 'posXpre': posXpre, 'posXpost': posXpost, 'posYpre': posYpre, 'posYpost': posYpost,
+         'include': include, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig, 'lineWidth': lineWidth}
+
+        _saveFigData(figData, saveData, '2Dnet')
+
+    # save figure
+    if saveFig:
+        if isinstance(saveFig, basestring):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename + '_plot_2Dfiring.gif'
+        ani.save(filename)
+
+    # show fig
+    if showFig: _showFigure()
+
+    return fig, {'include': include, 'posX': posX, 'posY': posY, 'posXpre': posXpre, 'posXpost': posXpost, 'posYpre': posYpre, 'posYpost': posYpost}
+
+
+
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot cell shape
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElectrodes=False, synStyle='.', synSize=3, dist=0.6, cvar=None, cvals=None, iv=False, ivprops=None, includeAxon=True, bkgColor=None, figSize=(10,8), fontSize=12, saveData=None, dpi=300, saveFig=None, showFig=True):
+def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElectrodes=False, synStyle='.', synSize=3, dist=0.6, elev=90, azim=-90, cvar=None, cvals=None, iv=False, ivprops=None, includeAxon=True, bkgColor=None, axis='auto', axisLabels=False, figSize=(10,8), fontSize=12, saveData=None, dpi=300, saveFig=None, showFig=True):
     """
     Function for/to <short description of `netpyne.analysis.network.plotShape`>
 
@@ -1200,6 +1374,16 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
 
                 cvals = np.array(cvals)
 
+            # voltage
+            elif cvar == 'voltage':
+                for cellPost in cellsPost:
+                    cellSecs = cellPost.secs if includeAxon else {k:s for k,s in cellPost.secs.items() if 'axon' not in s['hObj'].hname()}
+                    for secLabel,sec in cellSecs.items():
+                        for seg in sec['hObj']:
+                            cvals.append(seg.v)
+    
+                cvals = np.array(cvals)
+
         if not isinstance(cellsPost[0].secs, dict):
             print('Error: Cell sections not available')
             return -1
@@ -1209,16 +1393,46 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
             secs = [sec for sec in secs if 'axon' not in sec.hname()]
 
         # Plot shapeplot
-        cbLabels = {'numSyns': 'number of synapses per segment', 'weightNorm': 'weight scaling'}
+        cbLabels = {'numSyns': 'Number of synapses per segment', 
+                    'weightNorm': 'Weight scaling',
+                    'voltage': 'Voltage (mV)'}
         plt.rcParams.update({'font.size': fontSize})
         fig=plt.figure(figsize=figSize)
         shapeax = plt.subplot(111, projection='3d')
-        shapeax.elev=90 # 90
-        shapeax.azim=-90 # -90
+        shapeax.elev=elev # 90
+        shapeax.azim=azim  # -90
         shapeax.dist=dist*shapeax.dist
-        plt.axis('auto')
+        plt.axis(axis)
         cmap = plt.cm.viridis #plt.cm.jet  #plt.cm.rainbow #plt.cm.jet #YlOrBr_r
-        morph.shapeplot(h,shapeax, sections=secs, cvals=cvals, cmap=cmap)
+        morph.shapeplot(h, shapeax, sections=secs, cvals=cvals, cmap=cmap)
+
+        # fix so that axes can be scaled
+        ax = plt.gca()
+        def set_axes_equal(ax):
+            """Set 3D plot axes to equal scale.
+
+            Make axes of 3D plot have equal scale so that spheres appear as
+            spheres and cubes as cubes.  Required since `ax.axis('equal')`
+            and `ax.set_aspect('equal')` don't work on 3D.
+            """
+            limits = np.array([
+                ax.get_xlim3d(),
+                ax.get_ylim3d(),
+                ax.get_zlim3d(),
+            ])
+            origin = np.mean(limits, axis=1)
+            radius = 0.5 * np.max(np.abs(limits[:, 1] - limits[:, 0]))
+            _set_axes_radius(ax, origin, radius)
+
+        def _set_axes_radius(ax, origin, radius):
+            x, y, z = origin
+            ax.set_xlim3d([x - radius, x + radius])
+            ax.set_ylim3d([y - radius, y + radius])
+            ax.set_zlim3d([z - radius, z + radius])
+
+        ax.set_box_aspect([1,1,1]) # IMPORTANT - this is the new, key line
+        set_axes_equal(ax) 
+
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
         if cvals is not None and len(cvals)>0:
             sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=np.min(cvals), vmax=np.max(cvals)))
@@ -1254,11 +1468,15 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
                 ax.text(coords[i,0],coords[i,1],coords[i,2], '  '+str(showElectrodes[i]), fontweight='bold' )
             cb.set_label('Segment total transfer resistance to electrodes (kiloohm)', rotation=90, fontsize=fontSize)
 
-        #plt.title(str(includePre)+' -> '+str(includePost) + ' ' + str(cvar))
-        shapeax.set_xticklabels([])
-        shapeax.set_yticklabels([])
-        shapeax.set_zticklabels([])
-        #shapeax.set_ylabel('y location (um)')
+        if axisLabels:
+            shapeax.set_xlabel('x (um)')
+            shapeax.set_ylabel('y (um)')
+            shapeax.set_zlabel('z (um)')
+        else:
+            shapeax.set_xticklabels([])
+            shapeax.set_yticklabels([])
+            shapeax.set_zticklabels([])
+            
 
         # save figure
         if saveFig:

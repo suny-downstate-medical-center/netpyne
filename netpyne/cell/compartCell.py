@@ -409,11 +409,12 @@ class CompartCell (Cell):
                     #if sim.cfg.verbose: print("Updated ion: %s in %s, e: %s, o: %s, i: %s" % \
                     #         (ionName, sectName, seg.__getattribute__('e'+ionName), seg.__getattribute__(ionName+'o'), seg.__getattribute__(ionName+'i')))
 
-            # add synMechs (only used when loading)
+            # add synMechs (only used when loading because python synMechs already exist)
             if 'synMechs' in sectParams:
                 for synMech in sectParams['synMechs']:
                     if 'label' in synMech and 'loc' in synMech:
-                        self.addSynMech(synLabel=synMech['label'], secLabel=sectName, loc=synMech['loc'])
+                        synMechParams = sim.net.params.synMechParams.get(synMech['label'])  # get params for this synMech
+                        self.addSynMechNEURONObj(synMech, synMechParams, sec, synMech['loc'])
 
             # add point processes
             if 'pointps' in sectParams:
@@ -457,14 +458,36 @@ class CompartCell (Cell):
         if mechInsertError:
             print("ERROR: Some mechanisms and/or ions were not inserted (for details run with cfg.verbose=True). Make sure the required mod files are compiled.")
 
+
+    def addSynMechNEURONObj(self, synMech, synMechParams, sec, loc):
+        if not synMech.get('hObj'):  # if synMech doesn't have NEURON obj, then create
+            synObj = getattr(h, synMechParams['mod'])
+            synMech['hObj'] = synObj(loc, sec=sec['hObj'])  # create h Syn object (eg. h.Exp2Syn)
+            for synParamName,synParamValue in synMechParams.items():  # add params of the synaptic mechanism
+                if synParamName not in ['label', 'mod', 'selfNetCon', 'loc']:
+                    setattr(synMech['hObj'], synParamName, synParamValue)
+                elif synParamName == 'selfNetcon':  # create self netcon required for some synapses (eg. homeostatic)
+                    secLabelNetCon = synParamValue.get('sec', 'soma')
+                    locNetCon = synParamValue.get('loc', 0.5)
+                    secNetCon = self.secs.get(secLabelNetCon, None)
+                    synMech['hObj'] = h.NetCon(secNetCon['hObj'](locNetCon)._ref_v, synMech[''], sec=secNetCon['hObj'])
+                    for paramName,paramValue in synParamValue.items():
+                        if paramName == 'weight':
+                            synMech['hObj'].weight[0] = paramValue
+                        elif paramName not in ['sec', 'loc']:
+                            setattr(synMech['hObj'], paramName, paramValue)
+
+
     def addSynMechsNEURONObj(self):
         # set params for all sections
-        for sectName,sectParams in self.secs.items():
+        for sectName, sectParams in self.secs.items():
+            sec = self.secs[sectName]  # pointer to section
             # add synMechs (only used when loading)
             if 'synMechs' in sectParams:
                 for synMech in sectParams['synMechs']:
                     if 'label' in synMech and 'loc' in synMech:
-                        self.addSynMech(synLabel=synMech['label'], secLabel=sectName, loc=synMech['loc'])
+                        synMechParams = sim.net.params.synMechParams.get(synMech['label'])  # get params for this synMech
+                        self.addSynMechNEURONObj(synMech, synMechParams, sec, synMech['loc'])
 
 
     # Create NEURON objs for conns and syns if included in prop (used when loading)
@@ -544,7 +567,10 @@ class CompartCell (Cell):
 
         if self.secs:
             if sim.cfg.createNEURONObj:
-                sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
+                if hasattr(sim, 'rank'):
+                    sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
+                else:
+                    sim.pc.set_gid2node(self.gid, 0)
                 sec = next((secParams for secName,secParams in self.secs.items() if 'spikeGenLoc' in secParams), None) # check if any section has been specified as spike generator
                 if sec:
                     loc = sec['spikeGenLoc']  # get location of spike generator within section
@@ -567,11 +593,13 @@ class CompartCell (Cell):
                 del nc # discard netcon
         sim.net.gid2lid[self.gid] = len(sim.net.gid2lid)
 
+    
     def addSynMech (self, synLabel, secLabel, loc):
         from .. import sim
 
         synMechParams = sim.net.params.synMechParams.get(synLabel)  # get params for this synMech
         sec = self.secs.get(secLabel, None)
+
         # add synaptic mechanism to python struct
         if 'synMechs' not in sec or not isinstance(sec['synMechs'], list):
             sec['synMechs'] = []
@@ -597,22 +625,8 @@ class CompartCell (Cell):
                 if not synMech:  # if still doesnt exist, then create
                     synMech = Dict()
                     sec['synMechs'].append(synMech)
-                if not synMech.get('hObj'):  # if synMech doesn't have NEURON obj, then create
-                    synObj = getattr(h, synMechParams['mod'])
-                    synMech['hObj'] = synObj(loc, sec=sec['hObj'])  # create h Syn object (eg. h.Exp2Syn)
-                    for synParamName,synParamValue in synMechParams.items():  # add params of the synaptic mechanism
-                        if synParamName not in ['label', 'mod', 'selfNetCon', 'loc']:
-                            setattr(synMech['hObj'], synParamName, synParamValue)
-                        elif synParamName == 'selfNetcon':  # create self netcon required for some synapses (eg. homeostatic)
-                            secLabelNetCon = synParamValue.get('sec', 'soma')
-                            locNetCon = synParamValue.get('loc', 0.5)
-                            secNetCon = self.secs.get(secLabelNetCon, None)
-                            synMech['hObj'] = h.NetCon(secNetCon['hObj'](locNetCon)._ref_v, synMech[''], sec=secNetCon['hObj'])
-                            for paramName,paramValue in synParamValue.items():
-                                if paramName == 'weight':
-                                    synMech['hObj'].weight[0] = paramValue
-                                elif paramName not in ['sec', 'loc']:
-                                    setattr(synMech['hObj'], paramName, paramValue)
+                # add the NEURON object
+                self.addSynMechNEURONObj(synMech, synMechParams, sec, loc)
             else:
                 synMech = None
             return synMech
@@ -728,7 +742,10 @@ class CompartCell (Cell):
                     netstim = self.addNetStim(netStimParams)
 
             if params.get('gapJunction', False) == True:  # only run for post gap junc (not pre)
-                preGapId = 1e9*sim.rank + sim.net.lastGapId  # global index for presyn gap junc
+                if hasattr(sim, 'rank'):
+                    preGapId = 1e9*sim.rank + sim.net.lastGapId  # global index for presyn gap junc
+                else:
+                    preGapId = sim.net.lastGapId
                 postGapId = preGapId + 1  # global index for postsyn gap junc
                 sim.net.lastGapId += 2  # keep track of num of gap juncs in this node
                 if not getattr(sim.net, 'preGapJunctions', False):
@@ -887,7 +904,26 @@ class CompartCell (Cell):
                         break
 
             if conditionsMet and 'preConds' in params:
-                print('Warning: modifyConns() does not yet support conditions of presynaptic cells')
+                try:
+                    cell = sim.net.cells[conn['preGid']]
+
+                    if cell:
+                        for (condKey,condVal) in params['preConds'].items():  # check if all conditions are met
+                            # check if conditions met
+                            if isinstance(condVal, list) and isinstance(condVal[0], Number):
+                                if cell.tags.get(condKey) < condVal[0] or cell.tags.get(condKey) > condVal[1]:
+                                    conditionsMet = 0
+                                    break
+                            elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
+                                if cell.tags.get(condKey) not in condVal:
+                                    conditionsMet = 0
+                                    break
+                            elif cell.tags.get(condKey) != condVal:
+                                conditionsMet = 0
+                                break
+                except:
+                    pass
+                    #print('Warning: modifyConns() does not yet support conditions of presynaptic cells when running parallel sims')
 
             if conditionsMet:  # if all conditions are met, set values for this cell
                 if sim.cfg.createPyStruct:

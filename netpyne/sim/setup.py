@@ -144,6 +144,9 @@ def setNetParams(params):
 
     from .. import sim
 
+    if not hasattr(sim, 'net'):
+        sim.setNet(sim.Network())  # create new network if one doesn't exist
+
     if params and isinstance(params, specs.NetParams):
         paramsDict = utils.replaceKeys(params.todict(), 'popLabel', 'pop')  # for backward compatibility
         sim.net.params = specs.NetParams(paramsDict)  # convert back to NetParams obj
@@ -272,6 +275,8 @@ def readCmdLineArgs(simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
             __main__.cfg = cfg
         except:
             print('\nWarning: Could not load cfg from command line path or from default cfg.py')
+            print('This usually occurs when cfg.py crashes.  Please ensure that your cfg.py file')
+            print('completes successfully on its own (i.e. execute "python cfg.py" and fix any bugs).')
             cfg = None
 
     if not netParamsPath:
@@ -286,6 +291,8 @@ def readCmdLineArgs(simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
             netParams = netParamsModule.netParams
         except:
             print('\nWarning: Could not load netParams from command line path or from default netParams.py')
+            print('This usually occurs when netParams.py crashes.  Please ensure that your netParams.py file')
+            print('completes successfully on its own (i.e. execute "python netParams.py" and fix any bugs).')
             netParams = None
 
     return cfg, netParams
@@ -324,7 +331,8 @@ def setupRecordLFP():
             cell.imembPtr.ptr_update_callback(cell.setImembPtr)   # used for gathering an array of  i_membrane values from the pointer vector
             cell.imembVec = h.Vector(nseg)
 
-        sim.cvode.use_fast_imem(1)   # make i_membrane_ a range variable
+        sim.cvode.use_fast_imem(True)   # make i_membrane_ a range variable
+        sim.cfg.use_fast_imem = True
 
 
 #------------------------------------------------------------------------------
@@ -333,8 +341,6 @@ def setupRecordLFP():
 def setupRecording():
     """
     Function for/to <short description of `netpyne.sim.setup.setupRecording`>
-
-
     """
 
 
@@ -379,6 +385,10 @@ def setupRecording():
 
     # intrinsic cell variables recording
     if sim.cfg.recordTraces:
+
+        # Set cvode use_fast_imem since might be needed to record i_membrane_ 
+        sim.cvode.use_fast_imem(sim.cfg.use_fast_imem)
+
         # if have rxd objects need to run h.finitialize() before setting up recording so pointers available
         if len(sim.net.params.rxdParams) > 0:
             h.finitialize()

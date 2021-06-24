@@ -1,5 +1,5 @@
 """
-analysis/morlet.py
+Module with support for Morlet wavelets
 
 Time-frequency representation using Morlet wavelets
 

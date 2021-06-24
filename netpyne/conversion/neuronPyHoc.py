@@ -300,8 +300,11 @@ def importCell(fileName, cellName, cellArgs = None, cellInstance = False):
         else:
             cell = getattr(modulePointer, cellName)(*cellArgs)  # create cell using template, passing list with args
         if removeFilePath: sys.path.remove(filePath)
+    elif fileName.endswith('.swc'):
+        from netpyne.support.morphology import load
+        cell = load(fileName)
     else:
-        print("File name should be either .hoc or .py file")
+        print("File name should end in '.hoc', '.py', or '.swc'")
         return
 
     secDic, secListDic, synMechs, globs = getCellParams(cell, varList, origGlob)

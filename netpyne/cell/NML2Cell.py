@@ -23,15 +23,14 @@ from ..specs import Dict
 #
 ###############################################################################
 
-class NML2Cell (CompartCell):
+class NML2Cell(CompartCell):
     """
-    Class for/to <short description of `netpyne.cell.NML2Cell.NML2Cell`>
+    Class to hold a NeuroML2 cell
 
     """
 
-    ''' Might this be useful to show better name for cell when psection() called?
-    def __str__():
-        return "%s"%self.tags['cellType']
-    '''
-
+    # Might this be useful to show better name for cell when psection() called?
+    # def __str__():
+    #     return "%s"%self.tags['cellType']
+    
     pass

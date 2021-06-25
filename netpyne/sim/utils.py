@@ -146,12 +146,19 @@ def timing(mode, processName):
                 sim.timingData[processName] = time()
             elif mode == 'stop':
                 sim.timingData[processName] = time() - sim.timingData[processName]
-
-    elif sim.cfg.timing:
-        if mode == 'start':
-            sim.timingData[processName] = time()
-        elif mode == 'stop':
-            sim.timingData[processName] = time() - sim.timingData[processName]
+        elif hasattr(sim.cfg, 'timing'):
+            if sim.cfg.timing:
+                if mode == 'start':
+                    sim.timingData[processName] = time()
+                elif mode == 'stop':
+                    sim.timingData[processName] = time() - sim.timingData[processName]
+    
+    elif hasattr(sim.cfg, 'timing'):
+        if sim.cfg.timing:
+            if mode == 'start':
+                sim.timingData[processName] = time()
+            elif mode == 'stop':
+                sim.timingData[processName] = time() - sim.timingData[processName]
 
 
 

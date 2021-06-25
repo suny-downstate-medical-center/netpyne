@@ -320,8 +320,11 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
 
         cell_param_set = {}
 
-        if not 'cellModel' in np_pop.tags and 'cellType' in np_pop.tags and np_pop.tags['cellType'] in net.params.cellParams.keys():
+        if (not 'cellModel' in np_pop.tags or np_pop.tags['cellModel']=='') and \
+           'cellType' in np_pop.tags and \
+           np_pop.tags['cellType'] in net.params.cellParams.keys():
             ## SIMPLE POP/CELLTYPE FORMAT
+            if sim.cfg.verbose: print("Assuming simple pop/cell type format...")
             cell_param_set = net.params.cellParams[np_pop.tags['cellType']]
             if sim.cfg.verbose: print("  -- Simple format for populations being used for pop %s with cell %s: %s"%(np_pop_id,np_pop.tags['cellType'],cell_param_set))
             np_pop.tags['cellModel'] = np_pop.tags['cellType']
@@ -364,7 +367,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                     exit(-1)
 
         if not np_pop.tags['cellModel'] == 'NetStim':
-            if 'conds' in cell_param_set:
+            if 'conds' in cell_param_set and len(cell_param_set['conds'])>0:
                 if not 'cellModel' in cell_param_set['conds'] or cell_param_set['conds']['cellModel']=={}:
                     cell_id = 'CELL_%s'%(cell_param_set['conds']['cellType'])
                 elif not 'cellType' in cell_param_set['conds'] or cell_param_set['conds']['cellType']=={}:
@@ -378,7 +381,9 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
             populations_vs_components[np_pop.tags['pop']]=cell_id
 
 
-        if 'cellModel' in np_pop.tags and not np_pop.tags['cellModel'] == 'NetStim' and not str(cell_param_set) in cells_added:
+        if sim.cfg.verbose: print("Checking whether to add cell: %s; already added: %s"%(cell_param_set,cells_added))
+        if 'cellModel' in np_pop.tags and not np_pop.tags['cellModel'] == 'NetStim' and not cell_id in cells_added:
+
             if sim.cfg.verbose: print("---------------  Adding a cell from pop %s: \n%s"%(np_pop.tags,cell_param_set))
 
             # print("=====  Adding the cell %s: \n%s"%(cell_name,pp.pprint(cell_param_set)))
@@ -434,13 +439,19 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
 
                 parentDistal = neuroml.Point3DWithDiam(x=0,y=0,z=0,diameter=0)
 
+                # First create all nml segs
+                for np_sec_name in list(cell_param_set['secs'].keys()):
+                    nml_seg = neuroml.Segment(id=count,name=np_sec_name)
+                    nml_segs[np_sec_name] = nml_seg
+                    count+=1
+
+                count = 0
                 for np_sec_name in list(cell_param_set['secs'].keys()):
 
                     parent_seg = None
 
                     np_sec = cell_param_set['secs'][np_sec_name]
-                    nml_seg = neuroml.Segment(id=count,name=np_sec_name)
-                    nml_segs[np_sec_name] = nml_seg
+                    nml_seg = nml_segs[np_sec_name]
 
                     if 'topol' in np_sec and len(np_sec['topol'])>0:
                         parent_seg = nml_segs[np_sec['topol']['parentSec']]
@@ -518,8 +529,8 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                         mp.spike_threshes.append(neuroml.SpikeThresh(value="%s mV"%sim.net.params.defaultThreshold))
 
                     # While testing HNN...
-                    mechs_to_ignore = ['dipole','ar_hnn','ca_hnn','cat_hnn','cad','kca','km']
-                    mechs_to_ignore = []
+                    mechs_to_ignore = ['dipole','dipole_pp','ar_hnn','ca_hnn','cat_hnn','cad','kca','km','ar','ca','cat','vecevent']
+                    #mechs_to_ignore = []
 
                     for mech_name in list(np_sec['mechs'].keys()):
                         mech = np_sec['mechs'][mech_name]
@@ -577,7 +588,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
 
                 nml_doc.cells.append(cell)
 
-            cells_added.append(str(cell_param_set))
+            cells_added.append(cell_id)
 
 
     for np_pop in list(net.pops.values()):

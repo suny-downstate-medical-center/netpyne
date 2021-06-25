@@ -15,3 +15,9 @@ sim.createExportNeuroML2(netParams = np,
 
 from neuroml.utils import validate_neuroml2
 validate_neuroml2('HHTut.net.nml')
+
+
+###### Export also to Python ######
+
+from netpyne.conversion import createPythonScript
+createPythonScript('HHTut_regen.py', HHTut.netParams, HHTut.simConfig)

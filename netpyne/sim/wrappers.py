@@ -11,7 +11,6 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 
-
 #------------------------------------------------------------------------------
 # Wrapper to create network
 #------------------------------------------------------------------------------
@@ -23,11 +22,11 @@ def create(netParams=None, simConfig=None, output=False):
     ----------
     netParams : ``netParams object``
         NetPyNE netParams object specifying network parameters.
-        **Default:** *required*.
+        **Default:** *required*. 
 
     simConfig : ``simConfig object``
         NetPyNE simConfig object specifying simulation configuration.
-        **Default:** *required*.
+        **Default:** *required*. 
 
     output : bool
         Whether or not to return output from the simulation.
@@ -54,7 +53,7 @@ def create(netParams=None, simConfig=None, output=False):
     rxd = sim.net.addRxD()                    # add reaction-diffusion (RxD)
     simData = sim.setupRecording()             # setup variables to record for each cell (spikes, V traces, etc)
 
-    if output:
+    if output: 
         return (pops, cells, conns, rxd, stims, simData)
 
 
@@ -68,10 +67,8 @@ def simulate():
     """
 
     from .. import sim
-
     sim.runSim()
     sim.gatherData()     # gather spiking data and cell info from each node
-
 
 #------------------------------------------------------------------------------
 # Wrapper to simulate network
@@ -112,14 +109,14 @@ def distributedSimulate(filename=None, dataDir=None, includeLFP=True):
     includeLFP : bool
         whether or not to include LFP data
         **Default:** ``True`` includes LFP data if available.
-
+    
     """
 
     from .. import sim
     sim.runSim()
     sim.saveDataInNodes(filename=filename, saveLFP=includeLFP, removeTraces=False, dataDir=dataDir)
     sim.gatherDataFromFiles(gatherLFP=includeLFP, dataDir=dataDir)
-
+    
 
 #------------------------------------------------------------------------------
 # Wrapper to analyze network
@@ -146,11 +143,11 @@ def createSimulate(netParams=None, simConfig=None, output=False):
     ----------
     netParams : ``netParams object``
         NetPyNE netParams object specifying network parameters.
-        **Default:** *required*.
+        **Default:** *required*. 
 
     simConfig : ``simConfig object``
         NetPyNE simConfig object specifying simulation configuration.
-        **Default:** *required*.
+        **Default:** *required*. 
 
     output : bool
         Whether or not to return output from the simulation.
@@ -168,7 +165,7 @@ def createSimulate(netParams=None, simConfig=None, output=False):
     (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
     sim.simulate()
 
-    if output:
+    if output: 
         return (pops, cells, conns, stims, simData)
 
 
@@ -183,11 +180,11 @@ def createSimulateAnalyze(netParams=None, simConfig=None, output=False):
     ----------
     netParams : ``netParams object``
         NetPyNE netParams object specifying network parameters.
-        **Default:** *required*.
+        **Default:** *required*. 
 
     simConfig : ``simConfig object``
         NetPyNE simConfig object specifying simulation configuration.
-        **Default:** *required*.
+        **Default:** *required*. 
 
     output : bool
         Whether or not to return output from the simulation.
@@ -205,7 +202,7 @@ def createSimulateAnalyze(netParams=None, simConfig=None, output=False):
     (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
     sim.simulate()
     sim.analyze()
-    if output:
+    if output: 
         return (pops, cells, conns, stims, simData)
 
 #------------------------------------------------------------------------------
@@ -219,11 +216,11 @@ def createSimulateAnalyzeInterval(netParams, simConfig, output=False, interval=N
     ----------
     netParams : ``netParams object``
         NetPyNE netParams object specifying network parameters.
-        **Default:** *required*.
+        **Default:** *required*. 
 
     simConfig : ``simConfig object``
         NetPyNE simConfig object specifying simulation configuration.
-        **Default:** *required*.
+        **Default:** *required*. 
 
     output : bool
         Whether or not to return output from the simulation.
@@ -258,7 +255,7 @@ def createSimulateAnalyzeInterval(netParams, simConfig, output=False, interval=N
         return
     sim.pc.barrier()
     sim.analyze()
-    if output:
+    if output: 
         return (pops, cells, conns, stims, simData)
 
 
@@ -273,11 +270,11 @@ def createSimulateAnalyzeDistributed(netParams, simConfig, output=False, filenam
     ----------
     netParams : ``netParams object``
         NetPyNE netParams object specifying network parameters.
-        **Default:** *required*.
+        **Default:** *required*. 
 
     simConfig : ``simConfig object``
         NetPyNE simConfig object specifying simulation configuration.
-        **Default:** *required*.
+        **Default:** *required*. 
 
     output : bool
         Whether or not to return output from the simulation.
@@ -307,14 +304,14 @@ def createSimulateAnalyzeDistributed(netParams, simConfig, output=False, filenam
     import os
     from .. import sim
     (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
-
+    
     sim.runSim()
     sim.saveDataInNodes(filename=filename, saveLFP=includeLFP, removeTraces=False, dataDir=dataDir)
     sim.gatherDataFromFiles(gatherLFP=includeLFP, dataDir=dataDir)
     sim.saveData()
     sim.analysis.plotData()
 
-    if output:
+    if output: 
         return (pops, cells, conns, stims, simData)
 
 
@@ -333,7 +330,7 @@ def load(filename, simConfig=None, output=False, instantiate=True, instantiateCe
 
     simConfig : ``simConfig object``
         NetPyNE simConfig object specifying simulation configuration.
-        **Default:** ``None`` uses the current ``simConfig``.
+        **Default:** ``None`` uses the current ``simConfig``. 
 
     output : bool
         whether or not to return output from the simulation.
@@ -410,7 +407,7 @@ def loadSimulate(filename, simConfig=None, output=False):
 
     simConfig : ``simConfig object``
         NetPyNE simConfig object specifying simulation configuration.
-        **Default:** ``None`` uses the current ``simConfig``.
+        **Default:** ``None`` uses the current ``simConfig``. 
 
     output : bool
         whether or not to return output from the simulation.
@@ -451,7 +448,7 @@ def loadSimulateAnalyze(filename, simConfig=None, output=False):
 
     simConfig : ``simConfig object``
         NetPyNE simConfig object specifying simulation configuration.
-        **Default:** ``None`` uses the current ``simConfig``.
+        **Default:** ``None`` uses the current ``simConfig``. 
 
     output : bool
         whether or not to return output from the simulation.
@@ -489,11 +486,11 @@ def createExportNeuroML2(netParams=None, simConfig=None, output=False, reference
     ----------
     netParams : ``netParams object``
         NetPyNE netParams object specifying network parameters.
-        **Default:** *required*.
+        **Default:** *required*. 
 
     simConfig : ``simConfig object``
         NetPyNE simConfig object specifying simulation configuration.
-        **Default:** *required*.
+        **Default:** *required*. 
 
     output : bool
         Whether or not to return output from the simulation.
@@ -537,7 +534,7 @@ def createExportNeuroML2(netParams=None, simConfig=None, output=False, reference
     simData = sim.setupRecording()        # setup variables to record for each cell (spikes, V traces, etc)
     sim.exportNeuroML2(reference, connections,  stimulations,format)     # export cells and connectivity to NeuroML 2 format
 
-    if output:
+    if output: 
         return (pops, cells, conns, stims, rxd, simData)
 
 
@@ -578,5 +575,3 @@ def runSimIntervalSaving(interval=1000):
 
 
 
-    sim.saveDataInNodes(filename=filename, saveLFP=includeLFP, removeTraces=removeTraces, dataDir=dataDir)
-    sim.gatherDataFromFiles(gatherLFP=includeLFP, dataDir=dataDir)

@@ -136,11 +136,23 @@ def timing(mode, processName):
 
     from .. import sim
 
-    if sim.rank == 0 and sim.cfg.timing:
+    if not hasattr(sim, 'timingData'):
+        sim.timingData = {}
+
+    if hasattr(sim, 'rank'):
+
+        if sim.rank == 0 and sim.cfg.timing:
+            if mode == 'start':
+                sim.timingData[processName] = time()
+            elif mode == 'stop':
+                sim.timingData[processName] = time() - sim.timingData[processName]
+
+    elif sim.cfg.timing:
         if mode == 'start':
             sim.timingData[processName] = time()
         elif mode == 'stop':
             sim.timingData[processName] = time() - sim.timingData[processName]
+
 
 
 #------------------------------------------------------------------------------

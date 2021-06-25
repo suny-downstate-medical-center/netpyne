@@ -250,7 +250,11 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
 
     if not data: data = _loadFile(filename)
     if 'net' in data and 'cells' in data['net'] and 'pops' in data['net']:
-        if sim.rank == 0:
+        loadNow = True
+        if hasattr(sim, 'rank'):
+            if sim.rank != 0:
+                loadNow = False
+        if loadNow:
             sim.timing('start', 'loadNetTime')
             print('Loading net...')
             if compactConnFormat:
@@ -259,10 +263,17 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
             sim.net.allCells = data['net']['cells']
         if instantiate:
             # calculate cells to instantiate in this node
-            if isinstance(instantiate, list):
-                cellsNode = [data['net']['cells'][i] for i in range(int(sim.rank), len(data['net']['cells']), sim.nhosts) if i in instantiate]
+            if hasattr(sim, 'rank'):
+                if isinstance(instantiate, list):
+                    cellsNode = [data['net']['cells'][i] for i in range(int(sim.rank), len(data['net']['cells']), sim.nhosts) if i in instantiate]
+                else:
+                    cellsNode = [data['net']['cells'][i] for i in range(int(sim.rank), len(data['net']['cells']), sim.nhosts)]
             else:
-                cellsNode = [data['net']['cells'][i] for i in range(int(sim.rank), len(data['net']['cells']), sim.nhosts)]
+                if isinstance(instantiate, list):
+                    cellsNode = [data['net']['cells'][i] for i in range(0, len(data['net']['cells']), 1) if i in instantiate]
+                else:
+                    cellsNode = [data['net']['cells'][i] for i in range(0, len(data['net']['cells']), 1)]
+            
             if sim.cfg.createPyStruct:
                 for popLoadLabel, popLoad in data['net']['pops'].items():
                     pop = sim.Pop(popLoadLabel, popLoad['tags'])
@@ -317,7 +328,7 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
 
                     print(('  Added NEURON objects to %d cells' % (len(sim.net.cells))))
 
-            if sim.rank == 0 and sim.cfg.timing:
+            if loadNow and sim.cfg.timing:  #if sim.rank == 0 and sim.cfg.timing:
                 sim.timing('stop', 'loadNetTime')
                 print(('  Done; re-instantiate net time = %0.2f s' % sim.timingData['loadNetTime']))
     else:

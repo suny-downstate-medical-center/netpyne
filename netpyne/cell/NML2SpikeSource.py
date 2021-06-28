@@ -14,19 +14,16 @@ from .compartCell import CompartCell
 from ..specs import Dict
 
 
-###############################################################################
-#
+
 # NeuroML2 SPIKE SOURCE CLASS
-#
-###############################################################################
 
-class NML2SpikeSource (CompartCell):
+class NML2SpikeSource(CompartCell):
     """
-    Class for/to <short description of `netpyne.cell.NML2SpikeSource.NML2SpikeSource`>
+    Class to deal with NeuroML2 spike sources
 
     """
 
-    def associateGid (self, threshold = 10.0):
+    def associateGid(self, threshold = 10.0):
         from .. import sim
 
         if sim.cfg.createNEURONObj:

@@ -387,7 +387,16 @@ class Pop (object):
 
         from .. import sim
 
-        # Check whether it's a NeuroML2 based cell
+        # obtain cellModel either from cellParams or popParams
+        if 'cellType' in self.tags and self.tags['cellType'] in sim.net.params.cellParams and 'cellModel' in sim.net.params.cellParams[self.tags['cellType']]:
+            cellModel = sim.net.params.cellParams[self.tags['cellType']]['cellModel']
+        elif 'cellModel' in self.tags:
+            cellModel = self.tags['cellModel']
+        else:
+            cellModel = None
+
+        # Check whether it's a NeuroML2 based cell 
+        # ! needs updating to read cellModel info from cellParams 
         if 'originalFormat' in self.tags:
             if self.tags['originalFormat'] == 'NeuroML2':
                 self.cellModelClass = sim.NML2Cell
@@ -397,8 +406,7 @@ class Pop (object):
         else:
             # set cell class: CompartCell for compartmental cells of PointCell for point neurons (NetStims, IntFire1,...)
             try: # check if cellModel corresponds to an existing point process mechanism; if so, use PointCell
-
-                    tmp = getattr(h, self.tags['cellModel'])
+                    tmp = getattr(h, cellModel)
                     self.cellModelClass = sim.PointCell
                     excludeTags = ['pop', 'cellModel', 'cellType', 'numCells', 'density', 'cellsList',
                                 'xRange', 'yRange', 'zRange', 'xnormRange', 'ynormRange', 'znormRange', 'vref', 'spkTimes', 'dynamicRates']
@@ -408,7 +416,7 @@ class Pop (object):
                     sim.net.params.popTagsCopiedToCells.append('params')
             except:
                 if getattr(self.tags, 'cellModel', None) in ['NetStim', 'DynamicNetStim', 'VecStim', 'IntFire1', 'IntFire2', 'IntFire4']:
-                    print('Warning: could not find %s point process mechanism required for population %s' % (self.tags['cellModel'], self.tags['pop']))
+                    print('Warning: could not find %s point process mechanism required for population %s' % (cellModel, self.tags['pop']))
                 self.cellModelClass = sim.CompartCell  # otherwise assume has sections and some cellParam rules apply to it; use CompartCell
 
 
@@ -491,6 +499,8 @@ class Pop (object):
         odict = self.__dict__.copy() # copy the dict since we change it
         odict = sim.replaceFuncObj(odict)  # replace h objects with None so can be pickled
         #odict['cellModelClass'] = str(odict['cellModelClass'])
-        del odict['cellModelClass']
-        del odict['rand']
+        if 'cellModelClass' in odict:
+            del odict['cellModelClass']
+        if 'rand' in odict:
+            del odict['rand']
         return odict

@@ -71,18 +71,18 @@ def tupleToStr(obj):
     """
 
 
-    #print '\nbefore:', obj
     if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict]:
                 tupleToStr(item)
-    elif type(obj) == dict:
-        for key,val in obj.items():
-            if type(val) in [list, dict]:
-                tupleToStr(val)
+    elif type(obj) == dict:        
+        for key in list(obj.keys()):
+            if type(obj[key]) in [list, dict]:
+                tupleToStr(obj[key])
             if type(key) == tuple:
                 obj[str(key)] = obj.pop(key)
-    #print 'after:', obj
+    
+    
     return obj
 
 

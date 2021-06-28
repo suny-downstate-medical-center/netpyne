@@ -16,7 +16,7 @@ secs['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el'
 netParams.cellParams['PYR'] = {'secs': secs}  # add dict to list of cell properties
 
 # Population parameters
-netParams.popParams['hop'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}     # add dict with params for this pop
+netParams.popParams['hop'] = {'cellType': 'PYR', 'numCells': 50}     # add dict with params for this pop
 #netParams.popParams['background'] = {'cellModel': 'NetStim', 'rate': 50, 'noise': 0.5}  # background inputs
 
 # Synaptic mechanism parameters

@@ -28,8 +28,7 @@ from .dicts import Dict, ODict
 
 class SimConfig(object):
     """
-    Class for/to <short description of `netpyne.specs.simConfig.SimConfig`>
-
+    Class to hold simulation configuration parameters
 
     """
 
@@ -135,6 +134,9 @@ class SimConfig(object):
             from .. import sim
             print(('Saving simConfig to %s ... ' % (filename)))
             sim.saveJSON(filename, dataSave)
+
+    def setParam(self, param, value):
+        self.__dict__[param] = value
 
     def addAnalysis(self, func, params):
         self.analysis[func] =  params

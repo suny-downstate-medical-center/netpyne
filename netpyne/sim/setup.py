@@ -144,6 +144,9 @@ def setNetParams(params):
 
     from .. import sim
 
+    if not hasattr(sim, 'net'):
+        sim.setNet(sim.Network())  # create new network if one doesn't exist
+
     if params and isinstance(params, specs.NetParams):
         paramsDict = utils.replaceKeys(params.todict(), 'popLabel', 'pop')  # for backward compatibility
         sim.net.params = specs.NetParams(paramsDict)  # convert back to NetParams obj

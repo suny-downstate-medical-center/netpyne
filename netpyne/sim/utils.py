@@ -897,6 +897,7 @@ def clearAll():
             matplotlib.pyplot.close('all')
 
     # clean rxd components
+    '''
     if hasattr(sim.net, 'rxd'):
         
         sim.clearObj(sim.net.rxd)
@@ -928,9 +929,10 @@ def clearAll():
         rxd.species._has_3d = False
         rxd.rxd._zero_volume_indices = np.ndarray(0, dtype=np.int_)
         rxd.set_solve_type(dimension=1)
-        print('cleared all')
+
         #except:
         #    pass
+    '''
 
     if hasattr(sim, 'net'):
         del sim.net

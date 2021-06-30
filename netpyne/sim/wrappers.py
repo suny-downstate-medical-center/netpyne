@@ -497,25 +497,21 @@ def createExportNeuroML2(netParams=None, simConfig=None, output=False, reference
         **Default:** ``False`` does not return anything.
         **Options:** ``True`` returns output.
 
-    reference : <``None``?>
-        <Short description of reference>
-        **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
+    reference : str
+        Will be used for id of the network
 
     connections : bool
-        <Short description of connections>
+        Should connections also be exported?
         **Default:** ``True``
-        **Options:** ``<option>`` <description of option>
 
     stimulations : bool
-        <Short description of stimulations>
+        Should stimulations (current clamps etc) also be exported?
         **Default:** ``True``
-        **Options:** ``<option>`` <description of option>
 
     format : str
-        <Short description of format>
+        Which format, xml or hdf5
         **Default:** ``'xml'``
-        **Options:** ``<option>`` <description of option>
+        **Options:** ``'xml'`` Export as XML format ``'hdf5'`` Export as binary HDF5 format
 
     Returns
     -------
@@ -557,7 +553,7 @@ def importNeuroML2SimulateAnalyze(fileName, simConfig):
 
     simConfig : ``simConfig object``
         NetPyNE simConfig object specifying simulation configuration.
-        **Default:** ``None`` uses the current ``simConfig``. 
+        **Default:** *required*.
 
     """
 

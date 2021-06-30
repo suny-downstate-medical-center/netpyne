@@ -11,3 +11,8 @@ sim.createExportNeuroML2(netParams = np,
                        reference = 'M1',
                        connections=True,
                        stimulations=True)  # create and export network to NeuroML 2
+
+###### Validate the NeuroML ######
+
+from neuroml.utils import validate_neuroml2
+validate_neuroml2('M1.net.nml')

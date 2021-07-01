@@ -928,6 +928,9 @@ def clearAll():
         rxd.species._has_3d = False
         rxd.rxd._zero_volume_indices = np.ndarray(0, dtype=np.int_)
         rxd.set_solve_type(dimension=1)
+        # clear reactions in case next sim does not use rxd
+        rxd.rxd.clear_rates()
+        
 
         #except:
         #    pass

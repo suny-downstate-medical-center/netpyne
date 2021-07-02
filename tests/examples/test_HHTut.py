@@ -16,5 +16,5 @@ class TestHHTut():
     def test_run(self, pkg_setup):
         import HHTut_run
 
-    #def test_export(self, pkg_setup):
-    #    import HHTut_export
+    def test_export(self, pkg_setup):
+        import HHTut_export

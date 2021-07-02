@@ -931,6 +931,9 @@ def clearAll():
         # clear reactions in case next sim does not use rxd
         rxd.rxd.clear_rates()
         
+        for obj in rxd.__dict__:
+            sim.clearObj(obj)
+        
 
         #except:
         #    pass

@@ -8,7 +8,7 @@ from netpyne import specs
 
 # Run parameters
 cfg = specs.SimConfig()       # object of class cfg to store simulation configuration
-cfg.duration = 0.1*1e3        # Duration of the simulation, in ms
+cfg.duration = 1.0*1e3        # Duration of the simulation, in ms
 cfg.hParams['v_init'] = -65   # set v_init to -65 mV
 cfg.dt = 0.1                  # Internal integration timestep to use
 cfg.verbose = False            # Show detailed messages

@@ -9,30 +9,30 @@ from __future__ import division
 from __future__ import absolute_import
 
 
-
 from builtins import next
 from builtins import dict
 from builtins import map
 from builtins import str
+
 try:
     basestring
 except NameError:
     basestring = str
 from future import standard_library
+
 standard_library.install_aliases()
 from time import time
 import hashlib
 import array
 from numbers import Number
 from collections import OrderedDict
-from neuron import h# Import NEURON
+from neuron import h  # Import NEURON
 from ..specs import Dict, ODict
 
 
-
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Convert dict strings to utf8 so can be saved in HDF5 format
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def cellByGid(gid):
     """
     Function for/to <short description of `netpyne.sim.utils.cellByGid`>
@@ -46,16 +46,15 @@ def cellByGid(gid):
 
     """
 
-
     from .. import sim
 
-    cell = next((c for c in sim.net.cells if c.gid==gid), None)
+    cell = next((c for c in sim.net.cells if c.gid == gid), None)
     return cell
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Get cells list for recording based on set of conditions
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def getCellsList(include, returnGids=False):
     """
     Function for/to <short description of `netpyne.sim.utils.getCellsList`>
@@ -74,10 +73,11 @@ def getCellsList(include, returnGids=False):
 
     """
 
-
     from .. import sim
 
-    if sim.nhosts > 1 and any(isinstance(cond, tuple) or isinstance(cond,list) for cond in include): # Gather tags from all cells
+    if sim.nhosts > 1 and any(
+        isinstance(cond, tuple) or isinstance(cond, list) for cond in include
+    ):  # Gather tags from all cells
         allCellTags = sim._gatherAllCellTags()
     else:
         allCellTags = {cell.gid: cell.tags for cell in sim.net.cells}
@@ -85,7 +85,7 @@ def getCellsList(include, returnGids=False):
     cellGids = []
     cells = []
     for condition in include:
-        if condition in ['all', 'allCells']:  # all cells + Netstims
+        if condition in ["all", "allCells"]:  # all cells + Netstims
             cells = list(sim.net.cells)
             return cells
 
@@ -95,15 +95,23 @@ def getCellsList(include, returnGids=False):
         elif isinstance(condition, basestring):  # entire pop
             cellGids.extend(list(sim.net.pops[condition].cellGids))
 
-        elif isinstance(condition, tuple) or isinstance(condition, list):  # subset of a pop with relative indices
-            cellsPop = [gid for gid,tags in allCellTags.items() if tags['pop']==condition[0]]
+        elif isinstance(condition, tuple) or isinstance(
+            condition, list
+        ):  # subset of a pop with relative indices
+            cellsPop = [
+                gid for gid, tags in allCellTags.items() if tags["pop"] == condition[0]
+            ]
             cellsPop = list(set(cellsPop))
             cellsPop.sort()
 
             if isinstance(condition[1], list):
-                cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
+                cellGids.extend(
+                    [gid for i, gid in enumerate(cellsPop) if i in condition[1]]
+                )
             elif isinstance(condition[1], int):
-                cellGids.extend([gid for i,gid in enumerate(cellsPop) if i==condition[1]])
+                cellGids.extend(
+                    [gid for i, gid in enumerate(cellsPop) if i == condition[1]]
+                )
 
     cellGids = list(set(cellGids))  # unique values
     if returnGids:
@@ -113,9 +121,9 @@ def getCellsList(include, returnGids=False):
         return cells
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Timing - Stop Watch
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def timing(mode, processName):
     """
     Function for/to <short description of `netpyne.sim.utils.timing`>
@@ -133,30 +141,31 @@ def timing(mode, processName):
 
     """
 
-
     from .. import sim
 
-    if not hasattr(sim, 'timingData'):
+    if not hasattr(sim, "timingData"):
         sim.timingData = {}
 
-    if hasattr(sim.cfg, 'timing'):
+    if hasattr(sim.cfg, "timing"):
         if sim.cfg.timing:
-            if hasattr(sim, 'rank'):
+            if hasattr(sim, "rank"):
                 if sim.rank == 0:
-                    if mode == 'start':
+                    if mode == "start":
                         sim.timingData[processName] = time()
-                    elif mode == 'stop':
-                        sim.timingData[processName] = time() - sim.timingData[processName]
+                    elif mode == "stop":
+                        sim.timingData[processName] = (
+                            time() - sim.timingData[processName]
+                        )
             else:
-                if mode == 'start':
+                if mode == "start":
                     sim.timingData[processName] = time()
-                elif mode == 'stop':
-                    sim.timingData[processName] = time() - sim.timingData[processName]                
+                elif mode == "stop":
+                    sim.timingData[processName] = time() - sim.timingData[processName]
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Print netpyne version
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def version(show=True):
     """
     Function for/to <short description of `netpyne.sim.utils.version`>
@@ -171,16 +180,16 @@ def version(show=True):
 
     """
 
-
     from netpyne import __version__
+
     if show:
         print(__version__)
     return __version__
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Print github version
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def gitChangeset(show=True):
     """
     Function for/to <short description of `netpyne.sim.utils.gitChangeset`>
@@ -195,28 +204,30 @@ def gitChangeset(show=True):
 
     """
 
-
     import netpyne, os, subprocess
 
     currentPath = os.getcwd()
     try:
         netpynePath = os.path.dirname(netpyne.__file__)
         os.chdir(netpynePath)
-        if show: os.system('git log -1')
+        if show:
+            os.system("git log -1")
         # get changeset (need to remove initial tag+num and ending '\n')
-        #changeset = subprocess.check_output(["git", "describe"]).split('-')[2][1:-1]
-        changeset = subprocess.check_output(["git", "describe"], stderr=subprocess.DEVNULL).split('-')[2][1:-1]
+        # changeset = subprocess.check_output(["git", "describe"]).split('-')[2][1:-1]
+        changeset = subprocess.check_output(
+            ["git", "describe"], stderr=subprocess.DEVNULL
+        ).split("-")[2][1:-1]
     except:
-        changeset = ''
+        changeset = ""
 
     os.chdir(currentPath)
 
     return changeset
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Hash function for string
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def hashStr(obj):
     """
     Function for/to <short description of `netpyne.sim.utils.hashStr`>
@@ -230,14 +241,15 @@ def hashStr(obj):
 
     """
 
+    # return hash(obj) & 0xffffffff  # hash func
+    return int(
+        hashlib.md5(obj.encode("utf-8")).hexdigest()[0:8], 16
+    )  # convert 8 first chars of md5 hash in base 16 to int
 
-    #return hash(obj) & 0xffffffff  # hash func
-    return int(hashlib.md5(obj.encode('utf-8')).hexdigest()[0:8],16)  # convert 8 first chars of md5 hash in base 16 to int
 
-
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Hash function for list of values
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def hashList(obj):
     """
     Function for/to <short description of `netpyne.sim.utils.hashList`>
@@ -251,22 +263,21 @@ def hashList(obj):
 
     """
 
+    return int(hashlib.md5(array.array(chr(ord("L")), obj)).hexdigest()[0:8], 16)
 
-    return int(hashlib.md5(array.array(chr(ord('L')), obj)).hexdigest()[0:8],16)
 
-
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Initialize the stim randomizer
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def _init_stim_randomizer(rand, stimType, gid, seed):
     from .. import sim
 
     rand.Random123(sim.hashStr(stimType), gid, seed)
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Fast function to find unique elements in sequence and preserve order
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def unique(seq):
     """
     Function for/to <short description of `netpyne.sim.utils.unique`>
@@ -280,15 +291,14 @@ def unique(seq):
 
     """
 
-
     seen = set()
     seen_add = seen.add
     return [x for x in seq if not (x in seen or seen_add(x))]
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Check memory
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def checkMemory():
     """
     Function for/to <short description of `netpyne.sim.utils.checkMemory`>
@@ -296,29 +306,32 @@ def checkMemory():
 
     """
 
-
     from .. import sim
 
     # print memory diagnostic info
-    if sim.rank == 0: # and checkMemory:
+    if sim.rank == 0:  # and checkMemory:
         import resource
-        print('\nMEMORY -----------------------')
-        print('Sections: ')
+
+        print("\nMEMORY -----------------------")
+        print("Sections: ")
         print(h.topology())
-        print('NetCons: ')
+        print("NetCons: ")
         print(len(h.List("NetCon")))
-        print('NetStims:')
+        print("NetStims:")
         print(len(h.List("NetStim")))
-        print('\n Memory usage: %s \n' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+        print(
+            "\n Memory usage: %s \n"
+            % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        )
         # import objgraph
         # objgraph.show_most_common_types()
-        print('--------------------------------\n')
+        print("--------------------------------\n")
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Replace item with specific key from dict or list (used to remove h objects)
-#------------------------------------------------------------------------------
-def copyReplaceItemObj(obj, keystart, newval, objCopy='ROOT', exclude_list=[]):
+# ------------------------------------------------------------------------------
+def copyReplaceItemObj(obj, keystart, newval, objCopy="ROOT", exclude_list=[]):
     """
     Function for/to <short description of `netpyne.sim.utils.copyReplaceItemObj`>
 
@@ -349,9 +362,8 @@ def copyReplaceItemObj(obj, keystart, newval, objCopy='ROOT', exclude_list=[]):
 
     """
 
-
     if type(obj) == list:
-        if objCopy=='ROOT':
+        if objCopy == "ROOT":
             objCopy = []
         for item in obj:
             if isinstance(item, list):
@@ -364,9 +376,9 @@ def copyReplaceItemObj(obj, keystart, newval, objCopy='ROOT', exclude_list=[]):
                 objCopy.append(item)
 
     elif isinstance(obj, (dict, Dict)):
-        if objCopy == 'ROOT':
+        if objCopy == "ROOT":
             objCopy = Dict()
-        for key,val in obj.items():
+        for key, val in obj.items():
             if type(val) in [list]:
                 objCopy[key] = []
                 copyReplaceItemObj(val, keystart, newval, objCopy[key], exclude_list)
@@ -380,10 +392,10 @@ def copyReplaceItemObj(obj, keystart, newval, objCopy='ROOT', exclude_list=[]):
     return objCopy
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Remove item with specific key from dict or list (used to remove h objects)
-#------------------------------------------------------------------------------
-def copyRemoveItemObj(obj, keystart,  objCopy='ROOT', exclude_list=[]):
+# ------------------------------------------------------------------------------
+def copyRemoveItemObj(obj, keystart, objCopy="ROOT", exclude_list=[]):
     """
     Function for/to <short description of `netpyne.sim.utils.copyRemoveItemObj`>
 
@@ -410,9 +422,8 @@ def copyRemoveItemObj(obj, keystart,  objCopy='ROOT', exclude_list=[]):
 
     """
 
-
     if type(obj) == list:
-        if objCopy=='ROOT':
+        if objCopy == "ROOT":
             objCopy = []
         for item in obj:
             if isinstance(item, list):
@@ -420,14 +431,14 @@ def copyRemoveItemObj(obj, keystart,  objCopy='ROOT', exclude_list=[]):
                 copyRemoveItemObj(item, keystart, objCopy[-1], exclude_list)
             elif isinstance(item, (dict, Dict)):
                 objCopy.append({})
-                copyRemoveItemObj(item, keystart,  objCopy[-1], exclude_list)
+                copyRemoveItemObj(item, keystart, objCopy[-1], exclude_list)
             else:
                 objCopy.append(item)
 
     elif isinstance(obj, (dict, Dict)):
-        if objCopy == 'ROOT':
+        if objCopy == "ROOT":
             objCopy = Dict()
-        for key,val in obj.items():
+        for key, val in obj.items():
             if type(val) in [list]:
                 objCopy[key] = []
                 copyRemoveItemObj(val, keystart, objCopy[key], exclude_list)
@@ -441,9 +452,9 @@ def copyRemoveItemObj(obj, keystart,  objCopy='ROOT', exclude_list=[]):
     return objCopy
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Replace item with specific key from dict or list (used to remove h objects)
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def replaceItemObj(obj, keystart, newval, exclude_list=[]):
     """
     Function for/to <short description of `netpyne.sim.utils.replaceItemObj`>
@@ -470,14 +481,13 @@ def replaceItemObj(obj, keystart, newval, exclude_list=[]):
 
     """
 
-
     if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict]:
                 replaceItemObj(item, keystart, newval, exclude_list)
 
     elif type(obj) == dict:
-        for key,val in obj.items():
+        for key, val in obj.items():
             if type(val) in [list, dict]:
                 replaceItemObj(val, keystart, newval, exclude_list)
             if key.startswith(keystart) and key not in exclude_list:
@@ -485,9 +495,9 @@ def replaceItemObj(obj, keystart, newval, exclude_list=[]):
     return obj
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Recursivele replace dict keys
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def replaceKeys(obj, oldkey, newkey):
     """
     Function for/to <short description of `netpyne.sim.utils.replaceKeys`>
@@ -509,7 +519,6 @@ def replaceKeys(obj, oldkey, newkey):
 
     """
 
-
     if type(obj) == list:
         for item in obj:
             if isinstance(item, (list, dict, Dict, ODict, OrderedDict)):
@@ -525,9 +534,9 @@ def replaceKeys(obj, oldkey, newkey):
     return obj
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Replace functions from dict or list with function string (so can be pickled)
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def replaceFuncObj(obj):
     """
     Function for/to <short description of `netpyne.sim.utils.replaceFuncObj`>
@@ -541,24 +550,25 @@ def replaceFuncObj(obj):
 
     """
 
-
     if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict]:
                 replaceFuncObj(item)
 
     elif type(obj) == dict:
-        for key,val in obj.items():
+        for key, val in obj.items():
             if type(val) in [list, dict]:
                 replaceFuncObj(val)
-            if 'func_name' in dir(val): #hasattr(val,'func_name'):  # avoid hasattr() since it creates key in Dicts()
-                obj[key] = 'func' # funcSource
+            if "func_name" in dir(
+                val
+            ):  # hasattr(val,'func_name'):  # avoid hasattr() since it creates key in Dicts()
+                obj[key] = "func"  # funcSource
     return obj
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Replace None from dict or list with [](so can be saved to .mat)
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def replaceNoneObj(obj):
     """
     Function for/to <short description of `netpyne.sim.utils.replaceNoneObj`>
@@ -572,26 +582,25 @@ def replaceNoneObj(obj):
 
     """
 
-
-    if type(obj) == list:# or type(obj) == tuple:
+    if type(obj) == list:  # or type(obj) == tuple:
         for item in obj:
             if isinstance(item, (list, dict, Dict, ODict)):
                 replaceNoneObj(item)
 
     elif isinstance(obj, (dict, Dict, ODict)):
-        for key,val in obj.items():
+        for key, val in obj.items():
             if isinstance(val, (list, dict, Dict, ODict)):
                 replaceNoneObj(val)
             if val == None:
                 obj[key] = []
             elif val == {}:
-                obj[key] = [] # also replace empty dicts with empty list
+                obj[key] = []  # also replace empty dicts with empty list
     return obj
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Replace Dict with dict and Odict with OrderedDict
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def replaceDictODict(obj):
     """
     Function for/to <short description of `netpyne.sim.utils.replaceDictODict`>
@@ -605,7 +614,6 @@ def replaceDictODict(obj):
 
     """
 
-
     if type(obj) == list:
         for item in obj:
             if type(item) == Dict:
@@ -616,7 +624,7 @@ def replaceDictODict(obj):
                 replaceDictODict(item)
 
     elif type(obj) in [dict, OrderedDict, Dict, ODict]:
-        for key,val in obj.items():
+        for key, val in obj.items():
             if type(val) == Dict:
                 obj[key] = val.todict()
             elif type(val) == ODict:
@@ -627,9 +635,9 @@ def replaceDictODict(obj):
     return obj
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Rename objects
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def rename(obj, old, new, label=None):
     """
     Function for/to <short description of `netpyne.sim.utils.rename`>
@@ -656,7 +664,6 @@ def rename(obj, old, new, label=None):
 
     """
 
-
     try:
         return obj.rename(old, new, label)
     except:
@@ -667,9 +674,9 @@ def rename(obj, old, new, label=None):
             return False
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Replace tuples with str
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def tupleToList(obj):
     """
     Function for/to <short description of `netpyne.sim.utils.tupleToList`>
@@ -683,7 +690,6 @@ def tupleToList(obj):
 
     """
 
-
     if type(obj) == list:
         for item in obj:
             if type(item) in [list, dict]:
@@ -692,17 +698,17 @@ def tupleToList(obj):
                 obj[obj.index(item)] = list(item)
 
     elif isinstance(obj, (dict, ODict)):
-        for key,val in obj.items():
+        for key, val in obj.items():
             if isinstance(val, (list, dict, ODict)):
                 tupleToList(val)
             elif type(val) == tuple:
-                obj[key] = list(val) # also replace empty dicts with empty list
+                obj[key] = list(val)  # also replace empty dicts with empty list
     return obj
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Replace Decimal with float
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def decimalToFloat(obj):
     """
     Function for/to <short description of `netpyne.sim.utils.decimalToFloat`>
@@ -716,27 +722,27 @@ def decimalToFloat(obj):
 
     """
 
-
     from decimal import Decimal
+
     if type(obj) == list:
-        for i,item in enumerate(obj):
+        for i, item in enumerate(obj):
             if type(item) in [list, dict, tuple]:
                 decimalToFloat(item)
             elif type(item) == Decimal:
                 obj[i] = float(item)
 
     elif isinstance(obj, dict):
-        for key,val in obj.items():
+        for key, val in obj.items():
             if isinstance(val, (list, dict)):
                 decimalToFloat(val)
             elif type(val) == Decimal:
-                obj[key] = float(val) # also replace empty dicts with empty list
+                obj[key] = float(val)  # also replace empty dicts with empty list
     return obj
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Recursively remove items of an object (used to avoid mem leaks)
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def clearObj(obj):
     """
     Function for/to <short description of `netpyne.sim.utils.clearObj`>
@@ -749,7 +755,6 @@ def clearObj(obj):
 
 
     """
-
 
     if type(obj) == list:
         for item in obj:
@@ -766,9 +771,9 @@ def clearObj(obj):
     return obj
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Support funcs to load from mat
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def _mat2dict(obj):
     """
     A recursive function which constructs from matobjects nested dictionaries
@@ -782,7 +787,7 @@ def _mat2dict(obj):
         out = {}
         for key in obj:
             if isinstance(obj[key], spio.matlab.mio5_params.mat_struct):
-                if key in ['conns', 'stims', 'synMechs']:
+                if key in ["conns", "stims", "synMechs"]:
                     out[key] = [_mat2dict(obj[key])]  # convert to 1-element list
                 else:
                     out[key] = _mat2dict(obj[key])
@@ -796,7 +801,7 @@ def _mat2dict(obj):
         for key in obj._fieldnames:
             val = obj.__dict__[key]
             if isinstance(val, spio.matlab.mio5_params.mat_struct):
-                if key in ['conns', 'stims', 'synMechs']:
+                if key in ["conns", "stims", "synMechs"]:
                     out[key] = [_mat2dict(val)]  # convert to 1-element list
                 else:
                     out[key] = _mat2dict(val)
@@ -808,7 +813,9 @@ def _mat2dict(obj):
     elif isinstance(obj, np.ndarray):
         out = []
         for item in obj:
-            if isinstance(item, spio.matlab.mio5_params.mat_struct) or isinstance(item, np.ndarray):
+            if isinstance(item, spio.matlab.mio5_params.mat_struct) or isinstance(
+                item, np.ndarray
+            ):
                 out.append(_mat2dict(item))
             else:
                 out.append(item)
@@ -819,19 +826,20 @@ def _mat2dict(obj):
     return out
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Convert dict strings to utf8 so can be saved in HDF5 format
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def _dict2utf8(obj):
-#unidict = {k.decode('utf8'): v.decode('utf8') for k, v in strdict.items()}
-    #print obj
+    # unidict = {k.decode('utf8'): v.decode('utf8') for k, v in strdict.items()}
+    # print obj
     import collections
+
     if isinstance(obj, basestring):
-        return obj.decode('utf8')
+        return obj.decode("utf8")
     elif isinstance(obj, collections.Mapping):
         for key in list(obj.keys()):
             if isinstance(key, Number):
-                obj[str(key).decode('utf8')] = obj[key]
+                obj[str(key).decode("utf8")] = obj[key]
                 obj.pop(key)
         return dict(list(map(_dict2utf8, iter(obj.items()))))
     elif isinstance(obj, collections.Iterable):
@@ -840,73 +848,88 @@ def _dict2utf8(obj):
         return obj
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Clear all sim objects in memory
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def clearAll():
     """
     Function to clear all sim objects in memory
 
     """
 
-
     from .. import sim
     import numpy as np
 
     # clean up
     sim.pc.barrier()
-    sim.pc.gid_clear()                    # clear previous gid settings
+    sim.pc.gid_clear()  # clear previous gid settings
 
     # clean cells and simData in all nodes
-    if hasattr(sim, 'net'):
-        sim.clearObj([cell.__dict__ if hasattr(cell, '__dict__') else cell for cell in sim.net.cells])
-    if hasattr(sim, 'simData'):
-        if 'stims' in list(sim.simData.keys()):
-            sim.clearObj([stim for stim in sim.simData['stims']])
+    if hasattr(sim, "net"):
+        sim.clearObj(
+            [
+                cell.__dict__ if hasattr(cell, "__dict__") else cell
+                for cell in sim.net.cells
+            ]
+        )
+    if hasattr(sim, "simData"):
+        if "stims" in list(sim.simData.keys()):
+            sim.clearObj([stim for stim in sim.simData["stims"]])
 
-        for key in list(sim.simData.keys()): del sim.simData[key]
+        for key in list(sim.simData.keys()):
+            del sim.simData[key]
 
-
-    if hasattr(sim, 'net'):
-        for c in sim.net.cells: del c
-        for p in sim.net.pops: del p
+    if hasattr(sim, "net"):
+        for c in sim.net.cells:
+            del c
+        for p in sim.net.pops:
+            del p
         del sim.net.params
 
     # clean cells and simData gathered in master node
-    if hasattr(sim, 'rank'):
+    if hasattr(sim, "rank"):
         if sim.rank == 0:
-            if hasattr(sim, 'net'):
-                if hasattr(sim.net, 'allCells'):
-                    sim.clearObj([cell.__dict__ if hasattr(cell, '__dict__') else cell for cell in sim.net.allCells])
-            if hasattr(sim, 'allSimData'):
-                for key in list(sim.allSimData.keys()): del sim.allSimData[key]
-                
-                if 'stims' in list(sim.allSimData.keys()):
-                    sim.clearObj([stim for stim in sim.allSimData['stims']])
-            
-            if hasattr(sim, 'net'):
-                for c in sim.net.allCells: del c
-                for p in sim.net.allPops: del p
+            if hasattr(sim, "net"):
+                if hasattr(sim.net, "allCells"):
+                    sim.clearObj(
+                        [
+                            cell.__dict__ if hasattr(cell, "__dict__") else cell
+                            for cell in sim.net.allCells
+                        ]
+                    )
+            if hasattr(sim, "allSimData"):
+                for key in list(sim.allSimData.keys()):
+                    del sim.allSimData[key]
+
+                if "stims" in list(sim.allSimData.keys()):
+                    sim.clearObj([stim for stim in sim.allSimData["stims"]])
+
+            if hasattr(sim, "net"):
+                for c in sim.net.allCells:
+                    del c
+                for p in sim.net.allPops:
+                    del p
                 del sim.net.allCells
-            
-            if hasattr(sim, 'allSimData'):
+
+            if hasattr(sim, "allSimData"):
                 del sim.allSimData
 
             import matplotlib
+
             matplotlib.pyplot.clf()
-            matplotlib.pyplot.close('all')
+            matplotlib.pyplot.close("all")
 
     # clean rxd components
-    if hasattr(sim.net, 'rxd'):
-        
+    if hasattr(sim.net, "rxd"):
+
         sim.clearObj(sim.net.rxd)
 
-        if 'rxd' not in globals():
+        if "rxd" not in globals():
             try:
-                from neuron import crxd as rxd 
+                from neuron import crxd as rxd
             except:
                 pass
-        #try:
+        # try:
         for r in rxd.rxd._all_reactions[:]:
             if r():
                 rxd.rxd._unregister_reaction(r)
@@ -914,7 +937,7 @@ def clearAll():
         for s in rxd.species._all_species:
             if s():
                 s().__del__()
-                
+
         rxd.region._all_regions = []
         rxd.region._region_count = 0
         rxd.region._c_region_lookup = None
@@ -930,24 +953,27 @@ def clearAll():
         rxd.set_solve_type(dimension=1)
         # clear reactions in case next sim does not use rxd
         rxd.rxd.clear_rates()
-        
+
         for obj in rxd.__dict__:
             sim.clearObj(obj)
-        
 
-        #except:
+        # except:
         #    pass
 
-    if hasattr(sim, 'net'):
+    if hasattr(sim, "net"):
         del sim.net
 
-    import gc; gc.collect()
+    import gc
 
-#------------------------------------------------------------------------------
+    gc.collect()
+
+
+# ------------------------------------------------------------------------------
 # Create a subclass of json.JSONEncoder to convert numpy types in Python types
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 import json
 import numpy as np
+
 
 class NpSerializer(json.JSONEncoder):
     """
@@ -955,7 +981,6 @@ class NpSerializer(json.JSONEncoder):
 
 
     """
-
 
     def default(self, obj):
         if isinstance(obj, np.integer):

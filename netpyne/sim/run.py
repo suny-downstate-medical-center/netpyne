@@ -13,16 +13,16 @@ from builtins import range
 
 from builtins import str
 from future import standard_library
+
 standard_library.install_aliases()
 import numpy as np
-from neuron import h, init # Import NEURON
+from neuron import h, init  # Import NEURON
 from . import utils
 
 
-
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Commands required just before running simulation
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def preRun():
     """
     Function for/to <short description of `netpyne.sim.run.preRun`>
@@ -30,13 +30,11 @@ def preRun():
 
     """
 
-
     from .. import sim
-
 
     # set initial v of cells
     for cell in sim.net.cells:
-       sim.fih.append(h.FInitializeHandler(0, cell.initV))
+        sim.fih.append(h.FInitializeHandler(0, cell.initV))
 
     # cvode variables
     sim.cvode.active(int(sim.cfg.cvode_active))
@@ -51,19 +49,24 @@ def preRun():
     h.dt = sim.cfg.dt
 
     # set v_init if doesn't exist
-    if 'v_init' not in sim.cfg.hParams: sim.cfg.hParams['v_init'] = -65.0
+    if "v_init" not in sim.cfg.hParams:
+        sim.cfg.hParams["v_init"] = -65.0
 
     # parallelcontext vars
     sim.pc.set_maxstep(10)
-    mindelay = sim.pc.allreduce(sim.pc.set_maxstep(10), 2) # flag 2 returns minimum value
-    if sim.rank==0 and sim.cfg.verbose: print(('Minimum delay (time-step for queue exchange) is %.2f'%(mindelay)))
+    mindelay = sim.pc.allreduce(
+        sim.pc.set_maxstep(10), 2
+    )  # flag 2 returns minimum value
+    if sim.rank == 0 and sim.cfg.verbose:
+        print(("Minimum delay (time-step for queue exchange) is %.2f" % (mindelay)))
     sim.pc.setup_transfer()  # setup transfer of source_var to target_var
 
     # handler for printing out time during simulation run
     if sim.rank == 0 and sim.cfg.printRunTime:
+
         def printRunTime():
-            print('%.1fs' % (h.t/1000.0))
-            sim.cvode.event(h.t + int(sim.cfg.printRunTime*1000.0), sim.printRunTime)
+            print("%.1fs" % (h.t / 1000.0))
+            sim.cvode.event(h.t + int(sim.cfg.printRunTime * 1000.0), sim.printRunTime)
 
         sim.printRunTime = printRunTime
         sim.fih.append(h.FInitializeHandler(1, sim.printRunTime))
@@ -75,38 +78,50 @@ def preRun():
 
     # reset all netstim randomizers so runs are always equivalent
     for cell in sim.net.cells:
-        if cell.tags.get('cellModel') == 'NetStim':
-            #cell.hRandom.Random123(sim.hashStr('NetStim'), cell.gid, cell.params['seed'])
-            utils._init_stim_randomizer(cell.hRandom, 'NetStim', cell.gid, cell.params['seed'])
+        if cell.tags.get("cellModel") == "NetStim":
+            # cell.hRandom.Random123(sim.hashStr('NetStim'), cell.gid, cell.params['seed'])
+            utils._init_stim_randomizer(
+                cell.hRandom, "NetStim", cell.gid, cell.params["seed"]
+            )
             cell.hRandom.negexp(1)
             cell.hPointp.noiseFromRandom(cell.hRandom)
-        pop = sim.net.pops[cell.tags['pop']]
-        if 'originalFormat' in pop.tags and pop.tags['originalFormat'] == 'NeuroML2_SpikeSource':
-            if sim.cfg.verbose: print("== Setting random generator in NeuroML spike generator")
+        pop = sim.net.pops[cell.tags["pop"]]
+        if (
+            "originalFormat" in pop.tags
+            and pop.tags["originalFormat"] == "NeuroML2_SpikeSource"
+        ):
+            if sim.cfg.verbose:
+                print("== Setting random generator in NeuroML spike generator")
             cell.initRandom()
         else:
             for stim in cell.stims:
-                if 'hRandom' in stim:
-                    #stim['hRandom'].Random123(sim.hashStr(stim['source']), cell.gid, stim['seed'])
-                    utils._init_stim_randomizer(stim['hRandom'], stim['type'], cell.gid, stim['seed'])
-                    stim['hRandom'].negexp(1)
+                if "hRandom" in stim:
+                    # stim['hRandom'].Random123(sim.hashStr(stim['source']), cell.gid, stim['seed'])
+                    utils._init_stim_randomizer(
+                        stim["hRandom"], stim["type"], cell.gid, stim["seed"]
+                    )
+                    stim["hRandom"].negexp(1)
                     # Check if noiseFromRandom is in stim['hObj']; see https://github.com/Neurosim-lab/netpyne/issues/219
-                    if not isinstance(stim['hObj'].noiseFromRandom, dict):
-                        stim['hObj'].noiseFromRandom(stim['hRandom'])
+                    if not isinstance(stim["hObj"].noiseFromRandom, dict):
+                        stim["hObj"].noiseFromRandom(stim["hRandom"])
 
     # handler for recording LFP
     if sim.cfg.recordLFP:
+
         def recordLFPHandler():
             sim.cvode.event(h.t + float(sim.cfg.recordStep), sim.calculateLFP)
             sim.cvode.event(h.t + float(sim.cfg.recordStep), recordLFPHandler)
 
         sim.recordLFPHandler = recordLFPHandler
-        sim.fih.append(h.FInitializeHandler(0, sim.recordLFPHandler))  # initialize imemb
+        sim.fih.append(
+            h.FInitializeHandler(0, sim.recordLFPHandler)
+        )  # initialize imemb
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Run Simulation
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+
 
 def runSim(skipPreRun=False):
     """
@@ -122,38 +137,44 @@ def runSim(skipPreRun=False):
 
     """
 
-
-
     from .. import sim
 
     sim.pc.barrier()
-    if hasattr(sim.cfg,'use_local_dt') and sim.cfg.use_local_dt:
+    if hasattr(sim.cfg, "use_local_dt") and sim.cfg.use_local_dt:
         try:
             sim.cvode.use_local_dt(1)
-            if sim.cfg.verbose: print('Using local dt.')
+            if sim.cfg.verbose:
+                print("Using local dt.")
         except:
-            if sim.cfg.verbose: 'Error Failed to use local dt.'
+            if sim.cfg.verbose:
+                "Error Failed to use local dt."
     sim.pc.barrier()
-    sim.timing('start', 'runTime')
+    sim.timing("start", "runTime")
 
     if not skipPreRun:
         preRun()
 
-    h.finitialize(float(sim.cfg.hParams['v_init']))
+    h.finitialize(float(sim.cfg.hParams["v_init"]))
 
-    if sim.rank == 0: print('\nRunning simulation for %s ms...'%sim.cfg.duration)
+    if sim.rank == 0:
+        print("\nRunning simulation for %s ms..." % sim.cfg.duration)
     sim.pc.psolve(sim.cfg.duration)
 
-    sim.pc.barrier() # Wait for all hosts to get to this point
-    sim.timing('stop', 'runTime')
-    if sim.rank==0:
-        print('  Done; run time = %0.2f s; real-time ratio: %0.2f.' %
-            (sim.timingData['runTime'], sim.cfg.duration/1000/sim.timingData['runTime']))
+    sim.pc.barrier()  # Wait for all hosts to get to this point
+    sim.timing("stop", "runTime")
+    if sim.rank == 0:
+        print(
+            "  Done; run time = %0.2f s; real-time ratio: %0.2f."
+            % (
+                sim.timingData["runTime"],
+                sim.cfg.duration / 1000 / sim.timingData["runTime"],
+            )
+        )
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Run Simulation
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def runSimWithIntervalFunc(interval, func):
     """
     Function for/to <short description of `netpyne.sim.run.runSimWithIntervalFunc`>
@@ -171,36 +192,43 @@ def runSimWithIntervalFunc(interval, func):
 
     """
 
-
     from .. import sim
-    sim.pc.barrier()
-    sim.timing('start', 'runTime')
-    preRun()
-    h.finitialize(float(sim.cfg.hParams['v_init']))
 
-    if sim.rank == 0: print('\nRunning with interval func  ...')
+    sim.pc.barrier()
+    sim.timing("start", "runTime")
+    preRun()
+    h.finitialize(float(sim.cfg.hParams["v_init"]))
+
+    if sim.rank == 0:
+        print("\nRunning with interval func  ...")
 
     while round(h.t) < sim.cfg.duration:
-        sim.pc.psolve(min(sim.cfg.duration, h.t+interval))
-        func(h.t) # function to be called at intervals
+        sim.pc.psolve(min(sim.cfg.duration, h.t + interval))
+        func(h.t)  # function to be called at intervals
 
-    sim.pc.barrier() # Wait for all hosts to get to this point
-    sim.timing('stop', 'runTime')
-    if sim.rank==0:
-        print(('  Done; run time = %0.2f s; real-time ratio: %0.2f.' %
-            (sim.timingData['runTime'], sim.cfg.duration/1000/sim.timingData['runTime'])))
+    sim.pc.barrier()  # Wait for all hosts to get to this point
+    sim.timing("stop", "runTime")
+    if sim.rank == 0:
+        print(
+            (
+                "  Done; run time = %0.2f s; real-time ratio: %0.2f."
+                % (
+                    sim.timingData["runTime"],
+                    sim.cfg.duration / 1000 / sim.timingData["runTime"],
+                )
+            )
+        )
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Calculate LFP (fucntion called at every time step)
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 def calculateLFP():
     """
     Function for/to <short description of `netpyne.sim.run.calculateLFP`>
 
 
     """
-
 
     from .. import sim
 
@@ -210,24 +238,24 @@ def calculateLFP():
 
     # compute
     saveStep = int(np.floor(h.t / sim.cfg.recordStep))
-    for cell in sim.net.compartCells: # compute ecp only from the biophysical cells
+    for cell in sim.net.compartCells:  # compute ecp only from the biophysical cells
         gid = cell.gid
-        im = cell.getImemb() # in nA
+        im = cell.getImemb()  # in nA
         tr = sim.net.recXElectrode.getTransferResistance(gid)  # in MOhm
         ecp = np.dot(tr, im)  # in mV (= R * I = MOhm * nA)
 
         if sim.cfg.saveLFPCells:
-            sim.simData['LFPCells'][gid][saveStep - 1,:] = ecp  # contribution of individual cells (stored optionally)
+            sim.simData["LFPCells"][gid][
+                saveStep - 1, :
+            ] = ecp  # contribution of individual cells (stored optionally)
 
-        sim.simData['LFP'][saveStep - 1,:] += ecp  # sum of all cells
+        sim.simData["LFP"][saveStep - 1, :] += ecp  # sum of all cells
 
 
-
-
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Calculate and print load balance
-#------------------------------------------------------------------------------
-def loadBalance(printNodeTimes = False):
+# ------------------------------------------------------------------------------
+def loadBalance(printNodeTimes=False):
     """
     Function for/to <short description of `netpyne.sim.run.loadBalance`>
 
@@ -241,23 +269,25 @@ def loadBalance(printNodeTimes = False):
 
     """
 
-
     from .. import sim
 
     computation_time = sim.pc.step_time()
     max_comp_time = sim.pc.allreduce(computation_time, 2)
     min_comp_time = sim.pc.allreduce(computation_time, 3)
-    avg_comp_time = sim.pc.allreduce(computation_time, 1)/sim.nhosts
-    load_balance = avg_comp_time/max_comp_time
+    avg_comp_time = sim.pc.allreduce(computation_time, 1) / sim.nhosts
+    load_balance = avg_comp_time / max_comp_time
 
     if printNodeTimes:
-        print('node:',sim.rank,' comp_time:',computation_time)
+        print("node:", sim.rank, " comp_time:", computation_time)
 
-    if sim.rank==0:
-        print('max_comp_time:', max_comp_time)
-        print('min_comp_time:', min_comp_time)
-        print('avg_comp_time:', avg_comp_time)
-        print('load_balance:',load_balance)
-        print('\nspike exchange time (run_time-comp_time): ', sim.timingData['runTime'] - max_comp_time)
+    if sim.rank == 0:
+        print("max_comp_time:", max_comp_time)
+        print("min_comp_time:", min_comp_time)
+        print("avg_comp_time:", avg_comp_time)
+        print("load_balance:", load_balance)
+        print(
+            "\nspike exchange time (run_time-comp_time): ",
+            sim.timingData["runTime"] - max_comp_time,
+        )
 
     return [max_comp_time, min_comp_time, avg_comp_time, load_balance]

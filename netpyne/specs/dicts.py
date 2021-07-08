@@ -14,12 +14,14 @@ from builtins import range
 from builtins import dict
 from builtins import super
 from future import standard_library
+
 standard_library.install_aliases()
 from collections import OrderedDict
 
 # ----------------------------------------------------------------------------
 # Dict class (allows dot notation for dicts)
 # ----------------------------------------------------------------------------
+
 
 class Dict(dict):
     """
@@ -28,15 +30,13 @@ class Dict(dict):
 
     """
 
-
-
     __slots__ = []
 
     def __init__(*args, **kwargs):
         self = args[0]
         args = args[1:]
         if len(args) > 1:
-            raise TypeError('expected at most 1 arguments, got %d' % len(args))
+            raise TypeError("expected at most 1 arguments, got %d" % len(args))
         if args:
             self.update(self.dotify(args[0]))
         if len(kwargs):
@@ -77,34 +77,32 @@ class Dict(dict):
         else:
             object.__delattr__(self, k)
 
-
     def todict(self):
         return self.undotify(self)
 
     def fromdict(self, d):
         d = self.dotify(d)
-        for k,v in d.items():
+        for k, v in d.items():
             self[k] = v
 
     def __repr__(self):
         keys = list(self.keys())
-        args = ', '.join(['%s: %r' % (key, self[key]) for key in keys])
-        return '{%s}' % (args)
-
+        args = ", ".join(["%s: %r" % (key, self[key]) for key in keys])
+        return "{%s}" % (args)
 
     def dotify(self, x):
         if isinstance(x, dict):
-            return Dict( (k, self.dotify(v)) for k,v in x.items() )
+            return Dict((k, self.dotify(v)) for k, v in x.items())
         elif isinstance(x, (list, tuple)):
-            return type(x)( self.dotify(v) for v in x )
+            return type(x)(self.dotify(v) for v in x)
         else:
             return x
 
     def undotify(self, x):
         if isinstance(x, dict):
-            return dict( (k, self.undotify(v)) for k,v in x.items() )
+            return dict((k, self.undotify(v)) for k, v in x.items())
         elif isinstance(x, (list, tuple)):
-            return type(x)( self.undotify(v) for v in x )
+            return type(x)(self.undotify(v) for v in x)
         else:
             return x
 
@@ -136,14 +134,14 @@ class Dict(dict):
         self.__rename__(*args, **kwargs)
 
     def __missing__(self, key):
-        if key and not key.startswith('_ipython'):
+        if key and not key.startswith("_ipython"):
             value = self[key] = Dict()
             return value
 
-    def __getstate__ (self):
+    def __getstate__(self):
         return self.todict()
 
-    def __setstate__ (self, d):
+    def __setstate__(self, d):
         self = self.fromdict(d)
 
 
@@ -151,14 +149,13 @@ class Dict(dict):
 # ODict class (allows dot notation for ordered dicts)
 # ----------------------------------------------------------------------------
 
+
 class ODict(OrderedDict):
     """
     Class for/to <short description of `netpyne.specs.dicts.ODict`>
 
 
     """
-
-
 
     __slots__ = []
 
@@ -182,23 +179,20 @@ class ODict(OrderedDict):
             except KeyError:
                 raise AttributeError(k)
 
-
     def __setattr__(self, k, v):
-        if k.startswith('_OrderedDict'):
-            super(ODict, self).__setattr__(k,v)
+        if k.startswith("_OrderedDict"):
+            super(ODict, self).__setattr__(k, v)
         else:
             try:
-                super(ODict, self).__setitem__(k,v)
+                super(ODict, self).__setitem__(k, v)
             except:
                 raise AttributeError(k)
-
 
     def __getitem__(self, k):
         return super(ODict, self).__getitem__(k)
 
-
     def __setitem__(self, k, v):
-        super(ODict, self).__setitem__(k,v)
+        super(ODict, self).__setitem__(k, v)
 
     def __delattr__(self, k):
         try:
@@ -217,32 +211,31 @@ class ODict(OrderedDict):
 
     def fromOrderedDict(self, d):
         d = self.dotify(d)
-        for k,v in d.items():
+        for k, v in d.items():
             self[k] = v
 
     def __repr__(self):
         keys = list(self.keys())
-        args = ', '.join(['%s: %r' % (key, self[key]) for key in keys])
-        return '{%s}' % (args)
-
+        args = ", ".join(["%s: %r" % (key, self[key]) for key in keys])
+        return "{%s}" % (args)
 
     def dotify(self, x):
         if isinstance(x, OrderedDict):
-            return ODict( (k, self.dotify(v)) for k,v in x.items() )
+            return ODict((k, self.dotify(v)) for k, v in x.items())
         elif isinstance(x, dict):
-            return Dict( (k, self.dotify(v)) for k,v in x.items() )
+            return Dict((k, self.dotify(v)) for k, v in x.items())
         elif isinstance(x, (list, tuple)):
-            return type(x)( self.dotify(v) for v in x )
+            return type(x)(self.dotify(v) for v in x)
         else:
             return x
 
     def undotify(self, x):
         if isinstance(x, OrderedDict):
-            return OrderedDict( (k, self.undotify(v)) for k,v in x.items() )
+            return OrderedDict((k, self.undotify(v)) for k, v in x.items())
         elif isinstance(x, dict):
-            return dict( (k, self.undotify(v)) for k,v in x.items() )
+            return dict((k, self.undotify(v)) for k, v in x.items())
         elif isinstance(x, (list, tuple)):
-            return type(x)( self.undotify(v) for v in x )
+            return type(x)(self.undotify(v) for v in x)
         else:
             return x
 
@@ -273,8 +266,8 @@ class ODict(OrderedDict):
     def rename(self, *args, **kwargs):
         self.__rename__(*args, **kwargs)
 
-    def __getstate__ (self):
+    def __getstate__(self):
         return self.toOrderedDict()
 
-    def __setstate__ (self, d):
+    def __setstate__(self, d):
         self = self.fromOrderedDict(d)

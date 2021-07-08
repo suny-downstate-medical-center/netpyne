@@ -30,8 +30,7 @@ import warnings
 
 import numpy as np
 from scipy.fftpack import hilbert
-from scipy.signal import (cheb2ord, cheby2, convolve, get_window, iirfilter,
-                          remez)
+from scipy.signal import cheb2ord, cheby2, convolve, get_window, iirfilter, remez
 
 try:
     from scipy.signal import sosfilt
@@ -55,15 +54,15 @@ def bandpass(data, freqmin, freqmax, df, corners=4, zerophase=True):
     data : array
         Data to filter.
 
-    freqmin : float 
+    freqmin : float
         Pass band low corner frequency.
-    
+
     freqmax : float
         Pass band high corner frequency.
-    
+
     df : float
         Sampling rate in Hz.
-    
+
     corners : int
         Filter corners / order.
         **Default:** ``4``
@@ -83,17 +82,18 @@ def bandpass(data, freqmin, freqmax, df, corners=4, zerophase=True):
     high = freqmax / fe
     # raise for some bad scenarios
     if high - 1.0 > -1e-6:
-        msg = ("Selected high corner frequency ({}) of bandpass is at or "
-               "above Nyquist ({}). Applying a high-pass instead.").format(
-            freqmax, fe)
+        msg = (
+            "Selected high corner frequency ({}) of bandpass is at or "
+            "above Nyquist ({}). Applying a high-pass instead."
+        ).format(freqmax, fe)
         warnings.warn(msg)
-        return highpass(data, freq=freqmin, df=df, corners=corners,
-                        zerophase=zerophase)
+        return highpass(data, freq=freqmin, df=df, corners=corners, zerophase=zerophase)
     if low > 1:
         msg = "Selected low corner frequency is above Nyquist."
         raise ValueError(msg)
-    z, p, k = iirfilter(corners, [low, high], btype='band',
-                        ftype='butter', output='zpk')
+    z, p, k = iirfilter(
+        corners, [low, high], btype="band", ftype="butter", output="zpk"
+    )
     sos = zpk2sos(z, p, k)
     if zerophase:
         firstpass = sosfilt(sos, data)
@@ -116,15 +116,15 @@ def bandstop(data, freqmin, freqmax, df, corners=4, zerophase=False):
     data : array
         Data to filter.
 
-    freqmin : float 
+    freqmin : float
         Stop band low corner frequency.
-    
+
     freqmax : float
         Stop band high corner frequency.
-    
+
     df : float
         Sampling rate in Hz.
-    
+
     corners : int
         Filter corners / order.
         **Default:** ``4``
@@ -137,7 +137,7 @@ def bandstop(data, freqmin, freqmax, df, corners=4, zerophase=False):
     -------
     data : array
         Filtered data.
-        
+
     """
 
     fe = 0.5 * df
@@ -146,14 +146,17 @@ def bandstop(data, freqmin, freqmax, df, corners=4, zerophase=False):
     # raise for some bad scenarios
     if high > 1:
         high = 1.0
-        msg = "Selected high corner frequency is above Nyquist. " + \
-              "Setting Nyquist as high corner."
+        msg = (
+            "Selected high corner frequency is above Nyquist. "
+            + "Setting Nyquist as high corner."
+        )
         warnings.warn(msg)
     if low > 1:
         msg = "Selected low corner frequency is above Nyquist."
         raise ValueError(msg)
-    z, p, k = iirfilter(corners, [low, high],
-                        btype='bandstop', ftype='butter', output='zpk')
+    z, p, k = iirfilter(
+        corners, [low, high], btype="bandstop", ftype="butter", output="zpk"
+    )
     sos = zpk2sos(z, p, k)
     if zerophase:
         firstpass = sosfilt(sos, data)
@@ -176,12 +179,12 @@ def lowpass(data, freq, df, corners=4, zerophase=False):
     data : array
         Data to filter.
 
-    freq : float 
+    freq : float
         Filter corner frequency.
-    
+
     df : float
         Sampling rate in Hz.
-    
+
     corners : int
         Filter corners / order.
         **Default:** ``4``
@@ -202,11 +205,12 @@ def lowpass(data, freq, df, corners=4, zerophase=False):
     # raise for some bad scenarios
     if f > 1:
         f = 1.0
-        msg = "Selected corner frequency is above Nyquist. " + \
-              "Setting Nyquist as high corner."
+        msg = (
+            "Selected corner frequency is above Nyquist. "
+            + "Setting Nyquist as high corner."
+        )
         warnings.warn(msg)
-    z, p, k = iirfilter(corners, f, btype='lowpass', ftype='butter',
-                        output='zpk')
+    z, p, k = iirfilter(corners, f, btype="lowpass", ftype="butter", output="zpk")
     sos = zpk2sos(z, p, k)
     if zerophase:
         firstpass = sosfilt(sos, data)
@@ -229,12 +233,12 @@ def highpass(data, freq, df, corners=4, zerophase=False):
     data : array
         Data to filter.
 
-    freq : float 
+    freq : float
         Filter corner frequency.
-    
+
     df : float
         Sampling rate in Hz.
-    
+
     corners : int
         Filter corners / order.
         **Default:** ``4``
@@ -256,8 +260,7 @@ def highpass(data, freq, df, corners=4, zerophase=False):
     if f > 1:
         msg = "Selected corner frequency is above Nyquist."
         raise ValueError(msg)
-    z, p, k = iirfilter(corners, f, btype='highpass', ftype='butter',
-                        output='zpk')
+    z, p, k = iirfilter(corners, f, btype="highpass", ftype="butter", output="zpk")
     sos = zpk2sos(z, p, k)
     if zerophase:
         firstpass = sosfilt(sos, data)
@@ -305,22 +308,22 @@ def remez_fir(data, freqmin, freqmax, df):
     data : array
         Data to filter.
 
-    freqmin : float 
+    freqmin : float
         Low corner frequency.
-    
-    freqmax : float 
+
+    freqmax : float
         High corner frequency.
 
     df : float
         Sampling rate in Hz.
-    
+
     Returns
     -------
     data : array
         Filtered data.
 
     """
-    
+
     # Remez filter description
     # ========================
     #
@@ -367,12 +370,16 @@ def remez_fir(data, freqmin, freqmax, df):
     #         eve/forums/a/tpc/f/6330927813/m/175006289731
     #
     # take 10% of freqmin and freqmax as """corners"""
-    
+
     flt = freqmin - 0.1 * freqmin
     fut = freqmax + 0.1 * freqmax
     # bandpass between freqmin and freqmax
-    filt = remez(50, np.array([0, flt, freqmin, freqmax, fut, df / 2 - 1]),
-                 np.array([0, 1, 0]), Hz=df)
+    filt = remez(
+        50,
+        np.array([0, flt, freqmin, freqmax, fut, df / 2 - 1]),
+        np.array([0, 1, 0]),
+        Hz=df,
+    )
     return convolve(filt, data)
 
 
@@ -387,23 +394,23 @@ def lowpass_fir(data, freq, df, winlen=2048):
     data : array
         Data to filter.
 
-    freq : float 
+    freq : float
         Data below this frequency pass.
-    
+
     df : float
         Sampling rate in Hz.
 
     winlen : int
         Window length for filter in samples, must be power of 2.
         **Default:** ``2048``
-    
+
     Returns
     -------
     data : array
         Filtered data.
-    
+
     """
-    
+
     # Source: Travis Oliphant
     # https://mail.scipy.org/pipermail/scipy-user/2004-February/002628.html
     #
@@ -419,13 +426,13 @@ def lowpass_fir(data, freq, df, winlen=2048):
     # give frequency bins in Hz and sample spacing
     w = np.fft.fftfreq(winlen, 1 / float(df))
     # cutoff is low-pass filter
-    myfilter = np.where((abs(w) < freq), 1., 0.)
+    myfilter = np.where((abs(w) < freq), 1.0, 0.0)
     # ideal filter
     h = np.fft.ifft(myfilter)
     beta = 11.7
     # beta implies Kaiser
     myh = np.fft.fftshift(h) * get_window(beta, winlen)
-    return convolve(abs(myh), data)[winlen / 2:-winlen / 2]
+    return convolve(abs(myh), data)[winlen / 2 : -winlen / 2]
 
 
 def integer_decimation(data, decimation_factor):
@@ -443,7 +450,7 @@ def integer_decimation(data, decimation_factor):
 
     decimation_factor : int
         Integer decimation factor.
-    
+
     Returns
     -------
     data : array
@@ -475,9 +482,9 @@ def lowpass_cheby_2(data, freq, df, maxorder=12, ba=False, freq_passband=False):
     data : array
         Data to filter.
 
-    freq : float 
+    freq : float
         The frequency above which signals are attenuated with 95 dB.
-    
+
     df : float
         Sampling rate in Hz.
 
@@ -493,14 +500,14 @@ def lowpass_cheby_2(data, freq, df, maxorder=12, ba=False, freq_passband=False):
         If True return additionally to the filtered data, the iteratively determined pass band frequency.
         **Default:** ``False``
 
-    
+
     Returns
     -------
     data : array
         Filtered data.
-    
+
     """
-    
+
     nyquist = df * 0.5
     # rp - maximum ripple of passband, rs - attenuation of stopband
     rp, rs, order = 1, 96, 1e99
@@ -509,8 +516,10 @@ def lowpass_cheby_2(data, freq, df, maxorder=12, ba=False, freq_passband=False):
     # raise for some bad scenarios
     if ws > 1:
         ws = 1.0
-        msg = "Selected corner frequency is above Nyquist. " + \
-              "Setting Nyquist as high corner."
+        msg = (
+            "Selected corner frequency is above Nyquist. "
+            + "Setting Nyquist as high corner."
+        )
         warnings.warn(msg)
     while True:
         if order <= maxorder:
@@ -518,8 +527,8 @@ def lowpass_cheby_2(data, freq, df, maxorder=12, ba=False, freq_passband=False):
         wp = wp * 0.99
         order, wn = cheb2ord(wp, ws, rp, rs, analog=0)
     if ba:
-        return cheby2(order, rs, wn, btype='low', analog=0, output='ba')
-    z, p, k = cheby2(order, rs, wn, btype='low', analog=0, output='zpk')
+        return cheby2(order, rs, wn, btype="low", analog=0, output="ba")
+    z, p, k = cheby2(order, rs, wn, btype="low", analog=0, output="zpk")
     sos = zpk2sos(z, p, k)
     if freq_passband:
         return sosfilt(sos, data), wp * nyquist

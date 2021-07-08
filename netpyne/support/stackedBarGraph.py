@@ -32,8 +32,10 @@ from __future__ import absolute_import
 from builtins import range
 from builtins import str
 from future import standard_library
+
 standard_library.install_aliases()
 from builtins import object
+
 __author__ = "Michael Imelfort; modified by salvadordura@gmail.com"
 __copyright__ = "Copyright 2014"
 __credits__ = ["Michael Imelfort"]
@@ -50,87 +52,98 @@ from matplotlib import pyplot as plt
 
 ###############################################################################
 
+
 class StackedBarGrapher(object):
     """Container class"""
-    def __init__(self): pass
+
+    def __init__(self):
+        pass
 
     def demo(self):
-        d = np.array([[101.,0.,0.,0.,0.,0.,0.],
-                      [92.,3.,0.,4.,5.,6.,0.],
-                      [56.,7.,8.,9.,23.,4.,5.],
-                      [81.,2.,4.,5.,32.,33.,4.],
-                      [0.,45.,2.,3.,45.,67.,8.],
-                      [99.,5.,0.,0.,0.,43.,56.]])
+        d = np.array(
+            [
+                [101.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [92.0, 3.0, 0.0, 4.0, 5.0, 6.0, 0.0],
+                [56.0, 7.0, 8.0, 9.0, 23.0, 4.0, 5.0],
+                [81.0, 2.0, 4.0, 5.0, 32.0, 33.0, 4.0],
+                [0.0, 45.0, 2.0, 3.0, 45.0, 67.0, 8.0],
+                [99.0, 5.0, 0.0, 0.0, 0.0, 43.0, 56.0],
+            ]
+        )
 
-        d_heights = [1.,2.,3.,4.,5.,6.]
-        d_widths = [.5,1.,3.,2.,1.,2.]
-        d_labels = ["fred","julie","sam","peter","rob","baz"]
-        d_colors = ['#2166ac', '#fee090', '#fdbb84', '#fc8d59', '#e34a33', '#b30000', '#777777']
+        d_heights = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
+        d_widths = [0.5, 1.0, 3.0, 2.0, 1.0, 2.0]
+        d_labels = ["fred", "julie", "sam", "peter", "rob", "baz"]
+        d_colors = [
+            "#2166ac",
+            "#fee090",
+            "#fdbb84",
+            "#fc8d59",
+            "#e34a33",
+            "#b30000",
+            "#777777",
+        ]
         gap = 0.05
 
         fig = plt.figure()
         ax1 = fig.add_subplot(321)
-        self.stackedBarPlot(ax1,
-                            d,
-                            d_colors,
-                            edgeCols=['#000000']*7,
-                            xLabels=d_labels,
-                            )
+        self.stackedBarPlot(
+            ax1,
+            d,
+            d_colors,
+            edgeCols=["#000000"] * 7,
+            xLabels=d_labels,
+        )
         plt.title("Straight up stacked bars")
 
         ax2 = fig.add_subplot(322)
-        self.stackedBarPlot(ax2,
-                            d,
-                            d_colors,
-                            edgeCols=['#000000']*7,
-                            xLabels=d_labels,
-                            scale=True
-                            )
+        self.stackedBarPlot(
+            ax2, d, d_colors, edgeCols=["#000000"] * 7, xLabels=d_labels, scale=True
+        )
         plt.title("Scaled bars")
 
         ax3 = fig.add_subplot(323)
-        self.stackedBarPlot(ax3,
-                            d,
-                            d_colors,
-                            edgeCols=['#000000']*7,
-                            xLabels=d_labels,
-                            heights=d_heights,
-                            yTicks=7,
-                            )
+        self.stackedBarPlot(
+            ax3,
+            d,
+            d_colors,
+            edgeCols=["#000000"] * 7,
+            xLabels=d_labels,
+            heights=d_heights,
+            yTicks=7,
+        )
         plt.title("Bars with set heights")
 
         ax4 = fig.add_subplot(324)
-        self.stackedBarPlot(ax4,
-                            d,
-                            d_colors,
-                            edgeCols=['#000000']*7,
-                            xLabels=d_labels,
-                            yTicks=7,
-                            widths=d_widths,
-                            scale=True
-                            )
+        self.stackedBarPlot(
+            ax4,
+            d,
+            d_colors,
+            edgeCols=["#000000"] * 7,
+            xLabels=d_labels,
+            yTicks=7,
+            widths=d_widths,
+            scale=True,
+        )
         plt.title("Scaled bars with set widths")
 
         ax5 = fig.add_subplot(325)
-        self.stackedBarPlot(ax5,
-                            d,
-                            d_colors,
-                            edgeCols=['#000000']*7,
-                            xLabels=d_labels,
-                            gap=gap
-                            )
+        self.stackedBarPlot(
+            ax5, d, d_colors, edgeCols=["#000000"] * 7, xLabels=d_labels, gap=gap
+        )
         plt.title("Straight up stacked bars + gaps")
 
         ax6 = fig.add_subplot(326)
-        self.stackedBarPlot(ax6,
-                            d,
-                            d_colors,
-                            edgeCols=['#000000']*7,
-                            xLabels=d_labels,
-                            scale=True,
-                            gap=gap,
-                            endGaps=True
-                            )
+        self.stackedBarPlot(
+            ax6,
+            d,
+            d_colors,
+            edgeCols=["#000000"] * 7,
+            xLabels=d_labels,
+            scale=True,
+            gap=gap,
+            endGaps=True,
+        )
         plt.title("Scaled bars + gaps + end gaps")
 
         # We change the fontsize of minor ticks label
@@ -141,30 +154,31 @@ class StackedBarGrapher(object):
         plt.close(fig)
         del fig
 
-    def stackedBarPlot(self,
-                       ax,                                 # axes to plot onto
-                       data,                               # data to plot
-                       cols,                               # colors for each level
-                       xLabels = None,                     # bar specific labels
-                       yTicks = 6.,                        # information used for making y ticks ["none", <int> or [[tick_pos1, tick_pos2, ... ],[tick_label_1, tick_label2, ...]]
-                       edgeCols=None,                      # colors for edges
-                       showFirst=-1,                       # only plot the first <showFirst> bars
-                       scale=False,                        # scale bars to same height
-                       widths=None,                        # set widths for each bar
-                       heights=None,                       # set heights for each bar
-                       ylabel='',                          # label for x axis
-                       xlabel='',                          # label for y axis
-                       gap=0.,                             # gap between bars
-                       endGaps=False                       # allow gaps at end of bar chart (only used if gaps != 0.)
-                       ):
+    def stackedBarPlot(
+        self,
+        ax,  # axes to plot onto
+        data,  # data to plot
+        cols,  # colors for each level
+        xLabels=None,  # bar specific labels
+        yTicks=6.0,  # information used for making y ticks ["none", <int> or [[tick_pos1, tick_pos2, ... ],[tick_label_1, tick_label2, ...]]
+        edgeCols=None,  # colors for edges
+        showFirst=-1,  # only plot the first <showFirst> bars
+        scale=False,  # scale bars to same height
+        widths=None,  # set widths for each bar
+        heights=None,  # set heights for each bar
+        ylabel="",  # label for x axis
+        xlabel="",  # label for y axis
+        gap=0.0,  # gap between bars
+        endGaps=False,  # allow gaps at end of bar chart (only used if gaps != 0.)
+    ):
 
-#------------------------------------------------------------------------------
-# data fixeratering
+        # ------------------------------------------------------------------------------
+        # data fixeratering
 
         # make sure this makes sense
         if showFirst != -1:
             showFirst = np.min([showFirst, np.shape(data)[0]])
-            data_copy = np.copy(data[:showFirst]).transpose().astype('float')
+            data_copy = np.copy(data[:showFirst]).transpose().astype("float")
             data_shape = np.shape(data_copy)
             if heights is not None:
                 heights = heights[:showFirst]
@@ -185,28 +199,30 @@ class StackedBarGrapher(object):
         else:
             x = [0]
             for i in range(1, len(widths)):
-                x.append(x[i-1] + (widths[i-1] + widths[i])/2)
+                x.append(x[i - 1] + (widths[i - 1] + widths[i]) / 2)
 
         # stack the data --
         # replace the value in each level by the cumulative sum of all preceding levels
-        data_stack = np.reshape([float(i) for i in np.ravel(np.cumsum(data_copy, axis=0))], data_shape)
+        data_stack = np.reshape(
+            [float(i) for i in np.ravel(np.cumsum(data_copy, axis=0))], data_shape
+        )
 
         # scale the data is needed
         if scale:
-            data_copy /= data_stack[levels-1]
-            data_stack /= data_stack[levels-1]
+            data_copy /= data_stack[levels - 1]
+            data_stack /= data_stack[levels - 1]
             if heights is not None:
                 print("WARNING: setting scale and heights does not make sense.")
                 heights = None
         elif heights is not None:
-            data_copy /= data_stack[levels-1]
-            data_stack /= data_stack[levels-1]
+            data_copy /= data_stack[levels - 1]
+            data_stack /= data_stack[levels - 1]
             for i in np.arange(num_bars):
-                data_copy[:,i] *= heights[i]
-                data_stack[:,i] *= heights[i]
+                data_copy[:, i] *= heights[i]
+                data_stack[:, i] *= heights[i]
 
-#------------------------------------------------------------------------------
-# ticks
+        # ------------------------------------------------------------------------------
+        # ticks
 
         if yTicks is not "none":
             # it is either a set of ticks or the number of auto ticks to make
@@ -220,43 +236,45 @@ class StackedBarGrapher(object):
                 yTicks = float(yTicks)
                 if scale:
                     # make the ticks line up to 100 %
-                    y_ticks_at = np.arange(yTicks)/(yTicks-1)
-                    y_tick_labels = np.array(["%0.2f"%(i * 100) for i in y_ticks_at])
+                    y_ticks_at = np.arange(yTicks) / (yTicks - 1)
+                    y_tick_labels = np.array(["%0.2f" % (i * 100) for i in y_ticks_at])
                 else:
                     # space the ticks along the y axis
-                    y_ticks_at = np.arange(yTicks)/(yTicks-1)*np.max(data_stack)
+                    y_ticks_at = np.arange(yTicks) / (yTicks - 1) * np.max(data_stack)
                     y_tick_labels = np.array([str(i) for i in y_ticks_at])
-                yTicks=(y_ticks_at, y_tick_labels)
+                yTicks = (y_ticks_at, y_tick_labels)
 
-#------------------------------------------------------------------------------
-# plot
+        # ------------------------------------------------------------------------------
+        # plot
 
         if edgeCols is None:
-            edgeCols = ["none"]*len(cols)
+            edgeCols = ["none"] * len(cols)
 
         # take cae of gaps
         gapd_widths = [i - gap for i in widths]
 
         # bars
-        ax.bar(x,
-               data_stack[0],
-               color=cols[0],
-               edgecolor=edgeCols[0],
-               width=gapd_widths,
-               linewidth=0.5,
-               align='center'
-               )
+        ax.bar(
+            x,
+            data_stack[0],
+            color=cols[0],
+            edgecolor=edgeCols[0],
+            width=gapd_widths,
+            linewidth=0.5,
+            align="center",
+        )
 
-        for i in np.arange(1,levels):
-            ax.bar(x,
-                   data_copy[i],
-                   bottom=data_stack[i-1],
-                   color=cols[i],
-                   edgecolor=edgeCols[i],
-                   width=gapd_widths,
-                   linewidth=0.5,
-                   align='center'
-                   )
+        for i in np.arange(1, levels):
+            ax.bar(
+                x,
+                data_copy[i],
+                bottom=data_stack[i - 1],
+                color=cols[i],
+                edgecolor=edgeCols[i],
+                width=gapd_widths,
+                linewidth=0.5,
+                align="center",
+            )
 
         # borders
         ax.spines["top"].set_visible(False)
@@ -273,23 +291,29 @@ class StackedBarGrapher(object):
         #     plt.yticks([], [])
 
         if xLabels is not None:
-            ax.tick_params(axis='x', which='both')#, labelsize=8, direction="out")
+            ax.tick_params(axis="x", which="both")  # , labelsize=8, direction="out")
             ax.xaxis.tick_bottom()
-            plt.xticks(x, xLabels) #, rotation='vertical')
+            plt.xticks(x, xLabels)  # , rotation='vertical')
         else:
             plt.xticks([], [])
 
         # limits
         if endGaps:
-            ax.set_xlim(-1.*widths[0]/2. - gap/2., np.sum(widths)-widths[0]/2. + gap/2.)
+            ax.set_xlim(
+                -1.0 * widths[0] / 2.0 - gap / 2.0,
+                np.sum(widths) - widths[0] / 2.0 + gap / 2.0,
+            )
         else:
-            ax.set_xlim(-1.*widths[0]/2. + gap/2., np.sum(widths)-widths[0]/2. - gap/2.)
-        ax.set_ylim(0, yTicks[0][-1])#np.max(data_stack))
+            ax.set_xlim(
+                -1.0 * widths[0] / 2.0 + gap / 2.0,
+                np.sum(widths) - widths[0] / 2.0 - gap / 2.0,
+            )
+        ax.set_ylim(0, yTicks[0][-1])  # np.max(data_stack))
 
         # labels
-        if xlabel != '':
+        if xlabel != "":
             plt.xlabel(xlabel)
-        if ylabel != '':
+        if ylabel != "":
             plt.ylabel(ylabel)
 
 
@@ -298,7 +322,7 @@ class StackedBarGrapher(object):
 ###############################################################################
 ###############################################################################
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     SBG = StackedBarGrapher()
     SBG.demo()

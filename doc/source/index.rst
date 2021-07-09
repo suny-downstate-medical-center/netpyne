@@ -17,7 +17,7 @@ Check out our latest tutorial: **Virtual Environments, Jupyter Notebooks, and Ne
 
 Join our `NetPyNE mailing list <https://groups.google.com/forum/#!forum/netpyne-mailing>`_ to receive updates on version releases and other major announcements.  Get your questions answered and participate in the NetPyNE community at the `NetPyNE forum <https://groups.google.com/forum/#!forum/netpyne-forum>`_ or the `NetPyNE section of the NEURON forum <https://www.neuron.yale.edu/phpBB/viewforum.php?f=45>`_.
 
-NetPyNE is available as a resource through `Neuroscience Gateway Portal (NSG) <https://www.nsgportal.org/>`_;  `Open Source Brain (OSB) <https://www.opensourcebrain.org/>`_ ; `Human Brain Project (HBP) eBrains <https://www.humanbrainproject.eu/en/hbp-platforms/ebrains/>`_; `NIH SPARC initiative <https://commonfund.nih.gov/Sparc/>`_.
+NetPyNE is available as a resource through `Neuroscience Gateway Portal (NSG) <https://www.nsgportal.org/>`_;  `Open Source Brain (OSB) <https://www.opensourcebrain.org/>`_ ; `Human Brain Project (HBP) EBRAINS <https://www.humanbrainproject.eu/en/hbp-platforms/ebrains/>`_; `NIH SPARC initiative <https://commonfund.nih.gov/Sparc/>`_.
 
 The NetPyNE source code is available on `GitHub <https://github.com/Neurosim-lab/netpyne>`_.
 

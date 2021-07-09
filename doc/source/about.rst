@@ -88,7 +88,7 @@ Major Features
 Questions, suggestions, and contributions
 -----------------------------------------
 
-Two kinds of contributions are solicited: 1. direct contributions to NetPyne code described below. 2. `Ancillary code contributions <contrib.html>`_.
+Two kinds of contributions are solicited: 1. direct contributions to NetPyNE code described below. 2. `Ancillary code contributions <contrib.html>`_.
 
 NetPyNE is open-source and available at `github.com/Neurosim-lab/netpyne <https://github.com/Neurosim-lab/netpyne>`_.
 

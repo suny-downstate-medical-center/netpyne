@@ -191,11 +191,12 @@ def runSimWithIntervalFunc(interval, func, timeRange=None, funcArgs=None):
         startTime = timeRange[0]
         stopTime = timeRange[1]
 
-    kwargs = {time: h.t}
+    kwargs = {'simTime': h.t}
     if type(funcArgs) == dict:
         kwargs.update(funcArgs)
 
-    if sim.rank == 0: print('\nRunning with interval func  ...')
+    if sim.rank == 0: 
+        print('\nRunning with interval func  ...')
     
     if int(startTime) != 0:
         sim.pc.psolve(startTime)

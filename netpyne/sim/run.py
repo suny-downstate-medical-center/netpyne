@@ -152,22 +152,29 @@ def runSim(skipPreRun=False):
 
 
 #------------------------------------------------------------------------------
-# Run Simulation
+# Run Simulation with a function executed at intervals
 #------------------------------------------------------------------------------
-def runSimWithIntervalFunc(interval, func):
+def runSimWithIntervalFunc(interval, func, timeRange=None, funcArgs=None):
     """
-    Function for/to <short description of `netpyne.sim.run.runSimWithIntervalFunc`>
+    Function to run a simulation while executing a function at intervals
 
     Parameters
     ----------
-    interval : <type>
-        <Short description of interval>
+    interval : float
+        Time interval (ms) at which to execute the function
         **Default:** *required*
 
-    func : <type>
-        <Short description of func>
+    func : function
+        The function to be executed at intervals
         **Default:** *required*
 
+    timeRange : list
+        Time range during which to execute the function [intervalStart, intervalStop]
+        **Default:** `None` uses the entire simulation duration
+
+    funcArgs: dict
+        A dictionary of keyword arguments to feed into the function.
+        **Default:** `None`
 
     """
 
@@ -178,11 +185,29 @@ def runSimWithIntervalFunc(interval, func):
     preRun()
     h.finitialize(float(sim.cfg.hParams['v_init']))
 
-    if sim.rank == 0: print('\nRunning with interval func  ...')
+    startTime = 0
+    stopTime = sim.cfg.duration
+    if timeRange is not None:
+        startTime = timeRange[0]
+        stopTime = timeRange[1]
 
-    while round(h.t) < sim.cfg.duration:
+    kwargs = {'simTime': h.t}
+    if type(funcArgs) == dict:
+        kwargs.update(funcArgs)
+
+    if sim.rank == 0: 
+        print('\nRunning with interval func  ...')
+    
+    if int(startTime) != 0:
+        sim.pc.psolve(startTime)
+        sim.pc.barrier()
+
+    while round(h.t) < stopTime:
         sim.pc.psolve(min(sim.cfg.duration, h.t+interval))
-        func(h.t) # function to be called at intervals
+        func(**kwargs) # function to be called at intervals
+
+    if stopTime != sim.cfg.duration:
+        sim.pc.psolve(sim.cfg.duration)
 
     sim.pc.barrier() # Wait for all hosts to get to this point
     sim.timing('stop', 'runTime')

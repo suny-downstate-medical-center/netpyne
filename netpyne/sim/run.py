@@ -191,7 +191,8 @@ def runSimWithIntervalFunc(interval, func, timeRange=None, funcArgs=None):
         startTime = timeRange[0]
         stopTime = timeRange[1]
 
-    kwargs = {'simTime': h.t}
+    #kwargs = {'simTime': h.t}
+    kwargs = {}
     if type(funcArgs) == dict:
         kwargs.update(funcArgs)
 
@@ -204,7 +205,7 @@ def runSimWithIntervalFunc(interval, func, timeRange=None, funcArgs=None):
 
     while round(h.t) < stopTime:
         sim.pc.psolve(min(sim.cfg.duration, h.t+interval))
-        func(**kwargs) # function to be called at intervals
+        func(simTime=h.t, **kwargs) # function to be called at intervals
 
     if stopTime != sim.cfg.duration:
         sim.pc.psolve(sim.cfg.duration)

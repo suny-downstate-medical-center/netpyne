@@ -20,7 +20,7 @@ import os
 ### This is an example function run at an interval during the simulation
 ### This function save weights everytime it runs and will save simulation data
 ### at a different interval defined by cfg.intervalRun and cfg.saveInterval.
-def saveWeights(t):
+def saveWeights(simTime):
 
     # if a list for weights is not initialized make one
     if not hasattr(sim, 'allWeights'):

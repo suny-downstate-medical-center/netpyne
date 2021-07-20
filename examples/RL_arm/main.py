@@ -89,15 +89,15 @@ if sim.useArm:
     sim.arm.setup(sim)  # pass framework as argument
 
 # Function to run at intervals during simulation
-def runArm(t):
+def runArm(simTime):
     # turn off RL and explor movs for last testing trial
-    if t >= sim.trainTime:
+    if simTime >= sim.trainTime:
         sim.useRL = False
         sim.explorMovs = False
 
     if sim.useArm:
-        sim.arm.run(t, sim) # run virtual arm apparatus (calculate command, move arm, feedback)
-    if sim.useRL and (t - sim.timeoflastRL >= sim.RLinterval): # if time for next RL
+        sim.arm.run(simTime, sim) # run virtual arm apparatus (calculate command, move arm, feedback)
+    if sim.useRL and (simTime - sim.timeoflastRL >= sim.RLinterval): # if time for next RL
         sim.timeoflastRL = h.t
         vec = h.Vector()
         if sim.rank == 0:
@@ -108,7 +108,7 @@ def runArm(t):
             sim.pc.broadcast(vec, 0)
             critic = vec.to_python()[0]
         if critic != 0: # if critic signal indicates punishment (-1) or reward (+1)
-            print('t=',t,'- adjusting weights based on RL critic value:', critic)
+            print('t=',simTime,'- adjusting weights based on RL critic value:', critic)
             for cell in sim.net.cells:
                 for conn in cell.conns:
                     STDPmech = conn.get('hSTDP')  # check if has STDP mechanism

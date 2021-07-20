@@ -302,19 +302,17 @@ def compactConnFormat():
 #------------------------------------------------------------------------------
 # Gathers data in master and saves it mid run
 #------------------------------------------------------------------------------
-def intervalSave(t, gatherLFP=True):
+def intervalSave(simTime, gatherLFP=True):
     """
-    Function for/to <short description of `netpyne.sim.save.intervalSave`>
+    Function to save data at a specific time point in the simulation
 
     Parameters
     ----------
-    t : <type>
-        <Short description of t>
+    simTime : number
+        The time at which to save the data
         **Default:** *required*
 
-
     """
-
 
     from .. import sim
     from ..specs import Dict
@@ -440,7 +438,7 @@ def intervalSave(t, gatherLFP=True):
             simDataVecs = simDataVecs + ['allWeights']
     
     if sim.rank == 0: # simData
-        print('  Saving data at intervals... {:0.0f} ms'.format(t))
+        print('  Saving data at intervals... {:0.0f} ms'.format(simTime))
         sim.allSimData = Dict()
         for k in list(gather[0]['simData'].keys()):  # initialize all keys of allSimData dict
             if gatherLFP and k == 'LFP':
@@ -492,7 +490,7 @@ def intervalSave(t, gatherLFP=True):
                 item.clear()
                 del item
 
-        name = os.path.join(targetFolder, 'interval_{:0.0f}.pkl'.format(t))
+        name = os.path.join(targetFolder, 'interval_{:0.0f}.pkl'.format(simTime))
         
         dataSave = {}
         net = {}

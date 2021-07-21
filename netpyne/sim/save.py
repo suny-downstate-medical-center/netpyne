@@ -52,7 +52,7 @@ def saveJSON(fileName, data):
     import json, io
     from .utils import NpSerializer
 
-    with io.open(fileName, 'w', encoding='utf8') as fileObj:
+    with io.open(fileName, 'w', encoding='utf-8') as fileObj:
         str_ = json.dumps(data,
                           indent=4, sort_keys=True,
                           separators=(',', ': '), ensure_ascii=False,

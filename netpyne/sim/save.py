@@ -143,6 +143,9 @@ def saveData(include=None, filename=None):
         if 'simData' in include:
             if 'LFP' in sim.allSimData:
                 sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist()
+            if 'LFPcells' in sim.allSimData:
+                for i in enumerate(sim.allSimData['LFPcells']): 
+                    sim.allSimData['LFPcells'][i] = sim.allSimData['LFPcells'][i].tolist()
             dataSave['simData'] = sim.allSimData
 
 
@@ -602,6 +605,9 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
 
     if saveLFP:
         simData = sim.simData
+        if sim.cfg.saveLFPCells:
+            for k in simData['LFPcells']:
+                simData['LFPcells'][k] = simData['LFPcells'][k].tolist()
     else:
         simData = {k: v for k, v in sim.simData.items() if k not in ['LFP']}
 

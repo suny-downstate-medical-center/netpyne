@@ -55,6 +55,8 @@ simConfig.filename = 'net_lfp'   # Set file output name
 
 simConfig.recordLFP = [[-15, y, 1.0*netParams.sizeZ] for y in range(int(netParams.sizeY/5.0), int(netParams.sizeY), int(netParams.sizeY/5.0))]
 
+simConfig.saveLFPCells = False
+
 #simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True, 'saveFig':True, 'figSize': (9,3)}      # Plot a raster
 simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'timeRange': [100,3000], 'saveFig': True} 
 #simConfig.analysis['getCSD'] = {'spacing_um': 200, 'timeRange': [100,3000], 'vaknin': True}
@@ -62,5 +64,9 @@ simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'timeR
 simConfig.analysis['plotCSD'] = True #{'timeRange':[100,200]}
 
 # Create network and run simulation
-sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
+#sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
 #sim.analysis.plotCSD(timeRange=[100,3000])
+sim.create(netParams = netParams, simConfig = simConfig) 
+sim.runSim()
+sim.saveDataInNodes()
+sim.gatherDataFromFiles()

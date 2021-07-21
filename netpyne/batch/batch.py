@@ -118,6 +118,17 @@ class Batch(object):
 
 
     def save(self, filename):
+        """
+        Function to save batch object to file
+
+        Parameters
+        ----------
+        filename : str
+            The path of the file to save batch object in
+            *required*
+            
+        """
+
         import os
         from copy import deepcopy
         basename = os.path.basename(filename)

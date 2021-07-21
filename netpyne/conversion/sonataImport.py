@@ -26,7 +26,7 @@ except ModuleNotFoundError as error:
             except ModuleNotFoundError as error:
                 needed.append(error.name)
         print('Note: SONATA import failed; import/export functions for SONATA will not be available.\n' +
-              '  To use this feature install those Python packages: ', needed)
+              '  To use this feature install these Python packages: ', needed)
 except ImportError as error:
     from neuron import h
     pc = h.ParallelContext() # MPI: Initialize the ParallelContext class

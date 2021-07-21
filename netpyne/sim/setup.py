@@ -316,7 +316,11 @@ def setupRecordLFP():
     saveSteps = int(np.ceil(sim.cfg.duration/sim.cfg.recordStep))
     sim.simData['LFP'] = np.zeros((saveSteps, nsites))
     if sim.cfg.saveLFPCells:
-        for c in sim.net.cells:
+        if sim.cfg.saveLFPCells == True:
+            cellsRecordLFP = utils.getCellsList(['all'])
+        elif isinstance(sim.cfg.saveLFPCells, list):
+            cellsRecordLFP = utils.getCellsList(sim.cfg.saveLFPCells)
+        for c in cellsRecordLFP:
             sim.simData['LFPCells'][c.gid] = np.zeros((saveSteps, nsites))
 
     if not sim.net.params.defineCellShapes: sim.net.defineCellShapes()  # convert cell shapes (if not previously done already)
@@ -435,7 +439,6 @@ def setupRecording():
     # set LFP recording
     if sim.cfg.recordLFP:
         setupRecordLFP()
-
 
     sim.timing('stop', 'setrecordTime')
 

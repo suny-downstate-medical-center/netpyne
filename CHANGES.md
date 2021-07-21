@@ -2,6 +2,8 @@
 
 - Fixed bug in loading where sim was required to have rank attribute
 
+- Enabled selecting a subset of cells to save individual LFP signal from 
+
 # Version 1.0.0.2
 
 - Release for use with GUI

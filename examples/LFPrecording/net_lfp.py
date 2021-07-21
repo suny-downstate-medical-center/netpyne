@@ -47,15 +47,13 @@ netParams.connParams['I->E'] = {
 
 # Simulation configuration
 simConfig = specs.SimConfig()        # object of class SimConfig to store simulation configuration
-simConfig.duration = 300 #3.0*1e3           # Duration of the simulation, in ms
+simConfig.duration = 3.0*1e3           # Duration of the simulation, in ms
 simConfig.dt = 0.1                # Internal integration timestep to use
 simConfig.verbose = False            # Show detailed messages
 simConfig.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'net_lfp'   # Set file output name
 
 simConfig.recordLFP = [[-15, y, 1.0*netParams.sizeZ] for y in range(int(netParams.sizeY/5.0), int(netParams.sizeY), int(netParams.sizeY/5.0))]
-
-simConfig.saveLFPCells = [('E2',1), ('I2', 1), ('E4', 0)]
 
 #simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True, 'saveFig':True, 'figSize': (9,3)}      # Plot a raster
 simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'timeRange': [100,3000], 'saveFig': True} 
@@ -66,7 +64,3 @@ simConfig.analysis['plotCSD'] = True #{'timeRange':[100,200]}
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
 #sim.analysis.plotCSD(timeRange=[100,3000])
-# sim.create(netParams = netParams, simConfig = simConfig) 
-# sim.runSim()
-# sim.saveDataInNodes()
-# sim.gatherDataFromFiles()

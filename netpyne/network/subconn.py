@@ -102,8 +102,7 @@ def _interpolateSegmentSigma(self, cell, secList, gridX, gridY, gridSigma):
                     print("ERROR in closest grid points: ", secName, x1, x2, y1, y2)
                 else:
                    # bilinear interpolation, see http://en.wikipedia.org/wiki/Bilinear_interpolation (fixed bug from Ben Suter's code)
-                   sigma = ((sigma_x1_y1*abs(x2-x)*abs(y2-y) + sigma_x2_y1*abs(x-x1)*abs(y2-y) + sigma_x1_y2*abs(x2-x)*abs(y-y1) + sigma_x2_y2*abs(x-x1)*abs(y-y1))/(abs(x2-x1)*abs(y2-y1)))
-                   #sigma = ((sigma_x1_y1*abs(x2-x)*abs(y2-y) + sigma_x2_y1*abs(x-x1)*abs(y2-y) + sigma_x1_y2*abs(x2-x)*abs(y-y1) + sigma_x2_y2*abs(x-x1)*abs(y-y1))/((x2-x1)*(y2-y1)))
+                    sigma = ((sigma_x1_y1*(x2-x)*(y2-y) + sigma_x2_y1*(x-x1)*(y2-y) + sigma_x1_y2*(x2-x)*(y-y1) + sigma_x2_y2*(x-x1)*(y-y1))/((x2-x1)*(y2-y1)))
 
             elif gridY:  # 1d = radial
                 distY = [abs(gy-y) for gy in gridY]
@@ -118,7 +117,7 @@ def _interpolateSegmentSigma(self, cell, secList, gridX, gridY, gridSigma):
                     print("ERROR in closest grid points: ", secName, y1, y2)
                 else:
                    # linear interpolation, see http://en.wikipedia.org/wiki/Bilinear_interpolation
-                   sigma = ((sigma_y1*abs(y2-y) + sigma_y2*abs(y-y1)) / abs(y2-y1))
+                   sigma = ((sigma_y1*(y2-y) + sigma_y2*(y-y1)) / (y2-y1))
 
             numSyn = sigma * sec['hObj'].L / sec['hObj'].nseg  # return num syns
             segNumSyn[secName].append(numSyn)

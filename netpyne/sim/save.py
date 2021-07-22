@@ -65,23 +65,20 @@ def saveJSON(fileName, data):
 #------------------------------------------------------------------------------
 def saveData(include=None, filename=None, saveLFP=True):
     """
-    Function for/to <short description of `netpyne.sim.save.saveData`>
+    Function to save simulation data to file
 
     Parameters
     ----------
-    include : <``None``?>
-        <Short description of include>
-        **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
+    include : list
+        What data to save
+        **Default:** ``sim.cfg.saveDataInclude``
+        **Options:** The list may include any combination of the following: ``'simData'``, ``'simConfig'``, ``'netParams'``, ``'net'``.
 
-    filename : <``None``?>
-        <Short description of filename>
+    filename : str
+        Path and file name to save data to
         **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
-
 
     """
-
 
     from .. import sim
 

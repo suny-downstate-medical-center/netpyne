@@ -347,36 +347,41 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
 
 
 #------------------------------------------------------------------------------
-# Load netParams from cell
+# Load simData from file
 #------------------------------------------------------------------------------
 def loadSimData(filename, data=None):
     """
-    Function for/to <short description of `netpyne.sim.load.loadSimData`>
+    Function to load simulation data from a file
 
     Parameters
     ----------
-    filename : <type>
-        <Short description of filename>
+    filename : str
+        The path and name of the file where the data is stored.
         **Default:** *required*
 
-    data : <``None``?>
-        <Short description of data>
+    data : dict
+        A dictionary containing a `simData` key.
         **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
-
 
     """
 
-
     from .. import sim
 
-    if not data: data = _loadFile(filename)
+    if not data: 
+        data = _loadFile(filename)
+    
     print('Loading simData...')
+    
     if 'simData' in data:
         sim.allSimData = data['simData']
     else:
         print(('  simData not found in file %s'%(filename)))
 
+    if 'net' in data:
+        try:
+            sim.net.recXElectrode = data['net']['recXElectrode']
+        except:
+            pass
     pass
 
 

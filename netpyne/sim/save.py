@@ -63,7 +63,7 @@ def saveJSON(fileName, data):
 #------------------------------------------------------------------------------
 # Save data
 #------------------------------------------------------------------------------
-def saveData(include=None, filename=None):
+def saveData(include=None, filename=None, saveLFP=True):
     """
     Function for/to <short description of `netpyne.sim.save.saveData`>
 
@@ -141,8 +141,10 @@ def saveData(include=None, filename=None):
         if net: dataSave['net'] = net
         if 'simConfig' in include: dataSave['simConfig'] = sim.cfg.__dict__
         if 'simData' in include:
-            if 'LFP' in sim.allSimData:
-                sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist()
+            if saveLFP:
+                if 'LFP' in sim.allSimData:
+                    sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist()
+                dataSave['net']['recXElectrode'] = sim.net.recXElectrode
             dataSave['simData'] = sim.allSimData
 
 

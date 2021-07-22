@@ -631,6 +631,10 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
     for popLabel, pop in sim.net.pops.items(): 
         dataSave['pops'][popLabel] = pop.__getstate__()
 
+    # Remove un-Pickleable hoc objects
+    for cell in dataSave['cells']:
+        cell.pop('imembPtr')
+
     if removeTraces:
         for k in sim.cfg.recordTraces.keys():
             del sim.simData[k]
@@ -651,14 +655,18 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
                 filename = sim.cfg.filename
         filePath = filename + timestampStr
 
-        # Save to pickle file
-        #if sim.cfg.savePickle:
-        import pickle
-        dataSave = utils.replaceDictODict(dataSave)
-        fileName = filePath + '_node_' + str(sim.rank) + '.pkl'
-        print(('  Saving output as: %s ... ' % (fileName)))
-        with open(os.path.join(saveFolder, fileName), 'wb') as fileObj:
-            pickle.dump(dataSave, fileObj)
+        try:
+            # Save to pickle file
+            #if sim.cfg.savePickle:
+            import pickle
+            dataSave = utils.replaceDictODict(dataSave)
+            fileName = filePath + '_node_' + str(sim.rank) + '.pkl'
+            print(('  Saving output as: %s ... ' % (fileName)))
+            with open(os.path.join(saveFolder, fileName), 'wb') as fileObj:
+                pickle.dump(dataSave, fileObj)
+        except:
+            print('Unable to save Pickle')
+            return dataSave
 
         # Save to json file
         if sim.cfg.saveJson:

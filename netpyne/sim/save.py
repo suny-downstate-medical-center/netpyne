@@ -588,6 +588,7 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
 
     # saving data
     dataSave = {}
+    net = {}
 
     dataSave['netpyne_version'] = sim.version(show=False)
     dataSave['netpyne_changeset'] = sim.gitChangeset(show=False)
@@ -629,10 +630,14 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
     dataSave['pops'] = {}
     for popLabel, pop in sim.net.pops.items(): 
         dataSave['pops'][popLabel] = pop.__getstate__()
+    dataSave['net'] = {}
 
     # Remove un-Pickleable hoc objects
     for cell in dataSave['cells']:
         cell.pop('imembPtr')
+
+    if saveLFP:
+        dataSave['net']['recXElectrode'] = sim.net.recXElectrode
 
     if removeTraces:
         for k in sim.cfg.recordTraces.keys():

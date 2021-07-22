@@ -391,7 +391,9 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
                                     allSimData[key] = list(allSimData[key]) + list(value)
 
                             elif gatherLFP and key == 'LFP':
-                                allSimData[key] += np.array(value)
+                                #allSimData[key] += np.array(value)
+                                allSimData[key] = np.array(value)
+
                             elif key not in singleNodeVecs:
                                 allSimData[key].update(value)
 

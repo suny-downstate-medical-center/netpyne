@@ -42,62 +42,50 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
         Time range to plot.
         **Default:**
         ``None`` plots entire time range
-        **Options:** ``<option>`` <description of option>
 
     electrodes : list
         List of electrodes to include; ``'avg'`` is the average of all electrodes; ``'all'`` is each electrode separately.
         **Default:** ``['avg', 'all']``
-        **Options:** ``<option>`` <description of option>
 
     plots : list
         List of plot types to show.
         **Default:** ``['timeSeries', 'PSD', 'spectrogram', 'locations']``
-        **Options:** ``<option>`` <description of option>
 
     NFFT : int (power of 2)
         Number of data points used in each block for the PSD and time-freq FFT.
         **Default:** ``256``
-        **Options:** ``<option>`` <description of option>
 
     noverlap : int (<nperseg)
         Number of points of overlap between segments for PSD and time-freq.
         **Default:** ``128``
-        **Options:** ``<option>`` <description of option>
 
     nperseg : int
         Length of each segment for time-freq.
         **Default:** ``256``
-        **Options:** ``<option>`` <description of option>
 
     minFreq : float
         Minimum frequency shown in plot for PSD and time-freq.
         **Default:** ``1``
-        **Options:** ``<option>`` <description of option>
 
     maxFreq : float
         Maximum frequency shown in plot for PSD and time-freq.
         **Default:** ``100``
-        **Options:** ``<option>`` <description of option>
 
     stepFreq : float
         Step frequency.
         **Default:** ``1``
-        **Options:** ``<option>`` <description of option>
 
     smooth : int
         Window size for smoothing LFP; no smoothing if ``0``
         **Default:** ``0``
-        **Options:** ``<option>`` <description of option>
 
     separation : float
         Separation factor between time-resolved LFP plots; multiplied by max LFP value.
         **Default:** ``1.0``
-        **Options:** ``<option>`` <description of option>
 
     includeAxon : bool
         Whether to show the axon in the location plot.
         **Default:** ``True``
-        **Options:** ``<option>`` <description of option>
 
     logx : bool
         Whether to make x-axis logarithmic
@@ -107,37 +95,30 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
     logy : bool
         Whether to make y-axis logarithmic
         **Default:** ``False``
-        **Options:** ``<option>`` <description of option>
 
     normSignal : bool
         Whether to normalize the signal.
         **Default:** ``False``
-        **Options:** ``<option>`` <description of option>
 
     normPSD : bool
         Whether to normalize the power spectral density.
-        **Default:** ``False,
-        **Options:** ``<option>`` <description of option>
+        **Default:** ``False``
 
     normSpec : bool
         Needs documentation.
         **Default:** ``False``
-        **Options:** ``<option>`` <description of option>
 
     filtFreq : int or list
         Frequency for low-pass filter (int) or frequencies for bandpass filter in a list: [low, high]
         **Default:** ``False`` does not filter the data
-        **Options:** ``<option>`` <description of option>
 
     filtOrder : int
         Order of the filter defined by `filtFreq`.
         **Default:** ``3``
-        **Options:** ``<option>`` <description of option>
 
     detrend : bool
         Whether to detrend.
         **Default:** ``False``
-        **Options:** ``<option>`` <description of option>
 
     transformMethod : str
         Transform method.
@@ -147,37 +128,30 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
     maxPlots : int
         Maximum number of subplots. Currently unused.
         **Default:** ``8``
-        **Options:** ``<option>`` <description of option>
 
     overlay : bool
         Whether to overlay plots or use subplots.
         **Default:** ``False`` overlays plots.
-        **Options:** ``<option>`` <description of option>
 
     colors : list
         List of normalized RGB colors to use.
         **Default:** ``None`` uses standard colors
-        **Options:** ``<option>`` <description of option>
 
     figSize : list [width, height]
         Size of figure in inches.
         **Default:** ``(10, 8)``
-        **Options:** ``<option>`` <description of option>
 
     fontSize : int
         Font size on figure.
         **Default:** ``14``
-        **Options:** ``<option>`` <description of option>
 
     lineWidth : int
         Line width.
         **Default:** ``1.5``
-        **Options:** ``<option>`` <description of option>
 
     dpi : int
         Resolution of figure in dots per inch.
         **Default:** ``100``
-        **Options:** ``<option>`` <description of option>
 
     saveData : bool or str
         Whether and where to save the data used to generate the plot.
@@ -194,7 +168,6 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
     showFig : bool
         Shows the figure if ``True``.
         **Default:** ``True``
-        **Options:** ``<option>`` <description of option>
 
     Returns
     -------
@@ -538,23 +511,27 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
 
     # locations ------------------------------
     if 'locations' in plots:
-        cvals = [] # used to store total transfer resistance
+        try:
+            cvals = [] # used to store total transfer resistance
 
-        for cell in sim.net.compartCells:
-            trSegs = list(np.sum(sim.net.recXElectrode.getTransferResistance(cell.gid)*1e3, axis=0)) # convert from Mohm to kilohm
-            if not includeAxon:
-                i = 0
-                for secName, sec in cell.secs.items():
-                    nseg = sec['hObj'].nseg #.geom.nseg
-                    if 'axon' in secName:
-                        for j in range(i,i+nseg): del trSegs[j]
-                    i+=nseg
-            cvals.extend(trSegs)
+            for cell in sim.net.compartCells:
+                trSegs = list(np.sum(sim.net.recXElectrode.getTransferResistance(cell.gid)*1e3, axis=0)) # convert from Mohm to kilohm
+                if not includeAxon:
+                    i = 0
+                    for secName, sec in cell.secs.items():
+                        nseg = sec['hObj'].nseg #.geom.nseg
+                        if 'axon' in secName:
+                            for j in range(i,i+nseg): del trSegs[j]
+                        i+=nseg
+                cvals.extend(trSegs)
 
-        includePost = [c.gid for c in sim.net.compartCells]
-        fig = sim.analysis.plotShape(includePost=includePost, showElectrodes=electrodes, cvals=cvals, includeAxon=includeAxon, dpi=dpi,
-        fontSize=fontSize, saveFig=saveFig, showFig=showFig, figSize=figSize)[0]
-        figs.append(fig)
+            includePost = [c.gid for c in sim.net.compartCells]
+            fig = sim.analysis.plotShape(includePost=includePost, showElectrodes=electrodes, cvals=cvals, includeAxon=includeAxon, dpi=dpi,
+            fontSize=fontSize, saveFig=saveFig, showFig=showFig, figSize=figSize)[0]
+            figs.append(fig)
+        except:
+            print('  Failed to plot LFP locations...')
+
 
 
     outputData = {'LFP': lfp, 'electrodes': electrodes, 'timeRange': timeRange, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}

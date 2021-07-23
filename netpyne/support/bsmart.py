@@ -49,6 +49,7 @@ import numpy as np
 from builtins import range
 from future import standard_library
 standard_library.install_aliases()
+from netpyne.logger import logger
 
 # ARMORF -- AR parameter estimation via LWR method modified by Morf.
 #
@@ -101,7 +102,7 @@ def ckchol(M):
     try: # First, try the Cholesky decomposition
         output=np.linalg.cholesky(M)
     except: # If not, just return garbage
-        print('WARNING: Cholesky failed, so returning (invalid) identity matrix!')
+        logger.warning('Cholesky failed, so returning (invalid) identity matrix!')
         output=np.matrix(np.eye(np.size(M,0)))
     return output
 

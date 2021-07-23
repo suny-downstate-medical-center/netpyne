@@ -4,7 +4,6 @@ Package for analysis and plotting
 """
 
 from __future__ import unicode_literals
-from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
@@ -24,6 +23,7 @@ from .wrapper import plotData
 from .utils import exception, _showFigure, _saveFigData, getCellsInclude, getCellsIncludeTags, _roundFigures, \
      _smooth1d, syncMeasure, invertDictMapping, checkAvailablePlots
 
+from netpyne.logger import logger
 
 # -------------------------------------------------------------------------------------------------------------------
 # Import connectivity-related functions
@@ -70,7 +70,7 @@ from .rxd import plotRxDConcentration
 try:
   from .interactive import iplotDipole, iplotDipoleSpectrogram, iplotDipolePSD, iplotRaster, iplotSpikeHist, iplotRatePSD, iplotTraces, iplotLFP, iplotConn, iplotRxDConcentration, iplot2Dnet, iplotSpikeStats, iplotGranger
 except:
-    print('Warning: could not import interactive plotting functions; make sure the "bokeh" package is installed.')
+    logger.warning('Could not import interactive plotting functions; make sure the "bokeh" package is installed.')
 
 
 # -------------------------------------------------------------------------------------------------------------------

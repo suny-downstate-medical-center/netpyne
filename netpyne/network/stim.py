@@ -4,7 +4,6 @@ Module for adding stimulations to networks
 
 """
 
-from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
@@ -12,6 +11,7 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 from numbers import Number
+from netpyne.logger import logger
 try:
     basestring
 except NameError:
@@ -40,7 +40,7 @@ def addStims(self):
     sim.timing('start', 'stimsTime')
     if self.params.stimSourceParams and self.params.stimTargetParams:
         if sim.rank==0:
-            print('Adding stims...')
+            logger.info('Adding stims...')
 
         if sim.nhosts > 1: # Gather tags from all cells
             allCellTags = sim._gatherAllCellTags()
@@ -115,10 +115,10 @@ def addStims(self):
                     else:
                         postCell.addStim(params)  # call cell method to add connection
 
-    print(('  Number of stims on node %i: %i ' % (sim.rank, sum([len(cell.stims) for cell in self.cells]))))
+    logger.info('  Number of stims on node %i: %i ' % (sim.rank, sum([len(cell.stims) for cell in self.cells])))
     sim.pc.barrier()
     sim.timing('stop', 'stimsTime')
-    if sim.rank == 0 and sim.cfg.timing: print(('  Done; cell stims creation time = %0.2f s.' % sim.timingData['stimsTime']))
+    if sim.rank == 0: logger.timing('  Done; cell stims creation time = %0.2f s.' % sim.timingData['stimsTime'])
 
     return [cell.stims for cell in self.cells]
 

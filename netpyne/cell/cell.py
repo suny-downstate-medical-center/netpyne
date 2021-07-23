@@ -4,7 +4,6 @@ Module containing a generic cell class
 """
 
 from __future__ import division
-from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
@@ -22,7 +21,7 @@ from numbers import Number
 from copy import deepcopy
 from neuron import h # Import NEURON
 from ..specs import Dict
-
+from netpyne.logger import logger
 
 ###############################################################################
 #
@@ -135,7 +134,7 @@ class Cell (object):
             self.stims.append(Dict(params.copy()))  # add new stim to Cell object
             stimContainer = self.stims[-1]
 
-            if sim.cfg.verbose: print(('  Created %s NetStim for cell gid=%d'% (params['source'], self.gid)))
+            logger.debug('  Created %s NetStim for cell gid=%d'% (params['source'], self.gid))
 
         if sim.cfg.createNEURONObj:
             rand = h.Random()
@@ -148,9 +147,9 @@ class Cell (object):
                         netstim.interval = 0.1**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms (set very low)
                         netstim.noise = params['noise']
                     except:
-                        print('Error: tried to create variable rate NetStim but NSLOC mechanism not available')
+                        logger.warning('Error: tried to create variable rate NetStim but NSLOC mechanism not available')
                 else:
-                    print('Error: Unknown stimulation rate type: %s'%(h.params['rate']))
+                    logger.warning('Error: Unknown stimulation rate type: %s'%(h.params['rate']))
             else:
                 netstim = h.NetStim()
                 netstim.interval = params['rate']**-1*1e3 # inverse of the frequency and then convert from Hz^-1 to ms
@@ -257,7 +256,7 @@ class Cell (object):
                                             ptr.extend([getattr(conn[params['mech']], '_ref_'+params['var'])])
                                         secLocs.extend([params['sec']+'_conn_'+str(conn_idx)])
                             else:
-                                print("Error recording conn trace, you need to specify the conn mech to record from.")
+                                logger.warning("Error recording conn trace, you need to specify the conn mech to record from.")
 
                         elif 'var' in params: # point process cell eg. cell._ref_v
                             ptr = getattr(self.hPointp, '_ref_'+params['var'])
@@ -301,15 +300,14 @@ class Cell (object):
                             else:                                
                                 sim.simData[key]['cell_'+str(self.gid)] = h.Vector(sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
                                 sim.simData[key]['cell_'+str(self.gid)].record(ptr, sim.cfg.recordStep)
-                        if sim.cfg.verbose:
-                            print('  Recording ', key, 'from cell ', self.gid, ' with parameters: ',str(params))
-                            print(sim.simData[key]['cell_'+str(self.gid)])
+                        logger.debug('  Recording ', key, 'from cell ', self.gid, ' with parameters: ',str(params))
+                        logger.debug(sim.simData[key]['cell_'+str(self.gid)])
                 except:
-                    if sim.cfg.verbose: print('  Cannot record ', key, 'from cell ', self.gid)
+                    logger.debug('  Cannot record ' + key + 'from cell ' + self.gid)
             else:
-                if sim.cfg.verbose: print('  Conditions preclude recording ', key, ' from cell ', self.gid)
+                logger.debug('  Conditions preclude recording ' + key + ' from cell ' + self.gid)
         #else:
-        #    if sim.cfg.verbose: print '  NOT recording ', key, 'from cell ', self.gid, ' with parameters: ',str(params)
+        #    logger.debug '  NOT recording ', key, 'from cell ', self.gid, ' with parameters: ',str(params)
 
 
 

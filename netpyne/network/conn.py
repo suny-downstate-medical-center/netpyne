@@ -4,7 +4,6 @@ Module for creating network connections
 
 """
 
-from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -23,7 +22,7 @@ import numpy as np
 from array import array as arrayFast
 from numbers import Number
 from numpy import array, sin, cos, tan, exp, sqrt, mean, inf, dstack, unravel_index, argsort, zeros, ceil, copy
-
+from netpyne.logger import logger
 
 # -----------------------------------------------------------------------------
 # Connect Cells
@@ -47,7 +46,7 @@ def connectCells(self):
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'connectTime')
     if sim.rank==0:
-        print('Making connections...')
+        logger.info('Making connections...')
 
     if sim.nhosts > 1: # Gather tags from all cells
         allCellTags = sim._gatherAllCellTags()
@@ -93,7 +92,7 @@ def connectCells(self):
 
         if sim.cfg.printSynsAfterRule:
             nodeSynapses = sum([len(cell.conns) for cell in sim.net.cells])
-            print(('  Number of synaptic contacts on node %i after conn rule %s: %i ' % (sim.rank, connParamLabel, nodeSynapses)))
+            logger.info('  Number of synaptic contacts on node %i after conn rule %s: %i ' % (sim.rank, connParamLabel, nodeSynapses))
 
 
     # add presynaptoc gap junctions
@@ -133,12 +132,12 @@ def connectCells(self):
     else:
         nodeConnections = nodeSynapses
 
-    print(('  Number of connections on node %i: %i ' % (sim.rank, nodeConnections)))
+    logger.info('  Number of connections on node %i: %i ' % (sim.rank, nodeConnections))
     if nodeSynapses != nodeConnections:
-        print(('  Number of synaptic contacts on node %i: %i ' % (sim.rank, nodeSynapses)))
+        logger.info('  Number of synaptic contacts on node %i: %i ' % (sim.rank, nodeSynapses))
     sim.pc.barrier()
     sim.timing('stop', 'connectTime')
-    if sim.rank == 0 and sim.cfg.timing: print(('  Done; cell connection time = %0.2f s.' % sim.timingData['connectTime']))
+    if sim.rank == 0: logger.timing('  Done; cell connection time = %0.2f s.' % sim.timingData['connectTime'])
 
     return [cell.conns for cell in self.cells]
 
@@ -269,7 +268,7 @@ def _disynapticBiasProb(self, origProbability, bias, prePreGids, postPreGids, di
     elif disynCounter > -maxImbalance:
         probability = max(origProbability - (min(origProbability + bias, 1.0) - origProbability), 0.0)
         disynCounter -= 1
-    #print disynCounter, origProbability, probability
+    #logger.info disynCounter, origProbability, probability
     return probability, disynCounter
 
 
@@ -343,7 +342,7 @@ def fullConn(self, preCellsTags, postCellsTags, connParam):
 
     from .. import sim
 
-    if sim.cfg.verbose: print('Generating set of all-to-all connections (rule: %s) ...' % (connParam['label']))
+    logger.debug('Generating set of all-to-all connections (rule: %s) ...' % (connParam['label']))
 
     # get list of params that have a lambda function
     paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam]
@@ -431,7 +430,7 @@ def probConn(self, preCellsTags, postCellsTags, connParam):
 
     from .. import sim
 
-    if sim.cfg.verbose: print('Generating set of probabilistic connections (rule: %s) ...' % (connParam['label']))
+    logger.debug('Generating set of probabilistic connections (rule: %s) ...' % (connParam['label']))
 
     allRands = self.generateRandsPrePost(preCellsTags, postCellsTags)
 
@@ -463,8 +462,8 @@ def probConn(self, preCellsTags, postCellsTags, connParam):
 
     # standard probabilistic conenctions
     else:
-        # print('rank %d'%(sim.rank))
-        # print(connParam)
+        # logger.info('rank %d'%(sim.rank))
+        # logger.info(connParam)
         # calculate the conn preGids of the each pre and post cell
         # for postCellGid,postCellTags in sorted(postCellsTags.items()):  # for each postsyn cell
         for postCellGid,postCellTags in postCellsTags.items():  # for each postsyn cell  # for each postsyn cell
@@ -550,7 +549,7 @@ def convConn(self, preCellsTags, postCellsTags, connParam):
 
     from .. import sim
 
-    if sim.cfg.verbose: print('Generating set of convergent connections (rule: %s) ...' % (connParam['label']))
+    logger.debug('Generating set of convergent connections (rule: %s) ...' % (connParam['label']))
 
     # get list of params that have a lambda function
     paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam]
@@ -619,7 +618,7 @@ def divConn(self, preCellsTags, postCellsTags, connParam):
 
     from .. import sim
 
-    if sim.cfg.verbose: print('Generating set of divergent connections (rule: %s) ...' % (connParam['label']))
+    logger.debug('Generating set of divergent connections (rule: %s) ...' % (connParam['label']))
 
     # get list of params that have a lambda function
     paramsStrFunc = [param for param in [p+'Func' for p in self.connStringFuncParams] if param in connParam]
@@ -686,7 +685,7 @@ def fromListConn(self, preCellsTags, postCellsTags, connParam):
 
     from .. import sim
 
-    if sim.cfg.verbose: print('Generating set of connections from list (rule: %s) ...' % (connParam['label']))
+    logger.debug('Generating set of connections from list (rule: %s) ...' % (connParam['label']))
 
     orderedPreGids = sorted(preCellsTags)
     orderedPostGids = sorted(postCellsTags)

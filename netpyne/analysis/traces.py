@@ -3,7 +3,6 @@ Module for analysis and plotting of traces-related results
 
 """
 
-from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -17,6 +16,7 @@ except NameError:
 from future import standard_library
 standard_library.install_aliases()
 from netpyne import __gui__
+from netpyne.logger import logger
 
 if __gui__:
     import matplotlib.pyplot as plt
@@ -131,7 +131,7 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
     from .. import sim
     from ..support.scalebar import add_scalebar
 
-    print('Plotting recorded cell traces ...', oneFigPer)
+    logger.info('Plotting recorded cell traces per ' + oneFigPer)
 
     if include is None:  # if none, record from whatever was recorded
         if 'plotTraces' in sim.cfg.analysis and 'include' in sim.cfg.analysis['plotTraces']:
@@ -187,7 +187,6 @@ def plotTraces(include=None, timeRange=None, oneFigPer='cell', rerun=False, titl
             figs['_trace_'+str(trace)] = plt.figure(figsize=figSize) # Open a new figure
 
             for igid, gid in enumerate(subGids):
-                # print('recordStep',recordStep)
                 if 'cell_'+str(gid) in sim.allSimData[trace]:
                     fullTrace = sim.allSimData[trace]['cell_'+str(gid)]
                     if isinstance(fullTrace, dict):
@@ -433,7 +432,7 @@ def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='a
 
     from .. import sim
 
-    print('Plotting EPSP amplitudes...')
+    logger.info('Plotting EPSP amplitudes...')
 
     if include is None: include = [] # If not defined, initialize as empty list
 
@@ -441,7 +440,7 @@ def plotEPSPAmp(include=None, trace=None, start=0, interval=50, number=2, amp='a
     gidPops = {cell['gid']: cell['tags']['pop'] for cell in cells}
 
     if not trace:
-        print('Error: Missing trace to to plot EPSP amplitudes')
+        logger.warning('Error: Missing trace to to plot EPSP amplitudes')
         return
     step = sim.cfg.recordStep
 

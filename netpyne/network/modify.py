@@ -4,11 +4,10 @@ Module for modifying the network model instance
 
 """
 
-from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
-
+from netpyne.logger import logger
 
 # -----------------------------------------------------------------------------
 # Modify cell params
@@ -43,7 +42,7 @@ def modifyCells(self, params, updateMasterAllCells=False):
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'modifyCellsTime')
     if sim.rank==0:
-        print('Modfying cell parameters...')
+        logger.info('Modifying cell parameters...')
 
     for cell in self.cells:
         cell.modify(params)
@@ -52,7 +51,7 @@ def modifyCells(self, params, updateMasterAllCells=False):
         sim._gatherCells()  # update allCells
 
     sim.timing('stop', 'modifyCellsTime')
-    if sim.rank == 0 and sim.cfg.timing: print(('  Done; cells modification time = %0.2f s.' % sim.timingData['modifyCellsTime']))
+    if sim.rank == 0: logger.timing('  Done; cells modification time = %0.2f s.' % sim.timingData['modifyCellsTime'])
 
 
 # -----------------------------------------------------------------------------
@@ -86,7 +85,7 @@ def modifySynMechs(self, params, updateMasterAllCells=False):
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'modifySynMechsTime')
     if sim.rank==0:
-        print('Modfying synaptic mech parameters...')
+        logger.info('Modifying synaptic mech parameters...')
 
     for cell in self.cells:
         cell.modifySynMechs(params)
@@ -95,7 +94,7 @@ def modifySynMechs(self, params, updateMasterAllCells=False):
          sim._gatherCells()  # update allCells
 
     sim.timing('stop', 'modifySynMechsTime')
-    if sim.rank == 0 and sim.cfg.timing: print(('  Done; syn mechs modification time = %0.2f s.' % sim.timingData['modifySynMechsTime']))
+    if sim.rank == 0: logger.timing('  Done; syn mechs modification time = %0.2f s.' % sim.timingData['modifySynMechsTime'])
 
 
 # -----------------------------------------------------------------------------
@@ -129,7 +128,7 @@ def modifyConns(self, params, updateMasterAllCells=False):
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'modifyConnsTime')
     if sim.rank==0:
-        print('Modfying connection parameters...')
+        logger.info('Modifying connection parameters...')
 
     for cell in self.cells:
         cell.modifyConns(params)
@@ -138,7 +137,7 @@ def modifyConns(self, params, updateMasterAllCells=False):
         sim._gatherCells()  # update allCells
 
     sim.timing('stop', 'modifyConnsTime')
-    if sim.rank == 0 and sim.cfg.timing: print(('  Done; connections modification time = %0.2f s.' % sim.timingData['modifyConnsTime']))
+    if sim.rank == 0: logger.timing('  Done; connections modification time = %0.2f s.' % sim.timingData['modifyConnsTime'])
 
 
 # -----------------------------------------------------------------------------
@@ -172,7 +171,7 @@ def modifyStims(self, params, updateMasterAllCells=False):
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'modifyStimsTime')
     if sim.rank==0:
-        print('Modfying stimulation parameters...')
+        logger.info('Modifying stimulation parameters...')
 
     for cell in self.cells:
         cell.modifyStims(params)
@@ -181,4 +180,4 @@ def modifyStims(self, params, updateMasterAllCells=False):
         sim._gatherCells()  # update allCells
 
     sim.timing('stop', 'modifyStimsTime')
-    if sim.rank == 0 and sim.cfg.timing: print(('  Done; stims modification time = %0.2f s.' % sim.timingData['modifyStimsTime']))
+    if sim.rank == 0: logger.timing('  Done; stims modification time = %0.2f s.' % sim.timingData['modifyStimsTime'])

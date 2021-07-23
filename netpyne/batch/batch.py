@@ -3,7 +3,6 @@ Module for setting up and running batch simulations
 
 """
 
-from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
@@ -42,12 +41,13 @@ from .utils import createFolder
 from .grid import gridSearch
 from .evol import evolOptim
 from .asd_parallel import asdOptim
+from netpyne.logger import logger
 
 try:
     from .optuna_parallel import optunaOptim
 except:
     pass
-    # print('Warning: Could not import "optuna" package...')
+    # logger.warning('Warning: Could not import "optuna" package...')
 
 
 pc = h.ParallelContext() # use bulletin board master/slave
@@ -153,7 +153,7 @@ class Batch(object):
             from .. import sim
             #from json import encoder
             #encoder.FLOAT_REPR = lambda o: format(o, '.12g')
-            print(('Saving batch to %s ... ' % (filename)))
+            logger.info('Saving batch to %s ... ' % (filename))
 
             sim.saveJSON(filename, dataSave)
 
@@ -254,4 +254,4 @@ class Batch(object):
             try:
                 optunaOptim(self, pc)
             except:
-                print(' Warning: an exception occurred when running Optuna optimization...')
+                logger.warning('An exception occurred when running Optuna optimization...')

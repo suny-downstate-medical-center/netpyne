@@ -20,7 +20,7 @@ standard_library.install_aliases()
 
 from collections import OrderedDict
 from .dicts import Dict, ODict
-
+from netpyne.logger import logger
 
 # ----------------------------------------------------------------------------
 # SIMULATION CONFIGURATION CLASS
@@ -122,14 +122,14 @@ class SimConfig(object):
             os.mkdir(folder)
         except OSError:
             if not os.path.exists(folder):
-                print(' Could not create', folder)
+                logger.warning('Could not create ' + folder)
 
         dataSave = {'simConfig': self.__dict__}
 
         # Save to json file
         if ext == 'json':
             from .. import sim
-            print(('Saving simConfig to %s ... ' % (filename)))
+            logger.info('Saving simConfig to %s ... ' % (filename))
             sim.saveJSON(filename, dataSave)
 
     def setParam(self, param, value):

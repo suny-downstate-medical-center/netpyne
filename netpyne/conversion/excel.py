@@ -3,17 +3,17 @@ Module for importing from Excel
 
 """
 
-from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
-
 
 from builtins import open
 from builtins import range
 from builtins import str
 from future import standard_library
 standard_library.install_aliases()
+from netpyne.logger import logger
+
 def importConnFromExcel (fileName, sheetName):
     """
     Function for/to <short description of `netpyne.conversion.excel.importConnFromExcel`>
@@ -54,7 +54,7 @@ def importConnFromExcel (fileName, sheetName):
         f.write(connText)  # write starting text
         for row in range(1,numRows+1):
             if sheet.cell(row=row, column=colProb).value:  # if not empty row
-                print('Creating conn rule for row ' + str(row))
+                logger.info('Creating conn rule for row ' + str(row))
                 # read row values
                 pre = sheet.cell(row=row, column=colPreTags).value
                 post = sheet.cell(row=row, column=colPostTags).value

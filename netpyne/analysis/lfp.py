@@ -3,7 +3,6 @@ Module for analyzing and plotting LFP-related results
 
 """
 
-from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -26,7 +25,7 @@ if __gui__:
 import numpy as np
 from numbers import Number
 from .utils import colorList, exception, _saveFigData, _showFigure, _smooth1d
-
+from netpyne.logger import logger
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot LFP (time-resolved, power spectral density, time-frequency and 3D locations)
@@ -185,7 +184,7 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
     from .. import sim
     from ..support.scalebar import add_scalebar
 
-    print('Plotting LFP ...')
+    logger.info('Plotting LFP ...')
 
     if not colors: colors = colorList
 
@@ -530,7 +529,7 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
             fontSize=fontSize, saveFig=saveFig, showFig=showFig, figSize=figSize)[0]
             figs.append(fig)
         except:
-            print('  Failed to plot LFP locations...')
+            logger.warning('  Failed to plot LFP locations...')
 
 
 

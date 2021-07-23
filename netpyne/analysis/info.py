@@ -3,7 +3,6 @@ Module for analyzing and plotting information theory results
 
 """
 
-from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -22,7 +21,7 @@ if __gui__:
     import matplotlib.pyplot as plt
 import numpy as np
 from .utils import exception, _saveFigData, _showFigure, getCellsInclude
-
+from netpyne.logger import logger
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Calculate normalized transfer entropy
@@ -92,13 +91,13 @@ def nTE(cells1=[], cells2=[], spks1=None, spks2=None, timeRange=None, binSize=20
 
     if 'nte' not in dir(h):
         try:
-            print(' Warning: support/nte.mod not compiled; attempting to compile from %s via "nrnivmodl support"'%(root))
+            logger.warning('support/nte.mod not compiled; attempting to compile from %s via "nrnivmodl support"'%(root))
             os.system('cd ' + root + '; nrnivmodl support')
             from neuron import load_mechanisms
             load_mechanisms(root)
-            print(' Compilation of support folder mod files successful')
+            logger.info('Compilation of support folder mod files successful')
         except:
-            print(' Error compiling support folder mod files')
+            logger.warning('Error compiling support folder mod files')
             return
 
     h.load_file(root+'/support/nte.hoc') # nTE code (also requires support/net.mod)
@@ -358,7 +357,7 @@ def plotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, l
         try:
             from statsmodels.tsa.stattools import grangercausalitytests as gt
         except:
-            print('To test Granger results please install the statsmodel package: "pip install statsmodel"')
+            logger.warning('To test Granger results please install the statsmodel package: "pip install statsmodel"')
             exit()
 
         tests = gt(np.array([histoCount1, histoCount2]).T, maxlag=10)

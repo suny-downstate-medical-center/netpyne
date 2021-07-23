@@ -4,7 +4,6 @@ Module with helper functions to set up and run batch simulations
 """
 
 from __future__ import unicode_literals
-from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
@@ -12,6 +11,7 @@ from future import standard_library
 standard_library.install_aliases()
 
 import numpy as np
+from netpyne.logger import logger
 
 # -------------------------------------------------------------------------------
 # function to create a folder if it does not exist
@@ -36,7 +36,7 @@ def createFolder(folder):
         try:
             os.mkdir(folder)
         except OSError:
-            print(' Could not create %s' %(folder))
+            logger.warning('Could not create %s' % folder)
 
 
 # -------------------------------------------------------------------------------
@@ -118,9 +118,9 @@ def cp(obj, verbose=True, die=True):
         output = copy.copy(obj)
     except Exception as E:
         output = obj
-        errormsg = 'Warning: could not perform shallow copy, returning original object: %s' % str(E)
+        errormsg = 'Could not perform shallow copy, returning original object: %s' % str(E)
         if die: raise Exception(errormsg)
-        else:   print(errormsg)
+        else:   logger.warning(errormsg)
     return output
 
 def dcp(obj, verbose=True, die=False):
@@ -150,9 +150,9 @@ def dcp(obj, verbose=True, die=False):
         output = copy.deepcopy(obj)
     except Exception as E:
         output = cp(obj)
-        errormsg = 'Warning: could not perform deep copy, performing shallow instead: %s' % str(E)
+        errormsg = 'Could not perform deep copy, performing shallow instead: %s' % str(E)
         if die: raise Exception(errormsg)
-        else:   print(errormsg)
+        else:   logger.warning(errormsg)
     return output
 
 

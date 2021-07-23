@@ -49,4 +49,4 @@ class NML2SpikeSource(CompartCell):
         self.secs['soma']['pointps'][self.tags['cellType']].hObj.noiseFromRandom(rand)  # use random number generator
         sim._init_stim_randomizer(rand, self.tags['pop'], self.tags['cellLabel'], seed)
         randContainer['hRandom'].negexp(1)
-        #print("Created Random: %s with %s (%s)"%(rand,seed, sim.cfg.seeds))
+        #logger.debug("Created Random: %s with %s (%s)"%(rand,seed, sim.cfg.seeds))

@@ -17,7 +17,7 @@ except ModuleNotFoundError as error:
     # soft-fail and suggest which packages to install
     from neuron import h
     pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
-    if int(pc.id()) == 0:  # only print for master node
+    if int(pc.id()) == 0:  # only log for master node
         needed = [error.name]
         for pkg in ['tables', 'pyneuroml', 'neuroml']:
             try:
@@ -25,19 +25,22 @@ except ModuleNotFoundError as error:
                     __import__(pkg)
             except ModuleNotFoundError as error:
                 needed.append(error.name)
-        print('Note: SONATA import failed; import/export functions for SONATA will not be available.\n' +
-              '  To use this feature install these Python packages: ', needed)
+        logger.warning('SONATA import failed; import/export functions for SONATA will not be available.\n' +
+              '  To use this feature install these Python packages: ')
+        logger.warning(needed)
 except ImportError as error:
     from neuron import h
     pc = h.ParallelContext() # MPI: Initialize the ParallelContext class
-    if int(pc.id()) == 0:  # only print for master node
-        print('Note: SONATA import failed; import/export functions for SONATA will not be available.\n', error)
+    if int(pc.id()) == 0:  # only log for master node
+        logger.warning('SONATA import failed; import/export functions for SONATA will not be available.\n')
+        logger.warning(error)
 
 
 from . import neuronPyHoc
 from .. import sim, specs
 import neuron
 from neuron import h
+from netpyne.logger import logger
 h.load_file('stdgui.hoc')
 h.load_file('import3d.hoc')
 
@@ -112,8 +115,7 @@ def _distributeCells(numCellsPop):
         if sim.nextHost>=sim.nhosts:
             sim.nextHost=0
 
-    if sim.cfg.verbose:
-        print(("Distributed population of %i cells on %s hosts: %s, next: %s"%(numCellsPop,sim.nhosts,hostCells,sim.nextHost)))
+    logger.debug(("Distributed population of %i cells on %s hosts: %s, next: %s"%(numCellsPop,sim.nhosts,hostCells,sim.nextHost)))
     return hostCells
 
 
@@ -198,7 +200,7 @@ class SONATAImporter():
     # ------------------------------------------------------------------------------------------------------------
     def __init__(self, **parameters):
 
-        print("Creating SONATAImporter %s..."%parameters)
+        logger.info("Creating SONATAImporter %s..."%parameters)
         self.parameters = parameters
         self.current_node = None
         self.current_node_group = None
@@ -286,14 +288,14 @@ class SONATAImporter():
         # create connections
         self.createConns()
 
-        #print('STOP HERE TO AVOID SIMULATING')
+        #logger.info('STOP HERE TO AVOID SIMULATING')
         #from IPython import embed; embed()
 
     # ------------------------------------------------------------------------------------------------------------
     # create simulation config
     # ------------------------------------------------------------------------------------------------------------
     def createSimulationConfig(self):
-        print("\nCreating simulation configuration from %s"%(self.config['simulation']))
+        logger.info("\nCreating simulation configuration from %s"%(self.config['simulation']))
 
         # set conditions required to replicate SONATA imported models
         sim.cfg.pt3dRelativeToCellLocation = False  # Make cell 3d points relative to the cell x,y,z location
@@ -316,14 +318,14 @@ class SONATAImporter():
 
         #try:
         if 'node_sets_file' in self.simulation_config:
-            #print(self.substitutes)
-            #print(self.subs(self.rootFolder + '/' + self.simulation_config['node_sets_file']))
+            #logger.info(self.substitutes)
+            #logger.info(self.subs(self.rootFolder + '/' + self.simulation_config['node_sets_file']))
             # TEMPORARY FIX - FIX!
             sim.cfg.node_sets = load_json(self.subs(self.rootFolder+'/'+self.simulation_config['node_sets_file']).replace('$BASE_DIR',''))
         elif 'node_sets' in self.simulation_config:
             sim.cfg.node_sets = self.simulation_config['node_sets']
         # except:
-        #     print('Could not load node_sets...')
+        #     logger.warning('Could not load node_sets...')
         #     sim.cfg.node_sets = {}
 
         # inputs - add as 'spkTimes' to external population
@@ -354,7 +356,7 @@ class SONATAImporter():
             nodes_file = self.subs(n['nodes_file'])
             node_types_file = self.subs(n['node_types_file'])
 
-            print("\nLoading nodes from %s and %s"%(nodes_file, node_types_file))
+            logger.info("\nLoading nodes from %s and %s"%(nodes_file, node_types_file))
 
             h5file = tables.open_file(nodes_file,mode='r')
 
@@ -384,7 +386,7 @@ class SONATAImporter():
 
                 self.pop_id_from_type[(sonata_pop, type)] = pop_id
 
-                print(" - Adding population: %s which has model info: %s"%(pop_id, info))
+                logger.info(" - Adding population: %s which has model info: %s"%(pop_id, info))
 
                 size = self.cell_info[sonata_pop]['type_numbers'][type]
 
@@ -544,7 +546,7 @@ class SONATAImporter():
                             cellTags['params']['spkTimes'] = pop.tags['spkTimes'] # 1D list (same for all)
 
                 sim.net.cells.append(pop.cellModelClass(gid, cellTags)) # instantiate Cell object
-                print(('Cell %d/%d (gid=%d) of pop %s, on node %d, ' % (icell, numCells, gid, pop_id, sim.rank)))
+                logger.info('Cell %d/%d (gid=%d) of pop %s, on node %d, ' % (icell, numCells, gid, pop_id, sim.rank))
 
             sim.net.lastGid = sim.net.lastGid + numCells
 
@@ -575,11 +577,11 @@ class SONATAImporter():
                 edges_file = self.subs(e['edges_file'])
                 edge_types_file = self.subs(e['edge_types_file'])
 
-                print("\nLoading edges from %s and %s"%(edges_file,edge_types_file))
+                logger.info("\nLoading edges from %s and %s"%(edges_file,edge_types_file))
 
                 h5file=tables.open_file(edges_file,mode='r')
 
-                print("Opened HDF5 file: %s"%(h5file.filename))
+                logger.info("Opened HDF5 file: %s"%(h5file.filename))
                 self.parse_group(h5file.root.edges)
                 h5file.close()
                 self.edges_info[self.current_edge] = load_csv_props(edge_types_file)
@@ -590,7 +592,7 @@ class SONATAImporter():
             pre_node = self.conn_info[conn]['pre_node']
             post_node = self.conn_info[conn]['post_node']
 
-            print('   Adding projection %s: %s -> %s '%(conn, pre_node, post_node))
+            logger.info('   Adding projection %s: %s -> %s '%(conn, pre_node, post_node))
 
             # add all synMechs in this projection to netParams.synMechParams
             for type in self.edges_info[conn]:
@@ -604,7 +606,7 @@ class SONATAImporter():
                             synMechParams[synMechSubs[k]] = synMechParams.pop(k)
                     synMechParams['mod'] = self.edges_info[conn][type]['model_template']
                     sim.net.params.synMechParams[syn_label] = synMechParams
-                    print('   Added synMech %s '%(syn_label))
+                    logger.info('   Added synMech %s '%(syn_label))
 
             # add individual connections in this projection
             for i in range(len(self.conn_info[conn]['pre_id'])):
@@ -618,8 +620,8 @@ class SONATAImporter():
 
                     type = self.conn_info[conn]['edge_type_id'][i]
 
-                    print('   Conn: type %s pop %s (id %s) -> pop %s (id %s) MAPPED TO: cell gid %s -> cell gid %s'%(type,pre_node,pre_id,post_node,post_id, pre_gid,post_gid))
-                    #print(self.edges_info[conn][type])
+                    logger.info('   Conn: type %s pop %s (id %s) -> pop %s (id %s) MAPPED TO: cell gid %s -> cell gid %s'%(type,pre_node,pre_id,post_node,post_id, pre_gid,post_gid))
+                    #logger.info(self.edges_info[conn][type])
 
                     connParams = {}
                     postCell = sim.net.cells[sim.net.gid2lid[post_gid]]
@@ -665,7 +667,7 @@ class SONATAImporter():
 
             if info['input_type'] == 'spikes':
 
-                print(" - Adding input: %s which has info: %s"%(input, info))
+                logger.info(" - Adding input: %s which has info: %s"%(input, info))
                 node_set = info['node_set']
                 # get cell type and pop_id
                 cellType = self.cell_info[node_set]['types'][0]
@@ -691,7 +693,7 @@ class SONATAImporter():
             info = self.simulation_config['inputs'][input]
 
             if info['input_type'] == 'current_clamp':
-                print(" - Adding input: %s which has info: %s"%(input, info))
+                logger.info(" - Adding input: %s which has info: %s"%(input, info))
                 node_set = info['node_set']
 
                 sim.net.params.stimSourceParams[input] = {
@@ -869,7 +871,7 @@ class SONATAImporter():
                     grp = vp.segment_groups
                     path_vals = inhomogeneous_parameters[grp]
                     expr = iv.value.replace('exp(','math.exp(')
-                    #print("variable_parameter: %s, %s, %s"%(grp,iv, expr))
+                    #logger.info("variable_parameter: %s, %s, %s"%(grp,iv, expr))
 
                     for section_name in seg_grps_vs_nrn_sections[grp]:
                         path_start, path_end = inhomogeneous_parameters[grp][section_name]
@@ -880,7 +882,7 @@ class SONATAImporter():
 
                         nseg = cellRule['secs'][section_name]['geom']['nseg'] if 'nseg' in cellRule['secs'][section_name]['geom'] else 1
 
-                        #print("   Cond dens %s: %s S_per_cm2 (%s um) -> %s S_per_cm2 (%s um); nseg = %s"%(section_name,gmax_start,path_start,gmax_end,path_end, nseg))
+                        #logger.info("   Cond dens %s: %s S_per_cm2 (%s um) -> %s S_per_cm2 (%s um); nseg = %s"%(section_name,gmax_start,path_start,gmax_end,path_end, nseg))
 
                         gmax = []
                         for fract in [(2*i+1.0)/(2*nseg) for i in range(nseg)]:
@@ -888,7 +890,7 @@ class SONATAImporter():
                             p = path_start + fract*(path_end-path_start)
 
                             gmax_i = pynml.convert_to_units('%s S_per_m2'%eval(expr),'S_per_cm2')
-                            #print("     Point %s at %s = %s"%(p,fract, gmax_i))
+                            #logger.info("     Point %s at %s = %s"%(p,fract, gmax_i))
                             gmax.append(gmax_i)
 
                         if cm.ion_channel=='pas':
@@ -961,8 +963,8 @@ class SONATAImporter():
                     cellRule['secs'][section_name]['ions'][specie.ion]['o'] = pynml.convert_to_units(specie.initial_ext_concentration,'mM')
                     cellRule['secs'][section_name]['ions'][specie.ion]['i'] = pynml.convert_to_units(specie.initial_concentration,'mM')
                     #cellRule['secs'][section_name]['mechs'][cell.concentratrionModel] = concentrationModelParams
-                    #print(cell.concentratrionModel)
-                    print(concentrationModelParams)
+                    #logger.info(cell.concentratrionModel)
+                    logger.info(concentrationModelParams)
 
 
         return cellRule
@@ -1014,7 +1016,6 @@ class SONATAImporter():
                 for eion in erev:
                     if eion.startswith('e'):
                         if 'ions' not in cellRule['secs'][sec]:
-                            print(sec, eion)
                             cellRule['secs'][sec]['ions'] = {}
                         cellRule['secs'][sec]['ions'][eion[1:]] =  {'e': erev[eion]}
 
@@ -1030,16 +1031,16 @@ class SONATAImporter():
     # Parse SONATA hdf5
     # ------------------------------------------------------------------------------------------------------------
     def parse_group(self, g):
-        print("+++++++++++++++Parsing group: "+ str(g)+", name: "+g._v_name)
+        logger.info("+++++++++++++++Parsing group: "+ str(g)+", name: "+g._v_name)
 
         for node in g:
-            print("   ------Sub node: %s, class: %s, name: %s (parent: %s)"   % (node,node._c_classid,node._v_name, g._v_name))
+            logger.info("   ------Sub node: %s, class: %s, name: %s (parent: %s)" % (node,node._c_classid,node._v_name, g._v_name))
 
             if node._c_classid == 'GROUP':
                 if g._v_name=='nodes':
                     node_id = node._v_name.replace('-','_')
                     self.current_node = node_id
-                    print('# CURRENT NODE: %s'%(self.current_node))
+                    logger.info('# CURRENT NODE: %s'%(self.current_node))
                     self.cell_info[self.current_node] = {}
                     self.cell_info[self.current_node]['types'] = {}
                     self.cell_info[self.current_node]['type_numbers'] = {}
@@ -1051,20 +1052,20 @@ class SONATAImporter():
                 if g._v_name==self.current_node:
                     node_group = node._v_name
                     self.current_node_group = node_group
-                    print('# CURRENT NODE GROUP: %s'%(self.current_node))
+                    logger.info('# CURRENT NODE GROUP: %s'%(self.current_node))
                     self.cell_info[self.current_node][self.current_node_group] = {}
                     self.cell_info[self.current_node][self.current_node_group]['locations'] = {}
 
                 if g._v_name=='edges':
                     edge_id = node._v_name.replace('-','_')
-                    print('  Found edge: %s'%edge_id)
+                    logger.info('  Found edge: %s'%edge_id)
                     self.current_edge = edge_id
                     self.conn_info[self.current_edge] = {}
 
                 if g._v_name==self.current_edge:
                     self.current_pre_node = g._v_name.split('_to_')[0]
                     self.current_post_node = g._v_name.split('_to_')[1]
-                    print('  Found edge %s -> %s'%(self.current_pre_node, self.current_post_node))
+                    logger.info('  Found edge %s -> %s'%(self.current_pre_node, self.current_post_node))
                     self.conn_info[self.current_edge]['pre_node'] = self.current_pre_node
                     self.conn_info[self.current_edge]['post_node'] = self.current_post_node
 
@@ -1083,7 +1084,7 @@ class SONATAImporter():
 
 
     def parse_dataset(self, d):
-        print("Parsing dataset/array: %s; at node: %s, node_group %s"%(str(d), self.current_node, self.current_node_group))
+        logger.info("Parsing dataset/array: %s; at node: %s, node_group %s"%(str(d), self.current_node, self.current_node_group))
 
         if self.current_node_group:
             for i in range(0, d.shape[0]):
@@ -1124,7 +1125,7 @@ class SONATAImporter():
         elif d.name=='syn_weight':
             self.conn_info[self.current_edge]['syn_weight'] = [i for i in d]
         else:
-            print("Unhandled dataset: %s"%d.name)
+            logger.warning("Unhandled dataset: %s"%d.name)
 
 
     # ------------------------------------------------------------------------------------------------------------

@@ -4,10 +4,11 @@ Module for adding reaction-diffusion to network models
 
 """
 
-from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
+
+from netpyne.logger import logger
 
 from builtins import dict
 from builtins import range
@@ -23,7 +24,7 @@ import copy
 try:
     from neuron.crxd import rxdmath
 except:
-    print('Warning: Could not import rxdmath module')
+    logger.warning('Could not import rxdmath module')
 
 # -----------------------------------------------------------------------------
 # Add RxD
@@ -52,9 +53,9 @@ def addRxD (self, nthreads=None):
             sim.net.rxd = {'species': {}, 'regions': {}}  # dictionary for rxd  
             if nthreads:
                 rxd.nthread(nthreads)
-                print('Using %d threads for RxD' % (nthreads))
+                logger.info('Using %d threads for RxD' % (nthreads))
         except:
-            print('cRxD module not available')
+            logger.warning('cRxD module not available')
             return -1
     else:
         return -1
@@ -63,7 +64,7 @@ def addRxD (self, nthreads=None):
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'rxdTime')
     if sim.rank==0:
-        print('Adding RxD...')
+        logger.info('Adding RxD...')
 
     # make copy of Python structure
     #if sim.cfg.createPyStruct: -- don't make conditional since need to have Python structure
@@ -91,7 +92,7 @@ def addRxD (self, nthreads=None):
 
     sim.pc.barrier()
     sim.timing('stop', 'rxdTime')
-    if sim.rank == 0 and sim.cfg.timing: print(('  Done; RxD setup time = %0.2f s.' % sim.timingData['rxdTime']))
+    if sim.rank == 0: logger.timing('  Done; RxD setup time = %0.2f s.' % sim.timingData['rxdTime'])
 
     return sim.net.rxd
 
@@ -134,7 +135,7 @@ def _addRegions(self, params):
                     geometry['hObj'] = getattr(rxd, param['geometry']['class'])(**param['geometry']['args'])
                     geometry = geometry['hObj']
             except:
-                print('  Error creating %s Region geometry using %s class'%(label, param['geometry']['class']))
+                logger.warning('  Error creating %s Region geometry using %s class'%(label, param['geometry']['class']))
         elif isinstance(param['geometry'], str):
             geometry = getattr(rxd, param['geometry'])()
 
@@ -172,7 +173,7 @@ def _addRegions(self, params):
                                                                    name=label)
         else: self.rxd['regions'][label]['hObj'] = None
 
-        print('  Created Region %s'%(label))
+        logger.info('  Created Region %s'%(label))
 
 
 # -----------------------------------------------------------------------------
@@ -183,7 +184,7 @@ def _addExtracellularRegion(self, label, param):
     try:
         rxd.options.enable.extracellular = True
     except:
-        print('Error enabling extracellular rxd')
+        logger.warning('Error enabling extracellular rxd')
         return -1
 
     # (xlo, ylo, zlo, xhi, yhi, zhi, dx, volume_fraction=1, tortuosity=1)
@@ -191,7 +192,7 @@ def _addExtracellularRegion(self, label, param):
     requiredArgs = ['xlo', 'ylo', 'zlo', 'xhi', 'yhi', 'zhi', 'dx']
     for arg in requiredArgs:
         if arg not in param:
-            print('  Error creating Extracellular object %s: %s parameter was missing'%(label, arg))
+            logger.warning('  Error creating Extracellular object %s: %s parameter was missing'%(label, arg))
 
     if 'volume_fraction' not in param:
         param['volume_fraction'] = 1
@@ -202,7 +203,7 @@ def _addExtracellularRegion(self, label, param):
     # call rxd method to create Region
     self.rxd['regions'][label]['hObj'] = rxd.Extracellular(**{k:v for k,v in param.items() if k != 'extracellular'})
 
-    print('  Created Extracellular Region %s'%(label))
+    logger.info('  Created Extracellular Region %s'%(label))
 
 
 # -----------------------------------------------------------------------------
@@ -214,7 +215,7 @@ def _addSpecies(self, params):
     for label, param in params.items():
         # regions
         if 'regions' not in param:
-            print('  Error creating Species %s: "regions" parameter was missing'%(label))
+            logger.warning('  Error creating Species %s: "regions" parameter was missing'%(label))
             continue
         if not isinstance(param['regions'], list):
             param['regions'] = [param['regions']]
@@ -222,7 +223,7 @@ def _addSpecies(self, params):
             nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions'] if self.rxd['regions'][region]['hObj'] != None]
 
         except:
-           print('  Error creating Species %s: could not find regions %s'%(label, param['regions']))
+           logger.warning('  Error creating Species %s: could not find regions %s'%(label, param['regions']))
 
         # d
         if 'd' not in param:
@@ -246,7 +247,7 @@ def _addSpecies(self, params):
                 exec(funcStr, {'rxd': rxd}, {'sim': sim})
                 initial = sim.net.rxd["species"][label]["initialFunc"]
             except:
-                print('  Error creating Species %s: cannot evaluate "initial" expression -- "%s"'%(label, param['initial']))
+                logger.warning('  Error creating Species %s: cannot evaluate "initial" expression -- "%s"'%(label, param['initial']))
                 continue
         else:
             initial = param['initial']
@@ -274,7 +275,7 @@ def _addSpecies(self, params):
                                                             ecs_boundary_conditions=param['ecs_boundary_conditions'])
         else: self.rxd['species'][label]['hObj'] = None
 
-        print('  Created Species %s'%(label))
+        logger.info('  Created Species %s'%(label))
 
 
 # -----------------------------------------------------------------------------
@@ -286,14 +287,14 @@ def _addStates(self, params):
     for label, param in params.items():
         # regions
         if 'regions' not in param:
-            print('  Error creating State %s: "regions" parameter was missing'%(label))
+            logger.warning('  Error creating State %s: "regions" parameter was missing'%(label))
             continue
         if not isinstance(param['regions'], list):
             param['regions'] = [param['regions']]
         try:
             nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions'] if self.rxd['regions'][region]['hObj'] != None]
         except:
-           print('  Error creating State %s: could not find regions %s'%(label, param['regions']))
+           logger.warning('  Error creating State %s: could not find regions %s'%(label, param['regions']))
 
         # initial
         if 'initial' not in param:
@@ -309,7 +310,7 @@ def _addStates(self, params):
                 exec(funcStr, {'rxd': rxd}, {'sim': sim})
                 initial = sim.net.rxd["species"][label]["initialFunc"]
             except:
-                print('  Error creating State %s: cannot evaluate "initial" expression -- "%s"'%(label, param['initial']))
+                logger.warning('  Error creating State %s: cannot evaluate "initial" expression -- "%s"'%(label, param['initial']))
                 continue
         else:
             initial = param['initial']
@@ -324,7 +325,7 @@ def _addStates(self, params):
                                                     initial=initial, name=name)
         else: self.rxd['states'][label]['hObj'] = None
 
-        print('  Created State %s'%(label))
+        logger.info('  Created State %s'%(label))
 
 # -----------------------------------------------------------------------------
 # Add RxD parameters
@@ -335,14 +336,14 @@ def _addParameters(self, params):
     for label, param in params.items():
         # regions
         if 'regions' not in param:
-            print('  Error creating State %s: "regions" parameter was missing'%(label))
+            logger.warning('  Error creating State %s: "regions" parameter was missing'%(label))
             continue
         if not isinstance(param['regions'], list):
             param['regions'] = [param['regions']]
         try:
             nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions']]
         except:
-           print('  Error creating State %s: could not find regions %s'%(label, param['regions']))
+           logger.warning('  Error creating State %s: could not find regions %s'%(label, param['regions']))
 
         if 'name' not in param:
             param['name'] = None
@@ -363,7 +364,7 @@ def _addParameters(self, params):
                 exec(funcStr, {'rxd': rxd}, {'sim': sim})        
                 value = sim.net.rxd["parameters"][label]["initialFunc"]
             except:
-                print('  Error creating Parameter %s: cannot evaluate "value" expression -- "%s"'%(label, param['value']))
+                logger.warning('  Error creating Parameter %s: cannot evaluate "value" expression -- "%s"'%(label, param['value']))
                 continue
         else:
             value = param['value']
@@ -373,7 +374,7 @@ def _addParameters(self, params):
                                                     value=value,
                                                     charge=param['charge'],
                                                     name=param['name'])
-        print('  Created Parameter %s'%(label))
+        logger.info('  Created Parameter %s'%(label))
 
 # -----------------------------------------------------------------------------
 # Add RxD reactions
@@ -390,7 +391,7 @@ def _addReactions(self, params, multicompartment=False):
 
         # reactant
         if 'reactant' not in param:
-            print('  Error creating %s %s: "reactant" parameter was missing'%(reactionStr,label))
+            logger.warning('  Error creating %s %s: "reactant" parameter was missing'%(reactionStr,label))
             continue
         reactantStr = self._replaceRxDStr(param['reactant'])
         try:
@@ -401,7 +402,7 @@ def _addReactions(self, params, multicompartment=False):
 
         # product
         if 'product' not in param:
-            print('  Error creating %s %s: "product" parameter was missing'%(reactionStr,label))
+            logger.warning('  Error creating %s %s: "product" parameter was missing'%(reactionStr,label))
             continue
         productStr = self._replaceRxDStr(param['product'])
         #from IPython import embed
@@ -411,7 +412,7 @@ def _addReactions(self, params, multicompartment=False):
 
         # rate_f
         if 'rate_f' not in param:
-            print('  Error creating %s %s: "scheme" parameter was missing'%(reactionStr,label))
+            logger.warning('  Error creating %s %s: "scheme" parameter was missing'%(reactionStr,label))
             continue
         if isinstance(param['rate_f'], basestring):
             rate_fStr = self._replaceRxDStr(param['rate_f'])
@@ -440,7 +441,7 @@ def _addReactions(self, params, multicompartment=False):
         try:
             nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions'] if region is not None and self.rxd['regions'][region]['hObj'] != None]
         except:
-            print('  Error creating %s %s: could not find regions %s'%(reactionStr, label, param['regions']))
+            logger.warning('  Error creating %s %s: could not find regions %s'%(reactionStr, label, param['regions']))
 
         # membrane
         if 'membrane' not in param:
@@ -482,7 +483,7 @@ def _addReactions(self, params, multicompartment=False):
                                                                             membrane=nrnMembraneRegion)
 
 
-        print('  Created %s %s'%(reactionStr, label))
+        logger.info('  Created %s %s'%(reactionStr, label))
 
 # -----------------------------------------------------------------------------
 # Add RxD reactions
@@ -496,19 +497,19 @@ def _addRates(self, params):
 
         # species
         if 'species' not in param:
-            print('  Error creating Rate %s: "species" parameter was missing'%(label))
+            logger.warning('  Error creating Rate %s: "species" parameter was missing'%(label))
             continue
         if isinstance(param['species'], basestring):
             speciesStr = self._replaceRxDStr(param['species'])
             exec('species = ' + speciesStr, dynamicVars)
             if 'species' not in dynamicVars: dynamicVars['species']  # fix for python 2
         else:
-            print('  Error creating Rate %s: "species" parameter should be a string'%(param['species']))
+            logger.warning('  Error creating Rate %s: "species" parameter should be a string'%(param['species']))
             continue
 
         # rate
         if 'rate' not in param:
-            print('  Error creating Rate %s: "rate" parameter was missing'%(label))
+            logger.warning('  Error creating Rate %s: "rate" parameter was missing'%(label))
             continue
         if isinstance(param['rate'], basestring):
             rateStr = self._replaceRxDStr(param['rate'])
@@ -523,7 +524,7 @@ def _addRates(self, params):
         try:
              nrnRegions = [self.rxd['regions'][region]['hObj'] for region in param['regions'] if region is not None and self.rxd['regions'][region]['hObj'] != None]
         except:
-           print('  Error creating Rate %s: could not find regions %s'%(label, param['regions']))
+           logger.warning('  Error creating Rate %s: could not find regions %s'%(label, param['regions']))
 
         # membrane_flux
         if 'membrane_flux' not in param:
@@ -534,7 +535,7 @@ def _addRates(self, params):
                                                     regions=nrnRegions,
                                                     membrane_flux=param['membrane_flux'])
 
-        print('  Created Rate %s'%(label))
+        logger.info('  Created Rate %s'%(label))
 
 # -----------------------------------------------------------------------------
 # Replace RxD param strings with expression

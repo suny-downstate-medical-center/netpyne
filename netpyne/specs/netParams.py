@@ -3,7 +3,6 @@ Module containing classes for high-level network parameters and methods
 
 """
 
-from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -23,6 +22,7 @@ standard_library.install_aliases()
 from collections import OrderedDict
 from .dicts import Dict, ODict
 from .. import conversion
+from netpyne.logger import logger
 
 # ----------------------------------------------------------------------------
 # PopParams class
@@ -326,13 +326,13 @@ class NetParams(object):
             os.mkdir(folder)
         except OSError:
             if not os.path.exists(folder):
-                print(' Could not create', folder)
+                logger.warning(' Could not create ' + folder)
 
         dataSave = {'net': {'params': self.__dict__}}
 
         # Save to json file
         if ext == 'json':
-            print(('Saving netParams to %s ... ' % (filename)))
+            logger.info('Saving netParams to %s ... ' % (filename))
             sim.saveJSON(filename, dataSave)
 
     def addCellParams(self, label=None, params=None):
@@ -381,11 +381,11 @@ class NetParams(object):
     #     try:
     #         obj = getattr(self, attr)
     #     except:
-    #         print 'Error renaming: netParams does not contain %s' % (attr)
+    #         logger.warning 'Error renaming: netParams does not contain %s' % (attr)
     #         return False
 
     #     if old not in obj:
-    #         print 'Error renaming: netParams.%s rule does not contain %s' % (attribute, old)
+    #         logger.warning 'Error renaming: netParams.%s rule does not contain %s' % (attribute, old)
     #         return False
 
     #     obj[new] = obj.pop(old)  # replace
@@ -406,7 +406,7 @@ class NetParams(object):
             somaSec = next((sec for sec in cellRule['secs'] if 'soma' in sec), None)
             if not somaSec or not 'pt3d' in cellRule['secs'][somaSec]['geom']:
                 pass
-                #print('Warning: cannot place soma at origin because soma does not exist or does not contain pt3d')
+                #logger.warning('Cannot place soma at origin because soma does not exist or does not contain pt3d')
             else:
                 soma3d = cellRule['secs'][somaSec]['geom']['pt3d']
                 midpoint = int(len(soma3d)/2)
@@ -434,15 +434,15 @@ class NetParams(object):
         if label in self.cellParams:
             cellRule = self.cellParams[label]
         else:
-            print('Error adding secList: netParams.cellParams does not contain %s' % (label))
+            logger.warning('Error adding secList: netParams.cellParams does not contain %s' % (label))
             return
 
         if somaDist is not None and (not isinstance(somaDist, list) or len(somaDist) != 2):
-            print('Error adding secList: somaDist should be a list with 2 elements')
+            logger.warning('Error adding secList: somaDist should be a list with 2 elements')
             return
 
         if somaDistY is not None and (not isinstance(somaDistY, list) or len(somaDistY) != 2):
-            print('Error adding secList: somaDistY should be a list with 2 elements')
+            logger.warning('Error adding secList: somaDistY should be a list with 2 elements')
             return
 
 
@@ -461,7 +461,7 @@ class NetParams(object):
                         secList.append(secName)
 
             else:
-                print('Error adding secList: Sections do not contain 3d points')
+                logger.warning('Error adding secList: Sections do not contain 3d points')
                 return
 
         cellRule.secLists[secListName] = list(secList)
@@ -470,11 +470,11 @@ class NetParams(object):
         if label in self.cellParams:
             cellRule = self.cellParams[label]
         else:
-            print('Error swapping 3d pts: netParams.cellParams does not contain %s' % (label))
+            logger.warning('Error swapping 3d pts: netParams.cellParams does not contain %s' % (label))
             return
 
         if origIndex not in list(range(4)) and targetIndex not in list(range(4)): # check valid indices (x,y,z,d)
-            print('Error swapping 3d pts: indices should be 0, 1, 2 or 3 (x,y,z,d)')
+            logger.warning('Error swapping 3d pts: indices should be 0, 1, 2 or 3 (x,y,z,d)')
             return
 
         for sec in list(cellRule.secs.values()):
@@ -496,7 +496,7 @@ class NetParams(object):
         if label in self.cellParams:
             cellRule = self.cellParams[label]
         else:
-            print('Error adding weightNorm: netParams.cellParams does not contain %s' % (label))
+            logger.warning('Error adding weightNorm: netParams.cellParams does not contain %s' % (label))
             return
 
         with open(fileName, 'rb') as fileObj:
@@ -509,7 +509,7 @@ class NetParams(object):
             somaSec = next((k for k in list(weightNorm.keys()) if k.startswith('soma')),None)
             somaWeightNorm = weightNorm[somaSec][0]
         except:
-            print('Error setting weightNorm: no soma section available to set threshold')
+            logger.warning('Error setting weightNorm: no soma section available to set threshold')
             return
         for sec, wnorm in weightNorm.items():
             if sec in cellRule['secs']:
@@ -519,7 +519,7 @@ class NetParams(object):
 
     def addCellParamsTemplate(self, label, conds={}, template=None):
         if label in self.cellParams:
-            print('CellParams key %s already exists...' % (label))
+            logger.info('CellParams key %s already exists...' % (label))
         secs = {}
 
         if template == 'Simple_HH':
@@ -547,7 +547,7 @@ class NetParams(object):
         if label in self.cellParams:
             cellRule = self.cellParams[label]
         else:
-            print('Error saving: netParams.cellParams does not contain %s' % (label))
+            logger.warning('Error saving: netParams.cellParams does not contain %s' % (label))
             return
 
         if ext == 'pkl':

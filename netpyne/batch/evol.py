@@ -3,7 +3,6 @@ Module for evolutionary parameter optimization
 
 """
 
-from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
@@ -40,6 +39,7 @@ from neuron import h
 from netpyne import specs
 from .utils import createFolder
 from .utils import bashTemplate
+from netpyne.logger import logger
 
 pc = h.ParallelContext() # use bulletin board master/slave
 
@@ -73,10 +73,10 @@ def runEvolJob(nrnCommand, script, cfgSavePath, netParamsSavePath, simDataPath):
 
     """
     import os
-    print('\nJob in rank id: ',pc.id())
+    logger.info('Job in rank id: ' + pc.id())
 
     command = '%s %s simConfig=%s netParams=%s' % (nrnCommand, script, cfgSavePath, netParamsSavePath)
-    print(command)
+    logger.info(command)
 
     with open(simDataPath+'.run', 'w') as outf, open(simDataPath+'.err', 'w') as errf:
         pid = Popen(command.split(' '), stdout=outf, stderr=errf, preexec_fn=os.setsid).pid
@@ -173,7 +173,7 @@ def evolOptim(self, pc):
 
             # modify cfg instance with candidate values
             for label, value in zip(paramLabels, candidate):
-                print('set %s=%s' % (label, value))
+                logger.info('set %s=%s' % (label, value))
                 self.setCfgNestedParam(label, value)
 
             #self.setCfgNestedParam("filename", jobPath)
@@ -190,7 +190,7 @@ def evolOptim(self, pc):
                 # MPI master-slaves
                 # ----------------------------------------------------------------------
                 pc.submit(runEvolJob, nrnCommand, script, cfgSavePath, netParamsSavePath, jobPath)
-                print('-'*80)
+                logger.info('-'*80)
 
             else:
                 # ----------------------------------------------------------------------
@@ -228,9 +228,9 @@ def evolOptim(self, pc):
                 # ----------------------------------------------------------------------
                 # save job and run
                 # ----------------------------------------------------------------------
-                print('Submitting job ', jobName)
-                print(jobString)
-                print('-'*80)
+                logger.info('Submitting job ', jobName)
+                logger.info(jobString)
+                logger.info('-'*80)
                 # save file
                 batchfile = '%s.sbatch' % (jobPath)
                 with open(batchfile, 'w') as text_file:
@@ -244,11 +244,11 @@ def evolOptim(self, pc):
                 #read = proc.stdout.read()
                 with open(jobPath+'.jobid', 'r') as outf:
                     read=outf.readline()
-                print(read)
+                logger.info(read)
                 if len(read) > 0:
                     jobid = int(read.split()[-1])
                     jobids[candidate_index] = jobid
-                print('jobids', jobids)
+                logger.info('jobids', jobids)
             total_jobs += 1
             sleep(0.1)
 
@@ -268,9 +268,9 @@ def evolOptim(self, pc):
         num_iters = 0
         jobs_completed = 0
         fitness = [None for cand in candidates]
-        # print outfilestem
-        print("Waiting for jobs from generation %d/%d ..." %(ngen, args.get('max_generations')))
-        # print "PID's: %r" %(pids)
+        # logger.info outfilestem
+        logger.info("Waiting for jobs from generation %d/%d ..." %(ngen, args.get('max_generations')))
+        # logger.info "PID's: %r" %(pids)
         # start fitness calculation
         while jobs_completed < total_jobs:
             unfinished = [i for i, x in enumerate(fitness) if x is None ]
@@ -282,23 +282,21 @@ def evolOptim(self, pc):
                             simData = json.load(file)['simData']
                         fitness[candidate_index] = fitnessFunc(simData, **fitnessFuncArgs)
                         jobs_completed += 1
-                        print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
+                        logger.info('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
                     elif os.path.isfile(jobNamePath+'.pkl'):
                         with open('%s.pkl'% (jobNamePath), 'rb') as file:
                             simData = pickle.load(file)['simData']
                         fitness[candidate_index] = fitnessFunc(simData, **fitnessFuncArgs)
                         jobs_completed += 1
-                        print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
+                        logger.info('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
                 except Exception as e:
-                    # print
                     err = "There was an exception evaluating candidate %d:"%(candidate_index)
-                    print(("%s \n %s"%(err,e)))
-                    #pass
-                    #print 'Error evaluating fitness of candidate %d'%(candidate_index)
+                    logger.warning("%s \n %s"%(err,e))
+                    #logger.warning 'Error evaluating fitness of candidate %d'%(candidate_index)
             num_iters += 1
-            print('completed: %d' %(jobs_completed))
+            logger.info('completed: %d' %(jobs_completed))
             if num_iters >= args.get('maxiter_wait', 5000):
-                print("Max iterations reached, the %d unfinished jobs will be canceled and set to default fitness" % (len(unfinished)))
+                logger.warning("Max iterations reached, the %d unfinished jobs will be canceled and set to default fitness" % (len(unfinished)))
                 for canditade_index in unfinished:
                     fitness[canditade_index] = defaultFitness
                     jobs_completed += 1
@@ -333,9 +331,9 @@ def evolOptim(self, pc):
         #     except:
         #         pass
         # return
-        print("-"*80)
-        print("  Completed a generation  ")
-        print("-"*80)
+        logger.info("-"*80)
+        logger.info("  Completed a generation  ")
+        logger.info("-"*80)
         return fitness
 
 
@@ -487,9 +485,9 @@ def evolOptim(self, pc):
     stats_file.close()
     ind_stats_file.close()
 
-    # print best and finish
-    print(('Best Solution: \n{0}'.format(str(max(final_pop)))))
-    print("-"*80)
-    print("   Completed evolutionary algorithm parameter optimization   ")
-    print("-"*80)
+    # log best and finish
+    logger.info('Best Solution: \n{0}'.format(str(max(final_pop))))
+    logger.info("-"*80)
+    logger.info("   Completed evolutionary algorithm parameter optimization   ")
+    logger.info("-"*80)
     sys.exit()

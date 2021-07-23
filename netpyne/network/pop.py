@@ -4,7 +4,6 @@ Module defining Population class and methods
 
 """
 
-from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -20,7 +19,7 @@ standard_library.install_aliases()
 from numpy import  pi, sqrt, sin, cos, arccos
 import numpy as np
 from neuron import h # Import NEURON
-
+from netpyne.logger import logger
 
 ###############################################################################
 #
@@ -60,8 +59,7 @@ class Pop (object):
             if sim.nextHost>=sim.nhosts:
                 sim.nextHost=0
 
-        if sim.cfg.verbose:
-            print(("Distributed population of %i cells on %s hosts: %s, next: %s"%(numCellsPop,sim.nhosts,hostCells,sim.nextHost)))
+        logger.debug("Distributed population of %i cells on %s hosts: %s, next: %s"%(numCellsPop,sim.nhosts,hostCells,sim.nextHost))
         return hostCells
 
 
@@ -89,7 +87,7 @@ class Pop (object):
         # not enough tags to create cells
         else:
             self.tags['numCells'] = 1
-            print('Warninig: number or density of cells not specified for population %s; defaulting to numCells = 1' % (self.tags['pop']))
+            logger.warning('Number or density of cells not specified for population %s; defaulting to numCells = 1' % (self.tags['pop']))
             cells = self.createCellsFixedNum()
 
         return cells
@@ -174,7 +172,7 @@ class Pop (object):
                         cellTags['params']['rates'] = [self.tags['dynamicRates']['rates'], self.tags['dynamicRates']['times']] # 1D list (same for all)
             cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
 
-            if sim.cfg.verbose: print(('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, sim.net.params.scale * self.tags['numCells']-1, gid, self.tags['pop'], sim.rank)))
+            logger.debug('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, sim.net.params.scale * self.tags['numCells']-1, gid, self.tags['pop'], sim.rank))
         sim.net.lastGid = sim.net.lastGid + self.tags['numCells']
         return cells
 
@@ -214,7 +212,7 @@ class Pop (object):
                 strFunc = self.tags['density']  # string containing function
                 strVars = [var for var in ['xnorm', 'ynorm', 'znorm'] if var in strFunc]  # get list of variables used
                 if not len(strVars) == 1:
-                    print('Error: density function (%s) for population %s does not include "xnorm", "ynorm" or "znorm"'%(strFunc,self.tags['pop']))
+                    logger.warning('Error: density function (%s) for population %s does not include "xnorm", "ynorm" or "znorm"'%(strFunc,self.tags['pop']))
                     return
                 coordFunc = strVars[0]
                 lambdaStr = 'lambda ' + coordFunc +': ' + strFunc # convert to lambda function
@@ -234,9 +232,9 @@ class Pop (object):
                 makethiscell = locsProb>allrands  # perform test to see whether or not this cell should be included (pruning based on density func)
                 funcLocs = [locsAll[i] for i in range(len(locsAll)) if i in np.array(makethiscell.nonzero()[0],dtype='int')] # keep only subset of yfuncLocs based on density func
                 self.tags['numCells'] = len(funcLocs)  # final number of cells after pruning of location values based on density func
-                if sim.cfg.verbose: print('Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.tags['numCells']))
+                logger.debug('Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.tags['numCells']))
             else:
-                print('Error: Density functions are only implemented for cuboid shaped networks')
+                logger.warning('Error: Density functions are only implemented for cuboid shaped networks')
                 exit(0)
         else:  # NO ynorm-dep
             self.tags['numCells'] = int(self.tags['density'] * volume)  # = density (cells/mm^3) * volume (mm^3)
@@ -278,7 +276,7 @@ class Pop (object):
             if funcLocs and coordFunc == coord+'norm':  # if locations for this coordinate calculated using density function
                 randLocs[:,icoord] = funcLocs
 
-        if sim.cfg.verbose and not funcLocs: print('Volume=%.4f, density=%.2f, numCells=%.0f'%(volume, self.tags['density'], self.tags['numCells']))
+        if not funcLocs: logger.debug('Volume=%.4f, density=%.2f, numCells=%.0f'%(volume, self.tags['density'], self.tags['numCells']))
 
         for i in self._distributeCells(self.tags['numCells'])[sim.rank]:
             gid = sim.net.lastGid+i
@@ -292,8 +290,7 @@ class Pop (object):
             cellTags['y'] = sizeY * randLocs[i,1]  # calculate y location (um)
             cellTags['z'] = sizeZ * randLocs[i,2]  # calculate z location (um)
             cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
-            if sim.cfg.verbose:
-                print(('Cell %d/%d (gid=%d) of pop %s, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.tags['numCells']-1, gid, self.tags['pop'],cellTags['x'], cellTags['y'], cellTags['z'], sim.rank)))
+            logger.debug('Cell %d/%d (gid=%d) of pop %s, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.tags['numCells']-1, gid, self.tags['pop'],cellTags['x'], cellTags['y'], cellTags['z'], sim.rank))
         sim.net.lastGid = sim.net.lastGid + self.tags['numCells']
         return cells
 
@@ -325,7 +322,7 @@ class Pop (object):
             if 'cellModel' in self.tags.keys() and self.tags['cellModel'] == 'Vecstim':  # if VecStim, copy spike times to params
                 cellTags['params']['spkTimes'] = self.tags['cellsList'][i]['spkTimes']
             cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
-            if sim.cfg.verbose: print(('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tags['numCells']-1, gid, i, sim.rank)))
+            logger.debug('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tags['numCells']-1, gid, i, sim.rank))
         sim.net.lastGid = sim.net.lastGid + len(self.tags['cellsList'])
         return cells
 
@@ -375,7 +372,7 @@ class Pop (object):
             cellTags['y'] = gridLocs[i][1] # set y location (um)
             cellTags['z'] = gridLocs[i][2] # set z location (um)
             cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
-            if sim.cfg.verbose: print(('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, numCells, gid, self.tags['pop'], sim.rank)))
+            logger.debug('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, numCells, gid, self.tags['pop'], sim.rank))
         sim.net.lastGid = sim.net.lastGid + numCells
         return cells
 
@@ -416,7 +413,7 @@ class Pop (object):
                     sim.net.params.popTagsCopiedToCells.append('params')
             except:
                 if getattr(self.tags, 'cellModel', None) in ['NetStim', 'DynamicNetStim', 'VecStim', 'IntFire1', 'IntFire2', 'IntFire4']:
-                    print('Warning: could not find %s point process mechanism required for population %s' % (cellModel, self.tags['pop']))
+                    logger.warning('Could not find %s point process mechanism required for population %s' % (cellModel, self.tags['pop']))
                 self.cellModelClass = sim.CompartCell  # otherwise assume has sections and some cellParam rules apply to it; use CompartCell
 
 

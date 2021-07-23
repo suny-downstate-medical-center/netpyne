@@ -3,7 +3,6 @@ Module for Optuna hyperparameter optimization (optuna.org)
 
 """
 
-from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
@@ -45,6 +44,7 @@ import optuna
 from .utils import createFolder
 from .utils import bashTemplate
 from .utils import dcp, sigfig
+from netpyne.logger import logger
 
 pc = h.ParallelContext() # use bulletin board master/slave
 
@@ -82,9 +82,9 @@ def runJob(nrnCommand, script, cfgSavePath, netParamsSavePath, simDataPath):
     """
 
     import os
-    print('\nJob in rank id: ',pc.id())
+    logger.info('Job in rank id: ' + pc.id())
     command = '%s %s simConfig=%s netParams=%s' % (nrnCommand, script, cfgSavePath, netParamsSavePath)
-    print(command)
+    logger.info(command)
 
     with open(simDataPath+'.run', 'w') as outf, open(simDataPath+'.err', 'w') as errf:
         pid = Popen(command.split(' '), stdout=outf, stderr=errf, preexec_fn=os.setsid).pid
@@ -187,9 +187,9 @@ def optunaOptim(self, pc):
                 self.setCfgNestedParam(paramLabel, paramVal)
 
         # modify cfg instance with candidate values
-        #print(paramLabels, candidate)
+        #logger.info(paramLabels, candidate)
         for label, value in zip(paramLabels, candidate):
-            print('set %s=%s' % (label, value))
+            logger.info('set %s=%s' % (label, value))
             self.setCfgNestedParam(label, value)
 
         #self.setCfgNestedParam("filename", jobPath)
@@ -206,7 +206,7 @@ def optunaOptim(self, pc):
             # MPI master-slaves
             # ----------------------------------------------------------------------
             pc.submit(runJob, nrnCommand, script, cfgSavePath, netParamsSavePath, jobPath)
-            print('-'*80)
+            logger.info('-'*80)
 
         else:
             # ----------------------------------------------------------------------
@@ -244,9 +244,9 @@ def optunaOptim(self, pc):
             # ----------------------------------------------------------------------
             # save job and run
             # ----------------------------------------------------------------------
-            print('Submitting job ', jobName)
-            print(jobString)
-            print('-'*80)
+            logger.info('Submitting job ' + jobName)
+            logger.info(jobString)
+            logger.info('-'*80)
             # save file
             batchfile = '%s.sbatch' % (jobPath)
             with open(batchfile, 'w') as text_file:
@@ -269,11 +269,12 @@ def optunaOptim(self, pc):
             else:
                 with open(jobPath+'.jobid', 'r') as outf:
                     read=outf.readline()
-                print(read)
+                logger.info(read)
                 if len(read) > 0:
                     jobid = int(read.split()[-1])
                     jobids[candidate_index] = jobid
-                print('jobids', jobids)
+                logger.info('jobids')
+                logger.info(jobids)
         total_jobs += 1
         sleep(0.1)
 
@@ -293,9 +294,9 @@ def optunaOptim(self, pc):
         num_iters = 0
         jobs_completed = 0
         fitness = [None]  # just 1 candidate
-        # print outfilestem
-        print("Waiting for jobs from generation %d/%d ..." %(ngen, args.get('maxiters')))
-        # print "PID's: %r" %(pids)
+        # log outfilestem
+        logger.info("Waiting for jobs from generation %d/%d ..." %(ngen, args.get('maxiters')))
+        # logger.info "PID's: %r" %(pids)
         # start fitness calculation
         while jobs_completed < total_jobs:
             unfinished = [i for i, x in enumerate(fitness) if x is None ]
@@ -307,20 +308,20 @@ def optunaOptim(self, pc):
                             simData = json.load(file)['simData']
                         fitness[candidate_index] = fitnessFunc(simData, **fitnessFuncArgs)
                         jobs_completed += 1
-                        print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
+                        logger.info('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
                     elif os.path.isfile(jobNamePath+'.pkl'):
                         with open('%s.pkl'% (jobNamePath), 'rb') as file:
                             simData = pickle.load(file)['simData']
                         fitness[candidate_index] = fitnessFunc(simData, **fitnessFuncArgs)
                         jobs_completed += 1
-                        print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
+                        logger.info('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
                 except Exception as e:
                     err = "There was an exception evaluating candidate %d:"%(candidate_index)
-                    print(("%s \n %s"%(err,e)))
+                    logger.warning("%s \n %s"%(err,e))
             num_iters += 1
-            print('completed: %d' %(jobs_completed))
+            logger.info('completed: %d' %(jobs_completed))
             if num_iters >= args.get('maxiter_wait', 5000):
-                print("Max iterations reached, the %d unfinished jobs will be canceled and set to default fitness" % (len(unfinished)))
+                logger.warning("Max iterations reached, the %d unfinished jobs will be canceled and set to default fitness" % (len(unfinished)))
                 for canditade_index in unfinished:
                     fitness[canditade_index] = maxFitness # rerun those that didn't complete;
                     jobs_completed += 1
@@ -365,9 +366,9 @@ def optunaOptim(self, pc):
 
         # don't want to to this for hpcs since jobs are running on compute nodes not master
 
-        print("-" * 80)
-        print("  Completed a generation  ")
-        print("-" * 80)
+        logger.info("-" * 80)
+        logger.info("  Completed a generation  ")
+        logger.info("-" * 80)
 
         return fitness[0] # single candidate for now
 
@@ -435,29 +436,30 @@ def optunaOptim(self, pc):
     try:
         study.optimize(lambda trial: objective(trial, args), n_trials=args['maxiters'], timeout=args['maxtime'])
     except Exception as e:
-        print(e)
+        logger.warning(e)
 
 
-    # print best and finish
+    # log best and finish
     if rank == size-1:
         df = study.trials_dataframe(attrs=('number', 'value', 'params', 'state'))
         importance = optuna.importance.get_param_importances(study=study)
 
-        print('\nBest trial: ', study.best_trial)
-        print('\nParameter importance: ', dict(importance))
+        logger.info('Best trial: ' + study.best_trial)
+        logger.info('Parameter importance:')
+        logger.info(dict(importance))
 
-        print('\nBest Solution with fitness = %.4g: \n' % (study.best_value), study.best_params)
+        logger.info('Best Solution with fitness = %.4g:' % (study.best_value))
+        logger.info(study.best_params)
 
-        print('\nSaving to output.pkl...\n')
+        logger.info('Saving to output.pkl...')
         output = {'study': study, 'df': df, 'importance': importance}
         with open('%s/%s_output.pkl' % (self.saveFolder, self.batchLabel), 'wb') as f:
             pickle.dump(output, f)
 
         sleep(1)
 
-        print("-" * 80)
-        print("   Completed Optuna parameter optimization   ")
-        print("-" * 80)
-
+        logger.info("-" * 80)
+        logger.info("   Completed Optuna parameter optimization   ")
+        logger.info("-" * 80)
 
     sys.exit()

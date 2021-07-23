@@ -4,7 +4,6 @@ Module defining Network class and methods
 
 """
 
-from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
@@ -13,6 +12,7 @@ from future import standard_library
 standard_library.install_aliases()
 from ..specs import ODict
 from neuron import h  # import NEURON
+from netpyne.logger import logger
 
 class Network(object):
     """
@@ -78,7 +78,7 @@ class Network(object):
         sim.pc.barrier()
         sim.timing('start', 'createTime')
         if sim.rank==0:
-            print(("\nCreating network of %i cell populations on %i hosts..." % (len(self.pops), sim.nhosts)))
+            logger.info("\nCreating network of %i cell populations on %i hosts..." % (len(self.pops), sim.nhosts))
 
         self._setDiversityRanges()  # update fractions for rules
 
@@ -86,14 +86,14 @@ class Network(object):
             newCells = ipop.createCells() # create cells for this pop using Pop method
             self.cells.extend(newCells)  # add to list of cells
             sim.pc.barrier()
-            if sim.rank==0 and sim.cfg.verbose: print(('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['pop'])))
+            if sim.rank==0: logger.timing('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['pop']))
 
         if self.params.defineCellShapes: self.defineCellShapes()
 
-        print(('  Number of cells on node %i: %i ' % (sim.rank,len(self.cells))))
+        logger.info('  Number of cells on node %i: %i ' % (sim.rank,len(self.cells)))
         sim.pc.barrier()
         sim.timing('stop', 'createTime')
-        if sim.rank == 0 and sim.cfg.timing: print(('  Done; cell creation time = %0.2f s.' % sim.timingData['createTime']))
+        if sim.rank == 0: logger.timing('  Done; cell creation time = %0.2f s.' % sim.timingData['createTime'])
 
         return self.cells
 

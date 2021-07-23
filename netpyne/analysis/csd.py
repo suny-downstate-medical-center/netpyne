@@ -3,7 +3,6 @@ Module with functions to extract and plot CSD info from LFP data
 
 """
 
-from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -31,7 +30,7 @@ from scipy.fftpack import hilbert
 from scipy.signal import cheb2ord, cheby2, convolve, get_window, iirfilter, remez, decimate
 from .filter import lowpass,bandpass
 from .utils import exception, _saveFigData 
-
+from netpyne.logger import logger
 
 def getbandpass(lfps, sampr, minf=0.05, maxf=300):
     """
@@ -320,7 +319,7 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
             sim.allSimData['CSD']['CSD_data'] = CSD_data
             sim.allSimData['CSD']['CSD_data_noBandpass'] = CSD_data_noBandpass 
         except:
-            print('NOTE: No sim.allSimData construct available to store CSD data.')
+            logger.warning('No sim.allSimData construct available to store CSD data.')
 
     # return CSD_data or all data
     if getAllData is True:
@@ -400,8 +399,8 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
 
     """
 
-    print('Plotting CSD... ')
-  
+    logger.info('Plotting CSD...')
+
     # DEFAULT -- CONDITION 1 : GET CSD DATA FROM SIM
     if CSD_data is None:
     
@@ -439,24 +438,24 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
     # CONDITION 2 : ARBITRARY CSD DATA 
     elif CSD_data is not None:
         if timeRange is None:
-            print('MUST PROVIDE TIME RANGE in ms')
+            logger.warning('Must provide time range in in ms')
         else:
-            print('timeRange = ' + str(timeRange))
+            logger.info('timeRange = ' + str(timeRange))
 
         if dt is None:
-            print('MUST PROVIDE dt in ms')
+            logger.warning('Must provide dt in ms')
         else:
-            print('dt = ' + str(dt)) # batch0['simConfig']['recordStep']
+            logger.info('dt = ' + str(dt)) # batch0['simConfig']['recordStep']
 
         if spacing_um is None:
-            print('MUST PROVIDE SPACING BETWEEN ELECTRODES in MICRONS')
+            logger.warning('Must provide spacing between electrodes in microns')
         else:
-            print('spacing_um = ' + str(spacing_um))
+            logger.info('spacing_um = ' + str(spacing_um))
 
         if ymax is None:
-            print('MUST PROVIDE YMAX (MAX DEPTH) in MICRONS')
+            logger.warning('Must provide ymax (max depth) in microns')
         else:
-            print('ymax = ' + str(ymax))
+            logger.info('ymax = ' + str(ymax))
 
         tt = np.arange(timeRange[0], timeRange[1], dt)
         LFP_data = np.array(LFP_input_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]
@@ -538,7 +537,7 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
                 subaxs[chan].plot(X, LFP_data[:,chan], color='gray', linewidth=0.3)
 
     else:
-        print('No data being overlaid')
+        logger.info('No data being overlaid')
         axs[0].set_title('Current Source Density (CSD)', fontsize=fontSize)
 
 
@@ -550,7 +549,7 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
 
     if layer_lines: 
         if layer_bounds is None:
-            print('No layer boundaries given')
+            logger.info('No layer boundaries given')
         else:
             layerKeys = []
         for i in layer_bounds.keys():

@@ -10,6 +10,7 @@ from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
+from netpyne.logger import logger
 
 #------------------------------------------------------------------------------
 # Wrapper to create network
@@ -251,7 +252,7 @@ def createSimulateAnalyzeInterval(netParams, simConfig, output=False, interval=N
                 os.mkdir('temp')
         sim.intervalSimulate(interval)
     except Exception as e:
-        print(e)
+        logger.warning(e)
         return
     sim.pc.barrier()
     sim.analyze()

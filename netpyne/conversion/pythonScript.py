@@ -3,7 +3,6 @@ Module for exporting models as Python scripts
 
 """
 
-from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
@@ -12,6 +11,7 @@ from builtins import open
 from future import standard_library
 standard_library.install_aliases()
 from netpyne import __version__
+from netpyne.logger import logger
 
 def createPythonScript(fname, netParams, simConfig):
     """
@@ -108,7 +108,7 @@ def createPythonScript(fname, netParams, simConfig):
             file.write('    sim.createExportNeuroML2(netParams=netParams, simConfig=simConfig, reference = nml_reference)\n')
             file.write(header('end script', spacer='='))
 
-        print(("script saved on " + fname))
+        logger.info("script saved on " + fname)
 
     except:
-        print(('error saving file: %s' %(sys.exc_info()[1])))
+        logger.warning('error saving file: %s' %(sys.exc_info()[1]))

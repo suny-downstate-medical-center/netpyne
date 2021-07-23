@@ -63,25 +63,22 @@ def saveJSON(fileName, data):
 #------------------------------------------------------------------------------
 # Save data
 #------------------------------------------------------------------------------
-def saveData(include=None, filename=None):
+def saveData(include=None, filename=None, saveLFP=True):
     """
-    Function for/to <short description of `netpyne.sim.save.saveData`>
+    Function to save simulation data to file
 
     Parameters
     ----------
-    include : <``None``?>
-        <Short description of include>
-        **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
+    include : list
+        What data to save
+        **Default:** ``sim.cfg.saveDataInclude``
+        **Options:** The list may include any combination of the following: ``'simData'``, ``'simConfig'``, ``'netParams'``, ``'net'``.
 
-    filename : <``None``?>
-        <Short description of filename>
+    filename : str
+        Path and file name to save data to
         **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
-
 
     """
-
 
     from .. import sim
 
@@ -141,8 +138,10 @@ def saveData(include=None, filename=None):
         if net: dataSave['net'] = net
         if 'simConfig' in include: dataSave['simConfig'] = sim.cfg.__dict__
         if 'simData' in include:
-            if 'LFP' in sim.allSimData:
-                sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist()
+            if saveLFP:
+                if 'LFP' in sim.allSimData:
+                    sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist()
+                dataSave['net']['recXElectrode'] = sim.net.recXElectrode
             dataSave['simData'] = sim.allSimData
 
 
@@ -589,6 +588,7 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
 
     # saving data
     dataSave = {}
+    net = {}
 
     dataSave['netpyne_version'] = sim.version(show=False)
     dataSave['netpyne_changeset'] = sim.gitChangeset(show=False)
@@ -630,10 +630,14 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
     dataSave['pops'] = {}
     for popLabel, pop in sim.net.pops.items(): 
         dataSave['pops'][popLabel] = pop.__getstate__()
+    dataSave['net'] = {}
 
     # Remove un-Pickleable hoc objects
     for cell in dataSave['cells']:
         cell.pop('imembPtr')
+
+    if saveLFP:
+        dataSave['net']['recXElectrode'] = sim.net.recXElectrode
 
     if removeTraces:
         for k in sim.cfg.recordTraces.keys():

@@ -18,6 +18,11 @@ try:
 except NameError:
     to_unicode = str
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 from future import standard_library
 standard_library.install_aliases()
 from collections import OrderedDict
@@ -597,11 +602,11 @@ class NetParams(object):
                 else:
                     container = container[paramLabel[ip]]
             container[paramLabel[-1]] = paramVal
-        else:
+        elif isinstance(paramLabel, basestring):
             setattr(self, paramLabel, paramVal) # set simConfig params
 
     def setCfgMapping(self, cfg):
         if hasattr(self, 'mapping'):
             for k, v in self.mapping.items():
-                if getattr(cfg, k, None):
+                if getattr(cfg, k, None) and :
                     self.setNestedParam(v, getattr(cfg, k))

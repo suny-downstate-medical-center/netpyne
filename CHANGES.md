@@ -4,6 +4,13 @@
 
 - Enabled selecting a subset of cells to save individual LFP signal from via cfg.saveLFPCells = [...] 
 
+**Bug fixes**
+
+- Fixed setting cfgMapping nested params when not string
+
+- Fixed defineCellShapes when sec['hObj'] is not a h.Section()
+
+
 # Version 1.0.0.2
 
 **New features**

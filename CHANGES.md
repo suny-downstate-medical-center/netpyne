@@ -1,3 +1,7 @@
+# Version 1.0.1
+
+- Fixed bug in loading where sim was required to have rank attribute
+
 # Version 1.0.0.2
 
 **New features**

@@ -567,7 +567,10 @@ class CompartCell (Cell):
 
         if self.secs:
             if sim.cfg.createNEURONObj:
-                sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
+                if hasattr(sim, 'rank'):
+                    sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
+                else:
+                    sim.pc.set_gid2node(self.gid, 0)
                 sec = next((secParams for secName,secParams in self.secs.items() if 'spikeGenLoc' in secParams), None) # check if any section has been specified as spike generator
                 if sec:
                     loc = sec['spikeGenLoc']  # get location of spike generator within section
@@ -739,7 +742,10 @@ class CompartCell (Cell):
                     netstim = self.addNetStim(netStimParams)
 
             if params.get('gapJunction', False) == True:  # only run for post gap junc (not pre)
-                preGapId = 1e9*sim.rank + sim.net.lastGapId  # global index for presyn gap junc
+                if hasattr(sim, 'rank'):
+                    preGapId = 1e9*sim.rank + sim.net.lastGapId  # global index for presyn gap junc
+                else:
+                    preGapId = sim.net.lastGapId
                 postGapId = preGapId + 1  # global index for postsyn gap junc
                 sim.net.lastGapId += 2  # keep track of num of gap juncs in this node
                 if not getattr(sim.net, 'preGapJunctions', False):

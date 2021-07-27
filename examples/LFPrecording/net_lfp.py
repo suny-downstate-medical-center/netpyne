@@ -47,7 +47,7 @@ netParams.connParams['I->E'] = {
 
 # Simulation configuration
 simConfig = specs.SimConfig()        # object of class SimConfig to store simulation configuration
-simConfig.duration = 300 #3.0*1e3           # Duration of the simulation, in ms
+simConfig.duration = 3.0*1e3           # Duration of the simulation, in ms
 simConfig.dt = 0.1                # Internal integration timestep to use
 simConfig.verbose = False            # Show detailed messages
 simConfig.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)

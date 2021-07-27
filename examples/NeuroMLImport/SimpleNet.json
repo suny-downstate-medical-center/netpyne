@@ -1,0 +1,447 @@
+{
+    "net": {
+        "cells": [
+            {
+                "conns": [],
+                "gid": 0,
+                "secLists": {},
+                "secs": {
+                    "soma": {
+                        "geom": {
+                            "L": 10,
+                            "cm": 31.830988618379067,
+                            "diam": 10
+                        },
+                        "pointps": {
+                            "RS": {
+                                "mod": "RS"
+                            }
+                        },
+                        "threshold": 0.0,
+                        "topol": {}
+                    }
+                },
+                "stims": [
+                    {
+                        "label": "Stim0_0_RS_pop_0_soma_0_5",
+                        "loc": 0.5,
+                        "originalFormat": "NeuroML2_stochastic_input",
+                        "sec": "soma",
+                        "source": "Stim0_0_RS_pop_0_soma_0_5",
+                        "type": "poissonFiringSyn"
+                    }
+                ],
+                "tags": {
+                    "cellLabel": 0,
+                    "cellType": "RS",
+                    "label": [
+                        "RS"
+                    ],
+                    "pop": "RS_pop",
+                    "x": 96.64535,
+                    "xnorm": 0.9664535,
+                    "y": 44.07326,
+                    "ynorm": 0.4407326,
+                    "z": 0.74915,
+                    "znorm": 0.0074915
+                }
+            },
+            {
+                "conns": [],
+                "gid": 1,
+                "secLists": {},
+                "secs": {
+                    "soma": {
+                        "geom": {
+                            "L": 10,
+                            "cm": 31.830988618379067,
+                            "diam": 10
+                        },
+                        "pointps": {
+                            "RS": {
+                                "mod": "RS"
+                            }
+                        },
+                        "threshold": 0.0,
+                        "topol": {}
+                    }
+                },
+                "stims": [
+                    {
+                        "label": "Stim0_1_RS_pop_1_soma_0_5",
+                        "loc": 0.5,
+                        "originalFormat": "NeuroML2_stochastic_input",
+                        "sec": "soma",
+                        "source": "Stim0_1_RS_pop_1_soma_0_5",
+                        "type": "poissonFiringSyn"
+                    }
+                ],
+                "tags": {
+                    "cellLabel": 1,
+                    "cellType": "RS",
+                    "label": [
+                        "RS"
+                    ],
+                    "pop": "RS_pop",
+                    "x": 91.0976,
+                    "xnorm": 0.910976,
+                    "y": 93.9269,
+                    "ynorm": 0.939269,
+                    "z": 58.22276,
+                    "znorm": 0.5822276
+                }
+            },
+            {
+                "conns": [],
+                "gid": 2,
+                "secLists": {},
+                "secs": {
+                    "soma": {
+                        "geom": {
+                            "L": 10,
+                            "cm": 31.830988618379067,
+                            "diam": 10
+                        },
+                        "pointps": {
+                            "RS": {
+                                "mod": "RS"
+                            }
+                        },
+                        "threshold": 0.0,
+                        "topol": {}
+                    }
+                },
+                "stims": [
+                    {
+                        "label": "Stim0_2_RS_pop_2_soma_0_5",
+                        "loc": 0.5,
+                        "originalFormat": "NeuroML2_stochastic_input",
+                        "sec": "soma",
+                        "source": "Stim0_2_RS_pop_2_soma_0_5",
+                        "type": "poissonFiringSyn"
+                    }
+                ],
+                "tags": {
+                    "cellLabel": 2,
+                    "cellType": "RS",
+                    "label": [
+                        "RS"
+                    ],
+                    "pop": "RS_pop",
+                    "x": 67.15635,
+                    "xnorm": 0.6715635,
+                    "y": 8.39382,
+                    "ynorm": 0.0839382,
+                    "z": 76.64809,
+                    "znorm": 0.7664808999999999
+                }
+            }
+        ],
+        "params": {
+            "cellParams": {
+                "RS": {
+                    "label": "RS",
+                    "secs": {
+                        "soma": {
+                            "geom": {
+                                "L": 10,
+                                "cm": 31.830988618379067,
+                                "diam": 10
+                            },
+                            "pointps": {
+                                "RS": {
+                                    "mod": "RS"
+                                }
+                            },
+                            "threshold": 0.0
+                        }
+                    }
+                }
+            },
+            "cellsVisualizationSpacingMultiplier": [
+                1,
+                1,
+                1
+            ],
+            "connParams": {},
+            "correctBorder": false,
+            "defaultDelay": 1,
+            "defaultThreshold": 10,
+            "defaultWeight": 1,
+            "defineCellShapes": false,
+            "popParams": {
+                "RS_pop": {
+                    "cellType": "RS",
+                    "cellsList": [
+                        {
+                            "cellLabel": 0,
+                            "x": 96.64535,
+                            "y": 44.07326,
+                            "z": 0.74915
+                        },
+                        {
+                            "cellLabel": 1,
+                            "x": 91.0976,
+                            "y": 93.9269,
+                            "z": 58.22276
+                        },
+                        {
+                            "cellLabel": 2,
+                            "x": 67.15635,
+                            "y": 8.39382,
+                            "z": 76.64809
+                        }
+                    ],
+                    "numCells": 3,
+                    "originalFormat": "NeuroML2",
+                    "pop": "RS_pop"
+                }
+            },
+            "popTagsCopiedToCells": [
+                "cellModel",
+                "cellType"
+            ],
+            "propVelocity": 500.0,
+            "rotateCellsRandomly": false,
+            "rxdParams": {},
+            "scale": 1,
+            "scaleConnWeight": 1,
+            "scaleConnWeightModels": false,
+            "scaleConnWeightNetStims": 1,
+            "shape": "cuboid",
+            "sizeX": 100,
+            "sizeY": 100,
+            "sizeZ": 100,
+            "stimSourceParams": {
+                "Stim0_0_RS_pop_0_soma_0_5": {
+                    "label": "Stim0_0_RS_pop_0_soma_0_5",
+                    "originalFormat": "NeuroML2_stochastic_input",
+                    "type": "poissonFiringSyn"
+                },
+                "Stim0_1_RS_pop_1_soma_0_5": {
+                    "label": "Stim0_1_RS_pop_1_soma_0_5",
+                    "originalFormat": "NeuroML2_stochastic_input",
+                    "type": "poissonFiringSyn"
+                },
+                "Stim0_2_RS_pop_2_soma_0_5": {
+                    "label": "Stim0_2_RS_pop_2_soma_0_5",
+                    "originalFormat": "NeuroML2_stochastic_input",
+                    "type": "poissonFiringSyn"
+                }
+            },
+            "stimTargetParams": {
+                "Stim0_0_RS_pop_0_soma_0_5": {
+                    "conds": {
+                        "cellList": [
+                            0
+                        ],
+                        "pop": "RS_pop"
+                    },
+                    "loc": 0.5,
+                    "sec": "soma",
+                    "source": "Stim0_0_RS_pop_0_soma_0_5"
+                },
+                "Stim0_1_RS_pop_1_soma_0_5": {
+                    "conds": {
+                        "cellList": [
+                            1
+                        ],
+                        "pop": "RS_pop"
+                    },
+                    "loc": 0.5,
+                    "sec": "soma",
+                    "source": "Stim0_1_RS_pop_1_soma_0_5"
+                },
+                "Stim0_2_RS_pop_2_soma_0_5": {
+                    "conds": {
+                        "cellList": [
+                            2
+                        ],
+                        "pop": "RS_pop"
+                    },
+                    "loc": 0.5,
+                    "sec": "soma",
+                    "source": "Stim0_2_RS_pop_2_soma_0_5"
+                }
+            },
+            "subConnParams": {},
+            "synMechParams": {}
+        },
+        "pops": {
+            "RS_pop": {
+                "cellGids": [
+                    0,
+                    1,
+                    2
+                ],
+                "tags": {
+                    "cellType": "RS",
+                    "cellsList": [
+                        {
+                            "cellLabel": 0,
+                            "x": 96.64535,
+                            "y": 44.07326,
+                            "z": 0.74915
+                        },
+                        {
+                            "cellLabel": 1,
+                            "x": 91.0976,
+                            "y": 93.9269,
+                            "z": 58.22276
+                        },
+                        {
+                            "cellLabel": 2,
+                            "x": 67.15635,
+                            "y": 8.39382,
+                            "z": 76.64809
+                        }
+                    ],
+                    "numCells": 3,
+                    "originalFormat": "NeuroML2",
+                    "pop": "RS_pop"
+                }
+            }
+        }
+    },
+    "netpyne_changeset": "",
+    "netpyne_version": "1.0.0.2",
+    "simConfig": {
+        "addSynMechs": true,
+        "allowConnsWithWeight0": true,
+        "allowSelfConns": false,
+        "analysis": {},
+        "backupCfgFile": [],
+        "cache_efficient": false,
+        "checkErrors": false,
+        "checkErrorsVerbose": false,
+        "compactConnFormat": false,
+        "connRandomSecFromList": true,
+        "createNEURONObj": true,
+        "createPyStruct": true,
+        "cvode_active": false,
+        "cvode_atol": 0.001,
+        "distributeSynsUniformly": true,
+        "dt": 0.025,
+        "duration": 1.0,
+        "filename": "SimpleNet",
+        "gatherOnlySimData": false,
+        "hParams": {
+            "celsius": 32.0,
+            "clamp_resist": 0.001,
+            "v_init": -65.0
+        },
+        "includeParamsLabel": true,
+        "invertedYCoord": true,
+        "oneSynPerNetcon": true,
+        "plotCells": [
+            "all"
+        ],
+        "plotRaster": true,
+        "printPopAvgRates": false,
+        "printRunTime": false,
+        "printSynsAfterRule": false,
+        "pt3dRelativeToCellLocation": true,
+        "rand123GlobalIndex": null,
+        "recordCells": [
+            "all"
+        ],
+        "recordCellsSpikes": -1,
+        "recordDipoles": false,
+        "recordLFP": [],
+        "recordStep": 0.1,
+        "recordStim": false,
+        "recordTime": true,
+        "recordTraces": {
+            "Vsoma": {
+                "loc": 0.5,
+                "sec": "soma",
+                "var": "v"
+            }
+        },
+        "saveCSV": false,
+        "saveCellConns": true,
+        "saveCellSecs": true,
+        "saveDat": true,
+        "saveDataInclude": [
+            "netParams",
+            "netCells",
+            "netPops",
+            "simConfig",
+            "simData"
+        ],
+        "saveDpk": false,
+        "saveFolder": "",
+        "saveHDF5": false,
+        "saveJson": true,
+        "saveLFPCells": false,
+        "saveMat": false,
+        "savePickle": false,
+        "saveTiming": false,
+        "seeds": {
+            "conn": 1,
+            "loc": 1,
+            "stim": 1
+        },
+        "simLabel": "",
+        "timestampFilename": false,
+        "timing": true,
+        "tstop": 1000.0,
+        "use_fast_imem": false,
+        "verbose": true
+    },
+    "simData": {
+        "Vsoma": {
+            "cell_0": [
+                -60.0,
+                -59.978353611390716,
+                -59.97865460481149,
+                -59.97895128804392,
+                -59.97924372302133,
+                -59.97953197078967,
+                -59.97981609152018,
+                -59.98009614452178,
+                -59.98037218825339,
+                -59.98064428033601
+            ],
+            "cell_1": [
+                -60.0,
+                -59.978353611390716,
+                -59.97865460481149,
+                -59.97895128804392,
+                -59.97924372302133,
+                -59.97953197078967,
+                -59.97981609152018,
+                -59.98009614452178,
+                -59.98037218825339,
+                -59.98064428033601
+            ],
+            "cell_2": [
+                -60.0,
+                -59.978353611390716,
+                -59.97865460481149,
+                -59.97895128804392,
+                -59.97924372302133,
+                -59.97953197078967,
+                -59.97981609152018,
+                -59.98009614452178,
+                -59.98037218825339,
+                -59.98064428033601
+            ]
+        },
+        "avgRate": 0,
+        "spkid": [],
+        "spkt": [],
+        "t": [
+            0.0,
+            0.1,
+            0.2,
+            0.30000000000000004,
+            0.4,
+            0.5,
+            0.6,
+            0.7,
+            0.7999999999999999,
+            0.8999999999999999
+        ]
+    }
+}

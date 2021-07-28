@@ -153,7 +153,7 @@ def saveData(include=None, filename=None, saveLFP=True):
             else:
                 timestampStr = ''
 
-            if hasattr(sim.cfg, 'saveFolder') and hasattr(sim.cfg, 'simLabel'):
+            if hasattr(sim.cfg, 'saveFolder') and hasattr(sim.cfg, 'simLabel') and len(sim.cfg.simLabel):
                 filePath = os.path.join(sim.cfg.saveFolder, sim.cfg.simLabel + '_data' + timestampStr)
             else:
                 filePath = sim.cfg.filename + '_data' + timestampStr

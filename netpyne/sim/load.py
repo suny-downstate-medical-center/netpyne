@@ -317,27 +317,27 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
             except:
                 print('Unable to create Python structure...')
 
-                try:
-                    # only create NEURON objs, if there is Python struc (fix so minimal Python struct is created)
-                    if sim.cfg.createNEURONObj:
-                        if sim.cfg.verbose: print("  Adding NEURON objects...")
-                        # create NEURON sections, mechs, syns, etc; and associate gid
-                        for cell in sim.net.cells:
-                            prop = {'secs': cell.secs}
-                            cell.createNEURONObj(prop)  # use same syntax as when creating based on high-level specs
-                            cell.associateGid()  # can only associate once the hSection obj has been created
-                        # create all NEURON Netcons, NetStims, etc
-                        sim.pc.barrier()
-                        for cell in sim.net.cells:
-                            try:
-                                cell.addStimsNEURONObj()  # add stims first so can then create conns between netstims
-                                cell.addConnsNEURONObj()
-                            except:
-                                if sim.cfg.verbose: ' Unable to load instantiate cell conns or stims'
+            try:
+                # only create NEURON objs, if there is Python struc (fix so minimal Python struct is created)
+                if sim.cfg.createNEURONObj:
+                    if sim.cfg.verbose: print("  Adding NEURON objects...")
+                    # create NEURON sections, mechs, syns, etc; and associate gid
+                    for cell in sim.net.cells:
+                        prop = {'secs': cell.secs}
+                        cell.createNEURONObj(prop)  # use same syntax as when creating based on high-level specs
+                        cell.associateGid()  # can only associate once the hSection obj has been created
+                    # create all NEURON Netcons, NetStims, etc
+                    sim.pc.barrier()
+                    for cell in sim.net.cells:
+                        try:
+                            cell.addStimsNEURONObj()  # add stims first so can then create conns between netstims
+                            cell.addConnsNEURONObj()
+                        except:
+                            if sim.cfg.verbose: ' Unable to load instantiate cell conns or stims'
 
-                        print(('  Added NEURON objects to %d cells' % (len(sim.net.cells))))
-                except:
-                    print('Unable to create NEURON objects...')    
+                    print(('  Added NEURON objects to %d cells' % (len(sim.net.cells))))
+            except:
+                print('Unable to create NEURON objects...')    
 
             if loadNow and sim.cfg.timing:  #if sim.rank == 0 and sim.cfg.timing:
                 sim.timing('stop', 'loadNetTime')

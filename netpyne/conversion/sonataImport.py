@@ -263,8 +263,6 @@ class SONATAImporter():
         # create and initialize sim object
         sim.initialize()
 
-        sim.cfg.verbose=1
-
         # create netpyne simConfig
         self.createSimulationConfig()
 

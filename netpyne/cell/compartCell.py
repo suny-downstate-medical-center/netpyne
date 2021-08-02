@@ -453,7 +453,7 @@ class CompartCell (Cell):
 
         # Log message about error inserting mechanisms
         if mechInsertError:
-            logger.warning("ERROR: Some mechanisms and/or ions were not inserted (for details run with cfg.verbose=True). Make sure the required mod files are compiled.")
+            logger.warning("ERROR: Some mechanisms and/or ions were not inserted (for details run with `import logging; logging.getLogger('netpyne').setLevel(logging.DEBUG))`. Make sure the required mod files are compiled.")
 
 
     def addSynMechNEURONObj(self, synMech, synMechParams, sec, loc):

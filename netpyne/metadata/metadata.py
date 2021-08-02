@@ -1217,12 +1217,6 @@ metadata = {
                 "suggestions": "",
                 "type": "bool"
             },
-            "verbose": {
-                "label": "Verbose mode",
-                "help": "Show detailed messages (default: False).",
-                "suggestions": "",
-                "type": "bool"
-            },
             "saveFolder": {
                 "label": "Output folder",
                 "help": "Path where to save output data (default: '')",

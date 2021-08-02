@@ -51,7 +51,7 @@ pc = h.ParallelContext() # use bulletin board master/slave
 def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, pinc=2, pdec=2,
     pinitial=None, sinitial=None, xmin=None, xmax=None, maxiters=None, maxtime=None,
     abstol=1e-6, reltol=1e-3, stalliters=None, stoppingfunc=None, randseed=None,
-    label=None, maxFitness=None, verbose=2, **kwargs):
+    label=None, maxFitness=None, **kwargs):
     """
     Function for/to <short description of `netpyne.batch.asd_parallel.asd`>
 
@@ -165,11 +165,6 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
 
-    verbose : int
-        <Short description of verbose>
-        **Default:** ``2``
-        **Options:** ``<option>`` <description of option>
-
     kwargs : <type>
         <Short description of kwargs>
         **Default:** *required*
@@ -277,7 +272,7 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
         xnewPop = []
         for icand, (x, fval, fvalnew, probabilities, stepsizes) in enumerate(zip(xPop, fvalPop, fvalnewPop, probabilitiesPop, stepsizesPop)):
 
-            logger.info(offset + label + 'Iteration %i; elapsed %0.1f s; objective: %0.3e' % (count, time() - start, fval)) # For more verbose, use other print statement below
+            logger.info(offset + label + 'Iteration %i; elapsed %0.1f s; objective: %0.3e' % (count, time() - start, fval))
             logger.debug('\n\n Count=%i \n x=%s \n probabilities=%s \n stepsizes=%s' % (count, x, probabilities, stepsizes))
 
             if fvalnew == maxFitness:
@@ -738,7 +733,6 @@ def asdOptim(self, pc):
       stalliters     10*n    Number of iterations over which to calculate TolFun (n = number of parameters)
       stoppingfunc   None    External method that can be used to stop the calculation from the outside.
       randseed       None    The random seed to use
-      verbose        2       How much information to print during the run
       label          None    A label to use to annotate the output
     '''
 

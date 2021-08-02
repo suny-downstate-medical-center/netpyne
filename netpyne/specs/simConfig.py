@@ -65,7 +65,6 @@ class SimConfig(object):
         self.printRunTime = False  # print run time at interval (in sec) specified here (eg. 0.1)
         self.printPopAvgRates = False  # print population avg firing rates after run
         self.printSynsAfterRule = False  # print total of connections after each conn rule is applied
-        self.verbose = False  # show detailed messages
 
         # Recording
         self.recordCells = []  # what cells to record traces from (eg. 'all', 5, or 'PYR')

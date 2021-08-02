@@ -306,9 +306,6 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
     populations_vs_components = {}
 
     cells_added = []
-
-    sim.cfg.verbose = False
-
     chans_added = []
 
     for np_pop_id in net.pops:
@@ -831,10 +828,9 @@ try:
         next_gid = 0
         stochastic_input_count = 0
 
-        def __init__(self, netParams, simConfig=None, verbose = False):
+        def __init__(self, netParams, simConfig=None):
             self.netParams = netParams
             self.simConfig = simConfig
-            self.verbose = verbose
 
         def finalise(self):
 
@@ -887,7 +883,7 @@ try:
         #
         def handle_population(self, population_id, component, size, component_obj, properties={}):
 
-            if self.verbose: logger.info("A population: %s with %i of %s (%s)"%(population_id,size,component,component_obj))
+            logger.debug("A population: %s with %i of %s (%s)"%(population_id,size,component,component_obj))
 
             self.pop_ids_vs_components[population_id] = component_obj
 
@@ -1481,8 +1477,6 @@ try:
 
         nmlHandler = None
 
-        verbose = True
-
         if fileName.endswith(".nml"):
 
             import logging
@@ -1490,7 +1484,7 @@ try:
 
             from neuroml.hdf5.NeuroMLXMLParser import NeuroMLXMLParser
 
-            nmlHandler = NetPyNEBuilder(netParams, simConfig=simConfig, verbose=verbose)
+            nmlHandler = NetPyNEBuilder(netParams, simConfig=simConfig)
 
             currParser = NeuroMLXMLParser(nmlHandler) # The XML handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
 
@@ -1511,7 +1505,7 @@ try:
 
             from neuroml.hdf5.NeuroMLHdf5Parser import NeuroMLHdf5Parser
 
-            nmlHandler = NetPyNEBuilder(netParams, simConfig=simConfig, verbose=verbose)
+            nmlHandler = NetPyNEBuilder(netParams, simConfig=simConfig)
 
             currParser = NeuroMLHdf5Parser(nmlHandler) # The HDF5 handler knows of the structure of NeuroML and calls appropriate functions in NetworkHandler
 

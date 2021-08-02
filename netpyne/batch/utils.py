@@ -93,7 +93,7 @@ echo $PBS_O_WORKDIR
 %s
         """
 
-def cp(obj, verbose=True, die=True):
+def cp(obj, die=True):
     '''
     Function for/to <short description of `netpyne.batch.utils.cp`>
 
@@ -102,11 +102,6 @@ def cp(obj, verbose=True, die=True):
     obj : <type>
         <Short description of obj>
         **Default:** *required*
-
-    verbose : bool
-        <Short description of verbose>
-        **Default:** ``True``
-        **Options:** ``<option>`` <description of option>
 
     die : bool
         <Short description of die>
@@ -123,7 +118,7 @@ def cp(obj, verbose=True, die=True):
         else:   logger.warning(errormsg)
     return output
 
-def dcp(obj, verbose=True, die=False):
+def dcp(obj, die=False):
     '''
     Function for/to <short description of `netpyne.batch.utils.dcp`>
 
@@ -132,11 +127,6 @@ def dcp(obj, verbose=True, die=False):
     obj : <type>
         <Short description of obj>
         **Default:** *required*
-
-    verbose : bool
-        <Short description of verbose>
-        **Default:** ``True``
-        **Options:** ``<option>`` <description of option>
 
     die : bool
         <Short description of die>

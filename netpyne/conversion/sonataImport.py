@@ -363,6 +363,9 @@ class SONATAImporter():
             self.nodes_info[self.current_node] = load_csv_props(node_types_file)
             self.current_node = None
 
+        # TODO we should change this to logging.debug(pformat(self.nodes_info)),
+        # to avoid the print() statements, but this will require some testing.
+        # (https://stackoverflow.com/a/11093247/3192470)
         pp.pprint(self.nodes_info)
 
 

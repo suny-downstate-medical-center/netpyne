@@ -141,7 +141,8 @@ def saveData(include=None, filename=None, saveLFP=True):
             if saveLFP:
                 if 'LFP' in sim.allSimData:
                     sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist()
-                dataSave['net']['recXElectrode'] = sim.net.recXElectrode
+                #if hasattr(sim.net, 'recXElectrode'):
+                #    dataSave['net']['recXElectrode'] = sim.net.recXElectrode
             dataSave['simData'] = sim.allSimData
 
 
@@ -636,8 +637,9 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
     for cell in dataSave['cells']:
         cell.pop('imembPtr')
 
-    if saveLFP:
-        dataSave['net']['recXElectrode'] = sim.net.recXElectrode
+    #if saveLFP:
+    #    if hasattr(sim.net, 'recXElectrode'):
+    #        dataSave['net']['recXElectrode'] = sim.net.recXElectrode
 
     if removeTraces:
         for k in sim.cfg.recordTraces.keys():

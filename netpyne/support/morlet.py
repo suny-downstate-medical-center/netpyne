@@ -10,7 +10,6 @@ Time-frequency representation using Morlet wavelets
  subtract mean from time series within the wavelet class)
 """
 
-from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import

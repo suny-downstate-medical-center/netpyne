@@ -253,25 +253,45 @@ def subcellularConn(self, allCellTags, allPopTags):
                                     newSecs.append(sec)
                                     newLocs.append(seg.x)
 
-
                     # Distance-based
-                    elif subConnParam.get('density', None) == 'distance':
+                    elif isinstance(subConnParam.get('density', None), dict) and subConnParam['density']['type'] == 'distance':
+                    #elif subConnParam.get('density', None) == 'distance':
                         # find origin section
+                        # default
                         if 'soma' in postCell.secs:
                             secOrig = 'soma'
                         elif any([secName.startswith('som') for secName in list(postCell.secs.keys())]):
                             secOrig = next(secName for secName in list(postCell.secs.keys()) if secName.startswith('soma'))
                         else:
                             secOrig = list(postCell.secs.keys())[0]
+                        # giving argument
+                        if 'ref_sec' in subConnParam['density']:
+                            if subConnParam['density']['ref_sec'] in list(postCell.secs.keys()):
+                                secOrig = subConnParam['density']['ref_sec']
+                            else:
+                                print('  Warning: Redistributing synapses based on inexistent information for neuron %d - section %s not found' %(postCell.gid,subConnParam['density']['ref_sec']))
 
-                        #print self.fromtodistance(postCell.secs[secOrig](0.5), postCell.secs['secs'][conn['sec']](conn['loc']))
+                        # find origin segment
+                        segOrig = 0.5    # default
+                        if 'ref_seg' in subConnParam['density']:
+                            segOrig = subConnParam['density']['ref_seg']
+                            
+                        # target
+                        target_distance = 0.0
+                        if 'target_distance' in subConnParam['density']:
+                            target_distance = subConnParam['density']['target_distance']
 
-                        # different case if has vs doesn't have 3d points
-                        #  h.distance(sec=h.soma[0], seg=0)
-                        # for sec in apical:
-                        #    print h.secname()
-                        #    for seg in sec:
-                        #      print seg.x, h.distance(seg.x)
+                        newSec, newLoc = secOrig, segOrig
+                        min_dist = target_distance
+                        for secName in secList:
+                            for seg in postCell.secs[secName]['hObj']:
+                                dist = self.fromtodistance(postCell.secs[secOrig]['hObj'](segOrig), seg)
+                                if abs(dist-target_distance) <= min_dist:
+                                    min_dist = abs(dist-target_distance)
+                                    newSec, newLoc = secName, seg.x
+
+                        newSecs = [newSec] * len(conns)
+                        newLocs = [newLoc] * len(conns)
 
                     for i,(conn, newSec, newLoc) in enumerate(zip(conns, newSecs, newLocs)):
 

@@ -21,6 +21,7 @@ class Logger():
   def __init__(self):
     self.netpyne_logger = logging.getLogger('netpyne')
     self.netpyne_logger.setLevel(logging.INFO)
+    self.netpyne_logger.propagate = False
 
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setFormatter(logging.Formatter('%(levelname)-8s %(message)s'))

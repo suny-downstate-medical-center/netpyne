@@ -54,7 +54,7 @@ def _loadFile(filename):
         # if it's anything else, return it in its original form
         return data
 
-    if hasattr(sim, 'cfg') and sim.cfg.timing: sim.timing('start', 'loadFileTime')
+    if hasattr(sim, 'cfg'): sim.timing('start', 'loadFileTime')
     ext = os.path.basename(filename).split('.')[-1]
 
     # load pickle file
@@ -126,7 +126,7 @@ def _loadFile(filename):
         logger.warning('Format not recognized for file %s'%(filename))
         return
 
-    if hasattr(sim, 'rank') and sim.rank == 0 and hasattr(sim, 'cfg') and sim.cfg.timing:
+    if hasattr(sim, 'rank') and sim.rank == 0 and hasattr(sim, 'cfg'):
         sim.timing('stop', 'loadFileTime')
         logger.timing('  Done; file loading time = %0.2f s' % sim.timingData['loadFileTime'])
 
@@ -339,7 +339,7 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
             except:
                 logger.warning('Unable to create NEURON objects...')
 
-            if loadNow and sim.cfg.timing:  #if sim.rank == 0 and sim.cfg.timing:
+            if loadNow:  #if sim.rank == 0 and sim.cfg.timing:
                 sim.timing('stop', 'loadNetTime')
                 logger.timing('  Done; re-instantiate net time = %0.2f s' % sim.timingData['loadNetTime'])
     else:

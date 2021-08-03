@@ -128,7 +128,7 @@ def _loadFile(filename):
 
     if hasattr(sim, 'rank') and sim.rank == 0 and hasattr(sim, 'cfg') and sim.cfg.timing:
         sim.timing('stop', 'loadFileTime')
-        logger.info('  Done; file loading time = %0.2f s' % sim.timingData['loadFileTime'])
+        logger.timing('  Done; file loading time = %0.2f s' % sim.timingData['loadFileTime'])
 
 
     return data
@@ -341,7 +341,7 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
 
             if loadNow and sim.cfg.timing:  #if sim.rank == 0 and sim.cfg.timing:
                 sim.timing('stop', 'loadNetTime')
-                logger.info('  Done; re-instantiate net time = %0.2f s' % sim.timingData['loadNetTime'])
+                logger.timing('  Done; re-instantiate net time = %0.2f s' % sim.timingData['loadNetTime'])
     else:
         logger.warning('  netCells and/or netPops not found in file %s'%(filename))
 

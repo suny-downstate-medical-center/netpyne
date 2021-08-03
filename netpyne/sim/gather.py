@@ -242,7 +242,7 @@ def gatherData(gatherLFP=True):
     sim.pc.barrier()
     if sim.rank == 0:
         sim.timing('stop', 'gatherTime')
-        if sim.cfg.timing: logger.info('  Done; gather time = %0.2f s.' % sim.timingData['gatherTime'])
+        logger.timing('  Done; gather time = %0.2f s.' % sim.timingData['gatherTime'])
 
         logger.info('')
         logger.info('Analyzing...')

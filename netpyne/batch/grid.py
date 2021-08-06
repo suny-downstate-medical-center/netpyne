@@ -26,13 +26,14 @@ import imp
 import json
 import logging
 import datetime
-import os
+import os, sys
 import glob
 from copy import copy
 from random import Random
 from time import sleep, time
 from itertools import product
 from subprocess import Popen, PIPE
+import subprocess
 import importlib, types
 
 from neuron import h
@@ -73,8 +74,8 @@ def runJob(script, cfgSavePath, netParamsSavePath, processes):
     print('\nJob in rank id: ',pc.id())
     command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath)
     print(command+'\n')
-    proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
-    print(proc.stdout.read().decode())
+    proc = subprocess.run(command.split(' '), stdout=PIPE, stderr=PIPE)
+    proc.check_returncode()
     processes.append(proc)
 
 
@@ -164,11 +165,7 @@ def gridSearch(self, pc):
             valueCombGroups = [(0,)] # this is a hack -- improve!
             indexCombGroups = [(0,)]
 
-    # if using pc bulletin board, initialize all workers
-    if self.runCfg.get('type', None) == 'mpi_bulletin':
-        for iworker in range(int(pc.nhost())):
-            pc.runworker()
-
+    pc.runworker() # only 1 runworker needed in rank0
     processes = []
     processFiles = []
 
@@ -342,24 +339,22 @@ wait
                     print('Submitting job ',jobName)
                     # master/slave bulletin board schedulling of jobs
                     pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath, processes)
-
+                    while pc.working(): pass
+                    pc.done()
+                    h.quit()
                 else:
                     print(self.runCfg)
                     print("Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'")
-                    import sys
                     sys.exit(0)
 
-            sleep(sleepInterval) # avoid saturating scheduler
     print("-"*80)
     print("   Finished submitting jobs for grid parameter exploration   ")
     print("-" * 80)
-    while pc.working():
-        sleep(sleepInterval)
     
     outfiles = []
     for procFile in processFiles:
         outfiles.append(open(procFile, 'r'))
-    
+        
     # note: while the process is running the poll() method will return None  
     # depending on the platform or the way the source file is executed (e.g. if run using mpiexec), 
     # the stored processes ids might correspond to completed processes  

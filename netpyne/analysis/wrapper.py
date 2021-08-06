@@ -50,6 +50,6 @@ def plotData():
             logger.timing('\nTotal time = %0.2f s' % sim.timingData['totalTime'])
 
         try:
-            logger.info('\nEnd time: ', datetime.now())
+            logger.info('\nEnd time: ' + str(datetime.now()))
         except:
             pass

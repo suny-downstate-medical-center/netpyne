@@ -340,8 +340,6 @@ wait
                     # master/slave bulletin board schedulling of jobs
                     pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath, processes)
                     while pc.working(): pass
-                    pc.done()
-                    h.quit()
                 else:
                     print(self.runCfg)
                     print("Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'")
@@ -373,3 +371,5 @@ wait
             proc.terminate()
         except:
             pass
+    pc.done()
+    h.quit()

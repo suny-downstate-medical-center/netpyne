@@ -52,7 +52,7 @@ def saveJSON(fileName, data):
     import json, io
     from .utils import NpSerializer
 
-    with io.open(fileName, 'w', encoding='utf8') as fileObj:
+    with io.open(fileName, 'w', encoding='utf-8') as fileObj:
         str_ = json.dumps(data,
                           indent=4, sort_keys=True,
                           separators=(',', ': '), ensure_ascii=False,
@@ -63,25 +63,22 @@ def saveJSON(fileName, data):
 #------------------------------------------------------------------------------
 # Save data
 #------------------------------------------------------------------------------
-def saveData(include=None, filename=None):
+def saveData(include=None, filename=None, saveLFP=True):
     """
-    Function for/to <short description of `netpyne.sim.save.saveData`>
+    Function to save simulation data to file
 
     Parameters
     ----------
-    include : <``None``?>
-        <Short description of include>
-        **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
+    include : list
+        What data to save
+        **Default:** ``sim.cfg.saveDataInclude``
+        **Options:** The list may include any combination of the following: ``'simData'``, ``'simConfig'``, ``'netParams'``, ``'net'``.
 
-    filename : <``None``?>
-        <Short description of filename>
+    filename : str
+        Path and file name to save data to
         **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
-
 
     """
-
 
     from .. import sim
 
@@ -141,8 +138,11 @@ def saveData(include=None, filename=None):
         if net: dataSave['net'] = net
         if 'simConfig' in include: dataSave['simConfig'] = sim.cfg.__dict__
         if 'simData' in include:
-            if 'LFP' in sim.allSimData:
-                sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist()
+            if saveLFP:
+                if 'LFP' in sim.allSimData:
+                    sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist()
+                #if hasattr(sim.net, 'recXElectrode'):
+                #    dataSave['net']['recXElectrode'] = sim.net.recXElectrode
             dataSave['simData'] = sim.allSimData
 
 
@@ -302,19 +302,17 @@ def compactConnFormat():
 #------------------------------------------------------------------------------
 # Gathers data in master and saves it mid run
 #------------------------------------------------------------------------------
-def intervalSave(t, gatherLFP=True):
+def intervalSave(simTime, gatherLFP=True):
     """
-    Function for/to <short description of `netpyne.sim.save.intervalSave`>
+    Function to save data at a specific time point in the simulation
 
     Parameters
     ----------
-    t : <type>
-        <Short description of t>
+    simTime : number
+        The time at which to save the data
         **Default:** *required*
 
-
     """
-
 
     from .. import sim
     from ..specs import Dict
@@ -440,7 +438,7 @@ def intervalSave(t, gatherLFP=True):
             simDataVecs = simDataVecs + ['allWeights']
     
     if sim.rank == 0: # simData
-        print('  Saving data at intervals... {:0.0f} ms'.format(t))
+        print('  Saving data at intervals... {:0.0f} ms'.format(simTime))
         sim.allSimData = Dict()
         for k in list(gather[0]['simData'].keys()):  # initialize all keys of allSimData dict
             if gatherLFP and k == 'LFP':
@@ -492,7 +490,7 @@ def intervalSave(t, gatherLFP=True):
                 item.clear()
                 del item
 
-        name = os.path.join(targetFolder, 'interval_{:0.0f}.pkl'.format(t))
+        name = os.path.join(targetFolder, 'interval_{:0.0f}.pkl'.format(simTime))
         
         dataSave = {}
         net = {}
@@ -591,6 +589,7 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
 
     # saving data
     dataSave = {}
+    net = {}
 
     dataSave['netpyne_version'] = sim.version(show=False)
     dataSave['netpyne_changeset'] = sim.gitChangeset(show=False)
@@ -632,6 +631,15 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
     dataSave['pops'] = {}
     for popLabel, pop in sim.net.pops.items(): 
         dataSave['pops'][popLabel] = pop.__getstate__()
+    dataSave['net'] = {}
+
+    # Remove un-Pickleable hoc objects
+    for cell in dataSave['cells']:
+        cell.pop('imembPtr')
+
+    #if saveLFP:
+    #    if hasattr(sim.net, 'recXElectrode'):
+    #        dataSave['net']['recXElectrode'] = sim.net.recXElectrode
 
     if removeTraces:
         for k in sim.cfg.recordTraces.keys():
@@ -653,14 +661,18 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
                 filename = sim.cfg.filename
         filePath = filename + timestampStr
 
-        # Save to pickle file
-        #if sim.cfg.savePickle:
-        import pickle
-        dataSave = utils.replaceDictODict(dataSave)
-        fileName = filePath + '_node_' + str(sim.rank) + '.pkl'
-        print(('  Saving output as: %s ... ' % (fileName)))
-        with open(os.path.join(saveFolder, fileName), 'wb') as fileObj:
-            pickle.dump(dataSave, fileObj)
+        try:
+            # Save to pickle file
+            #if sim.cfg.savePickle:
+            import pickle
+            dataSave = utils.replaceDictODict(dataSave)
+            fileName = filePath + '_node_' + str(sim.rank) + '.pkl'
+            print(('  Saving output as: %s ... ' % (fileName)))
+            with open(os.path.join(saveFolder, fileName), 'wb') as fileObj:
+                pickle.dump(dataSave, fileObj)
+        except:
+            print('Unable to save Pickle')
+            return dataSave
 
         # Save to json file
         if sim.cfg.saveJson:

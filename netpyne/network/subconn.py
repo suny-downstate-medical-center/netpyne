@@ -168,7 +168,7 @@ def subcellularConn(self, allCellTags, allPopTags):
                 if postCellGid in self.gid2lid:
                     postCell = self.cells[self.gid2lid[postCellGid]]
                     allConns = [conn for conn in postCell.conns if conn['preGid'] in preCellsTags]
-                    if 'NetStim' in [x['cellModel'] for x in list(preCellsTags.values())]: # temporary fix to include netstim conns
+                    if 'NetStim' in [x['cellModel'] for x in list(preCellsTags.values()) if 'cellModel' in x.keys()]: # temporary fix to include netstim conns
                         allConns.extend([conn for conn in postCell.conns if conn['preGid'] == 'NetStim'])
 
                     # group synMechs so they are not distributed separately

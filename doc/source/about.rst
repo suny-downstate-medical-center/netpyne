@@ -88,6 +88,8 @@ Major Features
 Questions, suggestions, and contributions
 -----------------------------------------
 
+Two kinds of contributions are solicited: 1. direct contributions to NetPyNE code described below. 2. `Ancillary code contributions <contrib.html>`_.
+
 NetPyNE is open-source and available at `github.com/Neurosim-lab/netpyne <https://github.com/Neurosim-lab/netpyne>`_.
 
 For questions or suggestions please use the `NetPyNE forum <https://groups.google.com/forum/#!forum/netpyne-forum>`_ , the `NEURON+NetPyNE forum <https://www.neuron.yale.edu/phpBB/viewforum.php?f=45>`_  or `submit an issue to GitHub <https://github.com/Neurosim-lab/netpyne/issues>`_. 

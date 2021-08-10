@@ -1,6 +1,6 @@
 # Version 1.0.1
 
-- Fixed bug in loading where sim was required to have rank attribute
+**New features**
 
 - Enabled selecting a subset of cells to save individual LFP signal from via cfg.saveLFPCells = [...] 
 
@@ -18,6 +18,11 @@
 - Added function to get list of batch grid search parameter combinations 
 
 - Save output of mpi_bulletin batches to .run and .err files
+
+- Fixed bug in loading where sim was required to have rank attribute
+
+- Added quotes in batch.py to avoid path white spaces issue
+
 
 # Version 1.0.0.2
 

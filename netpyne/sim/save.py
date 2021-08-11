@@ -64,7 +64,7 @@ def saveJSON(fileName, data, checkFileTimeout=0):
         fileObj.write(to_unicode(str_))
 
 
-    if checkFile:
+    if checkFileTimeout>0:
         sleepTime = 0.1
         timeoutCyles = checkFileTimeout / sleepTime 
         cycles = 0

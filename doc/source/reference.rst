@@ -628,6 +628,8 @@ Once connections are defined via the ``connParams`` ordered dictionary, it may b
 
 				If omitted, this value is set to 0. The chosen location will be the closest to this target, between the allowed sections.
 
+			* ``coord`` (optional) - Coordinates' system used to compute distance. If omitted (or set to 'topol'), the distance is computed along the dendritic tree. Alternatively, it may be used 'cartesian' to calculate the distance in the euclidean space (distance from the reference to the target segment in the cartesian coordinate system). In this case, post-synaptic cells need to have a 3d morphology (or set ``netParams.defineCellShapes = True``).
+
 		For example, 
 
 		.. code-block:: python

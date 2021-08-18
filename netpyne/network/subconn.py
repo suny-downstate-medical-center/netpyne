@@ -255,7 +255,6 @@ def subcellularConn(self, allCellTags, allPopTags):
 
                     # Distance-based
                     elif isinstance(subConnParam.get('density', None), dict) and subConnParam['density']['type'] == 'distance':
-                    #elif subConnParam.get('density', None) == 'distance':
                         # find origin section
                         # default
                         if 'soma' in postCell.secs:
@@ -283,12 +282,25 @@ def subcellularConn(self, allCellTags, allPopTags):
 
                         newSec, newLoc = secOrig, segOrig
                         min_dist = target_distance
-                        for secName in secList:
-                            for seg in postCell.secs[secName]['hObj']:
-                                dist = self.fromtodistance(postCell.secs[secOrig]['hObj'](segOrig), seg)
-                                if abs(dist-target_distance) <= min_dist:
-                                    min_dist = abs(dist-target_distance)
-                                    newSec, newLoc = secName, seg.x
+                        if 'coord' in subConnParam['density'] and subConnParam['density']['coord'] == 'cartesian':
+                            # calculate euclidean distance from reference
+                            x0, y0, z0 = self._posFromLoc(postCell.secs[secOrig]['hObj'], postCell.secs[secOrig]['hObj'](segOrig).x)
+                            for secName in secList:
+                                for seg in postCell.secs[secName]['hObj']:
+                                    x, y, z = self._posFromLoc(postCell.secs[secName]['hObj'], seg.x)
+                                    dist = np.sqrt((x-x0)**2 + (y-y0)**2 + (z-z0)**2)
+                                    if abs(dist-target_distance) <= min_dist:
+                                        min_dist = abs(dist-target_distance)
+                                        newSec, newLoc = secName, seg.x
+
+                        else:
+                            # (default) calculate distance based on the topology
+                            for secName in secList:
+                                for seg in postCell.secs[secName]['hObj']:
+                                    dist = self.fromtodistance(postCell.secs[secOrig]['hObj'](segOrig), seg)
+                                    if abs(dist-target_distance) <= min_dist:
+                                        min_dist = abs(dist-target_distance)
+                                        newSec, newLoc = secName, seg.x
 
                         newSecs = [newSec] * len(conns)
                         newLocs = [newLoc] * len(conns)

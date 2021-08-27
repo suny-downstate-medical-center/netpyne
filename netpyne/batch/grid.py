@@ -71,7 +71,7 @@ def runJob(script, cfgSavePath, netParamsSavePath, processes):
 
 
     print('\nJob in rank id: ',pc.id())
-    command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath)
+    command = "nrniv %s simConfig='%s' netParams='%s'" % (script, cfgSavePath, netParamsSavePath)
     print(command+'\n')
     proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
     print(proc.stdout.read().decode())

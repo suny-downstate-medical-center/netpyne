@@ -1447,7 +1447,8 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
             sm._A = []  # fake up the array of the scalar mappable
             cb = plt.colorbar(sm, fraction=0.15, shrink=0.5, pad=0.05, aspect=20)
             if cvar: cb.set_label(cbLabels[cvar], rotation=90, fontsize=fontSize)
-            cb.ax.set_title('Time = ' + str(round(h.t, 1)), fontsize=fontSize)
+            if saveFig == 'movie':
+                cb.ax.set_title('Time = ' + str(round(h.t, 1)), fontsize=fontSize)
 
         if bkgColor:
             shapeax.w_xaxis.set_pane_color(bkgColor)

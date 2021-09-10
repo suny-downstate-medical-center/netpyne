@@ -150,11 +150,11 @@ def runSim(skipPreRun=False):
 
     if sim.cfg.coreneuron == True:
         if sim.rank == 0: print('\nRunning simulation using CoreNEURON for %s ms...'%sim.cfg.duration)
-            from neuron import coreneuron
-            coreneuron.enable = True
-            if sim.cfg.gpu == True:
-                coreneuron.gpu = True
-                coreneuron.cell_permute = 2
+        from neuron import coreneuron
+        coreneuron.enable = True
+        if sim.cfg.gpu == True:
+            coreneuron.gpu = True
+            coreneuron.cell_permute = 2
     else:
         if sim.rank == 0: print('\nRunning simulation using NEURON for %s ms...'%sim.cfg.duration)
 

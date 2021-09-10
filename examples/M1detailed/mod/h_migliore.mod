@@ -31,7 +31,7 @@ NEURON {
 	NONSPECIFIC_CURRENT i
 	NONSPECIFIC_CURRENT lk
         RANGE gbar, vhalfl, elk, clk, glk, ehd
-        GLOBAL linf,taul
+        RANGE linf,taul
 }
 
 

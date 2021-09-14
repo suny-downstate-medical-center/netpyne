@@ -692,6 +692,9 @@ def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderB
 
     print('Plotting connectivity matrix...')
 
+    if groupBy == 'cell' and feature == 'strength':
+        feature = 'weight'
+
     if connsFile and tagsFile:
         connMatrix, pre, post = _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile, removeWeightNorm, logPlot)
     else:
@@ -836,7 +839,8 @@ def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderB
 ## Plot 2D representation of network cell positions and connections
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, tagsFile=None, figSize=(12,12), fontSize=12, saveData=None, saveFig=None, showFig=True, lineWidth=0.1):
+def plot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, tagsFile=None,
+    figSize=(12,12), fontSize=12, saveData=None, saveFig=None, showFig=True, lineWidth=0.1):
     """
     Function for/to <short description of `netpyne.analysis.network.plot2Dnet`>
 
@@ -1028,11 +1032,181 @@ def plot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, t
     return fig, {'include': include, 'posX': posX, 'posY': posY, 'posXpre': posXpre, 'posXpost': posXpost, 'posYpre': posYpre, 'posYpost': posYpost}
 
 
+
+# -------------------------------------------------------------------------------------------------------------------
+## Plot 2D representation of network activity 
+# -------------------------------------------------------------------------------------------------------------------
+@exception
+def plot2Dfiring(include=['allCells'], view='xy', popColors=None, timeRange=None, spikeBin=5, 
+    figSize=(12,12), fontSize=12, saveData=None, saveFig=None, showFig=True, lineWidth=0.1):
+    """
+    Function for/to <short description of `netpyne.analysis.network.plot2Dnet`>
+
+    Parameters
+    ----------
+    include : list
+        List of presynaptic cells to include.
+        **Default:** ``['allCells']``
+        **Options:**
+        ``['all']`` plots all cells and stimulations,
+        ``['allNetStims']`` plots just stimulations,
+        ``['popName1']`` plots a single population,
+        ``['popName1', 'popName2']`` plots multiple populations,
+        ``[120]`` plots a single cell,
+        ``[120, 130]`` plots multiple cells,
+        ``[('popName1', 56)]`` plots a cell from a specific population,
+        ``[('popName1', [0, 1]), ('popName2', [4, 5, 6])]``, plots cells from multiple populations
+
+    view : str
+        Perspective of view.
+        **Default:** ``'xy'`` front view,
+        **Options:** ``'xz'`` top-down view
+
+
+    popColors : dict
+        Dictionary with custom color (value) used for each population (key).
+        **Default:** ``None`` uses standard colors
+        **Options:** ``<option>`` <description of option>
+
+    figSize : list [width, height]
+        Size of figure in inches.
+        **Default:** ``(12, 12)``
+        **Options:** ``<option>`` <description of option>
+
+    fontSize : int
+        Font size on figure.
+        **Default:** ``12``
+        **Options:** ``<option>`` <description of option>
+
+    saveData : bool or str
+        Whether and where to save the data used to generate the plot.
+        **Default:** ``False``
+        **Options:** ``True`` autosaves the data,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.pkl'`` and ``'.json'``
+
+    saveFig : bool or str
+        Whether and where to save the figure.
+        **Default:** ``False``
+        **Options:** ``True`` autosaves the figure,
+        ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
+
+    showFig : bool
+        Shows the figure if ``True``.
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+
+     lineWidth: float
+        Width of connection lines.
+        **Default:** ``0.1``
+        **Options:** ``<option>`` <description of option>
+
+    Returns
+    -------
+
+
+"""
+
+    from .. import sim
+    from matplotlib import animation
+
+    print('Plotting 2D representation of network cell locations and connections...')
+
+    fig = plt.figure(figsize=figSize)
+
+    # front view
+    if view == 'xy':
+        ycoord = 'y'
+    elif view == 'xz':
+        ycoord = 'z'
+
+    # get tags
+    cells, cellGids, _ = getCellsInclude(include)
+    selectedPops = [cell['tags']['pop'] for cell in cells]
+    popLabels = [pop for pop in sim.net.allPops if pop in selectedPops] # preserves original ordering
+
+    # pop and cell colors
+    popColorsTmp = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
+    if popColors: popColorsTmp.update(popColors)
+    popColors = popColorsTmp
+    cellColors = [popColors[cell['tags']['pop']] for cell in cells]
+
+    # cell locations
+    posX = [cell['tags']['x'] for cell in cells]  # get all x positions
+    posY = [cell['tags'][ycoord] for cell in cells]  # get all y positions
+
+    sc = plt.scatter(posX, posY, s=60, color=cellColors) # plot cell soma positions
+    posXpre, posYpre = [], []
+    posXpost, posYpost = [], []
+
+    plt.xlabel('x (um)')
+    plt.ylabel(ycoord+' (um)')
+    plt.xlim([min(posX)-0.05*max(posX),1.05*max(posX)])
+    plt.ylim([min(posY)-0.05*max(posY),1.05*max(posY)])
+    fontsiz = fontSize
+
+    for popLabel in popLabels:
+        plt.plot(0,0,color=popColors[popLabel],label=popLabel)
+    plt.legend(fontsize=fontsiz, bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0.)
+    ax = plt.gca()
+    ax.invert_yaxis()
+
+    # generate animation with time-resolved spiking activity
+    spktsAll = sim.allSimData['spkt']
+    spkidsAll = sim.allSimData['spkid']
+
+    if not isinstance(timeRange, list):  # True or None
+        timeRange = [0, sim.cfg.duration]
+
+    def animate(i, sc, timeRange, spikeBin, ycoord, spkidsAll, spktsAll, cells, cellGids, popColors):
+        timeInterval = [timeRange[0] + i*spikeBin, timeRange[0] + (i+1)*spikeBin]
+
+        out = list(zip(*[(spkid, spkt) for spkid, spkt in zip(spkidsAll, spktsAll) if timeInterval[0] <= spkt <= timeInterval[1]]))
+        if len(out) == 2:
+            spkids, spkts = out
+
+            spkids = [int(x) for x in list(set(spkids) & set(cellGids))]
+
+            posX = np.array([cells[gid]['tags']['x'] for gid in spkids])  # get all x positions
+            posY = np.array([cells[gid]['tags'][ycoord] for gid in spkids])  # get all y positions
+            cellColors = [popColors[cells[gid]['tags']['pop']] for gid in spkids]
+            
+            sc.set_offsets(np.c_[posX,posY])
+            sc.set_color(cellColors)
+            plt.gca().set_title('t = %d' % int(timeRange[0] + (i+1)*spikeBin))
+
+
+
+    frames = int((timeRange[1]-timeRange[0]) / spikeBin)
+    ani = animation.FuncAnimation(fig, animate, frames=frames, interval=100, repeat=True, fargs=(sc, timeRange, spikeBin, ycoord, spkidsAll, spktsAll, cells, cellGids, popColors,)) 
+
+
+    # save figure data
+    if saveData:
+        figData = {'posX': posX, 'posY': posY, 'posX': cellColors, 'posXpre': posXpre, 'posXpost': posXpost, 'posYpre': posYpre, 'posYpost': posYpost,
+         'include': include, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig, 'lineWidth': lineWidth}
+
+        _saveFigData(figData, saveData, '2Dnet')
+
+    # save figure
+    if saveFig:
+        if isinstance(saveFig, basestring):
+            filename = saveFig
+        else:
+            filename = sim.cfg.filename + '_plot_2Dfiring.gif'
+        ani.save(filename)
+
+    # show fig
+    if showFig: _showFigure()
+
+    return fig, {'include': include, 'posX': posX, 'posY': posY, 'posXpre': posXpre, 'posXpost': posXpost, 'posYpre': posYpre, 'posYpost': posYpost}
+
+
+
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot cell shape
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElectrodes=False, synStyle='.', synSize=3, dist=0.6, elev=90, azim=-90, cvar=None, cvals=None, iv=False, ivprops=None, includeAxon=True, bkgColor=None, axis='auto', axisLabels=False, figSize=(10,8), fontSize=12, saveData=None, dpi=300, saveFig=None, showFig=True):
+def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElectrodes=False, synStyle='.', synSize=3, dist=0.6, elev=90, azim=-90, cvar=None, cvals=None, clim=None, iv=False, ivprops=None, includeAxon=True, bkgColor=None, axis='auto', axisLabels=False, figSize=(10,8), fontSize=12, saveData=None, dpi=300, saveFig=None, showFig=True, **kwargs):
     """
     Function for/to <short description of `netpyne.analysis.network.plotShape`>
 
@@ -1230,7 +1404,7 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
         shapeax.dist=dist*shapeax.dist
         plt.axis(axis)
         cmap = plt.cm.viridis #plt.cm.jet  #plt.cm.rainbow #plt.cm.jet #YlOrBr_r
-        morph.shapeplot(h, shapeax, sections=secs, cvals=cvals, cmap=cmap)
+        morph.shapeplot(h, shapeax, sections=secs, cvals=cvals, cmap=cmap, clim=clim)
 
         # fix so that axes can be scaled
         ax = plt.gca()
@@ -1261,10 +1435,19 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
 
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
         if cvals is not None and len(cvals)>0:
-            sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=np.min(cvals), vmax=np.max(cvals)))
+            vmin = np.min(cvals)
+            vmax = np.max(cvals)
+            
+            if clim is not None:
+                vmin = np.min(clim)
+                vmax = np.max(clim)
+
+            sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=vmin, vmax=vmax))
             sm._A = []  # fake up the array of the scalar mappable
             cb = plt.colorbar(sm, fraction=0.15, shrink=0.5, pad=0.05, aspect=20)
             if cvar: cb.set_label(cbLabels[cvar], rotation=90, fontsize=fontSize)
+            if saveFig == 'movie':
+                cb.ax.set_title('Time = ' + str(round(h.t, 1)), fontsize=fontSize)
 
         if bkgColor:
             shapeax.w_xaxis.set_pane_color(bkgColor)
@@ -1302,12 +1485,14 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
             shapeax.set_xticklabels([])
             shapeax.set_yticklabels([])
             shapeax.set_zticklabels([])
-            
 
         # save figure
         if saveFig:
             if isinstance(saveFig, basestring):
-                filename = saveFig
+                if saveFig == 'movie':
+                    filename = sim.cfg.filename + '_shape_movie_' + str(round(h.t, 1)) + '.png'
+                else:
+                    filename = saveFig
             else:
                 filename = sim.cfg.filename+'_shape.png'
             plt.savefig(filename, dpi=dpi)
@@ -1477,3 +1662,4 @@ def calculateDisynaptic(includePost = ['allCells'], includePre = ['allCells'], i
     print('    time ellapsed (s): ', time() - start)
 
     return numDis
+

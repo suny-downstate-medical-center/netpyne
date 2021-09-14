@@ -118,7 +118,8 @@ Each item of the ``cellParams`` ordered dictionary consists of a key and a value
 
 	* **ions**: Dictionary of ions.
 		The key contains the name of the ion (e.g. 'na' or 'k')
-		The value contains a dictionary with the properties of the ion (e.g. ``{'e': -70}``).
+		The value contains a dictionary with the properties of the ion for the particular section (e.g. ``{'e': -70}``).
+		Properties available are ``'e'``: reversal potential, ``'i'``: internal concentration of the ion at that section, and ``'o'``: the extracellular concentration of the ion at that section.
 	
 	* **pointps**: Dictionary of point processes (excluding synaptic mechanisms). 
 		The key contains an arbitrary label (e.g. 'Izhi')
@@ -717,7 +718,7 @@ Related to recording:
 * **recordSpikesGids** - List of cells to record spike times from  (-1 to record from all). Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. (default: -1)
 * **recordStim** - Record spikes of cell stims (default: False)
 * **recordLFP** - 3D locations of local field potential (LFP) electrodes, e.g. [[50, 100, 50], [50, 200, 50]] (note the y coordinate represents depth, so will be represented as a negative value when plotted). The LFP signal in each electrode is obtained by summing the extracellular potential contributed by each neuronal segment, calculated using the "line source approximation" and assuming an Ohmic medium with conductivity |sigma| = 0.3 mS/mm. Stored in ``sim.allSimData['LFP']``. (default: False).
-* **saveLFPCells** - Store LFP generated individually by each cell in ``sim.allSimData['LFPCells']`` 
+* **saveLFPCells** - Store LFP generated individually by each cell in ``sim.allSimData['LFPCells']``; can select a subset of cells to save e.g. [3, 'PYR', ('PV2', 5)] 
 * **recordStep** - Step size in ms for data recording (default: 0.1)
 
 Related to file saving:

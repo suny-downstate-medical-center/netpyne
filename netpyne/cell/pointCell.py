@@ -43,6 +43,15 @@ class PointCell (Cell):
     def __init__ (self, gid, tags, create=True, associateGid=True):
         from .. import sim
 
+        # enable defining pointCell properties directly in cellParams
+        exclude = ['cellType']
+
+        #import IPython; IPython.embed()
+
+        if 'cellType' in tags and tags['cellType'] in sim.net.params.cellParams:
+            tags.update({k: v for k,v in sim.net.params.cellParams[tags['cellType']].items() if k not in exclude})
+
+        # call parent calls (Cell) constructor to set gid and tags
         super(PointCell, self).__init__(gid, tags)
         self.hPointp = None
         if 'params' in self.tags:

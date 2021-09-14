@@ -136,11 +136,22 @@ def timing(mode, processName):
 
     from .. import sim
 
-    if sim.rank == 0 and sim.cfg.timing:
-        if mode == 'start':
-            sim.timingData[processName] = time()
-        elif mode == 'stop':
-            sim.timingData[processName] = time() - sim.timingData[processName]
+    if not hasattr(sim, 'timingData'):
+        sim.timingData = {}
+
+    if hasattr(sim.cfg, 'timing'):
+        if sim.cfg.timing:
+            if hasattr(sim, 'rank'):
+                if sim.rank == 0:
+                    if mode == 'start':
+                        sim.timingData[processName] = time()
+                    elif mode == 'stop':
+                        sim.timingData[processName] = time() - sim.timingData[processName]
+            else:
+                if mode == 'start':
+                    sim.timingData[processName] = time()
+                elif mode == 'stop':
+                    sim.timingData[processName] = time() - sim.timingData[processName]                
 
 
 #------------------------------------------------------------------------------
@@ -834,49 +845,101 @@ def _dict2utf8(obj):
 #------------------------------------------------------------------------------
 def clearAll():
     """
-    Function for/to <short description of `netpyne.sim.utils.clearAll`>
-
+    Function to clear all sim objects in memory
 
     """
 
 
     from .. import sim
+    import numpy as np
 
     # clean up
     sim.pc.barrier()
     sim.pc.gid_clear()                    # clear previous gid settings
 
     # clean cells and simData in all nodes
-    sim.clearObj([cell.__dict__ if hasattr(cell, '__dict__') else cell for cell in sim.net.cells])
-    if 'stims' in list(sim.simData.keys()):
-        sim.clearObj([stim for stim in sim.simData['stims']])
+    if hasattr(sim, 'net'):
+        sim.clearObj([cell.__dict__ if hasattr(cell, '__dict__') else cell for cell in sim.net.cells])
+    if hasattr(sim, 'simData'):
+        if 'stims' in list(sim.simData.keys()):
+            sim.clearObj([stim for stim in sim.simData['stims']])
 
-    for key in list(sim.simData.keys()): del sim.simData[key]
-    for c in sim.net.cells: del c
-    for p in sim.net.pops: del p
-    del sim.net.params
+        for key in list(sim.simData.keys()): del sim.simData[key]
 
+
+    if hasattr(sim, 'net'):
+        for c in sim.net.cells: del c
+        for p in sim.net.pops: del p
+        del sim.net.params
 
     # clean cells and simData gathered in master node
-    if sim.rank == 0:
-        if hasattr(sim.net, 'allCells'):
-            sim.clearObj([cell.__dict__ if hasattr(cell, '__dict__') else cell for cell in sim.net.allCells])
-        if hasattr(sim, 'allSimData'):
-            for key in list(sim.allSimData.keys()): del sim.allSimData[key]
+    if hasattr(sim, 'rank'):
+        if sim.rank == 0:
+            if hasattr(sim, 'net'):
+                if hasattr(sim.net, 'allCells'):
+                    sim.clearObj([cell.__dict__ if hasattr(cell, '__dict__') else cell for cell in sim.net.allCells])
+            if hasattr(sim, 'allSimData'):
+                for key in list(sim.allSimData.keys()): del sim.allSimData[key]
+                
+                if 'stims' in list(sim.allSimData.keys()):
+                    sim.clearObj([stim for stim in sim.allSimData['stims']])
             
-            if 'stims' in list(sim.allSimData.keys()):
-                sim.clearObj([stim for stim in sim.allSimData['stims']])
+            if hasattr(sim, 'net'):
+                for c in sim.net.allCells: del c
+                for p in sim.net.allPops: del p
+                del sim.net.allCells
+            
+            if hasattr(sim, 'allSimData'):
+                del sim.allSimData
+
+            import matplotlib
+            matplotlib.pyplot.clf()
+            matplotlib.pyplot.close('all')
+
+    # clean rxd components
+    if hasattr(sim.net, 'rxd'):
         
-        for c in sim.net.allCells: del c
-        for p in sim.net.allPops: del p
-        del sim.net.allCells
-        del sim.allSimData
+        sim.clearObj(sim.net.rxd)
 
-        import matplotlib
-        matplotlib.pyplot.clf()
-        matplotlib.pyplot.close('all')
+        if 'rxd' not in globals():
+            try:
+                from neuron import crxd as rxd 
+            except:
+                pass
+        #try:
+        for r in rxd.rxd._all_reactions[:]:
+            if r():
+                rxd.rxd._unregister_reaction(r)
 
-    del sim.net
+        for s in rxd.species._all_species:
+            if s():
+                s().__del__()
+                
+        rxd.region._all_regions = []
+        rxd.region._region_count = 0
+        rxd.region._c_region_lookup = None
+        rxd.species._species_counts = 0
+        rxd.section1d._purge_cptrs()
+        rxd.initializer.has_initialized = False
+        rxd.rxd.free_conc_ptrs()
+        rxd.rxd.free_curr_ptrs()
+        rxd.rxd.rxd_include_node_flux1D(0, None, None, None)
+        rxd.species._has_1d = False
+        rxd.species._has_3d = False
+        rxd.rxd._zero_volume_indices = np.ndarray(0, dtype=np.int_)
+        rxd.set_solve_type(dimension=1)
+        # clear reactions in case next sim does not use rxd
+        rxd.rxd.clear_rates()
+        
+        for obj in rxd.__dict__:
+            sim.clearObj(obj)
+        
+
+        #except:
+        #    pass
+
+    if hasattr(sim, 'net'):
+        del sim.net
 
     import gc; gc.collect()
 

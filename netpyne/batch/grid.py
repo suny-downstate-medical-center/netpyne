@@ -71,7 +71,7 @@ def runJob(script, cfgSavePath, netParamsSavePath, processes):
 
 
     print('\nJob in rank id: ',pc.id())
-    command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath)
+    command = "nrniv %s simConfig='%s' netParams='%s'" % (script, cfgSavePath, netParamsSavePath)
     print(command+'\n')
     proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
     print(proc.stdout.read().decode())
@@ -228,6 +228,7 @@ def gridSearch(self, pc):
                     queueName = self.runCfg.get('queueName', 'default')
                     nodesppn = 'nodes=%d:ppn=%d'%(nodes,ppn)
                     custom = self.runCfg.get('custom', '')
+                    printOutput = self.runCfg.get('printOutput', False)
                     numproc = nodes*ppn
 
                     command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
@@ -273,6 +274,7 @@ echo $PBS_O_WORKDIR
                     walltime = self.runCfg.get('walltime', '00:30:00')
                     reservation = self.runCfg.get('reservation', None)
                     custom = self.runCfg.get('custom', '')
+                    printOutput = self.runCfg.get('printOutput', False)
                     if reservation:
                         res = '#SBATCH --res=%s'%(reservation)
                     else:
@@ -323,6 +325,7 @@ wait
                     folder = self.runCfg.get('folder', '.')
                     script = self.runCfg.get('script', 'init.py')
                     mpiCommand = self.runCfg.get('mpiCommand', 'mpirun')
+                    printOutput = self.runCfg.get('printOutput', False)
 
                     command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, cores, script, cfgSavePath, netParamsSavePath)
 
@@ -335,6 +338,7 @@ wait
                 # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
                 elif self.runCfg.get('type',None) == 'mpi_bulletin':
                     jobName = self.saveFolder+'/'+simLabel
+                    printOutput = self.runCfg.get('printOutput', False)
                     print('Submitting job ',jobName)
                     # master/slave bulletin board schedulling of jobs
                     pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath, processes)
@@ -355,17 +359,20 @@ wait
     outfiles = []
     for procFile in processFiles:
         outfiles.append(open(procFile, 'r'))
-        
+    
+    # note: while the process is running the poll() method will return None  
+    # depending on the platform or the way the source file is executed (e.g. if run using mpiexec), 
+    # the stored processes ids might correspond to completed processes  
+    # and therefore return 1 (even though nrniv processes are still running)
     while any([proc.poll() is None for proc in processes]):
         for i, proc in enumerate(processes):
                 newline = outfiles[i].readline()
                 if len(newline) > 1:
                     print(newline, end='')
                 
-        sleep(sleepInterval)
+        #sleep(sleepInterval)
     
     # attempt to terminate completed processes
-    
     for proc in processes:
         try:
             proc.terminate()

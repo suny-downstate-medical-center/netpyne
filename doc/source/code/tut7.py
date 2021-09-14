@@ -16,7 +16,7 @@ secs['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el'
 netParams.cellParams['PYR'] = {'secs': secs}  # add dict to list of cell properties
 
 # Population parameters
-netParams.popParams['hop'] = {'cellType': 'PYR', 'cellModel': 'HH', 'numCells': 50}     # add dict with params for this pop
+netParams.popParams['hop'] = {'cellType': 'PYR', 'numCells': 50}     # add dict with params for this pop
 #netParams.popParams['background'] = {'cellModel': 'NetStim', 'rate': 50, 'noise': 0.5}  # background inputs
 
 # Synaptic mechanism parameters
@@ -100,5 +100,5 @@ if __gui__:
     sim.analysis.plotRaster(syncLines=True)
     sim.analysis.plotTraces(include = [1])
 
-# check model output
+# Check the model output: sim.checkOutput is used for testing purposes.  Please comment out the following line if you are exploring the tutorial.
 sim.checkOutput('tut7')

@@ -8,7 +8,6 @@ def batchTauWeight():
         # fill in with parameters to explore and range of values (key has to coincide with a variable in simConfig)
         params['synMechTau2'] = [3.0, 5.0, 7.0]
         params['connWeight'] = [0.005, 0.01, 0.15]
-        params[('analysis', 'plotTraces', 'saveFig')] = [True, False]
 
         # create Batch object with parameters to modify, and specifying files to use
         b = Batch(params=params, cfgFile='tut8_cfg.py', netParamsFile='tut8_netParams.py',)

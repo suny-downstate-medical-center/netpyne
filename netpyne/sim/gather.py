@@ -14,6 +14,8 @@ from future import standard_library
 standard_library.install_aliases()
 import numpy as np
 from ..specs import Dict, ODict
+from . import setup
+
 
 
 #------------------------------------------------------------------------------
@@ -293,7 +295,7 @@ def gatherData(gatherLFP=True):
 #------------------------------------------------------------------------------
 # Gather data from files
 #------------------------------------------------------------------------------
-def gatherDataFromFiles(gatherLFP=True, dataDir=None, fileName=None, sim=None):
+def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None):
     """
     Function to gather data from multiple files (from distributed or interval saving)
 
@@ -304,7 +306,7 @@ def gatherDataFromFiles(gatherLFP=True, dataDir=None, fileName=None, sim=None):
         **Default:** ``True`` gathers LFP data if available.
         **Options:** ``False`` does not gather LFP data.
 
-    dataDir : str
+    saveFolder : str
         Name of the directory where data files are located.
         **Default:** ``None`` attempts to auto-locate the data directory.
 
@@ -319,18 +321,15 @@ def gatherDataFromFiles(gatherLFP=True, dataDir=None, fileName=None, sim=None):
 
     if sim.rank == 0:
 
-        if not fileName:
-            fileName = sim.cfg.filename
-            simLabels = None
-        else:
-            simLabels = [fileName]
+        if not simLabel:
+            simLabel = sim.cfg.simLabel
         
-        if not dataDir:
-            dataDir = fileName + '_node_data'
+        if not saveFolder:
+            saveFolder = ''
 
-        # find all individual sim labels whose files need to be gathered
-        if not simLabels:
-            simLabels = [f.replace('_node_0.pkl', '') for f in os.listdir(dataDir) if f.endswith('_node_0.pkl')]
+        nodeDataDir = os.path.join(saveFolder, 'node_data')
+
+        simLabels = [f.replace('_node_0.pkl', '') for f in os.listdir(nodeDataDir) if f.endswith('_node_0.pkl')]
 
         for simLabel in simLabels:
 
@@ -348,51 +347,68 @@ def gatherDataFromFiles(gatherLFP=True, dataDir=None, fileName=None, sim=None):
                 simDataVecs.append('dipole')
 
             fileData = {'simData': sim.simData}
-            fileList = sorted([f for f in os.listdir(dataDir) if f.startswith(simLabel + '_node')])
+            fileList = sorted([f for f in os.listdir(nodeDataDir) if (f.startswith(simLabel + '_node') and f.endswith('.pkl'))])
+            fileType = 'pkl'
+            if not fileList:
+                fileList = sorted([f for f in os.listdir(nodeDataDir) if (f.startswith(simLabel + '_node') and f.endswith('.json'))])
+                fileType = 'json'
 
             for file in fileList:
                 
-                with open(os.path.join(dataDir, file), 'rb') as openFile:
-                    data = pickle.load(openFile)
-                    print('  Merging data file: %s' % (file))
-                    
-                    if 'cells' in data.keys():
-                        allCells.extend([cell.__dict__ for cell in data['cells']])
-                    if 'pops' in data.keys():
-                        for popLabel, pop in data['pops'].items(): 
-                            allPops[popLabel] = pop.__getstate__()
+                print('  Merging data file: %s' % (file))
+                
+                if fileType == 'pkl':
 
-                    nodePopsCellGids = {popLabel: list(pop.cellGids) for popLabel, pop in data['pops'].items()}
-
-                    for key, value in data['simData'].items():
+                    with open(os.path.join(nodeDataDir, file), 'rb') as openFile:
+                        data = pickle.load(openFile)
                         
-                        if key in simDataVecs:
+                        if 'cells' in data.keys():
+                            #allCells.extend([cell.__dict__ for cell in data['cells']])
+                            allCells.extend([cell.__getstate__() for cell in data['cells']])
+                        if 'pops' in data.keys():
+                            for popLabel, pop in data['pops'].items(): 
+                                allPops[popLabel] = pop['tags']  #pop.__getstate__()
+                        if 'simConfig' in data.keys():
+                            setup.setSimCfg(data['simConfig'])
+
+                        nodePopsCellGids = {popLabel: list(pop['cellGids']) for popLabel, pop in data['pops'].items()}
+
+                        for key, value in data['simData'].items():
                             
-                            if isinstance(value, dict):
-                                for key2, value2 in value.items():
-                                    if isinstance(value2, dict):
-                                        allSimData[key].update(Dict({key2: Dict()}))
-                                        for stim, value3 in value2.items():
-                                            allSimData[key][key2].update({stim: list(value3)}) 
-                                    elif key == 'dipole':
-                                        allSimData[key][key2] = np.add(allSimData[key][key2], value2.as_numpy()) 
-                                    else:
-                                        allSimData[key].update({key2: list(value2)})  
-                            else:
-                                allSimData[key] = list(allSimData[key]) + list(value)
+                            if key in simDataVecs:
+                                
+                                if isinstance(value, dict):
+                                    for key2, value2 in value.items():
+                                        if isinstance(value2, dict):
+                                            allSimData[key].update(Dict({key2: Dict()}))
+                                            for stim, value3 in value2.items():
+                                                allSimData[key][key2].update({stim: list(value3)}) 
+                                        elif key == 'dipole':
+                                            allSimData[key][key2] = np.add(allSimData[key][key2], value2.as_numpy()) 
+                                        else:
+                                            allSimData[key].update({key2: list(value2)})  
+                                else:
+                                    allSimData[key] = list(allSimData[key]) + list(value)
 
-                        elif gatherLFP and key == 'LFP':
-                            allSimData[key] += np.array(value)
-                        elif key not in singleNodeVecs:
-                            allSimData[key].update(value)
+                            elif gatherLFP and key == 'LFP':
+                                allSimData[key] = np.array(value)
+                                if not hasattr(sim.net, 'recXElectrode'):
+                                    sim.net.recXElectrode = data['net']['recXElectrode']
 
-                    if file == fileList[0]:
-                        for key in singleNodeVecs:
-                            allSimData[key] = list(fileData['simData'][key])
-                        allPopsCellGids = {popLabel: [] for popLabel in nodePopsCellGids}
-                    else:
-                        for popLabel, popCellGids in nodePopsCellGids.items():
-                            allPopsCellGids[popLabel].extend(popCellGids)
+                            elif key not in singleNodeVecs:
+                                allSimData[key].update(value)
+
+                        if file == fileList[0]:
+                            for key in singleNodeVecs:
+                                allSimData[key] = list(fileData['simData'][key])
+                            allPopsCellGids = {popLabel: [] for popLabel in nodePopsCellGids}
+                        else:
+                            for popLabel, popCellGids in nodePopsCellGids.items():
+                                allPopsCellGids[popLabel].extend(popCellGids)
+
+                elif fileType == 'json':
+                    print('JSON loading not implemented yet.')
+                    return False
 
             if len(allSimData['spkt']) > 0:
                 allSimData['spkt'], allSimData['spkid'] = zip(*sorted(zip(allSimData['spkt'], allSimData['spkid'])))

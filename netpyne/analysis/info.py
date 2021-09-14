@@ -189,7 +189,7 @@ def nTE(cells1=[], cells2=[], spks1=None, spks2=None, timeRange=None, binSize=20
 ## Calculate granger causality
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def granger(cells1=[], cells2=[], spks1=None, spks2=None, label1='spkTrain1', label2='spkTrain2', timeRange=None, binSize=5, testGranger=False, plotFig=True, saveData=None, saveFig=None, showFig=True):
+def plotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, label2=None, timeRange=None, binSize=5, testGranger=False, plotFig=True, saveData=None, saveFig=None, showFig=True):
     """
     Function that calculates Granger Causality between two spike train signals.
     
@@ -205,7 +205,7 @@ def granger(cells1=[], cells2=[], spks1=None, spks2=None, label1='spkTrain1', la
     ----------
     cells1 : list
         Subset of cells from which to obtain spike train 1.
-        **Default:** ``[]``
+        **Default:** ``None``
         **Options:**
         ``['all']`` plots all cells and stimulations,
         ``['allNetStims']`` plots just stimulations,
@@ -218,48 +218,40 @@ def granger(cells1=[], cells2=[], spks1=None, spks2=None, label1='spkTrain1', la
 
     cells2 : list
         Subset of cells from which to obtain spike train 2.
-        **Default:** ``[]``
+        **Default:** ``None``
         **Options:** same as for `cells1`
 
     spks1 : list
         Spike train 1; list of spike times; if omitted then obtains spikes from cells1.
         **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
 
     spks2 : list
         Spike train 2; list of spike times; if omitted then obtains spikes from cells2.
         **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
 
     label1 : str
         Label for spike train 1 to use in plot.
-        **Default:** ``'spkTrain1'``
-        **Options:** ``<option>`` <description of option>
+        **Default:** ``None``
 
     label2 : str
         Label for spike train 2 to use in plot.
-        **Default:** ``'spkTrain2'``
-        **Options:** ``<option>`` <description of option>
+        **Default:** ``None``
 
     timeRange : list [min, max]
         Range of time to calculate nTE in ms.
         **Default:** ``None`` uses the entire simulation time range
-        **Options:** ``<option>`` <description of option>
 
     binSize : int
         Bin size used to convert spike times into histogram.
-        **Default:** ``20``
-        **Options:** ``<option>`` <description of option>
+        **Default:** ``5``
 
     testGranger : bool
         Whether to test the Granger calculation.
         **Default:** ``False``
-        **Options:** ``<option>`` <description of option>
 
     plotFig : bool
         Whether to plot a figure showing Granger Causality Fx2y and Fy2x
         **Default:** ``True``
-        **Options:** ``<option>`` <description of option>
 
     saveData : bool or str
         Whether and where to save the data used to generate the plot.
@@ -276,19 +268,38 @@ def granger(cells1=[], cells2=[], spks1=None, spks2=None, label1='spkTrain1', la
     showFig : bool
         Shows the figure if ``True``.
         **Default:** ``True``
-        **Options:** ``<option>`` <description of option>
-
+        
     Returns
     -------
 
 
-"""
+    """
 
     from .. import sim
     import numpy as np
     from netpyne.support.bsmart import pwcausalr
 
     if not spks1:  # if doesnt contain a list of spk times, obtain from cells specified
+        
+        if not cells1:
+            pops = list(sim.net.allPops.keys())
+            if len(pops) == 1:
+                cells1 = [0]
+                if not label1:
+                    label1 = 'cell_0'
+                if not cells2:
+                    cells2 = ['allCells']
+                    if not label2:
+                        label2 = 'all cells'
+            elif len(pops) > 1:
+                cells1 = [pops[0]]
+                if not label1:
+                    label1 = pops[0]
+                if not cells2:
+                    cells2 = [pops[1]]
+                    if not label2:
+                        label2 = pops[1]
+
         cells, cellGids, netStimPops = getCellsInclude(cells1)
         numNetStims = 0
 
@@ -315,6 +326,7 @@ def granger(cells1=[], cells2=[], spks1=None, spks2=None, label1='spkTrain1', la
         spks1 = list(spkts)
 
     if not spks2:  # if doesnt contain a list of spk times, obtain from cells specified
+        
         cells, cellGids, netStimPops = getCellsInclude(cells2)
         numNetStims = 0
 
@@ -399,13 +411,17 @@ def granger(cells1=[], cells2=[], spks1=None, spks2=None, label1='spkTrain1', la
         y2xZscore = abs(np.max(Fy2x[0][1:]) - y2xMean) / y2xStd
         y2xPvalue = scipy.stats.norm.sf(y2xZscore)
 
+    if not label1:
+        label1='spkTrain1'
+    if not label2: 
+        label2='spkTrain2'
 
     # plot granger
     fig = -1
     if plotFig:
         fig = plt.figure()
-        plt.plot(F, Fy2x[0], label = label2 + ' -> ' + label1)
-        plt.plot(F, Fx2y[0], 'r', label = label1 + ' -> ' + label2)
+        plt.plot(F, Fy2x[0], label = label2 + ' --> ' + label1)
+        plt.plot(F, Fx2y[0], 'r', label = label1 + ' --> ' + label2)
         plt.xlabel('Frequency (Hz)')
         plt.ylabel('Granger Causality')
         plt.legend()
@@ -432,3 +448,7 @@ def granger(cells1=[], cells2=[], spks1=None, spks2=None, label1='spkTrain1', la
         return fig, {'F': F, 'Fx2y': Fx2y[0], 'Fy2x': Fy2x[0], 'Fxy': Fxy[0], 'MaxFy2xZscore': y2xZscore, 'MaxFy2xPvalue': y2xPvalue}
     else:
         return fig, {'F': F, 'Fx2y': Fx2y[0], 'Fy2x': Fy2x[0], 'Fxy': Fxy[0]}
+
+
+# The following is to maintain backwards compatibility
+granger = plotGranger

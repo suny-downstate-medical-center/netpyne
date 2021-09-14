@@ -118,7 +118,8 @@ Each item of the ``cellParams`` ordered dictionary consists of a key and a value
 
 	* **ions**: Dictionary of ions.
 		The key contains the name of the ion (e.g. 'na' or 'k')
-		The value contains a dictionary with the properties of the ion (e.g. ``{'e': -70}``).
+		The value contains a dictionary with the properties of the ion for the particular section (e.g. ``{'e': -70}``).
+		Properties available are ``'e'``: reversal potential, ``'i'``: internal concentration of the ion at that section, and ``'o'``: the extracellular concentration of the ion at that section.
 	
 	* **pointps**: Dictionary of point processes (excluding synaptic mechanisms). 
 		The key contains an arbitrary label (e.g. 'Izhi')

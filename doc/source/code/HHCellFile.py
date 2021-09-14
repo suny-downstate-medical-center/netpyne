@@ -55,13 +55,13 @@ class HHCellClass(Cell):
 
     def defineGeometry(self):
         """Set the 3D geometry of the cell."""
-        self.soma.L = 18.8 	# length of the entire section in microns
-        self.soma.diam = 18.8 	# Soma's diameter in microns
-        self.soma.Ra = 123.0 	# Soma's axial resistivity in ohm-cm
+        self.soma.L = 18.8 	    # length of the soma section in microns
+        self.soma.diam = 18.8 	# diameter of the soma section in microns
+        self.soma.Ra = 123.0 	# axial resistivity of the soma section in ohm-cm
 
-        self.dend.L = 200.0 	# length of the entire section in microns
-        self.dend.diam = 1.0	# Dendrite's diameter in microns
-        self.dend.Ra = 100.0 	# Dendrite's axial resistivity in ohm-cm
+        self.dend.L = 200.0 	# length of the dend section in microns
+        self.dend.diam = 1.0	# diameter of the dend section in microns
+        self.dend.Ra = 100.0 	# axial resistivity of the dend section in ohm-cm
 
     def defineBiophysics(self):
         """Assign the membrane properties across the cell."""
@@ -69,7 +69,7 @@ class HHCellClass(Cell):
         self.soma.insert('hh')
         self.soma.gnabar_hh = 0.12  # Sodium conductance in S/cm2
         self.soma.gkbar_hh = 0.036  # Potassium conductance in S/cm2
-        self.soma.gl_hh = 0.003    # Leak conductance in S/cm2
+        self.soma.gl_hh = 0.003     # Leak conductance in S/cm2
         self.soma.el_hh = -70       # Reversal potential in mV
 
         self.dend.insert('pas')

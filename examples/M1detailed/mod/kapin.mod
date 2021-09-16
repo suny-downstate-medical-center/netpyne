@@ -58,8 +58,6 @@ STATE {          :the unknown parameters to be solved in the DEs
 	n l
 }
 
-:LOCAL qt
-
 INITIAL {		:initialize the following parameter using rates()
         qt = q10^((celsius-24)/10(degC))         : temprature adjustment factor
 	rates(v)

@@ -2,7 +2,8 @@
 
 import numpy as np
 import matplotlib.patches as mpatches
-from ..analysis.utils import exception, loadData
+from ..analysis.utils import exception #, loadData
+from ..analysis.tools import loadData
 from .plotter import HistPlotter
 
 

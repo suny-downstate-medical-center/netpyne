@@ -1,5 +1,5 @@
 """
-Package for analysis and plotting
+Package for plotting
 
 """
 

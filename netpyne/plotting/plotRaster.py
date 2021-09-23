@@ -1,7 +1,8 @@
 # Generate a raster plot
 
 import matplotlib.patches as mpatches
-from ..analysis.utils import exception, loadData
+from ..analysis.utils import exception #, loadData
+from ..analysis.tools import loadData
 from .plotter import ScatterPlotter
 
 

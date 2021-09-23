@@ -27,8 +27,9 @@ except NameError:
 import pandas as pd
 import numpy as np
 from numbers import Number
-from .utils import exception, getInclude, getSpktSpkid
-from .utils import saveData as saveFigData
+from .utils import exception #, getInclude, getSpktSpkid
+from .tools import getInclude, getSpktSpkid
+from .tools import saveData as saveFigData
 from ..support.scalebar import add_scalebar
 
 
@@ -250,3 +251,87 @@ def prepareSpikeHist(
 
     return figData
 
+
+#------------------------------------------------------------------------------
+# Calculate and print avg pop rates
+#------------------------------------------------------------------------------
+@exception
+def popAvgRates(tranges=None, show=True):
+    """
+    Function to calculate and return average firing rates by population
+
+    Parameters
+    ----------
+    tranges : list or tuple
+        The time range or time ranges to calculate firing rates within
+        **Default:** ``None`` uses the entire simulation time range.
+        **Options:** a single time range is defined in a list (``[startTime, stopTime]``) while multiple time ranges should be a tuple of lists (``([start1, stop1], [start2, stop2])``).
+
+    show : bool
+        Whether or not to print the population firing rates
+        **Default:** ``True``
+
+
+    """
+
+    from .. import sim
+
+    avgRates = Dict()
+
+    if not hasattr(sim, 'allSimData') or 'spkt' not in sim.allSimData:
+        print('Error: sim.allSimData not available; please call sim.gatherData()')
+        return None
+
+    spktsAll = sim.allSimData['spkt']
+    spkidsAll = sim.allSimData['spkid']
+
+    spkidsList, spktsList = [], []
+
+    if not isinstance(tranges, list):  # True or None
+        tranges = [[0, sim.cfg.duration]]
+
+    if isinstance(tranges, list):
+
+        # convert single time interval to list
+        if not isinstance(tranges[0], (list, tuple)):
+            tranges = [tranges]
+
+        # calculate for multiple time intervals
+        if isinstance(tranges[0], (list,tuple)):
+            for trange in tranges:
+                try:
+                    spkids, spkts = list(zip(*[(spkid, spkt) for spkid, spkt in zip(spkidsAll, spktsAll) if trange[0] <= spkt <= trange[1]]))
+                except:
+                    spkids, spkts = [], []
+                spkidsList.append(spkids)
+                spktsList.append(spkts)
+
+    else:
+        return avgRates
+
+    for pop in sim.net.allPops:
+
+        if len(tranges) > 1:
+            if show: 
+                print('   %s ' % (pop))
+            avgRates[pop] = {}
+
+        for spkids, spkts, trange in zip(spkidsList, spktsList, tranges):
+            numCells = float(len(sim.net.allPops[pop]['cellGids']))
+            if numCells > 0:
+
+                # single time intervals
+                if len(tranges) == 1:
+                    tsecs = float((trange[1]-trange[0]))/1000.0
+                    avgRates[pop] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['pop']==pop])/numCells/tsecs
+                    if show: 
+                        print('   %s : %.3f Hz'%(pop, avgRates[pop]))
+
+                # multiple time intervals
+                else:
+                    tsecs = float((trange[1]-trange[0]))/1000.0
+                    avgRates[pop]['%d_%d'%(trange[0], trange[1])] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['pop']==pop])/numCells/tsecs
+                    if show: 
+                        print('        (%d - %d ms): %.3f Hz'%(trange[0], trange[1], avgRates[pop]['%d_%d'%(trange[0], trange[1])]))
+
+    return avgRates

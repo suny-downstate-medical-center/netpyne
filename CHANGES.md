@@ -1485,3 +1485,5 @@ First version that was uploaded to pypi. Includes following features:
 	- Parameters/specifications
 	- Instantiated networks
 	- Simulation results
+
+- Distance-based redistribution of synapses (subConn)

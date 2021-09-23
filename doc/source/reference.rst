@@ -573,6 +573,71 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 		# ...
 
 
+Sub-cellular connectivity rules - Redistribution of synapses
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Once connections are defined via the ``connParams`` ordered dictionary, it may be necessary to redistribute synapses according to specific profiles along the dendritic tree. For this purpose, the ``subConnParams`` ordered dictionary set the rules and parameters governing this redistribution. Each item in this dictionary consists in a key and a value.  The key is a label used as a reference for this redistribution rule. The value is a dictionary setting the parameters for this process and includes the following fields:
+
+* **preConds / postConds** - Set of conditions for the pre- and post-synaptic cells
+
+	As in the ``connParams`` specifications, these fields provide attributes/tags to select already established connections that satisfy specific conditions on pre- and post-synaptic sides. They are defined as a dictionary with the proper attributes/tags and the required values, e.g. {'cellType': 'PYR'}, {'pop': ['Exc1', 'Exc2']}, {'ynorm': [0.1, 0.6]}.
+
+* **groupSynMechs (optional)** – List of synaptic mechanisms grouped together when redistributing synapses
+
+	If omitted, post-synaptic locations of all connections (meeting preConds and postConds) are redistributed independently with a given profile (defined below). If a list is provided, synapses of common connections (same pre- and post-synaptic neurons for each mechanism) are relocated to the same location. For example, ['AMPA','NMDA'].
+
+* **sec (optional)** – List of sections admitting redistributed synapses
+
+	If omitted, the section used to redistribute synapses is the soma or, if it does not exist, the first available section in the post-synaptic cell. For example, ['Adend1','Adend2', 'Adend3','Bdend'].
+
+* **density** - Type of redistribution. There are a number of predefined rules:
+
+	* ``uniform`` - Each connection meeting conditions is uniformly redistributed along the provided sections, weighted according to their length.
+
+	* dictionary with different options:
+
+		* ``type`` - Type of synaptic density map. Available options: 1Dmap or 2Dmap.
+
+		In addition, it should be included:
+
+			* ``gridY`` – List of positions in y-coordinate (depth)
+			* ``gridX`` (only for 2Dmap) - List of positions in x-coordinate (or z).
+			* ``fixedSomaY`` (optional) - Absolute position y-coordinate of the soma, used to shift gridY (also provided in absolute coordinates).
+			* ``gridValues`` – one or two-dimensional list expressing the (relative) synaptic density in the coordinates defined by (gridX and) gridY.
+
+		For example, 
+
+		.. code-block:: python
+
+			netParams.subConnParams[...] = {'type':'1Dmap','gridY': [0,-200,-400,-600,-800], 'fixedSomaY':-700,'gridValues':[0,0.2,0.7,1.0,0]}.
+
+		On the other hand, for this selection, post-synaptic cells need to have a 3d morphology. For simple sections, this can be automatically generated (cylinders along the y-axis oriented upwards) by setting ``netParams.defineCellShapes = True``.
+
+
+		* ``distance`` - Synapses relocated at a given distance (in allowed sections) from a reference.
+
+		In addition, it may be included:
+
+			* ``ref_sec`` (optional) – String
+				
+				Section used as a reference from which distance is computed. If omitted, the section used to reference distances is the soma or, if it does not exist, anything starting with 'som' or, otherwise, the first available section in the post-synaptic cell.
+
+			* ``ref_seg`` (optional) - Numerical value
+
+				Segment within the section used to reference the distances. If omitted, it is used a default value (0.5).
+
+			* ``target_distance`` (optional) - Target distance from the reference where synapses will be reallocated
+
+				If omitted, this value is set to 0. The chosen location will be the closest to this target, between the allowed sections.
+
+			* ``coord`` (optional) - Coordinates' system used to compute distance. If omitted (or set to 'topol'), the distance is computed along the dendritic tree. Alternatively, it may be used 'cartesian' to calculate the distance in the euclidean space (distance from the reference to the target segment in the cartesian coordinate system). In this case, post-synaptic cells need to have a 3d morphology (or set ``netParams.defineCellShapes = True``).
+
+		For example, 
+
+		.. code-block:: python
+
+			netParams.subConnParams[...] = {'type':'distance','ref_sec': 'soma', 'ref_seg': 1,'target_distance': 500}.
+
+
 .. _stimulation:
 
 Stimulation parameters

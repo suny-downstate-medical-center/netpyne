@@ -2,7 +2,7 @@
     
     <!-- 
 
-        This LEMS file has been automatically generated using PyNeuroML v0.3.14 (libNeuroML v0.2.45)
+        This LEMS file has been automatically generated using PyNeuroML v0.5.13 (libNeuroML v0.2.56)
 
      -->
     
@@ -20,9 +20,9 @@
     <Simulation id="Sim_SimpleNet" length="500ms" step="0.025ms" target="SimpleNet" seed="12345">  <!-- Note seed: ensures same random numbers used every run -->
         
         <Display id="DispPop__RS_pop" title="Membrane potentials of cells in RS_pop" timeScale="1ms" xmin="-50.0" xmax="550.0" ymin="-90" ymax="50">
-            <Line id="RS_pop[0]: v" quantity="RS_pop/0/RS/v" scale="1mV" color="#6aa799" timeScale="1ms"/>
-            <Line id="RS_pop[1]: v" quantity="RS_pop/1/RS/v" scale="1mV" color="#029a72" timeScale="1ms"/>
-            <Line id="RS_pop[2]: v" quantity="RS_pop/2/RS/v" scale="1mV" color="#d340bb" timeScale="1ms"/>
+            <Line id="RS_pop[0]: v" quantity="RS_pop/0/RS/v" scale="1mV" color="#d54f33" timeScale="1ms"/>
+            <Line id="RS_pop[1]: v" quantity="RS_pop/1/RS/v" scale="1mV" color="#0534e4" timeScale="1ms"/>
+            <Line id="RS_pop[2]: v" quantity="RS_pop/2/RS/v" scale="1mV" color="#98e752" timeScale="1ms"/>
         </Display>
         
         <OutputFile id="Volts_file__RS_pop" fileName="Sim_SimpleNet.RS_pop.v.dat">

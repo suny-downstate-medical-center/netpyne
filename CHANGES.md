@@ -1,6 +1,15 @@
 # Version 1.0.1
 
+**New features**
+
+- Enabled selecting a subset of cells to save individual LFP signal from via cfg.saveLFPCells = [...] 
+
+**Bug fixes**
+
 - Fixed bug in loading where sim was required to have rank attribute
+
+- Added quotes in batch.py to avoid path white spaces issue
+
 
 # Version 1.0.0.2
 
@@ -1476,3 +1485,5 @@ First version that was uploaded to pypi. Includes following features:
 	- Parameters/specifications
 	- Instantiated networks
 	- Simulation results
+
+- Distance-based redistribution of synapses (subConn)

@@ -20,7 +20,7 @@ import os
 ### This is an example function run at an interval during the simulation
 ### This function save weights everytime it runs and will save simulation data
 ### at a different interval defined by cfg.intervalRun and cfg.saveInterval.
-def saveWeights(t):
+def saveWeights(simTime):
 
     # if a list for weights is not initialized make one
     if not hasattr(sim, 'allWeights'):
@@ -33,8 +33,8 @@ def saveWeights(t):
 
     # if the sim time matches the saveInterval then save data
     # NOTE: intervalRun must divide evenly into saveInterval (saveInterval % intervalRun == 0)
-    if (round(t, 4) % cfg.saveInterval == 0):
-            sim.intervalSave(t)
+    if (round(simTime, 4) % cfg.saveInterval == 0):
+            sim.intervalSave(simTime)
 
 
 print("Starting sim ...")
@@ -49,5 +49,5 @@ sim.runSimWithIntervalFunc(cfg.intervalRun, saveWeights)
 sim.fileGather()
 sim.analyze()
 
-
+# Check the model output: sim.checkOutput is used for testing purposes.  Please comment out the following line if you are exploring the example.
 sim.checkOutput('M1detailed')

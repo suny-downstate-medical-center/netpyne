@@ -27,6 +27,7 @@ if __gui__:
     import matplotlib.pyplot as plt
 import numpy as np
 from numbers import Number
+from math import ceil
 from .utils import colorList, exception, _roundFigures, getCellsInclude, getCellsIncludeTags
 from .utils import _saveFigData, _showFigure
 
@@ -1206,7 +1207,7 @@ def plot2Dfiring(include=['allCells'], view='xy', popColors=None, timeRange=None
 ## Plot cell shape
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElectrodes=False, synStyle='.', synSize=3, dist=0.6, elev=90, azim=-90, cvar=None, cvals=None, iv=False, ivprops=None, includeAxon=True, bkgColor=None, axis='auto', axisLabels=False, figSize=(10,8), fontSize=12, saveData=None, dpi=300, saveFig=None, showFig=True):
+def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElectrodes=False, synStyle='.', synSize=3, dist=0.6, elev=90, azim=-90, cvar=None, cvals=None, clim=None, iv=False, ivprops=None, includeAxon=True, bkgColor=None, axis='auto', axisLabels=False, figSize=(10,8), fontSize=12, saveData=None, dpi=300, saveFig=None, showFig=True, **kwargs):
     """
     Function for/to <short description of `netpyne.analysis.network.plotShape`>
 
@@ -1369,7 +1370,7 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
                         nsyns = [0] * nseg
                         secs.append(sec['hObj'])
                         conns = [conn for conn in cellPost.conns if conn['sec']==secLabel and conn['preGid'] in cellsPreGids]
-                        for conn in conns: nsyns[int(round(conn['loc']*nseg))-1] += 1
+                        for conn in conns: nsyns[int(ceil(conn['loc']*nseg))-1] += 1
                         cvals.extend(nsyns)
 
                 cvals = np.array(cvals)
@@ -1404,7 +1405,7 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
         shapeax.dist=dist*shapeax.dist
         plt.axis(axis)
         cmap = plt.cm.viridis #plt.cm.jet  #plt.cm.rainbow #plt.cm.jet #YlOrBr_r
-        morph.shapeplot(h, shapeax, sections=secs, cvals=cvals, cmap=cmap)
+        morph.shapeplot(h, shapeax, sections=secs, cvals=cvals, cmap=cmap, clim=clim)
 
         # fix so that axes can be scaled
         ax = plt.gca()
@@ -1435,10 +1436,19 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
 
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
         if cvals is not None and len(cvals)>0:
-            sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=np.min(cvals), vmax=np.max(cvals)))
+            vmin = np.min(cvals)
+            vmax = np.max(cvals)
+            
+            if clim is not None:
+                vmin = np.min(clim)
+                vmax = np.max(clim)
+
+            sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=vmin, vmax=vmax))
             sm._A = []  # fake up the array of the scalar mappable
             cb = plt.colorbar(sm, fraction=0.15, shrink=0.5, pad=0.05, aspect=20)
             if cvar: cb.set_label(cbLabels[cvar], rotation=90, fontsize=fontSize)
+            if saveFig == 'movie':
+                cb.ax.set_title('Time = ' + str(round(h.t, 1)), fontsize=fontSize)
 
         if bkgColor:
             shapeax.w_xaxis.set_pane_color(bkgColor)
@@ -1476,12 +1486,14 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
             shapeax.set_xticklabels([])
             shapeax.set_yticklabels([])
             shapeax.set_zticklabels([])
-            
 
         # save figure
         if saveFig:
             if isinstance(saveFig, basestring):
-                filename = saveFig
+                if saveFig == 'movie':
+                    filename = sim.cfg.filename + '_shape_movie_' + str(round(h.t, 1)) + '.png'
+                else:
+                    filename = saveFig
             else:
                 filename = sim.cfg.filename+'_shape.png'
             plt.savefig(filename, dpi=dpi)
@@ -1651,3 +1663,4 @@ def calculateDisynaptic(includePost = ['allCells'], includePre = ['allCells'], i
     print('    time ellapsed (s): ', time() - start)
 
     return numDis
+

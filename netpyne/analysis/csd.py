@@ -580,5 +580,5 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
             plt.savefig('CSD_fig.png', dpi=dpi)
 
     # display figure
-    if showFig is True:
+    if showFig:
         plt.show()

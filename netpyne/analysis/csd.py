@@ -546,16 +546,16 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
     # add horizontal lines at electrode locations
     if hlines:
         for i in range(len(sim.cfg.recordLFP)):
-            axs[0].hlines(sim.cfg.recordLFP[i][1], xmin, xmax, colors='black', linestyles='dashed')
+            axs[0].hlines(sim.cfg.recordLFP[i][1], xmin, xmax, colors='pink', linewidth=1, linestyles='dashed')
 
     if layer_lines: 
         if layer_bounds is None:
             print('No layer boundaries given')
         else:
             layerKeys = []
-        for i in layer_bounds.keys():
-            axs[0].hlines(layer_bounds[i], xmin, xmax, colors='black', linewidth=1, linestyles='dotted') 
-        layerKeys.append(i)
+            for i in layer_bounds.keys():
+                axs[0].hlines(layer_bounds[i], xmin, xmax, colors='black', linewidth=1, linestyles='dotted') 
+                layerKeys.append(i) # makes a list with names of each layer, as specified in layer_bounds dict argument 
 
         for n in range(len(layerKeys)):
             if n == 0:

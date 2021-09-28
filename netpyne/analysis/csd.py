@@ -294,6 +294,7 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
         ax = 1
     else:
         ax = 0
+    print('ax = ' + str(ax))
 
     # Vaknin correction
     if vaknin: 
@@ -305,7 +306,6 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
 
     # now each column (or row) is an electrode -- take CSD along electrodes
     CSD_data = -np.diff(datband, n=2, axis=ax)/spacing_mm**2    #spacing_mm**2  
-  
 
     
     # noBandpass trial 
@@ -348,7 +348,7 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
 # PLOTTING CSD 
 
 @exception
-def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sampr=None, stim_start_time=None, spacing_um=None, ymax=None, dt=None, hlines=False, layer_lines=False, layer_bounds=None, smooth=None, fontSize=12, figSize=(8,8),dpi=200, saveFig=True, showFig=True): 
+def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sampr=None, stim_start_time=None, spacing_um=None, ymax=None, dt=None, hlines=False, layer_lines=False, layer_bounds=None, smooth=True, fontSize=12, figSize=(8,8),dpi=200, saveFig=True, showFig=True): 
     """
     Function to plot CSD values extracted from simulated LFP data 
       
@@ -521,9 +521,9 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
         axs[i].tick_params(axis='y', which='major', labelsize=fontSize)
         axs[i].tick_params(axis='x', which='major', labelsize=fontSize)
 
-    # plot interpolated CSD color map 
-    if smooth:
-        Z = scipy.ndimage.filters.gaussian_filter(Z, smooth, mode='nearest')
+    ## plot interpolated CSD color map 
+    #if smooth:
+    #    Z = scipy.ndimage.filters.gaussian_filter(Z, sigma = 5, mode='nearest')#smooth, mode='nearest')
 
     spline=axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r', alpha=0.9) 
     axs[0].set_ylabel('Contact depth (um)', fontsize=fontSize)

@@ -208,7 +208,7 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
         # Sampling rate of data recording during the simulation 
         if sampr is None:
             # divide by 1000.0 to turn denominator from units of ms to s
-            sampr = 1.0/(sim.cfg.recordStep/1000.0) 
+            sampr = 1.0/(dt/1000.0) # sim.cfg.recordStep --> == dt
 
         # Spacing between electrodes (in microns)
         if spacing_um is None:
@@ -304,7 +304,7 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
         removemean(datband,ax=ax)
 
     # now each column (or row) is an electrode -- take CSD along electrodes
-    CSD_data = -np.diff(datband, n=2, axis=ax)/(spacing_um**2)    #spacing_mm**2  
+    CSD_data = -np.diff(datband, n=2, axis=ax)/spacing_mm**2    #spacing_mm**2  
   
 
     
@@ -322,7 +322,7 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
     if norm:
         removemean(datband_noBandpass, ax=ax)
   
-    CSD_data_noBandpass = -np.diff(datband_noBandpass,n=2,axis=ax)/(spacing_um**2)    #spacing_mm**2 
+    CSD_data_noBandpass = -np.diff(datband_noBandpass,n=2,axis=ax)/spacing_um**2    #spacing_mm**2 
 
 
     # Add CSD and other param values to sim.allSimData for later access

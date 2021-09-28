@@ -183,9 +183,9 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
 
     """
 
-    # DEFAULT -- CONDITION 1 : LFP DATA COMES FROM SIMULATION 
+    ### DEFAULT -- CONDITION 1 : LFP DATA COMES FROM SIMULATION ###
 
-    # if no inputs are given, get LFP data from simulation
+    # Get LFP data from simulation
     if LFP_input_data is None and LFP_input_file is None:
         
         try:
@@ -210,15 +210,21 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
             # divide by 1000.0 to turn denominator from units of ms to s
             sampr = 1.0/(sim.cfg.recordStep/1000.0) 
 
-        # Spacing between electrodes --> convert from micron to mm 
+        # Spacing between electrodes (in microns)
         if spacing_um is None:
             spacing_um = sim.cfg.recordLFP[1][1] - sim.cfg.recordLFP[0][1]
 
+        ## This retrieves: 
+        #   lfp_data (as an array)
+        #   dt --> recording time step (in ms)
+        #   sampr --> sampling rate of data recording (in Hz)
+        #   spacing_um --> spacing btwn electrodes (in um)
 
-    # CONDITION 2 : ARBITRARY LFP DATA 
-    # Note: need to expand capability to include a list of multiple files 
+
+
+    ### CONDITION 2 : LFP DATA FROM SIM .JSON FILE ###     # Note: need to expand capability to include a list of multiple files 
   
-    # load sim data from a JSON file
+    # load sim data from JSON file
     elif LFP_input_data is None and '.json' in LFP_input_file:
     
         data = {}
@@ -232,7 +238,7 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
 
         # extract LFP data (only works in the 1 input file scenario; expand capability for multiple files) 
         for key in data.keys:
-            lfp_data_list = data[key]['simData']['LFP']              
+            lfp_data_list = data[key]['simData']['LFP']
         
         # cast LFP data as Numpy array 
         lfp_data = np.array(lfp_data_list)
@@ -260,13 +266,22 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
             else:
                 csd_data[i]['dt'] = dt
 
+        ## This retrieves: 
+        #   lfp_data (as a list)
+        #   dt --> recording time step (in ms)
+        #   sampr --> sampling rate of data recording (in Hz)
+        #   spacing_um --> spacing btwn electrodes (in um)
 
 
-    # FOR LIST OF LFP DATA WITHOUT ANY .JSON INPUT FILE
+
+    ### CONDITION 3 : ARBITRARY LFP DATA ###    # NOTE: for condition 3 --> need to also retrieve the dt, sampr, and spacing_um !!
 
     # get lfp_data and cast as numpy array
-    elif len(LFP_input_data) > 0 and LFP_input_file is None:     
-        lfp_data = np.array(LFP_input_data)  
+    elif len(LFP_input_data) > 0 and LFP_input_file is None:
+        lfp_data = np.array(LFP_input_data)
+
+
+    ####################################
 
     # Convert spacing from microns to mm 
     spacing_mm = spacing_um/1000
@@ -289,7 +304,7 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
         removemean(datband,ax=ax)
 
     # now each column (or row) is an electrode -- take CSD along electrodes
-    CSD_data = -np.diff(datband, n=2, axis=ax)/spacing_mm**2  
+    CSD_data = -np.diff(datband, n=2, axis=ax)/(spacing_um**2)    #spacing_mm**2  
   
 
     
@@ -307,7 +322,7 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
     if norm:
         removemean(datband_noBandpass, ax=ax)
   
-    CSD_data_noBandpass = -np.diff(datband_noBandpass,n=2,axis=ax)/spacing_mm**2 
+    CSD_data_noBandpass = -np.diff(datband_noBandpass,n=2,axis=ax)/(spacing_um**2)    #spacing_mm**2 
 
 
     # Add CSD and other param values to sim.allSimData for later access
@@ -326,7 +341,7 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
     if getAllData is True:
         return lfp_data, CSD_data, sampr, spacing_um, dt
     if getAllData is False:
-        return CSD_data       
+        return CSD_data
 
 
 
@@ -406,34 +421,47 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
     if CSD_data is None:
     
         from .. import sim
-        lfp_data, CSD_data, sampr, spacing_um, dt = getCSD(sampr=sampr, spacing_um=spacing_um, dt=dt, getAllData=True)
+        LFP_data, CSD_data, sampr, spacing_um, dt = getCSD(getAllData=True) #getCSD(sampr=sampr, spacing_um=spacing_um, dt=dt, getAllData=True)
 
-        sim_data_categories = sim.allSimData.keys()
+        if timeRange is None:
+            timeRange = [0,sim.cfg.duration] 
+
+        tt = np.arange(timeRange[0], timeRange[1], dt)
+
+        ymax = sim.cfg.recordLFP[-1][1] + spacing_um 
+
+        LFP_data = np.array(LFP_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]
+        CSD_data = CSD_data[:,int(timeRange[0]/dt):int(timeRange[1]/dt)]  
+        CSD_data_noBandpass = CSD_data[:,int(timeRange[0]/dt):int(timeRange[1]/dt)]
+
+
+        ### The problem with this setup is that it defaults to whatever was saved in .pkl !!
+        # sim_data_categories = sim.allSimData.keys()
         
-        if 'CSD' in sim_data_categories:
+        # if 'CSD' in sim_data_categories:  
 
-            if timeRange is None:
-                timeRange = [0,sim.cfg.duration] 
+        #     if timeRange is None:
+        #         timeRange = [0,sim.cfg.duration] 
 
-            dt = sim.cfg.recordStep
-            tt = np.arange(timeRange[0],timeRange[1],dt)
+        #     dt = sim.cfg.recordStep
+        #     tt = np.arange(timeRange[0],timeRange[1],dt)
 
-            spacing_um = sim.allSimData['CSD']['spacing_um']
-            spacing_mm = spacing_um/1000 
+        #     spacing_um = sim.allSimData['CSD']['spacing_um']
+        #     #spacing_mm = spacing_um/1000 
 
-            ymax = sim.cfg.recordLFP[-1][1] + spacing_um
+        #     ymax = sim.cfg.recordLFP[-1][1] + spacing_um
 
-            # get LFP data
-            LFP_data = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+        #     # get LFP data
+        #     LFP_data = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
 
-            # get CSD data
-            CSD_data = sim.allSimData['CSD']['CSD_data'][:,int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep)]  
+        #     # get CSD data
+        #     CSD_data = sim.allSimData['CSD']['CSD_data'][:,int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep)]  
 
-            # noBandpass trial
-            CSD_data_noBandpass = sim.allSimData['CSD']['CSD_data_noBandpass'][:,int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep)]
+        #     # noBandpass trial
+        #     CSD_data_noBandpass = sim.allSimData['CSD']['CSD_data_noBandpass'][:,int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep)]
       
-        else:
-            raise Exception('No CSD data in sim.')
+        # else:
+        #     raise Exception('No CSD data in sim.')
 
 
     # CONDITION 2 : ARBITRARY CSD DATA 
@@ -460,7 +488,7 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
 
         tt = np.arange(timeRange[0], timeRange[1], dt)
         LFP_data = np.array(LFP_input_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]
-        
+
 
     # PLOTTING 
     X = np.arange(timeRange[0], timeRange[1], dt)

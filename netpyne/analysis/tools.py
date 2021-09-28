@@ -228,8 +228,17 @@ def plotData(sim=None):
         for funcName, kwargs in sim.cfg.analysis.items():
             if kwargs == True: kwargs = {}
             elif kwargs == False: continue
-            func = getattr(sim.plotting, funcName)  # get pointer to function
-            out = func(**kwargs)  # call function with user arguments
+            func = None
+            try:
+                func = getattr(sim.plotting, funcName)
+                out = func(**kwargs)  # call function with user arguments
+            except:
+                try:
+                    func = getattr(sim.analysis, funcName)
+                    out = func(**kwargs)  # call function with user arguments
+                except:
+                    print('Unable to run', funcName, 'from sim.plotting and sim.analysis')
+                
 
         # Print timings
         if sim.cfg.timing:

@@ -557,7 +557,7 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
                 axs[0].hlines(layer_bounds[i], xmin, xmax, colors='black', linewidth=1, linestyles='dotted') 
                 layerKeys.append(i) # makes a list with names of each layer, as specified in layer_bounds dict argument 
 
-        for n in range(len(layerKeys)):
+        for n in range(len(layerKeys)): # label the horizontal layer lines with the proper layer label 
             if n == 0:
                 axs[0].text(xmax+5, layer_bounds[layerKeys[n]]/2, layerKeys[n], color='black', fontsize=fontSize)
             else:

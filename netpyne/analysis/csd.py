@@ -305,7 +305,7 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
         removemean(datband,ax=ax)
 
     # now each column (or row) is an electrode -- take CSD along electrodes
-    CSD_data = -np.diff(datband, n=2, axis=ax)/spacing_mm**2    #spacing_mm**2  
+    CSD_data = -np.diff(datband, n=2, axis=ax)/spacing_mm**2  
 
     
     # noBandpass trial 
@@ -322,7 +322,7 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
     if norm:
         removemean(datband_noBandpass, ax=ax)
   
-    CSD_data_noBandpass = -np.diff(datband_noBandpass,n=2,axis=ax)/spacing_um**2    #spacing_mm**2 
+    CSD_data_noBandpass = -np.diff(datband_noBandpass,n=2,axis=ax)/spacing_mm**2
 
 
     # Add CSD and other param values to sim.allSimData for later access
@@ -431,8 +431,10 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
         ymax = sim.cfg.recordLFP[-1][1] + spacing_um 
 
         LFP_data = np.array(LFP_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]
-        CSD_data = CSD_data[:,int(timeRange[0]/dt):int(timeRange[1]/dt)]  
-        CSD_data_noBandpass = CSD_data[:,int(timeRange[0]/dt):int(timeRange[1]/dt)]
+        CSD_data = CSD_data[:,int(timeRange[0]/dt):int(timeRange[1]/dt)]
+
+        CSD_data_noBandpass = sim.allSimData['CSD']['CSD_data_noBandpass'][:,int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep)]
+        #CSD_data_noBandpass = CSD_data_noBandpass[:,int(timeRange[0]/dt):int(timeRange[1]/dt)]
 
 
         ### The problem with this setup is that it defaults to whatever was saved in .pkl !!
@@ -553,7 +555,7 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
                 subaxs[chan].margins(0.0,0.01)
                 subaxs[chan].get_xaxis().set_visible(False)
                 subaxs[chan].get_yaxis().set_visible(False)
-                subaxs[chan].plot(X, CSD_data[chan,:], color='blue', linewidth=0.3)
+                subaxs[chan].plot(X, CSD_data[chan,:], color='green', linewidth=0.3) # 'blue'
 
         elif overlay == 'LFP':
             axs[0].set_title('CSD with LFP overlay', fontsize=14) 

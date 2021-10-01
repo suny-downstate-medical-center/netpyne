@@ -50,6 +50,9 @@ def preRun():
     # set h.dt
     h.dt = sim.cfg.dt
 
+    if sim.cfg.coreneuron:
+        sim.cfg.random123 = True
+
     # set v_init if doesn't exist
     if 'v_init' not in sim.cfg.hParams: sim.cfg.hParams['v_init'] = -65.0
 
@@ -77,7 +80,7 @@ def preRun():
     for cell in sim.net.cells:
         if cell.tags.get('cellModel') == 'NetStim':
             #cell.hRandom.Random123(sim.hashStr('NetStim'), cell.gid, cell.params['seed'])
-            if sim.cfg.coreneuron:
+            if sim.cfg.random123:
                 cell.hPointp.noiseFromRandom123(utils.hashStr('NetStim'), cell.gid, cell.params['seed'])
             else:
                 utils._init_stim_randomizer(cell.hRandom, 'NetStim', cell.gid, cell.params['seed'])
@@ -91,12 +94,12 @@ def preRun():
             for stim in cell.stims:
                 if 'hRandom' in stim:
                     #stim['hRandom'].Random123(sim.hashStr(stim['source']), cell.gid, stim['seed'])
-                    if not sim.cfg.coreneuron:
+                    if not sim.cfg.random123:
                         utils._init_stim_randomizer(stim['hRandom'], stim['type'], cell.gid, stim['seed'])
                         stim['hRandom'].negexp(1)
                     # Check if noiseFromRandom is in stim['hObj']; see https://github.com/Neurosim-lab/netpyne/issues/219
                     if not isinstance(stim['hObj'].noiseFromRandom, dict):
-                        if sim.cfg.coreneuron:
+                        if sim.cfg.random123:
                             stim['hObj'].noiseFromRandom123(sim.hashStr(stim['type']), cell.gid, stim['seed'])
                         else:
                             stim['hObj'].noiseFromRandom(stim['hRandom'])
@@ -157,7 +160,6 @@ def runSim(skipPreRun=False):
             coreneuron.cell_permute = 2
     else:
         if sim.rank == 0: print('\nRunning simulation using NEURON for %s ms...'%sim.cfg.duration)
-
     sim.pc.psolve(sim.cfg.duration)
 
     sim.pc.barrier() # Wait for all hosts to get to this point

@@ -366,6 +366,7 @@ wait
         #sleep(sleepInterval)
     
     # attempt to terminate completed processes
+    print('Attempting to terminate completed processes')
     for proc in processes:
         try:
             proc.terminate()

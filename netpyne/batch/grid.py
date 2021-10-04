@@ -74,8 +74,7 @@ def runJob(script, cfgSavePath, netParamsSavePath, processes):
     print('\nJob in rank id: ',pc.id())
     command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath)
     print(command+'\n')
-    proc = subprocess.run(command.split(' '), stdout=PIPE, stderr=PIPE)
-    proc.check_returncode()
+    proc = subprocess.run(command.split(' '), stdout=PIPE, stderr=PIPE, check=False)
     processes.append(proc)
 
 

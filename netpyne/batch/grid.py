@@ -69,11 +69,12 @@ def runJob(script, cfgSavePath, netParamsSavePath, processes):
 
     """
 
+    print('\nJob in rank id: ',pc.id())
     command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath)
-    print('\nJob %s in rank id %d'%(command,pc.id()))
+    print(command+'\n')
     proc = subprocess.run(command.split(' '), stdout=PIPE, stderr=PIPE, check=False)
+    print(proc.stdout)
     processes.append(proc)
-    print('#### processes: %s'%(len(processes)))
 
 # -------------------------------------------------------------------------------
 # Grid Search optimization
@@ -337,6 +338,7 @@ wait
                     print('Submitting job ',jobName)
                     # master/slave bulletin board schedulling of jobs
                     pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath, processes)
+                    while pc.working(): pass
                 else:
                     print(self.runCfg)
                     print("Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'")
@@ -346,31 +348,27 @@ wait
     print("   Finished submitting jobs for grid parameter exploration   ")
     print("-" * 80)
     
-    while pc.working(): pass
     outfiles = []
-    print('processFiles: %d; processes: %d\n'%(len(processFiles),len(processes)))
-    if len(processes) > 0:
-        for procFile in processFiles:
-            outfiles.append(open(procFile, 'r'))
+    for procFile in processFiles:
+        outfiles.append(open(procFile, 'r'))
         
-        # note: while the process is running the poll() method will return None  
-        # depending on the platform or the way the source file is executed (e.g. if run using mpiexec), 
-        # the stored processes ids might correspond to completed processes  
-        # and therefore return 1 (even though nrniv processes are still running)
-        while any([proc.poll() is None for proc in processes]):
-            for i, proc in enumerate(processes):
+    # note: while the process is running the poll() method will return None  
+    # depending on the platform or the way the source file is executed (e.g. if run using mpiexec), 
+    # the stored processes ids might correspond to completed processes  
+    # and therefore return 1 (even though nrniv processes are still running)
+    while any([proc.poll() is None for proc in processes]):
+        for i, proc in enumerate(processes):
                 newline = outfiles[i].readline()
                 if len(newline) > 1:
                     print(newline, end='')
-            #sleep(sleepInterval)
+                
+        #sleep(sleepInterval)
     
-        # attempt to terminate completed processes
-        print('Attempting to terminate completed processes')
-        for proc in processes:
-            try:
-               proc.terminate()
-            except:
-               pass
-
+    # attempt to terminate completed processes
+    for proc in processes:
+        try:
+            proc.terminate()
+        except:
+            pass
     pc.done()
     h.quit()

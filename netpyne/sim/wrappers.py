@@ -133,18 +133,6 @@ def analyze():
 
 
 #------------------------------------------------------------------------------
-# Wrapper to save results
-#------------------------------------------------------------------------------
-def saveAll():
-    """
-    Wrapper function to save only
-
-    """
-
-    from .. import sim
-    sim.saveData()
-
-#------------------------------------------------------------------------------
 # Wrapper to create, simulate, and analyse network
 #------------------------------------------------------------------------------
 def createSimulate(netParams=None, simConfig=None, output=False):

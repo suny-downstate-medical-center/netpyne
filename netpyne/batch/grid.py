@@ -37,7 +37,7 @@ import subprocess
 import importlib, types
 
 from neuron import h
-from netpyne import specs
+from netpyne import specs, sim
 from .utils import createFolder
 from .utils import bashTemplate
 
@@ -70,11 +70,14 @@ def runJob(script, cfgSavePath, netParamsSavePath, processes):
     """
 
     print('\nJob in rank id: ',pc.id())
-    command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath)
-    print(command+'\n')
-    proc = subprocess.run(command.split(' '), stdout=PIPE, stderr=PIPE, check=False)
-    print(proc.stdout)
-    processes.append(proc)
+    sim.create(netParams=netParamsSavePath, simConfig=cfgSavePath)
+    # execfile
+    exec(open(script).read(), globals())
+    # command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath)
+    
+    # proc = subprocess.run(command.split(' '), stdout=PIPE, stderr=PIPE, check=False)
+    # print(proc.stdout)
+    # processes.append(proc)
 
 # -------------------------------------------------------------------------------
 # Grid Search optimization

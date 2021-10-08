@@ -22,7 +22,8 @@ try:
 except NameError:
     to_unicode = str
 
-import imp
+import imp # deprecated as of 3.4; use importlib
+import importlib 
 import json
 import logging
 import datetime
@@ -70,11 +71,8 @@ def runJob(script, cfgSavePath, netParamsSavePath, processes):
     """
 
     print('\nJob in rank id: ',pc.id())
-    sim.create(netParams=netParamsSavePath, simConfig=cfgSavePath)
-    # execfile
-    exec(open(script).read(), globals())
+    module = importlib.import_module(script.split('.')[0])
     # command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath)
-    
     # proc = subprocess.run(command.split(' '), stdout=PIPE, stderr=PIPE, check=False)
     # print(proc.stdout)
     # processes.append(proc)
@@ -99,6 +97,10 @@ def gridSearch(self, pc):
 
     """
 
+    if self.runCfg.get('type',None) == 'mpi_bulletin': 
+        script = self.runCfg.get('script', 'init.py')
+        pc.master_works_on_jobs(0) # preserve master for managing
+        pc.runworker() # only 1 runworker needed in rank0
 
     createFolder(self.saveFolder)
 
@@ -163,10 +165,6 @@ def gridSearch(self, pc):
         else:
             valueCombGroups = [(0,)] # this is a hack -- improve!
             indexCombGroups = [(0,)]
-
-    if self.runCfg.get('type',None) == 'mpi_bulletin': 
-        pc.master_works_on_jobs(0) # preserve master for managing
-        pc.runworker() # only 1 runworker needed in rank0
 
     processes = []
     processFiles = []
@@ -340,7 +338,7 @@ wait
                     printOutput = self.runCfg.get('printOutput', False)
                     print('Submitting job ',jobName)
                     # master/slave bulletin board schedulling of jobs
-                    pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath, processes)
+                    pc.submit(runJob, cfgSavePath, netParamsSavePath, processes)
                     while pc.working(): pass
                 else:
                     print(self.runCfg)

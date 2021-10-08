@@ -22,6 +22,7 @@ try:
 except NameError:
     to_unicode = str
 
+import sys
 import imp
 import json
 import pickle
@@ -255,3 +256,9 @@ class Batch(object):
                 optunaOptim(self, pc)
             except:
                 print(' Warning: an exception occurred when running Optuna optimization...')
+
+        print('before done in batch/batch')        
+        pc.done()
+        print('after done batch/batch')        
+        h.quit()
+        print('after quit batch/batch')        

@@ -562,9 +562,9 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
                 subaxs[chan].get_yaxis().set_visible(False)
                 subaxs[chan].plot(X, LFP_data[:,chan], color='gray', linewidth=0.3)
 
-        else:
-            print('Invalid option specified for overlay argument -- no data overlaid')
-            axs[0].set_title('Current Source Density (CSD)', fontsize=fontSize)
+    else:
+        print('Invalid option specified for overlay argument -- no data overlaid')
+        axs[0].set_title('Current Source Density (CSD)', fontsize=fontSize)
 
 
 

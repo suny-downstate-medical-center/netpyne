@@ -348,7 +348,7 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
 # PLOTTING CSD 
 
 @exception
-def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sampr=None, stim_start_time=None, spacing_um=None, ymax=None, dt=None, hlines=False, layer_lines=False, layer_bounds=None, smooth=True, fontSize=12, figSize=(8,8),dpi=200, saveFig=True, showFig=True): 
+def plotCSD(CSD_data=None, LFP_input_data=None, overlay=False, timeRange=None, sampr=None, stim_start_time=None, spacing_um=None, ymax=None, dt=None, hlines=False, layerLines=False, layerBounds=None, smooth=True, fontSize=12, figSize=(8,8),dpi=200, saveFig=True, showFig=True): 
     """
     Function to plot CSD values extracted from simulated LFP data 
       
@@ -362,10 +362,10 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
         LFP data provided by user (mV).  Each element of the list/array must be a list/array containing LFP data for an electrode. 
         **Default:** ``None`` pulls the data from the current NetPyNE sim object.
 
-    overlay : str
-        Option to include other data overlaid on CSD color map plot. 
-        **Default:** ``None``
-        **Options:** ``'CSD_raw'``, ``'CSD_bandpassed'``, ``'LFP'``
+
+    overlay : bool
+        Option to include LFP data overlaid on CSD color map plot. 
+        **Default:** ``False`` provides no overlay 
 
     timeRange : list
         Time range to plot [start, stop].
@@ -396,11 +396,11 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
         Option to include horizontal lines on plot to indicate electrode positions. 
         **Default:** ``False`` 
 
-    layer_lines : bool 
+    layerLines : bool 
         Whether to plot horizontal lines over CSD plot at layer boundaries. 
         **Default:** ``False`` 
 
-    layer_bounds : dict
+    layerBounds : dict
         Dictionary containing layer labels as keys, and layer boundaries as values, e.g. {'L1':100, 'L2': 160, 'L3': 950, 'L4': 1250, 'L5A': 1334, 'L5B': 1550, 'L6': 2000}
         **Default:** ``None``
 
@@ -578,20 +578,20 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
         for i in range(len(sim.cfg.recordLFP)):
             axs[0].hlines(sim.cfg.recordLFP[i][1], xmin, xmax, colors='pink', linewidth=1, linestyles='dashed')
 
-    if layer_lines: 
-        if layer_bounds is None:
-            print('No layer boundaries given')
+    if layerLines:  
+        if layerBounds is None:
+            print('No layer boundaries given -- will not overlay layer boundaries on CSD plot')
         else:
             layerKeys = []
-            for i in layer_bounds.keys():
-                axs[0].hlines(layer_bounds[i], xmin, xmax, colors='black', linewidth=1, linestyles='dotted') 
-                layerKeys.append(i) # makes a list with names of each layer, as specified in layer_bounds dict argument 
+            for i in layerBounds.keys():
+                axs[0].hlines(layerBounds[i], xmin, xmax, colors='black', linewidth=1, linestyles='dotted') 
+                layerKeys.append(i) # makes a list with names of each layer, as specified in layerBounds dict argument 
 
-        for n in range(len(layerKeys)): # label the horizontal layer lines with the proper layer label 
-            if n == 0:
-                axs[0].text(xmax+5, layer_bounds[layerKeys[n]]/2, layerKeys[n], color='black', fontsize=fontSize)
-            else:
-                axs[0].text(xmax+5, (layer_bounds[layerKeys[n]] + layer_bounds[layerKeys[n-1]])/2, layerKeys[n], color='black', fontsize=fontSize, verticalalignment='center')
+            for n in range(len(layerKeys)): # label the horizontal layer lines with the proper layer label 
+                if n == 0:
+                    axs[0].text(xmax+5, layerBounds[layerKeys[n]]/2, layerKeys[n], color='black', fontsize=fontSize)
+                else:
+                    axs[0].text(xmax+5, (layerBounds[layerKeys[n]] + layerBounds[layerKeys[n-1]])/2, layerKeys[n], color='black', fontsize=fontSize, verticalalignment='center')
 
     # set vertical line at stimulus onset
     if type(stim_start_time) is int or type(stim_start_time) is float:

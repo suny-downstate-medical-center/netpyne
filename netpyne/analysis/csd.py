@@ -348,7 +348,7 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
 # PLOTTING CSD 
 
 @exception
-def plotCSD(CSD_data=None, LFP_input_data=None, overlay=False, timeRange=None, sampr=None, stim_start_time=None, spacing_um=None, ymax=None, dt=None, hlines=False, layerLines=False, layerBounds=None, smooth=True, fontSize=12, figSize=(8,8),dpi=200, saveFig=True, showFig=True): 
+def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sampr=None, stim_start_time=None, spacing_um=None, ymax=None, dt=None, hlines=False, layerLines=False, layerBounds=None, smooth=True, fontSize=12, figSize=(8,8),dpi=200, saveFig=True, showFig=True): 
     """
     Function to plot CSD values extracted from simulated LFP data 
       
@@ -363,9 +363,10 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=False, timeRange=None, s
         **Default:** ``None`` pulls the data from the current NetPyNE sim object.
 
 
-    overlay : bool
+    overlay : str
         Option to include LFP data overlaid on CSD color map plot. 
-        **Default:** ``False`` provides no overlay 
+        **Default:** ``None`` provides no overlay 
+        OPTIONS are 'LFP' or 'CSD'
 
     timeRange : list
         Time range to plot [start, stop].
@@ -530,25 +531,19 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=False, timeRange=None, s
     spline=axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r', alpha=0.9) 
     axs[0].set_ylabel('Contact depth (um)', fontsize=fontSize)
 
-    # set Title of plot & overlay data (CSD_raw, CSD_bandpassed, or LFP)  
-    if overlay is 'CSD_raw' or overlay is 'CSD_bandpassed' or overlay is 'LFP':
+
+    # OVERLAY DATA ('LFP', 'CSD', or None) & Set title of plot 
+    if overlay is None:
+        print('No data being overlaid')
+        axs[0].set_title('Current Source Density (CSD)', fontsize=fontSize)
+
+    elif overlay is 'CSD' or overlay is 'LFP':
         nrow = LFP_data.shape[1]
         gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(nrow, 1, subplot_spec=gs_outer[0:2], wspace=0.0, hspace=0.0)
         subaxs = []
 
-        # go down grid and add data from each channel
-        if overlay == 'CSD_raw':
-            axs[0].set_title('CSD with raw CSD time series overlay', fontsize=fontSize)
-            for chan in range(nrow):
-                subaxs.append(plt.Subplot(fig, gs_inner[chan], frameon=False))
-                fig.add_subplot(subaxs[chan])
-                subaxs[chan].margins(0.0,0.01)
-                subaxs[chan].get_xaxis().set_visible(False)
-                subaxs[chan].get_yaxis().set_visible(False)
-                subaxs[chan].plot(X, CSD_data_noBandpass[chan,:], color='red', linewidth=0.4)
-    
-        elif overlay == 'CSD_bandpassed':
-            axs[0].set_title('CSD with Bandpassed CSD time series overlay', fontsize=fontSize) 
+        if overlay == 'CSD':
+            axs[0].set_title('CSD with time series overlay', fontsize=fontSize) 
             for chan in range(nrow):
                 subaxs.append(plt.Subplot(fig, gs_inner[chan], frameon=False))
                 fig.add_subplot(subaxs[chan])
@@ -567,9 +562,9 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=False, timeRange=None, s
                 subaxs[chan].get_yaxis().set_visible(False)
                 subaxs[chan].plot(X, LFP_data[:,chan], color='gray', linewidth=0.3)
 
-    else:
-        print('No data being overlaid')
-        axs[0].set_title('Current Source Density (CSD)', fontsize=fontSize)
+        else:
+            print('Invalid option specified for overlay argument -- no data overlaid')
+            axs[0].set_title('Current Source Density (CSD)', fontsize=fontSize)
 
 
 

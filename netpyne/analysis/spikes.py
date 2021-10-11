@@ -31,7 +31,7 @@ from .utils import exception #, getInclude, getSpktSpkid
 from .tools import getInclude, getSpktSpkid
 from .tools import saveData as saveFigData
 from ..support.scalebar import add_scalebar
-
+from ..specs import Dict # ADDED TO CSD BRANCH TO TRY TO RESOLVE popAvgRates() Dict() ERROR! 
 
 @exception
 def prepareSpikeData(

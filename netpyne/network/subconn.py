@@ -102,8 +102,7 @@ def _interpolateSegmentSigma(self, cell, secList, gridX, gridY, gridSigma):
                     print("ERROR in closest grid points: ", secName, x1, x2, y1, y2)
                 else:
                    # bilinear interpolation, see http://en.wikipedia.org/wiki/Bilinear_interpolation (fixed bug from Ben Suter's code)
-                   sigma = ((sigma_x1_y1*abs(x2-x)*abs(y2-y) + sigma_x2_y1*abs(x-x1)*abs(y2-y) + sigma_x1_y2*abs(x2-x)*abs(y-y1) + sigma_x2_y2*abs(x-x1)*abs(y-y1))/(abs(x2-x1)*abs(y2-y1)))
-                   #sigma = ((sigma_x1_y1*abs(x2-x)*abs(y2-y) + sigma_x2_y1*abs(x-x1)*abs(y2-y) + sigma_x1_y2*abs(x2-x)*abs(y-y1) + sigma_x2_y2*abs(x-x1)*abs(y-y1))/((x2-x1)*(y2-y1)))
+                    sigma = ((sigma_x1_y1*(x2-x)*(y2-y) + sigma_x2_y1*(x-x1)*(y2-y) + sigma_x1_y2*(x2-x)*(y-y1) + sigma_x2_y2*(x-x1)*(y-y1))/((x2-x1)*(y2-y1)))
 
             elif gridY:  # 1d = radial
                 distY = [abs(gy-y) for gy in gridY]
@@ -118,7 +117,7 @@ def _interpolateSegmentSigma(self, cell, secList, gridX, gridY, gridSigma):
                     print("ERROR in closest grid points: ", secName, y1, y2)
                 else:
                    # linear interpolation, see http://en.wikipedia.org/wiki/Bilinear_interpolation
-                   sigma = ((sigma_y1*abs(y2-y) + sigma_y2*abs(y-y1)) / abs(y2-y1))
+                   sigma = ((sigma_y1*(y2-y) + sigma_y2*(y-y1)) / (y2-y1))
 
             numSyn = sigma * sec['hObj'].L / sec['hObj'].nseg  # return num syns
             segNumSyn[secName].append(numSyn)
@@ -254,25 +253,57 @@ def subcellularConn(self, allCellTags, allPopTags):
                                     newSecs.append(sec)
                                     newLocs.append(seg.x)
 
-
                     # Distance-based
-                    elif subConnParam.get('density', None) == 'distance':
+                    elif isinstance(subConnParam.get('density', None), dict) and subConnParam['density']['type'] == 'distance':
                         # find origin section
+                        # default
                         if 'soma' in postCell.secs:
                             secOrig = 'soma'
                         elif any([secName.startswith('som') for secName in list(postCell.secs.keys())]):
                             secOrig = next(secName for secName in list(postCell.secs.keys()) if secName.startswith('soma'))
                         else:
                             secOrig = list(postCell.secs.keys())[0]
+                        # giving argument
+                        if 'ref_sec' in subConnParam['density']:
+                            if subConnParam['density']['ref_sec'] in list(postCell.secs.keys()):
+                                secOrig = subConnParam['density']['ref_sec']
+                            else:
+                                print('  Warning: Redistributing synapses based on inexistent information for neuron %d - section %s not found' %(postCell.gid,subConnParam['density']['ref_sec']))
 
-                        #print self.fromtodistance(postCell.secs[secOrig](0.5), postCell.secs['secs'][conn['sec']](conn['loc']))
+                        # find origin segment
+                        segOrig = 0.5    # default
+                        if 'ref_seg' in subConnParam['density']:
+                            segOrig = subConnParam['density']['ref_seg']
+                            
+                        # target
+                        target_distance = 0.0
+                        if 'target_distance' in subConnParam['density']:
+                            target_distance = subConnParam['density']['target_distance']
 
-                        # different case if has vs doesn't have 3d points
-                        #  h.distance(sec=h.soma[0], seg=0)
-                        # for sec in apical:
-                        #    print h.secname()
-                        #    for seg in sec:
-                        #      print seg.x, h.distance(seg.x)
+                        newSec, newLoc = secOrig, segOrig
+                        min_dist = target_distance
+                        if 'coord' in subConnParam['density'] and subConnParam['density']['coord'] == 'cartesian':
+                            # calculate euclidean distance from reference
+                            x0, y0, z0 = self._posFromLoc(postCell.secs[secOrig]['hObj'], postCell.secs[secOrig]['hObj'](segOrig).x)
+                            for secName in secList:
+                                for seg in postCell.secs[secName]['hObj']:
+                                    x, y, z = self._posFromLoc(postCell.secs[secName]['hObj'], seg.x)
+                                    dist = np.sqrt((x-x0)**2 + (y-y0)**2 + (z-z0)**2)
+                                    if abs(dist-target_distance) <= min_dist:
+                                        min_dist = abs(dist-target_distance)
+                                        newSec, newLoc = secName, seg.x
+
+                        else:
+                            # (default) calculate distance based on the topology
+                            for secName in secList:
+                                for seg in postCell.secs[secName]['hObj']:
+                                    dist = self.fromtodistance(postCell.secs[secOrig]['hObj'](segOrig), seg)
+                                    if abs(dist-target_distance) <= min_dist:
+                                        min_dist = abs(dist-target_distance)
+                                        newSec, newLoc = secName, seg.x
+
+                        newSecs = [newSec] * len(conns)
+                        newLocs = [newLoc] * len(conns)
 
                     for i,(conn, newSec, newLoc) in enumerate(zip(conns, newSecs, newLocs)):
 

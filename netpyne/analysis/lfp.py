@@ -32,7 +32,11 @@ from .utils import colorList, exception, _saveFigData, _showFigure, _smooth1d
 ## Plot LFP (time-resolved, power spectral density, time-frequency and 3D locations)
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram', 'locations'], inputLFP=None, NFFT=256, noverlap=128, nperseg=256, minFreq=1, maxFreq=100, stepFreq=1, smooth=0, separation=1.0, includeAxon=True, logx=False, logy=False, normSignal=False, normPSD=False, normSpec=False, filtFreq=False, filtOrder=3, detrend=False, transformMethod='morlet', maxPlots=8, overlay=False, colors=None, figSize=(8, 8), fontSize=14, lineWidth=1.5, dpi=200, saveData=None, saveFig=None, showFig=True):
+def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram', 'locations'], inputLFP=None, 
+    pop=None, NFFT=256, noverlap=128, nperseg=256, minFreq=1, maxFreq=100, stepFreq=1, smooth=0, separation=1.0, includeAxon=True, 
+    logx=False, logy=False, normSignal=False, normPSD=False, normSpec=False, filtFreq=False, filtOrder=3, detrend=False, 
+    transformMethod='morlet', maxPlots=8, overlay=False, colors=None, figSize=(8, 8), fontSize=14, lineWidth=1.5, dpi=200, 
+    saveData=None, saveFig=None, showFig=True):
     """
     Function for plotting local field potentials (LFP)
 
@@ -199,7 +203,11 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
     if inputLFP is not None:
         lfp = inputLFP[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
     else:
-        lfp = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+        if pop and pop in sim.allSimData['LFPPops']:
+            lfp = np.array(sim.allSimData['LFPPops'][pop])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]     
+            print('here')   
+        else:
+            lfp = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
 
     if filtFreq:
         from scipy import signal

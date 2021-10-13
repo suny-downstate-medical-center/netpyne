@@ -242,6 +242,11 @@ def calculateLFP():
         tr = sim.net.recXElectrode.getTransferResistance(gid)  # in MOhm
         ecp = np.dot(tr, im)  # in mV (= R * I = MOhm * nA)
 
+        if sim.cfg.saveLFPPops:
+            for pop in sim.simData['LFPPops']:
+                if gid in sim.net.pops[pop].cellGids:
+                    sim.simData['LFPPops'][pop][saveStep - 1,:] += ecp  # contribution of individual cells (stored optionally)
+
         if sim.cfg.saveLFPCells and gid in sim.simData['LFPCells']:
             sim.simData['LFPCells'][gid][saveStep - 1,:] = ecp  # contribution of individual cells (stored optionally)
 

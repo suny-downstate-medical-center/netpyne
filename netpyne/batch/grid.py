@@ -126,7 +126,7 @@ def gridSearch(self, pc):
             cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
 
         self.cfg = cfgModule.cfg
-    
+
     self.cfg.checkErrors = False  # avoid error checking during batch
 
     # set initial cfg initCfg
@@ -211,26 +211,53 @@ def gridSearch(self, pc):
                 cfgSavePath = self.saveFolder+'/'+simLabel+'_cfg.json'
                 self.cfg.save(cfgSavePath)
 
-                # hpc torque job submission
-                if self.runCfg.get('type',None) == 'hpc_torque':
+    self.gridSubmit(pc, cfgSavePath, netParamsSavePath, jobName, simLabel, processes, processFiles)
+    outfiles = []
+    for procFile in processFiles:
+        outfiles.append(open(procFile, 'r'))
 
-                    # read params or set defaults
-                    sleepInterval = self.runCfg.get('sleepInterval', 1)
-                    nodes = self.runCfg.get('nodes', 1)
-                    ppn = self.runCfg.get('ppn', 1)
-                    script = self.runCfg.get('script', 'init.py')
-                    mpiCommand = self.runCfg.get('mpiCommand', 'mpiexec')
-                    walltime = self.runCfg.get('walltime', '00:30:00')
-                    queueName = self.runCfg.get('queueName', 'default')
-                    nodesppn = 'nodes=%d:ppn=%d'%(nodes,ppn)
-                    custom = self.runCfg.get('custom', '')
-                    printOutput = self.runCfg.get('printOutput', False)
-                    numproc = nodes*ppn
+    # note: while the process is running the poll() method will return None
+    # depending on the platform or the way the source file is executed (e.g. if run using mpiexec),
+    # the stored processes ids might correspond to completed processes
+    # and therefore return 1 (even though nrniv processes are still running)
+    while any([proc.poll() is None for proc in processes]):
+        for i, proc in enumerate(processes):
+            newline = outfiles[i].readline()
+            if len(newline) > 1:
+                print(newline, end='')
 
-                    command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
+        #sleep(sleepInterval)
 
+    # attempt to terminate completed processes
+    for proc in processes:
+        try:
+            proc.terminate()
+        except:
+            pass
+        pc.done()
+        h.quit()
 
-                    jobString = """#!/bin/bash
+def gridSubmit(self, pc, cfgSavePath, netParamsSavePath, jobName, simLabel, processes, processFiles):
+
+    # hpc torque job submission
+    if self.runCfg.get('type',None) == 'hpc_torque':
+
+        # read params or set defaults
+        sleepInterval = self.runCfg.get('sleepInterval', 1)
+        nodes = self.runCfg.get('nodes', 1)
+        ppn = self.runCfg.get('ppn', 1)
+        script = self.runCfg.get('script', 'init.py')
+        mpiCommand = self.runCfg.get('mpiCommand', 'mpiexec')
+        walltime = self.runCfg.get('walltime', '00:30:00')
+        queueName = self.runCfg.get('queueName', 'default')
+        nodesppn = 'nodes=%d:ppn=%d'%(nodes,ppn)
+        custom = self.runCfg.get('custom', '')
+        printOutput = self.runCfg.get('printOutput', False)
+        numproc = nodes*ppn
+
+        command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
+
+        jobString = """#!/bin/bash
 #PBS -N %s
 #PBS -l walltime=%s
 #PBS -q %s
@@ -241,45 +268,43 @@ def gridSearch(self, pc):
 cd $PBS_O_WORKDIR
 echo $PBS_O_WORKDIR
 %s
-                    """ % (jobName, walltime, queueName, nodesppn, jobName, jobName, custom, command)
+            """ % (jobName, walltime, queueName, nodesppn, jobName, jobName, custom, command)
 
-                    # Send job_string to qsub
-                    print('Submitting job ',jobName)
-                    print(jobString+'\n')
+        # Send job_string to qsub
+        print('Submitting job ',jobName)
+        print(jobString+'\n')
 
-                    batchfile = '%s.pbs'%(jobName)
-                    with open(batchfile, 'w') as text_file:
-                        text_file.write("%s" % jobString)
+        batchfile = '%s.pbs'%(jobName)
+        with open(batchfile, 'w') as text_file:
+            text_file.write("%s" % jobString)
+        proc = Popen(['qsub', batchfile], stderr=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
+        (output, input) = (proc.stdin, proc.stdout)
 
-                    proc = Popen(['qsub', batchfile], stderr=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
-                    (output, input) = (proc.stdin, proc.stdout)
+    # hpc slurm job submission
+    elif self.runCfg.get('type',None) == 'hpc_slurm':
 
+        # read params or set defaults
+        sleepInterval = self.runCfg.get('sleepInterval', 1)
+        allocation = self.runCfg.get('allocation', 'csd403') # NSG account
+        nodes = self.runCfg.get('nodes', 1)
+        coresPerNode = self.runCfg.get('coresPerNode', 1)
+        email = self.runCfg.get('email', 'a@b.c')
+        folder = self.runCfg.get('folder', '.')
+        script = self.runCfg.get('script', 'init.py')
+        mpiCommand = self.runCfg.get('mpiCommand', 'ibrun')
+        walltime = self.runCfg.get('walltime', '00:30:00')
+        reservation = self.runCfg.get('reservation', None)
+        custom = self.runCfg.get('custom', '')
+        printOutput = self.runCfg.get('printOutput', False)
+        if reservation:
+            res = '#SBATCH --res=%s'%(reservation)
+        else:
+            res = ''
 
-                # hpc slurm job submission
-                elif self.runCfg.get('type',None) == 'hpc_slurm':
+        numproc = nodes*coresPerNode
+        command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
 
-                    # read params or set defaults
-                    sleepInterval = self.runCfg.get('sleepInterval', 1)
-                    allocation = self.runCfg.get('allocation', 'csd403') # NSG account
-                    nodes = self.runCfg.get('nodes', 1)
-                    coresPerNode = self.runCfg.get('coresPerNode', 1)
-                    email = self.runCfg.get('email', 'a@b.c')
-                    folder = self.runCfg.get('folder', '.')
-                    script = self.runCfg.get('script', 'init.py')
-                    mpiCommand = self.runCfg.get('mpiCommand', 'ibrun')
-                    walltime = self.runCfg.get('walltime', '00:30:00')
-                    reservation = self.runCfg.get('reservation', None)
-                    custom = self.runCfg.get('custom', '')
-                    printOutput = self.runCfg.get('printOutput', False)
-                    if reservation:
-                        res = '#SBATCH --res=%s'%(reservation)
-                    else:
-                        res = ''
-
-                    numproc = nodes*coresPerNode
-                    command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
-
-                    jobString = """#!/bin/bash
+        jobString = """#!/bin/bash
 #SBATCH --job-name=%s
 #SBATCH -A %s
 #SBATCH -t %s
@@ -298,77 +323,52 @@ cd %s
 wait
                     """  % (simLabel, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, res, custom, folder, command)
 
-                    # Send job_string to sbatch
+        # Send job_string to sbatch
 
-                    print('Submitting job ',jobName)
-                    print(jobString+'\n')
+        print('Submitting job ',jobName)
+        print(jobString+'\n')
 
-                    batchfile = '%s.sbatch'%(jobName)
-                    with open(batchfile, 'w') as text_file:
-                        text_file.write("%s" % jobString)
+        batchfile = '%s.sbatch'%(jobName)
+        with open(batchfile, 'w') as text_file:
+            text_file.write("%s" % jobString)
 
-                    #subprocess.call
-                    proc = Popen(['sbatch',batchfile], stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
-                    (output, input) = (proc.stdin, proc.stdout)
+        #subprocess.call
+        proc = Popen(['sbatch',batchfile], stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
+        (output, input) = (proc.stdin, proc.stdout)
 
 
-                # run mpi jobs directly e.g. if have 16 cores, can run 4 jobs * 4 cores in parallel
-                # eg. usage: python batch.py
-                elif self.runCfg.get('type',None) == 'mpi_direct':
-                    jobName = self.saveFolder+'/'+simLabel
-                    print('Running job ',jobName)
-                    cores = self.runCfg.get('cores', 1)
-                    folder = self.runCfg.get('folder', '.')
-                    script = self.runCfg.get('script', 'init.py')
-                    mpiCommand = self.runCfg.get('mpiCommand', 'mpirun')
-                    printOutput = self.runCfg.get('printOutput', False)
+    # run mpi jobs directly e.g. if have 16 cores, can run 4 jobs * 4 cores in parallel
+    # eg. usage: python batch.py
+    elif self.runCfg.get('type',None) == 'mpi_direct':
+        jobName = self.saveFolder+'/'+simLabel
+        print('Running job ',jobName)
+        cores = self.runCfg.get('cores', 1)
+        folder = self.runCfg.get('folder', '.')
+        script = self.runCfg.get('script', 'init.py')
+        mpiCommand = self.runCfg.get('mpiCommand', 'mpirun')
+        printOutput = self.runCfg.get('printOutput', False)
 
-                    command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, cores, script, cfgSavePath, netParamsSavePath)
+        command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, cores, script, cfgSavePath, netParamsSavePath)
 
-                    print(command+'\n')
-                    proc = Popen(command.split(' '), stdout=open(jobName+'.run','w'),  stderr=open(jobName+'.err','w'))
-                    processes.append(proc)
-                    processFiles.append(jobName+'.run')
+        print(command+'\n')
+        proc = Popen(command.split(' '), stdout=open(jobName+'.run','w'),  stderr=open(jobName+'.err','w'))
+        processes.append(proc)
+        processFiles.append(jobName+'.run')
 
-                # pc bulletin board job submission (master/slave) via mpi
-                # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
-                elif self.runCfg.get('type',None) == 'mpi_bulletin':
-                    jobName = self.saveFolder+'/'+simLabel
-                    printOutput = self.runCfg.get('printOutput', False)
-                    print('Submitting job ',jobName)
-                    # master/slave bulletin board schedulling of jobs
-                    pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath, processes)
-                    while pc.working(): pass
-                else:
-                    print(self.runCfg)
-                    print("Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'")
-                    sys.exit(0)
+    # pc bulletin board job submission (master/slave) via mpi
+    # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
+    elif self.runCfg.get('type',None) == 'mpi_bulletin':
+        jobName = self.saveFolder+'/'+simLabel
+        printOutput = self.runCfg.get('printOutput', False)
+        print('Submitting job ',jobName)
+        # master/slave bulletin board schedulling of jobs
+        pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath, processes)
+        while pc.working(): pass
+    else:
+        print(self.runCfg)
+        print("Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'")
+        sys.exit(0)
 
     print("-"*80)
     print("   Finished submitting jobs for grid parameter exploration   ")
     print("-" * 80)
-    
-    outfiles = []
-    for procFile in processFiles:
-        outfiles.append(open(procFile, 'r'))
-        
-    # note: while the process is running the poll() method will return None  
-    # depending on the platform or the way the source file is executed (e.g. if run using mpiexec), 
-    # the stored processes ids might correspond to completed processes  
-    # and therefore return 1 (even though nrniv processes are still running)
-    while any([proc.poll() is None for proc in processes]):
-        for i, proc in enumerate(processes):
-                newline = outfiles[i].readline()
-                if len(newline) > 1:
-                    print(newline, end='')
-                
-        #sleep(sleepInterval)
-    
-    # attempt to terminate completed processes
-    for proc in processes:
-        try:
-            proc.terminate()
-        except:
-            pass
-    pc.done()
-    h.quit()

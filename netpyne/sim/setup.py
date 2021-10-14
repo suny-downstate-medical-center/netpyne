@@ -328,6 +328,9 @@ def setupRecordLFP():
             popsRecordLFP = list(sim.net.pops.keys()) # record all pops
         elif isinstance(sim.cfg.saveLFPPops, list):
             popsRecordLFP = [p for p in sim.cfg.saveLFPPops if p in list(sim.net.pops.keys())] # only pops that exist
+            sim.net.popForEachGid = {}
+            for pop in popsRecordLFP:
+                sim.net.popForEachGid.update({gid: pop for gid in sim.net.pops[pop].cellGids})
         for pop in popsRecordLFP:
             sim.simData['LFPPops'][pop] = np.zeros((saveSteps, nsites))
 

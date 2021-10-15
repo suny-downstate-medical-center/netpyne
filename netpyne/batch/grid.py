@@ -82,14 +82,14 @@ def runJob(script, cfgSavePath, netParamsSavePath, processes):
 # -------------------------------------------------------------------------------
 # Grid Search optimization
 # -------------------------------------------------------------------------------
-def gridSearch(self, pc):
+def gridSearch(batch, pc):
     """
     Function for/to <short description of `netpyne.batch.grid.gridSearch`>
 
     Parameters
     ----------
-    self : <type>
-        <Short description of self>
+    batch : <type>
+        <Short description of batch>
         **Default:** *required*
 
     pc : <type>
@@ -100,45 +100,45 @@ def gridSearch(self, pc):
     """
 
 
-    createFolder(self.saveFolder)
+    createFolder(batch.saveFolder)
 
     # save Batch dict as json
-    targetFile = self.saveFolder+'/'+self.batchLabel+'_batch.json'
-    self.save(targetFile)
+    targetFile = batch.saveFolder+'/'+batch.batchLabel+'_batch.json'
+    batch.save(targetFile)
 
     # copy this batch script to folder
-    targetFile = self.saveFolder+'/'+self.batchLabel+'_batchScript.py'
+    targetFile = batch.saveFolder+'/'+batch.batchLabel+'_batchScript.py'
     os.system('cp ' + os.path.realpath(__file__) + ' ' + targetFile)
 
     # copy netParams source to folder
-    netParamsSavePath = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
-    os.system('cp ' + self.netParamsFile + ' ' + netParamsSavePath)
+    netParamsSavePath = batch.saveFolder+'/'+batch.batchLabel+'_netParams.py'
+    os.system('cp ' + batch.netParamsFile + ' ' + netParamsSavePath)
 
     # import cfg
-    if self.cfg is None:
-        cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
+    if batch.cfg is None:
+        cfgModuleName = os.path.basename(batch.cfgFile).split('.')[0]
 
         try:
-            loader = importlib.machinery.SourceFileLoader(cfgModuleName, self.cfgFile)
+            loader = importlib.machinery.SourceFileLoader(cfgModuleName, batch.cfgFile)
             cfgModule = types.ModuleType(loader.name)
             loader.exec_module(cfgModule)
         except:
-            cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
+            cfgModule = imp.load_source(cfgModuleName, batch.cfgFile)
 
-        self.cfg = cfgModule.cfg
+        batch.cfg = cfgModule.cfg
 
-    self.cfg.checkErrors = False  # avoid error checking during batch
+    batch.cfg.checkErrors = False  # avoid error checking during batch
 
     # set initial cfg initCfg
-    if len(self.initCfg) > 0:
-        for paramLabel, paramVal in self.initCfg.items():
-            self.setCfgNestedParam(paramLabel, paramVal)
+    if len(batch.initCfg) > 0:
+        for paramLabel, paramVal in batch.initCfg.items():
+            batch.setCfgNestedParam(paramLabel, paramVal)
 
     # iterate over all param combinations
-    if self.method == 'grid':
+    if batch.method == 'grid':
         groupedParams = False
         ungroupedParams = False
-        for p in self.params:
+        for p in batch.params:
             if 'group' not in p:
                 p['group'] = False
                 ungroupedParams = True
@@ -146,7 +146,7 @@ def gridSearch(self, pc):
                 groupedParams = True
 
         if ungroupedParams:
-            labelList, valuesList = zip(*[(p['label'], p['values']) for p in self.params if p['group'] == False])
+            labelList, valuesList = zip(*[(p['label'], p['values']) for p in batch.params if p['group'] == False])
             valueCombinations = list(product(*(valuesList)))
             indexCombinations = list(product(*[range(len(x)) for x in valuesList]))
         else:
@@ -156,7 +156,7 @@ def gridSearch(self, pc):
             valuesList = ()
 
         if groupedParams:
-            labelListGroup, valuesListGroup = zip(*[(p['label'], p['values']) for p in self.params if p['group'] == True])
+            labelListGroup, valuesListGroup = zip(*[(p['label'], p['values']) for p in batch.params if p['group'] == True])
             valueCombGroups = zip(*(valuesListGroup))
             indexCombGroups = zip(*[range(len(x)) for x in valuesListGroup])
             labelList = labelListGroup+labelList
@@ -187,31 +187,31 @@ def gridSearch(self, pc):
 
             for i, paramVal in enumerate(pComb):
                 paramLabel = labelList[i]
-                self.setCfgNestedParam(paramLabel, paramVal)
+                batch.setCfgNestedParam(paramLabel, paramVal)
 
                 print(str(paramLabel)+' = '+str(paramVal))
 
             # set simLabel and jobName
-            simLabel = self.batchLabel+''.join([''.join('_'+str(i)) for i in iComb])
-            jobName = self.saveFolder+'/'+simLabel
+            simLabel = batch.batchLabel+''.join([''.join('_'+str(i)) for i in iComb])
+            jobName = batch.saveFolder+'/'+simLabel
 
             sleepInterval = 1
 
             # skip if output file already exists
-            if self.runCfg.get('skip', False) and glob.glob(jobName+'.json'):
+            if batch.runCfg.get('skip', False) and glob.glob(jobName+'.json'):
                 print('Skipping job %s since output file already exists...' % (jobName))
-            elif self.runCfg.get('skipCfg', False) and glob.glob(jobName+'_cfg.json'):
+            elif batch.runCfg.get('skipCfg', False) and glob.glob(jobName+'_cfg.json'):
                 print('Skipping job %s since cfg file already exists...' % (jobName))
-            elif self.runCfg.get('skipCustom', None) and glob.glob(jobName+self.runCfg['skipCustom']):
-                print('Skipping job %s since %s file already exists...' % (jobName, self.runCfg['skipCustom']))
+            elif batch.runCfg.get('skipCustom', None) and glob.glob(jobName+batch.runCfg['skipCustom']):
+                print('Skipping job %s since %s file already exists...' % (jobName, batch.runCfg['skipCustom']))
             else:
                 # save simConfig json to saveFolder
-                self.cfg.simLabel = simLabel
-                self.cfg.saveFolder = self.saveFolder
-                cfgSavePath = self.saveFolder+'/'+simLabel+'_cfg.json'
-                self.cfg.save(cfgSavePath)
+                batch.cfg.simLabel = simLabel
+                batch.cfg.saveFolder = batch.saveFolder
+                cfgSavePath = batch.saveFolder+'/'+simLabel+'_cfg.json'
+                batch.cfg.save(cfgSavePath)
 
-    self.gridSubmit(pc, cfgSavePath, netParamsSavePath, jobName, simLabel, processes, processFiles)
+    gridSubmit(batch, pc, cfgSavePath, netParamsSavePath, jobName, simLabel, processes, processFiles)
     outfiles = []
     for procFile in processFiles:
         outfiles.append(open(procFile, 'r'))
@@ -237,22 +237,22 @@ def gridSearch(self, pc):
         pc.done()
         h.quit()
 
-def gridSubmit(self, pc, cfgSavePath, netParamsSavePath, jobName, simLabel, processes, processFiles):
+def gridSubmit(batch, pc, cfgSavePath, netParamsSavePath, jobName, simLabel, processes, processFiles):
 
     # hpc torque job submission
-    if self.runCfg.get('type',None) == 'hpc_torque':
+    if batch.runCfg.get('type',None) == 'hpc_torque':
 
         # read params or set defaults
-        sleepInterval = self.runCfg.get('sleepInterval', 1)
-        nodes = self.runCfg.get('nodes', 1)
-        ppn = self.runCfg.get('ppn', 1)
-        script = self.runCfg.get('script', 'init.py')
-        mpiCommand = self.runCfg.get('mpiCommand', 'mpiexec')
-        walltime = self.runCfg.get('walltime', '00:30:00')
-        queueName = self.runCfg.get('queueName', 'default')
+        sleepInterval = batch.runCfg.get('sleepInterval', 1)
+        nodes = batch.runCfg.get('nodes', 1)
+        ppn = batch.runCfg.get('ppn', 1)
+        script = batch.runCfg.get('script', 'init.py')
+        mpiCommand = batch.runCfg.get('mpiCommand', 'mpiexec')
+        walltime = batch.runCfg.get('walltime', '00:30:00')
+        queueName = batch.runCfg.get('queueName', 'default')
         nodesppn = 'nodes=%d:ppn=%d'%(nodes,ppn)
-        custom = self.runCfg.get('custom', '')
-        printOutput = self.runCfg.get('printOutput', False)
+        custom = batch.runCfg.get('custom', '')
+        printOutput = batch.runCfg.get('printOutput', False)
         numproc = nodes*ppn
 
         command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
@@ -282,21 +282,21 @@ echo $PBS_O_WORKDIR
         (output, input) = (proc.stdin, proc.stdout)
 
     # hpc slurm job submission
-    elif self.runCfg.get('type',None) == 'hpc_slurm':
+    elif batch.runCfg.get('type',None) == 'hpc_slurm':
 
         # read params or set defaults
-        sleepInterval = self.runCfg.get('sleepInterval', 1)
-        allocation = self.runCfg.get('allocation', 'csd403') # NSG account
-        nodes = self.runCfg.get('nodes', 1)
-        coresPerNode = self.runCfg.get('coresPerNode', 1)
-        email = self.runCfg.get('email', 'a@b.c')
-        folder = self.runCfg.get('folder', '.')
-        script = self.runCfg.get('script', 'init.py')
-        mpiCommand = self.runCfg.get('mpiCommand', 'ibrun')
-        walltime = self.runCfg.get('walltime', '00:30:00')
-        reservation = self.runCfg.get('reservation', None)
-        custom = self.runCfg.get('custom', '')
-        printOutput = self.runCfg.get('printOutput', False)
+        sleepInterval = batch.runCfg.get('sleepInterval', 1)
+        allocation = batch.runCfg.get('allocation', 'csd403') # NSG account
+        nodes = batch.runCfg.get('nodes', 1)
+        coresPerNode = batch.runCfg.get('coresPerNode', 1)
+        email = batch.runCfg.get('email', 'a@b.c')
+        folder = batch.runCfg.get('folder', '.')
+        script = batch.runCfg.get('script', 'init.py')
+        mpiCommand = batch.runCfg.get('mpiCommand', 'ibrun')
+        walltime = batch.runCfg.get('walltime', '00:30:00')
+        reservation = batch.runCfg.get('reservation', None)
+        custom = batch.runCfg.get('custom', '')
+        printOutput = batch.runCfg.get('printOutput', False)
         if reservation:
             res = '#SBATCH --res=%s'%(reservation)
         else:
@@ -340,14 +340,14 @@ wait
 
     # run mpi jobs directly e.g. if have 16 cores, can run 4 jobs * 4 cores in parallel
     # eg. usage: python batch.py
-    elif self.runCfg.get('type',None) == 'mpi_direct':
-        jobName = self.saveFolder+'/'+simLabel
+    elif batch.runCfg.get('type',None) == 'mpi_direct':
+        jobName = batch.saveFolder+'/'+simLabel
         print('Running job ',jobName)
-        cores = self.runCfg.get('cores', 1)
-        folder = self.runCfg.get('folder', '.')
-        script = self.runCfg.get('script', 'init.py')
-        mpiCommand = self.runCfg.get('mpiCommand', 'mpirun')
-        printOutput = self.runCfg.get('printOutput', False)
+        cores = batch.runCfg.get('cores', 1)
+        folder = batch.runCfg.get('folder', '.')
+        script = batch.runCfg.get('script', 'init.py')
+        mpiCommand = batch.runCfg.get('mpiCommand', 'mpirun')
+        printOutput = batch.runCfg.get('printOutput', False)
 
         command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, cores, script, cfgSavePath, netParamsSavePath)
 
@@ -358,15 +358,15 @@ wait
 
     # pc bulletin board job submission (master/slave) via mpi
     # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
-    elif self.runCfg.get('type',None) == 'mpi_bulletin':
-        jobName = self.saveFolder+'/'+simLabel
-        printOutput = self.runCfg.get('printOutput', False)
+    elif batch.runCfg.get('type',None) == 'mpi_bulletin':
+        jobName = batch.saveFolder+'/'+simLabel
+        printOutput = batch.runCfg.get('printOutput', False)
         print('Submitting job ',jobName)
         # master/slave bulletin board schedulling of jobs
-        pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath, processes)
+        pc.submit(runJob, batch.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath, processes)
         while pc.working(): pass
     else:
-        print(self.runCfg)
+        print(batch.runCfg)
         print("Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'")
         sys.exit(0)
 

@@ -277,6 +277,7 @@ echo $PBS_O_WORKDIR
         batchfile = '%s.pbs'%(jobName)
         with open(batchfile, 'w') as text_file:
             text_file.write("%s" % jobString)
+
         proc = Popen(['qsub', batchfile], stderr=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
         (output, input) = (proc.stdin, proc.stdout)
 

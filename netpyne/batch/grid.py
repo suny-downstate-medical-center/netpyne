@@ -97,6 +97,11 @@ def gridSearch(batch, pc):
     """
 
 
+    if self.runCfg.get('type',None) == 'mpi_bulletin': 
+        script = self.runCfg.get('script', 'init.py')
+        pc.master_works_on_jobs(0) # preserve master for managing
+        pc.runworker() # only 1 runworker needed in rank0
+
     createFolder(batch.saveFolder)
 
     # save Batch dict as json
@@ -161,7 +166,6 @@ def gridSearch(batch, pc):
             valueCombGroups = [(0,)] # this is a hack -- improve!
             indexCombGroups = [(0,)]
 
-    pc.runworker() # only 1 runworker needed in rank0
     processes = []
     processFiles = []
 

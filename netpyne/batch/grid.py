@@ -70,14 +70,11 @@ def runJob(script, cfgSavePath, netParamsSavePath, processes):
 
     """
 
-
     print('\nJob in rank id: ',pc.id())
     command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath)
     print(command+'\n')
     proc = subprocess.run(command.split(' '), stdout=PIPE, stderr=PIPE, check=False)
     processes.append(proc)
-
-
 
 # -------------------------------------------------------------------------------
 # Grid Search optimization
@@ -362,7 +359,7 @@ wait
         jobName = batch.saveFolder+'/'+simLabel
         printOutput = batch.runCfg.get('printOutput', False)
         print('Submitting job ',jobName)
-        # master/slave bulletin board schedulling of jobs
+        # master/slave bulletin board scheduling of jobs
         pc.submit(runJob, batch.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath, processes)
         while pc.working(): pass
     else:
@@ -371,5 +368,5 @@ wait
         sys.exit(0)
 
     print("-"*80)
-    print("   Finished submitting jobs for grid parameter exploration   ")
+    print("   Finished submitting jobs for parameter exploration   ")
     print("-" * 80)

@@ -97,8 +97,8 @@ def gridSearch(batch, pc):
     """
 
 
-    if self.runCfg.get('type',None) == 'mpi_bulletin': 
-        script = self.runCfg.get('script', 'init.py')
+    if batch.runCfg.get('type',None) == 'mpi_bulletin': 
+        script = batch.runCfg.get('script', 'init.py')
         pc.master_works_on_jobs(0) # preserve master for managing
         pc.runworker() # only 1 runworker needed in rank0
 

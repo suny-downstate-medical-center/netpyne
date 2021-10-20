@@ -369,7 +369,7 @@ wait
         print('Submitting job ',jobName)
         # master/slave bulletin board scheduling of jobs
         pc.submit(runJob, script, cfgSavePath, netParamsSavePath, processes)
-        while pc.working(): sleep()
+        while pc.working(): pass
     else:
         print(batch.runCfg)
         print("Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'")

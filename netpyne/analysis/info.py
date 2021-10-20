@@ -29,7 +29,17 @@ from netpyne.logger import logger
 @exception
 def nTE(cells1=[], cells2=[], spks1=None, spks2=None, timeRange=None, binSize=20, numShuffle=30):
     """
-    Function for/to <short description of `netpyne.analysis.info.nTE`>
+    Function that calculates the Normalized Transfer Entropy (nTE) between two spike train signals.
+    
+    Transfer entropy is a model-free statistic that is able to measure 
+    the time-directed transfer of information between stochastic variables
+    and therefore provides an asymmetric method to measure information transfer.
+    In simple words, the nTE represents the fraction of information in X explained
+    by its own past which is not explained by the past of Y. 
+    
+    Kale, P. et al (2018, July). Normalized Transfer Entropy as a Tool to Identify Multisource 
+    Functional Epileptic Networks IEEE Engineering in Medicine and Biology Society (EMBC) 
+    https://doi.org/10.1109/embc.2018.8512532
 
     Parameters
     ----------
@@ -180,7 +190,15 @@ def nTE(cells1=[], cells2=[], spks1=None, spks2=None, timeRange=None, binSize=20
 @exception
 def plotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, label2=None, timeRange=None, binSize=5, testGranger=False, plotFig=True, saveData=None, saveFig=None, showFig=True):
     """
-    Function to plot the Granger Causality between two groups of cells
+    Function that calculates Granger Causality between two spike train signals.
+    
+    The Granger causality test is a statistical hypothesis test for determining 
+    whether one time series is useful in forecasting another. G-causality is based 
+    on the simple idea that causes both precede and help predict their effects.
+    
+    Seth, A. K., Barrett, A. B., & Barnett, L. (2015). Granger Causality Analysis in 
+    Neuroscience and Neuroimaging. Journal of Neuroscience, 35(8), 3293–3297. 
+    https://doi.org/10.1523/jneurosci.4399-14.2015
 
     Parameters
     ----------

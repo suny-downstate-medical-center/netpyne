@@ -72,7 +72,8 @@ class SimConfig(object):
         self.recordStim = False  # record spikes of cell stims
         self.recordLFP = []  # list of 3D locations to record LFP from
         self.recordDipoles = False # record dipoles
-        self.saveLFPCells = False  # Store LFP generate individually by each cell
+        self.saveLFPCells = False  # Store LFP generated individually by each cell
+        self.saveLFPPops = False  # Store LFP generated individually by each population
         self.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
         self.recordTime = True  # record time step of recording
 

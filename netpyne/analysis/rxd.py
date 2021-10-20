@@ -25,9 +25,9 @@ from .utils import exception, _showFigure, _saveFigData
 ## Plot RxD concentration
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotRxDConcentration(speciesLabel, regionLabel, plane='xy', figSize=(5,10), fontSize=10, scalebar=False, title=True, showFig=True, saveFig=True):
+def plotRxDConcentration(speciesLabel, regionLabel, plane='xy', figSize=(5,10), clim=None, fontSize=10, scalebar=False, title=True, showFig=True, saveFig=True, **kwargs):
     """
-    Function for/to <short description of `netpyne.analysis.rxd.plotRxDConcentration`>
+    Function to plot reaction-diffusion concentrations
 
     Parameters
     ----------
@@ -81,6 +81,8 @@ def plotRxDConcentration(speciesLabel, regionLabel, plane='xy', figSize=(5,10), 
 
     from .. import sim
 
+    print('Plotting RxD concentration ...')
+
     # set font size
     plt.rcParams.update({'font.size': fontSize})
 
@@ -94,8 +96,19 @@ def plotRxDConcentration(speciesLabel, regionLabel, plane='xy', figSize=(5,10), 
     extent.append(sim.net.rxd['regions'][regionLabel][plane[1] + 'lo'])
     extent.append(sim.net.rxd['regions'][regionLabel][plane[1] + 'hi'])
 
+    vmin = None
+    vmax = None
+    if clim is not None:
+        vmin = clim[0]
+        vmax = clim[1]
+
     fig = plt.figure(figsize=figSize)
-    plt.imshow(species[region].states3d[:].mean(plane2mean[plane]).T, interpolation='nearest', origin='upper', extent=extent)
+    plt.imshow(species[region].states3d[:].mean(plane2mean[plane]).T, interpolation='nearest', origin='upper', extent=extent, vmin=vmin, vmax=vmax)
+    import numpy as np
+    print('  min:', np.min(species[region].states3d[:].mean(plane2mean[plane]).T))
+    print('  max:', np.max(species[region].states3d[:].mean(plane2mean[plane]).T))
+
+
 
     ax = plt.gca()
     if scalebar:
@@ -105,9 +118,14 @@ def plotRxDConcentration(speciesLabel, regionLabel, plane='xy', figSize=(5,10), 
         sb.location = 'lower left'
         ax.add_artist(sb)
 
-    plt.colorbar(label='[' + species.name + '] (mM)')
+    cb = plt.colorbar(label='[' + species.name + '] (mM)')
     plt.xlabel(plane[0] + ' location (um)')
     plt.ylabel(plane[1] + ' location (um)')
+    
+    if saveFig == 'movie':
+        from neuron import h
+        cb.ax.set_title('Time = ' + str(round(h.t, 1)), fontsize=fontSize)
+
     if title:
         plt.title('RxD: ' + species.name +  ' concentration')
     plt.tight_layout()
@@ -118,9 +136,13 @@ def plotRxDConcentration(speciesLabel, regionLabel, plane='xy', figSize=(5,10), 
     # save figure
     if saveFig:
         if isinstance(saveFig, basestring):
-            filename = saveFig
+            if saveFig == 'movie':
+                filename = sim.cfg.filename + '_rxd_concentration_movie_' + str(round(h.t, 1)) + '.png'
+            else:
+                filename = saveFig
         else:
             filename = sim.cfg.filename + '_rxd_concentration.png'
         plt.savefig(filename)
 
     return fig, {'data': species[region].states3d[:].mean(plane2mean[plane])}
+

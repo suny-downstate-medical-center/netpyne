@@ -26,6 +26,7 @@ if __gui__:
     import matplotlib.pyplot as plt
 import numpy as np
 from numbers import Number
+from math import ceil
 from .utils import colorList, exception, _roundFigures, getCellsInclude, getCellsIncludeTags
 from .utils import _saveFigData, _showFigure
 from netpyne.logger import logger
@@ -1369,7 +1370,7 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
                         nsyns = [0] * nseg
                         secs.append(sec['hObj'])
                         conns = [conn for conn in cellPost.conns if conn['sec']==secLabel and conn['preGid'] in cellsPreGids]
-                        for conn in conns: nsyns[int(round(conn['loc']*nseg))-1] += 1
+                        for conn in conns: nsyns[int(ceil(conn['loc']*nseg))-1] += 1
                         cvals.extend(nsyns)
 
                 cvals = np.array(cvals)
@@ -1446,7 +1447,8 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
             sm._A = []  # fake up the array of the scalar mappable
             cb = plt.colorbar(sm, fraction=0.15, shrink=0.5, pad=0.05, aspect=20)
             if cvar: cb.set_label(cbLabels[cvar], rotation=90, fontsize=fontSize)
-            cb.ax.set_title('Time = ' + str(round(h.t, 1)), fontsize=fontSize)
+            if saveFig == 'movie':
+                cb.ax.set_title('Time = ' + str(round(h.t, 1)), fontsize=fontSize)
 
         if bkgColor:
             shapeax.w_xaxis.set_pane_color(bkgColor)

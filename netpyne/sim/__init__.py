@@ -61,6 +61,9 @@ from ..network import Network, Pop
 # import analysis-related module
 from .. import analysis
 
+# import plotting-related module
+from .. import plotting
+
 # import testing related functions
 from .. import tests
 from ..tests.checks import checkOutput

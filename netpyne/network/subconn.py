@@ -268,7 +268,7 @@ def subcellularConn(self, allCellTags, allPopTags):
                             if subConnParam['density']['ref_sec'] in list(postCell.secs.keys()):
                                 secOrig = subConnParam['density']['ref_sec']
                             else:
-                                print('  Warning: Redistributing synapses based on inexistent information for neuron %d - section %s not found' %(postCell.gid,subConnParam['density']['ref_sec']))
+                                logger.warning('  Redistributing synapses based on inexistent information for neuron %d - section %s not found' %(postCell.gid,subConnParam['density']['ref_sec']))
 
                         # find origin segment
                         segOrig = 0.5    # default

@@ -4,7 +4,6 @@ Module for utilities to help analyze and plot results
 """
 
 from __future__ import unicode_literals
-from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
@@ -29,7 +28,7 @@ import sys
 import pandas as pd
 import pickle, json
 import os
-
+from netpyne.logger import logger
 
 
 
@@ -51,7 +50,7 @@ def exception(function):
             return function(*args, **kwargs)
         except Exception as e:
             err = "There was an exception in %s():" % (function.__name__)
-            print(("  %s \n    %s \n    %s" % (err, e, sys.exc_info())))
+            logger.warning("  %s \n    %s \n    %s" % (err, e, sys.exc_info()))
             return -1
 
     return wrapper
@@ -237,22 +236,20 @@ def plotData(sim=None):
                     func = getattr(sim.analysis, funcName)
                     out = func(**kwargs)  # call function with user arguments
                 except:
-                    print('Unable to run', funcName, 'from sim.plotting and sim.analysis')
-                
+                    logger.warning('Unable to run ' + funcName + ' from sim.plotting and sim.analysis')
 
         # Print timings
         if sim.cfg.timing:
-
             sim.timing('stop', 'plotTime')
-            print(('  Done; plotting time = %0.2f s' % sim.timingData['plotTime']))
+            logger.info('  Done; plotting time = %0.2f s' % sim.timingData['plotTime'])
 
             sim.timing('stop', 'totalTime')
             sumTime = sum([t for k,t in sim.timingData.items() if k not in ['totalTime']])
-            if sim.timingData['totalTime'] <= 1.2*sumTime:  # Print total time (only if makes sense)
-                print(('\nTotal time = %0.2f s' % sim.timingData['totalTime']))
+            if sim.timingData['totalTime'] <= 1.2*sumTime: # Print total time (only if makes sense)
+                logger.info('Total time = %0.2f s' % sim.timingData['totalTime'])
 
         try:
-            print('\nEnd time: ', datetime.now())
+            logger.info('End time: ' + datetime.now())
         except:
             pass
 
@@ -317,15 +314,15 @@ def saveData(data, fileName=None, fileDesc=None, fileType=None, fileDir=None, si
         fileName = os.path.join(fileDir, fileName)
 
     if fileName.endswith('.pkl'):
-        print(('Saving data as %s ... ' % (fileName)))
+        logger.info('Saving data as %s... ' % (fileName))
         with open(fileName, 'wb') as fileObj:
             pickle.dump(data, fileObj)
 
     elif fileName.endswith('.json'):
-        print(('Saving data as %s ... ' % (fileName)))
+        logger.info('Saving data as %s... ' % (fileName))
         sim.saveJSON(fileName, data)
     else:
-        print('File extension to save data not recognized')
+        logger.warning('File extension to save data not recognized')
 
     return fileName
 

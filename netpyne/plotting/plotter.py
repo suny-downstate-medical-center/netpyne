@@ -9,6 +9,7 @@ import numpy as np
 from copy import deepcopy
 import pickle, json
 import os
+from netpyne.logger import logger
 
 plt.ion()
 
@@ -60,7 +61,7 @@ class GeneralPlotter:
                 if rcParam in mpl.rcParams:
                     mpl.rcParams[rcParam] = rcParams[rcParam]
                 else:
-                    print(rcParam, 'not found in matplotlib.rcParams')
+                    logger.warning(str(rcParam) + ' not found in matplotlib.rcParams')
             self.rcParams = rcParams
         else:
             self.rcParams = self.orig_rcParams

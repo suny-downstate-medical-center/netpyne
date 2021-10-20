@@ -4,7 +4,7 @@ import matplotlib.patches as mpatches
 from ..analysis.utils import exception #, loadData
 from ..analysis.tools import loadData
 from .plotter import ScatterPlotter
-
+from netpyne.logger import logger
 
 @exception
 def plotRaster(
@@ -231,7 +231,7 @@ def plotRaster(
 
         rasterData = sim.analysis.prepareRaster(legend=legend, popLabels=popLabels, **kwargs)
 
-    print('Plotting raster...')
+    logger.info('Plotting raster...')
 
     # If input is a file name, load data from the file
     if type(rasterData) == str:

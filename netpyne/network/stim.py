@@ -118,7 +118,7 @@ def addStims(self):
     logger.info('  Number of stims on node %i: %i ' % (sim.rank, sum([len(cell.stims) for cell in self.cells])))
     sim.pc.barrier()
     sim.timing('stop', 'stimsTime')
-    if sim.rank == 0: logger.timing('  Done; cell stims creation time = %0.2f s.' % sim.timingData['stimsTime'])
+    if sim.cfg.timing and sim.rank == 0: logger.info('  Done; cell stims creation time = %0.2f s.' % sim.timingData['stimsTime'])
 
     return [cell.stims for cell in self.cells]
 

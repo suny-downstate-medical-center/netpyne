@@ -137,7 +137,7 @@ def connectCells(self):
         logger.info('  Number of synaptic contacts on node %i: %i ' % (sim.rank, nodeSynapses))
     sim.pc.barrier()
     sim.timing('stop', 'connectTime')
-    if sim.rank == 0: logger.timing('  Done; cell connection time = %0.2f s.' % sim.timingData['connectTime'])
+    if sim.cfg.timing and sim.rank == 0: logger.info('  Done; cell connection time = %0.2f s.' % sim.timingData['connectTime'])
 
     return [cell.conns for cell in self.cells]
 

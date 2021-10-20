@@ -41,13 +41,14 @@ def plotData():
             out = func(**kwargs) # call function with user arguments
 
         # Print timings
-        sim.timing('stop', 'plotTime')
-        logger.timing('  Done; plotting time = %0.2f s' % sim.timingData['plotTime'])
+        if sim.cfg.timing:
+            sim.timing('stop', 'plotTime')
+            logger.info('  Done; plotting time = %0.2f s' % sim.timingData['plotTime'])
 
-        sim.timing('stop', 'totalTime')
-        sumTime = sum([t for k,t in sim.timingData.items() if k not in ['totalTime']])
-        if sim.timingData['totalTime'] <= 1.2*sumTime: # Print total time (only if makes sense)
-            logger.timing('\nTotal time = %0.2f s' % sim.timingData['totalTime'])
+            sim.timing('stop', 'totalTime')
+            sumTime = sum([t for k,t in sim.timingData.items() if k not in ['totalTime']])
+            if sim.timingData['totalTime'] <= 1.2*sumTime: # Print total time (only if makes sense)
+                logger.info('\nTotal time = %0.2f s' % sim.timingData['totalTime'])
 
         try:
             logger.info('\nEnd time: ' + str(datetime.now()))

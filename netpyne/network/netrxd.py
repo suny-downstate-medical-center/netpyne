@@ -92,7 +92,7 @@ def addRxD (self, nthreads=None):
 
     sim.pc.barrier()
     sim.timing('stop', 'rxdTime')
-    if sim.rank == 0: logger.timing('  Done; RxD setup time = %0.2f s.' % sim.timingData['rxdTime'])
+    if sim.cfg.timing and sim.rank == 0: logger.info('  Done; RxD setup time = %0.2f s.' % sim.timingData['rxdTime'])
 
     return sim.net.rxd
 

@@ -242,7 +242,8 @@ def gatherData(gatherLFP=True):
     sim.pc.barrier()
     if sim.rank == 0:
         sim.timing('stop', 'gatherTime')
-        logger.timing('  Done; gather time = %0.2f s.' % sim.timingData['gatherTime'])
+        if sim.cfg.timing:
+            logger.info('  Done; gather time = %0.2f s.' % sim.timingData['gatherTime'])
 
         logger.info('')
         logger.info('Analyzing...')
@@ -429,7 +430,8 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
         sim.pc.barrier()
     else:
         sim.timing('stop', 'gatherTime')
-        logger.timing('  Done; gather time = %0.2f s.' % sim.timingData['gatherTime'])
+        if sim.cfg.timing:
+            logger.info('  Done; gather time = %0.2f s.' % sim.timingData['gatherTime'])
 
         logger.info('')
         logger.info('Analyzing...')

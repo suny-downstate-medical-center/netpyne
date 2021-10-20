@@ -126,9 +126,9 @@ def _loadFile(filename):
         logger.warning('Format not recognized for file %s'%(filename))
         return
 
-    if hasattr(sim, 'rank') and sim.rank == 0 and hasattr(sim, 'cfg'):
+    if hasattr(sim, 'rank') and sim.rank == 0 and hasattr(sim, 'cfg') and sim.cfg.timing:
         sim.timing('stop', 'loadFileTime')
-        logger.timing('  Done; file loading time = %0.2f s' % sim.timingData['loadFileTime'])
+        logger.info('  Done; file loading time = %0.2f s' % sim.timingData['loadFileTime'])
 
 
     return data
@@ -341,7 +341,7 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
 
             if loadNow:  #if sim.rank == 0 and sim.cfg.timing:
                 sim.timing('stop', 'loadNetTime')
-                logger.timing('  Done; re-instantiate net time = %0.2f s' % sim.timingData['loadNetTime'])
+                if sim.cfg.timing: logger.info('  Done; re-instantiate net time = %0.2f s' % sim.timingData['loadNetTime'])
     else:
         logger.warning('  netCells and/or netPops not found in file %s'%(filename))
 

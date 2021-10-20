@@ -226,7 +226,8 @@ def saveData(include=None, filename=None, saveLFP=True):
 
             # Save timing
             sim.timing('stop', 'saveTime')
-            logger.timing('  Done; saving time = %0.2f s.' % sim.timingData['saveTime'])
+            if sim.cfg.timing:
+                logger.info('  Done; saving time = %0.2f s.' % sim.timingData['saveTime'])
             if sim.cfg.timing and sim.cfg.saveTiming:
                 import pickle
                 with open('timing.pkl', 'wb') as file: pickle.dump(sim.timing, file)
@@ -682,7 +683,8 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
         sim.pc.barrier()
         if sim.rank == 0:
             sim.timing('stop', 'saveInNodeTime')
-            logger.timing('  Done; saving time = %0.2f s.' % sim.timingData['saveInNodeTime'])
+            if sim.cfg.timing:
+                logger.info('  Done; saving time = %0.2f s.' % sim.timingData['saveInNodeTime'])
             if sim.cfg.timing and sim.cfg.saveTiming:
                 import pickle
                 with open('timing.pkl', 'wb') as file: pickle.dump(sim.timing, file)

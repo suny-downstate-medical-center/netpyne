@@ -51,7 +51,7 @@ def modifyCells(self, params, updateMasterAllCells=False):
         sim._gatherCells()  # update allCells
 
     sim.timing('stop', 'modifyCellsTime')
-    if sim.rank == 0: logger.timing('  Done; cells modification time = %0.2f s.' % sim.timingData['modifyCellsTime'])
+    if sim.rank == 0 and sim.cfg.timing: logger.info('  Done; cells modification time = %0.2f s.' % sim.timingData['modifyCellsTime'])
 
 
 # -----------------------------------------------------------------------------
@@ -94,7 +94,7 @@ def modifySynMechs(self, params, updateMasterAllCells=False):
          sim._gatherCells()  # update allCells
 
     sim.timing('stop', 'modifySynMechsTime')
-    if sim.rank == 0: logger.timing('  Done; syn mechs modification time = %0.2f s.' % sim.timingData['modifySynMechsTime'])
+    if sim.rank == 0 and sim.cfg.timing: logger.info('  Done; syn mechs modification time = %0.2f s.' % sim.timingData['modifySynMechsTime'])
 
 
 # -----------------------------------------------------------------------------
@@ -137,7 +137,7 @@ def modifyConns(self, params, updateMasterAllCells=False):
         sim._gatherCells()  # update allCells
 
     sim.timing('stop', 'modifyConnsTime')
-    if sim.rank == 0: logger.timing('  Done; connections modification time = %0.2f s.' % sim.timingData['modifyConnsTime'])
+    if sim.rank == 0 and sim.cfg.timing: logger.info('  Done; connections modification time = %0.2f s.' % sim.timingData['modifyConnsTime'])
 
 
 # -----------------------------------------------------------------------------
@@ -180,4 +180,4 @@ def modifyStims(self, params, updateMasterAllCells=False):
         sim._gatherCells()  # update allCells
 
     sim.timing('stop', 'modifyStimsTime')
-    if sim.rank == 0: logger.timing('  Done; stims modification time = %0.2f s.' % sim.timingData['modifyStimsTime'])
+    if sim.rank == 0 and sim.cfg.timing: logger.info('  Done; stims modification time = %0.2f s.' % sim.timingData['modifyStimsTime'])

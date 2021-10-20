@@ -86,14 +86,14 @@ class Network(object):
             newCells = ipop.createCells() # create cells for this pop using Pop method
             self.cells.extend(newCells)  # add to list of cells
             sim.pc.barrier()
-            if sim.rank==0: logger.timing('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['pop']))
+            if sim.cfg.timing and sim.rank == 0: logger.info('Instantiated %d cells of population %s'%(len(newCells), ipop.tags['pop']))
 
         if self.params.defineCellShapes: self.defineCellShapes()
 
         logger.info('  Number of cells on node %i: %i ' % (sim.rank,len(self.cells)))
         sim.pc.barrier()
         sim.timing('stop', 'createTime')
-        if sim.rank == 0: logger.timing('  Done; cell creation time = %0.2f s.' % sim.timingData['createTime'])
+        if sim.cfg.timing and sim.rank == 0: logger.info('  Done; cell creation time = %0.2f s.' % sim.timingData['createTime'])
 
         return self.cells
 

@@ -37,12 +37,13 @@ class Logger():
   def warning(self, *args, **kwargs):
     self.netpyne_logger.warning(*args, **kwargs)
 
-  def timing(self, *args, **kwargs):
-    from . import sim
-    if sim.cfg.timing:
-      self.netpyne_logger.info(*args, **kwargs)
-
-  # The methods we don't yet use:
+  # The methods we don't yet use.
+  # See https://github.com/Neurosim-lab/netpyne/pull/623 for explanations.
+  #
+  # def timing(self, *args, **kwargs):
+  #   from . import sim
+  #   if sim.cfg.timing:
+  #     self.netpyne_logger.info(*args, **kwargs)
   # 
   # def error(*args, **kwargs):
   #   self.netpyne_logger.error(*args, **kwargs)

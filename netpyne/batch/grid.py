@@ -97,9 +97,7 @@ def gridSearch(batch, pc):
     """
 
 
-    if batch.runCfg.get('type',None) == 'mpi_bulletin': 
-        script = batch.runCfg.get('script', 'init.py')
-        pc.master_works_on_jobs(0) # preserve master for managing
+    if batch.runCfg.get('type',None) == 'mpi_bulletin':
         pc.runworker() # only 1 runworker needed in rank0
 
     createFolder(batch.saveFolder)
@@ -212,7 +210,11 @@ def gridSearch(batch, pc):
                 cfgSavePath = batch.saveFolder+'/'+simLabel+'_cfg.json'
                 batch.cfg.save(cfgSavePath)
 
-    gridSubmit(batch, pc, cfgSavePath, netParamsSavePath, jobName, simLabel, processes, processFiles)
+            gridSubmit(batch, pc, cfgSavePath, netParamsSavePath, jobName, simLabel, processes, processFiles)
+    print("-"*80)
+    print("   Finished creating jobs for parameter exploration   ")
+    print("-" * 80)
+
     outfiles = []
     for procFile in processFiles:
         outfiles.append(open(procFile, 'r'))
@@ -235,8 +237,8 @@ def gridSearch(batch, pc):
             proc.terminate()
         except:
             pass
-        pc.done()
-        h.quit()
+    pc.done()
+    h.quit()
 
 def gridSubmit(batch, pc, cfgSavePath, netParamsSavePath, jobName, simLabel, processes, processFiles):
 
@@ -360,17 +362,15 @@ wait
     # pc bulletin board job submission (master/slave) via mpi
     # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
     elif batch.runCfg.get('type',None) == 'mpi_bulletin':
+        script = batch.runCfg.get('script', 'init.py')
+
         jobName = batch.saveFolder+'/'+simLabel
         printOutput = batch.runCfg.get('printOutput', False)
         print('Submitting job ',jobName)
         # master/slave bulletin board scheduling of jobs
-        pc.submit(runJob, batch.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath, processes)
-        while pc.working(): pass
+        pc.submit(runJob, script, cfgSavePath, netParamsSavePath, processes)
+        while pc.working(): sleep()
     else:
         print(batch.runCfg)
         print("Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'")
         sys.exit(0)
-
-    print("-"*80)
-    print("   Finished submitting jobs for parameter exploration   ")
-    print("-" * 80)

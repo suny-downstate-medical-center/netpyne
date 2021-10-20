@@ -37,9 +37,9 @@ def plotTraces(
     cells = tracesData['cells']
     pops = tracesData['pops']
 
-    logger.info('traces: ' + traces)
-    logger.info('cells: ' + cells)
-    logger.info('pops: ' + pops)
+    logger.info('traces: ' + str(traces))
+    logger.info('cells: ' + str(cells))
+    logger.info('pops: ' + str(pops))
 
     logger.info('Plotting traces ...')
 

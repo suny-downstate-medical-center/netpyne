@@ -115,7 +115,7 @@ def _distributeCells(numCellsPop):
         if sim.nextHost>=sim.nhosts:
             sim.nextHost=0
 
-    logger.debug(("Distributed population of %i cells on %s hosts: %s, next: %s"%(numCellsPop,sim.nhosts,hostCells,sim.nextHost)))
+    logger.debug("Distributed population of %i cells on %s hosts: %s, next: %s"%(numCellsPop,sim.nhosts,hostCells,sim.nextHost))
     return hostCells
 
 

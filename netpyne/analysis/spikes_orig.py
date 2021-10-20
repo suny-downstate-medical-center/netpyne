@@ -544,7 +544,7 @@ def plotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid
             sel, spkts, spkgids = getSpktSpkid(cellGids=[] if include == ['allCells'] else cellGids, timeRange=timeRange) # using [] is faster for all cells
         except:
             import sys
-            logger.info(sys.exc_info())
+            logger.warning(sys.exc_info())
             spkgids, spkts = [], []
             sel = pd.DataFrame(columns=['spkt', 'spkid'])
         sel['spkgidColor'] = sel['spkid'].map(gidColors)

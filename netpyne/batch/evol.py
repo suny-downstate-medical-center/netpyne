@@ -248,7 +248,8 @@ def evolOptim(self, pc):
                 if len(read) > 0:
                     jobid = int(read.split()[-1])
                     jobids[candidate_index] = jobid
-                logger.info('jobids', jobids)
+                logger.info('jobids')
+                logger.info(jobids)
             total_jobs += 1
             sleep(0.1)
 

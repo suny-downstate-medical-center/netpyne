@@ -1327,7 +1327,7 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
     from .. import sim
     from neuron import h
 
-    logger.info('Plotting 3D cell shape ...')
+    logger.info('Plotting 3D cell shape...')
 
     cellsPreGids = [c.gid for c in sim.getCellsList(includePre)] if includePre else []
     cellsPost = sim.getCellsList(includePost)
@@ -1659,7 +1659,7 @@ def calculateDisynaptic(includePost = ['allCells'], includePre = ['allCells'], i
     except:
         pass
 
-    logger.info('    time ellapsed (s): ', time() - start)
+    logger.info('    time ellapsed (s): ' + str(time() - start))
 
     return numDis
 

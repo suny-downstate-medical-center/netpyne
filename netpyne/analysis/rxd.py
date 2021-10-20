@@ -82,7 +82,7 @@ def plotRxDConcentration(speciesLabel, regionLabel, plane='xy', figSize=(5,10), 
 
     from .. import sim
 
-    logger.info('Plotting RxD concentration ...')
+    logger.info('Plotting RxD concentration...')
 
     # set font size
     plt.rcParams.update({'font.size': fontSize})

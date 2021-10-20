@@ -526,7 +526,8 @@ def asdOptim(self, pc):
                     self.setCfgNestedParam(paramLabel, paramVal)
 
             # modify cfg instance with candidate values
-            logger.info(paramLabels, candidate)
+            logger.info(paramLabels)
+            logger.info(candidate)
             for label, value in zip(paramLabels, candidate):
                 logger.info('set %s=%s' % (label, value))
                 self.setCfgNestedParam(label, value)
@@ -609,7 +610,8 @@ def asdOptim(self, pc):
                     if len(read) > 0:
                         jobid = int(read.split()[-1])
                         jobids[candidate_index] = jobid
-                    logger.info('jobids' + jobids)
+                    logger.info('jobids')
+                    logger.info(jobids)
             total_jobs += 1
             sleep(0.1)
 
@@ -790,7 +792,7 @@ def asdOptim(self, pc):
     bestFval = np.min(output['fval'])
     bestX = output['x'][np.argmin(output['fval'])]
 
-    logger.info('Best Solution with fitness = %.4g: \n' % (bestFval) + bestX)
+    logger.info('Best Solution with fitness = %.4g: \n' % (bestFval) + ' ' + str(bestX))
     logger.info("-" * 80)
     logger.info("   Completed adaptive stochasitc parameter optimization   ")
     logger.info("-" * 80)

@@ -187,7 +187,8 @@ def gridSearch(self, pc):
                 iComb = []
                 pComb = []
 
-            logger.info(iComb, pComb)
+            logger.info(iComb)
+            logger.info(pComb)
 
             for i, paramVal in enumerate(pComb):
                 paramLabel = labelList[i]

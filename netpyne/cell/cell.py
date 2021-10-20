@@ -300,12 +300,12 @@ class Cell (object):
                             else:                                
                                 sim.simData[key]['cell_'+str(self.gid)] = h.Vector(sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
                                 sim.simData[key]['cell_'+str(self.gid)].record(ptr, sim.cfg.recordStep)
-                        logger.debug('  Recording ', key, 'from cell ', self.gid, ' with parameters: ',str(params))
-                        logger.debug(sim.simData[key]['cell_'+str(self.gid)])
+                        logger.debug('  Recording ' + key + ' from cell ' + str(self.gid) + ' with parameters: ' + str(params))
+                        logger.debug(sim.simData[key]['cell_' + str(self.gid)])
                 except:
-                    logger.debug('  Cannot record ' + key + 'from cell ' + self.gid)
+                    logger.debug('  Cannot record ' + key + 'from cell ' + str(self.gid))
             else:
-                logger.debug('  Conditions preclude recording ' + key + ' from cell ' + self.gid)
+                logger.debug('  Conditions preclude recording ' + key + ' from cell ' + str(self.gid))
         #else:
         #    logger.debug '  NOT recording ', key, 'from cell ', self.gid, ' with parameters: ',str(params)
 

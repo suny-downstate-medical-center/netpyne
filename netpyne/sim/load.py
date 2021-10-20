@@ -70,7 +70,7 @@ def _loadFile(filename):
     # load dpk file
     elif ext == 'dpk':
         import gzip
-        logger.warning('Loading file %s ... ' % (filename))
+        logger.info('Loading file %s ... ' % (filename))
         #fn=sim.cfg.filename #.split('.')
         #gzip.open(fn, 'wb').write(pk.dumps(dataSave)) # write compressed string
         logger.warning('NOT IMPLEMENTED!')
@@ -94,14 +94,14 @@ def _loadFile(filename):
     elif ext == 'saveHDF5':
         #dataSaveUTF8 = _dict2utf8(replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
         import hdf5storage
-        logger.warning('Loading file %s ... ' % (filename))
+        logger.info('Loading file %s ... ' % (filename))
         #hdf5storage.writes(dataSaveUTF8, filename=sim.cfg.filename+'.hdf5')
         logger.warning('NOT IMPLEMENTED!')
 
     # load CSV file (currently only saves spikes)
     elif ext == 'csv':
         import csv
-        logger.warning('Loading file %s ... ' % (filename))
+        logger.info('Loading file %s ... ' % (filename))
         writer = csv.writer(open(sim.cfg.filename+'.csv', 'wb'))
         #for dic in dataSave['simData']:
         #    for values in dic:
@@ -110,7 +110,7 @@ def _loadFile(filename):
 
     # load Dat file(s)
     elif ext == 'dat':
-        logger.warning('Loading file %s ... ' % (filename))
+        logger.info('Loading file %s ... ' % (filename))
         logger.warning('NOT IMPLEMENTED!')
         # traces = sim.cfg.recordTraces
         # for ref in traces.keys():
@@ -598,7 +598,7 @@ def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, lo
             else:
                 conns.update({int(cell['gid']): cell['conns'] for cell in objs if connsGidRange==None or cell['gid'] in connsGidRange})
 
-        logger.info('time ellapsed (s): ', time() - start)
+        logger.info('time ellapsed (s): ' + str(time() - start))
 
     tags = utils.decimalToFloat(tags)
     conns = utils.decimalToFloat(conns)

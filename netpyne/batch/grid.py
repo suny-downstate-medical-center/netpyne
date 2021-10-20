@@ -215,6 +215,8 @@ def gridSearch(batch, pc):
     print("   Finished creating jobs for parameter exploration   ")
     print("-" * 80)
 
+    if batch.runCfg.get('type',None) == 'mpi_bulletin':
+        while pc.working(): pass
     outfiles = []
     for procFile in processFiles:
         outfiles.append(open(procFile, 'r'))
@@ -369,7 +371,6 @@ wait
         print('Submitting job ',jobName)
         # master/slave bulletin board scheduling of jobs
         pc.submit(runJob, script, cfgSavePath, netParamsSavePath, processes)
-        while pc.working(): pass
     else:
         print(batch.runCfg)
         print("Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'")

@@ -350,6 +350,46 @@ def setupRecordLFP():
         sim.cfg.use_fast_imem = True
 
 
+
+#------------------------------------------------------------------------------
+# Setup Dipoles Recording (needed for EEG/MEG)
+#------------------------------------------------------------------------------
+def setupRecordDipoles():
+    """
+    Function for/to <short description of `netpyne.sim.setup.setupRecordDipoles`>
+
+
+    """
+
+
+    from .. import sim
+    import lfpykit
+
+    saveSteps = int(np.ceil(sim.cfg.duration/sim.cfg.recordStep))
+    sim.simData['dipoles'] = np.zeros((saveSteps))
+
+    if not sim.net.params.defineCellShapes: sim.net.defineCellShapes()  # convert cell shapes (if not previously done already)
+    sim.net.calcSegCoords()  # calculate segment coords for each cell
+
+    if sim.cfg.createNEURONObj:
+        for cell in sim.net.compartCells:
+          
+            # wrap around NeuronCell class - just needs collect_geometry() func
+            # update collect_geometry to get 3d geom of each segment (maybe use existing LFP code?)
+            # Calculate cdm = lfpykit.CurrentDipoleMoment(cell=cell)
+            # Calculate M = cdm.get_transformation_matrix()
+          
+          
+          
+            # # nseg = cell._segCoords['p0'].shape[1]
+            # sim.net.recXElectrode.calcTransferResistance(cell.gid, cell._segCoords)  # transfer resistance for each cell
+            # cell.imembPtr = h.PtrVector(nseg)  # pointer vector
+            # cell.imembPtr.ptr_update_callback(cell.setImembPtr)   # used for gathering an array of  i_membrane values from the pointer vector
+            # cell.imembVec = h.Vector(nseg)
+
+        sim.cvode.use_fast_imem(True)   # make i_membrane_ a range variable
+        sim.cfg.use_fast_imem = True
+
 #------------------------------------------------------------------------------
 # Setup Recording
 #------------------------------------------------------------------------------

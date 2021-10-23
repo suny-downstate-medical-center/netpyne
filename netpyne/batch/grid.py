@@ -140,7 +140,7 @@ def gridSearch(batch, pc):
 
     if batch.method == 'list':
         paramListFile = batch.runCfg.get('paramListFile', 'params.csv')
-        paramLines = pd.read_csv('paramListFile')
+        paramLines = pd.read_csv(paramListFile)
         paramLabels = list(paramLines.columns)
         print(f'Running {len(paramLines)} simulations from {paramListFile}')
         for row in paramLines.itertuples():
@@ -148,7 +148,7 @@ def gridSearch(batch, pc):
                 batch.setCfgNestedParam(paramLabel, paramVal)
                 print(f'{paramLabel} = {paramVal}')
             # set simLabel and jobName
-            simLabel = f'{batch.batchLabel}{ParamLines.Index}'
+            simLabel = f'{batch.batchLabel}{row.Index}'
             jobName = f'{batch.saveFolder}/{simLabel}'
             gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles)
 

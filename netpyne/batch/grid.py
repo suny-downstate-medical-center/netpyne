@@ -22,6 +22,7 @@ try:
 except NameError:
     to_unicode = str
 
+import csv
 import imp
 import json
 import logging
@@ -76,6 +77,7 @@ def runJob(script, cfgSavePath, netParamsSavePath, processes):
     proc = subprocess.run(command.split(' '), stdout=PIPE, stderr=PIPE, check=False)
     processes.append(proc)
 
+
 # -------------------------------------------------------------------------------
 # Grid Search optimization
 # -------------------------------------------------------------------------------
@@ -95,7 +97,6 @@ def gridSearch(batch, pc):
 
 
     """
-
 
     if batch.runCfg.get('type',None) == 'mpi_bulletin':
         pc.runworker() # only 1 runworker needed in rank0
@@ -134,8 +135,25 @@ def gridSearch(batch, pc):
         for paramLabel, paramVal in batch.initCfg.items():
             batch.setCfgNestedParam(paramLabel, paramVal)
 
-    # iterate over all param combinations
-    if batch.method == 'grid':
+    processes = []
+    processFiles = []
+
+    if batch.method == 'list':
+        paramListFile = batch.runCfg.get('paramListFile', 'params.csv')
+        with open(paramListFile, 'r') as lf:
+            paramLines = list(csv.reader(lf))
+        paramLabels = paramLines.pop(0) # 1st line of file is header
+        print(f'Running {len(paramLines)} simulations from {paramListFile}')
+        for line in paramLines:
+            for paramLabel, paramVal in zip(paramLabels, line):
+                batch.setCfgNestedParam(paramLabel, paramVal)
+                print(f'{paramLabel} = {paramVal}')
+            # set simLabel and jobName
+            simLabel = f'{batch.batchLabel}{line}'
+            jobName = f'{batch.saveFolder}/{simLabel}'
+            gridSubmit(batch, pc, cfgSavePath, netParamsSavePath, jobName, simLabel, processes, processFiles)
+
+    elif batch.method == 'grid': # iterate over all param combinations
         groupedParams = False
         ungroupedParams = False
         for p in batch.params:
@@ -164,56 +182,39 @@ def gridSearch(batch, pc):
             valueCombGroups = [(0,)] # this is a hack -- improve!
             indexCombGroups = [(0,)]
 
-    processes = []
-    processFiles = []
+        for iCombG, pCombG in zip(indexCombGroups, valueCombGroups):
+            for iCombNG, pCombNG in zip(indexCombinations, valueCombinations):
+                if groupedParams and ungroupedParams: # temporary hack - improve
+                    iComb = iCombG+iCombNG
+                    pComb = pCombG+pCombNG
+                elif ungroupedParams:
+                    iComb = iCombNG
+                    pComb = pCombNG
+                elif groupedParams:
+                    iComb = iCombG
+                    pComb = pCombG
+                else:
+                    iComb = []
+                    pComb = []
 
-    for iCombG, pCombG in zip(indexCombGroups, valueCombGroups):
-        for iCombNG, pCombNG in zip(indexCombinations, valueCombinations):
-            if groupedParams and ungroupedParams: # temporary hack - improve
-                iComb = iCombG+iCombNG
-                pComb = pCombG+pCombNG
-            elif ungroupedParams:
-                iComb = iCombNG
-                pComb = pCombNG
-            elif groupedParams:
-                iComb = iCombG
-                pComb = pCombG
-            else:
-                iComb = []
-                pComb = []
+                print(iComb, pComb)
 
-            print(iComb, pComb)
+                for i, paramVal in enumerate(pComb):
+                    paramLabel = labelList[i]
+                    batch.setCfgNestedParam(paramLabel, paramVal)
 
-            for i, paramVal in enumerate(pComb):
-                paramLabel = labelList[i]
-                batch.setCfgNestedParam(paramLabel, paramVal)
+                    print(str(paramLabel)+' = '+str(paramVal))
 
-                print(str(paramLabel)+' = '+str(paramVal))
+                # set simLabel and jobName
+                simLabel = batch.batchLabel+''.join([''.join('_'+str(i)) for i in iComb])
+                jobName = batch.saveFolder+'/'+simLabel
 
-            # set simLabel and jobName
-            simLabel = batch.batchLabel+''.join([''.join('_'+str(i)) for i in iComb])
-            jobName = batch.saveFolder+'/'+simLabel
-
-            sleepInterval = 1
-
-            # skip if output file already exists
-            if batch.runCfg.get('skip', False) and glob.glob(jobName+'.json'):
-                print('Skipping job %s since output file already exists...' % (jobName))
-            elif batch.runCfg.get('skipCfg', False) and glob.glob(jobName+'_cfg.json'):
-                print('Skipping job %s since cfg file already exists...' % (jobName))
-            elif batch.runCfg.get('skipCustom', None) and glob.glob(jobName+batch.runCfg['skipCustom']):
-                print('Skipping job %s since %s file already exists...' % (jobName, batch.runCfg['skipCustom']))
-            else:
-                # save simConfig json to saveFolder
-                batch.cfg.simLabel = simLabel
-                batch.cfg.saveFolder = batch.saveFolder
-                cfgSavePath = batch.saveFolder+'/'+simLabel+'_cfg.json'
-                batch.cfg.save(cfgSavePath)
-
-            gridSubmit(batch, pc, cfgSavePath, netParamsSavePath, jobName, simLabel, processes, processFiles)
-    print("-"*80)
-    print("   Finished creating jobs for parameter exploration   ")
-    print("-" * 80)
+                sleepInterval = 1
+                
+                gridSubmit(batch, pc, cfgSavePath, netParamsSavePath, jobName, simLabel, processes, processFiles)
+        print("-"*80)
+        print("   Finished creating jobs for parameter exploration   ")
+        print("-" * 80)
 
     if batch.runCfg.get('type',None) == 'mpi_bulletin':
         while pc.working(): pass
@@ -243,6 +244,20 @@ def gridSearch(batch, pc):
     h.quit()
 
 def gridSubmit(batch, pc, cfgSavePath, netParamsSavePath, jobName, simLabel, processes, processFiles):
+
+    # skip if output file already exists
+    if batch.runCfg.get('skip', False) and glob.glob(jobName+'.json'):
+        print('Skipping job %s since output file already exists...' % (jobName))
+    elif batch.runCfg.get('skipCfg', False) and glob.glob(jobName+'_cfg.json'):
+        print('Skipping job %s since cfg file already exists...' % (jobName))
+    elif batch.runCfg.get('skipCustom', None) and glob.glob(jobName+batch.runCfg['skipCustom']):
+        print('Skipping job %s since %s file already exists...' % (jobName, batch.runCfg['skipCustom']))
+    else:
+        # save simConfig json to saveFolder
+        batch.cfg.simLabel = simLabel
+        batch.cfg.saveFolder = batch.saveFolder
+        cfgSavePath = batch.saveFolder+'/'+simLabel+'_cfg.json'
+        batch.cfg.save(cfgSavePath)
 
     # hpc torque job submission
     if batch.runCfg.get('type',None) == 'hpc_torque':

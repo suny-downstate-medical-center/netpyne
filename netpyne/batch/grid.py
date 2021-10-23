@@ -135,8 +135,7 @@ def gridSearch(batch, pc):
         for paramLabel, paramVal in batch.initCfg.items():
             batch.setCfgNestedParam(paramLabel, paramVal)
 
-    processes = []
-    processFiles = []
+    processes, processFiles = [],[]
 
     if batch.method == 'list':
         paramListFile = batch.runCfg.get('paramListFile', 'params.csv')

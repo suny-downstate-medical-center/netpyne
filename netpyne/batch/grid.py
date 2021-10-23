@@ -144,12 +144,12 @@ def gridSearch(batch, pc):
             paramLines = list(csv.reader(lf))
         paramLabels = paramLines.pop(0) # 1st line of file is header
         print(f'Running {len(paramLines)} simulations from {paramListFile}')
-        for line in paramLines:
+        for ii, line in enumerate(paramLines):
             for paramLabel, paramVal in zip(paramLabels, line):
                 batch.setCfgNestedParam(paramLabel, paramVal)
                 print(f'{paramLabel} = {paramVal}')
             # set simLabel and jobName
-            simLabel = f'{batch.batchLabel}{line}'
+            simLabel = f'{batch.batchLabel}{ii}'
             jobName = f'{batch.saveFolder}/{simLabel}'
             gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles)
 

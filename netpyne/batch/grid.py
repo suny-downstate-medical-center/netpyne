@@ -151,7 +151,7 @@ def gridSearch(batch, pc):
             # set simLabel and jobName
             simLabel = f'{batch.batchLabel}{line}'
             jobName = f'{batch.saveFolder}/{simLabel}'
-            gridSubmit(batch, pc, cfgSavePath, netParamsSavePath, jobName, simLabel, processes, processFiles)
+            gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles)
 
     elif batch.method == 'grid': # iterate over all param combinations
         groupedParams = False
@@ -211,7 +211,7 @@ def gridSearch(batch, pc):
 
                 sleepInterval = 1
                 
-                gridSubmit(batch, pc, cfgSavePath, netParamsSavePath, jobName, simLabel, processes, processFiles)
+                gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles)
         print("-"*80)
         print("   Finished creating jobs for parameter exploration   ")
         print("-" * 80)
@@ -243,7 +243,7 @@ def gridSearch(batch, pc):
     pc.done()
     h.quit()
 
-def gridSubmit(batch, pc, cfgSavePath, netParamsSavePath, jobName, simLabel, processes, processFiles):
+def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles):
 
     # skip if output file already exists
     if batch.runCfg.get('skip', False) and glob.glob(jobName+'.json'):

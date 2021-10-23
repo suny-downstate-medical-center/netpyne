@@ -22,7 +22,7 @@ try:
 except NameError:
     to_unicode = str
 
-import csv
+import pandas as pd
 import imp
 import json
 import logging
@@ -140,16 +140,15 @@ def gridSearch(batch, pc):
 
     if batch.method == 'list':
         paramListFile = batch.runCfg.get('paramListFile', 'params.csv')
-        with open(paramListFile, 'r') as lf:
-            paramLines = list(csv.reader(lf))
-        paramLabels = paramLines.pop(0) # 1st line of file is header
+        paramLines = pd.read_csv('paramListFile')
+        paramLabels = list(paramLines.columns)
         print(f'Running {len(paramLines)} simulations from {paramListFile}')
-        for ii, line in enumerate(paramLines):
-            for paramLabel, paramVal in zip(paramLabels, line):
+        for row in paramLines.itertuples():
+            for paramLabel, paramVal in zip(paramLabels, row[1:]): # 0th element is Index
                 batch.setCfgNestedParam(paramLabel, paramVal)
                 print(f'{paramLabel} = {paramVal}')
             # set simLabel and jobName
-            simLabel = f'{batch.batchLabel}{ii}'
+            simLabel = f'{batch.batchLabel}{ParamLines.Index}'
             jobName = f'{batch.saveFolder}/{simLabel}'
             gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles)
 

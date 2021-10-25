@@ -5,7 +5,6 @@ Module with support functions for morphology
 
 from __future__ import division
 from __future__ import unicode_literals
-from __future__ import print_function
 from __future__ import absolute_import
 # Code adapted from https://github.com/ahwillia/PyNeuron-Toolbox under MIT license
 

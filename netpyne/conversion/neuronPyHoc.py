@@ -3,7 +3,6 @@ Module for importing cells, synapses, and networks from NEURON
 
 """
 
-from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
@@ -18,6 +17,7 @@ import os, sys, signal
 from numbers import Number
 from neuron import h
 import importlib
+from netpyne.logger import logger
 
 #h.load_file("stdrun.hoc")
 
@@ -105,9 +105,9 @@ def importCellParams(fileName, labels, values, key = None):
             params = dict(list(zip(paramLabels, paramValues)))
             if removeFilePath: sys.path.remove(filePath)
         except:
-            print("Error loading cell parameter values from " + fileName)
+            logger.warning("Error loading cell parameter values from " + fileName)
     else:
-        print("Trying to import izhi params from a file without the .py extension")
+        logger.info("Trying to import izhi params from a file without the .py extension")
     return params
 
 
@@ -304,7 +304,7 @@ def importCell(fileName, cellName, cellArgs = None, cellInstance = False):
         from netpyne.support.morphology import load
         cell = load(fileName)
     else:
-        print("File name should end in '.hoc', '.py', or '.swc'")
+        logger.warning("File name should end in '.hoc', '.py', or '.swc'")
         return
 
     secDic, secListDic, synMechs, globs = getCellParams(cell, varList, origGlob)
@@ -363,7 +363,7 @@ def importCellsFromNet(netParams, fileName, labelList, condsList, cellNamesList,
     h.initnrn()
 
     if fileName.endswith('.hoc') or fileName.endswith('.tem'):
-        print('Importing from .hoc network not yet supported')
+        logger.warning('Importing from .hoc network not yet supported')
         return
         # h.load_file(fileName)
         # for cellName in cellNames:
@@ -380,18 +380,18 @@ def importCellsFromNet(netParams, fileName, labelList, condsList, cellNamesList,
             removeFilePath = False
         moduleName = fileNameOnly.split('.py')[0]  # remove .py to obtain module name
         os.chdir(filePath)
-        print('\nRunning network in %s to import cells into NetPyNE ...\n'%(fileName))
+        logger.info('Running network in %s to import cells into NetPyNE ...\n'%fileName)
         from neuron import load_mechanisms
         load_mechanisms(filePath)
         tempModule = importlib.import_module(moduleName)
         modulePointer = tempModule
         if removeFilePath: sys.path.remove(filePath)
     else:
-        print("File name should be either .hoc or .py file")
+        logger.warning("File name should be either .hoc or .py file")
         return
 
     for label, conds, cellName in zip(labelList, condsList, cellNamesList):
-        print('\nImporting %s from %s ...'%(cellName, fileName))
+        logger.info('\nImporting %s from %s ...'%(cellName, fileName))
         exec('cell = tempModule' + '.' + cellName)
         #cell = getattr(modulePointer, cellName) # get cell object
         varList = mechVarList()
@@ -568,7 +568,7 @@ def getCellParams(cell, varList={}, origGlob={}):
                         try:
                             synMech[varName] = point.__getattribute__(varName)
                         except:
-                            print('Could not read variable %s from synapse %s'%(varName,synMech['label']))
+                            logger.warning('Could not read variable %s from synapse %s'%(varName,synMech['label']))
 
                     if not any([_equal_dicts(synMech, synMech2, ignore_keys=['label']) for synMech2 in synMechs]):
                         synMechs.append(synMech)
@@ -584,7 +584,7 @@ def getCellParams(cell, varList={}, origGlob={}):
                             # special condition for Izhi model, to set vinit=vr
                             # if varName == 'vr': secDic[secName]['vinit'] = point.__getattribute__(varName)
                         except:
-                            print('Could not read %s variable from point process %s'%(varName,pointpName))
+                            logger.warning('Could not read %s variable from point process %s'%(varName,pointpName))
 
         if pointps: secDic[secName]['pointps'] = pointps
 

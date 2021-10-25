@@ -4,7 +4,6 @@ Module for plotting and analysis of reaction/diffusion-related results
 """
 
 from __future__ import unicode_literals
-from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
@@ -21,6 +20,7 @@ if __gui__:
     import matplotlib.pyplot as plt
     from matplotlib_scalebar.scalebar import ScaleBar
 from .utils import exception, _showFigure, _saveFigData
+from netpyne.logger import logger
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot RxD concentration
@@ -82,7 +82,7 @@ def plotRxDConcentration(speciesLabel, regionLabel, plane='xy', figSize=(5,10), 
 
     from .. import sim
 
-    print('Plotting RxD concentration ...')
+    logger.info('Plotting RxD concentration...')
 
     # set font size
     plt.rcParams.update({'font.size': fontSize})
@@ -106,10 +106,8 @@ def plotRxDConcentration(speciesLabel, regionLabel, plane='xy', figSize=(5,10), 
     fig = plt.figure(figsize=figSize)
     plt.imshow(species[region].states3d[:].mean(plane2mean[plane]).T, interpolation='nearest', origin='upper', extent=extent, vmin=vmin, vmax=vmax)
     import numpy as np
-    print('  min:', np.min(species[region].states3d[:].mean(plane2mean[plane]).T))
-    print('  max:', np.max(species[region].states3d[:].mean(plane2mean[plane]).T))
-
-
+    logger.info('  min: ' + str(np.min(species[region].states3d[:].mean(plane2mean[plane]).T)))
+    logger.info('  max: '+ str(np.max(species[region].states3d[:].mean(plane2mean[plane]).T)))
 
     ax = plt.gca()
     if scalebar:

@@ -3,7 +3,6 @@ Module for anaysis and plotting of spiking-related results
 
 """
 
-from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -32,7 +31,7 @@ import pandas as pd
 import scipy
 from ..specs import Dict
 from .utils import colorList, exception, getCellsInclude, getSpktSpkid, _showFigure, _saveFigData, syncMeasure, _smooth1d
-
+from netpyne.logger import logger
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Calculate avg and peak rate of different subsets of cells for specific time period
@@ -63,7 +62,7 @@ def calculateRate (include = ['allCells', 'eachPop'], peakBin = 5, timeRange = N
 
     from .. import sim
 
-    print('Calculating avg and peak firing rates ...')
+    logger.info('Calculating avg and peak firing rates...')
 
     # Replace 'eachPop' with list of pops
     if 'eachPop' in include:
@@ -329,9 +328,9 @@ def plotSyncs(include=['allCells', 'eachPop'], timeRanges=None, timeRangeLabels=
         timeRangeLabels = ['%f-%f ms'%(t[0], t[1]) for t in timeRanges] #['period '+i for i in range(len(timeRanges))]
 
     for i, timeRange in enumerate(timeRanges):
-        print(timeRange)
+        logger.info(timeRange)
         _, sync = sim.analysis.plotSpikeStats (include = include, timeRange = timeRange, stats = ['sync'], saveFig = False, showFig =False)
-        print(sync)
+        logger.info(sync)
         sync = [s[0] for s in sync]
         syncs.append(sync)
 
@@ -504,7 +503,7 @@ def plotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid
 
     from .. import sim
 
-    print('Plotting raster...')
+    logger.info('Plotting raster...')
 
     # Select cells to include
     cells, cellGids, netStimLabels = getCellsInclude(include)
@@ -545,7 +544,7 @@ def plotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid
             sel, spkts, spkgids = getSpktSpkid(cellGids=[] if include == ['allCells'] else cellGids, timeRange=timeRange) # using [] is faster for all cells
         except:
             import sys
-            print((sys.exc_info()))
+            logger.warning(sys.exc_info())
             spkgids, spkts = [], []
             sel = pd.DataFrame(columns=['spkt', 'spkid'])
         sel['spkgidColor'] = sel['spkid'].map(gidColors)
@@ -580,14 +579,14 @@ def plotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid
             numNetStims += 1
         else:
             pass
-            #print netStimLabel+' produced no spikes'
+            #logger.info netStimLabel+' produced no spikes'
     if len(cellGids)>0 and numNetStims:
         ylabelText = ylabelText + ' and NetStims (at the end)'
     elif numNetStims:
         ylabelText = ylabelText + 'NetStims'
 
     if numCellSpks+numNetStims == 0:
-        print('No spikes available to plot raster')
+        logger.info('No spikes available to plot raster')
         return None
 
     # Time Range
@@ -601,7 +600,7 @@ def plotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid
 
     # Limit to maxSpikes
     if (len(sel)>maxSpikes):
-        print(('  Showing only the first %i out of %i spikes' % (maxSpikes, len(sel)))) # Limit num of spikes
+        logger.info('  Showing only the first %i out of %i spikes' % (maxSpikes, len(sel))) # Limit num of spikes
         if numNetStims: # sort first if have netStims
             sel = sel.sort_values(by='spkt')
         sel = sel.iloc[:maxSpikes]
@@ -850,7 +849,7 @@ def plotSpikeHist(include=['eachPop', 'allCells'], timeRange=None, binSize=5, ov
     from .. import sim
     from ..support.scalebar import add_scalebar
 
-    print('Plotting spike histogram...')
+    logger.info('Plotting spike histogram...')
 
     # Replace 'eachPop' with list of pops
     if 'eachPop' in include:
@@ -869,7 +868,7 @@ def plotSpikeHist(include=['eachPop', 'allCells'], timeRange=None, binSize=5, ov
         else:
             yaxisLabel = 'Spike count'
     else:
-        print('Invalid measure: %s', (measure))
+        logger.warning('Invalid measure: %s' % (measure))
         return
 
     # time range
@@ -1152,7 +1151,7 @@ def plotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=Non
 """
 
     from .. import sim
-    print('Plotting spike stats...')
+    logger.info('Plotting spike stats...')
 
     # Set plot style
     colors = []
@@ -1269,8 +1268,7 @@ def plotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=Non
                         import pyspike
                         import numpy as np
                     except:
-                        print("Error: plotSpikeStats() requires the PySpike python package \
-                            to calculate synchrony (try: pip install pyspike)")
+                        logger.warning("Error: plotSpikeStats() requires the PySpike python package to calculate synchrony (try: pip install pyspike)")
                         return 0
 
                     spkmat = [pyspike.SpikeTrain([spkt for spkind,spkt in zip(spkinds,spkts)
@@ -1320,7 +1318,7 @@ def plotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=Non
                 bp['medians'][i].set_linewidth(3)
                 # for f in bp['fliers']:
                 #    f.set_color(colors[icolor])
-                #    print f
+                #    logger.info f
                 # and 4 caps to remove
                 for c in bp['caps']:
                     c.set_color(borderColor)
@@ -1385,7 +1383,7 @@ def plotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=Non
                         x = [(binedges[i]+binedges[i+1])/2.0 for i in range(len(binedges)-1)]  #np.linspace(histmin, 30, num=400) # values for x-axis
                         pdf = stats.lognorm.pdf(x, shape, loc=0, scale=scale) # probability distribution
                         R, p = scipy.stats.pearsonr(n, pdf)
-                        print('    Pop %s rate: mean=%f, std=%f, lognorm mu=%f, lognorm sigma=%f, R=%.2f (p-value=%.2f)' % (popLabel, M, s, mu, sigma, R, p))
+                        logger.info('    Pop %s rate: mean=%f, std=%f, lognorm mu=%f, lognorm sigma=%f, R=%.2f (p-value=%.2f)' % (popLabel, M, s, mu, sigma, R, p))
                         plt.semilogx(x, pdf, color=color, ls='dashed')
                         return pdf
 
@@ -1397,7 +1395,7 @@ def plotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=Non
 
                     # check normality of distribution
                     #W, p = scipy.stats.shapiro(data)
-                    #print 'Pop %s rate: mean = %f, std = %f, normality (Shapiro-Wilk test) = %f, p-value = %f' % (include[i], mu, sigma, W, p)
+                    #logger.info 'Pop %s rate: mean = %f, std = %f, normality (Shapiro-Wilk test) = %f, p-value = %f' % (include[i], mu, sigma, W, p)
 
 
             plt.xlabel(xlabel, fontsize=fontsiz)
@@ -1596,7 +1594,7 @@ def plotRatePSD(include=['eachPop', 'allCells'], timeRange=None, binSize=5, minF
 
     from .. import sim
 
-    print('Plotting firing rate power spectral density (PSD) ...')
+    logger.info('Plotting firing rate power spectral density (PSD)...')
 
     # Replace 'eachPop' with list of pops
     if 'eachPop' in include:
@@ -1858,7 +1856,7 @@ def plotRateSpectrogram(include=['allCells', 'eachPop'], timeRange=None, binSize
 
     from .. import sim
 
-    print('Plotting firing rate spectrogram ...')
+    logger.info('Plotting firing rate spectrogram...')
 
     # Replace 'eachPop' with list of pops
     if 'eachPop' in include:
@@ -1993,7 +1991,7 @@ def popAvgRates(tranges = None, show = True):
     avgRates = Dict()
 
     if not hasattr(sim, 'allSimData') or 'spkt' not in sim.allSimData:
-        print('Error: sim.allSimData not available; please call sim.gatherData()')
+        logger.warning('Error: sim.allSimData not available; please call sim.gatherData()')
         return None
 
     spktsAll = sim.allSimData['spkt']
@@ -2026,7 +2024,7 @@ def popAvgRates(tranges = None, show = True):
     for pop in sim.net.allPops:
 
         if len(tranges) > 1:
-            print('   %s ' % (pop))
+            logger.info('   %s ' % (pop))
             avgRates[pop] = {}
 
         for spkids, spkts, trange in zip(spkidsList, spktsList, tranges):
@@ -2037,13 +2035,13 @@ def popAvgRates(tranges = None, show = True):
                 if len(tranges) == 1:
                     tsecs = float((trange[1]-trange[0]))/1000.0
                     avgRates[pop] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['pop']==pop])/numCells/tsecs
-                    print('   %s : %.3f Hz'%(pop, avgRates[pop]))
+                    logger.info('   %s : %.3f Hz'%(pop, avgRates[pop]))
 
                 # multiple time intervals
                 else:
                     tsecs = float((trange[1]-trange[0]))/1000.0
                     avgRates[pop]['%d_%d'%(trange[0], trange[1])] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['pop']==pop])/numCells/tsecs
-                    print('        (%d - %d ms): %.3f Hz'%(trange[0], trange[1], avgRates[pop]['%d_%d'%(trange[0], trange[1])]))
+                    logger.info('        (%d - %d ms): %.3f Hz'%(trange[0], trange[1], avgRates[pop]['%d_%d'%(trange[0], trange[1])]))
 
     return avgRates
 
@@ -2056,7 +2054,7 @@ def calculatefI():
 
     from .. import sim
 
-    print('Calculating f-I features...')
+    logger.info('Calculating f-I features...')
 
     times = sim.cfg.analysis['plotfI'].get('times', [0, sim.cfg.duration])
     dur = sim.cfg.analysis['plotfI'].get('dur', sim.cfg.duration)

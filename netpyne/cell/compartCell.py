@@ -4,7 +4,6 @@ Module containing a compartmental cell class
 """
 
 from __future__ import division
-from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
@@ -29,7 +28,7 @@ import numpy as np
 from math import sin, cos
 from .cell import Cell
 from ..specs import Dict
-
+from netpyne.logger import logger
 
 ###############################################################################
 #
@@ -267,14 +266,14 @@ class CompartCell (Cell):
         try:
             sec['hObj'].insert('dipole')
         except:
-            print('Error inserting dipole mechanism')
+            logger.warning('Error inserting dipole mechanism')
             return -1
 
         # insert Dipole point process (dipole_pp.mod)
         try:
             sec['hDipole_pp'] = h.Dipole(1.0, sec = sec['hObj'])
         except:
-            print('Error inserting Dipole point process')
+            logger.warning('Error inserting Dipole point process')
             return -1
         dpp = sec['hDipole_pp']
 
@@ -366,8 +365,7 @@ class CompartCell (Cell):
                         sec['hObj'].insert(mechName)
                     except:
                         mechInsertError = True
-                        if sim.cfg.verbose:
-                            print('# Error inserting %s mechanims in %s section! (check mod files are compiled)'%(mechName, sectName))
+                        logger.debug('# Error inserting %s mechanims in %s section! (check mod files are compiled)'%(mechName, sectName))
                         continue
                     for mechParamName,mechParamValue in mechParams.items():  # add params of the mechanism
                         mechParamValueFinal = mechParamValue
@@ -389,8 +387,7 @@ class CompartCell (Cell):
                         sec['hObj'].insert(ionName+'_ion')    # insert mechanism
                     except:
                         mechInsertError = True
-                        if sim.cfg.verbose:
-                            print('# Error inserting %s ion in %s section!'%(ionName, sectName))
+                        logger.debug('# Error inserting %s ion in %s section!'%(ionName, sectName))
                         continue
                     for ionParamName,ionParamValue in ionParams.items():  # add params of the mechanism
                         ionParamValueFinal = ionParamValue
@@ -406,7 +403,7 @@ class CompartCell (Cell):
                                 setattr(seg, '%si'%ionName, ionParamValueFinal)
                                 h('%si0_%s_ion = %s'%(ionName,ionName,ionParamValueFinal))  # e.g. cai0_ca_ion, the default initial value
 
-                    #if sim.cfg.verbose: print("Updated ion: %s in %s, e: %s, o: %s, i: %s" % \
+                    # logger.debug("Updated ion: %s in %s, e: %s, o: %s, i: %s" % \
                     #         (ionName, sectName, seg.__getattribute__('e'+ionName), seg.__getattribute__(ionName+'o'), seg.__getattribute__(ionName+'i')))
 
             # add synMechs (only used when loading because python synMechs already exist)
@@ -454,9 +451,9 @@ class CompartCell (Cell):
                 if 'mechs' in sectParams and 'dipole' in sectParams['mechs']:
                     self.__dipoleInsert(sectName, sec)  # add dipole mechanisms to each section
 
-        # Print message about error inserting mechanisms
+        # Log message about error inserting mechanisms
         if mechInsertError:
-            print("ERROR: Some mechanisms and/or ions were not inserted (for details run with cfg.verbose=True). Make sure the required mod files are compiled.")
+            logger.warning("ERROR: Some mechanisms and/or ions were not inserted (for details run with `import logging; logging.getLogger('netpyne').setLevel(logging.DEBUG))`. Make sure the required mod files are compiled.")
 
 
     def addSynMechNEURONObj(self, synMech, synMechParams, sec, loc):
@@ -536,9 +533,11 @@ class CompartCell (Cell):
             try:
                 postTarget = synMech['hObj']
             except:
-                print('\nError: no synMech available for conn: ', conn)
-                print(' cell tags: ',self.tags)
-                print(' cell synMechs: ',self.secs[conn['sec']]['synMechs'])
+                logger.warning('Error: no synMech available for conn: ' + conn)
+                logger.warning('cell tags:')
+                logger.warning(self.tags)
+                logger.warning('cell synMechs:')
+                logger.warning(self.secs[conn['sec']]['synMechs'])
                 import sys
                 sys.exit()
 
@@ -680,7 +679,7 @@ class CompartCell (Cell):
                                 try:
                                     setattr(synMech['hObj'], synParamName, synParamValue)
                                 except:
-                                    print('Error setting %s=%s on synMech' % (synParamName, str(synParamValue)))
+                                    logger.warning('Error setting %s=%s on synMech' % (synParamName, str(synParamValue)))
 
 
 
@@ -703,9 +702,9 @@ class CompartCell (Cell):
             # Only allow self connections if option selected by user
             # !!!! AD HOC RULE FOR HNN!!! -  or 'soma' in secLabels and not self.tags['cellType'] == 'L5Basket' (removed)
             if sim.cfg.allowSelfConns:
-                if sim.cfg.verbose: print('  Warning: creating self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
+                logger.debug('  Warning: creating self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
             else:
-                if sim.cfg.verbose: print('  Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
+                logger.debug('  Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
                 return  # if self-connection return
 
         # Weight
@@ -850,15 +849,13 @@ class CompartCell (Cell):
                 # Add plasticity
                 self._addConnPlasticity(params, sec, netcon, weightIndex)
 
-            if sim.cfg.verbose:
-                sec = params['sec'] if pointp else synMechSecs[i]
-                loc = params['loc'] if pointp else synMechLocs[i]
-                preGid = netStimParams['source']+' NetStim' if netStimParams else params['preGid']
-                try:
-                    print(('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.2f'
-                        % (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i])))
-                except:
-                    print(('  Created connection preGid=%s' % (preGid)))
+            sec = params['sec'] if pointp else synMechSecs[i]
+            loc = params['loc'] if pointp else synMechLocs[i]
+            preGid = netStimParams['source']+' NetStim' if netStimParams else params['preGid']
+            try:
+                logger.debug('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.2f' % (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i]))
+            except:
+                logger.debug('  Created connection preGid=%s' % (preGid))
 
 
     def modifyConns (self, params):
@@ -923,7 +920,7 @@ class CompartCell (Cell):
                                 break
                 except:
                     pass
-                    #print('Warning: modifyConns() does not yet support conditions of presynaptic cells when running parallel sims')
+                    #logger.warning('modifyConns() does not yet support conditions of presynaptic cells when running parallel sims')
 
             if conditionsMet:  # if all conditions are met, set values for this cell
                 if sim.cfg.createPyStruct:
@@ -937,7 +934,7 @@ class CompartCell (Cell):
                             else:
                                 setattr(conn['hObj'], paramName, paramValue)
                         except:
-                            print('Error setting %s=%s on Netcon' % (paramName, str(paramValue)))
+                            logger.warning('Error setting %s=%s on Netcon' % (paramName, str(paramValue)))
 
 
     def modifyStims (self, params):
@@ -1003,7 +1000,7 @@ class CompartCell (Cell):
                                 else:
                                     setattr(stim['hObj'], paramName, paramValue)
                             except:
-                                print('Error setting %s=%s on stim' % (paramName, str(paramValue)))
+                                logger.warning('Error setting %s=%s on stim' % (paramName, str(paramValue)))
 
 
 
@@ -1011,13 +1008,13 @@ class CompartCell (Cell):
         from .. import sim
 
         if not params['sec'] or (isinstance(params['sec'], basestring) and not params['sec'] in list(self.secs.keys())+list(self.secLists.keys())):
-            if sim.cfg.verbose: print('  Warning: no valid sec specified for stim on cell gid=%d so using soma or 1st available. Existing secs: %s; params: %s'%(self.gid, list(self.secs.keys()),params))
+            logger.debug('  Warning: no valid sec specified for stim on cell gid=%d so using soma or 1st available. Existing secs: %s; params: %s'%(self.gid, list(self.secs.keys()),params))
             if 'soma' in self.secs:
                 params['sec'] = 'soma'  # use 'soma' if exists
             elif self.secs:
                 params['sec'] = list(self.secs.keys())[0]  # if no 'soma', use first sectiona available
             else:
-                if sim.cfg.verbose: print('  Error: no Section available on cell gid=%d to add stim'%(self.gid))
+                logger.debug('  Error: no Section available on cell gid=%d to add stim'%(self.gid))
                 return
 
         if not 'loc' in params: params['loc'] = 0.5  # default stim location
@@ -1069,22 +1066,22 @@ class CompartCell (Cell):
             self.stims.append(Dict(params)) # add to python structure
             self.stims[-1]['hObj'] = stim  # add stim object to dict in stims list
 
-            if sim.cfg.verbose: print(('  Added %s %s to cell gid=%d, sec=%s, loc=%.4g%s'%
-                (params['source'], params['type'], self.gid, params['sec'], params['loc'], stringParams)))
+            logger.debug('  Added %s %s to cell gid=%d, sec=%s, loc=%.4g%s'%
+                (params['source'], params['type'], self.gid, params['sec'], params['loc'], stringParams))
 
         else:
-            if sim.cfg.verbose: print(('Adding exotic stim (NeuroML 2 based?): %s'% params))
+            logger.debug('Adding exotic stim (NeuroML 2 based?): %s'% params)
             sec = self.secs[params['sec']]
             stim = getattr(h, params['type'])(sec['hObj'](params['loc']))
             stimParams = {k:v for k,v in params.items() if k not in ['type', 'source', 'loc', 'sec', 'label']}
             stringParams = ''
             for stimParamName, stimParamValue in stimParams.items(): # set mechanism internal params
                 if isinstance(stimParamValue, list):
-                    print("Can't set point process paramaters of type vector eg. VClamp.amp[3]")
+                    logger.info("Can't set point process paramaters of type vector eg. VClamp.amp[3]")
                     pass
                     #setattr(stim, stimParamName._ref_[0], stimParamValue[0])
                 elif 'originalFormat' in params and stimParamName=='originalFormat' and params['originalFormat']=='NeuroML2_stochastic_input':
-                    if sim.cfg.verbose: print(('   originalFormat: %s'%(params['originalFormat'])))
+                    logger.debug('   originalFormat: %s'%(params['originalFormat']))
 
                     rand = h.Random()
                     stim_ref = params['label'][:params['label'].rfind(self.tags['pop'])]
@@ -1103,8 +1100,8 @@ class CompartCell (Cell):
 
             self.stims.append(params) # add to python structure
             self.stims[-1]['hObj'] = stim  # add stim object to dict in stims list
-            if sim.cfg.verbose: print(('  Added %s %s to cell gid=%d, sec=%s, loc=%.4g%s'%
-                (params['source'], params['type'], self.gid, params['sec'], params['loc'], stringParams)))
+            logger.debug('  Added %s %s to cell gid=%d, sec=%s, loc=%.4g%s'%
+                (params['source'], params['type'], self.gid, params['sec'], params['loc'], stringParams))
 
 
     def _setConnSections (self, params):
@@ -1112,13 +1109,13 @@ class CompartCell (Cell):
 
         # if no section specified or single section specified does not exist
         if not params.get('sec') or (isinstance(params.get('sec'), basestring) and not params.get('sec') in list(self.secs.keys())+list(self.secLists.keys())):
-            if sim.cfg.verbose: print('  Warning: no valid sec specified for connection to cell gid=%d so using soma or 1st available'%(self.gid))
+            logger.debug('  Warning: no valid sec specified for connection to cell gid=%d so using soma or 1st available'%(self.gid))
             if 'soma' in self.secs:
                 params['sec'] = 'soma'  # use 'soma' if exists
             elif self.secs:
                 params['sec'] = list(self.secs.keys())[0]  # if no 'soma', use first sectiona available
             else:
-                if sim.cfg.verbose: print('  Error: no Section available on cell gid=%d to add connection'%(self.gid))
+                logger.debug('  Error: no Section available on cell gid=%d to add connection'%(self.gid))
                 sec = -1  # if no Sections available print error and exit
                 return sec
 
@@ -1130,7 +1127,7 @@ class CompartCell (Cell):
             secLabels = []
             for i,section in enumerate(secList):
                 if section not in self.secs: # remove sections that dont exist; and corresponding weight and delay
-                    if sim.cfg.verbose: print('  Error: Section %s not available so removing from list of sections for connection to cell gid=%d'%(section, self.gid))
+                    logger.debug('  Error: Section %s not available so removing from list of sections for connection to cell gid=%d'%(section, self.gid))
                     secList.remove(section)
                     if isinstance(params['weight'], list): params['weight'].remove(params['weight'][i])
                     if isinstance(params['delay'], list): params['delay'].remove(params['delay'][i])
@@ -1181,7 +1178,7 @@ class CompartCell (Cell):
                                 weightIndex = pointpParams['synList'].index(params.get('synMech'))  # udpate weight index based pointp synList
 
         if pointp and params['synsPerConn'] > 1: # only single synapse per connection rule allowed
-            if sim.cfg.verbose: print('  Error: Multiple synapses per connection rule not allowed for cells where V is not in section (cell gid=%d) '%(self.gid))
+            logger.debug('  Error: Multiple synapses per connection rule not allowed for cells where V is not in section (cell gid=%d) '%(self.gid))
             return -1, weightIndex
 
         return pointp, weightIndex
@@ -1195,10 +1192,10 @@ class CompartCell (Cell):
             if sim.net.params.synMechParams:  # if no synMech specified, but some synMech params defined
                 synLabel = list(sim.net.params.synMechParams.keys())[0]  # select first synMech from net params and add syn
                 params['synMech'] = synLabel
-                if sim.cfg.verbose: print('  Warning: no synaptic mechanisms specified for connection to cell gid=%d so using %s '%(self.gid, synLabel))
+                logger.debug('  Warning: no synaptic mechanisms specified for connection to cell gid=%d so using %s '%(self.gid, synLabel))
             else: # if no synaptic mechanism specified and no synMech params available
-                if sim.cfg.verbose: print('  Error: no synaptic mechanisms available to add conn on cell gid=%d '%(self.gid))
-                return -1  # if no Synapse available print error and exit
+                logger.debug('  Error: no synaptic mechanisms available to add conn on cell gid=%d '%(self.gid))
+                return -1  # if no Synapse available log error and exit
 
         # if desired synaptic mechanism specified in conn params
         if synsPerConn > 1:  # if more than 1 synapse
@@ -1208,7 +1205,7 @@ class CompartCell (Cell):
                     if len(params['loc']) == synsPerConn:
                         synMechLocs = params['loc']
                     else:
-                        print("Error: The length of the list of locations does not match synsPerConn (distributing uniformly)")
+                        logger.warning("Error: The length of the list of locations does not match synsPerConn (distributing uniformly)")
                         synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
                 else:
                     synMechLocs = [i*(1.0/synsPerConn)+1.0/synsPerConn/2 for i in range(synsPerConn)]
@@ -1223,7 +1220,7 @@ class CompartCell (Cell):
                             if len(params['loc']) == synsPerConn:  # list of locs matches num syns
                                 synMechLocs = params['loc']
                             else:  # list of locs does not match num syns
-                                print("Error: The length of the list of locations does not match synsPerConn (with cfg.distributeSynsUniformly = False")
+                                logger.warning("Error: The length of the list of locations does not match synsPerConn (with cfg.distributeSynsUniformly = False")
                                 return
                         else: # single loc
                             synMechLocs = [params['loc']] * synsPerConn
@@ -1248,8 +1245,8 @@ class CompartCell (Cell):
                                 randLoc = rand.uniform(0, 1)
                                 synMechLocs = [rand.uniform(0, 1) for i in range(synsPerConn)]
                         else:
-                                print("\nError: The length of the list of sections needs to be greater or equal to the synsPerConn (with cfg.connRandomSecFromList = True")
-                                return
+                            logger.warning("Error: The length of the list of sections needs to be greater or equal to the synsPerConn (with cfg.connRandomSecFromList = True")
+                            return
 
         else:  # if 1 synapse
             # by default place on 1st section of list and location available
@@ -1282,8 +1279,7 @@ class CompartCell (Cell):
                 secLengths = [self.secs[s]['hObj'].L for s in secList]
             else:
                 secLengths = [1.0 for s in secList]
-                if sim.cfg.verbose:
-                    print(('  Section lengths not available to distribute synapses in cell %d'%self.gid))
+                logger.debug('  Section lengths not available to distribute synapses in cell %d'%self.gid)
 
             secLengths = [x for x in secLengths if isinstance(x, Number)]
             totLength = sum(secLengths)
@@ -1315,9 +1311,9 @@ class CompartCell (Cell):
                     self.conns[-1]['hSTDPprecon']   = precon
                     self.conns[-1]['hSTDPpstcon']   = pstcon
                     self.conns[-1]['STDPdata']      = {'preGid':params['preGid'], 'postGid': self.gid, 'receptor': weightIndex} # Not used; FYI only; store here just so it's all in one place
-                    if sim.cfg.verbose: print('  Added STDP plasticity to synaptic mechanism')
+                    logger.debug('  Added STDP plasticity to synaptic mechanism')
             except:
-                print('Error: exception when adding plasticity using %s mechanism' % (plasticity['mech']))
+                logger.warning('Error: exception when adding plasticity using %s mechanism' % (plasticity['mech']))
 
 
 

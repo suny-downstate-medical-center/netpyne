@@ -3,7 +3,6 @@ Module with functions to create patterned spike inputs in cells
 
 """
 
-from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
@@ -18,6 +17,7 @@ except NameError:
 
 from neuron import h
 import numpy as np
+from netpyne.logger import logger
 
 def createRhythmicPattern(params, rand):
     """
@@ -50,7 +50,7 @@ def createRhythmicPattern(params, rand):
     distribution = params.get('distribution', 'normal')
 
     if eventsPerCycle > 2 or eventsPerCycle <= 0:
-        print("eventsPerCycle should be either 1 or 2, trying 2")
+        logger.warning("eventsPerCycle should be either 1 or 2, trying 2")
         eventsPerCycle = 2
     # If frequency is 0, create empty vector if input times
     if not freq:
@@ -98,7 +98,7 @@ def createRhythmicPattern(params, rand):
         t_input = t_input[t_input > 0]
         t_input.sort()
     else:
-        print("Indicated distribution not recognized. Not making any alpha feeds.")
+        logger.warning("Indicated distribution not recognized. Not making any alpha feeds.")
         t_input = []
 
     return np.array(t_input)

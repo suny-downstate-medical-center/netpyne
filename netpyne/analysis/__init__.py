@@ -7,6 +7,7 @@ Package for analysis
 from .tools import getInclude, plotData, saveData, loadData
 from .utils import exception, _showFigure, _saveFigData, getCellsInclude, getCellsIncludeTags, _roundFigures, _smooth1d, syncMeasure, invertDictMapping, checkAvailablePlots
 
+from netpyne.logger import logger
 # Import connectivity-related functions
 from .network import plotConn, _plotConnCalculateFromSim, _plotConnCalculateFromFile, plot2Dnet, plotShape, calculateDisynaptic, plot2Dfiring
 
@@ -33,7 +34,7 @@ from .rxd import plotRxDConcentration
 try:
     from .interactive import iplotDipole, iplotDipoleSpectrogram, iplotDipolePSD, iplotRaster, iplotSpikeHist, iplotRatePSD, iplotTraces, iplotLFP, iplotConn, iplotRxDConcentration, iplot2Dnet, iplotSpikeStats
 except:
-    print('Warning: could not import interactive plotting functions; make sure the "bokeh" package is installed.')
+    logger.warning('Could not import interactive plotting functions; make sure the "bokeh" package is installed.')
 
 # Import CSD-related functions
 from .csd import getCSD, plotCSD

@@ -4,7 +4,6 @@ Module for production of interactive plots
 """
 
 from __future__ import unicode_literals
-from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
@@ -32,6 +31,7 @@ from bokeh.io import curdoc
 from bokeh.palettes import Viridis256
 from bokeh.models import HoverTool
 
+from netpyne.logger import logger
 
 def applyTheme(kwargs):
     theme = None
@@ -171,7 +171,7 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
     from bokeh.colors import RGB
     from bokeh.models.annotations import Title
 
-    print('Plotting interactive raster ...')
+    logger.info('Plotting interactive raster...')
 
     theme = applyTheme(kwargs)
 
@@ -218,7 +218,7 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
             sel, spkts, spkgids = getSpktSpkid(cellGids=[] if include == ['allCells'] else cellGids, timeRange=timeRange)
         except:
             import sys
-            print((sys.exc_info()))
+            logger.warning(sys.exc_info())
             spkgids, spkts = [], []
             sel = pd.DataFrame(columns=['spkt', 'spkid'])
         sel['spkgidColor'] = sel['spkid'].map(gidColors)
@@ -252,14 +252,13 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
             numNetStims += 1
         else:
             pass
-            #print netStimLabel+' produced no spikes'
     if len(cellGids)>0 and numNetStims:
         ylabelText = ylabelText + ' and NetStims (at the end)'
     elif numNetStims:
         ylabelText = ylabelText + 'NetStims'
 
     if numCellSpks+numNetStims == 0:
-        print('No spikes available to plot raster')
+        logger.warning('No spikes available to plot raster')
         return None
 
     # Time Range
@@ -272,7 +271,7 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
 
     # Limit to max spikes
     if (len(sel)>maxSpikes):
-        print(('  Showing only the first %i out of %i spikes' % (maxSpikes, len(sel)))) # Limit num of spikes
+        logger.info('  Showing only the first %i out of %i spikes' % (maxSpikes, len(sel))) # Limit num of spikes
         if numNetStims: # sort first if have netStims
             sel = sel.sort_values(by='spkt')
         sel = sel.iloc[:maxSpikes]
@@ -321,7 +320,6 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
     if syncLines:
         for spkt in sel['spkt'].tolist():
             fig.line((spkt, spkt), (0, len(cells)+numNetStims), color='red', line_width=2)
-        print(syncMeasure())
         t.text = 'cells=%i  syns/cell=%0.1f  rate=%0.1f Hz  sync=%0.2f' % (numCells,connsPerCell,firingRate,syncMeasure())
     else:
         t.text = 'cells=%i  syns/cell=%0.1f  rate=%0.1f Hz' % (numCells,connsPerCell,firingRate)
@@ -967,7 +965,7 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
     from bokeh.models import Legend
     from bokeh.colors import RGB
 
-    print('Plotting interactive spike histogram...')
+    logger.info('Plotting interactive spike histogram...')
 
     theme = applyTheme(kwargs)
 
@@ -1085,7 +1083,7 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
         fig.legend.click_policy='hide'
         fig.legend.location='top_right'
 
-    print(figs)
+    logger.info(figs)
     plot_layout = gridplot(figs, ncols=1, merge_tools=False, sizing_mode='stretch_both')
     html = file_html(plot_layout, CDN, title="Spike Histogram", theme=theme)
 
@@ -1191,7 +1189,7 @@ def iplotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, max
     from bokeh.colors import RGB
     from bokeh.models import Legend
 
-    print('Plotting interactive firing rate power spectral density (PSD) ...')
+    logger.info('Plotting interactive firing rate power spectral density (PSD) ...')
 
     theme = applyTheme(kwargs)
 
@@ -1407,7 +1405,7 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
     from bokeh.models import Legend
     from bokeh.colors import RGB
 
-    print('Plotting interactive recorded cell traces per', oneFigPer)
+    logger.info('Plotting interactive recorded cell traces per ' + oneFigPer)
 
     theme = applyTheme(kwargs)
 
@@ -1736,7 +1734,7 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
     from bokeh.layouts import layout, column, row
     from bokeh.colors import RGB
 
-    print('Plotting interactive LFP ...')
+    logger.info('Plotting interactive LFP ...')
 
     html = None
     theme = applyTheme(kwargs)
@@ -2137,7 +2135,7 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
     from bokeh.layouts import layout
     from bokeh.colors import RGB
 
-    print('Plotting interactive connectivity matrix...')
+    logger.info('Plotting interactive connectivity matrix...')
 
     theme = applyTheme(kwargs)
 
@@ -2148,7 +2146,7 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
 
 
     if connMatrix is None:
-        print("  Error calculating connMatrix in iplotConn()")
+        logger.info("  Error calculating connMatrix in iplotConn()")
         return None
 
     # TODO: set plot font size in Bokeh
@@ -2253,11 +2251,11 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
             fig.yaxis.axis_label = feature
 
         elif groupBy == 'cell':
-            print('  Error: plotConn graphType="bar" with groupBy="cell" not yet implemented')
+            logger.warning('  Error: plotConn graphType="bar" with groupBy="cell" not yet implemented')
             return None
 
     elif graphType == 'pie':
-        print('  Error: plotConn graphType="pie" not yet implemented')
+        logger.warning('  Error: plotConn graphType="pie" not yet implemented')
         return None
 
     plot_layout = layout([fig], sizing_mode='stretch_both')
@@ -2375,7 +2373,7 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
     from bokeh.colors import RGB
     from bokeh.models.annotations import Title
 
-    print('Plotting interactive 2D representation of network cell locations and connections...')
+    logger.info('Plotting interactive 2D representation of network cell locations and connections...')
 
     theme = applyTheme(kwargs)
 
@@ -2393,7 +2391,7 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
         ycoord = 'z'
 
     if tagsFile:
-        print('Loading tags file...')
+        logger.info('Loading tags file...')
         import json
         with open(tagsFile, 'r') as fileObj: tagsTmp = json.load(fileObj)['tags']
         tagsFormat = tagsTmp.pop('format', [])
@@ -2407,8 +2405,8 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
         yIndex = tagsFormat.index('y') if 'y' in tagsFormat else missing.append('y')
         zIndex = tagsFormat.index('z') if 'z' in tagsFormat else missing.append('z')
         if len(missing) > 0:
-            print("Missing:")
-            print(missing)
+            logger.info("Missing:")
+            logger.info(missing)
             return None, None, None
 
         # find pre and post cells
@@ -2429,7 +2427,7 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
             elif ycoord == 'z':
                 posY = [tags[gid][zIndex] for gid in cellGids]  # get all y positions
         else:
-            print('Error loading tags from file')
+            logger.warning('Error loading tags from file')
             return None
 
     else:
@@ -2580,7 +2578,7 @@ def iplotRxDConcentration(speciesLabel, regionLabel, plane='xy', saveFig=None, s
     from bokeh.transform import linear_cmap
     from bokeh.models import ColorBar
 
-    print('Plotting interactive RxD concentration ...')
+    logger.info('Plotting interactive RxD concentration ...')
     
     theme = applyTheme(kwargs)
 
@@ -2790,7 +2788,7 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
     from bokeh.palettes import Spectral6
     from bokeh.models.mappers import CategoricalColorMapper
 
-    print('Plotting interactive spike statistics ...')
+    logger.info('Plotting interactive spike statistics ...')
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
@@ -2887,7 +2885,7 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
                     try:
                         import pyspike
                     except:
-                        print("Error: plotSpikeStats() requires the PySpike python package \
+                        logger.warning("Error: plotSpikeStats() requires the PySpike python package \
                             to calculate synchrony (try: pip install pyspike)")
                         return 0
 

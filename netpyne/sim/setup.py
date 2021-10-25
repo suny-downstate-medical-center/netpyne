@@ -3,7 +3,6 @@ Module for setting up simulations
 
 """
 
-from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -19,6 +18,7 @@ from neuron import h # Import NEURON
 from .. import specs
 from ..specs import Dict, ODict
 from . import utils
+from netpyne.logger import logger
 try:
     from datetime import datetime
 except:
@@ -57,7 +57,7 @@ def initialize(netParams = None, simConfig = None, net = None):
     if netParams is None: netParams = {} # If not specified, initialize as empty dict
     if simConfig is None: simConfig = {} # If not specified, initialize as empty dict
     if hasattr(simConfig, 'popParams') or hasattr(netParams, 'duration'):
-        print('Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)')
+        logger.warning('Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)')
         sys.exit()
 
     # for testing validation
@@ -77,7 +77,7 @@ def initialize(netParams = None, simConfig = None, net = None):
 
     if sim.rank == 0:
         try:
-            print('\nStart time: ', datetime.now())
+            logger.info('\nStart time: ' + str(datetime.now()))
         except:
             pass
         sim.timing('start', 'initialTime')
@@ -99,7 +99,7 @@ def initialize(netParams = None, simConfig = None, net = None):
             simTestObj.netParams = sim.net.params
             simTestObj.runTests()
         except:
-            print("\nAn exception occurred during the error checking process...")
+            logger.warning("An exception occurred during the error checking process...")
 
     sim.timing('stop', 'initialTime')
 
@@ -238,7 +238,7 @@ def readCmdLineArgs(simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
 
 
     if len(sys.argv) > 1:
-        print('\nReading command line arguments using syntax: python file.py [simConfig=filepath] [netParams=filepath]')
+        logger.info('Reading command line arguments using syntax: python file.py [simConfig=filepath] [netParams=filepath]')
     cfgPath = None
     netParamsPath = None
 
@@ -260,7 +260,7 @@ def readCmdLineArgs(simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
                 except: # py2
                     netParamsModule = imp.load_source(os.path.basename(netParamsPath).split('.')[0], netParamsPath)
                 netParams = netParamsModule.netParams
-                print('Importing netParams from %s' %(netParamsPath))
+                logger.info('Importing netParams from %s' % netParamsPath)
 
     if not cfgPath:
         try:
@@ -274,9 +274,7 @@ def readCmdLineArgs(simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
             cfg = cfgModule.cfg
             __main__.cfg = cfg
         except:
-            print('\nWarning: Could not load cfg from command line path or from default cfg.py')
-            print('This usually occurs when cfg.py crashes.  Please ensure that your cfg.py file')
-            print('completes successfully on its own (i.e. execute "python cfg.py" and fix any bugs).')
+            logger.warning('Could not load cfg from command line path or from default cfg.py. \nThis usually occurs when cfg.py crashes. Please ensure that your cfg.py file completes successfully on its own (i.e. execute "python cfg.py" and fix any bugs).')
             cfg = None
 
     if not netParamsPath:
@@ -290,9 +288,7 @@ def readCmdLineArgs(simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
 
             netParams = netParamsModule.netParams
         except:
-            print('\nWarning: Could not load netParams from command line path or from default netParams.py')
-            print('This usually occurs when netParams.py crashes.  Please ensure that your netParams.py file')
-            print('completes successfully on its own (i.e. execute "python netParams.py" and fix any bugs).')
+            logger.warning('Could not load netParams from command line path or from default netParams.py. \nThis usually occurs when netParams.py crashes.  Please ensure that your netParams.py file completes successfully on its own (i.e. execute "python netParams.py" and fix any bugs).')
             netParams = None
 
     return cfg, netParams
@@ -434,18 +430,18 @@ def setupRecording():
                 else:
                     sim.simData['t'].record(h._ref_t, sim.cfg.recordStep)
             except:
-                if sim.cfg.verbose: 'Error recording h.t (could be due to no sections existing)'
+                logger.debug('Error recording h.t (could be due to no sections existing)')
 
-        # print recorded traces
+        # log recorded traces
         cat = 0
         total = 0
         for key in sim.simData:
-            if sim.cfg.verbose: print(("   Recording: %s:"%key))
+            logger.debug("   Recording: %s:"%key)
             if len(sim.simData[key])>0: cat+=1
             for k2 in sim.simData[key]:
-                if sim.cfg.verbose: print(("      %s"%k2))
+                logger.debug("      %s"%k2)
                 total+=1
-        print(("Recording %s traces of %s types on node %i"%(total, cat, sim.rank)))
+        logger.info("Recording %s traces of %s types on node %i"%(total, cat, sim.rank))
 
     # set LFP recording
     if sim.cfg.recordLFP:
@@ -476,25 +472,25 @@ def setGlobals():
         for k,v in cellRule.get('globals', {}).items():
             if k not in cellGlobs:
                 cellGlobs[k] = v
-            elif cellGlobs[k] != v and sim.cfg.verbose:
+            elif cellGlobs[k] != v:
                 if k == 'v_init':
                     wrongVinit = [s['vinit'] for s in list(cellRule['secs'].values()) if 'vinit' in s and s['vinit'] == v and s['vinit'] != cellGlobs[k]] # check if set inside secs (set by default during import)
                     if len(wrongVinit) == len(cellRule['secs']):
-                        print("\nWarning: global variable %s=%s differs from that set for each section in cellParams rule %s: %s" % (k, str(cellGlobs[k]), cellRuleName, str(v)))
+                        logger.debug("Global variable %s=%s differs from that set for each section in cellParams rule %s: %s" % (k, str(cellGlobs[k]), cellRuleName, str(v)))
                     else: # no need since v_inits set in each sec during import
-                        print("\nWarning: global variable %s=%s differs from that defined (not used) in the 'globals' of cellParams rule %s: %s" % (k, str(cellGlobs[k]), cellRuleName, str(v)))
+                        logger.debug("Global variable %s=%s differs from that defined (not used) in the 'globals' of cellParams rule %s: %s" % (k, str(cellGlobs[k]), cellRuleName, str(v)))
                 else:
-                    print("\nWarning: global variable %s=%s differs from that defined (not used) in the 'globals' of cellParams rule %s: %s" % (k, str(cellGlobs[k]), cellRuleName, str(v)))
+                    logger.debug("Global variable %s=%s differs from that defined (not used) in the 'globals' of cellParams rule %s: %s" % (k, str(cellGlobs[k]), cellRuleName, str(v)))
 
     # add tstop as global (for ease of transition with standard NEURON)
     cellGlobs['tstop'] = float(sim.cfg.duration)
 
     # h global params
-    if sim.cfg.verbose and len(cellGlobs) > 0:
-        print('\nSetting h global variables ...')
+    if len(cellGlobs) > 0:
+        logger.debug('Setting h global variables ...')
     for key,val in cellGlobs.items():
         try:
             h('%s=%s'%(key,val))
-            if sim.cfg.verbose: print(('  h.%s = %s' % (key, str(val))))
+            logger.debug('  h.%s = %s' % (key, str(val)))
         except:
-            print('\nError: could not set global %s = %s' % (key, str(val)))
+            logger.warning('Error: could not set global %s = %s' % (key, str(val)))

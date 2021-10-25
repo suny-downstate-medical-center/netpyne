@@ -3,7 +3,6 @@ Module with RecXElectrode from Allen Brain Institute
 
 """
 
-from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -43,7 +42,7 @@ from future import standard_library
 standard_library.install_aliases()
 import numpy as np
 import math
-
+from netpyne.logger import logger
 
 class RecXElectrode(object):
     """Extracellular electrode
@@ -61,8 +60,8 @@ class RecXElectrode(object):
             self.nsites = self.pos.shape[0]
             self.transferResistances = {}
         except:
-               print('Error creating extracellular electrode: sim.cfg.recordLFP should contain a list of x,y,z locations')
-               return None
+            logger.warning('Error creating extracellular electrode: sim.cfg.recordLFP should contain a list of x,y,z locations')
+            return None
 
         self.nsites = self.pos.shape[1]
         self.transferResistances = {}   # V_e = transfer_resistance*Im

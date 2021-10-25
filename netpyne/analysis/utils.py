@@ -3,7 +3,6 @@ Module for utilities to help analyze and plot results
 
 """
 
-from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -30,6 +29,7 @@ if __gui__:
 import numpy as np
 import functools
 import sys
+from netpyne.logger import logger
 
 # -------------------------------------------------------------------------------------------------------------------
 # Define list of colors
@@ -70,9 +70,8 @@ def exception(function):
         try:
             return function(*args, **kwargs)
         except Exception as e:
-            # print
             err = "There was an exception in %s():"%(function.__name__)
-            print(("  %s \n    %s \n    %s"%(err,e,sys.exc_info())))
+            logger.warning("  %s \n    %s \n    %s"%(err,e,sys.exc_info()))
             return -1
 
     return wrapper
@@ -105,15 +104,14 @@ def _saveFigData(figData, fileName=None, type=''):
 
     if fileName.endswith('.pkl'): # save to pickle
         import pickle
-        print(('Saving figure data as %s ... ' % (fileName)))
+        logger.info('Saving figure data as %s ... ' % fileName)
         with open(fileName, 'wb') as fileObj:
             pickle.dump(figData, fileObj)
-
     elif fileName.endswith('.json'):  # save to json
-        print(('Saving figure data as %s ... ' % (fileName)))
+        logger.info('Saving figure data as %s ... ' % fileName)
         sim.saveJSON(fileName, figData)
     else:
-        print('File extension to save figure data not recognized')
+        logger.warning('File extension to save figure data not recognized')
 
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -167,7 +165,7 @@ def _smooth1d(x,window_len=11,window='hanning'):
 
 
     s=np.r_[x[window_len-1:0:-1],x,x[-1:-window_len:-1]]
-    #print(len(s))
+
     if window == 'flat': #moving average
         w=np.ones(window_len,'d')
     else:

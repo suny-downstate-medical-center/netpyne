@@ -3,7 +3,6 @@ Module related to saving
 
 """
 
-from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -26,6 +25,7 @@ import pickle as pk
 from . import gather
 from . import utils
 from ..specs import Dict, ODict
+from netpyne.logger import logger
 
 
 #------------------------------------------------------------------------------
@@ -95,7 +95,7 @@ def saveData(include=None, filename=None, saveLFP=True):
         # copy source files
         if isinstance(sim.cfg.backupCfgFile, list) and len(sim.cfg.backupCfgFile) == 2:
             simName = sim.cfg.simLabel if sim.cfg.simLabel else os.path.basename(sim.cfg.filename)
-            print(('Copying cfg file %s ... ' % simName))
+            logger.info('Copying cfg file %s ... ' % simName)
             source = sim.cfg.backupCfgFile[0]
             targetFolder = sim.cfg.backupCfgFile[1]
             # make dir
@@ -103,11 +103,11 @@ def saveData(include=None, filename=None, saveLFP=True):
                 os.mkdir(targetFolder)
             except OSError:
                 if not os.path.exists(targetFolder):
-                    print(' Could not create target folder: %s' % (targetFolder))
+                    logger.warning('  Could not create target folder: %s' % targetFolder)
             # copy file
             targetFile = targetFolder + '/' + simName + '_cfg.py'
             if os.path.exists(targetFile):
-                print(' Removing prior cfg file' , targetFile)
+                logger.info('  Removing prior cfg file ' + targetFile)
                 os.system('rm ' + targetFile)
             os.system('cp ' + source + ' ' + targetFile)
 
@@ -118,7 +118,7 @@ def saveData(include=None, filename=None, saveLFP=True):
             try:
                 os.mkdir(targetFolder)
             except OSError:
-                print(' Could not create target folder: %s' % (targetFolder))
+                logger.warning(' Could not create target folder: %s' % targetFolder)
 
         # saving data
         if not include: include = sim.cfg.saveDataInclude
@@ -162,52 +162,52 @@ def saveData(include=None, filename=None, saveLFP=True):
             if sim.cfg.savePickle:
                 import pickle
                 dataSave = utils.replaceDictODict(dataSave)
-                print(('Saving output as %s ... ' % (filePath + '.pkl')))
+                logger.info('Saving output as %s... ' % (filePath + '.pkl'))
                 with open(filePath+'.pkl', 'wb') as fileObj:
                     pickle.dump(dataSave, fileObj)
-                print('Finished saving!')
+                logger.info('Finished saving!')
 
             # Save to dpk file
             if sim.cfg.saveDpk:
                 import gzip
-                print(('Saving output as %s ... ' % (filePath+'.dpk')))
+                logger.info('Saving output as %s ... ' % (filePath+'.dpk'))
                 #fn=filePath #.split('.')
                 gzip.open(filePath, 'wb').write(pk.dumps(dataSave)) # write compressed string
-                print('Finished saving!')
+                logger.info('Finished saving!')
 
             # Save to json file
             if sim.cfg.saveJson:
                 # Make it work for Python 2+3 and with Unicode
-                print(('Saving output as %s ... ' % (filePath+'.json ')))
+                logger.info('Saving output as %s ... ' % (filePath+'.json '))
                 #dataSave = utils.replaceDictODict(dataSave)  # not required since json saves as dict
                 sim.saveJSON(filePath+'.json', dataSave)
-                print('Finished saving!')
+                logger.info('Finished saving!')
 
             # Save to mat file
             if sim.cfg.saveMat:
                 from scipy.io import savemat
-                print(('Saving output as %s ... ' % (filePath+'.mat')))
+                logger.info('Saving output as %s ... ' % (filePath+'.mat'))
                 savemat(filePath+'.mat', utils.tupleToList(utils.replaceNoneObj(dataSave)))  # replace None and {} with [] so can save in .mat format
-                print('Finished saving!')
+                logger.info('Finished saving!')
 
             # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)
             if sim.cfg.saveHDF5:
                 dataSaveUTF8 = utils._dict2utf8(utils.replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
                 import hdf5storage
-                print(('Saving output as %s... ' % (filePath+'.hdf5')))
+                logger.info('Saving output as %s... ' % (filePath+'.hdf5'))
                 hdf5storage.writes(dataSaveUTF8, filename=filePath+'.hdf5')
-                print('Finished saving!')
+                logger.info('Finished saving!')
 
             # Save to CSV file (currently only saves spikes)
             if sim.cfg.saveCSV:
                 if 'simData' in dataSave:
                     import csv
-                    print(('Saving output as %s ... ' % (filePath+'.csv')))
+                    logger.info('Saving output as %s ... ' % (filePath+'.csv'))
                     writer = csv.writer(open(filePath+'.csv', 'wb'))
                     for dic in dataSave['simData']:
                         for values in dic:
                             writer.writerow(values)
-                    print('Finished saving!')
+                    logger.info('Finished saving!')
 
             # Save to Dat file(s)
             if sim.cfg.saveDat:
@@ -217,17 +217,17 @@ def saveData(include=None, filename=None, saveLFP=True):
                         dat_file_name = '%s_%s.dat'%(ref,cellid)
                         dat_file = open(dat_file_name, 'w')
                         trace = sim.allSimData[ref][cellid]
-                        print(("Saving %i points of data on: %s:%s to %s"%(len(trace),ref,cellid,dat_file_name)))
+                        logger.info("Saving %i points of data on: %s:%s to %s"%(len(trace),ref,cellid,dat_file_name))
                         for i in range(len(trace)):
                             dat_file.write('%s\t%s\n'%((i*sim.cfg.dt/1000),trace[i]/1000))
                         dat_file.close()
 
-                print('Finished saving!')
+                logger.info('Finished saving!')
 
             # Save timing
+            sim.timing('stop', 'saveTime')
             if sim.cfg.timing:
-                sim.timing('stop', 'saveTime')
-                print(('  Done; saving time = %0.2f s.' % sim.timingData['saveTime']))
+                logger.info('  Done; saving time = %0.2f s.' % sim.timingData['saveTime'])
             if sim.cfg.timing and sim.cfg.saveTiming:
                 import pickle
                 with open('timing.pkl', 'wb') as file: pickle.dump(sim.timing, file)
@@ -243,7 +243,7 @@ def saveData(include=None, filename=None, saveLFP=True):
             return os.getcwd() + '/' + filePath
 
         else:
-            print('Nothing to save')
+            logger.info('Nothing to save')
 
 
 #------------------------------------------------------------------------------
@@ -334,7 +334,7 @@ def intervalSave(simTime, gatherLFP=True):
             try:
                 os.makedirs(targetFolder)
             except OSError:
-                print(' Could not create target folder: %s' % (targetFolder))
+                logger.warning(' Could not create target folder: %s' % targetFolder)
 
         include = sim.cfg.saveDataInclude
     
@@ -350,7 +350,6 @@ def intervalSave(simTime, gatherLFP=True):
         for k,v in nodeData.items():
             data[0][k] = v
 
-        #print data
         gather = sim.pc.py_alltoall(data)
         sim.pc.barrier()
         if sim.rank == 0:
@@ -438,7 +437,7 @@ def intervalSave(simTime, gatherLFP=True):
             simDataVecs = simDataVecs + ['allWeights']
     
     if sim.rank == 0: # simData
-        print('  Saving data at intervals... {:0.0f} ms'.format(simTime))
+        logger.info('  Saving data at intervals... {:0.0f} ms'.format(simTime))
         sim.allSimData = Dict()
         for k in list(gather[0]['simData'].keys()):  # initialize all keys of allSimData dict
             if gatherLFP and k == 'LFP':
@@ -585,7 +584,7 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
 
     sim.pc.barrier()
     if sim.rank == 0:
-        print('\nSaving an output file for each node in: %s' % (saveFolder))
+        logger.info('\nSaving an output file for each node in: %s' % (saveFolder))
 
     # saving data
     dataSave = {}
@@ -667,25 +666,25 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
             import pickle
             dataSave = utils.replaceDictODict(dataSave)
             fileName = filePath + '_node_' + str(sim.rank) + '.pkl'
-            print(('  Saving output as: %s ... ' % (fileName)))
+            logger.info('  Saving output as: %s ... ' % (fileName))
             with open(os.path.join(saveFolder, fileName), 'wb') as fileObj:
                 pickle.dump(dataSave, fileObj)
         except:
-            print('Unable to save Pickle')
+            logger.warning('Unable to save Pickle')
             return dataSave
 
         # Save to json file
         if sim.cfg.saveJson:
             fileName = filePath + '_node_' + str(sim.rank) + '.json'
-            print(('  Saving output as: %s ... ' % (fileName)))
+            logger.info('  Saving output as: %s ... ' % (fileName))
             sim.saveJSON(os.path.join(saveFolder, fileName), dataSave)
 
         # Save timing
         sim.pc.barrier()
         if sim.rank == 0:
+            sim.timing('stop', 'saveInNodeTime')
             if sim.cfg.timing:
-                sim.timing('stop', 'saveInNodeTime')
-                print(('  Done; saving time = %0.2f s.' % sim.timingData['saveInNodeTime']))
+                logger.info('  Done; saving time = %0.2f s.' % sim.timingData['saveInNodeTime'])
             if sim.cfg.timing and sim.cfg.saveTiming:
                 import pickle
                 with open('timing.pkl', 'wb') as file: pickle.dump(sim.timing, file)

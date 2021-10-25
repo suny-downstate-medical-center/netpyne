@@ -1,3 +1,5 @@
+from netpyne.logger import logger
+
 # Generate a plot of traces
 
 def plotTraces(
@@ -35,12 +37,11 @@ def plotTraces(
     cells = tracesData['cells']
     pops = tracesData['pops']
 
-    print('traces:', traces)
-    print('cells:', cells)
-    print('pops:', pops)
+    logger.info('traces: ' + str(traces))
+    logger.info('cells: ' + str(cells))
+    logger.info('pops: ' + str(pops))
 
-
-    print('Plotting traces ...')
+    logger.info('Plotting traces ...')
 
     lineData = {}
     lineData['x'] = time

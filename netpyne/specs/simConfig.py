@@ -3,7 +3,6 @@ Module containing SimConfig class including simulation configuration and methods
 
 """
 
-from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
@@ -20,7 +19,7 @@ standard_library.install_aliases()
 
 from collections import OrderedDict
 from .dicts import Dict, ODict
-
+from netpyne.logger import logger
 
 # ----------------------------------------------------------------------------
 # SIMULATION CONFIGURATION CLASS
@@ -65,7 +64,6 @@ class SimConfig(object):
         self.printRunTime = False  # print run time at interval (in sec) specified here (eg. 0.1)
         self.printPopAvgRates = False  # print population avg firing rates after run
         self.printSynsAfterRule = False  # print total of connections after each conn rule is applied
-        self.verbose = False  # show detailed messages
 
         # Recording
         self.recordCells = []  # what cells to record traces from (eg. 'all', 5, or 'PYR')
@@ -123,14 +121,14 @@ class SimConfig(object):
             os.mkdir(folder)
         except OSError:
             if not os.path.exists(folder):
-                print(' Could not create', folder)
+                logger.warning('Could not create ' + folder)
 
         dataSave = {'simConfig': self.__dict__}
 
         # Save to json file
         if ext == 'json':
             from .. import sim
-            print(('Saving simConfig to %s ... ' % (filename)))
+            logger.info('Saving simConfig to %s ... ' % (filename))
             sim.saveJSON(filename, dataSave)
 
     def setParam(self, param, value):

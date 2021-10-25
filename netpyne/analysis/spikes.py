@@ -4,7 +4,6 @@ Module for analysis of spiking-related results
 """
 
 from __future__ import unicode_literals
-from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
@@ -31,7 +30,7 @@ from .utils import exception #, getInclude, getSpktSpkid
 from .tools import getInclude, getSpktSpkid
 from .tools import saveData as saveFigData
 from ..support.scalebar import add_scalebar
-
+from netpyne.logger import logger
 
 @exception
 def prepareSpikeData(
@@ -52,7 +51,7 @@ def prepareSpikeData(
 
     """
 
-    print('Preparing spike data...')
+    logger.info('Preparing spike data...')
 
     if not sim:
         from .. import sim
@@ -97,7 +96,7 @@ def prepareSpikeData(
             sel, spkts, spkgids = getSpktSpkid(cellGids=[] if include == ['allCells'] else cellGids, timeRange=timeRange) # using [] is faster for all cells
         except:
             import sys
-            print((sys.exc_info()))
+            logger.warning(sys.exc_info())
             spkgids, spkts = [], []
             sel = pd.DataFrame(columns=['spkt', 'spkid'])
         
@@ -116,11 +115,11 @@ def prepareSpikeData(
     numCellSpks = len(sel)
     numNetStims = 0
     for netStimLabel in netStimLabels:
-        print(netStimLabel)
+        logger.info(netStimLabel)
         stims = sim.allSimData['stims'].items()
-        print(stims)
+        logger.info(stims)
         netStimSpks = [spk for cell, stims in sim.allSimData['stims'].items() for stimLabel, stimSpks in stims.items() for spk in stimSpks if stimLabel == netStimLabel]
-        print(netStimSpks)
+        logger.info(netStimSpks)
         if len(netStimSpks) > 0:
             lastInd = sel['spkind'].max() if len(sel['spkind']) > 0 else 0
             spktsNew = netStimSpks
@@ -136,7 +135,7 @@ def prepareSpikeData(
         ylabelText = ylabelText + 'NetStims'
 
     if numCellSpks + numNetStims == 0:
-        print('No spikes available to plot raster')
+        logger.info('No spikes available to plot raster')
         return None
 
     # Time Range
@@ -149,7 +148,7 @@ def prepareSpikeData(
 
     # Limit to maxSpikes
     if (len(sel) > maxSpikes):
-        print(('  Showing only the first %i out of %i spikes' % (maxSpikes, len(sel)))) # Limit num of spikes
+        logger.info('  Showing only the first %i out of %i spikes' % (maxSpikes, len(sel))) # Limit num of spikes
         if numNetStims: # sort first if have netStims
             sel = sel.sort_values(by='spkt')
         sel = sel.iloc[:maxSpikes]
@@ -279,7 +278,7 @@ def popAvgRates(tranges=None, show=True):
     avgRates = Dict()
 
     if not hasattr(sim, 'allSimData') or 'spkt' not in sim.allSimData:
-        print('Error: sim.allSimData not available; please call sim.gatherData()')
+        logger.warning('Error: sim.allSimData not available; please call sim.gatherData()')
         return None
 
     spktsAll = sim.allSimData['spkt']
@@ -313,7 +312,7 @@ def popAvgRates(tranges=None, show=True):
 
         if len(tranges) > 1:
             if show: 
-                print('   %s ' % (pop))
+                logger.info('   %s ' % (pop))
             avgRates[pop] = {}
 
         for spkids, spkts, trange in zip(spkidsList, spktsList, tranges):
@@ -325,13 +324,13 @@ def popAvgRates(tranges=None, show=True):
                     tsecs = float((trange[1]-trange[0]))/1000.0
                     avgRates[pop] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['pop']==pop])/numCells/tsecs
                     if show: 
-                        print('   %s : %.3f Hz'%(pop, avgRates[pop]))
+                        logger.info('   %s : %.3f Hz'%(pop, avgRates[pop]))
 
                 # multiple time intervals
                 else:
                     tsecs = float((trange[1]-trange[0]))/1000.0
                     avgRates[pop]['%d_%d'%(trange[0], trange[1])] = len([spkid for spkid in spkids if sim.net.allCells[int(spkid)]['tags']['pop']==pop])/numCells/tsecs
                     if show: 
-                        print('        (%d - %d ms): %.3f Hz'%(trange[0], trange[1], avgRates[pop]['%d_%d'%(trange[0], trange[1])]))
+                        logger.info('        (%d - %d ms): %.3f Hz'%(trange[0], trange[1], avgRates[pop]['%d_%d'%(trange[0], trange[1])]))
 
     return avgRates

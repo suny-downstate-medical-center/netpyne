@@ -3,7 +3,6 @@ Module for analyzing and plotting connectivity-related results
 
 """
 
-from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -30,6 +29,7 @@ from numbers import Number
 from math import ceil
 from .utils import colorList, exception, _roundFigures, getCellsInclude, getCellsIncludeTags
 from .utils import _saveFigData, _showFigure
+from netpyne.logger import logger
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Support function for plotConn() - calculate conn using data from sim object
@@ -46,7 +46,7 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
         try:
             return [x for x in seq if x[key] not in seen and not seen_add(x[key])]
         except:
-            print('  Error calculating list of dict unique by key...')
+            logger.warning('  Error calculating list of dict unique by key...')
             return []
 
     # adapt indices/keys based on compact vs long conn format
@@ -62,8 +62,8 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
         preLabelIndex = connsFormat.index('preLabel') if 'preLabel' in connsFormat else -1
 
         if len(missing) > 0:
-            print("  Error: cfg.compactConnFormat missing:")
-            print(missing)
+            logger.warning("  Error: cfg.compactConnFormat missing:")
+            logger.warning(missing)
             return None, None, None
     else:
         # using long conn format (dict)
@@ -88,7 +88,7 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
             connMatrix = np.zeros((len(cellGidsPre), len(cellGidsPost)))
             countMatrix = np.zeros((len(cellGidsPre), len(cellGidsPost)))
         else:
-            print('  Conn matrix with groupBy="cell" only supports features= "weight", "delay" or "numConns"')
+            logger.warning('  Conn matrix with groupBy="cell" only supports features= "weight", "delay" or "numConns"')
             return None, None, None
         cellIndsPre = {cell['gid']: ind for ind,cell in enumerate(cellsPre)}
         cellIndsPost = {cell['gid']: ind for ind,cell in enumerate(cellsPost)}
@@ -251,7 +251,7 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
     # Calculate matrix if grouped by numeric tag (eg. 'y')
     elif groupBy in sim.net.allCells[0]['tags'] and isinstance(sim.net.allCells[0]['tags'][groupBy], Number):
         if not isinstance(groupByIntervalPre, Number) or not isinstance(groupByIntervalPost, Number):
-            print('  groupByIntervalPre or groupByIntervalPost not specified')
+            logger.warning('  groupByIntervalPre or groupByIntervalPost not specified')
             return None, None, None
 
         # group cells by 'groupBy' feature (eg. 'y') in intervals of 'groupByInterval')
@@ -273,7 +273,7 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
 
         # only allow matrix sizes >= 2x2 [why?]
         # if len(groupsPre) < 2 or len(groupsPost) < 2:
-        #     print 'groupBy %s with groupByIntervalPre %s and groupByIntervalPost %s results in <2 groups'%(str(groupBy), str(groupByIntervalPre), str(groupByIntervalPre))
+        #     logger.info 'groupBy %s with groupByIntervalPre %s and groupByIntervalPost %s results in <2 groups'%(str(groupBy), str(groupByIntervalPre), str(groupByIntervalPre))
         #     return
 
         # set indices for pre and post groups
@@ -344,7 +344,7 @@ def _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy
 
     # no valid groupBy
     else:
-        print('  groupBy (%s) is not valid'%(str(groupBy)))
+        logger.warning('  groupBy (%s) is not valid'%(str(groupBy)))
         return None, None, None
 
     # normalize by number of postsyn cells
@@ -396,19 +396,19 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
     start = time()
     tags, conns = None, None
     if tagsFile:
-        print('Loading tags file...')
+        logger.info('Loading tags file...')
         with open(tagsFile, 'r') as fileObj: tagsTmp = json.load(fileObj)['tags']
         tagsFormat = tagsTmp.pop('format', [])
         tags = {int(k): v for k,v in tagsTmp.items()} # find method to load json with int keys?
         del tagsTmp
     if connsFile:
-        print('Loading conns file...')
+        logger.info('Loading conns file...')
         with open(connsFile, 'r') as fileObj: connsTmp = json.load(fileObj)['conns']
         connsFormat = connsTmp.pop('format', [])
         conns = {int(k): v for k,v in connsTmp.items()}
         del connsTmp
 
-    print('Finished loading; total time (s): %.2f'%(time()-start))
+    logger.info('Finished loading; total time (s): %.2f'%(time()-start))
 
     # find pre and post cells
     if tags and conns:
@@ -418,7 +418,7 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
         else:
             cellGidsPost = getCellsIncludeTags(includePost, tags, tagsFormat)
     else:
-        print('Error loading tags and conns from file')
+        logger.warning('Error loading tags and conns from file')
         return None, None, None
 
 
@@ -432,22 +432,22 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
     preLabelIndex = connsFormat.index('preLabel') if 'preLabel' in connsFormat else -1
 
     if len(missing) > 0:
-        print("Missing:")
-        print(missing)
+        logger.warning("Missing:")
+        logger.warning(missing)
         return None, None, None
 
     if isinstance(synMech, basestring): synMech = [synMech]  # make sure synMech is a list
 
     # Calculate matrix if grouped by cell
     if groupBy == 'cell':
-        print('  plotConn from file for groupBy=cell not implemented yet')
+        logger.warning('  plotConn from file for groupBy=cell not implemented yet')
         return None, None, None
 
     # Calculate matrix if grouped by pop
     elif groupBy == 'pop':
 
         # get list of pops
-        print('    Obtaining list of populations ...')
+        logger.info('    Obtaining list of populations ...')
         popsPre = list(set([tags[gid][popIndex] for gid in cellGidsPre]))
         popIndsPre = {pop: ind for ind,pop in enumerate(popsPre)}
         netStimPopsPre = []  # netstims not yet supported
@@ -468,7 +468,7 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
         countMatrix = np.zeros((len(popsPre), len(popsPost)))
 
         # calculate max num conns per pre and post pair of pops
-        print('    Calculating max num conns for each pair of population ...')
+        logger.info('    Calculating max num conns for each pair of population ...')
         numCellsPopPre = {}
         for pop in popsPre:
             if pop in netStimPopsPre:
@@ -497,9 +497,9 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
                 if feature == 'divergence': maxPreConnMatrix[popIndsPre[prePop], popIndsPost[postPop]] = numCellsPopPre[prePop]
 
         # Calculate conn matrix
-        print('    Calculating weights, strength, prob, delay etc matrices ...')
+        logger.info('    Calculating weights, strength, prob, delay etc matrices ...')
         for postGid in cellGidsPost:  # for each postsyn cell
-            print('     cell %d'%(int(postGid)))
+            logger.info('     cell %d'%(int(postGid)))
             if synOrConn=='syn':
                 cellConns = conns[postGid] # include all synapses
             else:
@@ -526,12 +526,12 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
 
     # Calculate matrix if grouped by numeric tag (eg. 'y')
     elif groupBy in sim.net.allCells[0]['tags'] and isinstance(sim.net.allCells[0]['tags'][groupBy], Number):
-        print('plotConn from file for groupBy=[arbitrary property] not implemented yet')
+        logger.warning('plotConn from file for groupBy=[arbitrary property] not implemented yet')
         return None, None, None
 
     # no valid groupBy
     else:
-        print('groupBy (%s) is not valid'%(str(groupBy)))
+        logger.warning('groupBy (%s) is not valid'%(str(groupBy)))
         return None, None, None
 
     if groupBy != 'cell':
@@ -558,7 +558,7 @@ def _plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupB
         elif feature == 'divergence':
             connMatrix = countMatrix / maxPreConnMatrix
 
-    print('    plotting ...')
+    logger.info('    plotting ...')
     return connMatrix, pre, post
 
 
@@ -691,7 +691,7 @@ def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderB
 
     from .. import sim
 
-    print('Plotting connectivity matrix...')
+    logger.info('Plotting connectivity matrix...')
 
     if groupBy == 'cell' and feature == 'strength':
         feature = 'weight'
@@ -702,7 +702,7 @@ def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderB
         connMatrix, pre, post = _plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, removeWeightNorm, logPlot)
 
     if connMatrix is None:
-        print("  Error calculating connMatrix in plotConn()")
+        logger.warning("  Error calculating connMatrix in plotConn()")
         return None
 
     # set font size
@@ -807,11 +807,11 @@ def plotConn(includePre=['all'], includePost=['all'], feature='strength', orderB
             plt.tight_layout()
 
         elif groupBy == 'cell':
-            print('  Error: plotConn graphType="bar" with groupBy="cell" not implemented')
+            logger.warning('  Error: plotConn graphType="bar" with groupBy="cell" not implemented')
             return None
 
     elif graphType == 'pie':
-        print('  Error: plotConn graphType="pie" not yet implemented')
+        logger.warning('  Error: plotConn graphType="pie" not yet implemented')
         return None
 
 
@@ -920,7 +920,7 @@ def plot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, t
 
     from .. import sim
 
-    print('Plotting 2D representation of network cell locations and connections...')
+    logger.info('Plotting 2D representation of network cell locations and connections...')
 
     fig = plt.figure(figsize=figSize)
 
@@ -931,7 +931,7 @@ def plot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, t
         ycoord = 'z'
 
     if tagsFile:
-        print('Loading tags file...')
+        logger.info('Loading tags file...')
         import json
         with open(tagsFile, 'r') as fileObj: tagsTmp = json.load(fileObj)['tags']
         tagsFormat = tagsTmp.pop('format', [])
@@ -945,8 +945,8 @@ def plot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, t
         yIndex = tagsFormat.index('y') if 'y' in tagsFormat else missing.append('y')
         zIndex = tagsFormat.index('z') if 'z' in tagsFormat else missing.append('z')
         if len(missing) > 0:
-            print("Missing:")
-            print(missing)
+            logger.warning("Missing:")
+            logger.warning(missing)
             return None, None, None
 
         # find pre and post cells
@@ -967,7 +967,7 @@ def plot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, t
             elif ycoord == 'z':
                 posY = [tags[gid][zIndex] for gid in cellGids]  # get all y positions
         else:
-            print('Error loading tags from file')
+            logger.warning('Error loading tags from file')
             return None
 
     else:
@@ -1110,7 +1110,7 @@ def plot2Dfiring(include=['allCells'], view='xy', popColors=None, timeRange=None
     from .. import sim
     from matplotlib import animation
 
-    print('Plotting 2D representation of network cell locations and connections...')
+    logger.info('Plotting 2D representation of network cell locations and connections...')
 
     fig = plt.figure(figsize=figSize)
 
@@ -1327,7 +1327,7 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
     from .. import sim
     from neuron import h
 
-    print('Plotting 3D cell shape ...')
+    logger.info('Plotting 3D cell shape...')
 
     cellsPreGids = [c.gid for c in sim.getCellsList(includePre)] if includePre else []
     cellsPost = sim.getCellsList(includePost)
@@ -1386,7 +1386,7 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
                 cvals = np.array(cvals)
 
         if not isinstance(cellsPost[0].secs, dict):
-            print('Error: Cell sections not available')
+            logger.warning('Error: Cell sections not available')
             return -1
 
         if not secs: secs = [s['hObj'] for cellPost in cellsPost for s in list(cellPost.secs.values())]
@@ -1602,17 +1602,17 @@ def calculateDisynaptic(includePost = ['allCells'], includePre = ['allCells'], i
 
     start = time()
     if tagsFile:
-        print('Loading tags file...')
+        logger.info('Loading tags file...')
         with open(tagsFile, 'r') as fileObj: tagsTmp = json.load(fileObj)['tags']
         tags = {int(k): v for k,v in tagsTmp.items()}
         del tagsTmp
     if connsFile:
-        print('Loading conns file...')
+        logger.info('Loading conns file...')
         with open(connsFile, 'r') as fileObj: connsTmp = json.load(fileObj)['conns']
         conns = {int(k): v for k,v in connsTmp.items()}
         del connsTmp
 
-    print('  Calculating disynaptic connections...')
+    logger.info('  Calculating disynaptic connections...')
     # loading from json files
     if tags and conns:
         cellsPreGids = getCellsIncludeTags(includePre, tags)
@@ -1634,7 +1634,7 @@ def calculateDisynaptic(includePost = ['allCells'], includePre = ['allCells'], i
             if 'preGid' in sim.cfg.compactConnFormat:
                 preGidIndex = sim.cfg.compactConnFormat.index('preGid')  # using compact conn format (list)
             else:
-                print('   Error: cfg.compactConnFormat does not include "preGid"')
+                logger.warning('   Error: cfg.compactConnFormat does not include "preGid"')
                 return -1
         else:
             preGidIndex = 'preGid' # using long conn format (dict)
@@ -1644,7 +1644,6 @@ def calculateDisynaptic(includePost = ['allCells'], includePre = ['allCells'], i
         cellsPost, _, _ = getCellsInclude(includePost)
 
         for postCell in cellsPost:
-            print(postCell['gid'])
             preGidsAll = [conn[preGidIndex] for conn in postCell['conns'] if isinstance(conn[preGidIndex], Number) and conn[preGidIndex] in cellsPreGids+cellsPrePreGids]
             preGids = [gid for gid in preGidsAll if gid in cellsPreGids]
             for preGid in preGids:
@@ -1654,13 +1653,13 @@ def calculateDisynaptic(includePost = ['allCells'], includePre = ['allCells'], i
                 if not set(prePreGids).isdisjoint(preGidsAll):
                     numDis += 1
 
-    print('    Total disynaptic connections: %d / %d (%.2f%%)' % (numDis, totCon, float(numDis)/float(totCon)*100 if totCon>0 else 0.0))
+    logger.info('    Total disynaptic connections: %d / %d (%.2f%%)' % (numDis, totCon, float(numDis)/float(totCon)*100 if totCon>0 else 0.0))
     try:
         sim.allSimData['disynConns'] = numDis
     except:
         pass
 
-    print('    time ellapsed (s): ', time() - start)
+    logger.info('    time ellapsed (s): ' + str(time() - start))
 
     return numDis
 

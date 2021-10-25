@@ -3,7 +3,6 @@ Module for running simulations
 
 """
 
-from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -17,7 +16,7 @@ standard_library.install_aliases()
 import numpy as np
 from neuron import h, init # Import NEURON
 from . import utils
-
+from netpyne.logger import logger
 
 
 #------------------------------------------------------------------------------
@@ -56,13 +55,13 @@ def preRun():
     # parallelcontext vars
     sim.pc.set_maxstep(10)
     mindelay = sim.pc.allreduce(sim.pc.set_maxstep(10), 2) # flag 2 returns minimum value
-    if sim.rank==0 and sim.cfg.verbose: print(('Minimum delay (time-step for queue exchange) is %.2f'%(mindelay)))
+    if sim.rank==0: logger.debug('Minimum delay (time-step for queue exchange) is %.2f'%(mindelay))
     sim.pc.setup_transfer()  # setup transfer of source_var to target_var
 
     # handler for printing out time during simulation run
     if sim.rank == 0 and sim.cfg.printRunTime:
         def printRunTime():
-            print('%.1fs' % (h.t/1000.0))
+            logger.info('%.1fs' % (h.t/1000.0))
             sim.cvode.event(h.t + int(sim.cfg.printRunTime*1000.0), sim.printRunTime)
 
         sim.printRunTime = printRunTime
@@ -82,7 +81,7 @@ def preRun():
             cell.hPointp.noiseFromRandom(cell.hRandom)
         pop = sim.net.pops[cell.tags['pop']]
         if 'originalFormat' in pop.tags and pop.tags['originalFormat'] == 'NeuroML2_SpikeSource':
-            if sim.cfg.verbose: print("== Setting random generator in NeuroML spike generator")
+            logger.debug("== Setting random generator in NeuroML spike generator")
             cell.initRandom()
         else:
             for stim in cell.stims:
@@ -130,9 +129,9 @@ def runSim(skipPreRun=False):
     if hasattr(sim.cfg,'use_local_dt') and sim.cfg.use_local_dt:
         try:
             sim.cvode.use_local_dt(1)
-            if sim.cfg.verbose: print('Using local dt.')
+            logger.debug('Using local dt.')
         except:
-            if sim.cfg.verbose: 'Error Failed to use local dt.'
+            logger.debug('Error Failed to use local dt.')
     sim.pc.barrier()
     sim.timing('start', 'runTime')
 
@@ -141,13 +140,13 @@ def runSim(skipPreRun=False):
 
     h.finitialize(float(sim.cfg.hParams['v_init']))
 
-    if sim.rank == 0: print('\nRunning simulation for %s ms...'%sim.cfg.duration)
+    if sim.rank == 0: logger.info('\nRunning simulation for %s ms...'%sim.cfg.duration)
     sim.pc.psolve(sim.cfg.duration)
 
     sim.pc.barrier() # Wait for all hosts to get to this point
     sim.timing('stop', 'runTime')
     if sim.rank==0:
-        print('  Done; run time = %0.2f s; real-time ratio: %0.2f.' %
+        logger.info('  Done; run time = %0.2f s; real-time ratio: %0.2f.' %
             (sim.timingData['runTime'], sim.cfg.duration/1000/sim.timingData['runTime']))
 
 
@@ -197,7 +196,7 @@ def runSimWithIntervalFunc(interval, func, timeRange=None, funcArgs=None):
         kwargs.update(funcArgs)
 
     if sim.rank == 0: 
-        print('\nRunning with interval func  ...')
+        logger.info('\nRunning with interval func...')
     
     if int(startTime) != 0:
         sim.pc.psolve(startTime)
@@ -213,8 +212,8 @@ def runSimWithIntervalFunc(interval, func, timeRange=None, funcArgs=None):
     sim.pc.barrier() # Wait for all hosts to get to this point
     sim.timing('stop', 'runTime')
     if sim.rank==0:
-        print(('  Done; run time = %0.2f s; real-time ratio: %0.2f.' %
-            (sim.timingData['runTime'], sim.cfg.duration/1000/sim.timingData['runTime'])))
+        logger.info('  Done; run time = %0.2f s; real-time ratio: %0.2f.' %
+            (sim.timingData['runTime'], sim.cfg.duration/1000/sim.timingData['runTime']))
 
 
 #------------------------------------------------------------------------------
@@ -282,13 +281,13 @@ def loadBalance(printNodeTimes = False):
     load_balance = avg_comp_time/max_comp_time
 
     if printNodeTimes:
-        print('node:',sim.rank,' comp_time:',computation_time)
+        logger.info('node: ' + str(sim.rank) + ' comp_time: ' + str(computation_time))
 
     if sim.rank==0:
-        print('max_comp_time:', max_comp_time)
-        print('min_comp_time:', min_comp_time)
-        print('avg_comp_time:', avg_comp_time)
-        print('load_balance:',load_balance)
-        print('\nspike exchange time (run_time-comp_time): ', sim.timingData['runTime'] - max_comp_time)
+        logger.info('max_comp_time:' + str(max_comp_time))
+        logger.info('min_comp_time:' + str(min_comp_time))
+        logger.info('avg_comp_time:' + str(avg_comp_time))
+        logger.info('load_balance:'  + str(load_balance))
+        logger.info('spike exchange time (run_time-comp_time): ' + str(sim.timingData['runTime'] - max_comp_time))
 
     return [max_comp_time, min_comp_time, avg_comp_time, load_balance]

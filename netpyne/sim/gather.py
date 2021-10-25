@@ -3,7 +3,6 @@ Module for gathering data from nodes after a simulation
 
 """
 
-from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -15,8 +14,7 @@ standard_library.install_aliases()
 import numpy as np
 from ..specs import Dict, ODict
 from . import setup
-
-
+from netpyne.logger import logger
 
 #------------------------------------------------------------------------------
 # Gather data from nodes
@@ -41,7 +39,8 @@ def gatherData(gatherLFP=True):
     sim.timing('start', 'gatherTime')
     ## Pack data from all hosts
     if sim.rank==0:
-        print('\nGathering data...')
+        logger.info('')
+        logger.info('Gathering data...')
 
     # flag to avoid saving sections data for each cell (saves gather time and space; cannot inspect cell secs or re-simulate)
     if not sim.cfg.saveCellSecs:
@@ -94,7 +93,7 @@ def gatherData(gatherLFP=True):
             sim.pc.barrier()
 
             if sim.rank == 0: # simData
-                print('  Gathering only sim data...')
+                logger.info('  Gathering only sim data...')
                 sim.allSimData = Dict()
                 for k in list(gather[0]['simData'].keys()):  # initialize all keys of allSimData dict
                     if gatherLFP and k == 'LFP':
@@ -243,9 +242,12 @@ def gatherData(gatherLFP=True):
     sim.pc.barrier()
     if sim.rank == 0:
         sim.timing('stop', 'gatherTime')
-        if sim.cfg.timing: print(('  Done; gather time = %0.2f s.' % sim.timingData['gatherTime']))
+        if sim.cfg.timing:
+            logger.info('  Done; gather time = %0.2f s.' % sim.timingData['gatherTime'])
 
-        print('\nAnalyzing...')
+        logger.info('')
+        logger.info('Analyzing...')
+
         sim.totalSpikes = len(sim.allSimData['spkt'])
         sim.totalSynapses = sum([len(cell['conns']) for cell in sim.net.allCells])
         if sim.cfg.createPyStruct:
@@ -269,15 +271,15 @@ def gatherData(gatherLFP=True):
             sim.connsPerCell = 0
             sim.synsPerCell = 0
 
-        print(('  Cells: %i' % (sim.numCells) ))
-        print(('  Connections: %i (%0.2f per cell)' % (sim.totalConnections, sim.connsPerCell)))
+        logger.info('  Cells: %i' % (sim.numCells))
+        logger.info('  Connections: %i (%0.2f per cell)' % (sim.totalConnections, sim.connsPerCell))
         if sim.totalSynapses != sim.totalConnections:
-            print(('  Synaptic contacts: %i (%0.2f per cell)' % (sim.totalSynapses, sim.synsPerCell)))
+            logger.info('  Synaptic contacts: %i (%0.2f per cell)' % (sim.totalSynapses, sim.synsPerCell))
 
         if 'runTime' in sim.timingData:
-            print(('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate)))
-            print(('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration/1e3, sim.nhosts)))
-            print(('  Run time: %0.2f s' % (sim.timingData['runTime'])))
+            logger.info('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate))
+            logger.info('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration/1e3, sim.nhosts))
+            logger.info('  Run time: %0.2f s' % (sim.timingData['runTime']))
 
             if sim.cfg.printPopAvgRates and not sim.cfg.gatherOnlySimData:
 
@@ -337,7 +339,8 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
             allCells = []
             allPops = ODict()
 
-            print('\nGathering data from files for simulation: %s ...' % (simLabel)) 
+            logger.info('')
+            logger.info('Gathering data from files for simulation: %s ...' % (simLabel)) 
 
             simDataVecs = ['spkt', 'spkid', 'stims'] + list(sim.cfg.recordTraces.keys())
             singleNodeVecs = ['t']
@@ -355,8 +358,8 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
 
             for file in fileList:
                 
-                print('  Merging data file: %s' % (file))
-                
+                logger.info('  Merging data file: %s' % (file))
+
                 if fileType == 'pkl':
 
                     with open(os.path.join(nodeDataDir, file), 'rb') as openFile:
@@ -407,7 +410,7 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
                                 allPopsCellGids[popLabel].extend(popCellGids)
 
                 elif fileType == 'json':
-                    print('JSON loading not implemented yet.')
+                    logger.warning('JSON loading not implemented yet.')
                     return False
 
             if len(allSimData['spkt']) > 0:
@@ -427,9 +430,11 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
         sim.pc.barrier()
     else:
         sim.timing('stop', 'gatherTime')
-        if sim.cfg.timing: print(('  Done; gather time = %0.2f s.' % sim.timingData['gatherTime']))
+        if sim.cfg.timing:
+            logger.info('  Done; gather time = %0.2f s.' % sim.timingData['gatherTime'])
 
-        print('\nAnalyzing...')
+        logger.info('')
+        logger.info('Analyzing...')
 
         sim.totalSpikes = len(sim.allSimData['spkt'])
         sim.totalSynapses = sum([len(cell['conns']) for cell in sim.net.allCells])
@@ -454,15 +459,15 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
             sim.connsPerCell = 0
             sim.synsPerCell = 0
 
-        print(('  Cells: %i' % (sim.numCells) ))
-        print(('  Connections: %i (%0.2f per cell)' % (sim.totalConnections, sim.connsPerCell)))
+        logger.info('  Cells: %i' % (sim.numCells))
+        logger.info('  Connections: %i (%0.2f per cell)' % (sim.totalConnections, sim.connsPerCell))
         if sim.totalSynapses != sim.totalConnections:
-            print(('  Synaptic contacts: %i (%0.2f per cell)' % (sim.totalSynapses, sim.synsPerCell)))
-        print(('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate)))
+            logger.info('  Synaptic contacts: %i (%0.2f per cell)' % (sim.totalSynapses, sim.synsPerCell))
+        logger.info('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate))
 
         if 'runTime' in sim.timingData:
-            print(('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration/1e3, sim.nhosts)))
-            print(('  Run time: %0.2f s' % (sim.timingData['runTime'])))
+            logger.info('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration/1e3, sim.nhosts))
+            logger.info('  Run time: %0.2f s' % (sim.timingData['runTime']))
 
             if sim.cfg.printPopAvgRates and not sim.cfg.gatherOnlySimData:
                 trange = sim.cfg.printPopAvgRates if isinstance(sim.cfg.printPopAvgRates, list) else None
@@ -534,7 +539,7 @@ def _gatherCells():
 
     ## Pack data from all hosts
     if sim.rank==0:
-        print('\nUpdating sim.net.allCells...')
+        logger.info('\nUpdating sim.net.allCells...')
 
     if sim.nhosts > 1:  # only gather if >1 nodes
         nodeData = {'netCells': [c.__getstate__() for c in sim.net.cells]}

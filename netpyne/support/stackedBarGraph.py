@@ -26,7 +26,6 @@ Module supporting use of stacked bar graphs
 ###############################################################################
 
 from __future__ import division
-from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import absolute_import
 from builtins import range
@@ -47,6 +46,7 @@ __status__ = "Development"
 
 import numpy as np
 from matplotlib import pyplot as plt
+from netpyne.logger import logger
 
 ###############################################################################
 
@@ -196,7 +196,7 @@ class StackedBarGrapher(object):
             data_copy /= data_stack[levels-1]
             data_stack /= data_stack[levels-1]
             if heights is not None:
-                print("WARNING: setting scale and heights does not make sense.")
+                logger.warning("Setting scale and heights does not make sense.")
                 heights = None
         elif heights is not None:
             data_copy /= data_stack[levels-1]

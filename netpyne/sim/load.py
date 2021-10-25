@@ -3,7 +3,6 @@ Module for loading of data and simulations
 
 """
 
-from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
@@ -29,6 +28,7 @@ from ..specs import Dict, ODict
 from .. import specs
 from . import utils
 from . import setup
+from netpyne.logger import logger
 
 #------------------------------------------------------------------------------
 # Load data from file
@@ -60,7 +60,7 @@ def _loadFile(filename):
     # load pickle file
     if ext == 'pkl':
         import pickle
-        print(('Loading file %s ... ' % (filename)))
+        logger.info('Loading file %s ... ' % (filename))
         with open(filename, 'rb') as fileObj:
             if sys.version_info[0] == 2:
                 data = pickle.load(fileObj)
@@ -70,65 +70,65 @@ def _loadFile(filename):
     # load dpk file
     elif ext == 'dpk':
         import gzip
-        print(('Loading file %s ... ' % (filename)))
+        logger.info('Loading file %s ... ' % (filename))
         #fn=sim.cfg.filename #.split('.')
         #gzip.open(fn, 'wb').write(pk.dumps(dataSave)) # write compressed string
-        print('NOT IMPLEMENTED!')
+        logger.warning('NOT IMPLEMENTED!')
 
     # load json file
     elif ext == 'json':
         import json
-        print(('Loading file %s ... ' % (filename)))
+        logger.info('Loading file %s ... ' % (filename))
         with open(filename, 'r') as fileObj:
             data = json.load(fileObj) # works with py2 and py3
     # load mat file
     elif ext == 'mat':
         from scipy.io import loadmat
-        print(('Loading file %s ... ' % (filename)))
+        logger.info('Loading file %s ... ' % (filename))
         dataraw = loadmat(filename, struct_as_record=False, squeeze_me=True)
         data = utils._mat2dict(dataraw)
         #savemat(sim.cfg.filename+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
-        print('Finished saving!')
+        logger.info('Finished saving!')
 
     # load HDF5 file (uses very inefficient hdf5storage module which supports dicts)
     elif ext == 'saveHDF5':
         #dataSaveUTF8 = _dict2utf8(replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
         import hdf5storage
-        print(('Loading file %s ... ' % (filename)))
+        logger.info('Loading file %s ... ' % (filename))
         #hdf5storage.writes(dataSaveUTF8, filename=sim.cfg.filename+'.hdf5')
-        print('NOT IMPLEMENTED!')
+        logger.warning('NOT IMPLEMENTED!')
 
     # load CSV file (currently only saves spikes)
     elif ext == 'csv':
         import csv
-        print(('Loading file %s ... ' % (filename)))
+        logger.info('Loading file %s ... ' % (filename))
         writer = csv.writer(open(sim.cfg.filename+'.csv', 'wb'))
         #for dic in dataSave['simData']:
         #    for values in dic:
         #        writer.writerow(values)
-        print('NOT IMPLEMENTED!')
+        logger.warning('NOT IMPLEMENTED!')
 
     # load Dat file(s)
     elif ext == 'dat':
-        print(('Loading file %s ... ' % (filename)))
-        print('NOT IMPLEMENTED!')
+        logger.info('Loading file %s ... ' % (filename))
+        logger.warning('NOT IMPLEMENTED!')
         # traces = sim.cfg.recordTraces
         # for ref in traces.keys():
         #     for cellid in sim.allSimData[ref].keys():
         #         dat_file_name = '%s_%s.dat'%(ref,cellid)
         #         dat_file = open(dat_file_name, 'w')
         #         trace = sim.allSimData[ref][cellid]
-        #         print("Saving %i points of data on: %s:%s to %s"%(len(trace),ref,cellid,dat_file_name))
+        #         logger.info("Saving %i points of data on: %s:%s to %s"%(len(trace),ref,cellid,dat_file_name))
         #         for i in range(len(trace)):
         #             dat_file.write('%s\t%s\n'%((i*sim.cfg.dt/1000),trace[i]/1000))
 
     else:
-        print(('Format not recognized for file %s'%(filename)))
+        logger.warning('Format not recognized for file %s'%(filename))
         return
 
     if hasattr(sim, 'rank') and sim.rank == 0 and hasattr(sim, 'cfg') and sim.cfg.timing:
         sim.timing('stop', 'loadFileTime')
-        print(('  Done; file loading time = %0.2f s' % sim.timingData['loadFileTime']))
+        logger.info('  Done; file loading time = %0.2f s' % sim.timingData['loadFileTime'])
 
 
     return data
@@ -163,14 +163,14 @@ def loadSimCfg(filename, data=None, setLoaded=True):
 
     if not data:
         data = _loadFile(filename)
-    print('Loading simConfig...')
+    logger.info('Loading simConfig...')
     if 'simConfig' in data:
         if setLoaded:
             setup.setSimCfg(data['simConfig'])
         else:
             return specs.SimConfig(data['simConfig'])
     else:
-        print(('  simConfig not found in file %s'%(filename)))
+        logger.warning('  simConfig not found in file %s'%(filename))
     pass
 
 
@@ -202,14 +202,14 @@ def loadNetParams(filename, data=None, setLoaded=True):
 
 
     if not data: data = _loadFile(filename)
-    print('Loading netParams...')
+    logger.info('Loading netParams...')
     if 'net' in data and 'params' in data['net']:
         if setLoaded:
             setup.setNetParams(data['net']['params'])
         else:
             return specs.NetParams(data['net']['params'])
     else:
-        print(('netParams not found in file %s'%(filename)))
+        logger.warning('netParams not found in file %s'%(filename))
 
     pass
 
@@ -258,7 +258,7 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
                 loadNow = False
         if loadNow:
             sim.timing('start', 'loadNetTime')
-            print('Loading net...')
+            logger.info('Loading net...')
             if compactConnFormat:
                 compactToLongConnFormat(data['net']['cells'], compactConnFormat) # convert loaded data to long format
             sim.net.allPops = data['net']['pops']
@@ -277,7 +277,7 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
                     else:
                         cellsNode = [data['net']['cells'][i] for i in range(0, len(data['net']['cells']), 1)]
             except:
-                print('Unable to instantiate network...')
+                logger.warning('Unable to instantiate network...')
             
             try:
                 if sim.cfg.createPyStruct:
@@ -298,29 +298,29 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
                                 cell.create()
                                 sim.cfg.createNEURONObj = createNEURONObjorig
                         except:
-                            if sim.cfg.verbose: print(' Unable to load cell secs')
+                            logger.debug(' Unable to load cell secs')
 
                         try:
                             cell.conns = [Dict(conn) for conn in cellLoad['conns']]
                         except:
-                            if sim.cfg.verbose: print(' Unable to load cell conns')
+                            logger.debug(' Unable to load cell conns')
 
                         try:
                             cell.stims = [Dict(stim) for stim in cellLoad['stims']]
                         except:
-                            if sim.cfg.verbose: print(' Unable to load cell stims')
+                            logger.debug(' Unable to load cell stims')
 
                         sim.net.cells.append(cell)
-                    print(('  Created %d cells' % (len(sim.net.cells))))
-                    print(('  Created %d connections' % (sum([len(c.conns) for c in sim.net.cells]))))
-                    print(('  Created %d stims' % (sum([len(c.stims) for c in sim.net.cells]))))
+                    logger.info('  Created %d cells' % (len(sim.net.cells)))
+                    logger.info('  Created %d connections' % (sum([len(c.conns) for c in sim.net.cells])))
+                    logger.info('  Created %d stims' % (sum([len(c.stims) for c in sim.net.cells])))
             except:
-                print('Unable to create Python structure...')
+                logger.warning('Unable to create Python structure...')
 
             try:
                 # only create NEURON objs, if there is Python struc (fix so minimal Python struct is created)
                 if sim.cfg.createNEURONObj:
-                    if sim.cfg.verbose: print("  Adding NEURON objects...")
+                    logger.debug("  Adding NEURON objects...")
                     # create NEURON sections, mechs, syns, etc; and associate gid
                     for cell in sim.net.cells:
                         prop = {'secs': cell.secs}
@@ -333,17 +333,17 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
                             cell.addStimsNEURONObj()  # add stims first so can then create conns between netstims
                             cell.addConnsNEURONObj()
                         except:
-                            if sim.cfg.verbose: ' Unable to load instantiate cell conns or stims'
+                            logger.debug('  Unable to load instantiate cell conns or stims')
 
-                    print(('  Added NEURON objects to %d cells' % (len(sim.net.cells))))
+                    logger.info('  Added NEURON objects to %d cells' % (len(sim.net.cells)))
             except:
-                print('Unable to create NEURON objects...')    
+                logger.warning('Unable to create NEURON objects...')
 
             if loadNow and sim.cfg.timing:  #if sim.rank == 0 and sim.cfg.timing:
                 sim.timing('stop', 'loadNetTime')
-                print(('  Done; re-instantiate net time = %0.2f s' % sim.timingData['loadNetTime']))
+                if sim.cfg.timing: logger.info('  Done; re-instantiate net time = %0.2f s' % sim.timingData['loadNetTime'])
     else:
-        print(('  netCells and/or netPops not found in file %s'%(filename)))
+        logger.warning('  netCells and/or netPops not found in file %s'%(filename))
 
 
 #------------------------------------------------------------------------------
@@ -370,12 +370,12 @@ def loadSimData(filename, data=None):
     if not data: 
         data = _loadFile(filename)
     
-    print('Loading simData...')
+    logger.info('Loading simData...')
     
     if 'simData' in data:
         sim.allSimData = data['simData']
     else:
-        print(('  simData not found in file %s'%(filename)))
+        logger.warning('  simData not found in file %s'%(filename))
 
     if 'net' in data:
         try:
@@ -426,7 +426,7 @@ def loadAll(filename, data=None, instantiate=True, createNEURONObj=True):
     if hasattr(sim.cfg, 'compactConnFormat'):
         connFormat = sim.cfg.compactConnFormat
     else:
-        print('Error: no connFormat provided in simConfig')
+        logger.warning('Error: no connFormat provided in simConfig')
         sys.exit()
     loadNet(filename, data=data, instantiate=instantiate, compactConnFormat=connFormat)
     loadSimData(filename, data=data)
@@ -461,7 +461,7 @@ def compactToLongConnFormat(cells, connFormat):
                 cell['conns'][iconn] = {key: conn[index] for key,index in formatIndices.items()}
         return cells
     except:
-        print("Error converting conns from compact to long format")
+        logger.warning("Error converting conns from compact to long format")
         return cells
 
 
@@ -569,13 +569,13 @@ def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, lo
 
     with open(filename, 'rb') as fd:
         start = time()
-        print('Loading data ...')
+        logger.info('Loading data ...')
         objs = ijson.items(fd, 'net.cells.item')
         if loadTags and loadConns:
-            print('Storing tags and conns ...')
+            logger.info('Storing tags and conns ...')
             for cell in objs:
                 if tagsGidRange==None or cell['gid'] in tagsGidRange:
-                    print('Cell gid: %d'%(cell['gid']))
+                    logger.info('Cell gid: %d'%(cell['gid']))
                     if tagFormat:
                         tags[int(cell['gid'])] = [cell['tags'][param] for param in tagFormat]
                     else:
@@ -586,30 +586,30 @@ def ijsonLoad(filename, tagsGidRange=None, connsGidRange=None, loadTags=True, lo
                         else:
                             conns[int(cell['gid'])] = cell['conns']
         elif loadTags:
-            print('Storing tags ...')
+            logger.info('Storing tags ...')
             if tagFormat:
                 tags.update({int(cell['gid']): [cell['tags'][param] for param in tagFormat] for cell in objs if tagsGidRange==None or cell['gid'] in tagsGidRange})
             else:
                 tags.update({int(cell['gid']): cell['tags'] for cell in objs if tagsGidRange==None or cell['gid'] in tagsGidRange})
         elif loadConns:
-            print('Storing conns...')
+            logger.info('Storing conns...')
             if connFormat:
                 conns.update({int(cell['gid']): [[conn[param] for param in connFormat] for conn in cell['conns']] for cell in objs if connsGidRange==None or cell['gid'] in connsGidRange})
             else:
                 conns.update({int(cell['gid']): cell['conns'] for cell in objs if connsGidRange==None or cell['gid'] in connsGidRange})
 
-        print('time ellapsed (s): ', time() - start)
+        logger.info('time ellapsed (s): ' + str(time() - start))
 
     tags = utils.decimalToFloat(tags)
     conns = utils.decimalToFloat(conns)
 
     if saveTags and tags:
         outFilename = saveTags if isinstance(saveTags, basestring) else 'filename'[:-4]+'_tags.json'
-        print('Saving tags to %s ...' % (outFilename))
+        logger.info('Saving tags to %s ...' % (outFilename))
         sim.saveJSON(outFilename, {'tags': tags})
     if saveConns and conns:
         outFilename = saveConns if isinstance(saveConns, basestring) else 'filename'[:-4]+'_conns.json'
-        print('Saving conns to %s ...' % (outFilename))
+        logger.info('Saving conns to %s ...' % (outFilename))
         sim.saveJSON(outFilename, {'conns': conns})
 
     return tags, conns

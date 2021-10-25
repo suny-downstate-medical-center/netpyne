@@ -27,7 +27,7 @@ from numbers import Number
 from collections import OrderedDict
 from neuron import h# Import NEURON
 from ..specs import Dict, ODict
-
+from netpyne.logger import logger
 
 
 #------------------------------------------------------------------------------
@@ -174,7 +174,7 @@ def version(show=True):
 
     from netpyne import __version__
     if show:
-        print(__version__)
+        logger.info(__version__)
     return __version__
 
 
@@ -302,17 +302,17 @@ def checkMemory():
     # print memory diagnostic info
     if sim.rank == 0: # and checkMemory:
         import resource
-        print('\nMEMORY -----------------------')
-        print('Sections: ')
-        print(h.topology())
-        print('NetCons: ')
-        print(len(h.List("NetCon")))
-        print('NetStims:')
-        print(len(h.List("NetStim")))
-        print('\n Memory usage: %s \n' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+        logger.info('\nMEMORY -----------------------')
+        logger.info('Sections: ')
+        logger.info(h.topology())
+        logger.info('NetCons: ')
+        logger.info(len(h.List("NetCon")))
+        logger.info('NetStims:')
+        logger.info(len(h.List("NetStim")))
+        logger.info('\n Memory usage: %s \n' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
         # import objgraph
         # objgraph.show_most_common_types()
-        print('--------------------------------\n')
+        logger.info('--------------------------------\n')
 
 
 #------------------------------------------------------------------------------

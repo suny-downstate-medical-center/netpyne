@@ -7,7 +7,6 @@ Contains pointCell class
 
 Contributors: salvadordura@gmail.com, samnemo@gmail.com
 """
-from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -23,7 +22,7 @@ from neuron import h # Import NEURON
 import numpy as np
 from .cell import Cell
 from ..specs import Dict
-
+from netpyne.logger import logger
 
 ###############################################################################
 #
@@ -78,7 +77,7 @@ class PointCell (Cell):
         try:
             self.hPointp = getattr(h, self.tags['cellModel'])()
         except:
-            print("Error creating point process mechanism %s in cell with gid %d" % (self.tags['cellModel'], self.gid))
+            logger.warning("Error creating point process mechanism %s in cell with gid %d" % (self.tags['cellModel'], self.gid))
             return
 
         # if rate is list with 2 items generate random value from uniform
@@ -109,7 +108,7 @@ class PointCell (Cell):
 
         # add random num generator, and set number and seed for NetStims
         if self.tags['cellModel'] == 'NetStim':
-            if sim.cfg.verbose: print("Creating a NetStim pointcell")
+            logger.debug("Creating a NetStim pointcell")
             rand = h.Random()
             self.hRandom = rand
             if 'number' not in self.params:
@@ -157,7 +156,6 @@ class PointCell (Cell):
                     # rand.negexp(noise*interval)
                     # vec.setrand(rand)
                     # negexpInterval= np.array(vec)
-                    # #print negexpInterval
                     # spkTimes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
 
                     if numSpks < 100:
@@ -179,7 +177,7 @@ class PointCell (Cell):
                         spkTimes = np.cumsum(fixedInterval + negexpInterval) + (start - interval*(1-noise))
 
                     else:
-                        print('\nError: exceeded the maximum number of VecStim spikes per cell (%d > %d)' % (numSpks, maxReproducibleSpks))
+                        logger.warning('Error: exceeded the maximum number of VecStim spikes per cell (%d > %d)' % (numSpks, maxReproducibleSpks))
                         return
 
             # spikePattern
@@ -207,7 +205,7 @@ class PointCell (Cell):
                     from .inputs import createGaussPattern
                     spkTimes = createGaussPattern(self.params['spikePattern'], rand)
                 else:
-                    print('\nError: invalid spikePattern type %s' % (patternType))
+                    logger.warning('Error: invalid spikePattern type %s' % (patternType))
                     return
 
                 vec = h.Vector(len(spkTimes))
@@ -216,7 +214,7 @@ class PointCell (Cell):
             elif 'spkTimes' in self.params:
                 spkTimes = self.params['spkTimes']
                 if type(spkTimes) not in (list,tuple,np.array):
-                    print('\nError: VecStim "spkTimes" needs to be a list, tuple or numpy array')
+                    logger.warning('Error: VecStim "spkTimes" needs to be a list, tuple or numpy array')
                     return
                 spkTimes = np.array(spkTimes)
                 vec = h.Vector(len(spkTimes))
@@ -225,14 +223,14 @@ class PointCell (Cell):
             elif 'spkTimes' in self.tags:
                 spkTimes = self.tags['spkTimes']
                 if type(spkTimes) not in (list,tuple,np.array):
-                    print('\nError: VecStim "spkTimes" needs to be a list, tuple or numpy array')
+                    logger.warning('Error: VecStim "spkTimes" needs to be a list, tuple or numpy array')
                     return
                 spkTimes = np.array(spkTimes)
                 vec = h.Vector(len(spkTimes))
 
             # missing params
             else:
-                print('\nError: VecStim requires interval, rate or spkTimes')
+                logger.warning('Error: VecStim requires interval, rate or spkTimes')
                 return
 
             # pulse list: start, end, rate, noise
@@ -251,12 +249,12 @@ class PointCell (Cell):
                     elif 'rate' in pulse:
                         interval = 1000.0/pulse['rate']
                     else:
-                        print('Error: Vecstim pulse missing "rate" or "interval" parameter')
+                        logger.warning('Error: Vecstim pulse missing "rate" or "interval" parameter')
                         return
 
                     # check start,end and noise params
                     if any([x not in pulse for x in ['start', 'end']]):
-                        print('Error: Vecstim pulse missing "start" and/or "end" parameter')
+                        logger.warning('Error: Vecstim pulse missing "start" and/or "end" parameter')
                         return
                     else:
                         noise = pulse['noise'] if 'noise' in pulse else 0.0
@@ -349,7 +347,7 @@ class PointCell (Cell):
 
         # Avoid self connections
         if params['preGid'] == self.gid:
-            if sim.cfg.verbose: print('  Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
+            logger.debug('  Error: attempted to create self-connection on cell gid=%d, section=%s '%(self.gid, params.get('sec')))
             return  # if self-connection return
 
         # Weight
@@ -438,15 +436,14 @@ class PointCell (Cell):
                     self.conns[-1]['shapeWeightVec'].play(netcon._ref_weight[weightIndex], self.conns[-1]['shapeTimeVec'])
 
 
-            if sim.cfg.verbose:
-                sec = params['sec']
-                loc = params['loc']
-                preGid = netStimParams['source']+' NetStim' if netStimParams else params['preGid']
-                try:
-                    print(('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.2f'
-                        % (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i])))
-                except:
-                    print(('  Created connection preGid=%s' % (preGid)))
+            sec = params['sec']
+            loc = params['loc']
+            preGid = netStimParams['source']+' NetStim' if netStimParams else params['preGid']
+            try:
+                logger.debug('  Created connection preGid=%s, postGid=%s, sec=%s, loc=%.4g, synMech=%s, weight=%.4g, delay=%.2f'
+                    % (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i]))
+            except:
+                logger.debug('  Created connection preGid=%s' % (preGid))
 
 
     def initV (self):
@@ -458,8 +455,7 @@ class PointCell (Cell):
             try:
                 name(*args,**kwargs)
             except:
-                if sim.cfg.verbose:
-                    print("Error: Function '%s' not yet implemented for Point Neurons" % name)
+                logger.debug("Error: Function '%s' not yet implemented for Point Neurons" % name)
         return wrapper
 
     def _addConnPlasticity (self, params, sec, netcon, weightIndex):
@@ -479,14 +475,14 @@ class PointCell (Cell):
                     self.conns[-1]['hSTDPprecon']   = precon
                     self.conns[-1]['hSTDPpstcon']   = pstcon
                     self.conns[-1]['STDPdata']      = {'preGid':params['preGid'], 'postGid': self.gid, 'receptor': weightIndex} # Not used; FYI only; store here just so it's all in one place
-                    if sim.cfg.verbose: print('  Added STDP plasticity to synaptic mechanism')
+                    logger.debug('  Added STDP plasticity to synaptic mechanism')
             except:
-                print('Error: exception when adding plasticity using %s mechanism' % (plasticity['mech']))
+                logger.warning('Error: exception when adding plasticity using %s mechanism' % (plasticity['mech']))
 
       
 
     # def modify (self):
-    #     print 'Error: Function not yet implemented for Point Neurons'
+    #     logger.warning 'Error: Function not yet implemented for Point Neurons'
 
     # def addSynMechsNEURONObj (self):
-    #     print 'Error: Function not yet implemented for Point Neurons'
+    #     logger.warning 'Error: Function not yet implemented for Point Neurons'

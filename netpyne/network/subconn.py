@@ -4,7 +4,6 @@ Module for distributing synapses at the subcellular level in networks
 
 """
 
-from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -19,6 +18,7 @@ from future import standard_library
 standard_library.install_aliases()
 import numpy as np
 from neuron import h
+from netpyne.logger import logger
 
 # -----------------------------------------------------------------------------
 # Calculate distance between 2 segments
@@ -61,7 +61,7 @@ def _posFromLoc(self, sec, x):
         if h.arc3d(ii) >= s:
             b = ii
             break
-    if b == -1: print("an error occurred in pointFromLoc, SOMETHING IS NOT RIGHT")
+    if b == -1: logger.warning("An error occurred in pointFromLoc, SOMETHING IS NOT RIGHT")
 
     if h.arc3d(b) == s:  # shortcut
         x, y, z = h.x3d(b), h.y3d(b), h.z3d(b)
@@ -99,7 +99,7 @@ def _interpolateSegmentSigma(self, cell, secList, gridX, gridY, gridSigma):
                 sigma_x2_y2 = gridSigma[i2][j2]
 
                 if x1 == x2 or y1 == y2:
-                    print("ERROR in closest grid points: ", secName, x1, x2, y1, y2)
+                    logger.warning("ERROR in closest grid points: " + secName + " " + str(x1) + " " + str(x2) + " " + str(y1) + " " + str(y2))
                 else:
                    # bilinear interpolation, see http://en.wikipedia.org/wiki/Bilinear_interpolation (fixed bug from Ben Suter's code)
                     sigma = ((sigma_x1_y1*(x2-x)*(y2-y) + sigma_x2_y1*(x-x1)*(y2-y) + sigma_x1_y2*(x2-x)*(y-y1) + sigma_x2_y2*(x-x1)*(y-y1))/((x2-x1)*(y2-y1)))
@@ -114,7 +114,7 @@ def _interpolateSegmentSigma(self, cell, secList, gridX, gridY, gridSigma):
                 sigma_y2 = gridSigma[j2]
 
                 if y1 == y2:
-                    print("ERROR in closest grid points: ", secName, y1, y2)
+                    logger.warning("ERROR in closest grid points: " + secName + " " + str(y1) + " " + str(y2))
                 else:
                    # linear interpolation, see http://en.wikipedia.org/wiki/Bilinear_interpolation
                    sigma = ((sigma_y1*(y2-y) + sigma_y2*(y-y1)) / (y2-y1))
@@ -153,7 +153,7 @@ def subcellularConn(self, allCellTags, allPopTags):
     from .. import sim
 
     sim.timing('start', 'subConnectTime')
-    print('  Distributing synapses based on subcellular connectivity rules...')
+    logger.info('  Distributing synapses based on subcellular connectivity rules...')
 
     for subConnParamTemp in list(self.params.subConnParams.values()):  # for each conn rule or parameter set
         subConnParam = subConnParamTemp.copy()
@@ -187,7 +187,7 @@ def subcellularConn(self, allCellTags, allPopTags):
                                             connGroup['synMech'] = '__grouped__'+connGroup['synMech']
                                             connsGroup[connGroupLabel] = connGroup
                                         except:
-                                            print('  Warning: Grouped synMechs %s not found' % (str(connGroup)))
+                                            logger.warning('  Grouped synMechs %s not found' % (str(connGroup)))
                     else:
                         conns = allConns
 
@@ -268,7 +268,7 @@ def subcellularConn(self, allCellTags, allPopTags):
                             if subConnParam['density']['ref_sec'] in list(postCell.secs.keys()):
                                 secOrig = subConnParam['density']['ref_sec']
                             else:
-                                print('  Warning: Redistributing synapses based on inexistent information for neuron %d - section %s not found' %(postCell.gid,subConnParam['density']['ref_sec']))
+                                logger.warning('  Redistributing synapses based on inexistent information for neuron %d - section %s not found' %(postCell.gid,subConnParam['density']['ref_sec']))
 
                         # find origin segment
                         segOrig = 0.5    # default

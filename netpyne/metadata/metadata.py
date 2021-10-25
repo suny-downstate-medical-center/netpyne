@@ -4,7 +4,6 @@ Module containing NetPyNE metadata
 """
 
 from __future__ import unicode_literals
-from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
@@ -1214,12 +1213,6 @@ metadata = {
             "timing": {
                 "label": "Show timing",
                 "help": "Show and record timing of each process (default: True).",
-                "suggestions": "",
-                "type": "bool"
-            },
-            "verbose": {
-                "label": "Verbose mode",
-                "help": "Show detailed messages (default: False).",
                 "suggestions": "",
                 "type": "bool"
             },

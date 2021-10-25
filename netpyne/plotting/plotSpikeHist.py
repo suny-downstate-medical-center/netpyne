@@ -5,7 +5,7 @@ import matplotlib.patches as mpatches
 from ..analysis.utils import exception #, loadData
 from ..analysis.tools import loadData
 from .plotter import HistPlotter
-
+from netpyne.logger import logger
 
 @exception
 def plotSpikeHist(
@@ -241,7 +241,7 @@ def plotSpikeHist(
 
         histData = sim.analysis.prepareSpikeHist(legend=legend, popLabels=popLabels, **kwargs)
 
-    print('Plotting spike histogram...')
+    logger.info('Plotting spike histogram...')
 
     # If input is a file name, load data from the file
     if type(histData) == str:

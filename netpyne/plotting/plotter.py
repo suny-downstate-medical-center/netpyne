@@ -18,10 +18,7 @@ except NameError:
     basestring = str
 
 
-colorList = [[0.42, 0.67, 0.84], [0.90, 0.76, 0.00], [0.42, 0.83, 0.59], [0.90, 0.32, 0.00],
-             [0.34, 0.67, 0.67], [0.90, 0.59, 0.00], [0.42, 0.82, 0.83], [1.00, 0.85, 0.00],
-             [0.33, 0.67, 0.47], [1.00, 0.38, 0.60], [0.57, 0.67, 0.33], [0.50, 0.20, 0.00],
-             [0.71, 0.82, 0.41], [0.00, 0.20, 0.50], [0.70, 0.32, 0.10]] * 3
+colorList = [[0.42, 0.67, 0.84], [0.90, 0.76, 0.00], [0.42, 0.83, 0.59], [0.90, 0.32, 0.00], [0.34, 0.67, 0.67], [0.90, 0.59, 0.00], [0.42, 0.82, 0.83], [1.00, 0.85, 0.00], [0.33, 0.67, 0.47], [1.00, 0.38, 0.60], [0.57, 0.67, 0.33], [0.50, 0.20, 0.00], [0.71, 0.82, 0.41], [0.00, 0.20, 0.50], [0.70, 0.32, 0.10]] * 3
 
 
 class GeneralPlotter:
@@ -109,6 +106,10 @@ class GeneralPlotter:
         if 'ylim' in kwargs:
             if kwargs['ylim'] is not None:
                 self.axis.set_ylim(kwargs['ylim'])
+
+        if 'invert_yaxis' in kwargs:
+            if kwargs['invert_yaxis'] is True:
+                self.axis.invert_yaxis()
 
 
 
@@ -206,7 +207,13 @@ class GeneralPlotter:
         if 'saveData' in kwargs:
             if kwargs['saveData']:
                 self.saveData(**kwargs)
-        
+
+        if 'legend' in kwargs:
+            if kwargs['legend'] is True:
+                self.addLegend()
+            elif type(kwargs['legend']) == dict:
+                self.addLegend(**kwargs['legend'])
+
         if 'saveFig' in kwargs:
             if kwargs['saveFig']:
                 self.saveFig(**kwargs)
@@ -252,7 +259,7 @@ class ScatterPlotter(GeneralPlotter):
 
 
 class LinePlotter(GeneralPlotter):
-    """A class used for line plotting"""
+    """A class used for plotting a line"""
 
     def __init__(self, data, axis=None, options={}, **kwargs):
         
@@ -270,14 +277,83 @@ class LinePlotter(GeneralPlotter):
 
     def plot(self, **kwargs):
 
-        self.formatAxis(**kwargs)
-
         linePlot = self.axis.plot(self.x, self.y, color=self.color, marker=self.marker, markersize=self.markersize, linewidth=self.linewidth, alpha=self.alpha)
 
         self.finishFig(**kwargs)
 
         return self.fig
 
+
+
+
+class LinesPlotter(GeneralPlotter):
+    """A class used for plotting multiple lines on the same axis"""
+
+    def __init__(self, data, axis=None, options={}, **kwargs):
+        
+        super().__init__(data=data, axis=axis, **kwargs)
+
+        self.type       = 'lines'
+        self.x          = np.array(data.get('x'))
+        self.y          = np.array(data.get('y'))
+        self.color      = data.get('colors')
+        self.marker     = data.get('markers')
+        self.markersize = data.get('markersizes')
+        self.linewidth  = data.get('linewidths')
+        self.alpha      = data.get('alphas')
+
+        self.label      = data.get('label')
+
+
+    def plot(self, **kwargs):
+
+        numLines = len(self.y)
+
+        if type(self.color) != list:
+            colors = [self.color for line in range(numLines)]
+        else:
+            colors = self.color
+
+        if type(self.marker) != list:
+            markers = [self.marker for line in range(numLines)]
+        else:
+            markers = self.marker
+
+        if type(self.markersize) != list:
+            markersizes = [self.markersize for line in range(numLines)]
+        else:
+            markersizes = self.markersize
+
+        if type(self.linewidth) != list:
+            linewidths = [self.linewidth for line in range(numLines)]
+        else:
+            linewidths = self.linewidth
+
+        if type(self.alpha) != list:
+            alphas = [self.alpha for line in range(numLines)]
+        else:
+            alphas = self.alpha
+
+        if self.label is None:
+            labels = [None for line in range(numLines)]
+        else:
+            labels = self.label
+
+        for index, line in enumerate(self.y):
+            self.axis.plot(
+                self.x, 
+                self.y[index], 
+                color=colors[index], 
+                marker=markers[index], 
+                markersize=markersizes[index], 
+                linewidth=linewidths[index], 
+                alpha=alphas[index], 
+                label=labels[index],
+                )
+
+        self.finishFig(**kwargs)
+
+        return self.fig
 
 
 
@@ -308,8 +384,6 @@ class HistPlotter(GeneralPlotter):
         self.data        = data.get('data', None)
 
     def plot(self, **kwargs):
-
-        #self.formatAxis(**kwargs)
 
         histPlot = self.axis.hist(self.x, bins=self.bins, range=self.range, density=self.density, weights=self.weights, cumulative=self.cumulative, bottom=self.bottom, histtype=self.histtype, align=self.align, orientation=self.orientation, rwidth=self.rwidth, log=self.log, color=self.color, alpha=self.alpha, label=self.label, stacked=self.stacked, data=self.data)
 

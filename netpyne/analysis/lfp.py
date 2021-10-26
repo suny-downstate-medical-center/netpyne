@@ -33,7 +33,8 @@ from ..support.scalebar import add_scalebar
 def prepareLFP(
     sim=None,
     timeRange=None,
-    electrodes=['avg', 'all'], 
+    electrodes=['avg', 'all'],
+    pop=None,
     LFPData=None, 
     separation=1.0, 
     logx=False, 
@@ -43,6 +44,7 @@ def prepareLFP(
     filtOrder=3, 
     detrend=False,
     **kwargs):
+
     """
     Function to prepare data for plotting of local field potentials (LFP)
     """
@@ -71,7 +73,10 @@ def prepareLFP(
     if LFPData is not None:
         lfp = LFPData[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
     else:
-        lfp = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+        if pop and pop in sim.allSimData['LFPPops']:
+            lfp = np.array(sim.allSimData['LFPPops'][pop])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]     
+        else:
+            lfp = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
 
     # filter the signals
     if filtFreq:

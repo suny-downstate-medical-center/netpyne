@@ -4,6 +4,8 @@
 
 - Enabled selecting a subset of cells to save individual LFP signal from via cfg.saveLFPCells = [...] 
 
+- Added cfg.saveLFPPops to store LFP generated individually by each population
+
 **Bug fixes**
 
 - Fixed bug in loading where sim was required to have rank attribute

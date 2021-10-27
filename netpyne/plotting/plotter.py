@@ -63,7 +63,7 @@ class GeneralPlotter:
             self.rcParams = self.orig_rcParams
 
 
-        # If an axis is input, plot there; therwise make a new figure and axis
+        # If an axis is input, plot there; otherwise make a new figure and axis
         if self.axis is None:
             if 'figSize' in kwargs:
                 figSize = kwargs['figSize']
@@ -259,7 +259,7 @@ class ScatterPlotter(GeneralPlotter):
 
 
 class LinePlotter(GeneralPlotter):
-    """A class used for plotting a line"""
+    """A class used for plotting one line per subplot"""
 
     def __init__(self, data, axis=None, options={}, **kwargs):
         

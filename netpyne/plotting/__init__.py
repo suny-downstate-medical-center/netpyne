@@ -18,6 +18,7 @@ from .plotRaster import plotRaster
 from .plotSpikeHist import plotSpikeHist
 from .plotTraces import plotTraces
 from .plotLFP import plotLFPTimeSeries
+from .plotLFP import plotPSD
 
 
 

@@ -1,5 +1,5 @@
 """
-Module for analyzing and plotting LFP-related results
+Module for analyzing LFP-related results
 
 """
 
@@ -36,7 +36,6 @@ def prepareLFP(
     electrodes=['avg', 'all'],
     pop=None,
     LFPData=None, 
-    separation=1.0, 
     logx=False, 
     logy=False, 
     normSignal=False, 
@@ -71,6 +70,7 @@ def prepareLFP(
 
     # accept input lfp data
     if LFPData is not None:
+        # loading LFPData is not yet functional
         lfp = LFPData[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
     else:
         if pop and pop in sim.allSimData['LFPPops']:
@@ -133,24 +133,22 @@ def prepareLFP(
 
 #@exception
 def preparePSD(
+    LFPData=None, 
     sim=None,
     timeRange=None,
     electrodes=['avg', 'all'], 
-    inputLFP=None, 
+    pop=None,
     NFFT=256, 
     noverlap=128, 
     nperseg=256, 
     minFreq=1, 
     maxFreq=100, 
     stepFreq=1, 
-    smooth=0, 
-    separation=1.0, 
-    includeAxon=True, 
+    smooth=0,
     logx=False, 
     logy=False, 
     normSignal=False, 
     normPSD=False, 
-    normSpec=False, 
     filtFreq=False, 
     filtOrder=3, 
     detrend=False, 
@@ -160,48 +158,73 @@ def preparePSD(
     Function to prepare data for plotting of power spectral density (PSD)
     """
 
-    print('Preparing PSD data...')
+    if not sim:
+        from .. import sim
 
     data = prepareLFP(
-    sim=sim,
-    timeRange=timeRange,
-    electrodes=electrodes, 
-    inputLFP=inputLFP, 
-    NFFT=NFFT, 
-    noverlap=noverlap, 
-    nperseg=nperseg, 
-    minFreq=minFreq, 
-    maxFreq=maxFreq, 
-    stepFreq=stepFreq, 
-    smooth=smooth, 
-    separation=separation, 
-    includeAxon=includeAxon, 
-    logx=logx, 
-    logy=logy, 
-    normSignal=normSignal, 
-    normPSD=normPSD, 
-    normSpec=normSpec, 
-    filtFreq=filtFreq, 
-    filtOrder=filtOrder, 
-    detrend=detrend, 
-    transformMethod=transformMethod, 
-    **kwargs)
+        sim=sim,
+        timeRange=timeRange,
+        electrodes=electrodes,
+        pop=pop,
+        LFPData=LFPData, 
+        logy=logy, 
+        normSignal=normSignal, 
+        filtFreq=filtFreq, 
+        filtOrder=filtOrder, 
+        detrend=detrend,
+        **kwargs)
 
-    allFreqs = data['allFreqs']
-    allSignal = data['allSignal']
-    electrodes = data['electrodes']
+    print('Preparing PSD data...')
+
+    names = data['electrodes']['names']
+    lfps = data['electrodes']['lfps']
+
+    allFreqs = []
+    allSignal = []
+    allNames = []
+
+    # Used in both transforms
+    Fs = int(1000.0/sim.cfg.recordStep)
+    
+    for index, lfp in enumerate(lfps):
+
+        # Morlet wavelet transform method
+        if transformMethod == 'morlet':
+            
+            from ..support.morlet import MorletSpec, index2ms
+            morletSpec = MorletSpec(lfp, Fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq)
+            freqs = morletSpec.f
+            spec = morletSpec.TFR
+            signal = np.mean(spec, 1)
+            ylabel = 'Power'
+
+        # FFT transform method
+        elif transformMethod == 'fft':
+            
+            power = mlab.psd(lfp, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning, noverlap=noverlap, pad_to=None, sides='default', scale_by_freq=None)
+
+            if smooth:
+                signal = _smooth1d(10 * np.log10(power[0]), smooth)
+            else:
+                signal = 10 * np.log10(power[0])
+            freqs = power[1]
+            ylabel = 'Power (dB/Hz)'
+
+        allFreqs.append(freqs)
+        allSignal.append(signal)
+        allNames.append(names[index])
 
     if normPSD:
         vmax = np.max(allSignal)
-        for i, s in enumerate(allSignal):
-            allSignal[i] = allSignal[i]/vmax
+        for index, signal in enumerate(allSignal):
+            allSignal[index] = allSignal[index]/vmax
 
     psdFreqs = []
     psdSignal = []
     
-    for i, elec in enumerate(electrodes):
-        freqs = allFreqs[i]
-        signal = allSignal[i]
+    for index, name in enumerate(names):
+        freqs = allFreqs[index]
+        signal = allSignal[index]
         
         psdFreqs.append(freqs[freqs<maxFreq])
         psdSignal.append(signal[freqs<maxFreq])
@@ -209,6 +232,7 @@ def preparePSD(
     data = {}
     data['psdFreqs'] = psdFreqs
     data['psdSignal'] = psdSignal
+    data['psdNames'] = names
 
     return data
 
@@ -219,7 +243,7 @@ def prepareSpectrogram(
     sim=None,
     timeRange=None,
     electrodes=['avg', 'all'], 
-    inputLFP=None, 
+    LFPData=None, 
     NFFT=256, 
     noverlap=128, 
     nperseg=256, 
@@ -227,7 +251,6 @@ def prepareSpectrogram(
     maxFreq=100, 
     stepFreq=1, 
     smooth=0, 
-    separation=1.0, 
     includeAxon=True, 
     logx=False, 
     logy=False, 
@@ -249,7 +272,7 @@ def prepareSpectrogram(
     sim=sim,
     timeRange=timeRange,
     electrodes=electrodes, 
-    inputLFP=inputLFP, 
+    LFPData=LFPData, 
     NFFT=NFFT, 
     noverlap=noverlap, 
     nperseg=nperseg, 
@@ -257,9 +280,7 @@ def prepareSpectrogram(
     maxFreq=maxFreq, 
     stepFreq=stepFreq, 
     smooth=smooth, 
-    separation=separation, 
     includeAxon=includeAxon, 
-    logx=logx, 
     logy=logy, 
     normSignal=normSignal, 
     normPSD=normPSD, 

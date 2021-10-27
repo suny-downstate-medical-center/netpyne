@@ -49,5 +49,5 @@ sim.runSimWithIntervalFunc(cfg.intervalRun, saveWeights)
 sim.fileGather()
 sim.analyze()
 
-
+# Check the model output: sim.checkOutput is used for testing purposes.  Please comment out the following line if you are exploring the example.
 sim.checkOutput('M1detailed')

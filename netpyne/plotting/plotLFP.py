@@ -293,11 +293,12 @@ def plotPSD(
     linesData = {}
     linesData['x'] = freq
     linesData['y'] = psds
-    linesData['color'] = plotColors
-    linesData['marker'] = None
-    linesData['markersize'] = None
-    linesData['linewidth'] = None
-    linesData['alpha'] = None
+    linesData['colors'] = plotColors
+    linesData['markers'] = None
+    linesData['markersizes'] = None
+    linesData['linewidths'] = None
+    linesData['alphas'] = None
+    linesData['label'] = legendLabels
 
     # If a kwarg matches a lines input key, use the kwarg value instead of the default
     for kwarg in kwargs:

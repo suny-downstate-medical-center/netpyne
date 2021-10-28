@@ -1369,6 +1369,10 @@ class CompartCell (Cell):
             self._segCoords['p0'] = p3dsoma 
             self._segCoords['p1'] = p3dsoma
 
+        self._segCoords['d0'] = morphSegCoords['d0']
+        self._segCoords['d1'] = morphSegCoords['d1']
+
+
     def setImembPtr(self):
         """Set PtrVector to point to the i_membrane_"""
         jseg = 0

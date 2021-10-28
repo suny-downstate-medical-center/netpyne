@@ -366,26 +366,46 @@ def setupRecordDipoles():
     import lfpykit
 
     saveSteps = int(np.ceil(sim.cfg.duration/sim.cfg.recordStep))
-    sim.simData['dipoles'] = np.zeros((saveSteps))
+    sim.simData['dipole'] = np.zeros((saveSteps))
+
+    if sim.cfg.saveDipoleCells:
+        if sim.cfg.saveDipoleCells == True:
+            cellsRecordDipole = utils.getCellsList(['all']) # record all cells
+        elif isinstance(sim.cfg.saveDipoleCells, list):
+            cellsRecordDipole = utils.getCellsList(sim.cfg.saveDipoleCells)
+        for c in cellsRecordDipole:
+            sim.simData['dipoleCells'][c.gid] = np.zeros((saveSteps))
+
+    if sim.cfg.saveDipolePops:
+        if sim.cfg.saveDipolePops == True:
+            popsRecordDipole = list(sim.net.pops.keys()) # record all pops
+        elif isinstance(sim.cfg.saveLFPPops, list):
+            popsRecordDipole = [p for p in sim.cfg.saveDipolePops if p in list(sim.net.pops.keys())] # only pops that exist
+            sim.net.popForEachGid = {}
+            for pop in popsRecordDipole:
+                sim.net.popForEachGid.update({gid: pop for gid in sim.net.pops[pop].cellGids})
+        for pop in popsRecordDipole:
+            sim.simData['dipolePops'][pop] = np.zeros((saveSteps))
+
 
     if not sim.net.params.defineCellShapes: sim.net.defineCellShapes()  # convert cell shapes (if not previously done already)
     sim.net.calcSegCoords()  # calculate segment coords for each cell
 
     if sim.cfg.createNEURONObj:
         for cell in sim.net.compartCells:
-          
-            # wrap around NeuronCell class - just needs collect_geometry() func
-            # update collect_geometry to get 3d geom of each segment (maybe use existing LFP code?)
-            # Calculate cdm = lfpykit.CurrentDipoleMoment(cell=cell)
-            # Calculate M = cdm.get_transformation_matrix()
-          
-          
-          
-            # # nseg = cell._segCoords['p0'].shape[1]
-            # sim.net.recXElectrode.calcTransferResistance(cell.gid, cell._segCoords)  # transfer resistance for each cell
-            # cell.imembPtr = h.PtrVector(nseg)  # pointer vector
-            # cell.imembPtr.ptr_update_callback(cell.setImembPtr)   # used for gathering an array of  i_membrane values from the pointer vector
-            # cell.imembVec = h.Vector(nseg)
+            cell = lfpykit.CellGeometry(x=[[p0,p1] for p0,p1 in zip(cell._segCoords['p0'][0], cell._segCoords['p1'][0])],
+                                        y=[[p0,p1] for p0,p1 in zip(cell._segCoords['p0'][1], cell._segCoords['p1'][1])],
+                                        z=[[p0,p1] for p0,p1 in zip(cell._segCoords['p0'][2], cell._segCoords['p1'][3])],
+                                        d=[[p0,p1] for p0,p1 in zip(cell._segCoords['p0'][0], cell._segCoords['p1'][4])])
+
+            cdm = lfpykit.CurrentDipoleMoment(cell=cell)
+            cell.M = cdm.get_transformation_matrix()
+                    
+            # set up recording of membrane currents (duplicate with setupRecordLFP -- unifiy and avoid calling twice)
+            nseg = cell._segCoords['p0'].shape[1]
+            cell.imembPtr = h.PtrVector(nseg)  # pointer vector
+            cell.imembPtr.ptr_update_callback(cell.setImembPtr)   # used for gathering an array of  i_membrane values from the pointer vector
+            cell.imembVec = h.Vector(nseg)
 
         sim.cvode.use_fast_imem(True)   # make i_membrane_ a range variable
         sim.cfg.use_fast_imem = True

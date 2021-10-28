@@ -442,7 +442,7 @@ class CompartCell (Cell):
                     sec['hObj'].connect(self.secs[sectParams['topol']['parentSec']]['hObj'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
 
         # add dipoles
-        if sim.cfg.recordDipoles:
+        if sim.cfg.recordDipolesHNN:
 
             # create a 1-element Vector to store the dipole value for this cell and record from this Vector
             self.dipole = {'hRef': h.Vector(1)}#_ref_[0]} #h._ref_dpl_ref}  #h.Vector(1)

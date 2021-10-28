@@ -21,7 +21,7 @@ from . import setup
 #------------------------------------------------------------------------------
 # Gather data from nodes
 #------------------------------------------------------------------------------
-def gatherData(gatherLFP=True):
+def gatherData(gatherLFP=True, gatherDipole=True):
     """
     Function for/to <short description of `netpyne.sim.gather.gatherData`>
 
@@ -32,6 +32,10 @@ def gatherData(gatherLFP=True):
         **Default:** ``True``
         **Options:** ``<option>`` <description of option>
 
+    gatherDipole : bool
+        <Short description of gatherDipole>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
 
     """
 
@@ -58,8 +62,10 @@ def gatherData(gatherLFP=True):
     elif sim.cfg.compactConnFormat:
         sim.compactConnFormat()
 
-    # remove data structures used to calculate LFP
-    if gatherLFP and sim.cfg.recordLFP and hasattr(sim.net, 'compartCells') and sim.cfg.createNEURONObj:
+    # remove data structures used to calculate LFP or Dipoles
+    if (gatherLFP and sim.cfg.recordLFP) or (gatherDipole and sim.cfg.recordDipole) \
+    and hasattr(sim.net, 'compartCells') \
+    and sim.cfg.createNEURONObj:
         for cell in sim.net.compartCells:
             try:
                 del cell.imembVec
@@ -75,7 +81,7 @@ def gatherData(gatherLFP=True):
     
     simDataVecs = ['spkt', 'spkid', 'stims', 'dipole'] + list(sim.cfg.recordTraces.keys())
     
-    if sim.cfg.recordDipoles:
+    if sim.cfg.recordDipolesHNN:
         _aggregateDipoles()
         simDataVecs.append('dipole')
 
@@ -99,8 +105,10 @@ def gatherData(gatherLFP=True):
                 for k in list(gather[0]['simData'].keys()):  # initialize all keys of allSimData dict
                     if gatherLFP and k == 'LFP':
                         sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
-                    elif sim.cfg.recordDipoles and k == 'dipole':
-                        for dk in sim.cfg.recordDipoles:
+                    elif gatherDipole and k == 'dipole':
+                        sim.allSimData[k] = np.zeros((gather[0]['simData']['dipole'].shape))
+                    elif sim.cfg.recordDipolesHNN and k == 'dipole':
+                        for dk in sim.cfg.recordDipolesHNN:
                             sim.allSimData[k][dk] = np.zeros(len(gather[0]['simData']['dipole'][dk]))
                     else:
                         sim.allSimData[k] = {}
@@ -125,6 +133,8 @@ def gatherData(gatherLFP=True):
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
                         elif gatherLFP and key == 'LFP':
+                            sim.allSimData[key] += np.array(val)
+                        elif gatherDipole and key == 'dipole':
                             sim.allSimData[key] += np.array(val)
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
@@ -159,8 +169,10 @@ def gatherData(gatherLFP=True):
                 for k in list(gather[0]['simData'].keys()):  # initialize all keys of allSimData dict
                     if gatherLFP and k == 'LFP':
                         sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
-                    elif sim.cfg.recordDipoles and k == 'dipole':
-                        for dk in sim.cfg.recordDipoles:
+                    elif gatherDipole and k == 'dipole':
+                        sim.allSimData[k] = np.zeros((gather[0]['simData']['dipole'].shape))
+                    elif sim.cfg.recordDipolesHNN and k == 'dipole':
+                        for dk in sim.cfg.recordDipolesHNN:
                             sim.allSimData[k][dk] = np.zeros(len(gather[0]['simData']['dipole'][dk]))
                     else:
                         sim.allSimData[k] = {}
@@ -189,6 +201,8 @@ def gatherData(gatherLFP=True):
                             else:
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
                         elif gatherLFP and key == 'LFP':
+                            sim.allSimData[key] += np.array(val)
+                        elif gatherDipole and key == 'dipole':
                             sim.allSimData[key] += np.array(val)
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
@@ -342,7 +356,7 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
             simDataVecs = ['spkt', 'spkid', 'stims'] + list(sim.cfg.recordTraces.keys())
             singleNodeVecs = ['t']
     
-            if sim.cfg.recordDipoles:
+            if sim.cfg.recordDipolesHNN:
                 _aggregateDipoles()
                 simDataVecs.append('dipole')
 
@@ -575,11 +589,11 @@ def _aggregateDipoles ():
     if not hasattr(sim.net, 'compartCells'):
         sim.net.compartCells = [c for c in sim.net.cells if type(c) is sim.CompartCell]
 
-    for k in sim.cfg.recordDipoles:
+    for k in sim.cfg.recordDipolesHNN:
         sim.simData['dipole'][k] = sim.h.Vector((sim.cfg.duration/sim.cfg.recordStep)+1)
 
     for cell in sim.net.compartCells:
         if hasattr(cell, 'dipole'):
-            for k, v in sim.cfg.recordDipoles.items():
+            for k, v in sim.cfg.recordDipolesHNN.items():
                 if cell.tags['pop'] in v:
                     sim.simData['dipole'][k].add(cell.dipole['hRec'])

@@ -59,7 +59,7 @@ simConfig.savePickle = True
 
 simConfig.recordDipole = True
 simConfig.saveDipoleCells = ['all']
-simConfig.saveDipolePops = ['E2', 'I2', 'E4', 'I4', 'E5', 'I5']
+simConfig.saveDipolePops = ['eachPop']
 
 #simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True, 'saveFig':True, 'figSize': (9,3)}      # Plot a raster
 #simConfig.analysis['plotLFP'] = {'pop': 'I2', 'includeAxon': False, 'figSize': (6,10), 'timeRange': [100,3000], 'saveFig': True} 

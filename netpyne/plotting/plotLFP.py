@@ -25,6 +25,7 @@ def plotLFPTimeSeries(
     colorList=None,
     orderInverse=True,
     legend=True,
+    scalebar=True,
     **kwargs):
     
 
@@ -162,6 +163,10 @@ def plotLFPTimeSeries(
     # add the legend
     if legend:
         axisArgs['legend'] = legendKwargs
+
+    # add the scalebar
+    if scalebar:
+        axisArgs['scalebar'] = True
 
     # Generate the figure
     LFPTimeSeriesPlot = linesPlotter.plot(**axisArgs, **kwargs)

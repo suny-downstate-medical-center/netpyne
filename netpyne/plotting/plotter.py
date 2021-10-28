@@ -9,6 +9,8 @@ import numpy as np
 from copy import deepcopy
 import pickle, json
 import os
+from .scalebars import add_scalebar
+
 
 plt.ion()
 
@@ -197,6 +199,33 @@ class GeneralPlotter:
             labels = cur_labels
 
         self.axis.legend(handles, labels, **legendKwargs)
+
+
+    def addScalebar(self):
+       
+        # calculate scalebar size and add scalebar
+
+        round_to_n = lambda x, n, m: int(np.ceil(round(x, -int(np.floor(np.log10(abs(x)))) + (n - 1)) / m)) * m
+        
+        scaley = 1000.0  # values in mV but want to convert to uV
+        m = 10.0
+        sizey = 100/scaley
+        
+        # while sizey > 0.25*ydisp:
+        #     try:
+        #         sizey = round_to_n(0.2*ydisp*scaley, 1, m) / scaley
+        #     except:
+        #         sizey /= 10.0
+        #     m /= 10.0
+        
+        labely = '%.3g $\mu$V'%(sizey*scaley)#)[1:]
+        
+        # if len(electrodes) > 1:
+        #     add_scalebar(ax,hidey=True, matchy=False, hidex=False, matchx=False, sizex=0, sizey=-sizey, labely=labely, unitsy='$\mu$V', scaley=scaley, loc=3, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
+        # else:
+        #     add_scalebar(ax, hidey=True, matchy=False, hidex=True, matchx=True, sizex=None, sizey=-sizey, labely=labely, unitsy='$\mu$V', scaley=scaley, unitsx='ms', loc=3, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
+
+        add_scalebar(self.axis, hidey=True, matchy=False, hidex=False, matchx=False, sizex=0, sizey=-sizey, labely=labely, loc=3, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
         
 
 
@@ -213,6 +242,12 @@ class GeneralPlotter:
                 self.addLegend()
             elif type(kwargs['legend']) == dict:
                 self.addLegend(**kwargs['legend'])
+
+        if 'scalebar' in kwargs:
+            if kwargs['scalebar'] is True:
+                self.addScalebar()
+            elif type(kwargs['scalebar']) == dict:
+                self.addScalebar(**kwargs['scalebar'])
 
         if 'saveFig' in kwargs:
             if kwargs['saveFig']:

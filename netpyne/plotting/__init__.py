@@ -19,6 +19,7 @@ from .plotSpikeHist import plotSpikeHist
 from .plotTraces import plotTraces
 from .plotLFP import plotLFPTimeSeries
 from .plotLFP import plotPSD
+from .scalebars import add_scalebar
 
 
 

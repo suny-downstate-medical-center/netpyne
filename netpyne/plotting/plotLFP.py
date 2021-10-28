@@ -14,6 +14,7 @@ def plotLFPTimeSeries(
     sim=None,
     timeRange=None,
     electrodes=['avg', 'all'], 
+    pop=None,
     separation=1.0, 
     logy=False, 
     normSignal=False, 
@@ -80,14 +81,14 @@ def plotLFPTimeSeries(
         axisArgs['xlabel'] = 'Time (ms)'
         axisArgs['ylabel'] = 'LFP Signal (uV)'
 
-    # If we use a kwarg, add it to a list to be removed from kwargs
-    kwargDels = []
+    # # If we use a kwarg, add it to a list to be removed from kwargs
+    # kwargDels = []
 
-    # If a kwarg matches an axis input key, use the kwarg value instead of the default
-    for kwarg in kwargs:
-        if kwarg in axisArgs.keys():
-            axisArgs[kwarg] = kwargs[kwarg]
-            kwargDels.append(kwarg)
+    # # If a kwarg matches an axis input key, use the kwarg value instead of the default
+    # for kwarg in kwargs:
+    #     if kwarg in axisArgs.keys():
+    #         axisArgs[kwarg] = kwargs[kwarg]
+    #         kwargDels.append(kwarg)
 
     # Link colors to traces, make avg plot black, add separation to traces
     plotColors = []
@@ -123,11 +124,11 @@ def plotLFPTimeSeries(
     for kwarg in kwargs:
         if kwarg in linesData:
             linesData[kwarg] = kwargs[kwarg]
-            kwargDels.append(kwarg)
+            #kwargDels.append(kwarg)
 
-    # Delete any kwargs that have been used
-    for kwargDel in kwargDels:
-        kwargs.pop(kwargDel)
+    # # Delete any kwargs that have been used
+    # for kwargDel in kwargDels:
+    #     kwargs.pop(kwargDel)
 
     # create Plotter object
     linesPlotter = LinesPlotter(data=linesData, axis=axis, **axisArgs, **kwargs)
@@ -174,20 +175,6 @@ def plotLFPTimeSeries(
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #@exception
 def plotPSD(
     PSDData=None,
@@ -196,6 +183,7 @@ def plotPSD(
     timeRange=None,
     electrodes=['avg', 'all'],
     pop=None, 
+    separation=1.0,
     NFFT=256,
     noverlap=128, 
     nperseg=256,
@@ -212,6 +200,8 @@ def plotPSD(
     detrend=False, 
     transformMethod='morlet',
     returnPlotter=False,
+    colorList=None,
+    orderInverse=True,
     legend=True,
     **kwargs):
     
@@ -252,52 +242,74 @@ def plotPSD(
     # If input is a dictionary, pull the data out of it
     if type(PSDData) == dict:
     
-        psdFreqs = PSDData['psdFreqs'] 
-        psdSignal = PSDData['psdSignal']
-        psdNames = PSDData['psdNames']
+        freqs = PSDData['psdFreqs']
+        freq = freqs[0]
+        psds = PSDData['psdSignal']
+        names = PSDData['psdNames']
+        colors = PSDData.get('colors')
+        linewidths = PSDData.get('linewidths')
+        alphas = PSDData.get('alphas')
+        axisArgs = PSDData.get('axisArgs')
 
-    # # Set up colors, linewidths, and alphas for the plots
-    # if not colors:
-    #     if not colorList:
-    #         from .plotter import colorList
-    #     colors = colorList[0:len(psdNames)]
+    # Set up colors, linewidths, and alphas for the plots
+    if not colors:
+        if not colorList:
+            from .plotter import colorList
+        colors = colorList[0:len(psds)]
 
-    # if not linewidths:
-    #     linewidths = [1.0 for name in psdNames]
+    if not linewidths:
+        linewidths = [1.0 for name in names]
 
-    # if not alphas:
-    #     alphas = [1.0 for name in psdNames]
+    if not alphas:
+        alphas = [1.0 for name in names]
+    
+    # Create a dictionary to hold axis inputs
+    if not axisArgs:
+        axisArgs = {}
+        axisArgs['title'] = 'LFP Power Spectral Density'
+        axisArgs['xlabel'] = 'Frequency (Hz)'
+        axisArgs['ylabel'] = 'Power'
 
-    lineData = {}
-    lineData['x'] = psdFreqs
-    lineData['y'] = psdSignal
-    lineData['color'] = None
-    lineData['marker'] = None
-    lineData['markersize'] = None
-    lineData['linewidth'] = None
-    lineData['alpha'] = None
+    # Link colors to traces, make avg plot black, add separation to traces
+    plotColors = []
+    legendLabels = []
+    colorIndex = 0
+    offset = np.absolute(psds).max() * separation
+    
+    for index, (name, psd) in enumerate(zip(names, psds)):
+        legendLabels.append(name)
+        if orderInverse:
+            psds[index] = index * offset - psd
+            axisArgs['invert_yaxis'] = True
+        else:
+            psds[index] = index * offset + psd
+        if name == 'avg':
+            plotColors.append('black')
+        else:
+            plotColors.append(colors[colorIndex])
+            colorIndex += 1
 
+    # Create a dictionary with the inputs for a line plot
+    linesData = {}
+    linesData['x'] = freq
+    linesData['y'] = psds
+    linesData['color'] = plotColors
+    linesData['marker'] = None
+    linesData['markersize'] = None
+    linesData['linewidth'] = None
+    linesData['alpha'] = None
+
+    # If a kwarg matches a lines input key, use the kwarg value instead of the default
     for kwarg in kwargs:
-        if kwarg in lineData:
-            lineData[kwarg] = kwargs[kwarg]
+        if kwarg in linesData:
+            linesData[kwarg] = kwargs[kwarg]
 
-    axisArgs = {}
-    axisArgs['title'] = 'LFP Power Spectral Density'
-    axisArgs['xlabel'] = 'Frequency (Hz)'
-    axisArgs['ylabel'] = 'Power'
+    # create Plotter object
+    linesPlotter = LinesPlotter(data=linesData, axis=axis, **axisArgs, **kwargs)
+    linesPlotter.type = 'PSD'
 
-    linePlotter = sim.plotting.LinePlotter(data=lineData, axis=axis, **axisArgs, **kwargs)
-    linePlotter.type = 'PSD'
-
-    # If we use a kwarg, add it to a list to be removed from kwargs
-    kwargDels = []
-
-    # If a kwarg matches an axis input key, use the kwarg value instead of the default
-    for kwarg in kwargs:
-        if kwarg in axisArgs.keys():
-            axisArgs[kwarg] = kwargs[kwarg]
-            kwargDels.append(kwarg)
-
+    # remove the y-axis
+    linesPlotter.axis.get_yaxis().set_ticks([])
 
     # Set up the default legend settings
     legendKwargs = {}
@@ -323,10 +335,10 @@ def plotPSD(
         axisArgs['legend'] = legendKwargs
 
     # Generate the figure
-    PSDPlot = linePlotter.plot(**axisArgs, **kwargs)
+    PSDPlot = linesPlotter.plot(**axisArgs, **kwargs)
 
     # Default is to return the figure, but you can also return the plotter
     if returnPlotter:
-        return linePlotter
+        return linesPlotter
     else:
         return PSDPlot

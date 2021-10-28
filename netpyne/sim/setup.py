@@ -366,7 +366,7 @@ def setupRecordDipole():
     import lfpykit
 
     saveSteps = int(np.ceil(sim.cfg.duration/sim.cfg.recordStep))
-    sim.simData['dipole'] = np.zeros((saveSteps))
+    sim.simData['dipoleSum'] = np.zeros((saveSteps, 3))
 
     if sim.cfg.saveDipoleCells:
         if sim.cfg.saveDipoleCells == True:
@@ -374,7 +374,7 @@ def setupRecordDipole():
         elif isinstance(sim.cfg.saveDipoleCells, list):
             cellsRecordDipole = utils.getCellsList(sim.cfg.saveDipoleCells)
         for c in cellsRecordDipole:
-            sim.simData['dipoleCells'][c.gid] = np.zeros((saveSteps))
+            sim.simData['dipoleCells'][c.gid] = np.zeros((saveSteps, 3))
 
     if sim.cfg.saveDipolePops:
         if sim.cfg.saveDipolePops == True:
@@ -385,7 +385,7 @@ def setupRecordDipole():
             for pop in popsRecordDipole:
                 sim.net.popForEachGid.update({gid: pop for gid in sim.net.pops[pop].cellGids})
         for pop in popsRecordDipole:
-            sim.simData['dipolePops'][pop] = np.zeros((saveSteps))
+            sim.simData['dipolePops'][pop] = np.zeros((saveSteps, 3))
 
 
     if not sim.net.params.defineCellShapes: sim.net.defineCellShapes()  # convert cell shapes (if not previously done already)

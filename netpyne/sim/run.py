@@ -103,6 +103,15 @@ def preRun():
         sim.recordLFPHandler = recordLFPHandler
         sim.fih.append(h.FInitializeHandler(0, sim.recordLFPHandler))  # initialize imemb
 
+    # handler for recording LFP
+    if sim.cfg.recordDipole:
+        def recordDipoleHandler():
+            sim.cvode.event(h.t + float(sim.cfg.recordStep), sim.calculateDipole)
+            sim.cvode.event(h.t + float(sim.cfg.recordStep), sim.recordDipoleHandler)
+
+        sim.recordDipoleHandler = recordDipoleHandler
+        sim.fih.append(h.FInitializeHandler(0, sim.recordDipoleHandler))  # initialize imemb
+
 
 #------------------------------------------------------------------------------
 # Run Simulation
@@ -256,7 +265,7 @@ def calculateLFP():
 #------------------------------------------------------------------------------
 # Calculate LFP (fucntion called at every time step)
 #------------------------------------------------------------------------------
-def calculateDipoles():
+def calculateDipole():
     """
     Function for/to <short description of `netpyne.sim.run.calculateLFP`>
 
@@ -271,6 +280,8 @@ def calculateDipoles():
     for cell in sim.net.compartCells:
         cell.setImembPtr()
 
+    #import IPython as ipy; ipy.embed()
+
     # compute
     saveStep = int(np.floor(h.t / sim.cfg.recordStep))
     for cell in sim.net.compartCells: # compute ecp only from the biophysical cells
@@ -281,12 +292,12 @@ def calculateDipoles():
         if sim.cfg.saveDipolePops:
             if cell.gid in sim.net.popForEachGid:
                 pop = sim.net.popForEachGid[cell.gid]
-                sim.simData['dipolePops'][pop][saveStep - 1,:] += p  # contribution of individual cells (stored optionally)
+                sim.simData['dipolePops'][pop][saveStep - 1] += p  # contribution of individual cells (stored optionally)
 
         if sim.cfg.saveDipoleCells and gid in sim.simData['dipoleCells']:
-            sim.simData['dipoleCells'][gid][saveStep - 1,:] = p  # contribution of individual cells (stored optionally)
+            sim.simData['dipoleCells'][gid][saveStep - 1] = p  # contribution of individual cells (stored optionally)
 
-        sim.simData['dipole'][saveStep - 1,:] += p  # sum of all cells
+        sim.simData['dipoleSum'][saveStep - 1] += p  # sum of all cells
 
 
 

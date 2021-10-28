@@ -105,8 +105,8 @@ def gatherData(gatherLFP=True, gatherDipole=True):
                 for k in list(gather[0]['simData'].keys()):  # initialize all keys of allSimData dict
                     if gatherLFP and k == 'LFP':
                         sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
-                    elif gatherDipole and k == 'dipole':
-                        sim.allSimData[k] = np.zeros((gather[0]['simData']['dipole'].shape))
+                    elif gatherDipole and k == 'dipoleSum':
+                        sim.allSimData[k] = np.zeros((gather[0]['simData']['dipoleSum'].shape))
                     elif sim.cfg.recordDipolesHNN and k == 'dipole':
                         for dk in sim.cfg.recordDipolesHNN:
                             sim.allSimData[k][dk] = np.zeros(len(gather[0]['simData']['dipole'][dk]))
@@ -134,7 +134,7 @@ def gatherData(gatherLFP=True, gatherDipole=True):
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
                         elif gatherLFP and key == 'LFP':
                             sim.allSimData[key] += np.array(val)
-                        elif gatherDipole and key == 'dipole':
+                        elif gatherDipole and key == 'dipoleSum':
                             sim.allSimData[key] += np.array(val)
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
@@ -169,7 +169,7 @@ def gatherData(gatherLFP=True, gatherDipole=True):
                 for k in list(gather[0]['simData'].keys()):  # initialize all keys of allSimData dict
                     if gatherLFP and k == 'LFP':
                         sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
-                    elif gatherDipole and k == 'dipole':
+                    elif gatherDipole and k == 'dipoleSum':
                         sim.allSimData[k] = np.zeros((gather[0]['simData']['dipole'].shape))
                     elif sim.cfg.recordDipolesHNN and k == 'dipole':
                         for dk in sim.cfg.recordDipolesHNN:
@@ -202,7 +202,7 @@ def gatherData(gatherLFP=True, gatherDipole=True):
                                 sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
                         elif gatherLFP and key == 'LFP':
                             sim.allSimData[key] += np.array(val)
-                        elif gatherDipole and key == 'dipole':
+                        elif gatherDipole and key == 'dipoleSum':
                             sim.allSimData[key] += np.array(val)
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors

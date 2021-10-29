@@ -170,7 +170,7 @@ def gatherData(gatherLFP=True, gatherDipole=True):
                     if gatherLFP and k == 'LFP':
                         sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
                     elif gatherDipole and k == 'dipoleSum':
-                        sim.allSimData[k] = np.zeros((gather[0]['simData']['dipole'].shape))
+                        sim.allSimData[k] = np.zeros((gather[0]['simData']['dipoleSum'].shape))
                     elif sim.cfg.recordDipolesHNN and k == 'dipole':
                         for dk in sim.cfg.recordDipolesHNN:
                             sim.allSimData[k][dk] = np.zeros(len(gather[0]['simData']['dipole'][dk]))

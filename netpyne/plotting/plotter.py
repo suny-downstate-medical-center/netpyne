@@ -9,7 +9,7 @@ import numpy as np
 from copy import deepcopy
 import pickle, json
 import os
-from .scalebars import add_scalebar
+from matplotlib.offsetbox import AnchoredOffsetbox
 
 
 plt.ion()
@@ -201,33 +201,10 @@ class GeneralPlotter:
         self.axis.legend(handles, labels, **legendKwargs)
 
 
-    def addScalebar(self):
+    def addScalebar(self, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=None, unitsy=None, scalex=1.0, scaley=1.0, **kwargs):
+
+        add_scalebar(self.axis, matchx=matchx, matchy=matchy, hidex=hidex, hidey=hidey, unitsx=unitsx, unitsy=unitsy, scalex=scalex, scaley=scaley, **kwargs)
        
-        # calculate scalebar size and add scalebar
-
-        round_to_n = lambda x, n, m: int(np.ceil(round(x, -int(np.floor(np.log10(abs(x)))) + (n - 1)) / m)) * m
-        
-        scaley = 1000.0  # values in mV but want to convert to uV
-        m = 10.0
-        sizey = 100/scaley
-        
-        # while sizey > 0.25*ydisp:
-        #     try:
-        #         sizey = round_to_n(0.2*ydisp*scaley, 1, m) / scaley
-        #     except:
-        #         sizey /= 10.0
-        #     m /= 10.0
-        
-        labely = '%.3g $\mu$V'%(sizey*scaley)#)[1:]
-        
-        # if len(electrodes) > 1:
-        #     add_scalebar(ax,hidey=True, matchy=False, hidex=False, matchx=False, sizex=0, sizey=-sizey, labely=labely, unitsy='$\mu$V', scaley=scaley, loc=3, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
-        # else:
-        #     add_scalebar(ax, hidey=True, matchy=False, hidex=True, matchx=True, sizex=None, sizey=-sizey, labely=labely, unitsy='$\mu$V', scaley=scaley, unitsx='ms', loc=3, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
-
-        add_scalebar(self.axis, hidey=True, matchy=False, hidex=False, matchx=False, sizex=0, sizey=-sizey, labely=labely, loc=3, pad=0.5, borderpad=0.5, sep=3, prop=None, barcolor="black", barwidth=2)
-        
-
 
     def finishFig(self, **kwargs):
 
@@ -427,33 +404,86 @@ class HistPlotter(GeneralPlotter):
         return self.fig
 
 
-
+class AnchoredScaleBar(AnchoredOffsetbox):
     """
+    A class used for adding scale bars to plots
+    """
+    
+    def __init__(self, transform, sizex=0, sizey=0, labelx=None, labely=None, loc=4, pad=0.1, borderpad=0.1, sep=2, prop=None, barcolor="black", barwidth=None, **kwargs):
+        """
+        Draw a horizontal and/or vertical  bar with the size in data coordinate
+        of the give axes. A label will be drawn underneath (center-aligned).
 
-    Types of plot:
-        line
-        scatter
-        matrix
-        bar
-        pie
+        - transform : the coordinate frame (typically axes.transData)
+        - sizex,sizey : width of x,y bar, in data units. 0 to omit
+        - labelx,labely : labels for x,y bars; None to omit
+        - loc : position in containing axes
+        - pad, borderpad : padding, in fraction of the legend font size (or prop)
+        - sep : separation between labels and bars in points.
+        - **kwargs : additional arguments passed to base class constructor
+        """
+        from matplotlib.patches import Rectangle
+        from matplotlib.offsetbox import AuxTransformBox, VPacker, HPacker, TextArea, DrawingArea
+        bars = AuxTransformBox(transform)
+        if sizex:
+            bars.add_artist(Rectangle((0,0), sizex, 0, ec=barcolor, lw=barwidth, fc="none"))
+        if sizey:
+            bars.add_artist(Rectangle((0,0), 0, sizey, ec=barcolor, lw=barwidth, fc="none"))
+
+        if sizex and labelx:
+            self.xlabel = TextArea(labelx)
+            bars = VPacker(children=[bars, self.xlabel], align="center", pad=0, sep=sep)
+        if sizey and labely:
+            self.ylabel = TextArea(labely)
+            bars = HPacker(children=[self.ylabel, bars], align="center", pad=0, sep=sep)
+
+        AnchoredOffsetbox.__init__(self, loc, pad=pad, borderpad=borderpad, child=bars, prop=prop, frameon=False, **kwargs)
+
+
+def add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=None, unitsy=None, scalex=1.0, scaley=1.0, **kwargs):
+    """
+    Add scalebars to axes
+
+    Adds a set of scale bars to *ax*, matching the size to the ticks of the plot and optionally hiding the x and y axes
+
+    - axis : the axis to attach ticks to
+    - matchx,matchy : if True, set size of scale bars to spacing between ticks, if False, set size using sizex and sizey params
+    - hidex,hidey : if True, hide x-axis and y-axis of parent
+    - **kwargs : additional arguments passed to AnchoredScaleBars
+
+    Returns created scalebar object
+    """
+    
+    def get_tick_size(subaxis):
+        tick_size = None
+        tick_locs = subaxis.get_majorticklocs()
+        if len(tick_locs)>1:
+            tick_size = np.abs(tick_locs[1] - tick_locs[0])
+        return tick_size
         
+    if matchx:
+        kwargs['sizex'] = get_tick_size(axis.xaxis)
+    if matchy:
+        kwargs['sizey'] = get_tick_size(axis.yaxis)
 
-    Plots:
-        plot2Dnet                   scatter
-        plotConn                    matrix, bar, pie
-        plotCSD                         
-        plotEPSPAmp                 
-        plotfI
-        plotLFP
-        plotRaster                  scatter
-        plotRatePSD                 
-        plotRates                   
-        plotRateSpectrogram         
-        plotRxDConcentration        
-        plotShape                   
-        plotSpikeHist               
-        plotSpikeStats              
-        plotSyncs                   
-        plotTraces                  line
+    if unitsx is None:
+        unitsx = ''
+    if unitsy is None:
+        unitsy = ''
 
-    """
+    if 'labelx' not in kwargs or kwargs['labelx'] is None:
+        kwargs['labelx'] = '%.3g %s'%(kwargs['sizex'] * scalex, unitsx)
+    if 'labely' not in kwargs or kwargs['labely'] is None:
+        kwargs['labely'] = '%.3g %s'%(kwargs['sizey'] * scaley, unitsy)
+        
+    scalebar = AnchoredScaleBar(axis.transData, **kwargs)
+    axis.add_artist(scalebar)
+
+    if hidex : 
+        axis.xaxis.set_visible(False)
+    if hidey : 
+        axis.yaxis.set_visible(False)
+    if hidex and hidey: 
+        axis.set_frame_on(False)
+
+    return scalebar

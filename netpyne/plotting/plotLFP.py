@@ -87,9 +87,10 @@ def plotLFPTimeSeries(
     legendLabels = []
     colorIndex = 0
     offset = np.absolute(lfps).max() * separation
-    
+
     for index, (name, lfp) in enumerate(zip(names, lfps)):
         legendLabels.append(name)
+        lfps[index] = index * offset + lfp
         if orderInverse:
             lfps[index] = index * offset - lfp
             axisArgs['invert_yaxis'] = True
@@ -122,7 +123,7 @@ def plotLFPTimeSeries(
     linesPlotter.type = 'LFPTimeSeries'
 
     # remove the y-axis
-    #linesPlotter.axis.get_yaxis().set_ticks([])
+    # linesPlotter.axis.get_yaxis().set_ticks([])
     # linesPlotter.axis.spines['top'].set_visible(False)
     # linesPlotter.axis.spines['right'].set_visible(False)
     # linesPlotter.axis.spines['left'].set_visible(False)

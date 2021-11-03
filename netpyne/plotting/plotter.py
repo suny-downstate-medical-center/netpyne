@@ -409,7 +409,7 @@ class AnchoredScaleBar(AnchoredOffsetbox):
     A class used for adding scale bars to plots
     """
     
-    def __init__(self, transform, sizex=0, sizey=0, labelx=None, labely=None, loc=4, pad=0.1, borderpad=0.1, sep=2, prop=None, barcolor="black", barwidth=None, **kwargs):
+    def __init__(self, axis, sizex=0, sizey=0, labelx=None, labely=None, loc=4, pad=0.1, borderpad=0.1, sep=2, prop=None, barcolor="black", barwidth=None, **kwargs):
         """
         Draw a horizontal and/or vertical  bar with the size in data coordinate
         of the give axes. A label will be drawn underneath (center-aligned).
@@ -424,10 +424,14 @@ class AnchoredScaleBar(AnchoredOffsetbox):
         """
         from matplotlib.patches import Rectangle
         from matplotlib.offsetbox import AuxTransformBox, VPacker, HPacker, TextArea, DrawingArea
-        bars = AuxTransformBox(transform)
+        bars = AuxTransformBox(axis.transData)
         if sizex:
+            if axis.xaxis_inverted():
+                sizex = -sizex
             bars.add_artist(Rectangle((0,0), sizex, 0, ec=barcolor, lw=barwidth, fc="none"))
         if sizey:
+            if axis.yaxis_inverted():
+                sizey = -sizey
             bars.add_artist(Rectangle((0,0), 0, sizey, ec=barcolor, lw=barwidth, fc="none"))
 
         if sizex and labelx:
@@ -476,12 +480,13 @@ def add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=
     if 'labely' not in kwargs or kwargs['labely'] is None:
         kwargs['labely'] = '%.3g %s'%(kwargs['sizey'] * scaley, unitsy)
         
-    scalebar = AnchoredScaleBar(axis.transData, **kwargs)
+    #scalebar = AnchoredScaleBar(axis.transData, **kwargs)
+    scalebar = AnchoredScaleBar(axis, **kwargs)
     axis.add_artist(scalebar)
 
-    if hidex : 
+    if hidex: 
         axis.xaxis.set_visible(False)
-    if hidey : 
+    if hidey: 
         axis.yaxis.set_visible(False)
     if hidex and hidey: 
         axis.set_frame_on(False)

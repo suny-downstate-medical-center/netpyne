@@ -28,7 +28,7 @@ from numbers import Number
 
 
 
-def plotDipole(showCell=None, showPop=None, dpi=300, showFig=True, saveFig=True):
+def plotDipole(showCell=None, showPop=None,  timeRange=None, dpi=300, showFig=True, saveFig=True):
     from .. import sim
     
     if showCell:
@@ -38,8 +38,13 @@ def plotDipole(showCell=None, showPop=None, dpi=300, showFig=True, saveFig=True)
     else:
         p = sim.allSimData['dipoleSum']
 
+    if timeRange is None:
+        timeRange = [0, sim.cfg.duration]
+
+    timeSteps = [int(timeRange[0]/sim.cfg.recordStep), int(timeRange[1]/sim.cfg.recordStep)]
+
     # current dipole moment
-    plt.plot(np.arange(0, sim.cfg.duration, sim.cfg.recordStep), np.array(p))
+    plt.plot(np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep), np.array(p)[timeSteps[0]:timeSteps[1]])
     plt.legend([r'$P_x$ (nA um)', r'$P_y$ (nA um)', r'$P_z$ (nA um)'])
     plt.ylabel(r'$\mathbf{P}(t)$ (nA $\mu$m)')
     plt.xlabel('$t$ (ms)')
@@ -59,7 +64,8 @@ def plotDipole(showCell=None, showPop=None, dpi=300, showFig=True, saveFig=True)
     if showFig is True:
         plt.show()
 
-def plotEEG(showCell=None, showPop=None, dipole_location='parietal_lobe', dpi=300, showFig=True, saveFig=True):
+
+def plotEEG(showCell=None, showPop=None,  timeRange=None, dipole_location='parietal_lobe', dpi=300, showFig=True, saveFig=True):
     from .. import sim
 
     from lfpykit.eegmegcalc import NYHeadModel
@@ -77,7 +83,14 @@ def plotEEG(showCell=None, showPop=None, dipole_location='parietal_lobe', dpi=30
     else:
         p = sim.allSimData['dipoleSum']
 
+    if timeRange is None:
+        timeRange = [0, sim.cfg.duration]
+
+    timeSteps = [int(timeRange[0]/sim.cfg.recordStep), int(timeRange[1]/sim.cfg.recordStep)]
+
     p = np.array(p).T
+    
+    p=p[:, timeSteps[0]:timeSteps[1]]
 
     # We rotate current dipole moment to be oriented along the normal vector of cortex
     p = nyhead.rotate_dipole_to_surface_normal(p)
@@ -88,7 +101,7 @@ def plotEEG(showCell=None, showPop=None, dipole_location='parietal_lobe', dpi=30
     y_lim = [-130, 100]
     z_lim = [-160, 120]
 
-    t = np.arange(0, sim.cfg.duration, sim.cfg.recordStep)
+    t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
 
     plt.close("all")
     fig = plt.figure(figsize=[19, 10])

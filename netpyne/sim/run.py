@@ -17,7 +17,7 @@ standard_library.install_aliases()
 import numpy as np
 from neuron import h, init # Import NEURON
 from . import utils
-
+import os
 
 
 #------------------------------------------------------------------------------
@@ -150,7 +150,7 @@ def runSim(skipPreRun=False):
         preRun()
 
     h.finitialize(float(sim.cfg.hParams['v_init']))
-
+    sim.pc.nrnbbcore_write('coredat')
     if sim.cfg.coreneuron == True:
         if sim.rank == 0: print('\nRunning simulation using CoreNEURON for %s ms...'%sim.cfg.duration)
         from neuron import coreneuron
@@ -160,7 +160,9 @@ def runSim(skipPreRun=False):
             coreneuron.cell_permute = 2
     else:
         if sim.rank == 0: print('\nRunning simulation using NEURON for %s ms...'%sim.cfg.duration)
+    sim.pc.prcellstate(int(os.getenv('PRCELLGID')), "t{}".format(h.t))
     sim.pc.psolve(sim.cfg.duration)
+    sim.pc.prcellstate(int(os.getenv('PRCELLGID')), "t{}".format(h.t))
 
     sim.pc.barrier() # Wait for all hosts to get to this point
     sim.timing('stop', 'runTime')

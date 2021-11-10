@@ -45,7 +45,8 @@ def prepareSpikeData(
     fileName=None, 
     fileDesc=None, 
     fileType=None, 
-    fileDir=None, 
+    fileDir=None,
+    calculatePhase=False,
     **kwargs):
     """
     Function to prepare data for creating spike-related plots

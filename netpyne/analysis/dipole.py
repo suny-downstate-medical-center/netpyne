@@ -28,7 +28,7 @@ from numbers import Number
 
 
 
-def plotDipole(showCell=None, showPop=None,  timeRange=None, dpi=300, showFig=True, saveFig=True):
+def plotDipole(showCell=None, showPop=None,  timeRange=None, dpi=300, figSize=(6,6), showFig=True, saveFig=True):
     from .. import sim
     
     if showCell:
@@ -38,16 +38,22 @@ def plotDipole(showCell=None, showPop=None,  timeRange=None, dpi=300, showFig=Tr
     else:
         p = sim.allSimData['dipoleSum']
 
+    p = p/1000.0 # convert from nA to mA
+
     if timeRange is None:
         timeRange = [0, sim.cfg.duration]
 
     timeSteps = [int(timeRange[0]/sim.cfg.recordStep), int(timeRange[1]/sim.cfg.recordStep)]
 
     # current dipole moment
+    plt.figure(figsize=figSize) 
     plt.plot(np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep), np.array(p)[timeSteps[0]:timeSteps[1]])
-    plt.legend([r'$P_x$ (nA um)', r'$P_y$ (nA um)', r'$P_z$ (nA um)'])
-    plt.ylabel(r'$\mathbf{P}(t)$ (nA $\mu$m)')
+    #plt.legend([r'$P_x$ (mA um)', r'$P_y$ (mA um)', r'$P_z$ (mA um)'])
+    plt.legend([r'$P_x$', r'$P_y$', r'$P_z$'])
+    plt.ylabel(r'$\mathbf{P}(t)$ (mA $\mu$m)')
     plt.xlabel('$t$ (ms)')
+    ax=plt.gca()
+    ax.grid(False)
     
     # save figure
     if saveFig:
@@ -59,6 +65,7 @@ def plotDipole(showCell=None, showPop=None,  timeRange=None, dpi=300, showFig=Tr
             plt.savefig(filename, dpi=dpi)
         except:
             plt.savefig('dipole_fig.png', dpi=dpi)
+
 
     # display figure
     if showFig is True:

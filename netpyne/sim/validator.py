@@ -27,7 +27,7 @@ cell_spec = {
                     Optional('Ra'): Or(int, float),
                     Optional('diam'): Or(int, float),
                     Optional('cm'): Or(int, float),
-                    Optional('pt3d'): And([(float, float, float, float)],
+                    Optional('pt3d'): And([(Or(int, float), Or(int, float), Or(int, float), Or(int, float))],
                                           lambda t: len(list(filter(lambda x: len(x) != 4, t))) == 0),
                     Optional('nseg'): Or(int, float)
                 },
@@ -71,14 +71,16 @@ cell_spec = {
                         'c': Or(int, float),
                         'd': Or(int, float),
                         'celltype': int,
-                        'loc': Or(int, float),
+                        Optional('loc'): Or(int, float),
                         Optional('vref'): str,
                         Optional('synList'): [str]
                     }
                 },
                 Optional('ions'): {
                     Optional(str): {
-                        'e': Or(int, float)
+                        'e': Or(int, float),
+                        'i': Or(int, float),
+                        'o': Or(int, float)
                     }
                 },
                 Optional('vinit'): Or(int, float)
@@ -100,9 +102,10 @@ population_spec = {
 
 synaptic_spec = {
     str: {
-        'mod': And(str, Use(str.lower), lambda s: s in ['exp2syn']),
-        'tau1': Or(int, float),
-        'tau2': Or(int, float),
+        'mod': And(str, Use(str.lower), lambda s: s in ['exp2syn', 'expsyn']), # Check to see if both of these strings are really valid
+        Optional('tau'): Or(int, float),
+        Optional('tau1'): Or(int, float),
+        Optional('tau2'): Or(int, float),
         'e': Or(int, float)
     }
 }
@@ -112,7 +115,7 @@ stimulation_source_spec = {
     str: {
         Optional('type'): And(str, Use(str.lower), lambda s: s in ['iclamp', 'vclamp', 'alphasynapse', 'netstim']),
         Optional('rate'): int,
-        Optional('noise'): float,
+        Optional('noise'): Or(int, float),
         Optional('del'): int,
         Optional('dur'): Or(int, [int]),
         Optional('amp'): Or(str, [int]),
@@ -139,7 +142,7 @@ stimulation_target_spec = {
             Optional('pop'): str,
             Optional('ynorm'): [Or(int, float)]
         },
-        Optional('weight'): Or(float, str),  # The string is for capturing functions. May want to validate it's valid python
+        Optional('weight'): Or(int, float, str),  # The string is for capturing functions. May want to validate it's valid python
         Optional('delay'): Or(int, str),  # The string is for capturing functions. May want to validate it's valid python
         Optional('synMech'): str,
         Optional('loc'): float,

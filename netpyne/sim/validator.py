@@ -1,6 +1,22 @@
 from schema import Schema, Optional, And, Or, Use
 from collections import ChainMap
 
+general_spec = {
+    Optional('scale'): Or(int, float),
+    Optional('shape'): And(str, Use(str.lower), lambda s: s in ['cuboid', 'cylinder', 'ellipsoid']),
+    Optional('sizeX'): Or(int, float),
+    Optional('sizeY'): Or(int, float),
+    Optional('sizeZ'): Or(int, float),
+    Optional('rotateCellsRandomly'): [Or(int, float), Or(int, float)],
+    Optional('defaultWeight'): Or(int, float),
+    Optional('defaultDelay'): Or(int, float),
+    Optional('propVelocity'): Or(int, float),
+    Optional('scaleConnWeight'): Or(int, float),
+    Optional('scaleConnWeightNetStims'): Or(int, float),
+    Optional('scaleConnWeightModels'): {},
+    Optional('popTagsCopiedToCells'): [],
+}
+
 cell_spec = {
     str: {
         'secs': {
@@ -54,9 +70,17 @@ cell_spec = {
                         'b': Or(int, float),
                         'c': Or(int, float),
                         'd': Or(int, float),
-                        'celltype': int
+                        'celltype': int,
+                        'loc': Of(int, float),
+                        Optional('vref'): str,
+                        Optional('synList'): [str]
                     }
                 },
+                Optional('ions'): {
+                    Optional(str): {
+                        'e': Or(int, float)
+                    }
+                }
                 Optional('vinit'): Or(int, float)
             }
         }
@@ -145,7 +169,7 @@ connection_spec = {
     }
 }
 
-
+general_schema = Schema(general_spec)
 cell_schema = Schema(cell_spec)
 population_schema = Schema(population_spec)
 synaptic_schema = Schema(synaptic_spec)
@@ -159,6 +183,7 @@ net_param_schema = Schema(dict(ChainMap(*[cell_spec, population_spec, synaptic_s
 
 
 def validate_netparams(net_params):
+    # return general_schema.validate(net_params) and \
     return cell_schema.validate(net_params.cellParams) and \
     population_schema.validate(net_params.popParams) and \
     synaptic_schema.validate(net_params.synMechParams) and \

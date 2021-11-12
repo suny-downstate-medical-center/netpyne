@@ -71,7 +71,7 @@ cell_spec = {
                         'c': Or(int, float),
                         'd': Or(int, float),
                         'celltype': int,
-                        'loc': Of(int, float),
+                        'loc': Or(int, float),
                         Optional('vref'): str,
                         Optional('synList'): [str]
                     }

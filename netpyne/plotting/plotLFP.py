@@ -82,23 +82,15 @@ def plotLFPTimeSeries(
         axisArgs['xlabel'] = 'Time (ms)'
         axisArgs['ylabel'] = 'LFP Signal (uV)'
 
-    # # If we use a kwarg, add it to a list to be removed from kwargs
-    # kwargDels = []
-
-    # # If a kwarg matches an axis input key, use the kwarg value instead of the default
-    # for kwarg in kwargs:
-    #     if kwarg in axisArgs.keys():
-    #         axisArgs[kwarg] = kwargs[kwarg]
-    #         kwargDels.append(kwarg)
-
     # Link colors to traces, make avg plot black, add separation to traces
     plotColors = []
     legendLabels = []
     colorIndex = 0
     offset = np.absolute(lfps).max() * separation
-    
+
     for index, (name, lfp) in enumerate(zip(names, lfps)):
         legendLabels.append(name)
+        lfps[index] = index * offset + lfp
         if orderInverse:
             lfps[index] = index * offset - lfp
             axisArgs['invert_yaxis'] = True
@@ -125,21 +117,16 @@ def plotLFPTimeSeries(
     for kwarg in kwargs:
         if kwarg in linesData:
             linesData[kwarg] = kwargs[kwarg]
-            #kwargDels.append(kwarg)
-
-    # # Delete any kwargs that have been used
-    # for kwargDel in kwargDels:
-    #     kwargs.pop(kwargDel)
 
     # create Plotter object
     linesPlotter = LinesPlotter(data=linesData, axis=axis, **axisArgs, **kwargs)
     linesPlotter.type = 'LFPTimeSeries'
 
     # remove the y-axis
-    linesPlotter.axis.get_yaxis().set_ticks([])
-    #linesPlotter.axis.spines['top'].set_visible(False)
-    #linesPlotter.axis.spines['right'].set_visible(False)
-    #linesPlotter.axis.spines['left'].set_visible(False)
+    # linesPlotter.axis.get_yaxis().set_ticks([])
+    # linesPlotter.axis.spines['top'].set_visible(False)
+    # linesPlotter.axis.spines['right'].set_visible(False)
+    # linesPlotter.axis.spines['left'].set_visible(False)
 
     # Set up the default legend settings
     legendKwargs = {}
@@ -150,7 +137,6 @@ def plotLFPTimeSeries(
     #legendKwargs['handlelength'] = 0.5
     legendKwargs['fontsize'] = 'small'
     legendKwargs['title_fontsize'] = 'small'
-
 
     # If 'legendKwargs' is found in kwargs, use those values instead of the defaults
     if 'legendKwargs' in kwargs:

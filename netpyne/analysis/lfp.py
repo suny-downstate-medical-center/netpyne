@@ -111,21 +111,26 @@ def prepareLFP(
         electrodes.remove('all')
         electrodes.extend(list(range(int(sim.net.recXElectrode.nsites))))
     
-    if 'avg' in electrodes:
-        electrodes.remove('avg')
-        data['electrodes']['names'].append('avg')
-        data['electrodes']['locs'].append(None)
-        data['electrodes']['lfps'].append(np.mean(lfp, axis=1))
+    # if 'avg' in electrodes:
+    #     electrodes.remove('avg')
+    #     data['electrodes']['names'].append('avg')
+    #     data['electrodes']['locs'].append(None)
+    #     data['electrodes']['lfps'].append(np.mean(lfp, axis=1))
 
     for i, elec in enumerate(electrodes):
+        
         if isinstance(elec, Number) and (LFPData is not None or elec <= sim.net.recXElectrode.nsites):
             lfpSignal = lfp[:, elec]
+            loc = sim.cfg.recordLFP[elec]
+        elif elec == 'avg':
+            lfpSignal = np.mean(lfp, axis=1)
+            loc = None
 
         if len(t) < len(lfpSignal):
             lfpSignal = lfpSignal[:len(t)]
 
         data['electrodes']['names'].append(str(elec))
-        data['electrodes']['locs'].append(sim.cfg.recordLFP[i])
+        data['electrodes']['locs'].append(loc)
         data['electrodes']['lfps'].append(lfpSignal)
 
     return data

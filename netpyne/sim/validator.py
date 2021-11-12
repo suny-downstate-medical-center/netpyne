@@ -80,7 +80,7 @@ cell_spec = {
                     Optional(str): {
                         'e': Or(int, float)
                     }
-                }
+                },
                 Optional('vinit'): Or(int, float)
             }
         }

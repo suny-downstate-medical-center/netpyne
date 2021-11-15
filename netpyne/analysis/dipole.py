@@ -72,7 +72,7 @@ def plotDipole(showCell=None, showPop=None,  timeRange=None, dpi=300, figSize=(6
         plt.show()
 
 
-def plotEEG(showCell=None, showPop=None,  timeRange=None, dipole_location='parietal_lobe', dpi=300, showFig=True, saveFig=True):
+def plotEEG(showCell=None, showPop=None,  timeRange=None, dipole_location='parietal_lobe', dpi=300, figSize=(19,10), showFig=True, saveFig=True):
     from .. import sim
 
     from lfpykit.eegmegcalc import NYHeadModel
@@ -203,3 +203,5 @@ def plotEEG(showCell=None, showPop=None,  timeRange=None, dipole_location='parie
     # display figure
     if showFig is True:
         plt.show()
+
+    #import IPython as ipy; ipy.embed() 

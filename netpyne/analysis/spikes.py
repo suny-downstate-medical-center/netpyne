@@ -31,7 +31,7 @@ from .utils import exception #, getInclude, getSpktSpkid
 from .tools import getInclude, getSpktSpkid
 from .tools import saveData as saveFigData
 from ..support.scalebar import add_scalebar
-
+from ..specs import Dict
 
 @exception
 def prepareSpikeData(

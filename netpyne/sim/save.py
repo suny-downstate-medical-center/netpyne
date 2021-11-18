@@ -153,10 +153,19 @@ def saveData(include=None, filename=None, saveLFP=True):
             else:
                 timestampStr = ''
 
-            if hasattr(sim.cfg, 'saveFolder') and hasattr(sim.cfg, 'simLabel'):
-                filePath = os.path.join(sim.cfg.saveFolder, sim.cfg.simLabel + '_data' + timestampStr)
-            else:
-                filePath = sim.cfg.filename + '_data' + timestampStr
+            filePath = sim.cfg.filename + '_data' + timestampStr
+            if hasattr(sim.cfg, 'saveFolder') and sim.cfg.saveFolder:
+                filePath = os.path.join(sim.cfg.saveFolder, sim.cfg.filename + '_data' + timestampStr) 
+                if hasattr(sim.cfg, 'simLabel') and sim.cfg.simLabel:
+                    filePath = os.path.join(sim.cfg.saveFolder, sim.cfg.simLabel + '_data' + timestampStr)
+
+            # create folder if missing
+            targetFolder = os.path.dirname(filePath)
+            if targetFolder and not os.path.exists(targetFolder):
+                try:
+                    os.mkdir(targetFolder)
+                except OSError:
+                    print(' Could not create target folder: %s' % (targetFolder))
             
             # Save to pickle file
             if sim.cfg.savePickle:

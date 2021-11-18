@@ -8,7 +8,7 @@ NEURON {
 	USEION ca READ cai, eca    
         RANGE gcatbar, iCa
         RANGE gcatbar, ica
-	GLOBAL hinf, minf
+        RANGE hinf, minf
 }
 
 UNITS {

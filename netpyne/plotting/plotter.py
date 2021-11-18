@@ -9,6 +9,8 @@ import numpy as np
 from copy import deepcopy
 import pickle, json
 import os
+from matplotlib.offsetbox import AnchoredOffsetbox
+
 
 plt.ion()
 
@@ -18,10 +20,7 @@ except NameError:
     basestring = str
 
 
-colorList = [[0.42, 0.67, 0.84], [0.90, 0.76, 0.00], [0.42, 0.83, 0.59], [0.90, 0.32, 0.00],
-             [0.34, 0.67, 0.67], [0.90, 0.59, 0.00], [0.42, 0.82, 0.83], [1.00, 0.85, 0.00],
-             [0.33, 0.67, 0.47], [1.00, 0.38, 0.60], [0.57, 0.67, 0.33], [0.50, 0.20, 0.00],
-             [0.71, 0.82, 0.41], [0.00, 0.20, 0.50], [0.70, 0.32, 0.10]] * 3
+colorList = [[0.42, 0.67, 0.84], [0.90, 0.76, 0.00], [0.42, 0.83, 0.59], [0.90, 0.32, 0.00], [0.34, 0.67, 0.67], [0.90, 0.59, 0.00], [0.42, 0.82, 0.83], [1.00, 0.85, 0.00], [0.33, 0.67, 0.47], [1.00, 0.38, 0.60], [0.57, 0.67, 0.33], [0.50, 0.20, 0.00], [0.71, 0.82, 0.41], [0.00, 0.20, 0.50], [0.70, 0.32, 0.10]] * 3
 
 
 class GeneralPlotter:
@@ -66,7 +65,7 @@ class GeneralPlotter:
             self.rcParams = self.orig_rcParams
 
 
-        # If an axis is input, plot there; therwise make a new figure and axis
+        # If an axis is input, plot there; otherwise make a new figure and axis
         if self.axis is None:
             if 'figSize' in kwargs:
                 figSize = kwargs['figSize']
@@ -109,6 +108,10 @@ class GeneralPlotter:
         if 'ylim' in kwargs:
             if kwargs['ylim'] is not None:
                 self.axis.set_ylim(kwargs['ylim'])
+
+        if 'invert_yaxis' in kwargs:
+            if kwargs['invert_yaxis'] is True:
+                self.axis.invert_yaxis()
 
 
 
@@ -196,8 +199,12 @@ class GeneralPlotter:
             labels = cur_labels
 
         self.axis.legend(handles, labels, **legendKwargs)
-        
 
+
+    def addScalebar(self, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=None, unitsy=None, scalex=1.0, scaley=1.0, **kwargs):
+
+        add_scalebar(self.axis, matchx=matchx, matchy=matchy, hidex=hidex, hidey=hidey, unitsx=unitsx, unitsy=unitsy, scalex=scalex, scaley=scaley, **kwargs)
+       
 
     def finishFig(self, **kwargs):
 
@@ -206,7 +213,19 @@ class GeneralPlotter:
         if 'saveData' in kwargs:
             if kwargs['saveData']:
                 self.saveData(**kwargs)
-        
+
+        if 'legend' in kwargs:
+            if kwargs['legend'] is True:
+                self.addLegend()
+            elif type(kwargs['legend']) == dict:
+                self.addLegend(**kwargs['legend'])
+
+        if 'scalebar' in kwargs:
+            if kwargs['scalebar'] is True:
+                self.addScalebar()
+            elif type(kwargs['scalebar']) == dict:
+                self.addScalebar(**kwargs['scalebar'])
+
         if 'saveFig' in kwargs:
             if kwargs['saveFig']:
                 self.saveFig(**kwargs)
@@ -252,7 +271,7 @@ class ScatterPlotter(GeneralPlotter):
 
 
 class LinePlotter(GeneralPlotter):
-    """A class used for line plotting"""
+    """A class used for plotting one line per subplot"""
 
     def __init__(self, data, axis=None, options={}, **kwargs):
         
@@ -270,14 +289,83 @@ class LinePlotter(GeneralPlotter):
 
     def plot(self, **kwargs):
 
-        self.formatAxis(**kwargs)
-
         linePlot = self.axis.plot(self.x, self.y, color=self.color, marker=self.marker, markersize=self.markersize, linewidth=self.linewidth, alpha=self.alpha)
 
         self.finishFig(**kwargs)
 
         return self.fig
 
+
+
+
+class LinesPlotter(GeneralPlotter):
+    """A class used for plotting multiple lines on the same axis"""
+
+    def __init__(self, data, axis=None, options={}, **kwargs):
+        
+        super().__init__(data=data, axis=axis, **kwargs)
+
+        self.type       = 'lines'
+        self.x          = np.array(data.get('x'))
+        self.y          = np.array(data.get('y'))
+        self.color      = data.get('colors')
+        self.marker     = data.get('markers')
+        self.markersize = data.get('markersizes')
+        self.linewidth  = data.get('linewidths')
+        self.alpha      = data.get('alphas')
+
+        self.label      = data.get('label')
+
+
+    def plot(self, **kwargs):
+
+        numLines = len(self.y)
+
+        if type(self.color) != list:
+            colors = [self.color for line in range(numLines)]
+        else:
+            colors = self.color
+
+        if type(self.marker) != list:
+            markers = [self.marker for line in range(numLines)]
+        else:
+            markers = self.marker
+
+        if type(self.markersize) != list:
+            markersizes = [self.markersize for line in range(numLines)]
+        else:
+            markersizes = self.markersize
+
+        if type(self.linewidth) != list:
+            linewidths = [self.linewidth for line in range(numLines)]
+        else:
+            linewidths = self.linewidth
+
+        if type(self.alpha) != list:
+            alphas = [self.alpha for line in range(numLines)]
+        else:
+            alphas = self.alpha
+
+        if self.label is None:
+            labels = [None for line in range(numLines)]
+        else:
+            labels = self.label
+
+        for index, line in enumerate(self.y):
+            self.axis.plot(
+                self.x, 
+                self.y[index], 
+                color=colors[index], 
+                marker=markers[index], 
+                markersize=markersizes[index], 
+                linewidth=linewidths[index], 
+                alpha=alphas[index], 
+                label=labels[index],
+                )
+
+        self.finishFig(**kwargs)
+
+        return self.fig
 
 
 
@@ -309,8 +397,6 @@ class HistPlotter(GeneralPlotter):
 
     def plot(self, **kwargs):
 
-        #self.formatAxis(**kwargs)
-
         histPlot = self.axis.hist(self.x, bins=self.bins, range=self.range, density=self.density, weights=self.weights, cumulative=self.cumulative, bottom=self.bottom, histtype=self.histtype, align=self.align, orientation=self.orientation, rwidth=self.rwidth, log=self.log, color=self.color, alpha=self.alpha, label=self.label, stacked=self.stacked, data=self.data)
 
         self.finishFig(**kwargs)
@@ -318,33 +404,91 @@ class HistPlotter(GeneralPlotter):
         return self.fig
 
 
-
+class AnchoredScaleBar(AnchoredOffsetbox):
     """
+    A class used for adding scale bars to plots
+    """
+    
+    def __init__(self, axis, sizex=0, sizey=0, labelx=None, labely=None, loc=4, pad=0.1, borderpad=0.1, sep=2, prop=None, barcolor="black", barwidth=None, **kwargs):
+        """
+        Draw a horizontal and/or vertical  bar with the size in data coordinate
+        of the give axes. A label will be drawn underneath (center-aligned).
 
-    Types of plot:
-        line
-        scatter
-        matrix
-        bar
-        pie
+        - transform : the coordinate frame (typically axes.transData)
+        - sizex,sizey : width of x,y bar, in data units. 0 to omit
+        - labelx,labely : labels for x,y bars; None to omit
+        - loc : position in containing axes
+        - pad, borderpad : padding, in fraction of the legend font size (or prop)
+        - sep : separation between labels and bars in points.
+        - **kwargs : additional arguments passed to base class constructor
+        """
+        from matplotlib.patches import Rectangle
+        from matplotlib.offsetbox import AuxTransformBox, VPacker, HPacker, TextArea, DrawingArea
+        bars = AuxTransformBox(axis.transData)
+        if sizex:
+            if axis.xaxis_inverted():
+                sizex = -sizex
+            bars.add_artist(Rectangle((0,0), sizex, 0, ec=barcolor, lw=barwidth, fc="none"))
+        if sizey:
+            if axis.yaxis_inverted():
+                sizey = -sizey
+            bars.add_artist(Rectangle((0,0), 0, sizey, ec=barcolor, lw=barwidth, fc="none"))
+
+        if sizex and labelx:
+            self.xlabel = TextArea(labelx)
+            bars = VPacker(children=[bars, self.xlabel], align="center", pad=0, sep=sep)
+        if sizey and labely:
+            self.ylabel = TextArea(labely)
+            bars = HPacker(children=[self.ylabel, bars], align="center", pad=0, sep=sep)
+
+        AnchoredOffsetbox.__init__(self, loc, pad=pad, borderpad=borderpad, child=bars, prop=prop, frameon=False, **kwargs)
+
+
+def add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=None, unitsy=None, scalex=1.0, scaley=1.0, **kwargs):
+    """
+    Add scalebars to axes
+
+    Adds a set of scale bars to *ax*, matching the size to the ticks of the plot and optionally hiding the x and y axes
+
+    - axis : the axis to attach ticks to
+    - matchx,matchy : if True, set size of scale bars to spacing between ticks, if False, set size using sizex and sizey params
+    - hidex,hidey : if True, hide x-axis and y-axis of parent
+    - **kwargs : additional arguments passed to AnchoredScaleBars
+
+    Returns created scalebar object
+    """
+    
+    def get_tick_size(subaxis):
+        tick_size = None
+        tick_locs = subaxis.get_majorticklocs()
+        if len(tick_locs)>1:
+            tick_size = np.abs(tick_locs[1] - tick_locs[0])
+        return tick_size
         
+    if matchx:
+        kwargs['sizex'] = get_tick_size(axis.xaxis)
+    if matchy:
+        kwargs['sizey'] = get_tick_size(axis.yaxis)
 
-    Plots:
-        plot2Dnet                   scatter
-        plotConn                    matrix, bar, pie
-        plotCSD                         
-        plotEPSPAmp                 
-        plotfI
-        plotLFP
-        plotRaster                  scatter
-        plotRatePSD                 
-        plotRates                   
-        plotRateSpectrogram         
-        plotRxDConcentration        
-        plotShape                   
-        plotSpikeHist               
-        plotSpikeStats              
-        plotSyncs                   
-        plotTraces                  line
+    if unitsx is None:
+        unitsx = ''
+    if unitsy is None:
+        unitsy = ''
 
-    """
+    if 'labelx' not in kwargs or kwargs['labelx'] is None:
+        kwargs['labelx'] = '%.3g %s'%(kwargs['sizex'] * scalex, unitsx)
+    if 'labely' not in kwargs or kwargs['labely'] is None:
+        kwargs['labely'] = '%.3g %s'%(kwargs['sizey'] * scaley, unitsy)
+        
+    #scalebar = AnchoredScaleBar(axis.transData, **kwargs)
+    scalebar = AnchoredScaleBar(axis, **kwargs)
+    axis.add_artist(scalebar)
+
+    if hidex: 
+        axis.xaxis.set_visible(False)
+    if hidey: 
+        axis.yaxis.set_visible(False)
+    if hidex and hidey: 
+        axis.set_frame_on(False)
+
+    return scalebar

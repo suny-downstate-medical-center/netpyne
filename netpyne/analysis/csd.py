@@ -406,7 +406,7 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
     if CSD_data is None:
     
         from .. import sim
-        #lfp_data, CSD_data, sampr, spacing_um, dt = getCSD(sampr=sampr, spacing_um=spacing_um, dt=dt, getAllData=True)
+        lfp_data, CSD_data, sampr, spacing_um, dt = getCSD(sampr=sampr, spacing_um=spacing_um, dt=dt, getAllData=True)
 
         sim_data_categories = sim.allSimData.keys()
         
@@ -555,7 +555,7 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
             layerKeys = []
         for i in layer_bounds.keys():
             axs[0].hlines(layer_bounds[i], xmin, xmax, colors='black', linewidth=1, linestyles='dotted') 
-        layerKeys.append(i)
+            layerKeys.append(i)
 
         for n in range(len(layerKeys)):
             if n == 0:

@@ -31,6 +31,7 @@ from netpyne import cell
 from netpyne import conversion
 from netpyne import metadata
 from netpyne import network
+from netpyne import plotting
 from netpyne import sim
 from netpyne import specs
 from netpyne import support

@@ -71,7 +71,7 @@ def runJob(script, cfgSavePath, netParamsSavePath, processes):
 
 
     print('\nJob in rank id: ',pc.id())
-    command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath)
+    command = "nrniv %s simConfig='%s' netParams='%s'" % (script, cfgSavePath, netParamsSavePath)
     print(command+'\n')
     proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
     print(proc.stdout.read().decode())
@@ -359,7 +359,11 @@ wait
     outfiles = []
     for procFile in processFiles:
         outfiles.append(open(procFile, 'r'))
-        
+    
+    # note: while the process is running the poll() method will return None  
+    # depending on the platform or the way the source file is executed (e.g. if run using mpiexec), 
+    # the stored processes ids might correspond to completed processes  
+    # and therefore return 1 (even though nrniv processes are still running)
     while any([proc.poll() is None for proc in processes]):
         for i, proc in enumerate(processes):
                 newline = outfiles[i].readline()

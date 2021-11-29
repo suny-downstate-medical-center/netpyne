@@ -324,8 +324,11 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
         for i,elec in enumerate(electrodes):
             if elec == 'avg':
                 lfpPlot = np.mean(lfp, axis=1)
+            elif isinstance(elec, list) and (inputLFP is not None or all([x <= sim.net.recXElectrode.nsites for x in elec])):
+                lfpPlot = np.mean(lfp[:, elec], axis=1)
             elif isinstance(elec, Number) and (inputLFP is not None or elec <= sim.net.recXElectrode.nsites):
                 lfpPlot = lfp[:, elec]
+
 
             # Morlet wavelet transform method
             if transformMethod == 'morlet':
@@ -426,6 +429,8 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
             for i,elec in enumerate(electrodes):
                 if elec == 'avg':
                     lfpPlot = np.mean(lfp, axis=1)
+                elif isinstance(elec, list) and (inputLFP is not None or all([x <= sim.net.recXElectrode.nsites for x in elec])):
+                    lfpPlot = np.mean(lfp[:, elec], axis=1)
                 elif isinstance(elec, Number) and (inputLFP is not None or elec <= sim.net.recXElectrode.nsites):
                     lfpPlot = lfp[:, elec]
                 fs = int(1000.0 / sim.cfg.recordStep)

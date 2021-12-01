@@ -27,12 +27,15 @@ cell_spec = {
                     Optional('Ra'): Or(int, float),
                     Optional('diam'): Or(int, float),
                     Optional('cm'): Or(int, float),
-                    Optional('pt3d'): And([(Or(int, float), Or(int, float), Or(int, float), Or(int, float))],
+# Adding a rule to allow pt3d to be a list of lists or tuples. According to the spec, it should be a list of tuples
+                    Optional('pt3d'): Or(And([(Or(int, float), Or(int, float), Or(int, float), Or(int, float))],
                                           lambda t: len(list(filter(lambda x: len(x) != 4, t))) == 0),
+                                          And([[Or(int, float), Or(int, float), Or(int, float), Or(int, float)]],
+                                          lambda t: len(list(filter(lambda x: len(x) != 4, t))) == 0)),
                     Optional('nseg'): Or(int, float)
                 },
                 Optional('mechs'): {
-                    And(str, Use(str.lower), lambda s: s in ['hh', 'pas']): {
+                    Optional(And(str, Use(str.lower), lambda s: s in ['hh', 'pas'])): { # Why does this have to be optional?
                         Optional('el'): int,
                         Optional('gkbar'): float,
                         Optional('gl'): float,
@@ -51,26 +54,96 @@ cell_spec = {
                     },
                     Optional('kacurrent'): {},
                     Optional('kdrcurrent'): {},
-                    Optional('hcurrent'): {}
+                    Optional('hcurrent'): {},
+                    Optional('cadad'): {
+                        Optional('taur'): float,
+                        Optional('depth'): float,
+                        Optional('kt'): float,
+                        Optional('cainf'): float,
+                        Optional('kd'): float
+                    },
+                    Optional('cal'): {
+                        'gcalbar': Or(float, [float])
+                    },
+                    Optional('can'): {
+                        'gcanbar': Or(float, [float])
+                    },
+                    Optional('hd'): {
+                        'clk': float,
+                        'ehd': float,
+                        'elk': Or(int, float),
+                        'gbar': Or(float, [float]),
+                        'vhalfl': float
+                    },
+                    Optional('kBK'): {
+                        'caPh': float,
+                        'caPk': float,
+                        'caPmax': float,
+                        'caPmin': float,
+                        'caVhh': float,
+                        'caVhmax': float,
+                        'caVhmin': float,
+                        'gpeak': float,
+                        'k': float,
+                        'tau': float
+                    },
+                    Optional('kap'): {
+                        'gbar': float,
+                        'sh': float,
+                        'tq': float,
+                        'vhalfl': float,
+                        'vhalfn': float
+                    },
+                    Optional('kdr'): {
+                        'gbar': float,
+                        'sh': float,
+                        'vhalfn': float
+                    },
+                    Optional('nax'): {
+                        'gbar': float,
+                        'sh': float
+                    },
+                    Optional('pas'): {
+                        'e': Or(int, float),
+                        'g': float
+                    },
+                    Optional('savedist'): {
+                        'x': Or(float, [float])
+                    },
+                    Optional('kdmc'): {
+                        'gbar':float
+                    },
+                    Optional('cat'): {
+                        'gcatbar': float
+                    },
+                    Optional('ih'): {
+                        'aslope': float,
+                        'gbar': float,
+                        'ascale': float,
+                        'bslope': float,
+                        'bscale': float,
+                        'ashift': float
+                    }
                 },
+                Optional('threshold'): Or(int, float),
                 Optional('topol'): {
-                    Optional('parentSec'): And(str, Use(str.lower), lambda s: s in ['soma', 'dend']),
+                    Optional('parentSec'): str,
                     Optional('childX'): Or(int, float),
                     Optional('parentX'): Or(int, float)
                 },
                 Optional('pointps'): {
                     str: {
-                        'mod': str,
-                        'C': Or(int, float),
-                        'k': Or(int, float),
-                        'vr': Or(int, float),
-                        'vt': Or(int, float),
-                        'vpeak': Or(int, float),
-                        'a': Or(int, float),
-                        'b': Or(int, float),
-                        'c': Or(int, float),
-                        'd': Or(int, float),
-                        'celltype': int,
+                        Optional('mod'): str,
+                        Optional('C'): Or(int, float),
+                        Optional('k'): Or(int, float),
+                        Optional('vr'): Or(int, float),
+                        Optional('vt'): Or(int, float),
+                        Optional('vpeak'): Or(int, float),
+                        Optional('a'): Or(int, float),
+                        Optional('b'): Or(int, float),
+                        Optional('c'): Or(int, float),
+                        Optional('d'): Or(int, float),
+                        Optional('celltype'): int,
                         Optional('loc'): Or(int, float),
                         Optional('vref'): str,
                         Optional('synList'): [str]
@@ -78,34 +151,60 @@ cell_spec = {
                 },
                 Optional('ions'): {
                     Optional(str): {
-                        'e': Or(int, float),
-                        'i': Or(int, float),
-                        'o': Or(int, float)
+                        Optional('e'): Or(int, float),
+                        Optional('i'): Or(int, float),
+                        Optional('o'): Or(int, float)
                     }
                 },
-                Optional('vinit'): Or(int, float)
-            }
-        }
+                Optional('vinit'): Or(int, float),
+                Optional('weightNorm'): [float]
+            },
+        },
+        Optional('conds'): {
+            Optional('cellModel'): str,
+            Optional('cellType'): Or(str, [str])
+        },
+        Optional('globals'): {
+            str: Or(int, float)
+        },
+        Optional('secLists'): {
+            Optional(str): [str]
+        },
+        Optional('label'): str
     }
 }
 
 population_spec = {
     str: {
-        'cellType': str,
-        'numCells': int,
+        Optional('cellType'): str,
+        Optional('numCells'): int,
         Optional('yRange'): [int],
         Optional('ynormRange'): [float],
-        Optional('cellModel'): str
+        Optional('cellModel'): str,
+        Optional('density'): float,
+        Optional('originalFormat'): str,
+        Optional('pop'): str,
+        Optional('cellGids'): [int],
+        Optional('cellsList'): [
+            {
+                'cellLabel': int,
+                'x': float,
+                'y': float,
+                'z': float
+            }
+        ]
     }
 }
 
 
 synaptic_spec = {
-    str: {
-        'mod': And(str, Use(str.lower), lambda s: s in ['exp2syn', 'expsyn']), # Check to see if both of these strings are really valid
+    Optional(str): {
+        'mod': str, # Check to see if both of these strings are really valid
         Optional('tau'): Or(int, float),
         Optional('tau1'): Or(int, float),
         Optional('tau2'): Or(int, float),
+        Optional('tau1NMDA'): Or(int, float),
+        Optional('tau2NMDA'): Or(int, float),
         'e': Or(int, float)
     }
 }
@@ -118,7 +217,7 @@ stimulation_source_spec = {
         Optional('noise'): Or(int, float),
         Optional('del'): int,
         Optional('dur'): Or(int, [int]),
-        Optional('amp'): Or(str, [int]),
+        Optional('amp'): Or(str, [int], float),
         Optional('gain'): float,
         Optional('tau1'): Or(int, float),
         Optional('tau2'): Or(int, float),
@@ -127,8 +226,10 @@ stimulation_source_spec = {
         Optional('gmax'): str,
         Optional('onset'): str,
         Optional('tau'): Or(int, float),
-        Optional('interval'): str,
-        Optional('start'): Or(int, float)
+        Optional('interval'): Or(str, float),
+        Optional('start'): Or(int, float),
+        Optional('delay'): Or(int, float),
+        Optional('number'): Or(int, float)
     }
 }
 
@@ -144,9 +245,10 @@ stimulation_target_spec = {
         },
         Optional('weight'): Or(int, float, str),  # The string is for capturing functions. May want to validate it's valid python
         Optional('delay'): Or(int, str),  # The string is for capturing functions. May want to validate it's valid python
-        Optional('synMech'): str,
+        Optional('synMech'): Or(str, [str]),
         Optional('loc'): float,
-        Optional('sec'): str
+        Optional('sec'): str,
+        Optional('synMechWeightFactor'): [float]
     }
 }
 

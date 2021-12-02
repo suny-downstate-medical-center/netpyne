@@ -331,10 +331,6 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
 
         nodeDataDir = os.path.join(saveFolder, 'node_data')
 
-        print(saveFolder)
-        print(nodeDataDir)
-        print(os.getcwd())
-
         simLabels = [f.replace('_node_0.pkl', '') for f in os.listdir(nodeDataDir) if f.endswith('_node_0.pkl')]
 
         for simLabel in simLabels:

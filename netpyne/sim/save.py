@@ -582,6 +582,22 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
     sim.timing('start', 'saveInNodeTime')
     import os
 
+
+    # flag to avoid saving sections data for each cell (saves gather time and space; cannot inspect cell secs or re-simulate)
+    if not sim.cfg.saveCellSecs:
+        for cell in sim.net.cells:
+            cell.secs = None
+            cell.secLists = None
+
+    # flag to avoid saving conns data for each cell (saves gather time and space; cannot inspect cell conns or re-simulate)
+    if not sim.cfg.saveCellConns:
+        for cell in sim.net.cells:
+            cell.conns = []
+
+    # Store conns in a compact list format instead of a long dict format (cfg.compactConnFormat contains list of keys to include)
+    elif sim.cfg.compactConnFormat:
+        sim.compactConnFormat()
+
     # create folder if missing
     if not saveFolder:
         if getattr(sim.cfg, 'saveFolder', None) is None:

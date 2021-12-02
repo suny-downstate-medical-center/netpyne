@@ -312,6 +312,8 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
 
     """
 
+    import os
+
     if not sim:
         from netpyne import sim
 
@@ -330,7 +332,7 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
         nodeDataDir = os.path.join(saveFolder, 'node_data')
 
         print(nodeDataDir)
-        import os; print(os.getcwd())
+        print(os.getcwd())
 
         simLabels = [f.replace('_node_0.pkl', '') for f in os.listdir(nodeDataDir) if f.endswith('_node_0.pkl')]
 

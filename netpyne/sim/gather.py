@@ -327,10 +327,11 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
             simLabel = sim.cfg.simLabel
         
         if not saveFolder:
-            saveFolder = ''
+            saveFolder = sim.cfg.saveFolder
 
         nodeDataDir = os.path.join(saveFolder, 'node_data')
 
+        print(saveFolder)
         print(nodeDataDir)
         print(os.getcwd())
 

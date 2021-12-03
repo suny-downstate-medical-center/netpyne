@@ -333,7 +333,7 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
 # PLOTTING CSD 
 
 #@exception
-def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sampr=None, stim_start_time=None, spacing_um=None, ymax=None, dt=None, hlines=False, layer_lines=False, layer_bounds=None, smooth=None, fontSize=12, figSize=(10,10),dpi=200, saveFig=True, showFig=True): 
+def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sampr=None, stim_start_time=None, spacing_um=None, ymax=None, dt=None, hlines=False, layer_lines=False, layer_bounds=None, smooth=None, vaknin=False, fontSize=12, figSize=(10,10),dpi=200, saveFig=True, showFig=True): 
     """
     Function to plot CSD values extracted from simulated LFP data 
       
@@ -406,7 +406,7 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
     if CSD_data is None:
     
         from .. import sim
-        lfp_data, CSD_data, sampr, spacing_um, dt = getCSD(sampr=sampr, spacing_um=spacing_um, dt=dt, getAllData=True)
+        lfp_data, CSD_data, sampr, spacing_um, dt = getCSD(sampr=sampr, spacing_um=spacing_um, vaknin=vaknin, dt=dt, getAllData=True)
 
         sim_data_categories = sim.allSimData.keys()
         
@@ -568,6 +568,8 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
     if type(stim_start_time) is int or type(stim_start_time) is float:
         axs[0].vlines(stim_start_time, ymin, ymax, colors='red', linewidth=1, linestyles='dashed')
 
+    ax = plt.gca()
+    ax.grid(False)
 
     # save figure
     if saveFig:

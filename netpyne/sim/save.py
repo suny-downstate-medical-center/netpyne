@@ -603,8 +603,7 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
         if getattr(sim.cfg, 'saveFolder', None) is None:
             saveFolder = sim.cfg.simLabel+'_node_data'
         else:
-            saveFolder = os.path.join(sim.cfg.saveFolder, 'node_data')
-            nodeDataDir = os.path.join(saveFolder, sim.cfg.simLabel+'_node_data')
+            saveFolder = os.path.join(saveFolder, sim.cfg.simLabel+'_node_data')
 
     if not os.path.exists(saveFolder):
         os.makedirs(saveFolder, exist_ok=True)

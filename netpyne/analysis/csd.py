@@ -477,6 +477,12 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
     xmin = int(X[0])
     xmax = int(X[-1]) + 1  #int(sim.allSimData['t'][-1])
     ymin = 0
+
+    #  when vaknin is off the top and bottom LFP channels are not included 
+    if not vaknin:
+        ymin = ymin + spacing_um
+        ymax = ymax - spacing_um
+
     extent_xy = [xmin, xmax, ymax, ymin]
 
     # set up figure 
@@ -503,7 +509,11 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
 
     # set Title of plot & overlay data (CSD_raw, CSD_bandpassed, or LFP)  
     if overlay is 'CSD_raw' or overlay is 'CSD_bandpassed' or overlay is 'LFP':
-        nrow = LFP_data.shape[1]
+        if vaknin:
+            nrow = LFP_data.shape[1]
+        else:
+            nrow = LFP_data.shape[1] - 2
+
         gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(nrow, 1, subplot_spec=gs_outer[0:2], wspace=0.0, hspace=0.0)
         subaxs = []
 
@@ -536,7 +546,8 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
                 subaxs[chan].margins(0.0,0.01)
                 subaxs[chan].get_xaxis().set_visible(False)
                 subaxs[chan].get_yaxis().set_visible(False)
-                subaxs[chan].plot(X, LFP_data[:,chan], color='gray', linewidth=0.3)
+                lfpchan = chan if vaknin else chan+1
+                subaxs[chan].plot(X, LFP_data[:,lfpchan], color='gray', linewidth=0.3)
 
     else:
         print('No data being overlaid')
@@ -556,7 +567,7 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
             layerKeys = []
         for i in layer_bounds.keys():
             axs[0].hlines(layer_bounds[i], xmin, xmax, colors='black', linewidth=1, linestyles='dotted') 
-        layerKeys.append(i)
+            layerKeys.append(i)
 
         for n in range(len(layerKeys)):
             if n == 0:

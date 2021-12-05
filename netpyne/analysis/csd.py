@@ -507,6 +507,8 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
     spline=axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r', alpha=0.9) 
     axs[0].set_ylabel('Contact depth (um)', fontsize=fontSize)
 
+    axs[0].set_yticks(range(ymin+int(spacing_um), ymax, int(spacing_um*2)))
+
     # set Title of plot & overlay data (CSD_raw, CSD_bandpassed, or LFP)  
     if overlay is 'CSD_raw' or overlay is 'CSD_bandpassed' or overlay is 'LFP':
         if vaknin:

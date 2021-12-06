@@ -375,6 +375,10 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
 
                         nodePopsCellGids = {popLabel: list(pop['cellGids']) for popLabel, pop in data['pops'].items()}
 
+                        if gatherLFP and 'LFP' in data['simData']:                            
+                            allSimData['LFP'] = np.zeros((data['simData']['LFP'].shape))
+
+
                         for key, value in data['simData'].items():
                             
                             if key in simDataVecs:
@@ -393,9 +397,10 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
                                     allSimData[key] = list(allSimData[key]) + list(value)
 
                             elif gatherLFP and key == 'LFP':
-                                allSimData[key] = np.array(value)
-                                if not hasattr(sim.net, 'recXElectrode'):
-                                    sim.net.recXElectrode = data['net']['recXElectrode']
+                                allSimData['LFP'] += np.array(value)
+                                print(allSimData['LFP'].shape)
+                                #if not hasattr(sim.net, 'recXElectrode'):
+                                #    sim.net.recXElectrode = data['net']['recXElectrode']
 
                             elif key not in singleNodeVecs:
                                 allSimData[key].update(value)

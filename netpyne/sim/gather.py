@@ -355,7 +355,7 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
                 fileList = sorted([f for f in os.listdir(nodeDataDir) if (f.startswith(simLabel + '_node') and f.endswith('.json'))])
                 fileType = 'json'
 
-            for file in fileList:
+            for ifile,file in enumerate(fileList):
                 
                 print('  Merging data file: %s' % (file))
                 
@@ -375,7 +375,7 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
 
                         nodePopsCellGids = {popLabel: list(pop['cellGids']) for popLabel, pop in data['pops'].items()}
 
-                        if gatherLFP and 'LFP' in data['simData']:                            
+                        if ifile==0 and gatherLFP and 'LFP' in data['simData']:                            
                             allSimData['LFP'] = np.zeros((data['simData']['LFP'].shape))
 
 

@@ -252,6 +252,10 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
                 lfpPlot = np.mean(lfp, axis=1)
                 color = 'k'
                 lw=1.0
+            elif isinstance(elec, list) and (inputLFP is not None or all([x <= sim.net.recXElectrode.nsites for x in elec])):
+                lfpPlot = np.mean(lfp[:, elec], axis=1)
+                color = colors[i%len(colors)]
+                lw = 1.0
             elif isinstance(elec, Number) and (inputLFP is not None or elec <= sim.net.recXElectrode.nsites):
                 lfpPlot = lfp[:, elec]
                 color = colors[i%len(colors)]

@@ -329,7 +329,7 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
         if not saveFolder:
             saveFolder = sim.cfg.saveFolder
 
-        nodeDataDir = os.path.join(saveFolder, sim.cfg.simLabel+'_node_data')
+        nodeDataDir = os.path.join(saveFolder, simLabel+'_node_data')
 
         simLabels = [f.replace('_node_0.pkl', '') for f in os.listdir(nodeDataDir) if f.endswith('_node_0.pkl')]
 

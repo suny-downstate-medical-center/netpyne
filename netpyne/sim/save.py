@@ -665,7 +665,8 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
 
     # Remove un-Pickleable hoc objects
     for cell in dataSave['cells']:
-        cell.pop('imembPtr')
+        if 'imembPtr' in cell:
+            cell.pop('imembPtr')
 
     #if saveLFP:
     #    if hasattr(sim.net, 'recXElectrode'):

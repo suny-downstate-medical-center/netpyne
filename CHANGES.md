@@ -8,6 +8,8 @@
 
 **Bug fixes**
 
+- Fixed bug in loading exotic stim param values
+
 - Fixed bug in loading where sim was required to have rank attribute
 
 - Added quotes in batch.py to avoid path white spaces issue

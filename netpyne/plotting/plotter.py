@@ -23,37 +23,20 @@ except NameError:
 colorList = [[0.42, 0.67, 0.84], [0.90, 0.76, 0.00], [0.42, 0.83, 0.59], [0.90, 0.32, 0.00], [0.34, 0.67, 0.67], [0.90, 0.59, 0.00], [0.42, 0.82, 0.83], [1.00, 0.85, 0.00], [0.33, 0.67, 0.47], [1.00, 0.38, 0.60], [0.57, 0.67, 0.33], [0.50, 0.20, 0.00], [0.71, 0.82, 0.41], [0.00, 0.20, 0.50], [0.70, 0.32, 0.10]] * 3
 
 
-class GeneralPlotter:
-    """A class used for plotting"""
 
-    def __init__(self, data, axis=None, sim=None, rcParams=None, **kwargs):
-        """
-        Parameters
-        ----------
-        data : dict, str
+class MultiFigure:
+    """A class which defines a figure object"""
 
-        axis : matplotlib axis
-            The axis to plot into.  If axis is set to None, a new figure and axis are created and plotted into.  If plotting into an existing axis, more options are available: xtwin, ytwin,
-        
-        """
-
-        if type(data) == str:
-            if os.path.isfile(data):
-                self.data = self.loadData(data)
-            else:
-                raise Exception('In Plotter, if data is a string, it must be the path to a data file.')
-        else:
-            self.data = data
+    def __init__(self, kind, sim=None, subplots=None, rcParams=None, **kwargs):
 
         if not sim:
             from .. import sim
-        
         self.sim = sim
-        self.axis = axis
+
+        self.kind = kind
 
         # Make a copy of the current matplotlib rcParams and update them
         self.orig_rcParams = deepcopy(mpl.rcParams)
-
         if rcParams:
             for rcParam in rcParams:
                 if rcParam in mpl.rcParams:
@@ -64,58 +47,28 @@ class GeneralPlotter:
         else:
             self.rcParams = self.orig_rcParams
 
+        # Set up any subplots
+        if not subplots:
+            nrows = 1
+            ncols = 1
+        elif type(subplots) == int:
+            nrows = subplots
+            ncols = 1
+        elif type(subplots) == list:
+            nrows = subplots[0]
+            ncols = subplots[1] 
 
-        # If an axis is input, plot there; otherwise make a new figure and axis
-        if self.axis is None:
-            if 'figSize' in kwargs:
-                figSize = kwargs['figSize']
-            else:
-                figSize = self.rcParams['figure.figsize']
-            self.fig, self.axis = plt.subplots(figsize=figSize)
+        # Create figure
+        if 'figSize' in kwargs:
+            figSize = kwargs['figSize']
         else:
-            self.fig = plt.gcf()
+            figSize = self.rcParams['figure.figsize']
+        self.fig, self.ax = plt.subplots(nrows, ncols, figsize=figSize)
+
+        self.plotters = []
 
 
-    def loadData(self, fileName, fileDir=None, sim=None):
-        
-        from ..analysis import loadData
-        self.data = loadData(fileName=fileName, fileDir=fileDir, sim=None)
-        
-
-
-    def saveData(self, fileName=None, fileDesc=None, fileType=None, fileDir=None, sim=None, **kwargs):
-
-        from ..analysis import saveData as saveFigData
-
-        saveFigData(self.data, fileName=fileName, fileDesc=fileDesc, fileType=fileType, fileDir=fileDir, sim=sim, **kwargs)
-    
-
-    def formatAxis(self, **kwargs):
-        
-        if 'title' in kwargs:
-            self.axis.set_title(kwargs['title'])
-
-        if 'xlabel' in kwargs:
-            self.axis.set_xlabel(kwargs['xlabel'])
-
-        if 'ylabel' in kwargs:
-            self.axis.set_ylabel(kwargs['ylabel'])
-
-        if 'xlim' in kwargs:
-            if kwargs['xlim'] is not None:
-                self.axis.set_xlim(kwargs['xlim'])
-
-        if 'ylim' in kwargs:
-            if kwargs['ylim'] is not None:
-                self.axis.set_ylim(kwargs['ylim'])
-
-        if 'invert_yaxis' in kwargs:
-            if kwargs['invert_yaxis'] is True:
-                self.axis.invert_yaxis()
-
-
-
-    def saveFig(self, fileName=None, fileDesc=None, fileType='png', fileDir=None, overwrite=True, **kwargs):
+    def saveFig(self, sim=None, fileName=None, fileDesc=None, fileType='png', fileDir=None, overwrite=True, **kwargs):
         """
         'eps': 'Encapsulated Postscript',
         'jpg': 'Joint Photographic Experts Group',
@@ -132,10 +85,13 @@ class GeneralPlotter:
         'tiff': 'Tagged Image File Format'
         """
 
+        if not sim:
+            from .. import sim
+
         if fileDesc is not None:
             fileDesc = '_' + str(fileDesc)
         else:
-            fileDesc = '_' + self.type
+            fileDesc = '_' + self.kind
 
         if fileType not in self.fig.canvas.get_supported_filetypes():
             raise Exception('fileType not recognized in saveFig')
@@ -171,15 +127,111 @@ class GeneralPlotter:
         return fileName
 
 
-
     def showFig(self, **kwargs):
-
         plt.close(self.fig)
         dummy = plt.figure(figsize=self.rcParams['figure.figsize'])
         new_manager = dummy.canvas.manager
         new_manager.canvas.figure = self.fig
         self.fig.set_canvas(new_manager.canvas)
         self.fig.show()
+
+
+    def finishFig(self, **kwargs):
+        if 'saveFig' in kwargs:
+            if kwargs['saveFig']:
+                self.saveFig(**kwargs)
+        
+        if 'showFig' in kwargs:
+            if kwargs['showFig']:   
+                self.showFig(**kwargs)
+        else:
+            plt.close(self.fig)
+
+        # Reset the matplotlib rcParams to their original settings
+        mpl.style.use(self.orig_rcParams)
+
+
+
+
+class GeneralPlotter:
+    """A class used for plotting"""
+
+    def __init__(self, data, kind, axis=None, sim=None, rcParams=None, multifig=None, **kwargs):
+        """
+        Parameters
+        ----------
+        data : dict, str
+
+        axis : matplotlib axis
+            The axis to plot into.  If axis is set to None, a new figure and axis are created and plotted into.  If plotting into an existing axis, more options are available: xtwin, ytwin,
+        
+        """
+        self.kind = kind
+
+        # Load data
+        if type(data) == str:
+            if os.path.isfile(data):
+                self.data = self.loadData(data)
+            else:
+                raise Exception('In Plotter, if data is a string, it must be the path to a data file.')
+        else:
+            self.data = data
+
+        if not sim:
+            from .. import sim
+        
+        self.sim = sim
+        self.axis = axis
+
+        if multifig:
+            self.multifig = multifig
+
+        # If an axis is input, plot there; otherwise make a new figure and axis
+        if self.axis is None:
+            final = True
+            self.multifig = MultiFigure(kind=self.kind)
+            self.fig = self.multifig.fig
+            self.axis = self.multifig.ax
+        else:
+            self.fig = self.axis.figure
+
+        # Attach plotter to its MultiFigure
+        self.multifig.plotters.append(self)
+
+
+    def loadData(self, fileName, fileDir=None, sim=None):
+        from ..analysis import loadData
+        self.data = loadData(fileName=fileName, fileDir=fileDir, sim=None)
+        
+
+
+    def saveData(self, fileName=None, fileDesc=None, fileType=None, fileDir=None, sim=None, **kwargs):
+        from ..analysis import saveData as saveFigData
+        saveFigData(self.data, fileName=fileName, fileDesc=fileDesc, fileType=fileType, fileDir=fileDir, sim=sim, **kwargs)
+    
+
+    def formatAxis(self, **kwargs):
+        
+        if 'title' in kwargs:
+            self.axis.set_title(kwargs['title'])
+
+        if 'xlabel' in kwargs:
+            self.axis.set_xlabel(kwargs['xlabel'])
+
+        if 'ylabel' in kwargs:
+            self.axis.set_ylabel(kwargs['ylabel'])
+
+        if 'xlim' in kwargs:
+            if kwargs['xlim'] is not None:
+                self.axis.set_xlim(kwargs['xlim'])
+
+        if 'ylim' in kwargs:
+            if kwargs['ylim'] is not None:
+                self.axis.set_ylim(kwargs['ylim'])
+
+        if 'invert_yaxis' in kwargs:
+            if kwargs['invert_yaxis'] is True:
+                self.axis.invert_yaxis()
 
 
     def addLegend(self, handles=None, labels=None, **kwargs):
@@ -206,7 +258,7 @@ class GeneralPlotter:
         add_scalebar(self.axis, matchx=matchx, matchy=matchy, hidex=hidex, hidey=hidey, unitsx=unitsx, unitsy=unitsy, scalex=scalex, scaley=scaley, **kwargs)
        
 
-    def finishFig(self, **kwargs):
+    def finishAxis(self, **kwargs):
 
         self.formatAxis(**kwargs)
         
@@ -228,17 +280,16 @@ class GeneralPlotter:
 
         if 'saveFig' in kwargs:
             if kwargs['saveFig']:
-                self.saveFig(**kwargs)
+                self.multifig.saveFig(**kwargs)
         
         if 'showFig' in kwargs:
             if kwargs['showFig']:   
-                self.showFig(**kwargs)
+                self.multifig.showFig(**kwargs)
         else:
             plt.close(self.fig)
 
         # Reset the matplotlib rcParams to their original settings
-        mpl.style.use(self.orig_rcParams)
-        
+        mpl.style.use(self.multifig.orig_rcParams)
                 
 
 class ScatterPlotter(GeneralPlotter):
@@ -248,7 +299,7 @@ class ScatterPlotter(GeneralPlotter):
         
         super().__init__(data=data, axis=axis, **kwargs)
 
-        self.type       = 'scatter'
+        self.kind       = 'scatter'
         self.x          = data.get('x')
         self.y          = data.get('y')
         self.s          = data.get('s')
@@ -265,7 +316,7 @@ class ScatterPlotter(GeneralPlotter):
 
         scatterPlot = self.axis.scatter(x=self.x, y=self.y, s=self.s, c=self.c, marker=self.marker, linewidth=self.linewidth, cmap=self.cmap, norm=self.norm, alpha=self.alpha, linewidths=self.linewidths)
 
-        self.finishFig(**kwargs)
+        self.finishAxis(**kwargs)
 
         return self.fig
 
@@ -277,7 +328,7 @@ class LinePlotter(GeneralPlotter):
         
         super().__init__(data=data, axis=axis, **kwargs)
 
-        self.type       = 'line'
+        self.kind       = 'line'
         self.x          = np.array(data.get('x'))
         self.y          = np.array(data.get('y'))
         self.color      = data.get('color')
@@ -291,7 +342,7 @@ class LinePlotter(GeneralPlotter):
 
         linePlot = self.axis.plot(self.x, self.y, color=self.color, marker=self.marker, markersize=self.markersize, linewidth=self.linewidth, alpha=self.alpha)
 
-        self.finishFig(**kwargs)
+        self.finishAxis(**kwargs)
 
         return self.fig
 
@@ -305,7 +356,7 @@ class LinesPlotter(GeneralPlotter):
         
         super().__init__(data=data, axis=axis, **kwargs)
 
-        self.type       = 'lines'
+        self.kind       = 'lines'
         self.x          = np.array(data.get('x'))
         self.y          = np.array(data.get('y'))
         self.color      = data.get('colors')
@@ -363,7 +414,7 @@ class LinesPlotter(GeneralPlotter):
                 label=labels[index],
                 )
 
-        self.finishFig(**kwargs)
+        self.finishAxis(**kwargs)
 
         return self.fig
 
@@ -376,7 +427,7 @@ class HistPlotter(GeneralPlotter):
         
         super().__init__(data=data, axis=axis, **kwargs)
 
-        self.type        = 'histogram'
+        self.kind        = 'histogram'
         self.x           = data.get('x')
         self.bins        = data.get('bins', None) 
         self.range       = data.get('range', None) 
@@ -399,9 +450,46 @@ class HistPlotter(GeneralPlotter):
 
         histPlot = self.axis.hist(self.x, bins=self.bins, range=self.range, density=self.density, weights=self.weights, cumulative=self.cumulative, bottom=self.bottom, histtype=self.histtype, align=self.align, orientation=self.orientation, rwidth=self.rwidth, log=self.log, color=self.color, alpha=self.alpha, label=self.label, stacked=self.stacked, data=self.data)
 
-        self.finishFig(**kwargs)
+        self.finishAxis(**kwargs)
 
         return self.fig
+
+
+
+class ImagePlotter(GeneralPlotter):
+    """A class used for image plotting using plt.imshow"""
+
+    def __init__(self, data, axis=None, options={}, **kwargs):
+        
+        super().__init__(data=data, axis=axis, **kwargs)
+
+        self.kind          = 'image'
+        self.X             = data.get('X') 
+        self.cmap          = data.get('cmap', None)
+        self.norm          = data.get('norm', None)
+        self.aspect        = data.get('aspect', None) 
+        self.interpolation = data.get('interpolation', None) 
+        self.alpha         = data.get('alpha', None) 
+        self.vmin          = data.get('vmin', None) 
+        self.vmax          = data.get('vmax', None) 
+        self.origin        = data.get('origin', None) 
+        self.extent        = data.get('extent', None) 
+        self.interpolation_stage = data.get('interpolation_stage', None) 
+        self.filternorm    = data.get('filternorm', True)
+        self.filterrad     = data.get('filterrad', 4.0)
+        self.resample      = data.get('resample', None)  
+        self.url           = data.get('url', None)  
+        self.data          = data.get('data', None) 
+
+    def plot(self, **kwargs):
+
+        imagePlot = self.axis.imshow(self.X, cmap=self.cmap, norm=self.norm, aspect=self.aspect, interpolation=self.interpolation, alpha=self.alpha, vmin=self.vmin, vmax=self.vmax, origin=self.origin, extent=self.extent, interpolation_stage=self.interpolation_stage, filternorm=self.filternorm, filterrad=self.filterrad, resample=self.resample, url=self.url, data=self.data)
+
+        self.finishAxis(**kwargs)
+
+        return self.fig
+
+
 
 
 class AnchoredScaleBar(AnchoredOffsetbox):

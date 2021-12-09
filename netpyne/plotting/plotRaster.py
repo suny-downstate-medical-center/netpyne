@@ -356,8 +356,7 @@ def plotRaster(
         kwargs.pop(kwargDel)
 
     # create Plotter object
-    rasterPlotter = ScatterPlotter(data=scatterData, axis=axis, **axisArgs, **kwargs)
-    rasterPlotter.type = 'raster'
+    rasterPlotter = ScatterPlotter(data=scatterData, kind='raster', axis=axis, **axisArgs, **kwargs)
 
     # add legend
     if legend:

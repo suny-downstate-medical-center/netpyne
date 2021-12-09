@@ -271,8 +271,6 @@ def prepareSpectrogram(
     Function to prepare data for plotting of the spectrogram
     """
 
-    print('Preparing spectrogram data...')
-
     data = prepareLFP(
     sim=sim,
     timeRange=timeRange,
@@ -296,72 +294,83 @@ def prepareSpectrogram(
     transformMethod=transformMethod, 
     **kwargs)
 
-    lfp = data['lfp']
-    allFreqs = data['allFreqs']
-    allSignal = data['allSignal']
+    print('Preparing spectrogram data...')
+
+    if not sim:
+        from .. import sim
+
+    lfps = np.array(data['electrodes']['lfps'])
+    names = data['electrodes']['names']
     electrodes = data['electrodes']
+
+    spect_data = {}
+    spect_data['vmin'] = None
+    spect_data['vmax'] = None
 
     # Morlet wavelet transform method
     if transformMethod == 'morlet':
+        
         from ..support.morlet import MorletSpec, index2ms
 
         spec = []
+        spect_data['morlet'] = []
+
         freqList = None
         if logy:
             freqList = np.logspace(np.log10(minFreq), np.log10(maxFreq), int((maxFreq-minFreq)/stepFreq))
 
-        for i, elec in enumerate(electrodes):
-            if elec == 'avg':
-                lfpPlot = np.mean(lfp, axis=1)
-            elif isinstance(elec, Number) and (inputLFP is not None or elec <= sim.net.recXElectrode.nsites):
-                lfpPlot = lfp[:, elec]
+        for i, elec in enumerate(names):
+            lfp_elec = lfps[:, i]
             fs = int(1000.0 / sim.cfg.recordStep)
-            t_spec = np.linspace(0, index2ms(len(lfpPlot), fs), len(lfpPlot))
-            spec.append(MorletSpec(lfpPlot, fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq, lfreq=freqList))
-
-        f = freqList if freqList is not None else np.array(range(minFreq, maxFreq+1, stepFreq))   # only used as output for user
+            t_spec = np.linspace(0, index2ms(len(lfp_elec), fs), len(lfp_elec))
+            spec.append(MorletSpec(lfp_elec, fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq, lfreq=freqList))
 
         vmin = np.array([s.TFR for s in spec]).min()
         vmax = np.array([s.TFR for s in spec]).max()
 
-        for i, elec in enumerate(electrodes):
-            T = timeRange
-            F = spec[i].f
+        if normSpec:
+            vmin = 0
+            vmax = 1
+
+        spect_data['vmin'] = vmin
+        spect_data['vmax'] = vmax
+
+        for i, elec in enumerate(names):
             if normSpec:
-                spec[i].TFR = spec[i].TFR / vmax
-                S = spec[i].TFR
-                vc = [0, 1]
+                S = spec[i].TFR / vmax
             else:
                 S = spec[i].TFR
-                vc = [vmin, vmax]
-
-            plt.imshow(S, extent=(np.amin(T), np.amax(T), np.amin(F), np.amax(F)), origin='lower', interpolation='None', aspect='auto', vmin=vc[0], vmax=vc[1], cmap=plt.get_cmap('viridis'))
+            spect_data['morlet'].append(S)
             
-
+            #plt.imshow(S, extent=(np.amin(T), np.amax(T), np.amin(F), np.amax(F)), origin='lower', interpolation='None', aspect='auto', vmin=vc[0], vmax=vc[1], cmap=plt.get_cmap('viridis'))
+            
     # FFT transform method
     elif transformMethod == 'fft':
 
         from scipy import signal as spsig
-        spec = []
+        
+        spect_data['fft'] = []
 
-        for i, elec in enumerate(electrodes):
-            if elec == 'avg':
-                lfpPlot = np.mean(lfp, axis=1)
-            elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
-                lfpPlot = lfp[:, elec]
-            # creates spectrogram over a range of data
-            # from: http://joelyancey.com/lfp-python-practice/
+        for i, elec in enumerate(names):
+            lfp_elec = lfps[:, i]
             fs = int(1000.0/sim.cfg.recordStep)
-            f, t_spec, x_spec = spsig.spectrogram(lfpPlot, fs=fs, window='hanning', detrend=mlab.detrend_none, nperseg=nperseg, noverlap=noverlap, nfft=NFFT,  mode='psd')
+            f, t_spec, x_spec = spsig.spectrogram(lfp_elec, fs=fs, window='hanning', detrend=mlab.detrend_none, nperseg=nperseg, noverlap=noverlap, nfft=NFFT,  mode='psd')
             x_mesh, y_mesh = np.meshgrid(t_spec*1000.0, f[f<maxFreq])
-            spec.append(10*np.log10(x_spec[f<maxFreq]))
+            spect_data['fft'].append(10*np.log10(x_spec[f<maxFreq]))
 
-        vmin = np.array(spec).min()
-        vmax = np.array(spec).max()
+        vmin = np.array(spect_data['fft']).min()
+        vmax = np.array(spect_data['fft']).max()
+        
+        spect_data['vmin'] = vmin
+        spect_data['vmax'] = vmax
 
-        for i, elec in enumerate(electrodes):
-            plt.pcolormesh(x_mesh, y_mesh, spec[i], cmap=cm.viridis, vmin=vmin, vmax=vmax)
+        spect_data['xmesh'] = x_mesh
+        spect_data['ymesh'] = y_mesh
+
+        #for i, elec in enumerate(electrodes):
+        #    plt.pcolormesh(x_mesh, y_mesh, spec[i], cmap=cm.viridis, vmin=vmin, vmax=vmax)
             
+    data['electrodes']['spectrogram'] = spect_data
 
     return data
     

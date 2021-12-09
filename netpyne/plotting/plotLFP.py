@@ -4,6 +4,8 @@ import matplotlib.patches as mpatches
 from ..analysis.utils import exception #, loadData
 from ..analysis.tools import loadData
 from .plotter import LinesPlotter
+from .plotter import ImagePlotter
+from .plotter import MultiFigure
 import numpy as np
 
 
@@ -119,8 +121,7 @@ def plotLFPTimeSeries(
             linesData[kwarg] = kwargs[kwarg]
 
     # create Plotter object
-    linesPlotter = LinesPlotter(data=linesData, axis=axis, **axisArgs, **kwargs)
-    linesPlotter.type = 'LFPTimeSeries'
+    linesPlotter = LinesPlotter(data=linesData, kind='LFPTimeSeries', axis=axis, **axisArgs, **kwargs)
 
     # remove the y-axis
     # linesPlotter.axis.get_yaxis().set_ticks([])
@@ -297,8 +298,7 @@ def plotPSD(
             linesData[kwarg] = kwargs[kwarg]
 
     # create Plotter object
-    linesPlotter = LinesPlotter(data=linesData, axis=axis, **axisArgs, **kwargs)
-    linesPlotter.type = 'PSD'
+    linesPlotter = LinesPlotter(data=linesData, kind='PSD', axis=axis, **axisArgs, **kwargs)
 
     # remove the y-axis
     linesPlotter.axis.get_yaxis().set_ticks([])
@@ -334,3 +334,111 @@ def plotPSD(
         return linesPlotter
     else:
         return PSDPlot
+
+
+
+
+
+
+
+#@exception
+def plotSpectrogram(
+    SpectData=None,
+    sim=None,
+    axis=None, 
+    timeRange=None,
+    electrodes=['avg', 'all'],
+    NFFT=256,
+    noverlap=128, 
+    nperseg=256,
+    minFreq=1, 
+    maxFreq=100, 
+    stepFreq=1, 
+    smooth=0,
+    logx=False,
+    logy=False, 
+    normSignal=False,
+    normPSD=False, 
+    filtFreq=False, 
+    filtOrder=3, 
+    detrend=False, 
+    transformMethod='morlet',
+    returnPlotter=False,
+    #colorList=None,
+    #orderInverse=True,
+    #legend=True,
+    **kwargs):
+    
+    # If there is no input data, get the data from the NetPyNE sim object
+    if SpectData is None:
+        if 'sim' not in kwargs:
+            from .. import sim
+        else:
+            sim = kwargs['sim']
+
+        SpectData = sim.analysis.prepareSpectrogram(
+            sim=sim,
+            timeRange=timeRange,
+            electrodes=electrodes, 
+            NFFT=NFFT, 
+            noverlap=noverlap, 
+            nperseg=nperseg, 
+            minFreq=minFreq, 
+            maxFreq=maxFreq, 
+            stepFreq=stepFreq, 
+            smooth=smooth, 
+            logx=logx, 
+            logy=logy, 
+            normSignal=normSignal, 
+            normPSD=normPSD, 
+            filtFreq=filtFreq, 
+            filtOrder=filtOrder, 
+            detrend=detrend, 
+            transformMethod=transformMethod, 
+            **kwargs)
+
+    print('Plotting LFP spectrogram...')
+
+    # If input is a dictionary, pull the data out of it
+    if type(SpectData) == dict:
+    
+        names = SpectData['electrodes']['names']
+        vmin = SpectData['electrodes']['spectrogram']['vmin']
+        vmax = SpectData['electrodes']['spectrogram']['vmax']
+        axisArgs = SpectData.get('axisArgs')
+
+    if 'rcParams' in kwargs:
+        rcParams = kwargs['rcParams']
+    else:
+        rcParams = None
+
+    multiFig = MultiFigure(kind='spect', subplots=len(names), rcParams=rcParams, **kwargs)
+
+    if 'morlet' in SpectData['electrodes']['spectrogram'].keys():
+        spect = SpectData['electrodes']['spectrogram']['morlet']
+
+    elif 'fft' in SpectData['electrodes']['spectrogram'].keys():
+        spect = SpectData['electrodes']['spectrogram']['fft']
+        xmesh = SpectData['electrodes']['spectrogram']['xmesh']
+        ymesh = SpectData['electrodes']['spectrogram']['ymesh']
+    
+    for index, name in enumerate(names):
+
+        # Create a dictionary with the inputs for an image plot
+        imageData = {}
+        imageData['X'] = np.array(spect)[:,:,index]
+        imageData['vmin'] = vmin
+        imageData['vmax'] = vmax
+
+        # Create a dictionary to hold axis inputs
+        axisArgs = {}
+        axisArgs['title'] = 'Electrode ' + name
+        axisArgs['xlabel'] = 'Time (ms)'
+        axisArgs['ylabel'] = 'Frequency (Hz)'
+
+        imagePlotter = ImagePlotter(data=imageData, kind='spect', multifig=multiFig, axis=multiFig.ax[index], **axisArgs, **kwargs)
+        spectPlot = imagePlotter.plot(**axisArgs, **kwargs)
+
+    
+    return spectPlot
+

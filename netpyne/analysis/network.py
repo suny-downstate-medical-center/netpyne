@@ -27,6 +27,7 @@ if __gui__:
     import matplotlib.pyplot as plt
 import numpy as np
 from numbers import Number
+from math import ceil
 from .utils import colorList, exception, _roundFigures, getCellsInclude, getCellsIncludeTags
 from .utils import _saveFigData, _showFigure
 
@@ -1369,7 +1370,7 @@ def plotShape(includePre=['all'], includePost=['all'], showSyns=False, showElect
                         nsyns = [0] * nseg
                         secs.append(sec['hObj'])
                         conns = [conn for conn in cellPost.conns if conn['sec']==secLabel and conn['preGid'] in cellsPreGids]
-                        for conn in conns: nsyns[int(round(conn['loc']*nseg))-1] += 1
+                        for conn in conns: nsyns[int(ceil(conn['loc']*nseg))-1] += 1
                         cvals.extend(nsyns)
 
                 cvals = np.array(cvals)

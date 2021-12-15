@@ -39,7 +39,10 @@ class SimConfig(object):
         self.duration = self.tstop = 1*1e3 # Duration of the simulation, in ms
         self.dt = 0.025 # Internal integration timestep to use
         self.hParams = Dict({'celsius': 6.3, 'v_init': -65.0, 'clamp_resist': 0.001})  # parameters of h module
+        self.coreneuron = False  # use CoreNEURON to run the simulation (alpha version)
+        self.random123 = False # enable Random123 random number generator
         self.cache_efficient = False  # use CVode cache_efficient option to optimize load when running on many cores
+        self.gpu = False  # enable GPU execution in CoreNEURON
         self.cvode_active = False  # Use CVode variable time step
         self.use_fast_imem = False  # use CVode fast_imem to record membrane voltage via i_membrane_
         self.cvode_atol = 0.001  # absolute error tolerance
@@ -74,7 +77,8 @@ class SimConfig(object):
         self.recordStim = False  # record spikes of cell stims
         self.recordLFP = []  # list of 3D locations to record LFP from
         self.recordDipoles = False # record dipoles
-        self.saveLFPCells = False  # Store LFP generate individually by each cell
+        self.saveLFPCells = False  # Store LFP generated individually by each cell
+        self.saveLFPPops = False  # Store LFP generated individually by each population
         self.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
         self.recordTime = True  # record time step of recording
 

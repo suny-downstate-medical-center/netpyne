@@ -497,7 +497,7 @@ class CompartCell (Cell):
             if stimParams['type'] == 'NetStim':
                 self.addNetStim(stimParams, stimContainer=stimParams)
 
-            elif stimParams['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
+            else: #if stimParams['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:  
                 stim = getattr(h, stimParams['type'])(self.secs[stimParams['sec']]['hObj'](stimParams['loc']))
                 stimProps = {k:v for k,v in stimParams.items() if k not in ['label', 'type', 'source', 'loc', 'sec', 'hObj']}
                 for stimPropName, stimPropValue in stimProps.items(): # set mechanism internal stimParams
@@ -1100,6 +1100,9 @@ class CompartCell (Cell):
                     if stimParamName in ['weight']:
                         setattr(stim, stimParamName, stimParamValue)
                         stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
+                    else:
+                        setattr(stim, stimParamName, stimParamValue)
+
 
             self.stims.append(params) # add to python structure
             self.stims[-1]['hObj'] = stim  # add stim object to dict in stims list

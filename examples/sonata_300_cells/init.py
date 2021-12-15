@@ -27,13 +27,13 @@ compareTraces = 0
 saveSpikesToBMTK = 0
 plotSpikesUsingBMTK = 0
 
-# Improt SONATA model and instantiate in netpyne
+# Import SONATA model and instantiate in NetPyNE
 if importSonataModel:
     sonataImporter = sonataImport.SONATAImporter()
     sonataImporter.importNet(sonataConfigFile, replaceAxon=True, setdLNseg=True)
 
 
-# code to save network to json so can read from NetPyNE-UI
+# Code to save network to .json so can read from NetPyNE-UI
 if saveForGUI:
     sim.cfg.saveJson = True
     #for k,v in sim.net.params.popParams.items():
@@ -59,7 +59,7 @@ if saveForGUI:
     sim.saveData(filename='sonata_300cells')
 
 
-# save json with psection
+# Save .json with psection
 if saveJsonPsection:
     import json
     data = {}
@@ -84,7 +84,7 @@ if saveJsonPsection:
         json.dump(data, f)
 
 
-# save json with psection
+# Save .json with psection
 if saveJsonConns:
     import json
     data = {}
@@ -113,7 +113,7 @@ if saveJsonConns:
         json.dump(data, f)
 
 
-# run simulation and plot raster+traces
+# Run simulation and plot raster+traces
 if runPlot:
     sim.cfg.recordTraces = {'V_soma':{'sec':'soma_0','loc':0.5,'var':'v'}}
     sim.cfg.recordCells = range(9)

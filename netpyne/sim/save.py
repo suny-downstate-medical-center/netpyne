@@ -166,10 +166,19 @@ def saveData(include=None, filename=None, saveLFP=True):
             else:
                 timestampStr = ''
 
-            if hasattr(sim.cfg, 'saveFolder') and hasattr(sim.cfg, 'simLabel') and len(sim.cfg.simLabel):
-                filePath = os.path.join(sim.cfg.saveFolder, sim.cfg.simLabel + '_data' + timestampStr)
-            else:
-                filePath = sim.cfg.filename + '_data' + timestampStr
+            filePath = sim.cfg.filename + '_data' + timestampStr
+            if hasattr(sim.cfg, 'saveFolder') and sim.cfg.saveFolder:
+                filePath = os.path.join(sim.cfg.saveFolder, sim.cfg.filename + '_data' + timestampStr) 
+                if hasattr(sim.cfg, 'simLabel') and sim.cfg.simLabel:
+                    filePath = os.path.join(sim.cfg.saveFolder, sim.cfg.simLabel + '_data' + timestampStr)
+
+            # create folder if missing
+            targetFolder = os.path.dirname(filePath)
+            if targetFolder and not os.path.exists(targetFolder):
+                try:
+                    os.mkdir(targetFolder)
+                except OSError:
+                    print(' Could not create target folder: %s' % (targetFolder))
             
             # Save to pickle file
             if sim.cfg.savePickle:
@@ -586,12 +595,33 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
     sim.timing('start', 'saveInNodeTime')
     import os
 
+
+    # flag to avoid saving sections data for each cell (saves gather time and space; cannot inspect cell secs or re-simulate)
+    if not sim.cfg.saveCellSecs:
+        for cell in sim.net.cells:
+            cell.secs = None
+            cell.secLists = None
+
+    # flag to avoid saving conns data for each cell (saves gather time and space; cannot inspect cell conns or re-simulate)
+    if not sim.cfg.saveCellConns:
+        for cell in sim.net.cells:
+            cell.conns = []
+
+    # Store conns in a compact list format instead of a long dict format (cfg.compactConnFormat contains list of keys to include)
+    elif sim.cfg.compactConnFormat:
+        sim.compactConnFormat()
+
     # create folder if missing
-    if not saveFolder:
-        if getattr(sim.cfg, 'saveFolder', None) is None:
-            saveFolder = 'node_data'
+    if not sim.cfg.simLabel:
+        sim.cfg.simLabel = ''
+
+    if not saveFolder: 
+        if getattr(sim.cfg, 'saveFolder', None):  # NO saveFolder, YES sim.cfg.saveFolder
+            saveFolder = os.path.join(sim.cfg.saveFolder, sim.cfg.simLabel+'_node_data')
         else:
-            saveFolder = os.path.join(sim.cfg.saveFolder, 'node_data')
+            saveFolder = sim.cfg.simLabel+'_node_data'  # NO saveFolder, NO sim.cfg.saveFolder
+    else:
+            saveFolder = os.path.join(saveFolder, sim.cfg.simLabel+'_node_data')  # YES saveFolder
 
     if not os.path.exists(saveFolder):
         os.makedirs(saveFolder, exist_ok=True)
@@ -648,7 +678,8 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
 
     # Remove un-Pickleable hoc objects
     for cell in dataSave['cells']:
-        cell.pop('imembPtr')
+        if 'imembPtr' in cell:
+            cell.pop('imembPtr')
 
     #if saveLFP:
     #    if hasattr(sim.net, 'recXElectrode'):

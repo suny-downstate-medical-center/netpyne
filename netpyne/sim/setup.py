@@ -320,11 +320,22 @@ def setupRecordLFP():
     sim.simData['LFP'] = np.zeros((saveSteps, nsites))
     if sim.cfg.saveLFPCells:
         if sim.cfg.saveLFPCells == True:
-            cellsRecordLFP = utils.getCellsList(['all'])
+            cellsRecordLFP = utils.getCellsList(['all']) # record all cells
         elif isinstance(sim.cfg.saveLFPCells, list):
             cellsRecordLFP = utils.getCellsList(sim.cfg.saveLFPCells)
         for c in cellsRecordLFP:
             sim.simData['LFPCells'][c.gid] = np.zeros((saveSteps, nsites))
+
+    if sim.cfg.saveLFPPops:
+        if sim.cfg.saveLFPPops == True:
+            popsRecordLFP = list(sim.net.pops.keys()) # record all pops
+        elif isinstance(sim.cfg.saveLFPPops, list):
+            popsRecordLFP = [p for p in sim.cfg.saveLFPPops if p in list(sim.net.pops.keys())] # only pops that exist
+            sim.net.popForEachGid = {}
+            for pop in popsRecordLFP:
+                sim.net.popForEachGid.update({gid: pop for gid in sim.net.pops[pop].cellGids})
+        for pop in popsRecordLFP:
+            sim.simData['LFPPops'][pop] = np.zeros((saveSteps, nsites))
 
     if not sim.net.params.defineCellShapes: sim.net.defineCellShapes()  # convert cell shapes (if not previously done already)
     sim.net.calcSegCoords()  # calculate segment coords for each cell

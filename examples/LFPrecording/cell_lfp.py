@@ -45,5 +45,5 @@ simConfig.analysis['plotCSD'] = {'timeRange': [10,45]}
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
 #sim.analysis.plotCSD()
 
-# check model output
+# Check the model output: sim.checkOutput is used for testing purposes.  Please comment out the following line if you are exploring the example.
 sim.checkOutput('cell_lfp')

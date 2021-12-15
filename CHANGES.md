@@ -4,6 +4,8 @@
 
 - Enabled selecting a subset of cells to save individual LFP signal from via cfg.saveLFPCells = [...] 
 
+- Added cfg.saveLFPPops to store LFP generated individually by each population
+
 **Bug fixes**
 
 - Fixed setting cfgMapping nested params when not string
@@ -18,6 +20,8 @@
 - Added function to get list of batch grid search parameter combinations 
 
 - Save output of mpi_bulletin batches to .run and .err files
+
+- Fixed bug in loading exotic stim param values
 
 - Fixed bug in loading where sim was required to have rank attribute
 
@@ -1498,3 +1502,5 @@ First version that was uploaded to pypi. Includes following features:
 	- Parameters/specifications
 	- Instantiated networks
 	- Simulation results
+
+- Distance-based redistribution of synapses (subConn)

@@ -31,10 +31,10 @@ cellRule = netParams.importCellParams(label='PT_6comp', conds={'cellType': 'PT',
 cellRule['secLists']['alldend'] = ['Bdend', 'Adend1', 'Adend2', 'Adend3']  # define section lists
 cellRule['secLists']['apicdend'] = ['Adend1', 'Adend2', 'Adend3']
 
-for secName,sec in cellRule['secs'].items():
-    sec['vinit'] = -75.0413649414  # set vinit for all secs
-    if secName in cellRule['secLists']['alldend']:
-        sec['mechs']['nax']['gbar'] = cfg.dendNa  # set dend Na gmax for all dends
+# for secName,sec in cellRule['secs'].items():
+#     sec['vinit'] = -75.0413649414  # set vinit for all secs
+#     if secName in cellRule['secLists']['alldend']:
+#         sec['mechs']['nax']['gbar'] = cfg.dendNa  # set dend Na gmax for all dends
 
 
 ###############################################################################
@@ -46,7 +46,7 @@ netParams.popParams['PT5B'] =	{'cellModel': 'HH_reduced', 'cellType': 'PT', 'num
 ###############################################################################
 # Synaptic mechanism parameters
 ###############################################################################
-netParams.synMechParams['NMDA'] = {'mod': 'MyExp2SynNMDABB', 'tau1NMDA': cfg.tau1NMDA, 'tau2NMDA': 150, 'e': 0}
+netParams.synMechParams['NMDA'] = {'mod': 'MyExp2SynNMDABB', 'tau1NMDA': 1, 'tau2NMDA': 150, 'e': 0}
 
 
 ###############################################################################
@@ -79,3 +79,8 @@ if cfg.addNetStim:
         netParams.stimTargetParams[nslabel+'_'+ns['pop']] = \
             {'source': nslabel, 'conds': {'pop': ns['pop']}, 'sec': ns['sec'], 'loc': ns['loc'],
              'synMech': ns['synMech'], 'weight': ns['weight'], 'delay': ns['delay']}
+
+###############################################################################
+# NetStim mapping to cfg
+###############################################################################
+netParams.mapping['tau1NMDA'] = ['synMechParams', 'NMDA', 'tau1NMDA'] 

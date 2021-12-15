@@ -18,6 +18,11 @@ try:
 except NameError:
     to_unicode = str
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 from future import standard_library
 standard_library.install_aliases()
 from collections import OrderedDict
@@ -272,6 +277,9 @@ class NetParams(object):
         self.defaultThreshold = 10  # default Netcon threshold (mV)
         self.propVelocity = 500.0  # propagation velocity (um/ms)
 
+        # mapping between cfg and netParams
+        self.mapping = {}
+
         # Cell params dict
         self.cellParams = CellParams()
 
@@ -328,7 +336,7 @@ class NetParams(object):
             if not os.path.exists(folder):
                 print(' Could not create', folder)
 
-        dataSave = {'net': {'params': self.__dict__}}
+        dataSave = {'net': {'params': self.todict()}}
 
         # Save to json file
         if ext == 'json':
@@ -579,6 +587,26 @@ class NetParams(object):
 
     def saveCellParams(self, label, fileName):
         return self.saveCellParamsRule(label, fileName)
+
     def todict(self):
         from ..sim import replaceDictODict
         return replaceDictODict(self.__dict__)
+
+
+    def setNestedParam(self, paramLabel, paramVal):
+        if isinstance(paramLabel, list):
+            container = self
+            for ip in range(len(paramLabel)-1):
+                if hasattr(container, paramLabel[ip]):
+                    container = getattr(container, paramLabel[ip])
+                else:
+                    container = container[paramLabel[ip]]
+            container[paramLabel[-1]] = paramVal
+        elif isinstance(paramLabel, basestring):
+            setattr(self, paramLabel, paramVal) # set simConfig params
+
+    def setCfgMapping(self, cfg):
+        if hasattr(self, 'mapping'):
+            for k, v in self.mapping.items():
+                if getattr(cfg, k, None):
+                    self.setNestedParam(v, getattr(cfg, k))

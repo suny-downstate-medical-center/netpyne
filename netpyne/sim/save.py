@@ -20,7 +20,7 @@ except NameError:
     to_unicode = str
 
 import os
-from time import time
+from time import time, sleep
 from datetime import datetime
 import pickle as pk
 from . import gather
@@ -31,7 +31,7 @@ from ..specs import Dict, ODict
 #------------------------------------------------------------------------------
 # Save JSON (Python 2/3 compatible)
 #------------------------------------------------------------------------------
-def saveJSON(fileName, data):
+def saveJSON(fileName, data, checkFileTimeout=0):
     """
     Function for/to <short description of `netpyne.sim.save.saveJSON`>
 
@@ -44,6 +44,10 @@ def saveJSON(fileName, data):
     data : <type>
         <Short description of data>
         **Default:** *required*
+
+    checkFileTimeout: timeout (sec)
+        if >0 then will check if file exists before continuing 
+        at 0.1 ms intervals for the timeout specified in secs
 
 
     """
@@ -58,6 +62,15 @@ def saveJSON(fileName, data):
                           separators=(',', ': '), ensure_ascii=False,
                           cls=NpSerializer)
         fileObj.write(to_unicode(str_))
+
+
+    if checkFileTimeout>0:
+        sleepTime = 0.1
+        timeoutCyles = checkFileTimeout / sleepTime 
+        cycles = 0
+        while not os.path.exists(fileName) and cycles <= timeOutCycles:
+            sleep(sleepTime)
+            
 
 
 #------------------------------------------------------------------------------
@@ -189,7 +202,7 @@ def saveData(include=None, filename=None, saveLFP=True):
                 # Make it work for Python 2+3 and with Unicode
                 print(('Saving output as %s ... ' % (filePath+'.json ')))
                 #dataSave = utils.replaceDictODict(dataSave)  # not required since json saves as dict
-                sim.saveJSON(filePath+'.json', dataSave)
+                sim.saveJSON(filePath+'.json', dataSave, checkFileTimeout=5)
                 print('Finished saving!')
 
             # Save to mat file

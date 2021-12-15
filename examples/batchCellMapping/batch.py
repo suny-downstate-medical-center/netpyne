@@ -16,7 +16,7 @@ def runBatch(b, label, setup='mpi_bulletin'):
     if setup == 'mpi_bulletin':
         b.runCfg = {'type': 'mpi_bulletin',
                     'script': 'init.py',
-                    'skip': False}
+                    'skip': True}
 
     elif setup == 'hpc_slurm_comet':
         b.runCfg = {'type': 'hpc_slurm',
@@ -58,7 +58,16 @@ def batchNMDA():
 	runBatch(b, 'batchNMDA', setup='mpi_bulletin')
 
 
+def batchNMDAMapping():
+	params = {'tau1NMDA': [10, 15, 20, 25]}
+	initCfg = {'duration': 1100}
+	
+	from cfg import cfg
+	from netParams import netParams
+	b = Batch(params=params, initCfg=initCfg, cfg=cfg, netParams=netParams)
+	runBatch(b, 'batchNMDAMapping', setup='mpi_bulletin')
+
 # Main code
 if __name__ == '__main__':
-	batchNa()
-	# batchNMDA()
+	# batchNa()
+	batchNMDAMapping()

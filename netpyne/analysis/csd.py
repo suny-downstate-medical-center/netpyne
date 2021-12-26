@@ -553,7 +553,7 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
                 subaxs[chan].plot(X, CSD_data[chan,:], color='green', linewidth=0.3) # 'blue'
 
         elif overlay == 'LFP':
-            axs[0].set_title('CSD with LFP overlay', fontsize=14) 
+            axs[0].set_title('CSD with LFP overlay', fontsize=fontSize) 
             for chan in range(nrow):
                 subaxs.append(plt.Subplot(fig, gs_inner[chan], frameon=False))
                 fig.add_subplot(subaxs[chan])

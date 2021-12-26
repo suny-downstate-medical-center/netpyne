@@ -22,6 +22,7 @@ cfg.createNEURONObj = 1  # create HOC objects when instantiating network
 cfg.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
 cfg.verbose = False  # show detailed messages
 cfg.saveCellSecs = False  # avoid saving detailed info about each cell's morphology and mechanisms
+cfg.simLabel = 'output'
 
 # Recording
 cfg.recordTraces = {'Vsoma':{'sec':'soma','loc':0.5,'var':'v'}}

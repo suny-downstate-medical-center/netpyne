@@ -8,6 +8,21 @@
 
 **Bug fixes**
 
+- Fixed setting cfgMapping nested params when not string
+
+- Fixed defineCellShapes when sec['hObj'] is not a h.Section()
+
+
+# Version 1.0.0.2
+
+**New features**
+
+- Added function to get list of batch grid search parameter combinations 
+
+- Save output of mpi_bulletin batches to .run and .err files
+
+- Fixed bug in loading exotic stim param values
+
 - Fixed bug in loading where sim was required to have rank attribute
 
 - Added quotes in batch.py to avoid path white spaces issue

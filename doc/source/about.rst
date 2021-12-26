@@ -198,11 +198,17 @@ Courses
 Future
 ^^^^^^^^^^^^
 
-- June 2020: Building and simulating brain circuit models on Google Cloud, Google Office, NYC (delayed)
+- June 2022: Building and simulating brain circuit models on Google Cloud, Google Office, NYC (delayed)
 
 
 Past
 ^^^^^^^^^
+- Dec 20201: Minicurso - Modelagem Computacional em NetPyNE usando Google Cloud Platform- Simpósio do PPGNCG (Brazilian course in portuguese)
+
+- July 2021: CNS’21 Building biophysically detailed neuronal models from molecules to networks with NEURON and NetPyNE. 
+
+- May 2021: Online 2-week Course: Multiscale modeling of brain circuits using NetPyNE.
+    
 - July 2020: `CNS*2020 <https://www.cnsorg.org/cns-2020>`_ Building mechanistic multiscale models: from molecules to networks using NEURON and NetPyNE, online conference
 
 - January 2020: VIII Latin American School on Computational Neuroscience (LASCON), Institute of Mathematics and Statistics, University of Sao Paulo, Brazil

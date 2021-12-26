@@ -386,8 +386,7 @@ def plotSpikeHist(
         kwargs.pop(kwargDel)
 
     # create Plotter object
-    histPlotter = HistPlotter(data=plotData, axis=axis, **axisArgs, **kwargs)
-    histPlotter.type = 'histogram'
+    histPlotter = HistPlotter(data=plotData, kind='histogram', axis=axis, **axisArgs, **kwargs)
 
     # add legend
     if legend:

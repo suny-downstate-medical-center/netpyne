@@ -21,7 +21,9 @@ from ..plotting import plotSpikeHist
 from .traces import plotTraces, plotEPSPAmp
 
 # Import LFP-related functions
-from .lfp import plotLFP
+from .lfp import prepareLFP
+from .lfp import preparePSD
+from .lfp import prepareSpectrogram
 
 # Import information theory-related functions
 from .info import nTE, granger

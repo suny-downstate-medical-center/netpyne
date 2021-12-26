@@ -206,7 +206,7 @@ def getSpktSpkid(cellGids=[], timeRange=None, sim=None):
 
 def plotData(sim=None):
     """
-    Wrapper to run plotting functions specified in somConfig
+    Wrapper to run plotting functions specified in simConfig
     
     Parameters
     ----------

@@ -31,7 +31,7 @@ from .utils import exception #, getInclude, getSpktSpkid
 from .tools import getInclude, getSpktSpkid
 from .tools import saveData as saveFigData
 from ..support.scalebar import add_scalebar
-from ..specs import Dict # ADDED TO CSD BRANCH TO TRY TO RESOLVE popAvgRates() Dict() ERROR! 
+from ..specs import Dict
 
 @exception
 def prepareSpikeData(
@@ -45,7 +45,8 @@ def prepareSpikeData(
     fileName=None, 
     fileDesc=None, 
     fileType=None, 
-    fileDir=None, 
+    fileDir=None,
+    calculatePhase=False,
     **kwargs):
     """
     Function to prepare data for creating spike-related plots

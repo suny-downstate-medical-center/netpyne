@@ -60,7 +60,8 @@ simConfig.saveLFPPops = ['I2', 'E4']
 simConfig.analysis['plotLFP'] = {'pop': 'I2', 'includeAxon': False, 'figSize': (6,10), 'timeRange': [100,3000], 'saveFig': True} 
 #simConfig.analysis['getCSD'] = {'spacing_um': 200, 'timeRange': [100,3000], 'vaknin': True}
 #simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'timeRange':[100,900], 'minFreq': 10, 'maxFreq':60, 'norm':1, 'plots': ['spectrogram'], 'showFig': True} 
-simConfig.analysis['plotCSD'] = True #{'timeRange':[100,200]}
+#simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'timeRange':[100,900], 'plots': ['spectrogram'], 'showFig': True} 
+#simConfig.analysis['plotCSD'] = True #{'timeRange':[100,200]}
 
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    

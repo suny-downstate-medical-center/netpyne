@@ -137,6 +137,16 @@ About NetPyNE
 Make use of NetPyNE
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+- Bryson A, Berkovic SF, Petrou S, Grayden DB. **State transitions through inhibitory interneurons in a cortical network model.** PLoS Comput Biol 17(10): e1009521. https://doi.org/10.1371/journal.pcbi.1009521, *2021*.
+
+- Pimentel1 JM, Moioli RC, de Araujo MFP, Ranieri CM, Romero RAF, Broz F and Vargas PA. **Neuro4PD: An Initial Neurorobotics Model of Parkinson’s Disease.** Front. Neurorobot. 15:640449. doi: 10.3389/fnbot.2021.640449 *2021*.
+
+- Volk, V.L., Hamilton, L.D., Hume, D.R. et al. Integration of neural architecture within a finite element framework for improved neuromusculoskeletal modeling. Scientific Reports 11, 22983 <https://doi.org/10.1038/s41598-021-02298-9>'_, *2021*. 
+
+- Ranieri CM, Moioli RC, Vargas P, Romero RAF, **A Neurorobotics Approach to Behaviour Selection based on Human Activity Recognition**, arXiv:2107.12540 [cs.RO] <https://arxiv.org/abs/2107.12536>'_, *2021*.
+
+- Ranieri CM, Pimentel JM, Romano MR, Elias LA, Romero RAF, Lones MA, Araujo MFP, Vargas PA, Moioli RC, **A Data-Driven Biophysical Computational Model of Parkinson’s Disease Based on Marmoset Monkeys**, IEEE Access, vol. 9, pp. 122548-122567, 2021, doi: <https://doi.org/10.1109/ACCESS.2021.3108682>'_, *2021*.
+
 - Metzner C, Mäki-Marttunen T, Karni G, McMahon-Cole H, Steuber V.  **The Effect of Alterations of Schizophrenia-Associated Genes on Gamma Band Oscillations.** `bioRxiv 2020.09.28.316737 <https://doi.org/10.1101/2020.09.28.316737>`_. *2020*
 
 - Gao P, Graham J,  Zhou W, Jang J, Angulo S, Dura-Bernal S, Hines ML, Lytton WW, and Antic S  **Local Glutamate-Mediated Dendritic Plateau Potentials Change the State of the Cortical Pyramidal Neuron.** *Journal of Neurophysiology (In Press). 2020*
@@ -173,6 +183,8 @@ Make use of NetPyNE
 Cite NetPyNE
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+- Spreizer S, Senk J, Rotter S, Diesmann M, Weyers, **NEST Desktop, an Educational Application for Neuroscience** eNeuro 11 November 2021, 8 (6) ENEURO.0274-21.2021; <http://doi.org/10.1523/ENEURO.0274-21.2021>'_ *2021*
+
 - Amsalem, O., Eyal, G., Rogozinski, N., Gevaert, M., Kumbhar, P., Schürmann, F. and Segev, I., **An efficient analytical reduction of detailed nonlinear neuron models.** `Nature Communications, 11(1), pp.1-13 <https://www.nature.com/articles/s41467-019-13932-6>`_. *2020*
 
 - Billeh, Y.N., Cai, B., Gratiy, S.L., Dai, K., Iyer, R., Gouwens, N.W., Abbasi-Asl, R., Jia, X., Siegle, J.H., Olsen, S.R. and Koch, C.,. **Systematic integration of structural and functional data into multi-scale models of mouse primary visual cortex.** `Neuron (In Press) NEURON-D-19-01027 <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3416643>`_. *2020*
@@ -188,7 +200,7 @@ Cite NetPyNE
 - Alber M, Buganza A, Cannon W, De S, Dura-Bernal S, Garikipati K, Karmiadakis G, Lytton W, Perdikaris P, Petzold L, Kuhl E. **Integrating Machine Learning and Multiscale Modeling: Perspectives, Challenges, and Opportunities in the Biological, Biomedical, and Behavioral Sciences.** `Nature Partner Journals (npj) Digital Medicine, 2, 115 <https://www.nature.com/articles/s41746-019-0193-y>`_. *2019*
 
 
-Here is an `updated list from Google Scholar <https://scholar.google.com/scholar?oi=bibs&hl=en&cites=17032431079400790910&as_sdt=5>`_.
+See here an `updated list from Google Scholar <https://scholar.google.com/scholar?oi=bibs&hl=en&cites=17032431079400790910&as_sdt=5>`_.
 
 
 

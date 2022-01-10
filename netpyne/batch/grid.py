@@ -74,9 +74,10 @@ def runJob(script, cfgSavePath, netParamsSavePath, processes):
     print('\nJob in rank id: ',pc.id())
     command = "nrniv %s simConfig=%s netParams=%s" % (script, cfgSavePath, netParamsSavePath)
     print(command+'\n')
-    proc = subprocess.run(command.split(' '), stdout=PIPE, stderr=PIPE, check=False)
-    processes.append(proc)
-
+    
+    stdout=open(jobName+'.run','w')
+    stderr=open(jobName+'.err','w')
+    proc = Popen(command.split(' '), stdout=stdout, stderr=stderr)
 
 # -------------------------------------------------------------------------------
 # Grid Search optimization

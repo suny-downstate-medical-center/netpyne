@@ -50,7 +50,7 @@ pc = h.ParallelContext() # use bulletin board master/slave
 # -------------------------------------------------------------------------------
 
 # func needs to be outside of class
-def runJob(script, cfgSavePath, netParamsSavePath, processes, jobName):
+def runJob(script, cfgSavePath, netParamsSavePath, processes): #, jobName):
     """
     Function for/to <short description of `netpyne.batch.grid.runJob`>
 
@@ -75,13 +75,13 @@ def runJob(script, cfgSavePath, netParamsSavePath, processes, jobName):
     command = "nrniv %s simConfig=%s netParams=%s" % (script, cfgSavePath, netParamsSavePath)
     print(command+'\n')
 
-    #proc = subprocess.run(command.split(' '), stdout=PIPE, stderr=PIPE, check=False)
-    #processes.append(proc)
-    
-    stdout=open(jobName+'.run','w')
-    stderr=open(jobName+'.err','w')
-    proc = Popen(command.split(' '), stdout=stdout, stderr=stderr)
+    proc = subprocess.run(command.split(' '), stdout=PIPE, stderr=PIPE, check=False)
     processes.append(proc)
+    
+    #stdout=open(jobName+'.run','w')
+    #stderr=open(jobName+'.err','w')
+    #proc = Popen(command.split(' '), stdout=stdout, stderr=stderr)
+    #processes.append(proc)
 # -------------------------------------------------------------------------------
 # Grid Search optimization
 # -------------------------------------------------------------------------------

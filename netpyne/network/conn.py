@@ -238,12 +238,10 @@ def _connStrToFunc(self, preCellsTags, postCellsTags, connParam):
                     # this code finds all 'normal's in the strFunc, but only replaces them if
                     # they are not 'lognormal's
                     index = 0
-                    locs = []
                     while index < len(strFunc):
                         index = strFunc.find('normal', index)
                         if index == -1:
                             break
-                        locs.append(index)
                         if index < 3:
                             strFunc = strFunc[:index] + 'rand.' + strFunc[index:]
                             index += 10

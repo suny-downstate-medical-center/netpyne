@@ -321,6 +321,8 @@ def compactConnFormat():
         del cell.conns
         cell.conns = newConns
 
+_previousIntervalSaveFile = None
+
 #------------------------------------------------------------------------------
 # Gathers data in master and saves it mid run
 #------------------------------------------------------------------------------
@@ -539,6 +541,12 @@ def intervalSave(simTime, gatherLFP=True):
 
         with open(name, 'wb') as fileObj:
             pickle.dump(dataSave, fileObj, protocol=2)
+
+            # clean-up data saved on previous interval
+            previous = sim.save._previousIntervalSaveFile
+            if previous is not None and os.path.exists(previous):
+                os.remove(previous)
+            sim.save._previousIntervalSaveFile = name
 
         # clean to avoid mem leaks
         for node in gather:

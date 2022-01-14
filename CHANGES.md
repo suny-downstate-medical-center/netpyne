@@ -12,6 +12,8 @@
 
 - Fixed defineCellShapes when sec['hObj'] is not a h.Section()
 
+- Fixed bug when using lognormal in string functions
+
 
 # Version 1.0.0.2
 

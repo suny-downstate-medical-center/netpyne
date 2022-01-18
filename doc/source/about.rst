@@ -137,9 +137,11 @@ About NetPyNE
 Make use of NetPyNE
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- Bryson A, Berkovic SF, Petrou S, Grayden DB. **State transitions through inhibitory interneurons in a cortical network model.** PLoS Comput Biol 17(10): e1009521. https://doi.org/10.1371/journal.pcbi.1009521, *2021*.
+- Hasegan D, Deible M, Earl C, D’Onofrio D, Hazan H, Anwar H, Neymotin SA. **Multi-timescale biological learning algorithms train spiking neuronal network motor control** bioRxiv 2021.11.20.469405; doi: <https://doi.org/10.1101/2021.11.20.469405>'_, *2021*.
 
-- Pimentel1 JM, Moioli RC, de Araujo MFP, Ranieri CM, Romero RAF, Broz F and Vargas PA. **Neuro4PD: An Initial Neurorobotics Model of Parkinson’s Disease.** Front. Neurorobot. 15:640449. doi: 10.3389/fnbot.2021.640449 *2021*.
+- Bryson A, Berkovic SF, Petrou S, Grayden DB. **State transitions through inhibitory interneurons in a cortical network model.** PLoS Comput Biol 17(10): e1009521. <https://doi.org/10.1371/journal.pcbi.1009521>'_, *2021*.
+
+- Pimentel1 JM, Moioli RC, de Araujo MFP, Ranieri CM, Romero RAF, Broz F and Vargas PA. **Neuro4PD: An Initial Neurorobotics Model of Parkinson’s Disease.** Front. Neurorobot. 15:640449. doi: <10.3389/fnbot.2021.640449>'_, *2021*.
 
 - Volk, V.L., Hamilton, L.D., Hume, D.R. et al. Integration of neural architecture within a finite element framework for improved neuromusculoskeletal modeling. Scientific Reports 11, 22983 <https://doi.org/10.1038/s41598-021-02298-9>'_, *2021*. 
 

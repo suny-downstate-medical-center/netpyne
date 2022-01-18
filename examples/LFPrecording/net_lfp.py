@@ -52,7 +52,7 @@ simConfig.dt = 0.1                # Internal integration timestep to use
 simConfig.verbose = False            # Show detailed messages
 simConfig.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'net_lfp'   # Set file output name
-
+simConfig.savePickle = True
 simConfig.recordLFP = [[-15, y, 1.0*netParams.sizeZ] for y in range(int(netParams.sizeY/5.0), int(netParams.sizeY), int(netParams.sizeY/5.0))]
 simConfig.saveLFPPops = ['I2', 'E4']
 
@@ -63,5 +63,22 @@ simConfig.analysis['plotLFP'] = {'pop': 'I2', 'includeAxon': False, 'figSize': (
 simConfig.analysis['plotCSD'] = True #{'timeRange':[100,200]}
 
 # Create network and run simulation
-sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
+#sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
 #sim.analysis.plotCSD(timeRange=[100,3000])
+sim.initialize(
+    simConfig = simConfig, 	
+    netParams = netParams)  				# create network object and set cfg and net params
+sim.net.createPops()               			# instantiate network populations
+sim.net.createCells()              			# instantiate network cells based on defined populations
+sim.net.connectCells()            			# create connections between cells based on params
+sim.net.addStims() 							# add network stimulation
+sim.setupRecording()              			# setup variables to record for each cell (spikes, V traces, etc)
+sim.runSim()                      			# run parallel Neuron simulation  
+#sim.gatherData()                  			# gather spiking data and cell info from each node
+
+# distributed saving (to avoid errors with large output data)
+sim.saveDataInNodes()
+sim.gatherDataFromFiles()
+sim.saveData()  
+
+sim.analysis.plotData()         			# plot spike raster etc

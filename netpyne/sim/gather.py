@@ -377,7 +377,8 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
 
                         if ifile==0 and gatherLFP and 'LFP' in data['simData']:                            
                             allSimData['LFP'] = np.zeros((data['simData']['LFP'].shape))
-
+                            if 'LFPPops' in data['simData']:
+                                allSimData['LFPPops'] = {p: np.zeros((data['simData']['LFP'].shape)) for p in data['simData']['LFPPops'].keys()}
 
                         for key, value in data['simData'].items():
                             
@@ -398,9 +399,10 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
 
                             elif gatherLFP and key == 'LFP':
                                 allSimData['LFP'] += np.array(value)
-                                print(allSimData['LFP'].shape)
-                                #if not hasattr(sim.net, 'recXElectrode'):
-                                #    sim.net.recXElectrode = data['net']['recXElectrode']
+
+                            elif gatherLFP and key == 'LFPPops':
+                                for p in value:
+                                    allSimData['LFPPops'][p] += np.array(value[p])
 
                             elif key not in singleNodeVecs:
                                 allSimData[key].update(value)

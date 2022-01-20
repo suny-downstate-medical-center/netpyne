@@ -137,73 +137,73 @@ About NetPyNE
 Make use of NetPyNE
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- Hasegan D, Deible M, Earl C, D’Onofrio D, Hazan H, Anwar H, Neymotin SA. **Multi-timescale biological learning algorithms train spiking neuronal network motor control** bioRxiv 2021.11.20.469405; doi: <https://doi.org/10.1101/2021.11.20.469405>'_, *2021*.
+- Hasegan D, Deible M, Earl C, D’Onofrio D, Hazan H, Anwar H, Neymotin SA. **Multi-timescale biological learning algorithms train spiking neuronal network motor control** bioRxiv 2021.11.20.469405, *2021*. doi: `<https://doi.org/10.1101/2021.11.20.469405>`_.
 
-- Bryson A, Berkovic SF, Petrou S, Grayden DB. **State transitions through inhibitory interneurons in a cortical network model.** PLoS Comput Biol 17(10): e1009521. <https://doi.org/10.1371/journal.pcbi.1009521>'_, *2021*.
+- Bryson A, Berkovic SF, Petrou S, Grayden DB. **State transitions through inhibitory interneurons in a cortical network model.** PLoS Comput Biol 17(10): e1009521, *2021*. doi: `<https://doi.org/10.1371/journal.pcbi.1009521>`_.
 
-- Pimentel1 JM, Moioli RC, de Araujo MFP, Ranieri CM, Romero RAF, Broz F and Vargas PA. **Neuro4PD: An Initial Neurorobotics Model of Parkinson’s Disease.** Front. Neurorobot. 15:640449. doi: <10.3389/fnbot.2021.640449>'_, *2021*.
+- Pimentel1 JM, Moioli RC, de Araujo MFP, Ranieri CM, Romero RAF, Broz F and Vargas PA. **Neuro4PD: An Initial Neurorobotics Model of Parkinson’s Disease.** Front. Neurorobot. 15:640449, *2021*. doi: `<10.3389/fnbot.2021.640449>`_.
 
-- Volk, V.L., Hamilton, L.D., Hume, D.R. et al. Integration of neural architecture within a finite element framework for improved neuromusculoskeletal modeling. Scientific Reports 11, 22983 <https://doi.org/10.1038/s41598-021-02298-9>'_, *2021*. 
+- Volk, V.L., Hamilton, L.D., Hume, D.R. et al. **Integration of neural architecture within a finite element framework for improved neuromusculoskeletal modeling.** Scientific Reports 11, 22983, *2021*. doi: `<https://doi.org/10.1038/s41598-021-02298-9>`_. 
 
-- Ranieri CM, Moioli RC, Vargas P, Romero RAF, **A Neurorobotics Approach to Behaviour Selection based on Human Activity Recognition**, arXiv:2107.12540 [cs.RO] <https://arxiv.org/abs/2107.12536>'_, *2021*.
+- Ranieri CM, Moioli RC, Vargas P, Romero RAF, **A Neurorobotics Approach to Behaviour Selection based on Human Activity Recognition**, arXiv:2107.12540 [cs.RO], *2021*. `<https://arxiv.org/abs/2107.12536>`_.
 
-- Ranieri CM, Pimentel JM, Romano MR, Elias LA, Romero RAF, Lones MA, Araujo MFP, Vargas PA, Moioli RC, **A Data-Driven Biophysical Computational Model of Parkinson’s Disease Based on Marmoset Monkeys**, IEEE Access, vol. 9, pp. 122548-122567, 2021, doi: <https://doi.org/10.1109/ACCESS.2021.3108682>'_, *2021*.
+- Ranieri CM, Pimentel JM, Romano MR, Elias LA, Romero RAF, Lones MA, Araujo MFP, Vargas PA, Moioli RC, **A Data-Driven Biophysical Computational Model of Parkinson’s Disease Based on Marmoset Monkeys**, IEEE Access, vol. 9, pp. 122548-122567, *2021*. doi: `<https://doi.org/10.1109/ACCESS.2021.3108682>`_.
 
-- Metzner C, Mäki-Marttunen T, Karni G, McMahon-Cole H, Steuber V.  **The Effect of Alterations of Schizophrenia-Associated Genes on Gamma Band Oscillations.** `bioRxiv 2020.09.28.316737 <https://doi.org/10.1101/2020.09.28.316737>`_. *2020*
+- Metzner C, Mäki-Marttunen T, Karni G, McMahon-Cole H, Steuber V.  **The Effect of Alterations of Schizophrenia-Associated Genes on Gamma Band Oscillations**, bioRxiv 2020.09.28.316737, *2020*. doi: `<https://doi.org/10.1101/2020.09.28.316737>`_. 
 
-- Gao P, Graham J,  Zhou W, Jang J, Angulo S, Dura-Bernal S, Hines ML, Lytton WW, and Antic S  **Local Glutamate-Mediated Dendritic Plateau Potentials Change the State of the Cortical Pyramidal Neuron.** *Journal of Neurophysiology (In Press). 2020*
+- Gao P, Graham J,  Zhou W, Jang J, Angulo S, Dura-Bernal S, Hines ML, Lytton WW, and Antic S  **Local Glutamate-Mediated Dendritic Plateau Potentials Change the State of the Cortical Pyramidal Neuron**, Journal of Neurophysiology (In Press). *2020*.
 
-- Sivagnanam S, Gorman W, Doherty D, Neymotin S, Hovhannisyan H, Fang S, Lytton W, Dura-Bernal S **Simulating large-scale models of brain neuronal circuits using Google Cloud Platform**. *Practice and Experience in Advanced Research Computing, PEARC2020. 2020*
+- Sivagnanam S, Gorman W, Doherty D, Neymotin S, Hovhannisyan H, Fang S, Lytton W, Dura-Bernal S **Simulating large-scale models of brain neuronal circuits using Google Cloud Platform**, Practice and Experience in Advanced Research Computing, PEARC2020, *2020*.
 
-- Neymotin, S.A., Daniels, D.S., Caldwell, B., McDougal, R.A., Carnevale, N.T., Jas, M., Moore, C.I., Hines, M.L., Hamalainen, M. and Jones, S.R., **Human Neocortical Neurosolver (HNN), a new software tool for interpreting the cellular and network origin of human MEG/EEG data.** `eLife, 9, p.e51214. <https://elifesciences.org/articles/51214>`_ *2020*
+- Neymotin, S.A., Daniels, D.S., Caldwell, B., McDougal, R.A., Carnevale, N.T., Jas, M., Moore, C.I., Hines, M.L., Hamalainen, M. and Jones, S.R., **Human Neocortical Neurosolver (HNN), a new software tool for interpreting the cellular and network origin of human MEG/EEG data**, eLife, 9, p.e51214, *2020*. doi: `<https://elifesciences.org/articles/51214>`_ .
 
-- Lytton WW, Sherif MA, Dura-Bernal S, Neymotin S. **Multiscale modeling of a “mental” disease.** *Virtual Physiological Human Conference, VHP2020. 2020*
+- Lytton WW, Sherif MA, Dura-Bernal S, Neymotin S. **Multiscale modeling of a “mental” disease**, Virtual Physiological Human Conference, VHP2020, *2020*.
 
-- Dura-Bernal S, Neymotin SA, Suter BA, Shepherd GMG, Lytton WW. **Multiscale dynamics and information flow in a data-driven model of the primary motor cortex microcircuit.** `bioRxiv 201707 <https://www.biorxiv.org/content/10.1101/201707v3>`_ , *2019.*
+- Dura-Bernal S, Neymotin SA, Suter BA, Shepherd GMG, Lytton WW. **Multiscale dynamics and information flow in a data-driven model of the primary motor cortex microcircuit**, bioRxiv 201707, *2019*. doi: `<https://www.biorxiv.org/content/10.1101/201707v3>`_.
 
-- Gerkin, R.C., Birgiolas, J., Jarvis, R.J., Omar, C. and Crook, S.M.. **NeuronUnit: A package for data-driven validation of neuron models using SciUnit.** *bioRxiv, p.665331. 2019*
+- Gerkin, R.C., Birgiolas, J., Jarvis, R.J., Omar, C. and Crook, S.M.. **NeuronUnit: A package for data-driven validation of neuron models using SciUnit**, bioRxiv, p.665331, *2019*.
 
-- Gleeson P, Cantarelli M, Quintana A, Earnsah M, Piasini E, Birgiolas J, Cannon RC, Cayco- Gajic A, Crook S, Davison AP, Dura-Bernal S, et al. **Open Source Brain: a collaborative resource for visualizing, analyzing, simulating and developing standardized models of neurons and circuits.** `Neuron, 10.1016/j.neuron.2019.05.019 <https://www.cell.com/neuron/fulltext/S0896-6273(19)30444-1>`_. *2019*
+- Gleeson P, Cantarelli M, Quintana A, Earnsah M, Piasini E, Birgiolas J, Cannon RC, Cayco- Gajic A, Crook S, Davison AP, Dura-Bernal S, et al. **Open Source Brain: a collaborative resource for visualizing, analyzing, simulating and developing standardized models of neurons and circuits**, Neuron, 10.1016/j.neuron.2019.05.019, *2019*. doi: `<https://www.cell.com/neuron/fulltext/S0896-6273(19)30444-1>`_.
 
-- Dai K, Hernando J, Billeh JN, Gratiy SL, Planas J, Davison AP, Dura-Bernal S, Gleeson P, Devresse A, Gevaert M, King JG, Van Geit WAH, Povolotsky AV, Muller E, Courcol J-D, Arkhipov A . **The SONATA Data Format for Efficient Description of Large-Scale Network Models.** `bioRxiv, 625491 [Preprint] <https://www.biorxiv.org/content/10.1101/625491v2>`_. *Under review in PLoS Computational Biology. 2019*
+- Dai K, Hernando J, Billeh JN, Gratiy SL, Planas J, Davison AP, Dura-Bernal S, Gleeson P, Devresse A, Gevaert M, King JG, Van Geit WAH, Povolotsky AV, Muller E, Courcol J-D, Arkhipov A . **The SONATA Data Format for Efficient Description of Large-Scale Network Models**, bioRxiv, 625491 [Preprint] doi: `<https://www.biorxiv.org/content/10.1101/625491v2>`_. *Under review in PLoS Computational Biology. 2019*
 
-- Dura-Bernal S, Neymotin SA, Suter BA, Shepherd GMG, Lytton WW **Long-range inputs and H-current regulate different modes of operation in a multiscale model of mouse M1 microcircuits.** `bioRxiv 201707 <https://www.biorxiv.org/content/10.1101/201707v3>`_ , *2018.*
+- Dura-Bernal S, Neymotin SA, Suter BA, Shepherd GMG, Lytton WW **Long-range inputs and H-current regulate different modes of operation in a multiscale model of mouse M1 microcircuits**, bioRxiv 201707, *2018*. doi: `<https://www.biorxiv.org/content/10.1101/201707v3>`_.
 
 
 Conference abstracts:
 
-- Dura-Bernal S, Griffith EY, Barczak A, O’Connell MN, McGinnis T, Anwar H, Lytton WW, Lakatos p, Neymotin SA. **Biophysically-detailed multiscale model of macaque auditory thalamocortical circuits reproduces physiological oscillations.** *Computational Neurosience (CNS), 2020.* 
+- Dura-Bernal S, Griffith EY, Barczak A, O’Connell MN, McGinnis T, Anwar H, Lytton WW, Lakatos p, Neymotin SA. **Biophysically-detailed multiscale model of macaque auditory thalamocortical circuits reproduces physiological oscillations.** *Computational Neurosience (CNS), 2020*. 
 
-- Griffith EY, Dura-Bernal S, Barczak A, O’connell MN, Mcginnis TM, Lytton WW, Lakatos P, Neymotin SA. **Data-driven model of auditory thalamocortical system rhythms.** *Society for Neuroscience (SfN). *2019*.
+- Griffith EY, Dura-Bernal S, Barczak A, O’connell MN, Mcginnis TM, Lytton WW, Lakatos P, Neymotin SA. **Data-driven model of auditory thalamocortical system rhythms.** *Society for Neuroscience (SfN), 2019*.
 
 - Doherty DW, Dura-Bernal S, Lytton WW. **Computer models of mouse area M1 show avalanches for full model and subcircuits defined by layer or cell type.** *Society for Neuroscience (SfN), 2019*.
 
-- Dura-Bernal S, Menzies RS, McLauchlan C, van Albada SJ, Kedziora DJ, Neymotin SA, Lytton WW, Kerr CC. **Effect of network size on computational capacity.** *Computational Neuroscience (CNS), 2016.*
+- Dura-Bernal S, Menzies RS, McLauchlan C, van Albada SJ, Kedziora DJ, Neymotin SA, Lytton WW, Kerr CC. **Effect of network size on computational capacity.** *Computational Neuroscience (CNS), 2016*.
 
-- Romaro C, Araujo Najman F, Dura-Bernal S, Roque AC. **Implementation of the Potjans-Diesmann cortical microcircuit model in NetPyNE/NEURON with rescaling option.** *Computational Neuroscience (CNS), 2018.*
+- Romaro C, Araujo Najman F, Dura-Bernal S, Roque AC. **Implementation of the Potjans-Diesmann cortical microcircuit model in NetPyNE/NEURON with rescaling option.** *Computational Neuroscience (CNS), 2018*.
 
-- Rodriguez F. **Dentate gyrus network model.** *Computational Neuroscience (CNS), 2018.*
+- Rodriguez F. **Dentate gyrus network model.** *Computational Neuroscience (CNS), 2018*.
 
 
 
 Cite NetPyNE
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- Spreizer S, Senk J, Rotter S, Diesmann M, Weyers, **NEST Desktop, an Educational Application for Neuroscience** eNeuro 11 November 2021, 8 (6) ENEURO.0274-21.2021; <http://doi.org/10.1523/ENEURO.0274-21.2021>'_ *2021*
+- Spreizer S, Senk J, Rotter S, Diesmann M, Weyers, **NEST Desktop, an Educational Application for Neuroscience** eNeuro 11 November 2021, 8 (6) ENEURO.0274-21.2021, *2021*. doi: `<http://doi.org/10.1523/ENEURO.0274-21.2021>`_.
 
-- Amsalem, O., Eyal, G., Rogozinski, N., Gevaert, M., Kumbhar, P., Schürmann, F. and Segev, I., **An efficient analytical reduction of detailed nonlinear neuron models.** `Nature Communications, 11(1), pp.1-13 <https://www.nature.com/articles/s41467-019-13932-6>`_. *2020*
+- Amsalem, O., Eyal, G., Rogozinski, N., Gevaert, M., Kumbhar, P., Schürmann, F. and Segev, I., **An efficient analytical reduction of detailed nonlinear neuron models.** Nature Communications, 11(1), pp.1-13, *2020*. doi: `<https://www.nature.com/articles/s41467-019-13932-6>`_.
 
-- Billeh, Y.N., Cai, B., Gratiy, S.L., Dai, K., Iyer, R., Gouwens, N.W., Abbasi-Asl, R., Jia, X., Siegle, J.H., Olsen, S.R. and Koch, C.,. **Systematic integration of structural and functional data into multi-scale models of mouse primary visual cortex.** `Neuron (In Press) NEURON-D-19-01027 <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3416643>`_. *2020*
+- Billeh, Y.N., Cai, B., Gratiy, S.L., Dai, K., Iyer, R., Gouwens, N.W., Abbasi-Asl, R., Jia, X., Siegle, J.H., Olsen, S.R. and Koch, C.,. **Systematic integration of structural and functional data into multi-scale models of mouse primary visual cortex.** Neuron (In Press) NEURON-D-19-01027, *2020*. doi: `<https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3416643>`_.
 
-- Tran, H., Ranta, R., Le Cam, S. and Louis-Dorr, V., **Fast simulation of extracellular action potential signatures based on a morphological filtering approximation.** *Journal of Computational Neuroscience**, pp.1-20. *2020*
+- Tran, H., Ranta, R., Le Cam, S. and Louis-Dorr, V., **Fast simulation of extracellular action potential signatures based on a morphological filtering approximation.** Journal of Computational Neuroscience, pp.1-20, *2020*. doi: `<https://doi.org/10.1007/s10827-019-00735-3>`_.
 
-- Gast, R., Rose, D., Salomon, C., Möller, H.E., Weiskopf, N. and Knösche, T.R.. **PyRates—A Python framework for rate-based neural simulations.** *PLoS ONE, 14(12). 2019*
+- Gast, R., Rose, D., Salomon, C., Möller, H.E., Weiskopf, N. and Knösche, T.R.. **PyRates—A Python framework for rate-based neural simulations.** PLoS ONE, 14(12), *2019*. doi: `<https://doi.org/10.1371/journal.pone.0225900>`_.
 
-- Tejada J, Roque AC, **Conductance-based models and the fragmentation problem: A case study based on hippocampal CA1 pyramidal cell models and epilepsy** `Epilepsy & Behavior, 106841 <http://www.sciencedirect.com/science/article/pii/S1525505019310819>`_ 2019.
+- Tejada J, Roque AC, **Conductance-based models and the fragmentation problem: A case study based on hippocampal CA1 pyramidal cell models and epilepsy** `Epilepsy & Behavior, 106841, *2019*. doi: `<https://doi.org/10.1016/j.yebeh.2019.106841>`_.
 
-- Kuhl E, Alber M, Tepole BA, Cannon WR, De S, Dura-Bernal S, Garikipati K, Karniadakis GE, Lytton WW, Perdikaris P, Petzold L. **Multiscale modeling meets machine learning: What can we learn?** `arXiv:1911.11958 <https://arxiv.org/abs/1911.11958>`_. [Preprint]. *Under review in Computer Methods in Applied Mechanics and Engineering. 2019*
+- Kuhl E, Alber M, Tepole BA, Cannon WR, De S, Dura-Bernal S, Garikipati K, Karniadakis GE, Lytton WW, Perdikaris P, Petzold L. **Multiscale modeling meets machine learning: What can we learn?** arXiv:1911.11958. doi: `<https://doi.org/10.1007/s11831-020-09405-5>`_. [Preprint]. *Under review in Computer Methods in Applied Mechanics and Engineering. 2019*
 
-- Alber M, Buganza A, Cannon W, De S, Dura-Bernal S, Garikipati K, Karmiadakis G, Lytton W, Perdikaris P, Petzold L, Kuhl E. **Integrating Machine Learning and Multiscale Modeling: Perspectives, Challenges, and Opportunities in the Biological, Biomedical, and Behavioral Sciences.** `Nature Partner Journals (npj) Digital Medicine, 2, 115 <https://www.nature.com/articles/s41746-019-0193-y>`_. *2019*
+- Alber M, Buganza A, Cannon W, De S, Dura-Bernal S, Garikipati K, Karmiadakis G, Lytton W, Perdikaris P, Petzold L, Kuhl E. **Integrating Machine Learning and Multiscale Modeling: Perspectives, Challenges, and Opportunities in the Biological, Biomedical, and Behavioral Sciences.** Nature Partner Journals (npj) Digital Medicine, 2, 115, *2019*. doi: `<https://www.nature.com/articles/s41746-019-0193-y>`_.
 
 
 See here an `updated list from Google Scholar <https://scholar.google.com/scholar?oi=bibs&hl=en&cites=17032431079400790910&as_sdt=5>`_.

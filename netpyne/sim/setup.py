@@ -18,7 +18,7 @@ import numpy as np
 from neuron import h # Import NEURON
 from .. import specs
 from ..specs import Dict, ODict
-from . import utils
+from . import utils, validator
 try:
     from datetime import datetime
 except:
@@ -51,7 +51,6 @@ def initialize(netParams = None, simConfig = None, net = None):
 
     """
 
-
     from .. import sim
 
     if netParams is None: netParams = {} # If not specified, initialize as empty dict
@@ -59,6 +58,11 @@ def initialize(netParams = None, simConfig = None, net = None):
     if hasattr(simConfig, 'popParams') or hasattr(netParams, 'duration'):
         print('Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)')
         sys.exit()
+
+    if validator.validate_netparams(netParams):
+        print('Good to go')
+    else:
+        print('Bad parameters')
 
     # for testing validation
     # if simConfig.exitOnError:

@@ -153,7 +153,27 @@ def plotLFPTimeSeries(
 
     # add the scalebar
     if scalebar:
-        axisArgs['scalebar'] = True
+        #axisArgs['scalebar'] = True
+        args = {}
+        args['hidey'] = True
+        args['matchy'] = True 
+        args['hidex'] = False 
+        args['matchx'] = False 
+        args['sizex'] = 0 
+        args['sizey'] = 1.0 
+        args['ymax'] = 0.25 * offset 
+        #args['labely'] = 'test'
+        args['unitsy'] = '$\mu$V' 
+        args['scaley'] = 1000.0
+        args['loc'] = 3
+        args['pad'] = 0.5 
+        args['borderpad'] = 0.5 
+        args['sep'] = 3 
+        args['prop'] = None 
+        args['barcolor'] = "black" 
+        args['barwidth'] = 2
+
+        axisArgs['scalebar'] = args
 
     # Generate the figure
     LFPTimeSeriesPlot = linesPlotter.plot(**axisArgs, **kwargs)

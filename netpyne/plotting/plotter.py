@@ -141,7 +141,6 @@ class MultiFigure:
 
 
     def finishFig(self, **kwargs):
-        print('finishFig kwargs:', kwargs)
 
         if 'figSize' in kwargs:
             self.fig.set_size_inches(kwargs['figSize'])
@@ -262,9 +261,9 @@ class GeneralPlotter:
         self.axis.legend(handles, labels, **legendKwargs)
 
 
-    def addScalebar(self, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=None, unitsy=None, scalex=1.0, scaley=1.0, **kwargs):
+    def addScalebar(self, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=None, unitsy=None, scalex=1.0, scaley=1.0, xmax=None, ymax=None, space=None, **kwargs):
 
-        add_scalebar(self.axis, matchx=matchx, matchy=matchy, hidex=hidex, hidey=hidey, unitsx=unitsx, unitsy=unitsy, scalex=scalex, scaley=scaley, **kwargs)
+        add_scalebar(self.axis, matchx=matchx, matchy=matchy, hidex=hidex, hidey=hidey, unitsx=unitsx, unitsy=unitsy, scalex=scalex, scaley=scaley, xmax=xmax, ymax=ymax, space=space, **kwargs)
        
 
     def finishAxis(self, **kwargs):
@@ -549,7 +548,7 @@ class AnchoredScaleBar(AnchoredOffsetbox):
         AnchoredOffsetbox.__init__(self, loc, pad=pad, borderpad=borderpad, child=bars, prop=prop, frameon=False, **kwargs)
 
 
-def add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=None, unitsy=None, scalex=1.0, scaley=1.0, xmax=None, ymax=None, **kwargs):
+def add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=None, unitsy=None, scalex=1.0, scaley=1.0, xmax=None, ymax=None, space=None, **kwargs):
     """
     Add scalebars to axes
 
@@ -607,6 +606,14 @@ def add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=
     if 'labely' not in kwargs or kwargs['labely'] is None:
         kwargs['labely'] = '%.3g %s'%(kwargs['sizey'] * scaley, unitsy)
         
+    # add space for scalebar
+    if space is not None:
+        ylim0, ylim1 = axis.get_ylim()
+        ylim = (ylim0 - space, ylim1)
+        if ylim0 > ylim1: # if y axis is inverted
+            ylim = (ylim0 + space, ylim1)
+        axis.set_ylim(ylim)
+
     scalebar = AnchoredScaleBar(axis, **kwargs)
     axis.add_artist(scalebar)
 

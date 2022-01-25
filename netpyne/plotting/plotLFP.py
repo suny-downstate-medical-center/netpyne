@@ -133,7 +133,7 @@ def plotLFPTimeSeries(
     legendKwargs = {}
     legendKwargs['title'] = 'Electrodes'
     #legendKwargs['bbox_to_anchor'] = (1.025, 1)
-    #legendKwargs['loc'] = 2
+    legendKwargs['loc'] = 'upper right'
     #legendKwargs['borderaxespad'] = 0.0
     #legendKwargs['handlelength'] = 0.5
     legendKwargs['fontsize'] = 'small'
@@ -172,6 +172,7 @@ def plotLFPTimeSeries(
         args['prop'] = None 
         args['barcolor'] = "black" 
         args['barwidth'] = 2
+        args['space'] = 0.25 * offset
 
         axisArgs['scalebar'] = args
 

@@ -27,6 +27,7 @@ def plotLFPTimeSeries(
     colorList=None,
     orderInverse=True,
     legend=True,
+    overlay=True,
     scalebar=True,
     **kwargs):
     
@@ -175,6 +176,15 @@ def plotLFPTimeSeries(
         args['space'] = 0.25 * offset
 
         axisArgs['scalebar'] = args
+
+    if overlay:
+        for index, name in enumerate(names):
+            linesPlotter.axis.text(t[0]-0.07*(t[-1]-t[0]), (index*offset), name, color=plotColors[index], ha='center', va='center', fontsize='large', fontweight='bold')
+        linesPlotter.axis.spines['top'].set_visible(False)
+        linesPlotter.axis.spines['right'].set_visible(False)
+        linesPlotter.axis.spines['left'].set_visible(False)
+        if len(names) > 1:
+            linesPlotter.fig.text(0.05, 0.4, 'LFP electrode', color='k', ha='left', va='bottom', fontsize='large', rotation=90)
 
     # Generate the figure
     LFPTimeSeriesPlot = linesPlotter.plot(**axisArgs, **kwargs)

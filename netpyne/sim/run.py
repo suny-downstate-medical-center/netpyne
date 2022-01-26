@@ -214,8 +214,15 @@ def runSimWithIntervalFunc(interval, func, timeRange=None, funcArgs=None):
     if type(funcArgs) == dict:
         kwargs.update(funcArgs)
 
-    if sim.rank == 0: 
-        print('\nRunning with interval func  ...')
+    if sim.cfg.coreneuron == True:
+        if sim.rank == 0: print('\nRunning with interval func using CoreNEURON for %s ms...'%sim.cfg.duration)
+        from neuron import coreneuron
+        coreneuron.enable = True
+        if sim.cfg.gpu == True:
+            coreneuron.gpu = True
+            coreneuron.cell_permute = 2
+    else:
+        if sim.rank == 0: print('\nRunning with interval func using NEURON for %s ms...'%sim.cfg.duration)
     
     if int(startTime) != 0:
         sim.pc.psolve(startTime)

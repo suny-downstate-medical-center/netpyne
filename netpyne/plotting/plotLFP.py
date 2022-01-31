@@ -1,6 +1,7 @@
 # Generate plots of LFP (local field potentials) and related analyses
 
 import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 from ..analysis.utils import exception #, loadData
 from ..analysis.tools import loadData
 from .plotter import LinesPlotter
@@ -395,9 +396,6 @@ def plotSpectrogram(
     detrend=False, 
     transformMethod='morlet',
     returnPlotter=False,
-    #colorList=None,
-    #orderInverse=True,
-    #legend=True,
     **kwargs):
     
     # If there is no input data, get the data from the NetPyNE sim object
@@ -447,6 +445,7 @@ def plotSpectrogram(
 
     if 'morlet' in SpectData['electrodes']['spectrogram'].keys():
         spect = SpectData['electrodes']['spectrogram']['morlet']
+        extent = SpectData['electrodes']['spectrogram']['extent']
 
     elif 'fft' in SpectData['electrodes']['spectrogram'].keys():
         spect = SpectData['electrodes']['spectrogram']['fft']
@@ -457,9 +456,14 @@ def plotSpectrogram(
 
         # Create a dictionary with the inputs for an image plot
         imageData = {}
-        imageData['X'] = np.array(spect)[:,:,index]
+        imageData['X'] = np.array(spect)[index,:,:]
         imageData['vmin'] = vmin
         imageData['vmax'] = vmax
+        imageData['extent'] = extent[index]
+        imageData['origin'] = 'lower'
+        imageData['interpolation'] = 'None'
+        imageData['aspect'] = 'auto'
+        imageData['cmap'] = plt.get_cmap('viridis')
 
         # Create a dictionary to hold axis inputs
         axisArgs = {}

@@ -53,6 +53,8 @@ def prepareLFP(
     if not sim:
         from .. import sim
 
+    print('new sim shape:', np.shape(sim.allSimData['LFP']))
+
     # create the output data dictionary
     data = {}
     data['electrodes'] = {}
@@ -133,6 +135,8 @@ def prepareLFP(
         data['electrodes']['locs'].append(loc)
         data['electrodes']['lfps'].append(lfpSignal)
 
+    #data['electrodes']['lfps'] = np.transpose(np.array(data['electrodes']['lfps']))
+
     return data
 
 
@@ -189,7 +193,7 @@ def preparePSD(
     allNames = []
 
     # Used in both transforms
-    Fs = int(1000.0/sim.cfg.recordStep)
+    fs = int(1000.0/sim.cfg.recordStep)
     
     for index, lfp in enumerate(lfps):
 
@@ -197,7 +201,7 @@ def preparePSD(
         if transformMethod == 'morlet':
             
             from ..support.morlet import MorletSpec, index2ms
-            morletSpec = MorletSpec(lfp, Fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq)
+            morletSpec = MorletSpec(lfp, fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq)
             freqs = morletSpec.f
             spec = morletSpec.TFR
             signal = np.mean(spec, 1)
@@ -206,7 +210,7 @@ def preparePSD(
         # FFT transform method
         elif transformMethod == 'fft':
             
-            power = mlab.psd(lfp, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning, noverlap=noverlap, pad_to=None, sides='default', scale_by_freq=None)
+            power = mlab.psd(lfp, Fs=fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning, noverlap=noverlap, pad_to=None, sides='default', scale_by_freq=None)
 
             if smooth:
                 signal = _smooth1d(10 * np.log10(power[0]), smooth)
@@ -299,9 +303,15 @@ def prepareSpectrogram(
     if not sim:
         from .. import sim
 
+    if not timeRange:
+        timeRange = [0, sim.cfg.duration]
+
     lfps = np.array(data['electrodes']['lfps'])
+    #lfps = np.transpose(np.array(data['electrodes']['lfps']))
     names = data['electrodes']['names']
     electrodes = data['electrodes']
+
+    print('new lfps shape:', np.shape(lfps))
 
     spect_data = {}
     spect_data['vmin'] = None
@@ -312,16 +322,20 @@ def prepareSpectrogram(
         
         from ..support.morlet import MorletSpec, index2ms
 
+        fs = int(1000.0/sim.cfg.recordStep)
+
         spec = []
         spect_data['morlet'] = []
+        spect_data['extent'] = []
 
         freqList = None
         if logy:
             freqList = np.logspace(np.log10(minFreq), np.log10(maxFreq), int((maxFreq-minFreq)/stepFreq))
 
         for i, elec in enumerate(names):
-            lfp_elec = lfps[:, i]
-            fs = int(1000.0 / sim.cfg.recordStep)
+            #lfp_elec = lfps[:, i]
+            lfp_elec = lfps[i, :]
+            print('new lfp shape:', np.shape(lfp_elec))
             t_spec = np.linspace(0, index2ms(len(lfp_elec), fs), len(lfp_elec))
             spec.append(MorletSpec(lfp_elec, fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq, lfreq=freqList))
 
@@ -336,12 +350,24 @@ def prepareSpectrogram(
         spect_data['vmax'] = vmax
 
         for i, elec in enumerate(names):
+            T = timeRange
+            F = spec[i].f
             if normSpec:
                 S = spec[i].TFR / vmax
             else:
                 S = spec[i].TFR
             spect_data['morlet'].append(S)
-            
+            spect_data['extent'].append([np.amin(T), np.amax(T), np.amin(F), np.amax(F)])
+
+            if i==0:
+                print('\n'*5)
+                print('new S:', S)
+                print('\n'*5)
+
+            print('new shape:', np.shape(S))
+
+            #from IPython import embed; embed()
+
             #plt.imshow(S, extent=(np.amin(T), np.amax(T), np.amin(F), np.amax(F)), origin='lower', interpolation='None', aspect='auto', vmin=vc[0], vmax=vc[1], cmap=plt.get_cmap('viridis'))
             
     # FFT transform method

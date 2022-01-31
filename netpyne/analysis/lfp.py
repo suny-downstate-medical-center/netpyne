@@ -307,11 +307,8 @@ def prepareSpectrogram(
         timeRange = [0, sim.cfg.duration]
 
     lfps = np.array(data['electrodes']['lfps'])
-    #lfps = np.transpose(np.array(data['electrodes']['lfps']))
     names = data['electrodes']['names']
     electrodes = data['electrodes']
-
-    print('new lfps shape:', np.shape(lfps))
 
     spect_data = {}
     spect_data['vmin'] = None
@@ -333,9 +330,7 @@ def prepareSpectrogram(
             freqList = np.logspace(np.log10(minFreq), np.log10(maxFreq), int((maxFreq-minFreq)/stepFreq))
 
         for i, elec in enumerate(names):
-            #lfp_elec = lfps[:, i]
             lfp_elec = lfps[i, :]
-            print('new lfp shape:', np.shape(lfp_elec))
             t_spec = np.linspace(0, index2ms(len(lfp_elec), fs), len(lfp_elec))
             spec.append(MorletSpec(lfp_elec, fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq, lfreq=freqList))
 
@@ -358,17 +353,6 @@ def prepareSpectrogram(
                 S = spec[i].TFR
             spect_data['morlet'].append(S)
             spect_data['extent'].append([np.amin(T), np.amax(T), np.amin(F), np.amax(F)])
-
-            if i==0:
-                print('\n'*5)
-                print('new S:', S)
-                print('\n'*5)
-
-            print('new shape:', np.shape(S))
-
-            #from IPython import embed; embed()
-
-            #plt.imshow(S, extent=(np.amin(T), np.amax(T), np.amin(F), np.amax(F)), origin='lower', interpolation='None', aspect='auto', vmin=vc[0], vmax=vc[1], cmap=plt.get_cmap('viridis'))
             
     # FFT transform method
     elif transformMethod == 'fft':

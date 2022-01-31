@@ -357,6 +357,7 @@ def plotRaster(
 
     # create Plotter object
     rasterPlotter = ScatterPlotter(data=scatterData, kind='raster', axis=axis, **axisArgs, **kwargs)
+    multiFig = rasterPlotter.multifig
 
     # add legend
     if legend:
@@ -404,6 +405,9 @@ def plotRaster(
 
     # Generate the figure
     rasterPlot = rasterPlotter.plot(**axisArgs, **kwargs)
+
+    if axis is None:
+        multiFig.finishFig(**kwargs)
 
     # Default is to return the figure, but you can also return the plotter
     if returnPlotter:

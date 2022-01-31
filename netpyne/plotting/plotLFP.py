@@ -124,6 +124,7 @@ def plotLFPTimeSeries(
 
     # create Plotter object
     linesPlotter = LinesPlotter(data=linesData, kind='LFPTimeSeries', axis=axis, **axisArgs, **kwargs)
+    multiFig = linesPlotter.multifig
 
     # remove the y-axis
     # linesPlotter.axis.get_yaxis().set_ticks([])
@@ -189,6 +190,9 @@ def plotLFPTimeSeries(
 
     # Generate the figure
     LFPTimeSeriesPlot = linesPlotter.plot(**axisArgs, **kwargs)
+
+    if axis is None:
+        multiFig.finishFig(**kwargs)
 
     # Default is to return the figure, but you can also return the plotter
     if returnPlotter:
@@ -331,6 +335,7 @@ def plotPSD(
 
     # create Plotter object
     linesPlotter = LinesPlotter(data=linesData, kind='PSD', axis=axis, **axisArgs, **kwargs)
+    multiFig = linesPlotter.multifig
 
     # remove the y-axis
     linesPlotter.axis.get_yaxis().set_ticks([])
@@ -360,6 +365,9 @@ def plotPSD(
 
     # Generate the figure
     PSDPlot = linesPlotter.plot(**axisArgs, **kwargs)
+
+    if axis is None:
+        multiFig.finishFig(**kwargs)
 
     # Default is to return the figure, but you can also return the plotter
     if returnPlotter:
@@ -483,7 +491,8 @@ def plotSpectrogram(
 
         multiFig.plotters.append(imagePlotter)
 
-    multiFig.finishFig(**kwargs)
-
+    if axis is None:
+        multiFig.finishFig(**kwargs)
+    
     return multiFig.fig
 

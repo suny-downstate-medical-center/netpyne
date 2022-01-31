@@ -387,6 +387,7 @@ def plotSpikeHist(
 
     # create Plotter object
     histPlotter = HistPlotter(data=plotData, kind='histogram', axis=axis, **axisArgs, **kwargs)
+    multiFig = histPlotter.multifig
 
     # add legend
     if legend:
@@ -469,6 +470,9 @@ def plotSpikeHist(
 
     # Generate the figure
     histPlot = histPlotter.plot(**axisArgs, **kwargs)
+
+    if axis is None:
+        multiFig.finishFig(**kwargs)
 
     # Default is to return the figure, but you can also return the plotter
     if returnPlotter:

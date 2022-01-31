@@ -133,7 +133,8 @@ class MultiFigure:
 
     def showFig(self, **kwargs):
         plt.close(self.fig)
-        dummy = plt.figure(figsize=self.rcParams['figure.figsize'])
+        figsize = self.fig.get_size_inches()
+        dummy = plt.figure(figsize=figsize)
         new_manager = dummy.canvas.manager
         new_manager.canvas.figure = self.fig
         self.fig.set_canvas(new_manager.canvas)

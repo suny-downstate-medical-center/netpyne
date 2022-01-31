@@ -53,8 +53,6 @@ def prepareLFP(
     if not sim:
         from .. import sim
 
-    print('new sim shape:', np.shape(sim.allSimData['LFP']))
-
     # create the output data dictionary
     data = {}
     data['electrodes'] = {}

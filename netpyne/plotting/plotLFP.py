@@ -481,6 +481,9 @@ def plotSpectrogram(
         imagePlotter = ImagePlotter(data=imageData, kind='spect', multifig=multiFig, axis=plotaxis, **axisArgs, **kwargs)
         spectPlot = imagePlotter.plot(**axisArgs, **kwargs)
 
-    
-    return spectPlot
+        multiFig.plotters.append(imagePlotter)
+
+    multiFig.finishFig(**kwargs)
+
+    return multiFig.fig
 

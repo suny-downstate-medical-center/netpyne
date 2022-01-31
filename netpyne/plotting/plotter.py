@@ -142,9 +142,6 @@ class MultiFigure:
 
     def finishFig(self, **kwargs):
 
-        if 'figSize' in kwargs:
-            self.fig.set_size_inches(kwargs['figSize'])
-
         if 'saveFig' in kwargs:
             if kwargs['saveFig']:
                 self.saveFig(**kwargs)
@@ -154,6 +151,8 @@ class MultiFigure:
                 self.showFig(**kwargs)
         else:
             plt.close(self.fig)
+
+        plt.tight_layout()
 
         # Reset the matplotlib rcParams to their original settings
         mpl.style.use(self.orig_rcParams)
@@ -293,16 +292,6 @@ class GeneralPlotter:
                 self.addScalebar()
             elif type(kwargs['scalebar']) == dict:
                 self.addScalebar(**kwargs['scalebar'])
-
-        if 'saveFig' in kwargs:
-            if kwargs['saveFig']:
-                self.multifig.saveFig(**kwargs)
-        
-        if 'showFig' in kwargs:
-            if kwargs['showFig']:   
-                self.multifig.showFig(**kwargs)
-        else:
-            plt.close(self.fig)
 
         # Reset the matplotlib rcParams to their original settings
         mpl.style.use(self.multifig.orig_rcParams)

@@ -471,7 +471,14 @@ def plotSpectrogram(
         axisArgs['xlabel'] = 'Time (ms)'
         axisArgs['ylabel'] = 'Frequency (Hz)'
 
-        imagePlotter = ImagePlotter(data=imageData, kind='spect', multifig=multiFig, axis=multiFig.ax[index], **axisArgs, **kwargs)
+        plotaxis = axis
+        if axis is None:
+            if len(names) > 1:
+                plotaxis = multiFig.ax[index]
+            else:
+                plotaxis = multiFig.ax
+        
+        imagePlotter = ImagePlotter(data=imageData, kind='spect', multifig=multiFig, axis=plotaxis, **axisArgs, **kwargs)
         spectPlot = imagePlotter.plot(**axisArgs, **kwargs)
 
     

@@ -723,17 +723,82 @@ Reaction-Diffusion (RxD) parameters
 
 The ``rxdParams`` ordered dictionary can be used to define the different RxD components:
 
-	* **regions** - dictionary with RxD Regions (also used to define 'extracellular' regions)
+* **regions** - Dictionary with RxD Regions (may be also used to define 'extracellular' regions)
 
-	* **species** - dictionary with RxD Species
+	This component is mandatory and is required to define where the reactions are taken place. Each item of the ``rxdParams['regions']`` is a dictionary in which the key specifies the name of the region (to be used in further definitions) and the value is a dictionary containing the following fields:
 
-	* **states** - dictionary with RxD States
+	* ``cells``: List of cells relevant for the definition of intracellular domains where species, reactions and others need to be specified. This list can include cell gids (e.g. ``[1]`` or ``[0, 3]``), population labels (e.g. ``['S']`` or ``['all']``), or a mix (e.g. ``[['S',[0,2]]]`` or ``[('S',[0,2])]``).
 
-	* **reactions** - dictionary with RxD Reactions
+	* ``secs``: List of sections to be included for the cells listed above (to be valid, they should be in the "secs" of the cells). For example, ['soma','Bdend'].
 
-	* **multicompartmentReactions** - dictionary with RxD MultiCompartmentReactions
+	Both ``cells`` and ``secs`` are used to specify the NEURON Sections where (intracellular) RxD is a relevant component.
 
-	* **rates** - dictionary with RxD Rates
+	* ``nrn_region``: An option that defines whether the region corresponds to the intracellular/cytosolic domain of the cell (for which the transmembrane voltage is being computed) or not. Available options are: `'i'` (just inside the plasma membrane), `'o'` (just outside the plasma), or `None` (none of the above, for example, an intracellular organelle).
+
+	* ``geometry``: This entry defines the geometry associated to the region. According to different options in NEURON, it can be either a string (`'inside'` or `'membrane'`) or a dictionary with two entries: the `'class'` indicating the kind of geometry (`'DistributedBoundary'`, `'FractionalVolume'`, `'FixedCrossSection'`, `'FixedPerimeter'`, `'ScalableBorder'`, `'Shell'`) and the `'args'` with the particular arguments neccessary to define it, structured in a dictionary. For example,
+
+		.. code-block:: python
+
+			netParams.rxdParams['regions'] = {'membrane_in':{'cells': 'all', 'secs': 'all', 'geometry': {'class': 'ScalableBorder', 'args': {'scale': 1, 'on_cell_surface': False}}}}.
+
+	* ``dimension``: This is an integer (1 or 3), indicating whether the simulation is 1D or 3D.
+
+	* ``dx``: A float (or int) specifying the discretization.
+
+	* ``extracellular``: Boolean option (``False`` if not specified) indicating whether the region represents the extracellular space or not. 
+
+
+	Example,
+
+		.. code-block:: python
+
+			netParams.rxdParams['regions'] = {'cyt':{'cells': ['all'], 'secs': ['soma','Bdend'], 'nrn_region': 'i'}}
+
+
+* **species** - This component is also mandatory and it corresponds to a dictionary with all the definitions to specify relevant species and the domains where they are involved. The key is the name/label of the species and the value is a dictionary with the following entries:
+
+	* ``regions``: A list of the regions (listed in ``rxdParams['regions']``) where the species are present. If it is a single region, it may be specified without listing. For example, ``'cyt'`` or ``['cyt','er']``.
+
+	* ``d``: Diffusion coefficient of the species.
+
+	* ``charge``: Signed charge, if any, of the species.
+
+	* ``initial``: Initial state of the concentration field, in mM. It may be a single value for all of its definition domain or a string-based function, where the variable is a node (in RxD's framework) property. For example, ``'1 if (0.4 < node.x < 0.6) else 0'``.
+
+	* ``ecs_boundary_conditions``: If an Extracellular region is defined, boundary conditions should be given. Options are ``None`` (default) for zero flux condition (Neumann type) or a value indicating the concentration at the boundary (Dirichlet).
+
+	* ``atolscale``: A number (default = 1) indicating the scale factor for absolute tolerance in variable step integrations for this particular species' concentration.
+
+	* ``name``: A string labeling this species. Important when RxD will be sharing species with hoc models, as this name has to be the same as the NEURON range variable.
+
+
+	Example,
+
+		.. code-block:: python
+
+			netParams.rxdParams['species'] = {'ca':{'regions': 'cyt', 'd': 0.25, 'charge': 2, 'name': 'ca', 'initial': '1 if node.sec in ['Bdend'] else 0'}}
+
+
+* **reactions** - Dictionary specifying the reactions, who and where, under analysis. The key labels the reaction and the value is a dictionary with the following entries:
+
+	* ``reactant``: A string declaring the left-hand side of the chemical reaction, with the species and the proper stechiometry. For example, ``ca + 2 * cl``, where 'ca' and 'cl' are defined in the 'species' entry and are available in the region where the reaction takes place (see next).
+
+	* ``product``: The same, for the right-hand side of the chemical reaction. For example, ``cacl2``, where 'cacl2' is a species properly defined.
+
+	* ``rate_f``: Rate for the forward reaction, for the scheme defined above. It can be either a numerical value or a string-based function (depending on species, etcetera; for example to implement a Hill equation).
+
+	* ``rate_b``: Same as above, for the backward reaction. This entry is optional.
+
+	* ``regions``: This entry is used to constrain the reaction to proceed only in a list of regions. If it is a single region, it may be specified without listing. If not provided, the reaction proceeds in all (plausible) regions.
+
+	* ``custom_dynamics``: This boolean entry specifies whether law of mass-action for elementary reactions does apply or not. If 'True', dynamics of each species' concentration satisfy a mass-action scheme.
+
+	Example,
+
+		.. code-block:: python
+
+			netParams.rxdParams['reactions'] = {'phosphorylation':{'reactant': 'E', 'product': 'EP', 'rate_f': 'kmax1 * E/ (k1 + E)', 'rate_b': 'kmax2 * EP/ (k2 + EP)','custom_dynamics': True}}
+
 
 The parameters of each dictionary follow the same structure as described in the RxD package: https://www.neuron.yale.edu/neuron/static/docs/rxd/index.html 
 

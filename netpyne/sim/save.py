@@ -94,6 +94,8 @@ def saveData(include=None, filename=None, saveLFP=True):
     """
 
     from .. import sim
+    if sim.cfg.validateDataSaveOptions() is False:
+        return []
 
     if sim.rank == 0 and not getattr(sim.net, 'allCells', None) and not getattr(sim, 'allSimData', None): needGather = True
     else: needGather = False
@@ -158,7 +160,7 @@ def saveData(include=None, filename=None, saveLFP=True):
                 #    dataSave['net']['recXElectrode'] = sim.net.recXElectrode
             dataSave['simData'] = sim.allSimData
 
-
+        savedFiles = []
         if dataSave:
             if sim.cfg.timestampFilename:
                 timestamp = time()
@@ -183,52 +185,64 @@ def saveData(include=None, filename=None, saveLFP=True):
             # Save to pickle file
             if sim.cfg.savePickle:
                 import pickle
+                path = filePath + '.pkl'
                 dataSave = utils.replaceDictODict(dataSave)
-                print(('Saving output as %s ... ' % (filePath + '.pkl')))
-                with open(filePath+'.pkl', 'wb') as fileObj:
+                print(f'Saving output as {path} ... ')
+                with open(path, 'wb') as fileObj:
                     pickle.dump(dataSave, fileObj)
+                savedFiles.append(path)
                 print('Finished saving!')
 
             # Save to dpk file
             if sim.cfg.saveDpk:
                 import gzip
-                print(('Saving output as %s ... ' % (filePath+'.dpk')))
+                path = filePath + '.dpk'
+                print(f'Saving output as {path} ... ')
                 #fn=filePath #.split('.')
-                gzip.open(filePath, 'wb').write(pk.dumps(dataSave)) # write compressed string
+                gzip.open(path, 'wb').write(pk.dumps(dataSave)) # write compressed string
+                savedFiles.append(path)
                 print('Finished saving!')
 
             # Save to json file
             if sim.cfg.saveJson:
+                path = filePath + '.json'
                 # Make it work for Python 2+3 and with Unicode
-                print(('Saving output as %s ... ' % (filePath+'.json ')))
+                print(f'Saving output as {path} ... ')
                 #dataSave = utils.replaceDictODict(dataSave)  # not required since json saves as dict
-                sim.saveJSON(filePath+'.json', dataSave, checkFileTimeout=5)
+                sim.saveJSON(path, dataSave, checkFileTimeout=5)
+                savedFiles.append(path)
                 print('Finished saving!')
 
             # Save to mat file
             if sim.cfg.saveMat:
                 from scipy.io import savemat
-                print(('Saving output as %s ... ' % (filePath+'.mat')))
-                savemat(filePath+'.mat', utils.tupleToList(utils.replaceNoneObj(dataSave)))  # replace None and {} with [] so can save in .mat format
+                path = filePath + '.mat'
+                print(f'Saving output as {path} ... ')
+                savemat(path, utils.tupleToList(utils.replaceNoneObj(dataSave)))  # replace None and {} with [] so can save in .mat format
+                savedFiles.append(path)
                 print('Finished saving!')
 
             # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)
-            if sim.cfg.saveHDF5:
+            if sim.cfg.saveHDF5: 
                 dataSaveUTF8 = utils._dict2utf8(utils.replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
                 import hdf5storage
-                print(('Saving output as %s... ' % (filePath+'.hdf5')))
-                hdf5storage.writes(dataSaveUTF8, filename=filePath+'.hdf5')
+                path = filePath + '.hdf5'
+                print(f'Saving output as {path} ... ')
+                hdf5storage.writes(dataSaveUTF8, filename=path)
+                savedFiles.append(path)
                 print('Finished saving!')
 
             # Save to CSV file (currently only saves spikes)
             if sim.cfg.saveCSV:
                 if 'simData' in dataSave:
                     import csv
-                    print(('Saving output as %s ... ' % (filePath+'.csv')))
-                    writer = csv.writer(open(filePath+'.csv', 'wb'))
+                    path = filePath + '.csv'
+                    print(f'Saving output as {path} ... ')
+                    writer = csv.writer(open(path, 'wb'))
                     for dic in dataSave['simData']:
                         for values in dic:
                             writer.writerow(values)
+                    savedFiles.append(path)
                     print('Finished saving!')
 
             # Save to Dat file(s)
@@ -243,6 +257,7 @@ def saveData(include=None, filename=None, saveLFP=True):
                         for i in range(len(trace)):
                             dat_file.write('%s\t%s\n'%((i*sim.cfg.dt/1000),trace[i]/1000))
                         dat_file.close()
+                        savedFiles.append(dat_file_name)
 
                 print('Finished saving!')
 
@@ -260,12 +275,10 @@ def saveData(include=None, filename=None, saveLFP=True):
                 del dataSave[key]
             del dataSave
 
-            # return full path
-            import os
-            return os.getcwd() + '/' + filePath
-
         else:
             print('Nothing to save')
+        
+        return savedFiles
 
 
 #------------------------------------------------------------------------------

@@ -145,12 +145,12 @@ def timing(mode, processName):
                 if sim.rank == 0:
                     if mode == 'start':
                         sim.timingData[processName] = time()
-                    elif mode == 'stop':
+                    elif mode == 'stop' and processName in sim.timingData:
                         sim.timingData[processName] = time() - sim.timingData[processName]
             else:
                 if mode == 'start':
                     sim.timingData[processName] = time()
-                elif mode == 'stop':
+                elif mode == 'stop' and processName in sim.timingData:
                     sim.timingData[processName] = time() - sim.timingData[processName]                
 
 

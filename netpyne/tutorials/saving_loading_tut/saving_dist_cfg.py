@@ -5,7 +5,6 @@ cfg = specs.SimConfig()
 # Saving parameters
 cfg.simLabel = 'saving_dist'
 cfg.saveFolder = cfg.simLabel + '_data'
-#cfg.savePickle = True
 cfg.saveDataInclude = ['simData', 'simConfig', 'netParams', 'net']
 
 # Simulation parameters

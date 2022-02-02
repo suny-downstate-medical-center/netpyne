@@ -295,7 +295,7 @@ def gatherData(gatherLFP=True):
 #------------------------------------------------------------------------------
 # Gather data from files
 #------------------------------------------------------------------------------
-def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None):
+def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None, saveMerged=False):
     """
     Function to gather data from multiple files (from distributed or interval saving)
 
@@ -355,6 +355,7 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
                 fileList = sorted([f for f in os.listdir(nodeDataDir) if (f.startswith(simLabel + '_node') and f.endswith('.json'))])
                 fileType = 'json'
 
+            mergedFiles = []
             for ifile,file in enumerate(fileList):
                 
                 print('  Merging data file: %s' % (file))
@@ -415,6 +416,8 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
                             for popLabel, popCellGids in nodePopsCellGids.items():
                                 allPopsCellGids[popLabel].extend(popCellGids)
 
+                        mergedFiles.append(file)
+
                 elif fileType == 'json':
                     print('JSON loading not implemented yet.')
                     return False
@@ -437,6 +440,16 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
     else:
         sim.timing('stop', 'gatherTime')
         if sim.cfg.timing: print(('  Done; gather time = %0.2f s.' % sim.timingData['gatherTime']))
+
+        if saveMerged:
+            print('\nSaving merged data into single file ...')
+            saved = sim.saveData()
+
+            if len(saved) > 0:
+                # if single file saved successfully, clean up node data
+                for file in mergedFiles:
+                    path = os.path.join(nodeDataDir, file)
+                    os.remove(path)
 
         print('\nAnalyzing...')
 

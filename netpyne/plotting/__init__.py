@@ -20,6 +20,8 @@ from .plotTraces import plotTraces
 from .plotLFP import plotLFPTimeSeries
 from .plotLFP import plotPSD
 from .plotLFP import plotSpectrogram
+from .plotLFP import plotLFPLocations
+from .plotShape import plotShape
 
 
 

@@ -8,7 +8,8 @@ from .tools import getInclude, plotData, saveData, loadData
 from .utils import exception, _showFigure, _saveFigData, getCellsInclude, getCellsIncludeTags, _roundFigures, _smooth1d, syncMeasure, invertDictMapping, checkAvailablePlots
 
 # Import connectivity-related functions
-from .network import plotConn, _plotConnCalculateFromSim, _plotConnCalculateFromFile, plot2Dnet, plotShape, calculateDisynaptic, plot2Dfiring
+from .network import plotConn, _plotConnCalculateFromSim, _plotConnCalculateFromFile, plot2Dnet, calculateDisynaptic, plot2Dfiring
+from ..plotting import plotShape
 
 # Import spike-related functions
 from .spikes import prepareSpikeData, prepareRaster, prepareSpikeHist, popAvgRates

@@ -377,10 +377,6 @@ def plotPSD(
 
 
 
-
-
-
-
 #@exception
 def plotSpectrogram(
     SpectData=None,
@@ -449,7 +445,8 @@ def plotSpectrogram(
     else:
         rcParams = None
 
-    multiFig = MultiFigure(kind='spect', subplots=len(names), rcParams=rcParams, **kwargs)
+    if axis is None:
+        multiFig = MultiFigure(kind='spect', subplots=len(names), rcParams=rcParams, **kwargs)
 
     if 'morlet' in SpectData['electrodes']['spectrogram'].keys():
         spect = SpectData['electrodes']['spectrogram']['morlet']
@@ -493,6 +490,61 @@ def plotSpectrogram(
 
     if axis is None:
         multiFig.finishFig(**kwargs)
+        return multiFig.fig
+    else:
+        return plt.gcf()
+
+
+
+
+
+#@exception
+def plotLFPLocations(
+    sim=None,
+    axis=None, 
+    electrodes=['all'],
+    includeAxon=True,
+    returnPlotter=False,
+    **kwargs):
+
+    print('Plotting LFP electrode locations...')
+
+    if 'sim' not in kwargs:
+        from .. import sim
+    else:
+        sim = kwargs['sim']
+
+    if 'rcParams' in kwargs:
+        rcParams = kwargs['rcParams']
+    else:
+        rcParams = None
+
+    # electrode selection
+    if 'all' in electrodes:
+        electrodes.remove('all')
+        electrodes.extend(list(range(int(sim.net.recXElectrode.nsites))))
+
+    cvals = [] # used to store total transfer resistance
+
+    for cell in sim.net.compartCells:
+        trSegs = list(np.sum(sim.net.recXElectrode.getTransferResistance(cell.gid)*1e3, axis=0)) # convert from Mohm to kilohm
+        if not includeAxon:
+            i = 0
+            for secName, sec in cell.secs.items():
+                nseg = sec['hObj'].nseg #.geom.nseg
+                if 'axon' in secName:
+                    for j in range(i,i+nseg): del trSegs[j]
+                i+=nseg
+        cvals.extend(trSegs)
+
+    includePost = [c.gid for c in sim.net.compartCells]
     
-    return multiFig.fig
+    fig = sim.plotting.plotShape(includePost=includePost, showElectrodes=electrodes, cvals=cvals, includeAxon=includeAxon)[0]
+
+    return fig
+
+
+
+
+
 

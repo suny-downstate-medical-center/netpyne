@@ -135,7 +135,15 @@ class MultiFigure:
             self.fig.show()
 
 
+    def addSuptitle(self, **kwargs):
+        self.fig.suptitle(**kwargs)
+
+
     def finishFig(self, **kwargs):
+
+        if 'suptitle' in kwargs:
+            if kwargs['suptitle']:
+                self.addSuptitle(**kwargs['suptitle'])
 
         if 'tightLayout' not in kwargs:
             plt.tight_layout()
@@ -264,11 +272,8 @@ class GeneralPlotter:
 
 
     def addColorbar(self, **kwargs):
-
         plt.colorbar(mappable=self.axis.get_images()[0], ax=self.axis, **kwargs)
 
-        
-       
 
     def finishAxis(self, **kwargs):
 

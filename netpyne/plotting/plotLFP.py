@@ -499,8 +499,10 @@ def plotSpectrogram(
 
         multiFig.plotters.append(imagePlotter)
 
+    suptitle = {'t':'LFP Spectrogram'}
+
     if axis is None:
-        multiFig.finishFig(**kwargs)
+        multiFig.finishFig(suptitle=suptitle, **kwargs)
         return multiFig.fig
     else:
         return plt.gcf()

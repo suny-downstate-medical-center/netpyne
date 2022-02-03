@@ -24,7 +24,7 @@ colorList = [[0.42, 0.67, 0.84], [0.90, 0.76, 0.00], [0.42, 0.83, 0.59], [0.90, 
 class MultiFigure:
     """A class which defines a figure object"""
 
-    def __init__(self, kind, sim=None, subplots=None, rcParams=None, **kwargs):
+    def __init__(self, kind, sim=None, subplots=None, rcParams=None, autosize=0.35, **kwargs):
 
         if not sim:
             from .. import sim
@@ -64,6 +64,13 @@ class MultiFigure:
             dpi = kwargs['dpi']
         else:
             dpi = self.rcParams['figure.dpi']
+        
+        if autosize:
+            maxplots = np.max([nrows, ncols])
+            figSize0 = figSize[0] + (maxplots-1)*(figSize[0]*autosize)
+            figSize1 = figSize[1] + (maxplots-1)*(figSize[1]*autosize)
+            figSize = [figSize0, figSize1]
+
         self.fig, self.ax = plt.subplots(nrows, ncols, figsize=figSize, dpi=dpi)
 
         self.plotters = []

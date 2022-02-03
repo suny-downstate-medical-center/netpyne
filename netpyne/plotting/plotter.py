@@ -137,6 +137,11 @@ class MultiFigure:
 
     def finishFig(self, **kwargs):
 
+        if 'tightLayout' not in kwargs:
+            plt.tight_layout()
+        elif kwargs['tightLayout']:
+            plt.tight_layout()
+
         if 'saveFig' in kwargs:
             if kwargs['saveFig']:
                 self.saveFig(**kwargs)

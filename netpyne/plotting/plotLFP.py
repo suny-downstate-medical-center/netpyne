@@ -467,6 +467,26 @@ def plotSpectrogram(
         axisArgs['xlabel'] = 'Time (ms)'
         axisArgs['ylabel'] = 'Frequency (Hz)'
 
+        # Create a dictionary to hold colorbar settings
+        colorbarArgs = {}
+        #colorbarArgs['mappable']     = None
+        #colorbarArgs['cax']          = None
+        #colorbarArgs['ax']           = None
+        #colorbarArgs['use_gridspec'] = None
+        #colorbarArgs['location']     = None
+        #colorbarArgs['orientation']  = None
+        #colorbarArgs['fraction']     = None
+        #colorbarArgs['shrink']       = None
+        #colorbarArgs['aspect']       = None
+        #colorbarArgs['pad']          = None
+        #colorbarArgs['anchor']       = None
+        #colorbarArgs['panchor']      = None
+        colorbarArgs['label']        = 'Power'
+
+        axisArgs['colorbar'] = colorbarArgs
+
+
+
         plotaxis = axis
         if axis is None:
             if len(names) > 1:

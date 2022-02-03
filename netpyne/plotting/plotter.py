@@ -152,8 +152,6 @@ class MultiFigure:
         else:
             plt.close(self.fig)
 
-        plt.tight_layout()
-
         # Reset the matplotlib rcParams to their original settings
         mpl.style.use(self.orig_rcParams)
 
@@ -263,6 +261,13 @@ class GeneralPlotter:
     def addScalebar(self, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=None, unitsy=None, scalex=1.0, scaley=1.0, xmax=None, ymax=None, space=None, **kwargs):
 
         add_scalebar(self.axis, matchx=matchx, matchy=matchy, hidex=hidex, hidey=hidey, unitsx=unitsx, unitsy=unitsy, scalex=scalex, scaley=scaley, xmax=xmax, ymax=ymax, space=space, **kwargs)
+
+
+    def addColorbar(self, **kwargs):
+
+        plt.colorbar(mappable=self.axis.get_images()[0], ax=self.axis, **kwargs)
+
+        
        
 
     def finishAxis(self, **kwargs):
@@ -292,6 +297,12 @@ class GeneralPlotter:
                 self.addScalebar()
             elif type(kwargs['scalebar']) == dict:
                 self.addScalebar(**kwargs['scalebar'])
+
+        if 'colorbar' in kwargs:
+            if kwargs['colorbar'] is True:
+                self.addColorbar()
+            elif type(kwargs['colorbar']) == dict:
+                self.addColorbar(**kwargs['colorbar'])
 
         # Reset the matplotlib rcParams to their original settings
         mpl.style.use(self.multifig.orig_rcParams)

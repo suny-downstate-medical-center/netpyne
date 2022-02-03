@@ -11,9 +11,6 @@ import pickle, json
 import os
 from matplotlib.offsetbox import AnchoredOffsetbox
 
-
-plt.ion()
-
 try:
     basestring
 except NameError:
@@ -132,13 +129,10 @@ class MultiFigure:
 
 
     def showFig(self, **kwargs):
-        # plt.close(self.fig)
-        # figsize = self.fig.get_size_inches()
-        # dummy = plt.figure(figsize=figsize)
-        # new_manager = dummy.canvas.manager
-        # new_manager.canvas.figure = self.fig
-        # self.fig.set_canvas(new_manager.canvas)
-        self.fig.show()
+        try:
+            self.fig.show(block=False)
+        except:
+            self.fig.show()
 
 
     def finishFig(self, **kwargs):

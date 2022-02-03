@@ -13,8 +13,6 @@ from ..plotting import plotShape
 
 # Import spike-related functions
 from .spikes import prepareSpikeData, prepareRaster, prepareSpikeHist, popAvgRates
-from ..plotting import plotRaster
-from ..plotting import plotSpikeHist
 
 # Import traces-related functions
 #from .traces import prepareTraces
@@ -40,3 +38,22 @@ except:
 
 # Import CSD-related functions
 from .csd import getCSD, plotCSD
+
+
+# Legacy code so that new plots produce same output as originals
+def plotLFP(**kwargs):
+    from ..plotting import plotLFPTimeSeries, plotPSD, plotSpectrogram, plotLFPLocations
+
+    plotLFPTimeSeries(**kwargs)
+    plotPSD(**kwargs)
+    plotSpectrogram(**kwargs)
+    plotLFPLocations(**kwargs)
+
+
+def plotSpikeHist(**kwargs):
+    pass
+
+def plotRaster(**kwargs):
+    pass
+
+

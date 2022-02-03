@@ -296,7 +296,7 @@ def plotPSD(
         axisArgs = {}
         axisArgs['title'] = 'LFP Power Spectral Density'
         axisArgs['xlabel'] = 'Frequency (Hz)'
-        axisArgs['ylabel'] = 'Power'
+        axisArgs['ylabel'] = 'Power (arbitrary units)'
 
     # Link colors to traces, make avg plot black, add separation to traces
     plotColors = []
@@ -344,20 +344,11 @@ def plotPSD(
     legendKwargs = {}
     legendKwargs['title'] = 'Electrodes'
     #legendKwargs['bbox_to_anchor'] = (1.025, 1)
-    #legendKwargs['loc'] = 2
+    legendKwargs['loc'] = 'upper right'
     #legendKwargs['borderaxespad'] = 0.0
     #legendKwargs['handlelength'] = 0.5
     legendKwargs['fontsize'] = 'small'
     legendKwargs['title_fontsize'] = 'small'
-
-
-    # If 'legendKwargs' is found in kwargs, use those values instead of the defaults
-    if 'legendKwargs' in kwargs:
-        legendKwargs_input = kwargs['legendKwargs']
-        kwargs.pop('legendKwargs')
-        for key, value in legendKwargs_input:
-            if key in legendKwargs:
-                legendKwargs[key] = value
     
     # add the legend
     if legend:

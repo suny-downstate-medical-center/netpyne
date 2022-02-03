@@ -30,10 +30,12 @@ from numbers import Number
 from math import ceil
 from ..analysis.utils import colorList, exception, _roundFigures, getCellsInclude, getCellsIncludeTags
 from ..analysis.utils import _saveFigData, _showFigure
+from .plotter import MultiFigure
 
 
 #@exception
 def plotShape(
+    axis=None,
     includePre=['all'], 
     includePost=['all'], 
     showSyns=False, 
@@ -50,14 +52,8 @@ def plotShape(
     ivprops=None, 
     includeAxon=True, 
     bkgColor=None, 
-    axis='auto', 
+    aspect='auto', 
     axisLabels=False, 
-    figSize=(10,8), 
-    fontSize=12, 
-    saveData=None, 
-    dpi=300, 
-    saveFig=None, 
-    showFig=True, 
     **kwargs):
     """
     Function for/to <short description of `netpyne.analysis.network.plotShape`>
@@ -76,6 +72,14 @@ def plotShape(
         sim.net.defineCellShapes()  # in case some cells had stylized morphologies without 3d pts
     except:
         pass
+
+    saveFig = False
+    if 'saveFig' in kwargs:
+        saveFig = kwargs['saveFig']
+
+    fontSize = None
+    if 'fontSize' in kwargs:
+        fontSize = kwargs['fontSize']
 
     if not iv: # plot using Python instead of interviews
         from mpl_toolkits.mplot3d import Axes3D
@@ -136,13 +140,24 @@ def plotShape(
         cbLabels = {'numSyns': 'Number of synapses per segment', 
                     'weightNorm': 'Weight scaling',
                     'voltage': 'Voltage (mV)'}
-        plt.rcParams.update({'font.size': fontSize})
-        fig=plt.figure(figsize=figSize)
-        shapeax = plt.subplot(111, projection='3d')
-        shapeax.elev=elev # 90
-        shapeax.azim=azim  # -90
-        shapeax.dist=dist*shapeax.dist
-        plt.axis(axis)
+        #plt.rcParams.update({'font.size': fontSize})
+
+        if axis is None:
+            multiFig = MultiFigure(kind='shape', subplots=None, **kwargs)
+            fig = multiFig.fig
+            multiFig.ax.remove()
+            shapeax = fig.add_subplot(111, projection='3d')
+            multiFig.ax = shapeax
+            #fig=plt.figure(figsize=figSize)
+            #shapeax = plt.subplot(111, projection='3d')
+        else:
+            shapeax = axis
+            fig = axis.figure
+
+        shapeax.elev = elev # 90
+        shapeax.azim = azim  # -90
+        shapeax.dist = dist*shapeax.dist
+        plt.axis(aspect)
         cmap = plt.cm.viridis #plt.cm.jet  #plt.cm.rainbow #plt.cm.jet #YlOrBr_r
         morph.shapeplot(h, shapeax, sections=secs, cvals=cvals, cmap=cmap, clim=clim)
 
@@ -186,6 +201,7 @@ def plotShape(
             sm._A = []  # fake up the array of the scalar mappable
             cb = plt.colorbar(sm, fraction=0.15, shrink=0.5, pad=0.05, aspect=20)
             if cvar: cb.set_label(cbLabels[cvar], rotation=90, fontsize=fontSize)
+            
             if saveFig == 'movie':
                 cb.ax.set_title('Time = ' + str(round(h.t, 1)), fontsize=fontSize)
 
@@ -226,19 +242,21 @@ def plotShape(
             shapeax.set_yticklabels([])
             shapeax.set_zticklabels([])
 
-        # save figure
-        if saveFig:
-            if isinstance(saveFig, basestring):
-                if saveFig == 'movie':
-                    filename = sim.cfg.filename + '_shape_movie_' + str(round(h.t, 1)) + '.png'
+        if axis is None:
+            multiFig.finishFig(**kwargs)
+        else:
+            if saveFig:
+                if isinstance(saveFig, basestring):
+                    if saveFig == 'movie':
+                        filename = sim.cfg.filename + '_shape_movie_' + str(round(h.t, 1)) + '.png'
+                    else:
+                        filename = saveFig
                 else:
-                    filename = saveFig
-            else:
-                filename = sim.cfg.filename+'_shape.png'
-            plt.savefig(filename, dpi=dpi)
+                    filename = sim.cfg.filename+'_shape.png'
+                plt.savefig(filename, dpi=dpi)
 
-        # show fig
-        if showFig: _showFigure()
+            # show fig
+            # if showFig: _showFigure()
 
     else:  # Plot using Interviews
         # colors: 0 white, 1 black, 2 red, 3 blue, 4 green, 5 orange, 6 brown, 7 violet, 8 yellow, 9 gray

@@ -193,7 +193,7 @@ def plotLFPTimeSeries(
     LFPTimeSeriesPlot = linesPlotter.plot(**axisArgs, **kwargs)
 
     if axis is None:
-        multiFig.finishFig(**kwargs)
+        multiFig.finishFig(tightLayout=False, **kwargs)
 
     # Default is to return the figure, but you can also return the plotter
     if returnPlotter:

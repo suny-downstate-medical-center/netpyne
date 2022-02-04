@@ -41,13 +41,70 @@ from .csd import getCSD, plotCSD
 
 
 # Legacy code so that new plots produce same output as originals
-def plotLFP(**kwargs):
-    from ..plotting import plotLFPTimeSeries, plotPSD, plotSpectrogram, plotLFPLocations
+def plotLFP(
+    timeRange=None, 
+    electrodes=['avg', 'all'], 
+    plots=['timeSeries', 'PSD', 'spectrogram', 'locations'], 
+    inputLFP=None, 
+    NFFT=256, 
+    noverlap=128, 
+    nperseg=256, 
+    minFreq=1, 
+    maxFreq=100, 
+    stepFreq=1, 
+    smooth=0, 
+    separation=1.0, 
+    includeAxon=True, 
+    logx=False, 
+    logy=False, 
+    normSignal=False, 
+    normPSD=False, 
+    normSpec=False, 
+    filtFreq=False, 
+    filtOrder=3, 
+    detrend=False, 
+    transformMethod='morlet', 
+    maxPlots=8, 
+    overlay=False, 
+    colors=None, 
+    figSize=(8, 8), 
+    fontSize=14, 
+    lineWidth=1.5, 
+    dpi=200, 
+    saveData=None, 
+    saveFig=None, 
+    showFig=True,):
 
-    plotLFPTimeSeries(**kwargs)
-    plotPSD(**kwargs)
-    plotSpectrogram(**kwargs)
-    plotLFPLocations(**kwargs)
+    from ..plotting import plotLFPTimeSeries, plotLFPPSD, plotLFPSpectrogram, plotLFPLocations
+
+    if 'timeSeries' in plots:
+        plotLFPTimeSeries(
+            timeRange=timeRange,
+            electrodes=electrodes,
+            separation=separation,
+            logy=logy,
+            normSignal=normSignal, 
+            filtFreq=filtFreq, 
+            filtOrder=filtOrder, 
+            detrend=detrend, 
+            colorList=colors,
+            figSize=figSize,
+            legend=False,
+            overlay=True,
+            dpi=dpi,
+            saveFig=saveFig,
+            showFig=showFig,
+            )
+
+    
+    if 'PSD' in plots:
+        plotLFPPSD()
+    
+    if 'spectrogram' in plots:
+        plotLFPSpectrogram()
+    
+    if 'locations' in plots:
+        plotLFPLocations()
 
 
 def plotSpikeHist(**kwargs):

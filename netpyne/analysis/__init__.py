@@ -98,13 +98,38 @@ def plotLFP(
 
     
     if 'PSD' in plots:
-        plotLFPPSD()
+        plotLFPPSD(
+            timeRange=timeRange,
+            electrodes=electrodes,
+            roundOffset=True,
+            separation=separation,
+            NFFT=NFFT,
+            noverlap=noverlap, 
+            nperseg=nperseg,
+            minFreq=minFreq, 
+            maxFreq=maxFreq, 
+            stepFreq=stepFreq, 
+            smooth=smooth,
+            logx=logx,
+            logy=logy, 
+            normSignal=normSignal,
+            normPSD=normPSD, 
+            filtFreq=filtFreq, 
+            filtOrder=filtOrder, 
+            detrend=detrend, 
+            transformMethod=transformMethod,
+            colorList=colors,
+            figSize=figSize,
+            dpi=dpi,
+            saveFig=saveFig,
+            showFig=showFig,
+            )
     
     if 'spectrogram' in plots:
-        plotLFPSpectrogram()
+        plotLFPSpectrogram(saveFig=saveFig)
     
     if 'locations' in plots:
-        plotLFPLocations()
+        plotLFPLocations(saveFig=saveFig)
 
 
 def plotSpikeHist(**kwargs):

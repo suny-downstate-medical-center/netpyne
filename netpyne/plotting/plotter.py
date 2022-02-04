@@ -33,7 +33,7 @@ class MultiFigure:
         self.kind = kind
 
         # Make a copy of the current matplotlib rcParams and update them
-        self.orig_rcParams = deepcopy(mpl.rcParams)
+        self.orig_rcParams = deepcopy(mpl.rcParamsDefault)
         if rcParams:
             for rcParam in rcParams:
                 if rcParam in mpl.rcParams:

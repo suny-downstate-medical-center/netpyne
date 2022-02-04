@@ -126,7 +126,29 @@ def plotLFP(
             )
     
     if 'spectrogram' in plots:
-        plotLFPSpectrogram(saveFig=saveFig)
+        plotLFPSpectrogram(
+            timeRange=timeRange,
+            electrodes=electrodes,
+            NFFT=NFFT,
+            noverlap=noverlap, 
+            nperseg=nperseg,
+            minFreq=minFreq, 
+            maxFreq=maxFreq, 
+            stepFreq=stepFreq, 
+            smooth=smooth,
+            logx=logx,
+            logy=logy, 
+            normSignal=normSignal,
+            normPSD=normPSD, 
+            filtFreq=filtFreq, 
+            filtOrder=filtOrder, 
+            detrend=detrend, 
+            transformMethod=transformMethod,
+            figSize=figSize,
+            dpi=dpi,
+            saveFig=saveFig,
+            showFig=showFig,
+            )
     
     if 'locations' in plots:
         plotLFPLocations(saveFig=saveFig)

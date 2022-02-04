@@ -16,11 +16,10 @@ warnings.filterwarnings("ignore")
 from .plotter import MultiFigure, GeneralPlotter, ScatterPlotter, LinePlotter, HistPlotter, ImagePlotter
 from .plotRaster import plotRaster
 from .plotSpikeHist import plotSpikeHist
-from .plotTraces import plotTraces
-from .plotLFP import plotLFPTimeSeries
-from .plotLFP import plotPSD
-from .plotLFP import plotSpectrogram
-from .plotLFP import plotLFPLocations
+from .plotLFPTimeSeries import plotLFPTimeSeries
+from .plotLFPPSD import plotLFPPSD
+from .plotLFPSpectrogram import plotLFPSpectrogram
+from .plotLFPLocations import plotLFPLocations
 from .plotShape import plotShape
 
 

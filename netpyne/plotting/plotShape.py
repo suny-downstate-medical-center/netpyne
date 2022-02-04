@@ -53,7 +53,9 @@ def plotShape(
     includeAxon=True, 
     bkgColor=None, 
     aspect='auto', 
-    axisLabels=False, 
+    axisLabels=False,
+    kind='shape',
+    returnPlotter=False, 
     **kwargs):
     """
     Function for/to <short description of `netpyne.analysis.network.plotShape`>
@@ -143,7 +145,7 @@ def plotShape(
         #plt.rcParams.update({'font.size': fontSize})
 
         if axis is None:
-            multiFig = MultiFigure(kind='shape', subplots=None, **kwargs)
+            multiFig = MultiFigure(kind=kind, subplots=None, **kwargs)
             fig = multiFig.fig
             multiFig.ax.remove()
             shapeax = fig.add_subplot(111, projection='3d')
@@ -294,6 +296,17 @@ def plotShape(
                 filename = sim.cfg.filename+'_'+'shape.ps'
             fig.printfile(filename)
 
-    return fig, {}
+    if not iv:
+        if axis is None:
+            if returnPlotter:
+                return multiFig
+            else:
+                return fig
+        else:
+            return fig
+
+
+    else:
+        return fig, {}
 
 

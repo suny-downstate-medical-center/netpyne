@@ -80,7 +80,7 @@ def plotLFPSpectrogram(
         rcParams = None
 
     if axis is None:
-        multiFig = MultiFigure(kind='spect', subplots=len(names), rcParams=rcParams, **kwargs)
+        multiFig = MultiFigure(kind='LFPSpectrogram', subplots=len(names), rcParams=rcParams, **kwargs)
 
     if 'morlet' in SpectData['electrodes']['spectrogram'].keys():
         spect = SpectData['electrodes']['spectrogram']['morlet']

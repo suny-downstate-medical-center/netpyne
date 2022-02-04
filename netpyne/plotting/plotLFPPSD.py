@@ -152,7 +152,7 @@ def plotLFPPSD(
             linesData[kwarg] = kwargs[kwarg]
 
     # create Plotter object
-    linesPlotter = LinesPlotter(data=linesData, kind='PSD', axis=axis, **axisArgs, **kwargs)
+    linesPlotter = LinesPlotter(data=linesData, kind='LFPPSD', axis=axis, **axisArgs, **kwargs)
     multiFig = linesPlotter.multifig
 
     # remove the y-axis tick labels

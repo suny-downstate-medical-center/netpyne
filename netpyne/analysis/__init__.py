@@ -96,7 +96,6 @@ def plotLFP(
             showFig=showFig,
             )
 
-    
     if 'PSD' in plots:
         plotLFPPSD(
             timeRange=timeRange,
@@ -151,7 +150,29 @@ def plotLFP(
             )
     
     if 'locations' in plots:
-        plotLFPLocations(saveFig=saveFig)
+        plotLFPLocations(
+            electrodes=['all'],
+            includeAxon=includeAxon,
+            NFFT=NFFT,
+            noverlap=noverlap, 
+            nperseg=nperseg,
+            minFreq=minFreq, 
+            maxFreq=maxFreq, 
+            stepFreq=stepFreq, 
+            smooth=smooth,
+            logx=logx,
+            logy=logy, 
+            normSignal=normSignal,
+            normPSD=normPSD, 
+            filtFreq=filtFreq, 
+            filtOrder=filtOrder, 
+            detrend=detrend, 
+            transformMethod=transformMethod,
+            figSize=figSize,
+            dpi=dpi,
+            saveFig=saveFig,
+            showFig=showFig,
+            )
 
 
 def plotSpikeHist(**kwargs):

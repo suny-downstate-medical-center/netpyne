@@ -301,9 +301,9 @@ def plotShape(
             if returnPlotter:
                 return multiFig
             else:
-                return fig
+                return fig, {}
         else:
-            return fig
+            return fig, {}
 
 
     else:

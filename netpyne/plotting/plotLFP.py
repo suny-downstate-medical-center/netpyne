@@ -2,6 +2,7 @@
 
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
+import math
 from ..analysis.utils import exception #, loadData
 from ..analysis.tools import loadData
 from .plotter import LinesPlotter
@@ -28,7 +29,7 @@ def plotLFPTimeSeries(
     colorList=None,
     orderInverse=True,
     legend=True,
-    overlay=True,
+    overlay=False,
     scalebar=True,
     **kwargs):
     
@@ -212,6 +213,7 @@ def plotPSD(
     electrodes=['avg', 'all'],
     pop=None, 
     separation=1.0,
+    roundOffset=True,
     NFFT=256,
     noverlap=128, 
     nperseg=256,
@@ -298,11 +300,20 @@ def plotPSD(
         axisArgs['xlabel'] = 'Frequency (Hz)'
         axisArgs['ylabel'] = 'Power (arbitrary units)'
 
+
+    axisArgs['grid'] = {'which': 'both'}
+
     # Link colors to traces, make avg plot black, add separation to traces
     plotColors = []
     legendLabels = []
     colorIndex = 0
     offset = np.absolute(psds).max() * separation
+
+    if roundOffset:
+        sigfigs = 1
+        if type(roundOffset) == int:
+            sigfigs = roundOffset
+        offset = round(offset, sigfigs - int(math.floor(math.log10(abs(offset)))) - 1)
     
     for index, (name, psd) in enumerate(zip(names, psds)):
         legendLabels.append(name)
@@ -337,8 +348,8 @@ def plotPSD(
     linesPlotter = LinesPlotter(data=linesData, kind='PSD', axis=axis, **axisArgs, **kwargs)
     multiFig = linesPlotter.multifig
 
-    # remove the y-axis
-    linesPlotter.axis.get_yaxis().set_ticks([])
+    # remove the y-axis tick labels
+    linesPlotter.axis.get_yaxis().set_ticklabels([])
 
     # Set up the default legend settings
     legendKwargs = {}

@@ -316,6 +316,14 @@ class GeneralPlotter:
             elif type(kwargs['colorbar']) == dict:
                 self.addColorbar(**kwargs['colorbar'])
 
+        if 'grid' in kwargs:
+            self.axis.minorticks_on()
+            if kwargs['grid'] is True:
+                self.axis.grid()
+            elif type(kwargs['grid']) == dict:
+                self.axis.grid(**kwargs['grid'])
+
+
         # Reset the matplotlib rcParams to their original settings
         mpl.style.use(self.multifig.orig_rcParams)
                 

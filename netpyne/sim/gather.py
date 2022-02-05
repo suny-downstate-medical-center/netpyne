@@ -372,6 +372,8 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
                                 allPops[popLabel] = pop['tags']  #pop.__getstate__()
                         if 'simConfig' in data.keys():
                             setup.setSimCfg(data['simConfig'])
+                        if 'net' in data and gatherLFP:
+                            sim.net.recXElectrode = data['net']['recXElectrode']
 
                         nodePopsCellGids = {popLabel: list(pop['cellGids']) for popLabel, pop in data['pops'].items()}
 

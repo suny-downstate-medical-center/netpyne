@@ -45,8 +45,7 @@ print("Starting sim ...")
 # if you just want to save the data and not the wieghts you can use the sim.intervalSave function instead of saveWeights
 sim.runSimWithIntervalFunc(cfg.intervalRun, saveWeights)
 
-# we run fileGather() instead of gather
-sim.fileGather()
+sim.gatherData()
 sim.analyze()
 
 # Check the model output: sim.checkOutput is used for testing purposes.  Please comment out the following line if you are exploring the example.

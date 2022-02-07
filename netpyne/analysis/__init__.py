@@ -3,6 +3,8 @@ Package for analysis
 
 """
 
+import netpyne
+
 # Import utils methods
 from .tools import getInclude, plotData, saveData, loadData
 from .utils import exception, _showFigure, _saveFigData, getCellsInclude, getCellsIncludeTags, _roundFigures, _smooth1d, syncMeasure, invertDictMapping, checkAvailablePlots
@@ -13,6 +15,7 @@ from ..plotting import plotShape
 
 # Import spike-related functions
 from .spikes import prepareSpikeData, prepareRaster, prepareSpikeHist, popAvgRates
+#from .spikes import plotSpikeHist
 
 # Import traces-related functions
 #from .traces import prepareTraces
@@ -41,6 +44,7 @@ from .csd import getCSD, plotCSD
 
 
 # Legacy code so that new plots produce same output as originals
+
 def plotLFP(
     timeRange=None, 
     electrodes=['avg', 'all'], 
@@ -75,10 +79,8 @@ def plotLFP(
     saveFig=None, 
     showFig=True,):
 
-    from ..plotting import plotLFPTimeSeries, plotLFPPSD, plotLFPSpectrogram, plotLFPLocations
-
     if 'timeSeries' in plots:
-        plotLFPTimeSeries(
+        netpyne.plotting.plotLFPTimeSeries(
             timeRange=timeRange,
             electrodes=electrodes,
             separation=separation,
@@ -97,7 +99,7 @@ def plotLFP(
             )
 
     if 'PSD' in plots:
-        plotLFPPSD(
+        netpyne.plotting.plotLFPPSD(
             timeRange=timeRange,
             electrodes=electrodes,
             roundOffset=True,
@@ -125,7 +127,7 @@ def plotLFP(
             )
     
     if 'spectrogram' in plots:
-        plotLFPSpectrogram(
+        netpyne.plotting.plotLFPSpectrogram(
             timeRange=timeRange,
             electrodes=electrodes,
             NFFT=NFFT,
@@ -150,7 +152,7 @@ def plotLFP(
             )
     
     if 'locations' in plots:
-        plotLFPLocations(
+        netpyne.plotting.plotLFPLocations(
             electrodes=['all'],
             includeAxon=includeAxon,
             NFFT=NFFT,
@@ -175,10 +177,54 @@ def plotLFP(
             )
 
 
-def plotSpikeHist(**kwargs):
+def plotSpikeHist():
     pass
 
-def plotRaster(**kwargs):
-    pass
+def plotRaster(
+    include=['allCells'], 
+    timeRange=None, 
+    maxSpikes=1e8, 
+    orderBy='gid', 
+    orderInverse=False, 
+    labels='legend', 
+    popRates=False, 
+    spikeHist=None, 
+    spikeHistBin=5, 
+    syncLines=False, 
+    lw=2, 
+    marker='|', 
+    markerSize=5, 
+    popColors=None, 
+    figSize=(10, 8), 
+    fontSize=12, 
+    dpi=100, 
+    saveData=None, 
+    saveFig=None, 
+    showFig=True,
+    **kwargs):
+    
+    legend = False
+    if labels == 'legend':
+        legend = True
 
+
+    netpyne.plotting.plotRaster(
+        include=include, 
+        timeRange=timeRange, 
+        maxSpikes=maxSpikes, 
+        orderBy=orderBy, 
+        orderInverse=orderInverse,
+        legend=legend,
+        popRates=popRates,
+        linewidth=lw, 
+        marker=marker, 
+        markersize=markerSize, 
+        popColors=popColors, 
+        figSize=figSize, 
+        fontSize=fontSize, 
+        dpi=dpi, 
+        saveData=saveData, 
+        saveFig=saveFig, 
+        showFig=showFig
+        )
 

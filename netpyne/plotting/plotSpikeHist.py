@@ -7,7 +7,7 @@ from ..analysis.tools import loadData
 from .plotter import HistPlotter
 
 
-@exception
+#@exception
 def plotSpikeHist(
     histData=None, 
     popNumCells=None, 
@@ -324,7 +324,8 @@ def plotSpikeHist(
         timeRange = kwargs['timeRange']
     elif 'timeRange' in histData:
         timeRange = histData['timeRange']
-    else:
+    
+    if timeRange is None:
         timeRange = [0, np.ceil(max(spkTimes))]
 
     # Bin the data using Numpy

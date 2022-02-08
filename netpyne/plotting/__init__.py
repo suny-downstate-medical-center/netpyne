@@ -16,6 +16,7 @@ warnings.filterwarnings("ignore")
 from .plotter import MultiFigure, GeneralPlotter, ScatterPlotter, LinePlotter, HistPlotter, ImagePlotter
 from .plotRaster import plotRaster
 from .plotSpikeHist import plotSpikeHist
+from .plotSpikeFreq import plotSpikeFreq
 from .plotLFPTimeSeries import plotLFPTimeSeries
 from .plotLFPPSD import plotLFPPSD
 from .plotLFPSpectrogram import plotLFPSpectrogram
@@ -54,6 +55,12 @@ from .spikes import calculateRate, plotRates, plotSyncs, plotRaster, plotSpikeHi
 # Import traces-related functions
 # -------------------------------------------------------------------------------------------------------------------
 from .traces import plotTraces, plotEPSPAmp
+
+
+# -------------------------------------------------------------------------------------------------------------------
+# Import LFP-related functions
+# -------------------------------------------------------------------------------------------------------------------
+from .lfp import plotLFP
 
 
 # -------------------------------------------------------------------------------------------------------------------

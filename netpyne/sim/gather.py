@@ -295,7 +295,7 @@ def gatherData(gatherLFP=True):
 #------------------------------------------------------------------------------
 # Gather data from files
 #------------------------------------------------------------------------------
-def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None):
+def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None, fileType='pkl', saveMerged=False):
     """
     Function to gather data from multiple files (from distributed or interval saving)
 
@@ -323,6 +323,11 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
 
     if sim.rank == 0:
 
+        fileType = fileType.lower()
+        if fileType not in ['pkl', 'json']:
+            print(f"Could not gather data from '.{fileType}' files. Only .pkl and .json are supported so far.")
+            return False
+
         if not simLabel:
             simLabel = sim.cfg.simLabel
         
@@ -331,8 +336,15 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
 
         nodeDataDir = os.path.join(saveFolder, simLabel+'_node_data')
 
-        simLabels = [f.replace('_node_0.pkl', '') for f in os.listdir(nodeDataDir) if f.endswith('_node_0.pkl')]
+        print(f"\nSearching for .{fileType} node files in {nodeDataDir} ...")
 
+        simLabels = [f.replace(f'_node_0.{fileType}', '') for f in os.listdir(nodeDataDir) if f.endswith(f'_node_0.{fileType}')]
+
+        if len(simLabels) == 0:
+            print(f"Could not gather data from files. No node files found.")
+            return False
+
+        mergedFiles = []
         for simLabel in simLabels:
 
             allSimData = Dict()
@@ -349,75 +361,91 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
                 simDataVecs.append('dipole')
 
             fileData = {'simData': sim.simData}
-            fileList = sorted([f for f in os.listdir(nodeDataDir) if (f.startswith(simLabel + '_node') and f.endswith('.pkl'))])
-            fileType = 'pkl'
-            if not fileList:
-                fileList = sorted([f for f in os.listdir(nodeDataDir) if (f.startswith(simLabel + '_node') and f.endswith('.json'))])
-                fileType = 'json'
+            fileList = sorted([f for f in os.listdir(nodeDataDir) if (f.startswith(simLabel + '_node') and f.endswith(f'.{fileType}'))])
 
             for ifile,file in enumerate(fileList):
                 
                 print('  Merging data file: %s' % (file))
-                
-                if fileType == 'pkl':
 
-                    with open(os.path.join(nodeDataDir, file), 'rb') as openFile:
+                with open(os.path.join(nodeDataDir, file), 'rb') as openFile:
+                    if fileType == 'pkl':
                         data = pickle.load(openFile)
-                        
-                        if 'cells' in data.keys():
-                            #allCells.extend([cell.__dict__ for cell in data['cells']])
+                    elif fileType == 'json':
+                        import json
+                        data = json.load(openFile)
+
+                    if 'cells' in data.keys():
+                        if fileType == 'pkl':
                             allCells.extend([cell.__getstate__() for cell in data['cells']])
-                        if 'pops' in data.keys():
-                            for popLabel, pop in data['pops'].items(): 
-                                allPops[popLabel] = pop['tags']  #pop.__getstate__()
-                        if 'simConfig' in data.keys():
-                            setup.setSimCfg(data['simConfig'])
-
-                        nodePopsCellGids = {popLabel: list(pop['cellGids']) for popLabel, pop in data['pops'].items()}
-
-                        if ifile==0 and gatherLFP and 'LFP' in data['simData']:                            
-                            allSimData['LFP'] = np.zeros((data['simData']['LFP'].shape))
-                            if 'LFPPops' in data['simData']:
-                                allSimData['LFPPops'] = {p: np.zeros((data['simData']['LFP'].shape)) for p in data['simData']['LFPPops'].keys()}
-
-                        for key, value in data['simData'].items():
-                            
-                            if key in simDataVecs:
-                                
-                                if isinstance(value, dict):
-                                    for key2, value2 in value.items():
-                                        if isinstance(value2, dict):
-                                            allSimData[key].update(Dict({key2: Dict()}))
-                                            for stim, value3 in value2.items():
-                                                allSimData[key][key2].update({stim: list(value3)}) 
-                                        elif key == 'dipole':
-                                            allSimData[key][key2] = np.add(allSimData[key][key2], value2.as_numpy()) 
-                                        else:
-                                            allSimData[key].update({key2: list(value2)})  
-                                else:
-                                    allSimData[key] = list(allSimData[key]) + list(value)
-
-                            elif gatherLFP and key == 'LFP':
-                                allSimData['LFP'] += np.array(value)
-
-                            elif gatherLFP and key == 'LFPPops':
-                                for p in value:
-                                    allSimData['LFPPops'][p] += np.array(value[p])
-
-                            elif key not in singleNodeVecs:
-                                allSimData[key].update(value)
-
-                        if file == fileList[0]:
-                            for key in singleNodeVecs:
-                                allSimData[key] = list(fileData['simData'][key])
-                            allPopsCellGids = {popLabel: [] for popLabel in nodePopsCellGids}
                         else:
-                            for popLabel, popCellGids in nodePopsCellGids.items():
-                                allPopsCellGids[popLabel].extend(popCellGids)
+                            allCells.extend(data['cells'])
 
-                elif fileType == 'json':
-                    print('JSON loading not implemented yet.')
-                    return False
+                    if 'pops' in data.keys():
+                        loadedPops = data['pops']
+                        if fileType == 'pkl':
+                            for popLabel, pop in loadedPops.items():
+                                allPops[popLabel] = pop['tags']
+                        elif fileType == 'json':
+                            # if populations order is not preserved (which is inherently the case for JSON), need to sort them again
+                            loadedPops = list(loadedPops.items())
+                            def sort(popKeyAndValue):
+                                # the assumption while sorting is that populations order corresponds to cell gids in this population
+                                cellGids = popKeyAndValue[1]['cellGids']
+                                if len(cellGids) > 0:
+                                    return cellGids[0]
+                                else:
+                                    return -1
+                            loadedPops.sort(key = sort)
+
+                            for popLabel, pop in loadedPops:
+                                allPops[popLabel] = pop['tags']
+
+                    if 'simConfig' in data.keys():
+                        setup.setSimCfg(data['simConfig'])
+
+                    nodePopsCellGids = {popLabel: list(pop['cellGids']) for popLabel, pop in data['pops'].items()}
+
+                    if ifile==0 and gatherLFP and 'LFP' in data['simData']:
+                        allSimData['LFP'] = np.zeros((data['simData']['LFP'].shape))
+                        if 'LFPPops' in data['simData']:
+                            allSimData['LFPPops'] = {p: np.zeros((data['simData']['LFP'].shape)) for p in data['simData']['LFPPops'].keys()}
+
+                    for key, value in data['simData'].items():
+
+                        if key in simDataVecs:
+
+                            if isinstance(value, dict):
+                                for key2, value2 in value.items():
+                                    if isinstance(value2, dict):
+                                        allSimData[key].update(Dict({key2: Dict()}))
+                                        for stim, value3 in value2.items():
+                                            allSimData[key][key2].update({stim: list(value3)})
+                                    elif key == 'dipole':
+                                        allSimData[key][key2] = np.add(allSimData[key][key2], value2.as_numpy())
+                                    else:
+                                        allSimData[key].update({key2: list(value2)})
+                            else:
+                                allSimData[key] = list(allSimData[key]) + list(value)
+
+                        elif gatherLFP and key == 'LFP':
+                            allSimData['LFP'] += np.array(value)
+
+                        elif gatherLFP and key == 'LFPPops':
+                            for p in value:
+                                allSimData['LFPPops'][p] += np.array(value[p])
+
+                        elif key not in singleNodeVecs:
+                            allSimData[key].update(value)
+
+                    if file == fileList[0]:
+                        for key in singleNodeVecs:
+                            allSimData[key] = list(fileData['simData'][key])
+                        allPopsCellGids = {popLabel: [] for popLabel in nodePopsCellGids}
+                    else:
+                        for popLabel, popCellGids in nodePopsCellGids.items():
+                            allPopsCellGids[popLabel].extend(popCellGids)
+
+                    mergedFiles.append(file)
 
             if len(allSimData['spkt']) > 0:
                 allSimData['spkt'], allSimData['spkid'] = zip(*sorted(zip(allSimData['spkt'], allSimData['spkid'])))
@@ -437,6 +465,16 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
     else:
         sim.timing('stop', 'gatherTime')
         if sim.cfg.timing: print(('  Done; gather time = %0.2f s.' % sim.timingData['gatherTime']))
+
+        if saveMerged:
+            print('\nSaving merged data into single file ...')
+            saved = sim.saveData()
+
+            if len(saved) > 0:
+                # if single file saved successfully, clean up node data
+                for file in mergedFiles:
+                    path = os.path.join(nodeDataDir, file)
+                    os.remove(path)
 
         print('\nAnalyzing...')
 

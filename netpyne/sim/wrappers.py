@@ -87,7 +87,7 @@ def intervalSimulate(interval):
 
     from .. import sim
     sim.runSimWithIntervalFunc(interval, sim.intervalSave) # run parallel Neuron simulation
-    sim.fileGather() # gather spiking data and cell info from saved file
+    sim.gatherData() # gather spiking data and cell info from saved file
 
 #------------------------------------------------------------------------------
 # Wrapper to simulate network

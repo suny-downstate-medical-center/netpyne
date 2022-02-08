@@ -156,8 +156,9 @@ def saveData(include=None, filename=None, saveLFP=True):
             if saveLFP:
                 if 'LFP' in sim.allSimData:
                     sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist()
-                #if hasattr(sim.net, 'recXElectrode'):
-                #    dataSave['net']['recXElectrode'] = sim.net.recXElectrode
+                    if sim.cfg.saveJson is False and hasattr(sim.net, 'recXElectrode'):
+                        # skip this step for JSON, because RecXElectrode is not JSON serializable
+                        dataSave['net']['recXElectrode'] = sim.net.recXElectrode
             dataSave['simData'] = sim.allSimData
 
         savedFiles = []
@@ -618,9 +619,10 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
         if 'imembPtr' in cell:
             cell.pop('imembPtr')
 
-    #if saveLFP:
-    #    if hasattr(sim.net, 'recXElectrode'):
-    #        dataSave['net']['recXElectrode'] = sim.net.recXElectrode
+    if saveLFP:
+       if sim.cfg.saveJson is False and hasattr(sim.net, 'recXElectrode'):
+           # skip this step for JSON, because RecXElectrode is not JSON serializable
+           dataSave['net']['recXElectrode'] = sim.net.recXElectrode
 
     if removeTraces:
         for k in sim.cfg.recordTraces.keys():

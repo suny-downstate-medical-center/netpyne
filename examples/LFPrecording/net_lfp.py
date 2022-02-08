@@ -57,7 +57,7 @@ simConfig.recordLFP = [[-15, y, 1.0*netParams.sizeZ] for y in range(int(netParam
 simConfig.saveLFPPops = ['I2', 'E4']
 
 #simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True, 'saveFig':True, 'figSize': (9,3)}      # Plot a raster
-simConfig.analysis['plotLFP'] = {'pop': 'I2', 'includeAxon': False, 'figSize': (6,10), 'timeRange': [100,3000], 'saveFig': True} 
+simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'timeRange': [100,1000], 'saveFig': True}
 #simConfig.analysis['getCSD'] = {'spacing_um': 200, 'timeRange': [100,3000], 'vaknin': True}
 #simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'timeRange':[100,900], 'minFreq': 10, 'maxFreq':60, 'norm':1, 'plots': ['spectrogram'], 'showFig': True} 
 simConfig.analysis['plotCSD'] = True #{'timeRange':[100,200]}

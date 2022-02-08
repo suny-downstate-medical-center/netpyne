@@ -11,9 +11,6 @@ import pickle, json
 import os
 from matplotlib.offsetbox import AnchoredOffsetbox
 
-
-plt.ion()
-
 try:
     basestring
 except NameError:
@@ -27,7 +24,7 @@ colorList = [[0.42, 0.67, 0.84], [0.90, 0.76, 0.00], [0.42, 0.83, 0.59], [0.90, 
 class MultiFigure:
     """A class which defines a figure object"""
 
-    def __init__(self, kind, sim=None, subplots=None, rcParams=None, **kwargs):
+    def __init__(self, kind, sim=None, subplots=None, rcParams=None, autosize=0.35, **kwargs):
 
         if not sim:
             from .. import sim
@@ -36,7 +33,7 @@ class MultiFigure:
         self.kind = kind
 
         # Make a copy of the current matplotlib rcParams and update them
-        self.orig_rcParams = deepcopy(mpl.rcParams)
+        self.orig_rcParams = deepcopy(mpl.rcParamsDefault)
         if rcParams:
             for rcParam in rcParams:
                 if rcParam in mpl.rcParams:
@@ -67,6 +64,13 @@ class MultiFigure:
             dpi = kwargs['dpi']
         else:
             dpi = self.rcParams['figure.dpi']
+        
+        if autosize:
+            maxplots = np.max([nrows, ncols])
+            figSize0 = figSize[0] + (maxplots-1)*(figSize[0]*autosize)
+            figSize1 = figSize[1] + (maxplots-1)*(figSize[1]*autosize)
+            figSize = [figSize0, figSize1]
+
         self.fig, self.ax = plt.subplots(nrows, ncols, figsize=figSize, dpi=dpi)
 
         self.plotters = []
@@ -132,16 +136,26 @@ class MultiFigure:
 
 
     def showFig(self, **kwargs):
-        plt.close(self.fig)
-        figsize = self.fig.get_size_inches()
-        dummy = plt.figure(figsize=figsize)
-        new_manager = dummy.canvas.manager
-        new_manager.canvas.figure = self.fig
-        self.fig.set_canvas(new_manager.canvas)
-        self.fig.show()
+        try:
+            self.fig.show(block=False)
+        except:
+            self.fig.show()
+
+
+    def addSuptitle(self, **kwargs):
+        self.fig.suptitle(**kwargs)
 
 
     def finishFig(self, **kwargs):
+
+        if 'suptitle' in kwargs:
+            if kwargs['suptitle']:
+                self.addSuptitle(**kwargs['suptitle'])
+
+        if 'tightLayout' not in kwargs:
+            plt.tight_layout()
+        elif kwargs['tightLayout']:
+            plt.tight_layout()
 
         if 'saveFig' in kwargs:
             if kwargs['saveFig']:
@@ -152,8 +166,6 @@ class MultiFigure:
                 self.showFig(**kwargs)
         else:
             plt.close(self.fig)
-
-        plt.tight_layout()
 
         # Reset the matplotlib rcParams to their original settings
         mpl.style.use(self.orig_rcParams)
@@ -264,7 +276,11 @@ class GeneralPlotter:
     def addScalebar(self, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=None, unitsy=None, scalex=1.0, scaley=1.0, xmax=None, ymax=None, space=None, **kwargs):
 
         add_scalebar(self.axis, matchx=matchx, matchy=matchy, hidex=hidex, hidey=hidey, unitsx=unitsx, unitsy=unitsy, scalex=scalex, scaley=scaley, xmax=xmax, ymax=ymax, space=space, **kwargs)
-       
+
+
+    def addColorbar(self, **kwargs):
+        plt.colorbar(mappable=self.axis.get_images()[0], ax=self.axis, **kwargs)
+
 
     def finishAxis(self, **kwargs):
 
@@ -293,6 +309,20 @@ class GeneralPlotter:
                 self.addScalebar()
             elif type(kwargs['scalebar']) == dict:
                 self.addScalebar(**kwargs['scalebar'])
+
+        if 'colorbar' in kwargs:
+            if kwargs['colorbar'] is True:
+                self.addColorbar()
+            elif type(kwargs['colorbar']) == dict:
+                self.addColorbar(**kwargs['colorbar'])
+
+        if 'grid' in kwargs:
+            self.axis.minorticks_on()
+            if kwargs['grid'] is True:
+                self.axis.grid()
+            elif type(kwargs['grid']) == dict:
+                self.axis.grid(**kwargs['grid'])
+
 
         # Reset the matplotlib rcParams to their original settings
         mpl.style.use(self.multifig.orig_rcParams)

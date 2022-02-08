@@ -319,6 +319,7 @@ def plotRaster(
     scatterData['c'] = spkColors
     scatterData['s'] = 5
     scatterData['marker'] = '|'
+    scatterData['markersize'] = 5
     scatterData['linewidth'] = 2
     scatterData['cmap'] = None
     scatterData['norm'] = None

@@ -177,8 +177,64 @@ def plotLFP(
             )
 
 
-def plotSpikeHist():
-    pass
+def plotSpikeHist(
+    include=['eachPop', 'allCells'], 
+    timeRange=None, 
+    binSize=5, 
+    graphType='line', 
+    measure='rate', 
+    norm=False, 
+    smooth=None, 
+    filtFreq=None, 
+    filtOrder=3, 
+    axis=True, 
+    popColors=None, 
+    figSize=(10,8), 
+    dpi=100, 
+    saveData=None, 
+    saveFig=None, 
+    showFig=True, 
+    **kwargs):
+
+    if measure =='rate':
+
+        netpyne.plotting.plotSpikeFreq(
+            include=include,
+            timeRange=timeRange,
+            popColors=popColors, 
+            legend=True, 
+            returnPlotter=False,
+            binSize=binSize, 
+            norm=norm, 
+            smooth=smooth, 
+            filtFreq=filtFreq, 
+            filtOrder=filtOrder, 
+            figSize=figSize, 
+            dpi=dpi, 
+            saveData=saveData, 
+            saveFig=saveFig, 
+            showFig=showFig,
+            )
+
+    else:
+
+        netpyne.plotting.plotSpikeHist(
+            include=include, 
+            timeRange=timeRange,
+            binSize=binSize,
+            norm=norm, 
+            smooth=smooth, 
+            filtFreq=filtFreq, 
+            filtOrder=filtOrder, 
+            popColors=popColors, 
+            figSize=figSize, 
+            dpi=dpi, 
+            saveData=saveData, 
+            saveFig=saveFig, 
+            showFig=showFig, 
+            )
+
+
 
 def plotRaster(
     include=['allCells'], 
@@ -225,6 +281,6 @@ def plotRaster(
         dpi=dpi, 
         saveData=saveData, 
         saveFig=saveFig, 
-        showFig=showFig
+        showFig=showFig,
         )
 

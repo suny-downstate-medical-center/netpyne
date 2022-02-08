@@ -258,6 +258,8 @@ def plotSpikeHist(
         if not popLabels:
             popLabels = histData.get('popLabels')
 
+        numNetStims = histData.get('numNetStims', 0)
+
         axisArgs = histData.get('axisArgs')
         legendLabels = histData.get('legendLabels')
     

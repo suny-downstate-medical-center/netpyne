@@ -7,7 +7,7 @@ from ..analysis.tools import loadData
 from .plotter import HistPlotter
 
 
-@exception
+#@exception
 def plotSpikeHist(
     histData=None, 
     popNumCells=None, 
@@ -324,7 +324,8 @@ def plotSpikeHist(
         timeRange = kwargs['timeRange']
     elif 'timeRange' in histData:
         timeRange = histData['timeRange']
-    else:
+    
+    if timeRange is None:
         timeRange = [0, np.ceil(max(spkTimes))]
 
     # Bin the data using Numpy
@@ -387,6 +388,7 @@ def plotSpikeHist(
 
     # create Plotter object
     histPlotter = HistPlotter(data=plotData, kind='histogram', axis=axis, **axisArgs, **kwargs)
+    multiFig = histPlotter.multifig
 
     # add legend
     if legend:
@@ -469,6 +471,9 @@ def plotSpikeHist(
 
     # Generate the figure
     histPlot = histPlotter.plot(**axisArgs, **kwargs)
+
+    if axis is None:
+        multiFig.finishFig(**kwargs)
 
     # Default is to return the figure, but you can also return the plotter
     if returnPlotter:

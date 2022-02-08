@@ -11,9 +11,6 @@ import pickle, json
 import os
 from matplotlib.offsetbox import AnchoredOffsetbox
 
-
-plt.ion()
-
 try:
     basestring
 except NameError:
@@ -27,7 +24,7 @@ colorList = [[0.42, 0.67, 0.84], [0.90, 0.76, 0.00], [0.42, 0.83, 0.59], [0.90, 
 class MultiFigure:
     """A class which defines a figure object"""
 
-    def __init__(self, kind, sim=None, subplots=None, rcParams=None, **kwargs):
+    def __init__(self, kind, sim=None, subplots=None, rcParams=None, autosize=0.35, **kwargs):
 
         if not sim:
             from .. import sim
@@ -36,7 +33,7 @@ class MultiFigure:
         self.kind = kind
 
         # Make a copy of the current matplotlib rcParams and update them
-        self.orig_rcParams = deepcopy(mpl.rcParams)
+        self.orig_rcParams = deepcopy(mpl.rcParamsDefault)
         if rcParams:
             for rcParam in rcParams:
                 if rcParam in mpl.rcParams:
@@ -63,7 +60,18 @@ class MultiFigure:
             figSize = kwargs['figSize']
         else:
             figSize = self.rcParams['figure.figsize']
-        self.fig, self.ax = plt.subplots(nrows, ncols, figsize=figSize)
+        if 'dpi' in kwargs:
+            dpi = kwargs['dpi']
+        else:
+            dpi = self.rcParams['figure.dpi']
+        
+        if autosize:
+            maxplots = np.max([nrows, ncols])
+            figSize0 = figSize[0] + (maxplots-1)*(figSize[0]*autosize)
+            figSize1 = figSize[1] + (maxplots-1)*(figSize[1]*autosize)
+            figSize = [figSize0, figSize1]
+
+        self.fig, self.ax = plt.subplots(nrows, ncols, figsize=figSize, dpi=dpi)
 
         self.plotters = []
 
@@ -128,15 +136,27 @@ class MultiFigure:
 
 
     def showFig(self, **kwargs):
-        plt.close(self.fig)
-        dummy = plt.figure(figsize=self.rcParams['figure.figsize'])
-        new_manager = dummy.canvas.manager
-        new_manager.canvas.figure = self.fig
-        self.fig.set_canvas(new_manager.canvas)
-        self.fig.show()
+        try:
+            self.fig.show(block=False)
+        except:
+            self.fig.show()
+
+
+    def addSuptitle(self, **kwargs):
+        self.fig.suptitle(**kwargs)
 
 
     def finishFig(self, **kwargs):
+
+        if 'suptitle' in kwargs:
+            if kwargs['suptitle']:
+                self.addSuptitle(**kwargs['suptitle'])
+
+        if 'tightLayout' not in kwargs:
+            plt.tight_layout()
+        elif kwargs['tightLayout']:
+            plt.tight_layout()
+
         if 'saveFig' in kwargs:
             if kwargs['saveFig']:
                 self.saveFig(**kwargs)
@@ -189,7 +209,7 @@ class GeneralPlotter:
         # If an axis is input, plot there; otherwise make a new figure and axis
         if self.axis is None:
             final = True
-            self.multifig = MultiFigure(kind=self.kind)
+            self.multifig = MultiFigure(kind=self.kind, **kwargs)
             self.fig = self.multifig.fig
             self.axis = self.multifig.ax
         else:
@@ -253,10 +273,14 @@ class GeneralPlotter:
         self.axis.legend(handles, labels, **legendKwargs)
 
 
-    def addScalebar(self, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=None, unitsy=None, scalex=1.0, scaley=1.0, **kwargs):
+    def addScalebar(self, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=None, unitsy=None, scalex=1.0, scaley=1.0, xmax=None, ymax=None, space=None, **kwargs):
 
-        add_scalebar(self.axis, matchx=matchx, matchy=matchy, hidex=hidex, hidey=hidey, unitsx=unitsx, unitsy=unitsy, scalex=scalex, scaley=scaley, **kwargs)
-       
+        add_scalebar(self.axis, matchx=matchx, matchy=matchy, hidex=hidex, hidey=hidey, unitsx=unitsx, unitsy=unitsy, scalex=scalex, scaley=scaley, xmax=xmax, ymax=ymax, space=space, **kwargs)
+
+
+    def addColorbar(self, **kwargs):
+        plt.colorbar(mappable=self.axis.get_images()[0], ax=self.axis, **kwargs)
+
 
     def finishAxis(self, **kwargs):
 
@@ -265,6 +289,14 @@ class GeneralPlotter:
         if 'saveData' in kwargs:
             if kwargs['saveData']:
                 self.saveData(**kwargs)
+
+        if 'dpi' in kwargs:
+            if kwargs['dpi']:
+                self.fig.set_dpi(kwargs['dpi'])
+
+        if 'figSize' in kwargs:
+            if kwargs['figSize']:
+                self.fig.set_size_inches(kwargs['figSize'])
 
         if 'legend' in kwargs:
             if kwargs['legend'] is True:
@@ -278,15 +310,19 @@ class GeneralPlotter:
             elif type(kwargs['scalebar']) == dict:
                 self.addScalebar(**kwargs['scalebar'])
 
-        if 'saveFig' in kwargs:
-            if kwargs['saveFig']:
-                self.multifig.saveFig(**kwargs)
-        
-        if 'showFig' in kwargs:
-            if kwargs['showFig']:   
-                self.multifig.showFig(**kwargs)
-        else:
-            plt.close(self.fig)
+        if 'colorbar' in kwargs:
+            if kwargs['colorbar'] is True:
+                self.addColorbar()
+            elif type(kwargs['colorbar']) == dict:
+                self.addColorbar(**kwargs['colorbar'])
+
+        if 'grid' in kwargs:
+            self.axis.minorticks_on()
+            if kwargs['grid'] is True:
+                self.axis.grid()
+            elif type(kwargs['grid']) == dict:
+                self.axis.grid(**kwargs['grid'])
+
 
         # Reset the matplotlib rcParams to their original settings
         mpl.style.use(self.multifig.orig_rcParams)
@@ -474,6 +510,8 @@ class ImagePlotter(GeneralPlotter):
         self.vmax          = data.get('vmax', None) 
         self.origin        = data.get('origin', None) 
         self.extent        = data.get('extent', None) 
+        self.aspect        = data.get('aspect', None) 
+        self.interpolation = data.get('interpolation', None)
         self.interpolation_stage = data.get('interpolation_stage', None) 
         self.filternorm    = data.get('filternorm', True)
         self.filterrad     = data.get('filterrad', 4.0)
@@ -532,7 +570,7 @@ class AnchoredScaleBar(AnchoredOffsetbox):
         AnchoredOffsetbox.__init__(self, loc, pad=pad, borderpad=borderpad, child=bars, prop=prop, frameon=False, **kwargs)
 
 
-def add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=None, unitsy=None, scalex=1.0, scaley=1.0, **kwargs):
+def add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=None, unitsy=None, scalex=1.0, scaley=1.0, xmax=None, ymax=None, space=None, **kwargs):
     """
     Add scalebars to axes
 
@@ -545,7 +583,6 @@ def add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=
 
     Returns created scalebar object
     """
-    
     def get_tick_size(subaxis):
         tick_size = None
         tick_locs = subaxis.get_majorticklocs()
@@ -554,9 +591,32 @@ def add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=
         return tick_size
         
     if matchx:
-        kwargs['sizex'] = get_tick_size(axis.xaxis)
+        sizex = get_tick_size(axis.xaxis)
     if matchy:
-        kwargs['sizey'] = get_tick_size(axis.yaxis)
+        sizey = get_tick_size(axis.yaxis)
+
+    if 'sizex' in kwargs:
+        sizex = kwargs['sizex']
+    if 'sizey' in kwargs:
+        sizey = kwargs['sizey']
+    
+    def autosize(value, maxvalue, scale, n=1, m=10):
+        round_to_n = lambda value, n, m: int(np.ceil(round(value, -int(np.floor(np.log10(abs(value)))) + (n - 1)) / m)) * m
+        while value > maxvalue:
+            try:
+                value = round_to_n(0.8 * maxvalue * scale, n, m) / scale
+            except:
+                value /= 10.0
+            m /= 10.0
+        return value
+
+    if ymax is not None and sizey>ymax:
+        sizey = autosize(sizey, ymax, scaley)
+    if xmax is not None and sizex>xmax:
+        sizex = autosize(sizex, xmax, scalex)
+
+    kwargs['sizex'] = sizex
+    kwargs['sizey'] = sizey
 
     if unitsx is None:
         unitsx = ''
@@ -568,7 +628,14 @@ def add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=
     if 'labely' not in kwargs or kwargs['labely'] is None:
         kwargs['labely'] = '%.3g %s'%(kwargs['sizey'] * scaley, unitsy)
         
-    #scalebar = AnchoredScaleBar(axis.transData, **kwargs)
+    # add space for scalebar
+    if space is not None:
+        ylim0, ylim1 = axis.get_ylim()
+        ylim = (ylim0 - space, ylim1)
+        if ylim0 > ylim1: # if y axis is inverted
+            ylim = (ylim0 + space, ylim1)
+        axis.set_ylim(ylim)
+
     scalebar = AnchoredScaleBar(axis, **kwargs)
     axis.add_artist(scalebar)
 

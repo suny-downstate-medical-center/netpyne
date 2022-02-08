@@ -390,75 +390,75 @@ def plotSpikeHist(
     histPlotter = HistPlotter(data=plotData, kind='histogram', axis=axis, **axisArgs, **kwargs)
     multiFig = histPlotter.multifig
 
+    # Set up a dictionary of population colors
+    if not popColors:
+        colorList = colorList
+        popColors = {popLabel: colorList[ipop % len(colorList)] for ipop, popLabel in enumerate(popLabels)}
+
+    # Create the labels and handles for the legend
+    # (use rectangles instead of markers because some markers don't show up well)
+    labels = []
+    handles = []
+
+    # Remove the sum of all population spiking when stacking
+    if stacked or histType == 'barstacked':
+        if 'allCells' in include:
+            include.remove('allCells')
+
+    # Deal with the sum of all population spiking (allCells)
+    if 'allCells' not in include:
+        histPlotter.x = []
+        histPlotter.color = []
+    else:
+        histPlotter.x = [histPlotter.x]
+        allCellsColor = 'black'
+        if 'allCellsColor' in kwargs:
+            allCellsColor = kwargs['allCellsColor']
+        histPlotter.color = [allCellsColor]
+        labels.append('All cells')
+        handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=allCellsColor))
+
+    # Go through each population
+    for popIndex, popLabel in enumerate(popLabels):
+        
+        # Get GIDs for this population
+        currentGids = popGids[popIndex]
+
+        # Use GIDs to get a spiketimes list for this population
+        spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in currentGids]))
+
+        # Append the population spiketimes list to histPlotter.x
+        histPlotter.x.append(spkts)
+
+        # Append the population color to histPlotter.color
+        histPlotter.color.append(popColors[popLabel])
+
+        # Append the legend labels and handles
+        if legendLabels:
+            labels.append(legendLabels[popIndex])
+        else:
+            labels.append(popLabel)
+        handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=popColors[popLabel]))
+
+    # Set up the default legend settings
+    legendKwargs = {}
+    legendKwargs['title'] = 'Populations'
+    legendKwargs['bbox_to_anchor'] = (1.025, 1)
+    legendKwargs['loc'] = 2
+    legendKwargs['borderaxespad'] = 0.0
+    legendKwargs['handlelength'] = 0.5
+    legendKwargs['fontsize'] = 'small'
+
+    # If 'legendKwargs' is found in kwargs, use those values instead of the defaults
+    if 'legendKwargs' in kwargs:
+        legendKwargs_input = kwargs['legendKwargs']
+        kwargs.pop('legendKwargs')
+        for key, value in legendKwargs_input:
+            if key in legendKwargs:
+                legendKwargs[key] = value
+
     # add legend
     if legend:
-
-        # Set up a dictionary of population colors
-        if not popColors:
-            colorList = colorList
-            popColors = {popLabel: colorList[ipop % len(colorList)] for ipop, popLabel in enumerate(popLabels)}
-
-        # Create the labels and handles for the legend
-        # (use rectangles instead of markers because some markers don't show up well)
-        labels = []
-        handles = []
-
-        # Remove the sum of all population spiking when stacking
-        if stacked or histType == 'barstacked':
-            if 'allCells' in include:
-                include.remove('allCells')
-
-        # Deal with the sum of all population spiking (allCells)
-        if 'allCells' not in include:
-            histPlotter.x = []
-            histPlotter.color = []
-        else:
-            histPlotter.x = [histPlotter.x]
-            allCellsColor = 'black'
-            if 'allCellsColor' in kwargs:
-                allCellsColor = kwargs['allCellsColor']
-            histPlotter.color = [allCellsColor]
-            labels.append('All cells')
-            handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=allCellsColor))
-
-        # Go through each population
-        for popIndex, popLabel in enumerate(popLabels):
-            
-            # Get GIDs for this population
-            currentGids = popGids[popIndex]
-
-            # Use GIDs to get a spiketimes list for this population
-            spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in currentGids]))
-
-            # Append the population spiketimes list to histPlotter.x
-            histPlotter.x.append(spkts)
-
-            # Append the population color to histPlotter.color
-            histPlotter.color.append(popColors[popLabel])
-
-            # Append the legend labels and handles
-            if legendLabels:
-                labels.append(legendLabels[popIndex])
-            else:
-                labels.append(popLabel)
-            handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=popColors[popLabel]))
-
-        # Set up the default legend settings
-        legendKwargs = {}
-        legendKwargs['title'] = 'Populations'
-        legendKwargs['bbox_to_anchor'] = (1.025, 1)
-        legendKwargs['loc'] = 2
-        legendKwargs['borderaxespad'] = 0.0
-        legendKwargs['handlelength'] = 0.5
-        legendKwargs['fontsize'] = 'small'
-
-        # If 'legendKwargs' is found in kwargs, use those values instead of the defaults
-        if 'legendKwargs' in kwargs:
-            legendKwargs_input = kwargs['legendKwargs']
-            kwargs.pop('legendKwargs')
-            for key, value in legendKwargs_input:
-                if key in legendKwargs:
-                    legendKwargs[key] = value
             
         # Add the legend
         histPlotter.addLegend(handles, labels, **legendKwargs)

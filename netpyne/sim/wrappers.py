@@ -92,7 +92,7 @@ def intervalSimulate(interval):
 #------------------------------------------------------------------------------
 # Wrapper to simulate network
 #------------------------------------------------------------------------------
-def distributedSimulate(filename=None, dataDir=None, includeLFP=True):
+def distributedSimulate(filename=None, includeLFP=True):
     """
     Wrapper function to run a simulation and save/load data to/from files by node
 
@@ -102,10 +102,6 @@ def distributedSimulate(filename=None, dataDir=None, includeLFP=True):
         name of saved data files.
         **Default:** ``None`` uses the name of the simulation.
 
-    dataDir : str
-        name of directory to save data to and load data from.
-        **Default:** ``None`` uses the simulation name.
-
     includeLFP : bool
         whether or not to include LFP data
         **Default:** ``True`` includes LFP data if available.
@@ -114,8 +110,8 @@ def distributedSimulate(filename=None, dataDir=None, includeLFP=True):
 
     from .. import sim
     sim.runSim()
-    sim.saveDataInNodes(filename=filename, saveLFP=includeLFP, removeTraces=False, dataDir=dataDir)
-    sim.gatherDataFromFiles(gatherLFP=includeLFP, dataDir=dataDir)
+    sim.saveDataInNodes(filename=filename, saveLFP=includeLFP, removeTraces=False)
+    sim.gatherDataFromFiles(gatherLFP=includeLFP)
     
 
 #------------------------------------------------------------------------------
@@ -262,7 +258,7 @@ def createSimulateAnalyzeInterval(netParams, simConfig, output=False, interval=N
 #------------------------------------------------------------------------------
 # Wrapper to create, simulate, and analyse network, while saving to master in intervals
 #------------------------------------------------------------------------------
-def createSimulateAnalyzeDistributed(netParams, simConfig, output=False, filename=None, dataDir=None, includeLFP=True):
+def createSimulateAnalyzeDistributed(netParams, simConfig, output=False, filename=None, includeLFP=True):
     """
     Wrapper function to run a simulation saving data in each node
 
@@ -306,9 +302,8 @@ def createSimulateAnalyzeDistributed(netParams, simConfig, output=False, filenam
     (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
     
     sim.runSim()
-    sim.saveDataInNodes(filename=filename, saveLFP=includeLFP, removeTraces=False, dataDir=dataDir)
-    sim.gatherDataFromFiles(gatherLFP=includeLFP, dataDir=dataDir)
-    sim.saveData()
+    sim.saveDataInNodes(filename=filename, saveLFP=includeLFP, removeTraces=False)
+    sim.gatherDataFromFiles(gatherLFP=includeLFP, saveMerged=True)
     sim.analysis.plotData()
 
     if output: 

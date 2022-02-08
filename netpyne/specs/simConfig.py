@@ -145,3 +145,11 @@ class SimConfig(object):
     def todict(self):
         from ..sim import replaceDictODict
         return replaceDictODict(self.__dict__)
+
+    def validateDataSaveOptions(self, printWarning = True):
+        
+        if any([self.savePickle, self.saveJson, self.saveMat, self.saveCSV, self.saveDpk, self.saveHDF5, self.saveDat]):
+            return True
+        if printWarning:
+            print("Warning: data won't be saved. No output format specified (consider sim.cfg.savePickle, sim.cfg.saveJson etc.)")
+        return False

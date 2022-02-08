@@ -27,7 +27,6 @@ sim.runSim()                      			# run parallel Neuron simulation
 
 # distributed saving (to avoid errors with large output data)
 sim.saveDataInNodes()
-sim.gatherDataFromFiles()
-sim.saveData()
+sim.gatherDataFromFiles(saveMerged=True)
 
 sim.analysis.plotData()        

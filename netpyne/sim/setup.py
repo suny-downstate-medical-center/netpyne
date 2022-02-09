@@ -18,7 +18,7 @@ import numpy as np
 from neuron import h # Import NEURON
 from .. import specs
 from ..specs import Dict, ODict
-from . import utils #, validator
+from . import utils, validator
 try:
     from datetime import datetime
 except:
@@ -59,15 +59,6 @@ def initialize(netParams = None, simConfig = None, net = None):
         print('Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)')
         sys.exit()
 
-    if validator.validate_netparams(netParams):
-        print('Good to go')
-    else:
-        print('Bad parameters')
-
-    # for testing validation
-    # if simConfig.exitOnError:
-    #sys.exit()
-
     sim.simData = Dict()  # used to store output simulation data (spikes etc)
     sim.fih = []  # list of func init handlers
     sim.rank = 0  # initialize rank
@@ -78,6 +69,10 @@ def initialize(netParams = None, simConfig = None, net = None):
     sim.cvode = h.CVode()
 
     sim.setSimCfg(simConfig)  # set simulation configuration
+
+    # for testing validation
+    # if simConfig.exitOnError:
+    #sys.exit()
 
     if sim.rank == 0:
         try:
@@ -94,16 +89,16 @@ def initialize(netParams = None, simConfig = None, net = None):
 
     sim.setNetParams(netParams)  # set network parameters
 
-    if sim.nhosts > 1: sim.cfg.checkErrors = False  # turn of error chceking if using multiple cores
+    if sim.nhosts > 1: sim.cfg.validateNetParams = False  # turn of error chceking if using multiple cores
 
-    if hasattr(sim.cfg, 'checkErrors') and sim.cfg.checkErrors: # whether to validate the input parameters
+    if hasattr(sim.cfg, 'validateNetParams') and sim.cfg.validateNetParams: # whether to validate the input parameters
         try:
-            simTestObj = sim.SimTestObj(sim.cfg.checkErrorsVerbose)
-            simTestObj.simConfig = sim.cfg
-            simTestObj.netParams = sim.net.params
-            simTestObj.runTests()
+            if validator.validate_netparams(netParams):
+                print("\nNetParams validation successful ...")
+            else:
+                print("\nNetParams validation identified some potential issues; see above for details...")
         except:
-            print("\nAn exception occurred during the error checking process...")
+            print("\nAn exception occurred during the netParams validation process...")
 
     sim.timing('stop', 'initialTime')
 

@@ -47,20 +47,38 @@ netParams.connParams['I->E'] = {
 
 # Simulation configuration
 simConfig = specs.SimConfig()        # object of class SimConfig to store simulation configuration
-simConfig.duration = 3.0*1e3           # Duration of the simulation, in ms
+simConfig.duration = 1.0*1e3           # Duration of the simulation, in ms
 simConfig.dt = 0.1                # Internal integration timestep to use
 simConfig.verbose = False            # Show detailed messages
 simConfig.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 simConfig.filename = 'net_lfp'   # Set file output name
-
+simConfig.savePickle = True
 simConfig.recordLFP = [[-15, y, 1.0*netParams.sizeZ] for y in range(int(netParams.sizeY/5.0), int(netParams.sizeY), int(netParams.sizeY/5.0))]
+simConfig.saveLFPPops = ['I2', 'E4']
+simConfig.savePickle = True
 
 #simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True, 'saveFig':True, 'figSize': (9,3)}      # Plot a raster
-simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'timeRange': [100,3000], 'saveFig': True} 
+simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'timeRange': [100,1000], 'saveFig': True}
 #simConfig.analysis['getCSD'] = {'spacing_um': 200, 'timeRange': [100,3000], 'vaknin': True}
 #simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'timeRange':[100,900], 'minFreq': 10, 'maxFreq':60, 'norm':1, 'plots': ['spectrogram'], 'showFig': True} 
 simConfig.analysis['plotCSD'] = True #{'timeRange':[100,200]}
 
 # Create network and run simulation
-sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
+#sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
 #sim.analysis.plotCSD(timeRange=[100,3000])
+sim.initialize(
+    simConfig = simConfig, 	
+    netParams = netParams)  				# create network object and set cfg and net params
+sim.net.createPops()               			# instantiate network populations
+sim.net.createCells()              			# instantiate network cells based on defined populations
+sim.net.connectCells()            			# create connections between cells based on params
+sim.net.addStims() 							# add network stimulation
+sim.setupRecording()              			# setup variables to record for each cell (spikes, V traces, etc)
+sim.runSim()                      			# run parallel Neuron simulation  
+#sim.gatherData()                  			# gather spiking data and cell info from each node
+
+# distributed saving (to avoid errors with large output data)
+sim.saveDataInNodes()
+sim.gatherDataFromFiles(saveMerged=True)
+
+sim.analysis.plotData()         			# plot spike raster etc

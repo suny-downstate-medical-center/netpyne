@@ -442,7 +442,7 @@ class CompartCell (Cell):
                     sec['hObj'].connect(self.secs[sectParams['topol']['parentSec']]['hObj'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
 
         # add dipoles
-        if sim.cfg.recordDipoles:
+        if sim.cfg.recordDipolesHNN:
 
             # create a 1-element Vector to store the dipole value for this cell and record from this Vector
             self.dipole = {'hRef': h.Vector(1)}#_ref_[0]} #h._ref_dpl_ref}  #h.Vector(1)
@@ -497,7 +497,7 @@ class CompartCell (Cell):
             if stimParams['type'] == 'NetStim':
                 self.addNetStim(stimParams, stimContainer=stimParams)
 
-            elif stimParams['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
+            else: #if stimParams['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:  
                 stim = getattr(h, stimParams['type'])(self.secs[stimParams['sec']]['hObj'](stimParams['loc']))
                 stimProps = {k:v for k,v in stimParams.items() if k not in ['label', 'type', 'source', 'loc', 'sec', 'hObj']}
                 for stimPropName, stimPropValue in stimProps.items(): # set mechanism internal stimParams
@@ -1100,6 +1100,9 @@ class CompartCell (Cell):
                     if stimParamName in ['weight']:
                         setattr(stim, stimParamName, stimParamValue)
                         stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
+                    else:
+                        setattr(stim, stimParamName, stimParamValue)
+
 
             self.stims.append(params) # add to python structure
             self.stims[-1]['hObj'] = stim  # add stim object to dict in stims list
@@ -1368,6 +1371,10 @@ class CompartCell (Cell):
             # rotated coordinates around z axis 
             self._segCoords['p0'] = p3dsoma 
             self._segCoords['p1'] = p3dsoma
+
+        self._segCoords['d0'] = morphSegCoords['d0']
+        self._segCoords['d1'] = morphSegCoords['d1']
+
 
     def setImembPtr(self):
         """Set PtrVector to point to the i_membrane_"""

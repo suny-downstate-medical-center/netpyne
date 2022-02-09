@@ -59,10 +59,10 @@ def initialize(netParams = None, simConfig = None, net = None):
         print('Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)')
         sys.exit()
 
-    if validator.validate_netparams(netParams):
-        print('Good to go')
-    else:
-        print('Bad parameters')
+    # if validator.validate_netparams(netParams):
+    #     print('Good to go')
+    # else:
+    #     print('Bad parameters')
 
     # for testing validation
     # if simConfig.exitOnError:

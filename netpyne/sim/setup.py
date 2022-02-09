@@ -353,6 +353,66 @@ def setupRecordLFP():
         sim.cfg.use_fast_imem = True
 
 
+
+#------------------------------------------------------------------------------
+# Setup Dipoles Recording (needed for EEG/MEG)
+#------------------------------------------------------------------------------
+def setupRecordDipole():
+    """
+    Function for/to <short description of `netpyne.sim.setup.setupRecordDipole`>
+
+
+    """
+
+
+    from .. import sim
+    import lfpykit
+
+    saveSteps = int(np.ceil(sim.cfg.duration/sim.cfg.recordStep))
+    sim.simData['dipoleSum'] = np.zeros((saveSteps, 3))
+
+    if sim.cfg.saveDipoleCells:
+        if sim.cfg.saveDipoleCells == True:
+            cellsRecordDipole = utils.getCellsList(['all']) # record all cells
+        elif isinstance(sim.cfg.saveDipoleCells, list):
+            cellsRecordDipole = utils.getCellsList(sim.cfg.saveDipoleCells)
+        for c in cellsRecordDipole:
+            sim.simData['dipoleCells'][c.gid] = np.zeros((saveSteps, 3))
+
+    if sim.cfg.saveDipolePops:
+        if sim.cfg.saveDipolePops == True:
+            popsRecordDipole = list(sim.net.pops.keys()) # record all pops
+        elif isinstance(sim.cfg.saveDipolePops, list):
+            popsRecordDipole = [p for p in sim.cfg.saveDipolePops if p in list(sim.net.pops.keys())] # only pops that exist
+            sim.net.popForEachGid = {}
+            for pop in popsRecordDipole:
+                sim.net.popForEachGid.update({gid: pop for gid in sim.net.pops[pop].cellGids})
+        for pop in popsRecordDipole:
+            sim.simData['dipolePops'][pop] = np.zeros((saveSteps, 3))
+
+
+    if not sim.net.params.defineCellShapes: sim.net.defineCellShapes()  # convert cell shapes (if not previously done already)
+    sim.net.calcSegCoords()  # calculate segment coords for each cell
+
+    if sim.cfg.createNEURONObj:
+        for cell in sim.net.compartCells:
+            lfpykitCell = lfpykit.CellGeometry(x=np.array([[p0,p1] for p0,p1 in zip(cell._segCoords['p0'][0], cell._segCoords['p1'][0])]),
+                                        y=np.array([[p0,p1] for p0,p1 in zip(cell._segCoords['p0'][1], cell._segCoords['p1'][1])]),
+                                        z=np.array([[p0,p1] for p0,p1 in zip(cell._segCoords['p0'][2], cell._segCoords['p1'][2])]),
+                                        d=np.array([[d0,d1] for d0,d1 in zip(cell._segCoords['d0'], cell._segCoords['d1'])]))
+
+            cdm = lfpykit.CurrentDipoleMoment(cell=lfpykitCell)
+            cell.M = cdm.get_transformation_matrix()
+                    
+            # set up recording of membrane currents (duplicate with setupRecordLFP -- unifiy and avoid calling twice)
+            nseg = cell._segCoords['p0'].shape[1]
+            cell.imembPtr = h.PtrVector(nseg)  # pointer vector
+            cell.imembPtr.ptr_update_callback(cell.setImembPtr)   # used for gathering an array of  i_membrane values from the pointer vector
+            cell.imembVec = h.Vector(nseg)
+
+        sim.cvode.use_fast_imem(True)   # make i_membrane_ a range variable
+        sim.cfg.use_fast_imem = True
+
 #------------------------------------------------------------------------------
 # Setup Recording
 #------------------------------------------------------------------------------
@@ -453,6 +513,10 @@ def setupRecording():
     # set LFP recording
     if sim.cfg.recordLFP:
         setupRecordLFP()
+
+    # set dipole recording
+    if sim.cfg.recordDipole:
+        setupRecordDipole()
 
     sim.timing('stop', 'setrecordTime')
 

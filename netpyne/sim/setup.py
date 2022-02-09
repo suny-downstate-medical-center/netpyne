@@ -18,7 +18,7 @@ import numpy as np
 from neuron import h # Import NEURON
 from .. import specs
 from ..specs import Dict, ODict
-from . import utils, validator
+from . import utils #, validator
 try:
     from datetime import datetime
 except:

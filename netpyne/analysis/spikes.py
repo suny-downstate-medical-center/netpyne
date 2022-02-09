@@ -45,7 +45,8 @@ def prepareSpikeData(
     fileName=None, 
     fileDesc=None, 
     fileType=None, 
-    fileDir=None, 
+    fileDir=None,
+    calculatePhase=False,
     **kwargs):
     """
     Function to prepare data for creating spike-related plots
@@ -230,16 +231,12 @@ def prepareSpikeHist(
     fileDesc=None, 
     fileType=None, 
     fileDir=None,
-
     binSize=5, 
-    overlay=True, 
-    graphType='line', 
     measure='rate', 
     norm=False, 
     smooth=None, 
     filtFreq=None, 
     filtOrder=3, 
-     
     **kwargs):
     """
     Function to prepare data for creating a spike histogram plot

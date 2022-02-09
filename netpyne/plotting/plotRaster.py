@@ -319,6 +319,7 @@ def plotRaster(
     scatterData['c'] = spkColors
     scatterData['s'] = 5
     scatterData['marker'] = '|'
+    scatterData['markersize'] = 5
     scatterData['linewidth'] = 2
     scatterData['cmap'] = None
     scatterData['norm'] = None
@@ -341,6 +342,10 @@ def plotRaster(
         axisArgs['xlabel'] = 'Time (ms)'
         axisArgs['ylabel'] = 'Cells'
 
+    # It is often useful to invert the ordering of cells, so positions match the legend
+    if orderInverse:
+        axisArgs['invert_yaxis'] = True 
+
     # If a kwarg matches an axis input key, use the kwarg value instead of the default
     for kwarg in kwargs:
         if kwarg in axisArgs.keys():
@@ -352,8 +357,8 @@ def plotRaster(
         kwargs.pop(kwargDel)
 
     # create Plotter object
-    rasterPlotter = ScatterPlotter(data=scatterData, axis=axis, **axisArgs, **kwargs)
-    rasterPlotter.type = 'raster'
+    rasterPlotter = ScatterPlotter(data=scatterData, kind='raster', axis=axis, **axisArgs, **kwargs)
+    multiFig = rasterPlotter.multifig
 
     # add legend
     if legend:
@@ -399,12 +404,11 @@ def plotRaster(
         maxLabelLen = max([len(label) for label in popLabels])
         rasterPlotter.fig.subplots_adjust(right=(rightOffset - 0.012 * maxLabelLen))
 
-    # It is often useful to invert the ordering of cells, so positions match the legend
-    if orderInverse: 
-        rasterPlotter.axis.invert_yaxis()
-
     # Generate the figure
     rasterPlot = rasterPlotter.plot(**axisArgs, **kwargs)
+
+    if axis is None:
+        multiFig.finishFig(**kwargs)
 
     # Default is to return the figure, but you can also return the plotter
     if returnPlotter:

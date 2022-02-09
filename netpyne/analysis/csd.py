@@ -555,7 +555,7 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
             layerKeys = []
         for i in layer_bounds.keys():
             axs[0].hlines(layer_bounds[i], xmin, xmax, colors='black', linewidth=1, linestyles='dotted') 
-        layerKeys.append(i)
+            layerKeys.append(i)
 
         for n in range(len(layerKeys)):
             if n == 0:

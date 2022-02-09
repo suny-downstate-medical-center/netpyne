@@ -13,10 +13,15 @@ standard_library.install_aliases()
 import warnings
 warnings.filterwarnings("ignore")
 
-from .plotter import GeneralPlotter, ScatterPlotter, LinePlotter, HistPlotter
+from .plotter import MultiFigure, GeneralPlotter, ScatterPlotter, LinePlotter, HistPlotter, ImagePlotter
 from .plotRaster import plotRaster
 from .plotSpikeHist import plotSpikeHist
-from .plotTraces import plotTraces
+from .plotSpikeFreq import plotSpikeFreq
+from .plotLFPTimeSeries import plotLFPTimeSeries
+from .plotLFPPSD import plotLFPPSD
+from .plotLFPSpectrogram import plotLFPSpectrogram
+from .plotLFPLocations import plotLFPLocations
+from .plotShape import plotShape
 
 
 

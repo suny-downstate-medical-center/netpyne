@@ -16,7 +16,7 @@ def runBatch(b, label, setup='mpi_bulletin'):
     if setup == 'mpi_bulletin':
         b.runCfg = {'type': 'mpi_bulletin',
                     'script': 'init.py',
-                    'skip': True}
+                    'skip': False}
 
     elif setup == 'hpc_slurm_comet':
         b.runCfg = {'type': 'hpc_slurm',
@@ -43,8 +43,8 @@ def runBatchComet(b, label):
 
 
 def batchNa():
-	params = {'dendNa': [0.025, 0.03, 0.035, 0.4],
-			('IClamp1', 'amp'): list(np.arange(-2.0, 8.0, 0.5)/10.0)}
+	params = {'dendNa': [0.025],#, 0.03, 0.035, 0.4],
+			('IClamp1', 'amp'): [-2.0]} #list(np.arange(-2.0, 8.0, 0.5)/10.0)}
 	initCfg = {'duration': 1.1, 'tau1NMDA': 15}
 	b = Batch(params=params, initCfg=initCfg)
 	runBatch(b, 'batchNa', setup='mpi_bulletin')

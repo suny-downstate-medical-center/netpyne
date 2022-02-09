@@ -156,6 +156,9 @@ def setNetParams(params):
     else:
         sim.net.params = specs.NetParams()
 
+    # set mapping from netParams variables to cfg (used in batch)
+    sim.net.params.setCfgMapping(sim.cfg) 
+
 
 #------------------------------------------------------------------------------
 # Set simulation config

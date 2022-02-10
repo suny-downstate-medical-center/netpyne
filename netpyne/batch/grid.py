@@ -82,6 +82,43 @@ def runJob(script, cfgSavePath, netParamsSavePath, processes): #, jobName):
     #stderr=open(jobName+'.err','w')
     #proc = Popen(command.split(' '), stdout=stdout, stderr=stderr)
     #processes.append(proc)
+
+# -------------------------------------------------------------------------------
+# Generate parameter combinations
+# -------------------------------------------------------------------------------
+def generateParamCombinations(batch):
+
+    # iterate over all param combinations
+    groupedParams = False
+    ungroupedParams = False
+    for p in batch.params:
+        if 'group' not in p:
+            p['group'] = False
+            ungroupedParams = True
+        elif p['group'] == True:
+            groupedParams = True
+
+    if ungroupedParams:
+        labelList, valuesList = zip(*[(p['label'], p['values']) for p in batch.params if p['group'] == False])
+        valueCombinations = list(product(*(valuesList)))
+        indexCombinations = list(product(*[range(len(x)) for x in valuesList]))
+    else:
+        valueCombinations = [(0,)] # this is a hack -- improve!
+        indexCombinations = [(0,)]
+        labelList = ()
+        valuesList = ()
+
+    if groupedParams:
+        labelListGroup, valuesListGroup = zip(*[(p['label'], p['values']) for p in batch.params if p['group'] == True])
+        valueCombGroups = zip(*(valuesListGroup))
+        indexCombGroups = zip(*[range(len(x)) for x in valuesListGroup])
+        labelList = labelListGroup+labelList
+    else:
+        valueCombGroups = [(0,)] # this is a hack -- improve!
+        indexCombGroups = [(0,)]
+
+    return groupedParams, ungroupedParams, indexCombGroups, valueCombGroups, indexCombinations, valueCombinations, labelList, valuesList
+
 # -------------------------------------------------------------------------------
 # Grid Search optimization
 # -------------------------------------------------------------------------------
@@ -101,6 +138,15 @@ def gridSearch(batch, pc):
 
 
     """
+
+    # create main sim directory and save scripts
+    batch.saveScripts()
+    netParamsSavePath = batch.netParamsSavePath
+
+    # set initial cfg initCfg
+    if len(batch.initCfg) > 0:
+        for paramLabel, paramVal in batch.initCfg.items():
+            batch.setCfgNestedParam(paramLabel, paramVal)
 
     if batch.runCfg.get('type',None) == 'mpi_bulletin':
         pc.runworker() # only 1 runworker needed in rank0
@@ -156,34 +202,9 @@ def gridSearch(batch, pc):
             gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles)
 
     elif batch.method == 'grid': # iterate over all param combinations
-        groupedParams = False
-        ungroupedParams = False
-        for p in batch.params:
-            if 'group' not in p:
-                p['group'] = False
-                ungroupedParams = True
-            elif p['group'] == True:
-                groupedParams = True
-
-        if ungroupedParams:
-            labelList, valuesList = zip(*[(p['label'], p['values']) for p in batch.params if p['group'] == False])
-            valueCombinations = list(product(*(valuesList)))
-            indexCombinations = list(product(*[range(len(x)) for x in valuesList]))
-        else:
-            valueCombinations = [(0,)] # this is a hack -- improve!
-            indexCombinations = [(0,)]
-            labelList = ()
-            valuesList = ()
-
-        if groupedParams:
-            labelListGroup, valuesListGroup = zip(*[(p['label'], p['values']) for p in batch.params if p['group'] == True])
-            valueCombGroups = zip(*(valuesListGroup))
-            indexCombGroups = zip(*[range(len(x)) for x in valuesListGroup])
-            labelList = labelListGroup+labelList
-        else:
-            valueCombGroups = [(0,)] # this is a hack -- improve!
-            indexCombGroups = [(0,)]
-
+        
+      
+      
         for iCombG, pCombG in zip(indexCombGroups, valueCombGroups):
             for iCombNG, pCombNG in zip(indexCombinations, valueCombinations):
                 if groupedParams and ungroupedParams: # temporary hack - improve

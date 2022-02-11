@@ -76,11 +76,12 @@ def runJob(script, cfgSavePath, netParamsSavePath, processes, jobName):
 
     stdout=open(jobName+'.run','w')
     stderr=open(jobName+'.err','w')
-    proc = Popen(command.split(' '), stdout=stdout, stderr=stderr)
+    #proc = Popen(command.split(' '), stdout=stdout, stderr=stderr)
+    proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
 
-    # proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
+    stdout.write(proc.stdout.read().decode())
+    stderr.write(proc.stderr.read().decode())
     
-    #print(proc.stdout.read().decode())
     processes.append(proc)
 
 # -------------------------------------------------------------------------------

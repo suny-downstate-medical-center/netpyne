@@ -45,6 +45,7 @@ def plotLFPTimeSeries(
             sim=sim,
             timeRange=timeRange,
             electrodes=electrodes, 
+            pop=pop,
             LFPData=LFPData, 
             logy=logy, 
             normSignal=normSignal, 
@@ -83,7 +84,10 @@ def plotLFPTimeSeries(
     # Create a dictionary to hold axis inputs
     if not axisArgs:
         axisArgs = {}
-        axisArgs['title'] = 'LFP Time Series Plot'
+        title = 'LFP Time Series Plot'
+        if pop:
+            title += ' - Population: ' + pop
+        axisArgs['title'] = title
         axisArgs['xlabel'] = 'Time (ms)'
         axisArgs['ylabel'] = 'LFP Signal (uV)'
 

@@ -103,7 +103,10 @@ def plotLFPPSD(
     # Create a dictionary to hold axis inputs
     if not axisArgs:
         axisArgs = {}
-        axisArgs['title'] = 'LFP Power Spectral Density'
+        title = 'LFP Power Spectral Density'
+        if pop:
+            title += ' - Population: ' + pop
+        axisArgs['title'] = title
         axisArgs['xlabel'] = 'Frequency (Hz)'
         axisArgs['ylabel'] = 'Power (arbitrary units)'
 

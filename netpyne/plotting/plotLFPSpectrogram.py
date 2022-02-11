@@ -18,6 +18,7 @@ def plotLFPSpectrogram(
     axis=None, 
     timeRange=None,
     electrodes=['avg', 'all'],
+    pop=None,
     NFFT=256,
     noverlap=128, 
     nperseg=256,
@@ -47,6 +48,7 @@ def plotLFPSpectrogram(
             sim=sim,
             timeRange=timeRange,
             electrodes=electrodes, 
+            pop=pop,
             NFFT=NFFT, 
             noverlap=noverlap, 
             nperseg=nperseg, 
@@ -106,7 +108,10 @@ def plotLFPSpectrogram(
 
         # Create a dictionary to hold axis inputs
         axisArgs = {}
-        axisArgs['title'] = 'Electrode ' + name
+        title = 'Electrode ' + name
+        if pop:
+            title += ' - Population: ' + pop
+        axisArgs['title'] = title
         axisArgs['xlabel'] = 'Time (ms)'
         axisArgs['ylabel'] = 'Frequency (Hz)'
 

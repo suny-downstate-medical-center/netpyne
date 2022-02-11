@@ -5,6 +5,7 @@ import netpyne
 def plotLFP(
     timeRange=None, 
     electrodes=['avg', 'all'], 
+    pop=None,
     plots=['timeSeries', 'PSD', 'spectrogram', 'locations'], 
     inputLFP=None, 
     NFFT=256, 
@@ -40,6 +41,7 @@ def plotLFP(
         netpyne.plotting.plotLFPTimeSeries(
             timeRange=timeRange,
             electrodes=electrodes,
+            pop=pop,
             separation=separation,
             logy=logy,
             normSignal=normSignal, 
@@ -59,6 +61,7 @@ def plotLFP(
         netpyne.plotting.plotLFPPSD(
             timeRange=timeRange,
             electrodes=electrodes,
+            pop=pop,
             roundOffset=True,
             separation=separation,
             NFFT=NFFT,
@@ -87,6 +90,7 @@ def plotLFP(
         netpyne.plotting.plotLFPSpectrogram(
             timeRange=timeRange,
             electrodes=electrodes,
+            pop=pop,
             NFFT=NFFT,
             noverlap=noverlap, 
             nperseg=nperseg,

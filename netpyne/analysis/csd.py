@@ -183,9 +183,9 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
 
     """
 
-    # DEFAULT -- CONDITION 1 : LFP DATA COMES FROM SIMULATION 
+    ### DEFAULT -- CONDITION 1 : LFP DATA COMES FROM SIMULATION ###
 
-    # if no inputs are given, get LFP data from simulation
+    # Get LFP data from simulation
     if LFP_input_data is None and LFP_input_file is None:
         
         try:
@@ -208,17 +208,23 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
         # Sampling rate of data recording during the simulation 
         if sampr is None:
             # divide by 1000.0 to turn denominator from units of ms to s
-            sampr = 1.0/(sim.cfg.recordStep/1000.0) 
+            sampr = 1.0/(dt/1000.0) # sim.cfg.recordStep --> == dt
 
-        # Spacing between electrodes --> convert from micron to mm 
+        # Spacing between electrodes (in microns)
         if spacing_um is None:
             spacing_um = sim.cfg.recordLFP[1][1] - sim.cfg.recordLFP[0][1]
 
+        ## This retrieves: 
+        #   lfp_data (as an array)
+        #   dt --> recording time step (in ms)
+        #   sampr --> sampling rate of data recording (in Hz)
+        #   spacing_um --> spacing btwn electrodes (in um)
 
-    # CONDITION 2 : ARBITRARY LFP DATA 
-    # Note: need to expand capability to include a list of multiple files 
+
+
+    ### CONDITION 2 : LFP DATA FROM SIM .JSON FILE ###     # Note: need to expand capability to include a list of multiple files 
   
-    # load sim data from a JSON file
+    # load sim data from JSON file
     elif LFP_input_data is None and '.json' in LFP_input_file:
     
         data = {}
@@ -232,7 +238,7 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
 
         # extract LFP data (only works in the 1 input file scenario; expand capability for multiple files) 
         for key in data.keys:
-            lfp_data_list = data[key]['simData']['LFP']              
+            lfp_data_list = data[key]['simData']['LFP']
         
         # cast LFP data as Numpy array 
         lfp_data = np.array(lfp_data_list)
@@ -260,13 +266,22 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
             else:
                 csd_data[i]['dt'] = dt
 
+        ## This retrieves: 
+        #   lfp_data (as a list)
+        #   dt --> recording time step (in ms)
+        #   sampr --> sampling rate of data recording (in Hz)
+        #   spacing_um --> spacing btwn electrodes (in um)
 
 
-    # FOR LIST OF LFP DATA WITHOUT ANY .JSON INPUT FILE
+
+    ### CONDITION 3 : ARBITRARY LFP DATA ###    # NOTE: for condition 3 --> need to also retrieve the dt, sampr, and spacing_um !!
 
     # get lfp_data and cast as numpy array
-    elif len(LFP_input_data) > 0 and LFP_input_file is None:     
-        lfp_data = np.array(LFP_input_data)  
+    elif len(LFP_input_data) > 0 and LFP_input_file is None:
+        lfp_data = np.array(LFP_input_data)
+
+
+    ####################################
 
     # Convert spacing from microns to mm 
     spacing_mm = spacing_um/1000
@@ -279,6 +294,7 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
         ax = 1
     else:
         ax = 0
+    print('ax = ' + str(ax))
 
     # Vaknin correction
     if vaknin: 
@@ -290,7 +306,6 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
 
     # now each column (or row) is an electrode -- take CSD along electrodes
     CSD_data = -np.diff(datband, n=2, axis=ax)/spacing_mm**2  
-  
 
     
     # noBandpass trial 
@@ -307,7 +322,7 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
     if norm:
         removemean(datband_noBandpass, ax=ax)
   
-    CSD_data_noBandpass = -np.diff(datband_noBandpass,n=2,axis=ax)/spacing_mm**2 
+    CSD_data_noBandpass = -np.diff(datband_noBandpass,n=2,axis=ax)/spacing_mm**2
 
 
     # Add CSD and other param values to sim.allSimData for later access
@@ -326,14 +341,14 @@ def getCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacin
     if getAllData is True:
         return lfp_data, CSD_data, sampr, spacing_um, dt
     if getAllData is False:
-        return CSD_data       
+        return CSD_data
 
 
 
 # PLOTTING CSD 
 
 @exception
-def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sampr=None, stim_start_time=None, spacing_um=None, ymax=None, dt=None, hlines=False, layer_lines=False, layer_bounds=None, smooth=None, fontSize=12, figSize=(10,10),dpi=200, saveFig=True, showFig=True): 
+def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sampr=None, stim_start_time=None, spacing_um=None, ymax=None, dt=None, hlines=False, layerLines=False, layerBounds=None, smooth=True, fontSize=12, figSize=(8,8),dpi=200, saveFig=True, showFig=True): 
     """
     Function to plot CSD values extracted from simulated LFP data 
       
@@ -347,10 +362,11 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
         LFP data provided by user (mV).  Each element of the list/array must be a list/array containing LFP data for an electrode. 
         **Default:** ``None`` pulls the data from the current NetPyNE sim object.
 
+
     overlay : str
-        Option to include other data overlaid on CSD color map plot. 
-        **Default:** ``None``
-        **Options:** ``'CSD_raw'``, ``'CSD_bandpassed'``, ``'LFP'``
+        Option to include LFP data overlaid on CSD color map plot. 
+        **Default:** ``None`` provides no overlay 
+        OPTIONS are 'LFP' or 'CSD'
 
     timeRange : list
         Time range to plot [start, stop].
@@ -381,11 +397,11 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
         Option to include horizontal lines on plot to indicate electrode positions. 
         **Default:** ``False`` 
 
-    layer_lines : bool 
+    layerLines : bool 
         Whether to plot horizontal lines over CSD plot at layer boundaries. 
         **Default:** ``False`` 
 
-    layer_bounds : dict
+    layerBounds : dict
         Dictionary containing layer labels as keys, and layer boundaries as values, e.g. {'L1':100, 'L2': 160, 'L3': 950, 'L4': 1250, 'L5A': 1334, 'L5B': 1550, 'L6': 2000}
         **Default:** ``None``
 
@@ -406,34 +422,49 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
     if CSD_data is None:
     
         from .. import sim
-        lfp_data, CSD_data, sampr, spacing_um, dt = getCSD(sampr=sampr, spacing_um=spacing_um, dt=dt, getAllData=True)
+        LFP_data, CSD_data, sampr, spacing_um, dt = getCSD(getAllData=True) #getCSD(sampr=sampr, spacing_um=spacing_um, dt=dt, getAllData=True)
 
-        sim_data_categories = sim.allSimData.keys()
+        if timeRange is None:
+            timeRange = [0,sim.cfg.duration] 
+
+        tt = np.arange(timeRange[0], timeRange[1], dt)
+
+        ymax = sim.cfg.recordLFP[-1][1] + spacing_um 
+
+        LFP_data = np.array(LFP_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]
+        CSD_data = CSD_data[:,int(timeRange[0]/dt):int(timeRange[1]/dt)]
+
+        CSD_data_noBandpass = sim.allSimData['CSD']['CSD_data_noBandpass'][:,int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep)]
+        #CSD_data_noBandpass = CSD_data_noBandpass[:,int(timeRange[0]/dt):int(timeRange[1]/dt)]
+
+
+        ### The problem with this setup is that it defaults to whatever was saved in .pkl !!
+        # sim_data_categories = sim.allSimData.keys()
         
-        if 'CSD' in sim_data_categories:
+        # if 'CSD' in sim_data_categories:  
 
-            if timeRange is None:
-                timeRange = [0,sim.cfg.duration] 
+        #     if timeRange is None:
+        #         timeRange = [0,sim.cfg.duration] 
 
-            dt = sim.cfg.recordStep
-            tt = np.arange(timeRange[0],timeRange[1],dt)
+        #     dt = sim.cfg.recordStep
+        #     tt = np.arange(timeRange[0],timeRange[1],dt)
 
-            spacing_um = sim.allSimData['CSD']['spacing_um']
-            spacing_mm = spacing_um/1000 
+        #     spacing_um = sim.allSimData['CSD']['spacing_um']
+        #     #spacing_mm = spacing_um/1000 
 
-            ymax = sim.cfg.recordLFP[-1][1] + spacing_um
+        #     ymax = sim.cfg.recordLFP[-1][1] + spacing_um
 
-            # get LFP data
-            LFP_data = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+        #     # get LFP data
+        #     LFP_data = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
 
-            # get CSD data
-            CSD_data = sim.allSimData['CSD']['CSD_data'][:,int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep)]  
+        #     # get CSD data
+        #     CSD_data = sim.allSimData['CSD']['CSD_data'][:,int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep)]  
 
-            # noBandpass trial
-            CSD_data_noBandpass = sim.allSimData['CSD']['CSD_data_noBandpass'][:,int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep)]
+        #     # noBandpass trial
+        #     CSD_data_noBandpass = sim.allSimData['CSD']['CSD_data_noBandpass'][:,int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep)]
       
-        else:
-            raise Exception('No CSD data in sim.')
+        # else:
+        #     raise Exception('No CSD data in sim.')
 
 
     # CONDITION 2 : ARBITRARY CSD DATA 
@@ -460,7 +491,7 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
 
         tt = np.arange(timeRange[0], timeRange[1], dt)
         LFP_data = np.array(LFP_input_data)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]
-        
+
 
     # PLOTTING 
     X = np.arange(timeRange[0], timeRange[1], dt)
@@ -484,7 +515,7 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
     # create plots w/ common axis labels and tick marks
     axs = []
     numplots = 1
-    gs_outer = matplotlib.gridspec.GridSpec(2, 2, figure=fig, wspace=0.4, hspace=0.2, height_ratios=[20, 1])
+    gs_outer = matplotlib.gridspec.GridSpec(1,1)#(2, 2, figure=fig)#, wspace=0.4, hspace=0.2, height_ratios=[20, 1])
 
     for i in range(numplots):
         axs.append(plt.Subplot(fig,gs_outer[i*2:i*2+2]))
@@ -493,42 +524,36 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
         axs[i].tick_params(axis='y', which='major', labelsize=fontSize)
         axs[i].tick_params(axis='x', which='major', labelsize=fontSize)
 
-    # plot interpolated CSD color map 
-    if smooth:
-        Z = scipy.ndimage.filters.gaussian_filter(Z, smooth, mode='nearest')
+    ## plot interpolated CSD color map 
+    #if smooth:
+    #    Z = scipy.ndimage.filters.gaussian_filter(Z, sigma = 5, mode='nearest')#smooth, mode='nearest')
 
     spline=axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r', alpha=0.9) 
     axs[0].set_ylabel('Contact depth (um)', fontsize=fontSize)
 
-    # set Title of plot & overlay data (CSD_raw, CSD_bandpassed, or LFP)  
-    if overlay is 'CSD_raw' or overlay is 'CSD_bandpassed' or overlay is 'LFP':
+
+    # OVERLAY DATA ('LFP', 'CSD', or None) & Set title of plot 
+    if overlay is None:
+        print('No data being overlaid')
+        axs[0].set_title('Current Source Density (CSD)', fontsize=fontSize)
+
+    elif overlay is 'CSD' or overlay is 'LFP':
         nrow = LFP_data.shape[1]
         gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(nrow, 1, subplot_spec=gs_outer[0:2], wspace=0.0, hspace=0.0)
         subaxs = []
 
-        # go down grid and add data from each channel
-        if overlay == 'CSD_raw':
-            axs[0].set_title('CSD with raw CSD time series overlay', fontsize=fontSize)
+        if overlay == 'CSD':
+            axs[0].set_title('CSD with time series overlay', fontsize=fontSize) 
             for chan in range(nrow):
                 subaxs.append(plt.Subplot(fig, gs_inner[chan], frameon=False))
                 fig.add_subplot(subaxs[chan])
                 subaxs[chan].margins(0.0,0.01)
                 subaxs[chan].get_xaxis().set_visible(False)
                 subaxs[chan].get_yaxis().set_visible(False)
-                subaxs[chan].plot(X, CSD_data_noBandpass[chan,:], color='red', linewidth=0.4)
-    
-        elif overlay == 'CSD_bandpassed':
-            axs[0].set_title('CSD with Bandpassed CSD time series overlay', fontsize=fontSize) 
-            for chan in range(nrow):
-                subaxs.append(plt.Subplot(fig, gs_inner[chan], frameon=False))
-                fig.add_subplot(subaxs[chan])
-                subaxs[chan].margins(0.0,0.01)
-                subaxs[chan].get_xaxis().set_visible(False)
-                subaxs[chan].get_yaxis().set_visible(False)
-                subaxs[chan].plot(X, CSD_data[chan,:], color='blue', linewidth=0.3)
+                subaxs[chan].plot(X, CSD_data[chan,:], color='green', linewidth=0.3) # 'blue'
 
         elif overlay == 'LFP':
-            axs[0].set_title('CSD with LFP overlay', fontsize=14) 
+            axs[0].set_title('CSD with LFP overlay', fontsize=fontSize) 
             for chan in range(nrow):
                 subaxs.append(plt.Subplot(fig, gs_inner[chan], frameon=False))
                 fig.add_subplot(subaxs[chan])
@@ -538,7 +563,7 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
                 subaxs[chan].plot(X, LFP_data[:,chan], color='gray', linewidth=0.3)
 
     else:
-        print('No data being overlaid')
+        print('Invalid option specified for overlay argument -- no data overlaid')
         axs[0].set_title('Current Source Density (CSD)', fontsize=fontSize)
 
 
@@ -546,22 +571,22 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
     # add horizontal lines at electrode locations
     if hlines:
         for i in range(len(sim.cfg.recordLFP)):
-            axs[0].hlines(sim.cfg.recordLFP[i][1], xmin, xmax, colors='black', linestyles='dashed')
+            axs[0].hlines(sim.cfg.recordLFP[i][1], xmin, xmax, colors='pink', linewidth=1, linestyles='dashed')
 
-    if layer_lines: 
-        if layer_bounds is None:
-            print('No layer boundaries given')
+    if layerLines:  
+        if layerBounds is None:
+            print('No layer boundaries given -- will not overlay layer boundaries on CSD plot')
         else:
             layerKeys = []
-        for i in layer_bounds.keys():
-            axs[0].hlines(layer_bounds[i], xmin, xmax, colors='black', linewidth=1, linestyles='dotted') 
-            layerKeys.append(i)
+            for i in layerBounds.keys():
+                axs[0].hlines(layerBounds[i], xmin, xmax, colors='black', linewidth=1, linestyles='dotted') 
+                layerKeys.append(i) # makes a list with names of each layer, as specified in layerBounds dict argument 
 
-        for n in range(len(layerKeys)):
-            if n == 0:
-                axs[0].text(xmax+5, layer_bounds[layerKeys[n]]/2, layerKeys[n], color='black', fontsize=fontSize)
-            else:
-                axs[0].text(xmax+5, (layer_bounds[layerKeys[n]] + layer_bounds[layerKeys[n-1]])/2, layerKeys[n], color='black', fontsize=fontSize)
+            for n in range(len(layerKeys)): # label the horizontal layer lines with the proper layer label 
+                if n == 0:
+                    axs[0].text(xmax+5, layerBounds[layerKeys[n]]/2, layerKeys[n], color='black', fontsize=fontSize)
+                else:
+                    axs[0].text(xmax+5, (layerBounds[layerKeys[n]] + layerBounds[layerKeys[n-1]])/2, layerKeys[n], color='black', fontsize=fontSize, verticalalignment='center')
 
     # set vertical line at stimulus onset
     if type(stim_start_time) is int or type(stim_start_time) is float:
@@ -580,5 +605,5 @@ def plotCSD(CSD_data=None, LFP_input_data=None, overlay=None, timeRange=None, sa
             plt.savefig('CSD_fig.png', dpi=dpi)
 
     # display figure
-    if showFig is True:
+    if showFig:
         plt.show()

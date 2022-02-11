@@ -512,7 +512,6 @@ class ImagePlotter(GeneralPlotter):
         self.extent        = data.get('extent', None) 
         self.aspect        = data.get('aspect', None) 
         self.interpolation = data.get('interpolation', None)
-        self.interpolation_stage = data.get('interpolation_stage', None) 
         self.filternorm    = data.get('filternorm', True)
         self.filterrad     = data.get('filterrad', 4.0)
         self.resample      = data.get('resample', None)  
@@ -521,7 +520,7 @@ class ImagePlotter(GeneralPlotter):
 
     def plot(self, **kwargs):
 
-        imagePlot = self.axis.imshow(self.X, cmap=self.cmap, norm=self.norm, aspect=self.aspect, interpolation=self.interpolation, alpha=self.alpha, vmin=self.vmin, vmax=self.vmax, origin=self.origin, extent=self.extent, interpolation_stage=self.interpolation_stage, filternorm=self.filternorm, filterrad=self.filterrad, resample=self.resample, url=self.url, data=self.data)
+        imagePlot = self.axis.imshow(self.X, cmap=self.cmap, norm=self.norm, aspect=self.aspect, interpolation=self.interpolation, alpha=self.alpha, vmin=self.vmin, vmax=self.vmax, origin=self.origin, extent=self.extent, filternorm=self.filternorm, filterrad=self.filterrad, resample=self.resample, url=self.url, data=self.data)
 
         self.finishAxis(**kwargs)
 

@@ -125,6 +125,9 @@ def prepareLFP(
         elif elec == 'avg':
             lfpSignal = np.mean(lfp, axis=1)
             loc = None
+        elif isinstance(elec, list) and (LFPData is not None or all([x <= sim.net.recXElectrode.nsites for x in elec])):
+                lfpSignal = np.mean(lfp[:, elec], axis=1)
+                loc = None
 
         if len(t) < len(lfpSignal):
             lfpSignal = lfpSignal[:len(t)]

@@ -8,6 +8,10 @@ from .plotter import ScatterPlotter
 
 @exception
 def plotRaster(
+    timeRange=None, 
+    maxSpikes=1e8, 
+    orderBy='gid', 
+    popRates=True,
     rasterData=None, 
     popNumCells=None, 
     popLabels=None, 
@@ -229,7 +233,14 @@ def plotRaster(
         else:
             sim = kwargs['sim']
 
-        rasterData = sim.analysis.prepareRaster(legend=legend, popLabels=popLabels, **kwargs)
+        rasterData = sim.analysis.prepareRaster(
+            legend=legend, 
+            popLabels=popLabels,
+            timeRange=timeRange, 
+            maxSpikes=maxSpikes, 
+            orderBy=orderBy, 
+            popRates=popRates,
+            **kwargs)
 
     print('Plotting raster...')
 
@@ -242,6 +253,7 @@ def plotRaster(
     
         spkTimes = rasterData['spkTimes']
         spkInds = rasterData['spkInds']
+        spkGids = rasterData['spkGids']
 
         if not popNumCells:
             popNumCells = rasterData.get('popNumCells')
@@ -292,17 +304,17 @@ def plotRaster(
         popColorsTemp.update(popColors)
     popColors = popColorsTemp
 
-    # Create a list to link cells to their populations
-    indPop = []
+    # Create a list to link cell GIDs to their populations
+    gidPop = []
     for popLabel, popNumCell in zip(popLabels, popNumCells):
-        indPop.extend(int(popNumCell) * [popLabel])
+        gidPop.extend(int(popNumCell) * [popLabel])
 
     # Create a dictionary to link cells to their population color
-    cellGids = list(set(spkInds))
-    gidColors = {cellGid: popColors[indPop[cellGid]] for cellGid in cellGids}  
+    cellGids = list(set(spkGids))
+    gidColors = {cellGid: popColors[gidPop[int(cellGid)]] for cellGid in cellGids}  
     
     # Create a list of spkColors to be fed into the scatter plot
-    spkColors = [gidColors[spkInd] for spkInd in spkInds]
+    spkColors = [gidColors[spkGid] for spkGid, spkInd in zip(spkGids, spkInds)]
 
     # Set the time range appropriately
     if 'timeRange' in kwargs:

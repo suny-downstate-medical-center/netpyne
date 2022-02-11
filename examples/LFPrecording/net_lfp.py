@@ -61,9 +61,11 @@ simConfig.savePickle = True
 simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'timeRange': [100,1000], 'saveFig': True}  # optional: 'pop': 'E4'
 #simConfig.analysis['getCSD'] = {'spacing_um': 200, 'timeRange': [100,3000], 'vaknin': True}
 #simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'timeRange':[100,900], 'minFreq': 10, 'maxFreq':60, 'norm':1, 'plots': ['spectrogram'], 'showFig': True} 
-simConfig.analysis['plotCSD'] = True #{'timeRange':[100,200]}
+#simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'timeRange':[100,900], 'plots': ['spectrogram'], 'showFig': True} 
+#simConfig.analysis['plotCSD'] = True #{'timeRange':[100,200]}
 
 # Create network and run simulation
+
 #sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
 #sim.analysis.plotCSD(timeRange=[100,3000])
 sim.initialize(

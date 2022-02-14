@@ -7,7 +7,7 @@ from ..analysis.tools import loadData
 from .plotter import HistPlotter
 
 
-#@exception
+@exception
 def plotSpikeHist(
     histData=None, 
     popNumCells=None, 
@@ -239,7 +239,7 @@ def plotSpikeHist(
         else:
             sim = kwargs['sim']
 
-        histData = sim.analysis.prepareSpikeHist(legend=legend, popLabels=popLabels, **kwargs)
+        histData = sim.analysis.prepareSpikeHist(**kwargs)
 
     print('Plotting spike histogram...')
 
@@ -365,8 +365,8 @@ def plotSpikeHist(
 
     # If a kwarg matches a histogram input key, use the kwarg value instead of the default
     for kwarg in kwargs:
-        if kwarg in histData:
-            histData[kwarg] = kwargs[kwarg]
+        if kwarg in plotData:
+            plotData[kwarg] = kwargs[kwarg]
             kwargDels.append(kwarg)
 
     # Create a dictionary to hold axis inputs
@@ -422,25 +422,27 @@ def plotSpikeHist(
 
     # Go through each population
     for popIndex, popLabel in enumerate(popLabels):
+
+        if popLabel in include:
         
-        # Get GIDs for this population
-        currentGids = popGids[popIndex]
+            # Get GIDs for this population
+            currentGids = popGids[popIndex]
 
-        # Use GIDs to get a spiketimes list for this population
-        spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in currentGids]))
+            # Use GIDs to get a spiketimes list for this population
+            spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in currentGids]))
 
-        # Append the population spiketimes list to histPlotter.x
-        histPlotter.x.append(spkts)
+            # Append the population spiketimes list to histPlotter.x
+            histPlotter.x.append(spkts)
 
-        # Append the population color to histPlotter.color
-        histPlotter.color.append(popColors[popLabel])
+            # Append the population color to histPlotter.color
+            histPlotter.color.append(popColors[popLabel])
 
-        # Append the legend labels and handles
-        if legendLabels:
-            labels.append(legendLabels[popIndex])
-        else:
-            labels.append(popLabel)
-        handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=popColors[popLabel]))
+            # Append the legend labels and handles
+            if legendLabels:
+                labels.append(legendLabels[popIndex])
+            else:
+                labels.append(popLabel)
+            handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=popColors[popLabel]))
 
     # Set up the default legend settings
     legendKwargs = {}

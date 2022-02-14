@@ -231,7 +231,7 @@ def gridSearch(self, pc):
             sleepInterval = 1
 
             # skip if output file already exists
-            if self.runCfg.get('skip', False) and glob.glob(jobName+'.json'):
+            if self.runCfg.get('skip', False) and glob.glob(jobName+'_data.json'):
                 print('Skipping job %s since output file already exists...' % (jobName))
             elif self.runCfg.get('skipCfg', False) and glob.glob(jobName+'_cfg.json'):
                 print('Skipping job %s since cfg file already exists...' % (jobName))

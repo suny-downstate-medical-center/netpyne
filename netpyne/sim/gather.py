@@ -11,6 +11,8 @@ from __future__ import absolute_import
 import os, pickle
 from builtins import zip
 from future import standard_library
+
+from netpyne.support.recxelectrode import RecXElectrode
 standard_library.install_aliases()
 import numpy as np
 from ..specs import Dict, ODict
@@ -151,6 +153,9 @@ def gatherData(gatherLFP=True, gatherDipole=True):
         # gather cells, pops and sim data
         else:
             nodeData = {'netCells': [c.__getstate__() for c in sim.net.cells], 'netPopsCellGids': netPopsCellGids, 'simData': sim.simData}
+            if gatherLFP and hasattr(sim.net, 'recXElectrode'):
+                nodeData['xElectrodeTransferResistances'] = sim.net.recXElectrode.transferResistances
+
             data = [None]*sim.nhosts
             data[0] = {}
             for k,v in nodeData.items():
@@ -165,6 +170,7 @@ def gatherData(gatherLFP=True, gatherDipole=True):
                 for popLabel,pop in sim.net.pops.items(): allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
                 allPopsCellGids = {popLabel: [] for popLabel in netPopsCellGids}
                 sim.allSimData = Dict()
+                allResistances = {}
 
                 for k in list(gather[0]['simData'].keys()):  # initialize all keys of allSimData dict
                     if gatherLFP and k == 'LFP':
@@ -206,6 +212,8 @@ def gatherData(gatherLFP=True, gatherDipole=True):
                             sim.allSimData[key] += np.array(val)
                         elif key not in singleNodeVecs:
                             sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
+                    if 'xElectrodeTransferResistances' in node:
+                        allResistances.update(node['xElectrodeTransferResistances'])
 
                 if len(sim.allSimData['spkt']) > 0:
                     sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
@@ -217,6 +225,7 @@ def gatherData(gatherLFP=True, gatherDipole=True):
                     pop['cellGids'] = sorted(allPopsCellGids[popLabel])
                 sim.net.allPops = allPops
 
+                sim.net.recXElectrode.transferResistances = allResistances
 
         # clean to avoid mem leaks
         for node in gather:
@@ -418,14 +427,22 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
                         setup.setSimCfg(data['simConfig'])
                     if 'net' in data and gatherLFP:
                         if 'recXElectrode' in data['net']:
-                            sim.net.recXElectrode = data['net']['recXElectrode']
+                            xElectrode = data['net']['recXElectrode']
+                            if False == isinstance(xElectrode, RecXElectrode):
+                                xElectrode = RecXElectrode.fromJSON(xElectrode)
+                            sim.net.recXElectrode = xElectrode
 
                     nodePopsCellGids = {popLabel: list(pop['cellGids']) for popLabel, pop in data['pops'].items()}
 
                     if ifile==0 and gatherLFP and 'LFP' in data['simData']:
-                        allSimData['LFP'] = np.zeros((data['simData']['LFP'].shape))
+                        lfpData = data['simData']['LFP']
+                        if False == isinstance(lfpData, np.ndarray):
+                            lfpData = np.array(lfpData)
+                            data['simData']['LFP'] = lfpData
+
+                        allSimData['LFP'] = np.zeros(lfpData.shape)
                         if 'LFPPops' in data['simData']:
-                            allSimData['LFPPops'] = {p: np.zeros((data['simData']['LFP'].shape)) for p in data['simData']['LFPPops'].keys()}
+                            allSimData['LFPPops'] = {p: np.zeros(lfpData.shape) for p in data['simData']['LFPPops'].keys()}
 
                     for key, value in data['simData'].items():
 

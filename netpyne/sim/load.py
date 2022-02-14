@@ -398,12 +398,12 @@ def loadSimData(filename, data=None):
         print(('  simData not found in file %s'%(filename)))
 
     if 'net' in data:
-        try:
-            sim.net.recXElectrode = data['net']['recXElectrode']
-        except:
-            pass
-    pass
-
+        if 'recXElectrode' in data['net']:
+            from netpyne.support.recxelectrode import RecXElectrode
+            xElectrode = data['net']['recXElectrode']
+            if False == isinstance(xElectrode, RecXElectrode):
+                xElectrode = RecXElectrode.fromJSON(xElectrode)
+            sim.net.recXElectrode = xElectrode
 
 #------------------------------------------------------------------------------
 # Load all data in file

@@ -156,8 +156,7 @@ def saveData(include=None, filename=None, saveLFP=True):
             if saveLFP:
                 if 'LFP' in sim.allSimData:
                     sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist()
-                    if sim.cfg.saveJson is False and hasattr(sim.net, 'recXElectrode'):
-                        # skip this step for JSON, because RecXElectrode is not JSON serializable
+                    if hasattr(sim.net, 'recXElectrode'):
                         dataSave['net']['recXElectrode'] = sim.net.recXElectrode
             dataSave['simData'] = sim.allSimData
 
@@ -382,6 +381,8 @@ def intervalSave(simTime, gatherLFP=True):
     netPopsCellGids = {popLabel: list(pop.cellGids) for popLabel,pop in sim.net.pops.items()}
 
     nodeData = {'netCells': [c.__getstate__() for c in sim.net.cells], 'netPopsCellGids': netPopsCellGids, 'simData': sim.simData}
+    if gatherLFP and hasattr(sim.net, 'recXElectrode'):
+        nodeData['xElectrodeTransferResistances'] = sim.net.recXElectrode.transferResistances
 
     if hasattr(sim.cfg, 'saveWeights') and sim.cfg.saveWeights:
         nodeData['simData']['allWeights']= sim.allWeights
@@ -400,12 +401,13 @@ def intervalSave(simTime, gatherLFP=True):
         for popLabel,pop in sim.net.pops.items(): allPops[popLabel] = pop.__getstate__() # can't use dict comprehension for OrderedDict
         allPopsCellGids = {popLabel: [] for popLabel in netPopsCellGids}
         sim.allSimData = Dict()
+        allResistances = {}
 
         for k in list(gather[0]['simData'].keys()):  # initialize all keys of allSimData dict
             if gatherLFP and k == 'LFP':
                 sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
-            elif sim.cfg.recordDipoles and k == 'dipole':
-                for dk in sim.cfg.recordDipoles:
+            elif sim.cfg.recordDipolesHNN and k == 'dipole':
+                for dk in sim.cfg.recordDipolesHNN:
                     sim.allSimData[k][dk] = np.zeros(len(gather[0]['simData']['dipole'][dk]))
             else:
                 sim.allSimData[k] = {}
@@ -437,6 +439,8 @@ def intervalSave(simTime, gatherLFP=True):
                     sim.allSimData[key] += np.array(val)
                 elif key not in singleNodeVecs:
                     sim.allSimData[key].update(val)           # update simData dicts which are not Vectors
+                if 'xElectrodeTransferResistances' in node:
+                    allResistances.update(node['xElectrodeTransferResistances'])
 
         if len(sim.allSimData['spkt']) > 0:
             sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(*sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))) # sort spks
@@ -447,6 +451,8 @@ def intervalSave(simTime, gatherLFP=True):
         for popLabel,pop in allPops.items():
             pop['cellGids'] = sorted(allPopsCellGids[popLabel])
         sim.net.allPops = allPops
+
+        sim.net.recXElectrode.transferResistances = allResistances
     
     if sim.rank == 0: # simData
         print('  Saving data at intervals... {:0.0f} ms'.format(simTime))
@@ -482,6 +488,8 @@ def intervalSave(simTime, gatherLFP=True):
         if 'simData' in include:
             if 'LFP' in sim.allSimData:
                 sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist()
+                if hasattr(sim.net, 'recXElectrode'):
+                    dataSave['net']['recXElectrode'] = sim.net.recXElectrode
             dataSave['simData'] = dict(sim.allSimData)
 
         dataSave = utils.replaceDictODict(dataSave)
@@ -620,8 +628,7 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
             cell.pop('imembPtr')
 
     if saveLFP:
-       if sim.cfg.saveJson is False and hasattr(sim.net, 'recXElectrode'):
-           # skip this step for JSON, because RecXElectrode is not JSON serializable
+       if hasattr(sim.net, 'recXElectrode'):
            dataSave['net']['recXElectrode'] = sim.net.recXElectrode
 
     if removeTraces:

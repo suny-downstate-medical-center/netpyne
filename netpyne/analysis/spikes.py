@@ -58,6 +58,13 @@ def prepareSpikeData(
     if not sim:
         from .. import sim
 
+    # Replace 'eachPop' with list of pops
+    if 'eachPop' in include:
+        include.remove('eachPop')
+        popLabels = [pop for pop in sim.net.allPops]
+        for popLabel in popLabels: 
+            include.append(popLabel)
+
     # Select cells to include
     cells, cellGids, netStimLabels = getInclude(include)
 

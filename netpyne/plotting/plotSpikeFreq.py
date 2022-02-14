@@ -45,7 +45,7 @@ def plotSpikeFreq(
         else:
             sim = kwargs['sim']
 
-        freqData = sim.analysis.prepareSpikeHist(legend=legend, popLabels=popLabels, **kwargs)
+        freqData = sim.analysis.prepareSpikeHist(**kwargs)
 
     print('Plotting spike frequency...')
 
@@ -232,16 +232,88 @@ def plotSpikeFreq(
         labels.append('All cells')
         handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=allCellsColor))
 
-    # Go through each population
-    for popIndex, popLabel in enumerate(popLabels):
 
-        if popLabel in include:
-        
-            # Get GIDs for this population
-            currentGids = popGids[popIndex]
+    for subset in include:
+
+        # if it's a single population
+        if type(subset) != list:
+
+            for popIndex, popLabel in enumerate(popLabels):
+
+                if popLabel == subset:
+                
+                    # Get GIDs for this population
+                    currentGids = popGids[popIndex]
+
+                    # Use GIDs to get a spiketimes list for this population
+                    spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in currentGids]))
+
+                    # Bin the data using Numpy
+                    histoData = np.histogram(spkts, bins=np.arange(timeRange[0], timeRange[1], binSize))
+                    histoCount = histoData[0]
+
+                    # Convert to firing frequency
+                    histoCount = histoCount * (1000.0 / binSize) / (len(currentGids))
+
+                    # Optionally filter
+                    if filtFreq:
+                        from scipy import signal
+                        fs = 1000.0/binSize
+                        nyquist = fs/2.0
+                        if isinstance(filtFreq, list): # bandpass
+                            Wn = [filtFreq[0]/nyquist, filtFreq[1]/nyquist]
+                            b, a = signal.butter(filtOrder, Wn, btype='bandpass')
+                        elif isinstance(filtFreq, Number): # lowpass
+                            Wn = filtFreq/nyquist
+                            b, a = signal.butter(filtOrder, Wn)
+                        histoCount = signal.filtfilt(b, a, histoCount)
+
+                    # Optionally normalize
+                    if norm:
+                        histoCount /= max(histoCount)
+
+                    # Optionally smooth
+                    if smooth:
+                        histoCount = _smooth1d(histoCount, smooth)[:len(histoT)]
+
+                    # Append the population spiketimes list to linesPlotter.x
+                    linesPlotter.y.append(histoCount)
+
+                    # Append the population color to linesPlotter.color
+                    linesPlotter.color.append(popColors[popLabel])
+
+                    # Append the legend labels and handles
+                    if legendLabels:
+                        labels.append(legendLabels[popIndex])
+                    else:
+                        labels.append(popLabel)
+                    handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=popColors[popLabel]))
+
+        # if it's a group of populations
+        else:
+
+            allGids = []
+            groupLabel = None
+            groupColor = None
+
+            for popIndex, popLabel in enumerate(popLabels):
+
+                if popLabel in subset:
+                
+                    # Get GIDs for this population
+                    currentGids = popGids[popIndex]
+                    allGids.extend(currentGids)
+
+                    if not groupLabel:
+                        groupLabel = popLabel
+                    else:
+                        groupLabel += ', ' + popLabel
+
+                    if not groupColor:
+                        groupColor = popColors[popLabel]
 
             # Use GIDs to get a spiketimes list for this population
-            spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in currentGids]))
+            spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in allGids]))
 
             # Bin the data using Numpy
             histoData = np.histogram(spkts, bins=np.arange(timeRange[0], timeRange[1], binSize))
@@ -275,14 +347,12 @@ def plotSpikeFreq(
             linesPlotter.y.append(histoCount)
 
             # Append the population color to linesPlotter.color
-            linesPlotter.color.append(popColors[popLabel])
+            linesPlotter.color.append(groupColor)
 
             # Append the legend labels and handles
-            if legendLabels:
-                labels.append(legendLabels[popIndex])
-            else:
-                labels.append(popLabel)
-            handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=popColors[popLabel]))
+            labels.append(groupLabel)
+            handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=groupColor))
+
 
     # Set up the default legend settings
     legendKwargs = {}

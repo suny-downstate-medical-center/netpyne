@@ -326,7 +326,6 @@ def plotSpikeHist(
         timeRange = kwargs['timeRange']
     elif 'timeRange' in histData:
         timeRange = histData['timeRange']
-    
     if timeRange is None:
         timeRange = [0, np.ceil(max(spkTimes))]
 
@@ -334,11 +333,6 @@ def plotSpikeHist(
     histoData = np.histogram(spkTimes, bins=np.arange(timeRange[0], timeRange[1], binSize))
     histoBins = histoData[1]
     histoCount = histoData[0]
-
-    # Check for a couple kwargs
-    alpha = None
-    if 'alpha' in kwargs:
-        alpha = kwargs['alpha']
 
     # Create a dictionary with the inputs for a histogram plot
     plotData = {}
@@ -355,7 +349,7 @@ def plotSpikeHist(
     plotData['rwidth']      = histData.get('rwidth', None)
     plotData['log']         = log
     plotData['color']       = histData.get('color', None)
-    plotData['alpha']       = alpha
+    plotData['alpha']       = histData.get('alpha', None)
     plotData['label']       = histData.get('label', None)
     plotData['stacked']     = stacked
     plotData['data']        = histData.get('data', None)
@@ -420,29 +414,70 @@ def plotSpikeHist(
         labels.append('All cells')
         handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=allCellsColor))
 
-    # Go through each population
-    for popIndex, popLabel in enumerate(popLabels):
+    for subset in include:
 
-        if popLabel in include:
-        
-            # Get GIDs for this population
-            currentGids = popGids[popIndex]
+        # if it's a single population
+        if type(subset) != list:
+
+            for popIndex, popLabel in enumerate(popLabels):
+
+                if popLabel == subset:
+                
+                    # Get GIDs for this population
+                    currentGids = popGids[popIndex]
+
+                    # Use GIDs to get a spiketimes list for this population
+                    spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in currentGids]))
+
+                    # Append the population spiketimes list to histPlotter.x
+                    histPlotter.x.append(spkts)
+
+                    # Append the population color to histPlotter.color
+                    histPlotter.color.append(popColors[popLabel])
+
+                    # Append the legend labels and handles
+                    if legendLabels:
+                        labels.append(legendLabels[popIndex])
+                    else:
+                        labels.append(popLabel)
+                    handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=popColors[popLabel]))
+
+        # if it's a group of populations
+        else:
+
+            allGids = []
+            groupLabel = None
+            groupColor = None
+
+            for popIndex, popLabel in enumerate(popLabels):
+
+                if popLabel in subset:
+                
+                    # Get GIDs for this population
+                    currentGids = popGids[popIndex]
+                    allGids.extend(currentGids)
+
+                    if not groupLabel:
+                        groupLabel = popLabel
+                    else:
+                        groupLabel += ', ' + popLabel
+
+                    if not groupColor:
+                        groupColor = popColors[popLabel]
 
             # Use GIDs to get a spiketimes list for this population
-            spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in currentGids]))
+            spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in allGids]))
 
             # Append the population spiketimes list to histPlotter.x
             histPlotter.x.append(spkts)
 
             # Append the population color to histPlotter.color
-            histPlotter.color.append(popColors[popLabel])
+            histPlotter.color.append(groupColor)
 
             # Append the legend labels and handles
-            if legendLabels:
-                labels.append(legendLabels[popIndex])
-            else:
-                labels.append(popLabel)
-            handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=popColors[popLabel]))
+            labels.append(groupLabel)
+            handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=groupColor))
+
 
     # Set up the default legend settings
     legendKwargs = {}

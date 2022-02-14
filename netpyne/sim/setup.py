@@ -338,7 +338,7 @@ def setupRecordLFP():
 
     if not sim.net.params.defineCellShapes: sim.net.defineCellShapes()  # convert cell shapes (if not previously done already)
     sim.net.calcSegCoords()  # calculate segment coords for each cell
-    sim.net.recXElectrode = RecXElectrode(sim)  # create exctracellular recording electrode
+    sim.net.recXElectrode = RecXElectrode.fromConfig(sim.cfg)  # create exctracellular recording electrode
 
     if sim.cfg.createNEURONObj:
         for cell in sim.net.compartCells:

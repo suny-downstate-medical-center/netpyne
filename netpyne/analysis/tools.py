@@ -240,8 +240,8 @@ def plotData(sim=None):
                 try:
                     func = getattr(sim.analysis, funcName)
                     out = func(**kwargs)  # call function with user arguments
-                except:
-                    print('Unable to run', funcName, 'from sim.plotting and sim.analysis')
+                except Exception as e:
+                    print('Unable to run', funcName, 'from sim.plotting and sim.analysis. Reason:', e)
                 
 
         # Print timings

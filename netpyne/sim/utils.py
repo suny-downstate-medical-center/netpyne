@@ -14,6 +14,8 @@ from builtins import next
 from builtins import dict
 from builtins import map
 from builtins import str
+
+from netpyne.support.recxelectrode import RecXElectrode
 try:
     basestring
 except NameError:
@@ -958,11 +960,16 @@ class NpSerializer(json.JSONEncoder):
 
 
     def default(self, obj):
+        from neuron import hoc
         if isinstance(obj, np.integer):
             return int(obj)
         elif isinstance(obj, np.floating):
             return float(obj)
         elif isinstance(obj, np.ndarray):
             return obj.tolist()
+        elif isinstance(obj, hoc.HocObject):
+            return obj.to_python()
+        elif isinstance(obj, RecXElectrode):
+            return obj.toJSON()
         else:
             return super(NpSerializer, self).default(obj)

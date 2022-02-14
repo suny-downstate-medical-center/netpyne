@@ -15,7 +15,7 @@ from ..plotting import plotShape
 
 # Import spike-related functions
 from .spikes import prepareSpikeData, prepareRaster, prepareSpikeHist, popAvgRates
-#from .spikes import plotSpikeHist
+from .spikes_orig import calculateRate, plotRates, plotSyncs, plotSpikeStats, plotRatePSD, plotRateSpectrogram, popAvgRates, plotfI, calculatefI
 
 # Import traces-related functions
 #from .traces import prepareTraces

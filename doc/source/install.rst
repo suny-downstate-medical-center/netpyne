@@ -54,7 +54,7 @@ This version can also be used by developers interested in extending the package.
 Use a browser-based online version of NetPyNE GUI (beta version)
 ------------------------------------------------------
 
-The NetPyNE GUI is available online at: `www.netpyne.org/gui <http://www.netpyne.org/gui>`_. There is a maximum number of simultaneous users for this online version, so if you can't log in, please try again later. 
+The NetPyNE GUI is available online at: `gui.netpyne.org <http://gui.netpyne.org>`_. There is a maximum number of simultaneous users for this online version, so if you can't log in, please try again later. 
 
 Note: the GUI also includes an interactive Python Jupyter Notebook (click "Python" icon at bottom-left) that you can use to directly run NetPyNE code/models (i.e. without using the actual graphical interface). 
 

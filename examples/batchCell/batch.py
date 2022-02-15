@@ -43,9 +43,9 @@ def runBatchComet(b, label):
 
 
 def batchNa():
-	params = {'dendNa': [0.025],#, 0.03, 0.035, 0.4],
-			('IClamp1', 'amp'): [-2.0]} #list(np.arange(-2.0, 8.0, 0.5)/10.0)}
-	initCfg = {'duration': 1.1, 'tau1NMDA': 15}
+	params = {'dendNa': [0.025, 0.03, 0.035, 0.4],
+			('IClamp1', 'amp'): list(np.arange(-2.0, 8.0, 0.5)/10.0)}
+	initCfg = {'duration': 1*1e3, 'tau1NMDA': 15}
 	b = Batch(params=params, initCfg=initCfg)
 	runBatch(b, 'batchNa', setup='mpi_bulletin')
 
@@ -53,7 +53,7 @@ def batchNa():
 def batchNMDA():
 	params = {'tau1NMDA': [10, 15, 20, 25],
 	  		 ('NetStim1', 'weight'): list(np.arange(1.0, 10.0, 1.0)/1e4)}
-	initCfg = {'duration': 1.1}
+	initCfg = {'duration': 1*1e3}
 	b = Batch(params=params, initCfg=initCfg)
 	runBatch(b, 'batchNMDA', setup='mpi_bulletin')
 

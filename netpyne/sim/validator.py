@@ -1,4 +1,3 @@
-from numpy import number
 from schema import Schema, Optional, And, Or, Use
 from collections import ChainMap
 
@@ -275,110 +274,6 @@ connection_spec = {
     }
 }
 
-rxd_spec = {
-    'regions': {
-        str: {
-            Optional('extracellular'): bool,
-            # cells and secs are optional for declaring the region in NEURON, but they collectivelly define the Sections where RxD takes place and should be defined before instantiating the RxD model
-            Optional('cells'): [ Or('all' , int , str , And( Or(tuple,list), lambda s: isinstance(s[0],str), lambda s: Or(isinstance(s[1],list),isinstance(s[1],int))) ) ],
-            Optional('secs'): Or(str,list),
-            Optional('nrn_region'): Or(lambda s: s in ['i','o'],None),
-            Optional('geometry'): Or( And(str,lambda s: s in ['inside','membrane']) , And(lambda s: s['class'] in ['DistributedBoundary','FractionalVolume','FixedCrossSection','FixedPerimeter','ScalableBorder','Shell'], lambda s: isinstance(s['args'],dict)) , None),
-            Optional('dimension'): Or(lambda s: s in [1,3],None),
-            Optional('dx'): Or(int,float,tuple,None),   # required if 'extracellular' == True. The tuple is accepted only if 'extracellular' option is true
-
-            # Depending on the option about extracellular, new (horizontal) entries are (optional or mandatory) are available. Since this conditional nesting is not allowed in this schema, all are specified as optional
-            Optional('xlo'): Or(int,float),  # required if 'extracellular' == True
-            Optional('ylo'): Or(int,float),  # required if 'extracellular' == True
-            Optional('zlo'): Or(int,float),  # required if 'extracellular' == True
-            Optional('xhi'): Or(int,float),  # required if 'extracellular' == True
-            Optional('yhi'): Or(int,float),  # required if 'extracellular' == True
-            Optional('zhi'): Or(int,float),  # required if 'extracellular' == True
-            Optional('volume_fraction'): Or(int,float),
-            Optional('tortuosity'): Or(int,float)
-        }
-    },
-
-    Optional('extracellular'): {
-        str: {
-            'xlo': Or(int,float),
-            'ylo': Or(int,float),
-            'zlo': Or(int,float),
-            'xhi': Or(int,float),
-            'yhi': Or(int,float),
-            'zhi': Or(int,float),
-            'dx': Or(int,float,tuple,None),
-            Optional('volume_fraction'): Or(int,float),
-            Optional('tortuosity'): Or(int,float)
-        }
-    },
-
-    'species': {
-        str: {
-            'regions': Or(str,[str]),                       # one or more regions defined in the previous entry
-            Optional('d'): Or(int,float),
-            Optional('charge'): int,
-            Optional('initial'): Or(int, float, str, None), # string-based function, based on "node" attributes
-            Optional('ecs_boundary_conditions'): Or(None,int,float),
-            Optional('atolscale'): Or(int,float),
-            Optional('name'): str
-        }
-    },
-
-    Optional('states'): {
-        str: {
-            'regions': Or(str,[str]),
-            Optional('initial'): Or(int, float, str, None), # string-based function, based on "node" attributes
-            Optional('name'): str
-        }
-    },
-
-    Optional('reactions'): {
-        str: {
-            'reactant': str,
-            'product': str,
-            'rate_f': Or(int,float,str),
-            Optional('rate_b'): Or(int, float, str, None),
-            Optional('regions'): Or(str,[str], [None]),
-            Optional('custom_dynamics'): Or(bool,None)
-            #Optional('membrane'): Or(str,None),           # Either none or one of the regions, with appropriate geometry. This is an argument not required in Reaction class (single-compartment reactions)
-            #Optional('membrane_flux'): bool               # This is an argument not required in Reaction class (single-compartment reactions)
-        }
-    },
-
-    Optional('parameters'): {
-        str: {
-            'regions': Or(str,[str]),
-            Optional('name'): Or(str,None),
-            Optional('charge'): int,
-            Optional('value'): Or(int, float, str, None)
-        }
-    },
-
-    Optional('multicompartmentReactions'): {
-        str: {
-            'reactant': str,
-            'product': str,
-            'rate_f': Or(int,float,str),
-            Optional('rate_b'): Or(int, float, str, None),
-            Optional('regions'): Or(str,[str], [None]),
-            Optional('custom_dynamics'): Or(bool,None),
-            Optional('membrane'): Or(str,None),
-            Optional('membrane_flux'): bool
-        }
-    },
-
-    Optional('rates'): {
-        str: {
-            'species': Or(str,[str]),
-            'rate':Or(int,float,str),
-            Optional('regions'): Or(str,[str], [None]),
-            Optional('membrane_flux'): bool
-        }
-    }
-
-}
-
 general_schema = Schema(general_spec)
 cell_schema = Schema(cell_spec)
 population_schema = Schema(population_spec)
@@ -386,7 +281,6 @@ synaptic_schema = Schema(synaptic_spec)
 stimulation_source_schema = Schema(stimulation_source_spec)
 stimulation_target_schema = Schema(stimulation_target_spec)
 connection_schema = Schema(connection_spec)
-rxd_schema = Schema(rxd_spec)
 
 # Attempt to merge schemas -- This doesn't work yet so we'll check the pieces one by one
 net_param_schema = Schema(dict(ChainMap(*[cell_spec, population_spec, synaptic_spec, stimulation_source_spec,
@@ -395,13 +289,8 @@ net_param_schema = Schema(dict(ChainMap(*[cell_spec, population_spec, synaptic_s
 
 def validate_netparams(net_params):
     # return general_schema.validate(net_params) and \
-    condition = cell_schema.validate(net_params.cellParams) and \
-        population_schema.validate(net_params.popParams) and \
-        synaptic_schema.validate(net_params.synMechParams) and \
-        stimulation_source_schema.validate(net_params.stimSourceParams) and \
-        stimulation_target_schema.validate(net_params.stimTargetParams)
-    
-    if len(net_params.rxdParams) == 0:
-        return condition
-    else:
-        return condition and rxd_schema.validate(net_params.rxdParams)
+    return cell_schema.validate(net_params.cellParams) and \
+    population_schema.validate(net_params.popParams) and \
+    synaptic_schema.validate(net_params.synMechParams) and \
+    stimulation_source_schema.validate(net_params.stimSourceParams) and \
+    stimulation_target_schema.validate(net_params.stimTargetParams)

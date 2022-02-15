@@ -2,9 +2,28 @@
 
 **New features**
 
+- Interfaced with LFPkit to enable recording/plotting of dipole current moments and EEG signals
+
+- Added Current Source Density (CSD) analysis and plots
+
 - Enabled selecting a subset of cells to save individual LFP signal from via cfg.saveLFPCells = [...] 
 
 - Added cfg.saveLFPPops to store LFP generated individually by each population
+
+- Function to return batch parameter combinations (used for GUI)
+
+- Added jupyter nb tutorials 
+
+- Added hippocampus CA3 model example
+
+- Updated SONATA importing
+
+- Improved distributed saving and interval saving (more robust)
+
+- Added mapping of netParams values within cfg (used for batch sims in GUI)
+
+- Extended Action tests to pull requests (not just push)
+
 
 **Bug fixes**
 
@@ -13,6 +32,12 @@
 - Fixed defineCellShapes when sec['hObj'] is not a h.Section()
 
 - Fixed bug when using lognormal in string functions
+
+- Added rxdmath to avoid RxD error
+
+- Fixed bug in Tutorial 8 (batch)
+
+- When saving to JSON wait until file exists before returning (to avoid exiting before saving finished)
 
 
 # Version 1.0.0.2

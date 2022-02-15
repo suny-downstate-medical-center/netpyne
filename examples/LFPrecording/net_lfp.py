@@ -55,14 +55,17 @@ simConfig.filename = 'net_lfp'   # Set file output name
 simConfig.savePickle = True
 simConfig.recordLFP = [[-15, y, 1.0*netParams.sizeZ] for y in range(int(netParams.sizeY/5.0), int(netParams.sizeY), int(netParams.sizeY/5.0))]
 simConfig.saveLFPPops = ['I2', 'E4']
+simConfig.savePickle = True
 
 #simConfig.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True, 'saveFig':True, 'figSize': (9,3)}      # Plot a raster
-simConfig.analysis['plotLFP'] = {'pop': 'I2', 'includeAxon': False, 'figSize': (6,10), 'timeRange': [100,3000], 'saveFig': True} 
+simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'timeRange': [100,1000], 'saveFig': True}  # optional: 'pop': 'E4'
 #simConfig.analysis['getCSD'] = {'spacing_um': 200, 'timeRange': [100,3000], 'vaknin': True}
 #simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'timeRange':[100,900], 'minFreq': 10, 'maxFreq':60, 'norm':1, 'plots': ['spectrogram'], 'showFig': True} 
-simConfig.analysis['plotCSD'] = True #{'timeRange':[100,200]}
+#simConfig.analysis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'timeRange':[100,900], 'plots': ['spectrogram'], 'showFig': True} 
+#simConfig.analysis['plotCSD'] = True #{'timeRange':[100,200]}
 
 # Create network and run simulation
+
 #sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
 #sim.analysis.plotCSD(timeRange=[100,3000])
 sim.initialize(
@@ -78,7 +81,6 @@ sim.runSim()                      			# run parallel Neuron simulation
 
 # distributed saving (to avoid errors with large output data)
 sim.saveDataInNodes()
-sim.gatherDataFromFiles()
-sim.saveData()  
+sim.gatherDataFromFiles(saveMerged=True)
 
 sim.analysis.plotData()         			# plot spike raster etc

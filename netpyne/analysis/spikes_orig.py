@@ -733,7 +733,7 @@ def plotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot spike histogram
 # -------------------------------------------------------------------------------------------------------------------
-@exception
+#@exception
 def plotSpikeHist(include=['eachPop', 'allCells'], timeRange=None, binSize=5, overlay=True, graphType='line', measure='rate', norm=False, smooth=None, filtFreq=None, filtOrder=3, axis=True, popColors=None, figSize=(10,8), dpi=100, saveData=None, saveFig=None, showFig=True, **kwargs):
     """
     Function for/to <short description of `netpyne.analysis.spikes.plotSpikeHist`>
@@ -944,7 +944,10 @@ def plotSpikeHist(include=['eachPop', 'allCells'], timeRange=None, binSize=5, ov
         if not isinstance(subset, list):
             color = colorList[iplot%len(colorList)]
         else:
-            color = popColors[subset] if subset in popColors else colorList[iplot%len(colorList)]
+            if popColors:
+                color = popColors[subset] if subset in popColors else colorList[iplot%len(colorList)]
+            else:
+                color = colorList[iplot%len(colorList)]
 
         if not overlay:
             plt.subplot(len(include), 1, iplot+1)  # if subplot, create new subplot
@@ -974,7 +977,10 @@ def plotSpikeHist(include=['eachPop', 'allCells'], timeRange=None, binSize=5, ov
             if not isinstance(subset, list):
                 color = colorList[i%len(colorList)]
             else:
-                color = popColors[subset] if subset in popColors else colorList[i%len(colorList)]
+                if popColors:
+                    color = popColors[subset] if subset in popColors else colorList[i%len(colorList)]
+                else:
+                    color = colorList[i%len(colorList)]
             plt.plot(0,0,color=color,label=str(subset))
         plt.legend(fontsize=fontsiz, bbox_to_anchor=(1.04, 1), loc=2, borderaxespad=0.)
         maxLabelLen = min(10,max([len(str(l)) for l in include]))

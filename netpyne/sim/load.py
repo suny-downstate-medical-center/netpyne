@@ -262,6 +262,26 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
             if compactConnFormat:
                 compactToLongConnFormat(data['net']['cells'], compactConnFormat) # convert loaded data to long format
             sim.net.allPops = data['net']['pops']
+
+            loadedPops = data['net']['pops']
+            if loadedPops is ODict:
+                sim.net.allPops = loadedPops
+            else:
+                # if populations order is not preserved (for example if loaded from JSON), need to sort them again
+                sim.net.allPops = ODict()
+                loadedPops = list(loadedPops.items())
+                def sort(popKeyValue):
+                    # the assumption while sorting is that populations order corresponds to cell gids in this population
+                    cellGids = popKeyValue[1]['cellGids']
+                    if len(cellGids) > 0:
+                        return cellGids[0]
+                    else:
+                        return -1
+                loadedPops.sort(key = sort)
+
+                for pop in loadedPops:
+                    sim.net.allPops[pop[0]] = pop[1]
+
             sim.net.allCells = data['net']['cells']
         if instantiate:
             try:
@@ -378,12 +398,12 @@ def loadSimData(filename, data=None):
         print(('  simData not found in file %s'%(filename)))
 
     if 'net' in data:
-        try:
-            sim.net.recXElectrode = data['net']['recXElectrode']
-        except:
-            pass
-    pass
-
+        if 'recXElectrode' in data['net']:
+            from netpyne.support.recxelectrode import RecXElectrode
+            xElectrode = data['net']['recXElectrode']
+            if False == isinstance(xElectrode, RecXElectrode):
+                xElectrode = RecXElectrode.fromJSON(xElectrode)
+            sim.net.recXElectrode = xElectrode
 
 #------------------------------------------------------------------------------
 # Load all data in file

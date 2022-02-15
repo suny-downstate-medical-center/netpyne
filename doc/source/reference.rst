@@ -745,7 +745,7 @@ The ``rxdParams`` ordered dictionary can be used to define the different RxD com
 
 	* ``dx``: A float (or int) specifying the discretization.
 
-	* ``extracellular``: Boolean option (``False`` if not specified) indicating whether the region represents the extracellular space or not. 
+	* ``extracellular``: Boolean option (``False`` if not specified) indicating whether the region represents the extracellular space or not. If ``True``, all the previous extries should not be specified. Instead, the entries corresponding to ``rxdParams['extracellular']`` (see next) has to be considered, but at the same level of the dictionary hierarchy. For example, ``rxdParams['regions']={'ext':{'extracellular':True, 'xlo': -100, ...}}``.
 
 
 	Example,
@@ -753,6 +753,27 @@ The ``rxdParams`` ordered dictionary can be used to define the different RxD com
 		.. code-block:: python
 
 			netParams.rxdParams['regions'] = {'cyt':{'cells': ['all'], 'secs': ['soma','Bdend'], 'nrn_region': 'i'}}
+
+
+* **extracellular** - Dictionary with the parameters neccessary to specify the RxD Extracellular region.
+
+	* ``xlo``, ``ylo``, ``zlo``: Values indicating the left-bottom-back corner of the box specifying the extracellular domain.
+
+	* ``xhi``, ``yhi``, ``zhi``: Values indicating the right-upper-front corner of the box specifying the extracellular domain.
+
+	* ``dx``: Value (int, float) specifying the discretization. In this case, the extracellular region, it could be a 3D-tuple if other than square voxels are needed.
+
+	The previous entries are mandatory. Next ones are optional (default values are considered, see NEURON).
+
+	* ``volume_fraction``: Value indicating the available space to diffuse.
+
+	* ``tortuosity``: Value indicating how restricted are the stright pathways to diffuse.
+
+	For example,
+
+		.. code-block:: python
+
+			netParams.rxdParams['extracellular'] = {'xlo':-100, 'ylo':-100, 'zlo':-100, 'xhi':100, 'yhi':100, 'zhi':100, 'dx':(0.2,0.2,0.4), 'volume_fraction':0.2, 'tortuosity': 1.6}.
 
 
 * **species** - This component is also mandatory and it corresponds to a dictionary with all the definitions to specify relevant species and the domains where they are involved. The key is the name/label of the species and the value is a dictionary with the following entries:
@@ -779,6 +800,21 @@ The ``rxdParams`` ordered dictionary can be used to define the different RxD com
 			netParams.rxdParams['species'] = {'ca':{'regions': 'cyt', 'd': 0.25, 'charge': 2, 'name': 'ca', 'initial': '1 if node.sec in ['Bdend'] else 0'}}
 
 
+* **states** - Dictionary declaring State variables that evolve, through other than reactions, during the simulation. The key is the name assigned to this variable and the value is a dictionary with the following entries:
+
+	* ``regions``: A list of the regions where the State variable is relevant (i.e. it evolves there). If it is a single region, it may be specified without listing.
+
+	* ``initial``: Initial state of this variable. Either a single-value valid in the entire domain (where this variable is specified) or a string-based function with node properties as the independent variable.
+
+	* ``name``:  A string internally labeling this variable.
+
+	Example,
+
+		.. code-block:: python
+
+			netParams.rxdParams['states'] = {'mgate':{'regions': 'cyt', 'initial': 0.05, 'name': 'mgate'}}
+
+
 * **reactions** - Dictionary specifying the reactions, who and where, under analysis. The key labels the reaction and the value is a dictionary with the following entries:
 
 	* ``reactant``: A string declaring the left-hand side of the chemical reaction, with the species and the proper stechiometry. For example, ``ca + 2 * cl``, where 'ca' and 'cl' are defined in the 'species' entry and are available in the region where the reaction takes place (see next).
@@ -798,6 +834,31 @@ The ``rxdParams`` ordered dictionary can be used to define the different RxD com
 		.. code-block:: python
 
 			netParams.rxdParams['reactions'] = {'phosphorylation':{'reactant': 'E', 'product': 'EP', 'rate_f': 'kmax1 * E/ (k1 + E)', 'rate_b': 'kmax2 * EP/ (k2 + EP)','custom_dynamics': True}}
+
+
+* **multicompartmentReactions** - Dictionary specifying reactions with species belonging to different regions. As in the previous case, the key labels the reaction and the value is a dictionary with exactly the same entries as before plus two further (optional) entries:
+
+	* ``membrane``: The region (with a geometry compatible with a membrane or a border) involved in the passage of ions from one region to another.
+
+	* ``membrane_flux``: This boolen entry indicates whether the reaction produces a current across the plasma membrane that should affect the membrane potential.
+.
+	Note: Take into account that species appearing in the 'reactant' or 'product' entries should be specified along with the region from which they are taken in the reaction scheme. For example, ``'ca[cyt]'``.
+
+* **rates** - Dictionary specifying rates controlling the dynamics of selected species or states. The key labels the dynamical scheme and the value is a dictionary with the following entries:
+
+	* ``species``: A string indicating which species or states is being considered.
+
+	* ``rate``: Value for the rate in the dynamical equation governing the temporal evolution of the species/state.
+
+	* ``regions``: This entry is used to constrain the dynamics to proceed only in a list of regions. If it is a single region, it may be specified without listing.
+
+	* ``membrane_flux``: As before, a boolean entry specifying whether a current should be considered or not. If 'True' the 'region' entry should correspond to a unique region with a membrane-like geometry.
+	
+	Example,
+
+		.. code-block:: python
+
+			netParams.rxdParams['rates'] = {'h_evol':{'species': h_gate, 'rate': '(1. / (1 + 1000. * ca[cyt] / (0.3)) - h_gate) / tau'}}
 
 
 The parameters of each dictionary follow the same structure as described in the RxD package: https://www.neuron.yale.edu/neuron/static/docs/rxd/index.html 

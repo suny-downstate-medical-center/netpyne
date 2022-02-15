@@ -304,17 +304,17 @@ def plotRaster(
         popColorsTemp.update(popColors)
     popColors = popColorsTemp
 
-    # Create a list to link cell GIDs to their populations
-    gidPop = []
+    # Create a list to link cell indices to their populations
+    indPop = []
     for popLabel, popNumCell in zip(popLabels, popNumCells):
-        gidPop.extend(int(popNumCell) * [popLabel])
-
-    # Create a dictionary to link cells to their population color
-    cellGids = list(set(spkGids))
-    gidColors = {cellGid: popColors[gidPop[int(cellGid)]] for cellGid in cellGids}  
+        indPop.extend(int(popNumCell) * [popLabel])
     
+    # Create a dictionary to link cells to their population color
+    cellInds = list(set(spkInds))
+    indColors = {cellInd: popColors[indPop[int(cellInd)]] for cellInd in cellInds}  
+
     # Create a list of spkColors to be fed into the scatter plot
-    spkColors = [gidColors[spkGid] for spkGid, spkInd in zip(spkGids, spkInds)]
+    spkColors = [indColors[spkInd] for spkGid, spkInd in zip(spkGids, spkInds)]
 
     # Set the time range appropriately
     if 'timeRange' in kwargs:

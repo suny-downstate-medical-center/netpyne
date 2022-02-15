@@ -59,6 +59,11 @@ def initialize(netParams = None, simConfig = None, net = None):
         print('Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)')
         sys.exit()
 
+#    if validator.validate_netparams(netParams):
+#        print('Good to go')
+#    else:
+#        print('Bad parameters')
+
     sim.simData = Dict()  # used to store output simulation data (spikes etc)
     sim.fih = []  # list of func init handlers
     sim.rank = 0  # initialize rank

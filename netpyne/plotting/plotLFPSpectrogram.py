@@ -7,7 +7,7 @@ from ..analysis.utils import exception #, loadData
 from ..analysis.tools import loadData
 from .plotter import LinesPlotter
 from .plotter import ImagePlotter
-from .plotter import MultiFigure
+from .plotter import MetaFigure
 import numpy as np
 
 
@@ -82,7 +82,7 @@ def plotLFPSpectrogram(
         rcParams = None
 
     if axis is None:
-        multiFig = MultiFigure(kind='LFPSpectrogram', subplots=len(names), rcParams=rcParams, **kwargs)
+        metaFig = MetaFigure(kind='LFPSpectrogram', subplots=len(names), rcParams=rcParams, **kwargs)
 
     if 'morlet' in SpectData['electrodes']['spectrogram'].keys():
         spect = SpectData['electrodes']['spectrogram']['morlet']
@@ -138,20 +138,20 @@ def plotLFPSpectrogram(
         plotaxis = axis
         if axis is None:
             if len(names) > 1:
-                plotaxis = multiFig.ax[index]
+                plotaxis = metaFig.ax[index]
             else:
-                plotaxis = multiFig.ax
+                plotaxis = metaFig.ax
         
-        imagePlotter = ImagePlotter(data=imageData, kind='spect', multifig=multiFig, axis=plotaxis, **axisArgs, **kwargs)
+        imagePlotter = ImagePlotter(data=imageData, kind='spect', metafig=metaFig, axis=plotaxis, **axisArgs, **kwargs)
         spectPlot = imagePlotter.plot(**axisArgs, **kwargs)
 
-        multiFig.plotters.append(imagePlotter)
+        metaFig.plotters.append(imagePlotter)
 
     suptitle = {'t':'LFP Spectrogram'}
 
     if axis is None:
-        multiFig.finishFig(suptitle=suptitle, **kwargs)
-        return multiFig.fig
+        metaFig.finishFig(suptitle=suptitle, **kwargs)
+        return metaFig.fig
     else:
         return plt.gcf()
 

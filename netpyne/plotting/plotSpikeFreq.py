@@ -207,7 +207,7 @@ def plotSpikeFreq(
 
     # create Plotter object
     linesPlotter = LinesPlotter(data=plotData, kind='spikeFreq', axis=axis, **axisArgs, **kwargs)
-    multiFig = linesPlotter.multifig
+    metaFig = linesPlotter.metafig
 
     # Set up a dictionary of population colors
     if not popColors:
@@ -388,7 +388,7 @@ def plotSpikeFreq(
     freqPlot = linesPlotter.plot(**axisArgs, **kwargs)
 
     if axis is None:
-        multiFig.finishFig(**kwargs)
+        metaFig.finishFig(**kwargs)
 
     # Default is to return the figure, but you can also return the plotter
     if returnPlotter:

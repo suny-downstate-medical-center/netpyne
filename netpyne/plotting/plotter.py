@@ -21,7 +21,7 @@ colorList = [[0.42, 0.67, 0.84], [0.90, 0.76, 0.00], [0.42, 0.83, 0.59], [0.90, 
 
 
 
-class MultiFigure:
+class MetaFigure:
     """A class which defines a figure object"""
 
     def __init__(self, kind, sim=None, subplots=None, rcParams=None, autosize=0.35, **kwargs):
@@ -176,7 +176,7 @@ class MultiFigure:
 class GeneralPlotter:
     """A class used for plotting"""
 
-    def __init__(self, data, kind, axis=None, sim=None, rcParams=None, multifig=None, **kwargs):
+    def __init__(self, data, kind, axis=None, sim=None, rcParams=None, metafig=None, **kwargs):
         """
         Parameters
         ----------
@@ -203,20 +203,20 @@ class GeneralPlotter:
         self.sim = sim
         self.axis = axis
 
-        if multifig:
-            self.multifig = multifig
+        if metafig:
+            self.metafig = metafig
 
         # If an axis is input, plot there; otherwise make a new figure and axis
         if self.axis is None:
             final = True
-            self.multifig = MultiFigure(kind=self.kind, **kwargs)
-            self.fig = self.multifig.fig
-            self.axis = self.multifig.ax
+            self.metafig = MetaFigure(kind=self.kind, **kwargs)
+            self.fig = self.metafig.fig
+            self.axis = self.metafig.ax
         else:
             self.fig = self.axis.figure
 
-        # Attach plotter to its MultiFigure
-        self.multifig.plotters.append(self)
+        # Attach plotter to its MetaFigure
+        self.metafig.plotters.append(self)
 
 
     def loadData(self, fileName, fileDir=None, sim=None):
@@ -325,7 +325,7 @@ class GeneralPlotter:
 
 
         # Reset the matplotlib rcParams to their original settings
-        mpl.style.use(self.multifig.orig_rcParams)
+        mpl.style.use(self.metafig.orig_rcParams)
                 
 
 class ScatterPlotter(GeneralPlotter):

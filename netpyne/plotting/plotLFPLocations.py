@@ -7,7 +7,7 @@ from ..analysis.utils import exception #, loadData
 from ..analysis.tools import loadData
 from .plotter import LinesPlotter
 from .plotter import ImagePlotter
-from .plotter import MultiFigure
+from .plotter import MetaFigure
 import numpy as np
 
 
@@ -53,12 +53,12 @@ def plotLFPLocations(
 
     includePost = [c.gid for c in sim.net.compartCells]
     
-    multiFig = sim.plotting.plotShape(includePost=includePost, showElectrodes=electrodes, cvals=cvals, includeAxon=includeAxon, kind='LFPLocations', returnPlotter=True, **kwargs)
+    metaFig = sim.plotting.plotShape(includePost=includePost, showElectrodes=electrodes, cvals=cvals, includeAxon=includeAxon, kind='LFPLocations', returnPlotter=True, **kwargs)
 
     if returnPlotter:
-        return multiFig
+        return metaFig
     else:
-        return multiFig.fig
+        return metaFig.fig
 
 
 

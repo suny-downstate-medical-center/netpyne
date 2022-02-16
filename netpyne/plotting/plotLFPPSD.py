@@ -7,7 +7,7 @@ from ..analysis.utils import exception #, loadData
 from ..analysis.tools import loadData
 from .plotter import LinesPlotter
 from .plotter import ImagePlotter
-from .plotter import MultiFigure
+from .plotter import MetaFigure
 import numpy as np
 
 
@@ -156,7 +156,7 @@ def plotLFPPSD(
 
     # create Plotter object
     linesPlotter = LinesPlotter(data=linesData, kind='LFPPSD', axis=axis, **axisArgs, **kwargs)
-    multiFig = linesPlotter.multifig
+    metaFig = linesPlotter.metafig
 
     # remove the y-axis tick labels
     linesPlotter.axis.get_yaxis().set_ticklabels([])
@@ -179,7 +179,7 @@ def plotLFPPSD(
     PSDPlot = linesPlotter.plot(**axisArgs, **kwargs)
 
     if axis is None:
-        multiFig.finishFig(**kwargs)
+        metaFig.finishFig(**kwargs)
 
     # Default is to return the figure, but you can also return the plotter
     if returnPlotter:

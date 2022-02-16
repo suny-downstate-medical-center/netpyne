@@ -7,7 +7,7 @@ from ..analysis.utils import exception #, loadData
 from ..analysis.tools import loadData
 from .plotter import LinesPlotter
 from .plotter import ImagePlotter
-from .plotter import MultiFigure
+from .plotter import MetaFigure
 import numpy as np
 
 
@@ -129,7 +129,7 @@ def plotLFPTimeSeries(
 
     # create Plotter object
     linesPlotter = LinesPlotter(data=linesData, kind='LFPTimeSeries', axis=axis, **axisArgs, **kwargs)
-    multiFig = linesPlotter.multifig
+    metaFig = linesPlotter.metafig
 
     # remove the y-axis
     # linesPlotter.axis.get_yaxis().set_ticks([])
@@ -197,7 +197,7 @@ def plotLFPTimeSeries(
     LFPTimeSeriesPlot = linesPlotter.plot(**axisArgs, **kwargs)
 
     if axis is None:
-        multiFig.finishFig(tightLayout=False, **kwargs)
+        metaFig.finishFig(tightLayout=False, **kwargs)
 
     # Default is to return the figure, but you can also return the plotter
     if returnPlotter:

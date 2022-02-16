@@ -30,7 +30,7 @@ from numbers import Number
 from math import ceil
 from ..analysis.utils import colorList, exception, _roundFigures, getCellsInclude, getCellsIncludeTags
 from ..analysis.utils import _saveFigData, _showFigure
-from .plotter import MultiFigure
+from .plotter import MetaFigure
 
 
 #@exception
@@ -145,11 +145,11 @@ def plotShape(
         #plt.rcParams.update({'font.size': fontSize})
 
         if axis is None:
-            multiFig = MultiFigure(kind=kind, subplots=None, **kwargs)
-            fig = multiFig.fig
-            multiFig.ax.remove()
+            metaFig = MetaFigure(kind=kind, subplots=None, **kwargs)
+            fig = metaFig.fig
+            metaFig.ax.remove()
             shapeax = fig.add_subplot(111, projection='3d')
-            multiFig.ax = shapeax
+            metaFig.ax = shapeax
             #fig=plt.figure(figsize=figSize)
             #shapeax = plt.subplot(111, projection='3d')
         else:
@@ -245,7 +245,7 @@ def plotShape(
             shapeax.set_zticklabels([])
 
         if axis is None:
-            multiFig.finishFig(**kwargs)
+            metaFig.finishFig(**kwargs)
         else:
             if saveFig:
                 if isinstance(saveFig, basestring):
@@ -299,7 +299,7 @@ def plotShape(
     if not iv:
         if axis is None:
             if returnPlotter:
-                return multiFig
+                return metaFig
             else:
                 return fig, {}
         else:

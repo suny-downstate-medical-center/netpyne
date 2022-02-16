@@ -384,7 +384,7 @@ def plotSpikeHist(
 
     # create Plotter object
     histPlotter = HistPlotter(data=plotData, kind='histogram', axis=axis, **axisArgs, **kwargs)
-    multiFig = histPlotter.multifig
+    metaFig = histPlotter.metafig
 
     # Set up a dictionary of population colors
     if not popColors:
@@ -512,7 +512,7 @@ def plotSpikeHist(
     histPlot = histPlotter.plot(**axisArgs, **kwargs)
 
     if axis is None:
-        multiFig.finishFig(**kwargs)
+        metaFig.finishFig(**kwargs)
 
     # Default is to return the figure, but you can also return the plotter
     if returnPlotter:

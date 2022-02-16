@@ -216,9 +216,9 @@ def gitChangeset(show=True):
 #------------------------------------------------------------------------------
 # Print git info: branch, source_dir, version
 #------------------------------------------------------------------------------
-def gitId(show=True):
+def gitInfo(show=True):
     """
-    Function for/to <short description of `netpyne.sim.utils.gitId`>
+    Function for/to <short description of `netpyne.sim.utils.gitInfo`>
 
     Parameters
     ----------

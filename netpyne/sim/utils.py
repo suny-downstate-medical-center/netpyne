@@ -215,6 +215,29 @@ def gitChangeset(show=True):
 
     return changeset
 
+#------------------------------------------------------------------------------
+# Print git info: branch, source_dir, version
+#------------------------------------------------------------------------------
+def gitInfo(show=True):
+    """
+    Function for/to <short description of `netpyne.sim.utils.gitInfo`>
+
+    Parameters
+    ----------
+    show : bool
+        <Short description of show>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+
+    """
+    import netpyne, os, subprocess
+    loc = os.path.dirname(netpyne.__file__)
+    vers, branch = subprocess.check_output(['git', '-C', loc, 'rev-parse', 'HEAD', '--abbrev-ref', 'HEAD']).decode('utf-8').split()
+    orig = subprocess.check_output(['git', '-C', loc, 'remote', 'get-url', 'origin']).decode('utf-8').strip()
+    if show: 
+        print(f'NetPyNE branch "{branch}" from {loc} (version:{vers[:8]} origin:{orig})')
+    else: 
+        return [branch, loc, vers, orig]
 
 #------------------------------------------------------------------------------
 # Hash function for string

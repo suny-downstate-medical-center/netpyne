@@ -2,7 +2,7 @@
 
 import numpy as np
 import matplotlib.patches as mpatches
-from ..analysis.utils import exception #, loadData
+from ..analysis.utils import exception
 from ..analysis.tools import loadData
 from .plotter import HistPlotter
 
@@ -10,19 +10,20 @@ from .plotter import HistPlotter
 @exception
 def plotSpikeHist(
     histData=None, 
+    axis=None, 
+    timeRange=None, 
     popNumCells=None, 
     popLabels=None, 
     popColors=None, 
-    axis=None, 
-    legend=True, 
-    colorList=None, 
-    returnPlotter=False,
+    binSize=5, 
     histType='step',
-    binSize=50, 
     stacked=False,
     cumulative=False,
     log=False,
     density=False,
+    legend=True, 
+    colorList=None, 
+    returnPlotter=False,
     **kwargs):
     """Function to produce a histogram of cell spiking, grouped by population
 
@@ -223,15 +224,6 @@ def plotSpikeHist(
         
     """
 
-    # Ensure that include is a list if it is in kwargs
-    if 'include' in kwargs:
-        include = kwargs['include']
-        if type(include) != list:
-            include = [include]
-            kwargs['include'] = include
-    else:
-        include = ['eachPop', 'allCells']
-
     # If there is no input data, get the data from the NetPyNE sim object
     if histData is None:
         if 'sim' not in kwargs:
@@ -239,7 +231,16 @@ def plotSpikeHist(
         else:
             sim = kwargs['sim']
 
-        histData = sim.analysis.prepareSpikeHist(**kwargs)
+        histData = sim.analysis.prepareSpikeHist(
+            timeRange=timeRange,
+            binSize=binSize, 
+            **kwargs)
+
+    # Ensure that include is a list if it is in kwargs
+    if 'include' in kwargs:
+        include = kwargs['include']
+    else:
+        include = ['eachPop', 'allCells']
 
     print('Plotting spike histogram...')
 
@@ -322,9 +323,7 @@ def plotSpikeHist(
     gidPops = {cellGid: indPop[cellGid] for cellGid in cellGids}  
     
     # Set the time range appropriately
-    if 'timeRange' in kwargs:
-        timeRange = kwargs['timeRange']
-    elif 'timeRange' in histData:
+    if 'timeRange' in histData:
         timeRange = histData['timeRange']
     if timeRange is None:
         timeRange = [0, np.ceil(max(spkTimes))]

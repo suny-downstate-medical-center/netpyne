@@ -11,32 +11,24 @@ from .plotter import LinesPlotter
 @exception
 def plotSpikeFreq(
     freqData=None, 
+    axis=None, 
+    timeRange=None, 
     popNumCells=None, 
     popLabels=None, 
     popColors=None, 
-    axis=None, 
-    legend=True, 
-    colorList=None, 
-    returnPlotter=False,
     binSize=5, 
     norm=False, 
     smooth=None, 
     filtFreq=None, 
-    filtOrder=3, 
+    filtOrder=3,
+    legend=True, 
+    colorList=None, 
+    returnPlotter=False, 
     **kwargs):
     """
     Function to produce a plot of cell spiking frequency, grouped by population
         
     """
-
-    # Ensure that include is a list if it is in kwargs
-    if 'include' in kwargs:
-        include = kwargs['include']
-        if type(include) != list:
-            include = [include]
-            kwargs['include'] = include
-    else:
-        include = ['eachPop', 'allCells']
 
     # If there is no input data, get the data from the NetPyNE sim object
     if freqData is None:
@@ -45,7 +37,16 @@ def plotSpikeFreq(
         else:
             sim = kwargs['sim']
 
-        freqData = sim.analysis.prepareSpikeHist(**kwargs)
+        freqData = sim.analysis.prepareSpikeHist(
+            timeRange=timeRange,
+            binSize=binSize, 
+            **kwargs)
+
+    # Ensure that include is a list if it is in kwargs
+    if 'include' in kwargs:
+        include = kwargs['include']
+    else:
+        include = ['eachPop', 'allCells']
 
     print('Plotting spike frequency...')
 
@@ -129,9 +130,7 @@ def plotSpikeFreq(
     gidPops = {cellGid: indPop[cellGid] for cellGid in cellGids}  
     
     # Set the time range appropriately
-    if 'timeRange' in kwargs:
-        timeRange = kwargs['timeRange']
-    elif 'timeRange' in freqData:
+    if 'timeRange' in freqData:
         timeRange = freqData['timeRange']
     if timeRange is None:
         timeRange = [0, np.ceil(max(spkTimes))]

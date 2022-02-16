@@ -48,8 +48,7 @@ def addRxD (self, nthreads=None):
     if len(self.params.rxdParams):
         try:
             global rxd
-            # from neuron import crxd as rxd 
-            from neuron import rxd 
+            from neuron import crxd as rxd 
             sim.net.rxd = {'species': {}, 'regions': {}}  # dictionary for rxd  
             if nthreads:
                 rxd.nthread(nthreads)
@@ -76,7 +75,8 @@ def addRxD (self, nthreads=None):
         if 'regions' in rxdParams:
             self._addRegions(rxdParams['regions'])
         if 'extracellular' in rxdParams:
-            self._addExtracellular(rxdParams['extracellular'])
+            #self._addExtracellular(rxdParams['extracellular'])
+            self._addExtracellularRegion('extracellular', rxdParams['extracellular'])
         if 'species' in rxdParams:
             self._addSpecies(rxdParams['species'])
         if 'states' in rxdParams:
@@ -112,7 +112,7 @@ def _addRegions(self, params):
 
         # cells
         if 'cells' not in param:
-            param['cells'] = 'all'
+            param['cells'] = ['all']
 
         # secs
         if 'secs' not in param:
@@ -201,7 +201,10 @@ def _addExtracellularRegion(self, label, param):
         param['tortuosity'] = 1
 
     # call rxd method to create Region
-    self.rxd['regions'][label]['hObj'] = rxd.Extracellular(**{k:v for k,v in param.items() if k != 'extracellular'})
+    if 'extracellular' in self.rxd:
+        self.rxd['extracellular']['hObj'] = rxd.Extracellular(**{k:v for k,v in param.items() if k != 'extracellular'})
+    else:
+        self.rxd['regions'][label]['hObj'] = rxd.Extracellular(**{k:v for k,v in param.items() if k != 'extracellular'})
 
     print('  Created Extracellular Region %s'%(label))
 
@@ -454,7 +457,6 @@ def _addReactions(self, params, multicompartment=False):
         # custom_dynamics
         if 'custom_dynamics' not in param:
             param['custom_dynamics'] = False
-
         if 'membrane_flux' not in param:
             param['membrane_flux'] = False
 
@@ -462,58 +464,26 @@ def _addReactions(self, params, multicompartment=False):
         if 'membrane_flux' not in param:
             param['membrane_flux'] = False
 
-        # scale_by_area 
-        if 'scale_by_area' not in param:
-            param['scale_by_area'] = True #False
+        if rate_b is None and dynamicVars.get('rate_b', None) is None:
+            # omit positional argument 'rate_b'
+            self.rxd[reactionDictKey][label]['hObj'] = getattr(rxd, reactionStr)(dynamicVars['reactant'],
+                                                                            dynamicVars['product'],
+                                                                            dynamicVars['rate_f'] if 'rate_f' in dynamicVars else rate_f,
+                                                                            regions=nrnRegions,
+                                                                            custom_dynamics=param['custom_dynamics'],
+                                                                            membrane_flux=param['membrane_flux'],
+                                                                            membrane=nrnMembraneRegion)
 
-        # mass action 
-        if 'mass_action' not in param:
-            param['mass_action'] = False
-
-        if multicompartment:
-            if rate_b is None and dynamicVars.get('rate_b', None) is None:
-                # omit positional argument 'rate_b'
-                self.rxd[reactionDictKey][label]['hObj'] = getattr(rxd, reactionStr)(dynamicVars['reactant'],
-                                                                                dynamicVars['product'],
-                                                                                dynamicVars['rate_f'] if 'rate_f' in dynamicVars else rate_f,
-                                                                                regions=nrnRegions,
-                                                                                custom_dynamics=param['custom_dynamics'],
-                                                                                membrane_flux=param['membrane_flux'],
-                                                                                membrane=nrnMembraneRegion,
-                                                                                scale_by_area=param['scale_by_area'])
-
-            else:
-                # include positional argument 'rate_b'
-                self.rxd[reactionDictKey][label]['hObj'] = getattr(rxd, reactionStr)(dynamicVars['reactant'],
-                                                                                dynamicVars['product'],
-                                                                                dynamicVars['rate_f'] if 'rate_f' in dynamicVars else rate_f,
-                                                                                dynamicVars['rate_b'] if 'rate_b' in dynamicVars else rate_b,
-                                                                                regions=nrnRegions,
-                                                                                custom_dynamics=param['custom_dynamics'],
-                                                                                membrane_flux=param['membrane_flux'],
-                                                                                membrane=nrnMembraneRegion,
-                                                                                scale_by_area=param['scale_by_area'])
         else:
-            if rate_b is None and dynamicVars.get('rate_b', None) is None:
-                # omit positional argument 'rate_b'
-                self.rxd[reactionDictKey][label]['hObj'] = getattr(rxd, reactionStr)(dynamicVars['reactant'],
-                                                                                dynamicVars['product'],
-                                                                                dynamicVars['rate_f'] if 'rate_f' in dynamicVars else rate_f,
-                                                                                regions=nrnRegions,
-                                                                                custom_dynamics=param['custom_dynamics'],
-                                                                                membrane_flux=param['membrane_flux'],
-                                                                                membrane=nrnMembraneRegion)
-
-            else:
-                # include positional argument 'rate_b'
-                self.rxd[reactionDictKey][label]['hObj'] = getattr(rxd, reactionStr)(dynamicVars['reactant'],
-                                                                                dynamicVars['product'],
-                                                                                dynamicVars['rate_f'] if 'rate_f' in dynamicVars else rate_f,
-                                                                                dynamicVars['rate_b'] if 'rate_b' in dynamicVars else rate_b,
-                                                                                regions=nrnRegions,
-                                                                                custom_dynamics=param['custom_dynamics'],
-                                                                                membrane_flux=param['membrane_flux'],
-                                                                                membrane=nrnMembraneRegion)
+            # include positional argument 'rate_b'
+            self.rxd[reactionDictKey][label]['hObj'] = getattr(rxd, reactionStr)(dynamicVars['reactant'],
+                                                                            dynamicVars['product'],
+                                                                            dynamicVars['rate_f'] if 'rate_f' in dynamicVars else rate_f,
+                                                                            dynamicVars['rate_b'] if 'rate_b' in dynamicVars else rate_b,
+                                                                            regions=nrnRegions,
+                                                                            custom_dynamics=param['custom_dynamics'],
+                                                                            membrane_flux=param['membrane_flux'],
+                                                                            membrane=nrnMembraneRegion)
 
 
         print('  Created %s %s'%(reactionStr, label))
@@ -537,7 +507,7 @@ def _addRates(self, params):
             exec('species = ' + speciesStr, dynamicVars)
             if 'species' not in dynamicVars: dynamicVars['species']  # fix for python 2
         else:
-            print('  Error creating Rate %s: "species" parameter should be a string'%(param['species']))
+            print('  Error creating Rate %s: "species" parameter should be a string'%(label))
             continue
 
         # rate

@@ -52,8 +52,9 @@ def batchNa():
 
 def batchNMDA():
 	params = {'tau1NMDA': [10, 15, 20, 25],
-	  		 ('NetStim1', 'weight'): list(np.arange(1.0, 10.0, 1.0)/1e4)}
-	initCfg = {'duration': 1*1e3}
+	  		 ('NetStim1', 'weight'): [0.0, 0.5, 0.75]} #list(np.arange(1.0, 10.0, 1.0)/1e4)}
+	initCfg = {'duration': 1.1}
+
 	b = Batch(params=params, initCfg=initCfg)
 	runBatch(b, 'batchNMDA', setup='mpi_bulletin')
 

@@ -203,8 +203,6 @@ def createParallelContext():
     sim.pc.done()
     sim.nhosts = int(sim.pc.nhost()) # Find number of hosts
     sim.rank = int(sim.pc.id())     # rank or node number (0 will be the master)
-    sim.pc.timeout(0)
-
     if sim.rank==0:
         sim.pc.gid_clear()
 

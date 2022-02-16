@@ -225,7 +225,8 @@ def gatherData(gatherLFP=True, gatherDipole=True):
                     pop['cellGids'] = sorted(allPopsCellGids[popLabel])
                 sim.net.allPops = allPops
 
-                sim.net.recXElectrode.transferResistances = allResistances
+                if gatherLFP and hasattr(sim.net, 'recXElectrode'):
+                    sim.net.recXElectrode.transferResistances = allResistances
 
         # clean to avoid mem leaks
         for node in gather:

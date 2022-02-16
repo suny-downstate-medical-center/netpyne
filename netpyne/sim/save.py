@@ -452,7 +452,8 @@ def intervalSave(simTime, gatherLFP=True):
             pop['cellGids'] = sorted(allPopsCellGids[popLabel])
         sim.net.allPops = allPops
 
-        sim.net.recXElectrode.transferResistances = allResistances
+        if gatherLFP and hasattr(sim.net, 'recXElectrode'):
+            sim.net.recXElectrode.transferResistances = allResistances
     
     if sim.rank == 0: # simData
         print('  Saving data at intervals... {:0.0f} ms'.format(simTime))

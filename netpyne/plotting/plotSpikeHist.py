@@ -239,7 +239,7 @@ def plotSpikeHist(
         else:
             sim = kwargs['sim']
 
-        histData = sim.analysis.prepareSpikeHist(legend=legend, popLabels=popLabels, **kwargs)
+        histData = sim.analysis.prepareSpikeHist(**kwargs)
 
     print('Plotting spike histogram...')
 
@@ -257,6 +257,8 @@ def plotSpikeHist(
             popNumCells = histData.get('popNumCells')
         if not popLabels:
             popLabels = histData.get('popLabels')
+
+        numNetStims = histData.get('numNetStims', 0)
 
         axisArgs = histData.get('axisArgs')
         legendLabels = histData.get('legendLabels')
@@ -324,18 +326,13 @@ def plotSpikeHist(
         timeRange = kwargs['timeRange']
     elif 'timeRange' in histData:
         timeRange = histData['timeRange']
-    else:
+    if timeRange is None:
         timeRange = [0, np.ceil(max(spkTimes))]
 
     # Bin the data using Numpy
     histoData = np.histogram(spkTimes, bins=np.arange(timeRange[0], timeRange[1], binSize))
     histoBins = histoData[1]
     histoCount = histoData[0]
-
-    # Check for a couple kwargs
-    alpha = None
-    if 'alpha' in kwargs:
-        alpha = kwargs['alpha']
 
     # Create a dictionary with the inputs for a histogram plot
     plotData = {}
@@ -352,7 +349,7 @@ def plotSpikeHist(
     plotData['rwidth']      = histData.get('rwidth', None)
     plotData['log']         = log
     plotData['color']       = histData.get('color', None)
-    plotData['alpha']       = alpha
+    plotData['alpha']       = histData.get('alpha', None)
     plotData['label']       = histData.get('label', None)
     plotData['stacked']     = stacked
     plotData['data']        = histData.get('data', None)
@@ -362,8 +359,8 @@ def plotSpikeHist(
 
     # If a kwarg matches a histogram input key, use the kwarg value instead of the default
     for kwarg in kwargs:
-        if kwarg in histData:
-            histData[kwarg] = kwargs[kwarg]
+        if kwarg in plotData:
+            plotData[kwarg] = kwargs[kwarg]
             kwargDels.append(kwarg)
 
     # Create a dictionary to hold axis inputs
@@ -387,76 +384,120 @@ def plotSpikeHist(
 
     # create Plotter object
     histPlotter = HistPlotter(data=plotData, kind='histogram', axis=axis, **axisArgs, **kwargs)
+    multiFig = histPlotter.multifig
 
-    # add legend
-    if legend:
+    # Set up a dictionary of population colors
+    if not popColors:
+        colorList = colorList
+        popColors = {popLabel: colorList[ipop % len(colorList)] for ipop, popLabel in enumerate(popLabels)}
 
-        # Set up a dictionary of population colors
-        if not popColors:
-            colorList = colorList
-            popColors = {popLabel: colorList[ipop % len(colorList)] for ipop, popLabel in enumerate(popLabels)}
+    # Create the labels and handles for the legend
+    # (use rectangles instead of markers because some markers don't show up well)
+    labels = []
+    handles = []
 
-        # Create the labels and handles for the legend
-        # (use rectangles instead of markers because some markers don't show up well)
-        labels = []
-        handles = []
+    # Remove the sum of all population spiking when stacking
+    if stacked or histType == 'barstacked':
+        if 'allCells' in include:
+            include.remove('allCells')
 
-        # Remove the sum of all population spiking when stacking
-        if stacked or histType == 'barstacked':
-            if 'allCells' in include:
-                include.remove('allCells')
+    # Deal with the sum of all population spiking (allCells)
+    if 'allCells' not in include:
+        histPlotter.x = []
+        histPlotter.color = []
+    else:
+        histPlotter.x = [histPlotter.x]
+        allCellsColor = 'black'
+        if 'allCellsColor' in kwargs:
+            allCellsColor = kwargs['allCellsColor']
+        histPlotter.color = [allCellsColor]
+        labels.append('All cells')
+        handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=allCellsColor))
 
-        # Deal with the sum of all population spiking (allCells)
-        if 'allCells' not in include:
-            histPlotter.x = []
-            histPlotter.color = []
+    for subset in include:
+
+        # if it's a single population
+        if type(subset) != list:
+
+            for popIndex, popLabel in enumerate(popLabels):
+
+                if popLabel == subset:
+                
+                    # Get GIDs for this population
+                    currentGids = popGids[popIndex]
+
+                    # Use GIDs to get a spiketimes list for this population
+                    spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in currentGids]))
+
+                    # Append the population spiketimes list to histPlotter.x
+                    histPlotter.x.append(spkts)
+
+                    # Append the population color to histPlotter.color
+                    histPlotter.color.append(popColors[popLabel])
+
+                    # Append the legend labels and handles
+                    if legendLabels:
+                        labels.append(legendLabels[popIndex])
+                    else:
+                        labels.append(popLabel)
+                    handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=popColors[popLabel]))
+
+        # if it's a group of populations
         else:
-            histPlotter.x = [histPlotter.x]
-            allCellsColor = 'black'
-            if 'allCellsColor' in kwargs:
-                allCellsColor = kwargs['allCellsColor']
-            histPlotter.color = [allCellsColor]
-            labels.append('All cells')
-            handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=allCellsColor))
 
-        # Go through each population
-        for popIndex, popLabel in enumerate(popLabels):
-            
-            # Get GIDs for this population
-            currentGids = popGids[popIndex]
+            allGids = []
+            groupLabel = None
+            groupColor = None
+
+            for popIndex, popLabel in enumerate(popLabels):
+
+                if popLabel in subset:
+                
+                    # Get GIDs for this population
+                    currentGids = popGids[popIndex]
+                    allGids.extend(currentGids)
+
+                    if not groupLabel:
+                        groupLabel = popLabel
+                    else:
+                        groupLabel += ', ' + popLabel
+
+                    if not groupColor:
+                        groupColor = popColors[popLabel]
 
             # Use GIDs to get a spiketimes list for this population
-            spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in currentGids]))
+            spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in allGids]))
 
             # Append the population spiketimes list to histPlotter.x
             histPlotter.x.append(spkts)
 
             # Append the population color to histPlotter.color
-            histPlotter.color.append(popColors[popLabel])
+            histPlotter.color.append(groupColor)
 
             # Append the legend labels and handles
-            if legendLabels:
-                labels.append(legendLabels[popIndex])
-            else:
-                labels.append(popLabel)
-            handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=popColors[popLabel]))
+            labels.append(groupLabel)
+            handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=groupColor))
 
-        # Set up the default legend settings
-        legendKwargs = {}
-        legendKwargs['title'] = 'Populations'
-        legendKwargs['bbox_to_anchor'] = (1.025, 1)
-        legendKwargs['loc'] = 2
-        legendKwargs['borderaxespad'] = 0.0
-        legendKwargs['handlelength'] = 0.5
-        legendKwargs['fontsize'] = 'small'
 
-        # If 'legendKwargs' is found in kwargs, use those values instead of the defaults
-        if 'legendKwargs' in kwargs:
-            legendKwargs_input = kwargs['legendKwargs']
-            kwargs.pop('legendKwargs')
-            for key, value in legendKwargs_input:
-                if key in legendKwargs:
-                    legendKwargs[key] = value
+    # Set up the default legend settings
+    legendKwargs = {}
+    legendKwargs['title'] = 'Populations'
+    legendKwargs['bbox_to_anchor'] = (1.025, 1)
+    legendKwargs['loc'] = 2
+    legendKwargs['borderaxespad'] = 0.0
+    legendKwargs['handlelength'] = 0.5
+    legendKwargs['fontsize'] = 'small'
+
+    # If 'legendKwargs' is found in kwargs, use those values instead of the defaults
+    if 'legendKwargs' in kwargs:
+        legendKwargs_input = kwargs['legendKwargs']
+        kwargs.pop('legendKwargs')
+        for key, value in legendKwargs_input:
+            if key in legendKwargs:
+                legendKwargs[key] = value
+
+    # add legend
+    if legend:
             
         # Add the legend
         histPlotter.addLegend(handles, labels, **legendKwargs)
@@ -469,6 +510,9 @@ def plotSpikeHist(
 
     # Generate the figure
     histPlot = histPlotter.plot(**axisArgs, **kwargs)
+
+    if axis is None:
+        multiFig.finishFig(**kwargs)
 
     # Default is to return the figure, but you can also return the plotter
     if returnPlotter:

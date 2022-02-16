@@ -3,17 +3,19 @@ Package for analysis
 
 """
 
+import netpyne
+
 # Import utils methods
 from .tools import getInclude, plotData, saveData, loadData
 from .utils import exception, _showFigure, _saveFigData, getCellsInclude, getCellsIncludeTags, _roundFigures, _smooth1d, syncMeasure, invertDictMapping, checkAvailablePlots
 
 # Import connectivity-related functions
-from .network import plotConn, _plotConnCalculateFromSim, _plotConnCalculateFromFile, plot2Dnet, plotShape, calculateDisynaptic, plot2Dfiring
+from .network import plotConn, _plotConnCalculateFromSim, _plotConnCalculateFromFile, plot2Dnet, calculateDisynaptic, plot2Dfiring
+from ..plotting import plotShape
 
 # Import spike-related functions
 from .spikes import prepareSpikeData, prepareRaster, prepareSpikeHist, popAvgRates
-from ..plotting import plotRaster
-from ..plotting import plotSpikeHist
+from .spikes_orig import calculateRate, plotRates, plotSyncs, plotSpikeStats, plotRatePSD, plotRateSpectrogram, popAvgRates, plotfI, calculatefI
 
 # Import traces-related functions
 #from .traces import prepareTraces
@@ -39,3 +41,10 @@ except:
 
 # Import CSD-related functions
 from .csd import getCSD, plotCSD
+
+# Import dipole-related functions
+from .dipole import plotDipole, plotEEG
+
+# Import mapped functions (for legacy purposes)
+from .mapping import plotLFP, plotSpikeHist, plotRaster
+

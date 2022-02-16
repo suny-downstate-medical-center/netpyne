@@ -76,9 +76,12 @@ class SimConfig(object):
         self.recordCellsSpikes = -1  # cells to record spike times from (-1 to record from all)
         self.recordStim = False  # record spikes of cell stims
         self.recordLFP = []  # list of 3D locations to record LFP from
-        self.recordDipoles = False # record dipoles
+        self.recordDipole = False # record dipoles using lfpykit method
+        self.recordDipolesHNN = False # record dipoles using HNN method
         self.saveLFPCells = False  # Store LFP generated individually by each cell
         self.saveLFPPops = False  # Store LFP generated individually by each population
+        self.saveDipoleCells = False  # Store LFP generated individually by each cell
+        self.saveDipolePops = False  # Store LFP generated individually by each population
         self.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
         self.recordTime = True  # record time step of recording
 
@@ -98,8 +101,9 @@ class SimConfig(object):
         self.backupCfgFile = [] # copy cfg file, list with [sourceFile,destFolder] (eg. ['cfg.py', 'backupcfg/'])
 
         # error checking
-        self.checkErrors = False # whether to validate the input parameters (will be turned off if num processors > 1)
-        self.checkErrorsVerbose = False # whether to print detailed errors during input parameter validation
+        self.validateNetParams = False  # whether to validate the input parameters (will be turned off if num processors > 1)
+        #self.checkErrors = False # whether to validate the input parameters (will be turned off if num processors > 1)
+        #self.checkErrorsVerbose = False # whether to print detailed errors during input parameter validation
         # self.exitOnError = False # whether to hard exit on error
 
         # Analysis and plotting
@@ -145,3 +149,11 @@ class SimConfig(object):
     def todict(self):
         from ..sim import replaceDictODict
         return replaceDictODict(self.__dict__)
+
+    def validateDataSaveOptions(self, printWarning = True):
+        
+        if any([self.savePickle, self.saveJson, self.saveMat, self.saveCSV, self.saveDpk, self.saveHDF5, self.saveDat]):
+            return True
+        if printWarning:
+            print("Warning: data won't be saved. No output format specified (consider sim.cfg.savePickle, sim.cfg.saveJson etc.)")
+        return False

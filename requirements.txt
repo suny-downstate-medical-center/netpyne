@@ -8,3 +8,4 @@ bokeh
 pyneuroml
 neuron
 pytest
+schema

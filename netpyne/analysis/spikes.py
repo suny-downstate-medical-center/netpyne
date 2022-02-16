@@ -58,6 +58,13 @@ def prepareSpikeData(
     if not sim:
         from .. import sim
 
+    # Replace 'eachPop' with list of pops
+    if 'eachPop' in include:
+        include.remove('eachPop')
+        popLabels = [pop for pop in sim.net.allPops]
+        for popLabel in popLabels: 
+            include.append(popLabel)
+
     # Select cells to include
     cells, cellGids, netStimLabels = getInclude(include)
 
@@ -200,7 +207,7 @@ def prepareSpikeData(
                 'ylabel': ylabelText, 
                 'title': title}
     
-    spikeData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'popNumCells': popNumCells, 'popLabels': popLabels, 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'axisArgs': axisArgs, 'legendLabels': legendLabels}
+    spikeData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'spkGids': sel['spkid'].tolist(), 'popNumCells': popNumCells, 'popLabels': popLabels, 'numNetStims': numNetStims, 'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'axisArgs': axisArgs, 'legendLabels': legendLabels}
 
     if saveData:
         saveFigData(spikeData, fileName=fileName, fileDesc='spike_data', fileType=fileType, fileDir=fileDir, sim=sim)
@@ -231,16 +238,12 @@ def prepareSpikeHist(
     fileDesc=None, 
     fileType=None, 
     fileDir=None,
-
     binSize=5, 
-    overlay=True, 
-    graphType='line', 
     measure='rate', 
     norm=False, 
     smooth=None, 
     filtFreq=None, 
     filtOrder=3, 
-     
     **kwargs):
     """
     Function to prepare data for creating a spike histogram plot

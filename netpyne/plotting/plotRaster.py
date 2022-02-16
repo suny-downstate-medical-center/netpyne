@@ -1,4 +1,4 @@
-# Generate a raster plot
+# Generate a raster plot of spiking
 
 import matplotlib.patches as mpatches
 from ..analysis.utils import exception #, loadData
@@ -8,21 +8,21 @@ from .plotter import ScatterPlotter
 
 @exception
 def plotRaster(
+    rasterData=None, 
+    axis=None,
     timeRange=None, 
     maxSpikes=1e8, 
     orderBy='gid', 
     popRates=True,
-    rasterData=None, 
     popNumCells=None, 
     popLabels=None, 
-    popColors=None, 
-    axis=None, 
+    popColors=None,  
     legend=True, 
     colorList=None, 
     orderInverse=False, 
     returnPlotter=False, 
     **kwargs):
-    """Function to produce a raster plot of cell spiking, grouped by population
+    """Function to produce a raster plot of cell spiking
 
     Parameters
     ----------
@@ -234,8 +234,6 @@ def plotRaster(
             sim = kwargs['sim']
 
         rasterData = sim.analysis.prepareRaster(
-            legend=legend, 
-            popLabels=popLabels,
             timeRange=timeRange, 
             maxSpikes=maxSpikes, 
             orderBy=orderBy, 

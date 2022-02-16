@@ -27,7 +27,7 @@ except NameError:
 import pandas as pd
 import numpy as np
 from numbers import Number
-from .utils import exception #, getInclude, getSpktSpkid
+from .utils import exception 
 from .tools import getInclude, getSpktSpkid
 from .tools import saveData as saveFigData
 from ..support.scalebar import add_scalebar
@@ -215,20 +215,45 @@ def prepareSpikeData(
     return spikeData
 
 
-
-def prepareRaster(include=['allCells'], sim=None, timeRange=None, maxSpikes=1e8, orderBy='gid', popRates=True, saveData=False, fileName=None, fileDesc=None, fileType=None, fileDir=None, **kwargs):
+@exception
+def prepareRaster(
+    include=['allCells'], 
+    sim=None, 
+    timeRange=None, 
+    maxSpikes=1e8, 
+    orderBy='gid', 
+    popRates=True, 
+    saveData=False, 
+    fileName=None, 
+    fileDesc=None, 
+    fileType=None, 
+    fileDir=None, 
+    **kwargs):
     """
     Function to prepare data for creating a raster plot
 
     """
 
-    figData = prepareSpikeData(include=include, sim=sim, timeRange=timeRange, maxSpikes=maxSpikes, orderBy=orderBy, popRates=popRates, saveData=saveData, fileName=fileName, fileDesc=fileDesc, fileType=fileType, fileDir=fileDir, **kwargs)
+    figData = prepareSpikeData(
+        include=include, 
+        sim=sim, 
+        timeRange=timeRange, 
+        maxSpikes=maxSpikes, 
+        orderBy=orderBy, 
+        popRates=popRates, 
+        saveData=saveData, 
+        fileName=fileName, 
+        fileDesc=fileDesc if fileDesc else 'raster_data', 
+        fileType=fileType, 
+        fileDir=fileDir, 
+        **kwargs)
 
     return figData
 
 
+@exception
 def prepareSpikeHist(
-    include=['eachPop', 'allCells'], 
+    include=['allCells', 'eachPop'],
     sim=None, 
     timeRange=None,
     maxSpikes=1e8,
@@ -238,18 +263,25 @@ def prepareSpikeHist(
     fileDesc=None, 
     fileType=None, 
     fileDir=None,
-    binSize=5, 
-    measure='rate', 
-    norm=False, 
-    smooth=None, 
-    filtFreq=None, 
-    filtOrder=3, 
+    binSize=5,  
     **kwargs):
     """
     Function to prepare data for creating a spike histogram plot
     """
 
-    figData = prepareSpikeData(include=include, sim=sim, timeRange=timeRange, maxSpikes=maxSpikes, orderBy='gid', popRates=popRates, saveData=saveData, fileName=fileName, fileDesc=fileDesc, fileType=fileType, fileDir=fileDir, **kwargs)
+    figData = prepareSpikeData(
+        include=include, 
+        sim=sim, 
+        timeRange=timeRange, 
+        maxSpikes=maxSpikes, 
+        orderBy='gid', 
+        popRates=popRates, 
+        saveData=saveData, 
+        fileName=fileName, 
+        fileDesc=fileDesc, 
+        fileType=fileType, 
+        fileDir=fileDir, 
+        **kwargs)
 
     figData['axisArgs']['ylabel'] = 'Number of spikes'
 
@@ -261,8 +293,7 @@ def prepareSpikeHist(
 #------------------------------------------------------------------------------
 @exception
 def popAvgRates(tranges=None, show=True):
-    """
-    Function to calculate and return average firing rates by population
+    """Function to calculate and return average firing rates by population
 
     Parameters
     ----------

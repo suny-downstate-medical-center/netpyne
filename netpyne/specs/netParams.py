@@ -18,6 +18,11 @@ try:
 except NameError:
     to_unicode = str
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 from future import standard_library
 standard_library.install_aliases()
 from collections import OrderedDict
@@ -30,8 +35,7 @@ from .. import conversion
 
 class PopParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.PopParams`>
-
+    Class to hold population parameters
 
     """
 
@@ -60,8 +64,7 @@ class PopParams(ODict):
 
 class CellParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.CellParams`>
-
+    Class to hold cell parameters
 
     """
 
@@ -97,8 +100,7 @@ class CellParams(ODict):
 
 class ConnParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.ConnParams`>
-
+    Class to hold connectivity parameters
 
     """
 
@@ -123,8 +125,7 @@ class ConnParams(ODict):
 
 class SynMechParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.SynMechParams`>
-
+    Class to hold synaptic mechanism parameters
 
     """
 
@@ -149,8 +150,7 @@ class SynMechParams(ODict):
 
 class SubConnParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.SubConnParams`>
-
+    Class to hold subcellular connectivity parameters
 
     """
 
@@ -175,8 +175,7 @@ class SubConnParams(ODict):
 
 class StimSourceParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.StimSourceParams`>
-
+    Class to hold stimulation source parameters
 
     """
 
@@ -201,8 +200,7 @@ class StimSourceParams(ODict):
 
 class StimTargetParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.StimTargetParams`>
-
+    Class to hold stimulation target parameters
 
     """
 
@@ -227,8 +225,7 @@ class StimTargetParams(ODict):
 
 class RxDParams(ODict):
     """
-    Class for/to <short description of `netpyne.specs.netParams.RxDParams`>
-
+    Class to hold reaction-diffusion (RxD) parameters
 
     """
 
@@ -252,8 +249,7 @@ class RxDParams(ODict):
 
 class NetParams(object):
     """
-    Class for/to <short description of `netpyne.specs.netParams.NetParams`>
-
+    Class to hold all network parameters
 
     """
 
@@ -270,6 +266,7 @@ class NetParams(object):
         self.rotateCellsRandomly = False # random rotation of cells around y-axis [min,max] radians, e.g. [0, 3.0]
         self.defineCellShapes = False # convert stylized cell geometries to 3d points (calls h.define_shape)
         self.correctBorder = False  # distance (um) from which to correct connectivity border effect, [x,y,z] eg. [100,150,150]
+        self.cellsVisualizationSpacingMultiplier = [1, 1, 1]  # x,y,z scaling factor for spacing between cells during visualization
 
         ## General connectivity parameters
         self.scaleConnWeight = 1 # Connection weight scale factor (NetStims not included)
@@ -279,6 +276,9 @@ class NetParams(object):
         self.defaultDelay = 1  # default connection delay (ms)
         self.defaultThreshold = 10  # default Netcon threshold (mV)
         self.propVelocity = 500.0  # propagation velocity (um/ms)
+
+        # mapping between cfg and netParams
+        self.mapping = {}
 
         # Cell params dict
         self.cellParams = CellParams()
@@ -305,8 +305,17 @@ class NetParams(object):
 
         # fill in params from dict passed as argument
         if netParamsDict:
+            netParamsComponents = ['cellParams', 'popParams', 'synMechParams', 'connParams', 'subConnParams', 'stimSourceParams', 'stimTargetParams', 'rxdParams']
             for k,v in netParamsDict.items():
-                if isinstance(v, OrderedDict):
+                if k in netParamsComponents:
+                    for k2, v2 in netParamsDict[k].items():
+                        if isinstance(v2, OrderedDict):
+                            getattr(self, k)[k2] = ODict(v2)
+                        elif isinstance(v2, dict):
+                            getattr(self, k)[k2] = ODict(v2)
+                        else:
+                            getattr(self, k)[k2] = v2
+                elif isinstance(v, OrderedDict):
                     setattr(self, k, ODict(v))
                 elif isinstance(v, dict):
                     setattr(self, k, Dict(v))
@@ -327,7 +336,7 @@ class NetParams(object):
             if not os.path.exists(folder):
                 print(' Could not create', folder)
 
-        dataSave = {'net': {'params': self.__dict__}}
+        dataSave = {'net': {'params': self.todict()}}
 
         # Save to json file
         if ext == 'json':
@@ -578,6 +587,26 @@ class NetParams(object):
 
     def saveCellParams(self, label, fileName):
         return self.saveCellParamsRule(label, fileName)
+
     def todict(self):
         from ..sim import replaceDictODict
         return replaceDictODict(self.__dict__)
+
+
+    def setNestedParam(self, paramLabel, paramVal):
+        if isinstance(paramLabel, list):
+            container = self
+            for ip in range(len(paramLabel)-1):
+                if hasattr(container, paramLabel[ip]):
+                    container = getattr(container, paramLabel[ip])
+                else:
+                    container = container[paramLabel[ip]]
+            container[paramLabel[-1]] = paramVal
+        elif isinstance(paramLabel, basestring):
+            setattr(self, paramLabel, paramVal) # set simConfig params
+
+    def setCfgMapping(self, cfg):
+        if hasattr(self, 'mapping'):
+            for k, v in self.mapping.items():
+                if getattr(cfg, k, None):
+                    self.setNestedParam(v, getattr(cfg, k))

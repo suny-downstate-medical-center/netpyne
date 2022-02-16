@@ -1,0 +1,11 @@
+numpy
+matplotlib
+scipy
+pandas
+future
+tables
+bokeh
+pyneuroml
+neuron
+pytest
+schema

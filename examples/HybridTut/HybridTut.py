@@ -22,13 +22,13 @@ simConfig = specs.SimConfig()   # object of class SimConfig to store the simulat
 ###############################################################################
 
 # Population parameters
-netParams.popParams['PYR_HH'] = {'cellModel': 'HH', 'cellType': 'PYR', 'numCells': 50} # add dict with params for this pop
-netParams.popParams['PYR_Izhi'] = {'cellModel': 'Izhi', 'cellType': 'PYR', 'numCells': 50} # add dict with params for this pop
+netParams.popParams['PYR_HH_pop'] = {'cellType': 'PYR_HH', 'numCells': 50} # add dict with params for this pop
+netParams.popParams['PYR_Izhi_pop'] = {'cellType': 'PYR_Izhi', 'numCells': 50} # add dict with params for this pop
 
 
 # Cell parameters list
 ## PYR cell properties (HH)
-cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'HH'},  'secs': {}}
+cellRule = {'secs': {}}
 cellRule['secs']['soma'] = {'geom': {}, 'topol': {}, 'mechs': {}}  # soma properties
 cellRule['secs']['soma']['geom'] = {'diam': 6.3, 'L': 5, 'Ra': 123.0, 'pt3d':[]}
 cellRule['secs']['soma']['geom']['pt3d'].append((0, 0, 0, 20))
@@ -43,7 +43,7 @@ cellRule['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
 netParams.cellParams['PYR_HH'] = cellRule  # add dict to list of cell properties
 
 ## PYR cell properties (Izhi)
-cellRule = {'conds': {'cellType': 'PYR', 'cellModel': 'Izhi'},  'secs': {}}
+cellRule = {'secs': {}}
 cellRule['secs']['soma'] = {'geom': {}, 'pointps':{}}  # soma properties
 cellRule['secs']['soma']['geom'] = {'diam': 10, 'L': 10, 'cm': 31.831}
 cellRule['secs']['soma']['pointps']['Izhi'] = {'mod':'Izhi2007b',
@@ -57,15 +57,16 @@ netParams.synMechParams['AMPA'] = {'mod': 'ExpSyn', 'tau': 0.1, 'e': 0}
 
 # Stimulation parameters
 netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 10, 'noise': 0.5}
-netParams.stimTargetParams['bg->PYR_Izhi'] = {'source': 'bkg', 'conds': {'cellType': 'PYR', 'cellModel': 'Izhi'},
+netParams.stimTargetParams['bg->PYR_Izhi'] = {'source': 'bkg', 'conds': {'cellType': 'PYR_Izhi'},
                                             'weight': 1, 'delay': 'uniform(1,5)', 'synMech': 'AMPA'}
-netParams.stimTargetParams['bg->PYR_HH'] = {'source': 'bkg', 'conds': {'cellType': 'PYR', 'cellModel': 'HH'},
+netParams.stimTargetParams['bg->PYR_HH'] = {'source': 'bkg', 'conds': {'cellType': 'PYR_HH'},
                                             'weight': 1, 'synMech': 'AMPA', 'sec': 'dend', 'loc': 1.0, 'delay': 'uniform(1,5)'}
 
 
 # Connectivity parameters
 netParams.connParams['PYR->PYR'] = {
-    'preConds': {'cellType': 'PYR'}, 'postConds': {'cellType': 'PYR'},
+    'preConds': {'cellType': ['PYR_HH', 'PYR_Izhi']}, 
+    'postConds': {'cellType': ['PYR_HH', 'PYR_Izhi']},
     'weight': 0.2,                    # weight of each connection
     'delay': '0.2+normal(13.0,1.4)',     # delay min=0.2, mean=13.0, var = 1.4
     'threshold': 10,                    # threshold
@@ -112,4 +113,3 @@ simConfig.saveDpk = False # save to a .dpk pickled file
 # Analysis and plotting
 simConfig.analysis['plotRaster'] = {'orderInverse': False} #True # Whether or not to plot a raster
 simConfig.analysis['plotTraces'] = {'include': [1,51]} # plot recorded traces for this list of cells
-simConfig.analysis['plotRatePSD'] = {'include': ['allCells', 'PYR_HH', 'PYR_Izhi'], 'smooth': 10} # plot recorded traces for this list of cells

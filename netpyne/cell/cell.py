@@ -180,7 +180,11 @@ class Cell (object):
 
                     # check if conditions met
                     if isinstance(condVal, list) and isinstance(condVal[0], Number):
-                        if compareTo < condVal[0] or compareTo > condVal[1]:
+                        if compareTo == self.gid:
+                            if compareTo not in condVal:
+                                conditionsMet = 0
+                                break
+                        elif compareTo < condVal[0] or compareTo > condVal[1]:
                             conditionsMet = 0
                             break
                     elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
@@ -294,7 +298,7 @@ class Cell (object):
                                     sim.cvode.record(ptr, sim.simData[key]['cell_'+str(self.gid)],
                                                      sim.simData['t'], 1)
                                 h.pop_section()
-                            else:
+                            else:                                
                                 sim.simData[key]['cell_'+str(self.gid)] = h.Vector(sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
                                 sim.simData[key]['cell_'+str(self.gid)].record(ptr, sim.cfg.recordStep)
                         if sim.cfg.verbose:

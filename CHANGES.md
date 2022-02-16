@@ -1,3 +1,109 @@
+# Version 1.0.1
+
+**New features**
+
+- Interfaced with LFPkit to enable recording/plotting of dipole current moments and EEG signals
+
+- Added Current Source Density (CSD) analysis and plots
+
+- Enabled selecting a subset of cells to save individual LFP signal from via cfg.saveLFPCells = [...] 
+
+- Added cfg.saveLFPPops to store LFP generated individually by each population
+
+- Function to return batch parameter combinations (used for GUI)
+
+- Added jupyter nb tutorials 
+
+- Added hippocampus CA3 model example
+
+- Updated SONATA importing
+
+- Improved distributed saving and interval saving (more robust)
+
+- Added mapping of netParams values within cfg (used for batch sims in GUI)
+
+- Extended Action tests to pull requests (not just push)
+
+
+**Bug fixes**
+
+- Fixed setting cfgMapping nested params when not string
+
+- Fixed defineCellShapes when sec['hObj'] is not a h.Section()
+
+- Fixed bug when using lognormal in string functions
+
+- Added rxdmath to avoid RxD error
+
+- Fixed bug in Tutorial 8 (batch)
+
+- When saving to JSON wait until file exists before returning (to avoid exiting before saving finished)
+
+
+# Version 1.0.0.2
+
+**New features**
+
+- Added function to get list of batch grid search parameter combinations 
+
+- Save output of mpi_bulletin batches to .run and .err files
+
+- Fixed bug in loading exotic stim param values
+
+- Fixed bug in loading where sim was required to have rank attribute
+
+- Added quotes in batch.py to avoid path white spaces issue
+
+
+# Version 1.0.0.2
+
+- Release for use with GUI
+
+# Version 1.0.0.1
+
+**New features**
+
+- Added guiBlack and guiWhite themes, streamlined theming
+
+- Updated iplots to avoid Bokeh deprecation
+
+# Version 1.0.0
+
+**New features**
+
+- Added wrapper for distributed saving; can now simply replace 'sim.gatherData()' with 'sim.gatherDataFromNodes()'
+
+- Added distributed saving/loading ability (save/load data by MPI node)
+
+- Allowed to specify 'cellModel' and point neuron params in netParams.cellParams (not only in netParams.popParams) 
+
+- Added cellsVisualizationSpacingMultiplier property to netParams
+
+- Improved Granger plot, renamed it plotGranger
+
+- Added interactive Granger plot (iplotGranger)
+
+- Implemented testing in GitHub Actions with pytest (thanks Daniel!)
+
+- Improved sim.clearAll such that it works even before a sim is run
+
+- Properly formatted all module docstrings
+
+**Bug fixes**
+
+- Fixed bug in TupleToStr function
+
+- Fixed broken links in tutorials
+
+- Bokeh update required changing options from None to 'auto'
+
+
+# Version 0.9.9.1
+
+**Bug fixes**
+
+- Fixed gathering of dipoles when running on multiple cores (uncommented lines that had been commented for debugging)
+
 # Version 0.9.9
 
 **New features**
@@ -6,15 +112,41 @@
 
 - Additional customization of 3D shape plot: show voltage as color, change proportions, include axis labels
 
+- Enable modifyConns based on properties of presynaptic neurons
+
+- Replaced -np with -n so compatible for all commands: mpiexec/mpirun/srun
+
 - Updated netrxd.py and network.py to include RxD's Parameter class, naming of States and Regions, and specification of Region geometries that do not require arguments like 'membrane' and 'inside'
+
+- Improved recordTraces such that the cond 'gid' can accept a list of numbers as well as a single number
+
+- Added a new tutorial going through use of NetPyNE with virtual environments and Jupyter notebooks
+
+- Added cfg.use_fast_imem to enable recording membrane voltage via seg.i_membrane_
+
+- Added swc import ability to importCell (and thus importCellParams)
+
+- Batch now polls processes, prints their output and terminates them once completed
+
+- Updated web documentation to explain importing SWC files and add Recording Configuration section
+
+- Added link to Jupyter notebook tutorial and video to website front page
 
 **Bug fixes** 
 
 - Made rate_b be positional instead of keyword argument in rxd multiCompartmentReaction
 
-- Check if _morphSegCoords exists in population before using
+- Check if \_morphSegCoords exists in population before using
 
 - Fixed bug to avoid recursive creating of synMechs when loading with cfg.oneSynPerNetcon=True
+
+- Fixed an issue with running rxd code twice
+
+- Wait until all subprocesses have ended before completing mpi_bulletin batches 
+
+- Fixed repeated rxd simulation issue for rates and reactions
+
+- Fixed pointNeuron spikePattern 'sync' option
 
 # Version 0.9.8
 
@@ -1397,3 +1529,5 @@ First version that was uploaded to pypi. Includes following features:
 	- Parameters/specifications
 	- Instantiated networks
 	- Simulation results
+
+- Distance-based redistribution of synapses (subConn)

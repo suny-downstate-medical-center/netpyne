@@ -118,7 +118,8 @@ Each item of the ``cellParams`` ordered dictionary consists of a key and a value
 
 	* **ions**: Dictionary of ions.
 		The key contains the name of the ion (e.g. 'na' or 'k')
-		The value contains a dictionary with the properties of the ion (e.g. ``{'e': -70}``).
+		The value contains a dictionary with the properties of the ion for the particular section (e.g. ``{'e': -70}``).
+		Properties available are ``'e'``: reversal potential, ``'i'``: internal concentration of the ion at that section, and ``'o'``: the extracellular concentration of the ion at that section.
 	
 	* **pointps**: Dictionary of point processes (excluding synaptic mechanisms). 
 		The key contains an arbitrary label (e.g. 'Izhi')
@@ -572,6 +573,71 @@ String-based functions add great flexibility and power to NetPyNE connectivity r
 		# ...
 
 
+Sub-cellular connectivity rules - Redistribution of synapses
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Once connections are defined via the ``connParams`` ordered dictionary, it may be necessary to redistribute synapses according to specific profiles along the dendritic tree. For this purpose, the ``subConnParams`` ordered dictionary set the rules and parameters governing this redistribution. Each item in this dictionary consists in a key and a value.  The key is a label used as a reference for this redistribution rule. The value is a dictionary setting the parameters for this process and includes the following fields:
+
+* **preConds / postConds** - Set of conditions for the pre- and post-synaptic cells
+
+	As in the ``connParams`` specifications, these fields provide attributes/tags to select already established connections that satisfy specific conditions on pre- and post-synaptic sides. They are defined as a dictionary with the proper attributes/tags and the required values, e.g. {'cellType': 'PYR'}, {'pop': ['Exc1', 'Exc2']}, {'ynorm': [0.1, 0.6]}.
+
+* **groupSynMechs (optional)** – List of synaptic mechanisms grouped together when redistributing synapses
+
+	If omitted, post-synaptic locations of all connections (meeting preConds and postConds) are redistributed independently with a given profile (defined below). If a list is provided, synapses of common connections (same pre- and post-synaptic neurons for each mechanism) are relocated to the same location. For example, ['AMPA','NMDA'].
+
+* **sec (optional)** – List of sections admitting redistributed synapses
+
+	If omitted, the section used to redistribute synapses is the soma or, if it does not exist, the first available section in the post-synaptic cell. For example, ['Adend1','Adend2', 'Adend3','Bdend'].
+
+* **density** - Type of redistribution. There are a number of predefined rules:
+
+	* ``uniform`` - Each connection meeting conditions is uniformly redistributed along the provided sections, weighted according to their length.
+
+	* dictionary with different options:
+
+		* ``type`` - Type of synaptic density map. Available options: 1Dmap or 2Dmap.
+
+		In addition, it should be included:
+
+			* ``gridY`` – List of positions in y-coordinate (depth)
+			* ``gridX`` (only for 2Dmap) - List of positions in x-coordinate (or z).
+			* ``fixedSomaY`` (optional) - Absolute position y-coordinate of the soma, used to shift gridY (also provided in absolute coordinates).
+			* ``gridValues`` – one or two-dimensional list expressing the (relative) synaptic density in the coordinates defined by (gridX and) gridY.
+
+		For example, 
+
+		.. code-block:: python
+
+			netParams.subConnParams[...] = {'type':'1Dmap','gridY': [0,-200,-400,-600,-800], 'fixedSomaY':-700,'gridValues':[0,0.2,0.7,1.0,0]}.
+
+		On the other hand, for this selection, post-synaptic cells need to have a 3d morphology. For simple sections, this can be automatically generated (cylinders along the y-axis oriented upwards) by setting ``netParams.defineCellShapes = True``.
+
+
+		* ``distance`` - Synapses relocated at a given distance (in allowed sections) from a reference.
+
+		In addition, it may be included:
+
+			* ``ref_sec`` (optional) – String
+				
+				Section used as a reference from which distance is computed. If omitted, the section used to reference distances is the soma or, if it does not exist, anything starting with 'som' or, otherwise, the first available section in the post-synaptic cell.
+
+			* ``ref_seg`` (optional) - Numerical value
+
+				Segment within the section used to reference the distances. If omitted, it is used a default value (0.5).
+
+			* ``target_distance`` (optional) - Target distance from the reference where synapses will be reallocated
+
+				If omitted, this value is set to 0. The chosen location will be the closest to this target, between the allowed sections.
+
+			* ``coord`` (optional) - Coordinates' system used to compute distance. If omitted (or set to 'topol'), the distance is computed along the dendritic tree. Alternatively, it may be used 'cartesian' to calculate the distance in the euclidean space (distance from the reference to the target segment in the cartesian coordinate system). In this case, post-synaptic cells need to have a 3d morphology (or set ``netParams.defineCellShapes = True``).
+
+		For example, 
+
+		.. code-block:: python
+
+			netParams.subConnParams[...] = {'type':'distance','ref_sec': 'soma', 'ref_seg': 1,'target_distance': 500}.
+
+
 .. _stimulation:
 
 Stimulation parameters
@@ -673,13 +739,11 @@ The parameters of each dictionary follow the same structure as described in the 
 
 See usage examples: `RxD buffering example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/rxd_buffering>`_ and `RxD network example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/rxd_buffering>`_. 
 
+
 .. _sim_config: 
 
 Simulation configuration
 --------------------------
-
-.. - Want to have more control, customize sequence -- sim module related to sim; net module related to net
-.. - Other structures are possible (flexibiliyty) - e.g. can read simCfg or netparams from disk file; can load existing net etc
 
 Below is a list of all simulation configuration options (i.e. attributes of a ``SimConfig`` object) arranged by categories:
 
@@ -719,7 +783,7 @@ Related to recording:
 * **recordSpikesGids** - List of cells to record spike times from  (-1 to record from all). Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. (default: -1)
 * **recordStim** - Record spikes of cell stims (default: False)
 * **recordLFP** - 3D locations of local field potential (LFP) electrodes, e.g. [[50, 100, 50], [50, 200, 50]] (note the y coordinate represents depth, so will be represented as a negative value when plotted). The LFP signal in each electrode is obtained by summing the extracellular potential contributed by each neuronal segment, calculated using the "line source approximation" and assuming an Ohmic medium with conductivity |sigma| = 0.3 mS/mm. Stored in ``sim.allSimData['LFP']``. (default: False).
-* **saveLFPCells** - Store LFP generated individually by each cell in ``sim.allSimData['LFPCells']`` 
+* **saveLFPCells** - Store LFP generated individually by each cell in ``sim.allSimData['LFPCells']``; can select a subset of cells to save e.g. [3, 'PYR', ('PV2', 5)] 
 * **recordStep** - Step size in ms for data recording (default: 0.1)
 
 Related to file saving:
@@ -753,6 +817,138 @@ Related to plotting and analysis:
 	The simConfig object also includes the method ``addAnalysis(func, params)``, which has the advantage of checking the syntax of the parameters (e.g. ``simConfig.addAnalysis('plotRaster', {'include': ['PYR'], 'timeRage': [200,600]})``)
 
 	Available analysis functions include ``plotRaster``, ``plotSpikeHist``, ``plotTraces``, ``plotConn`` and ``plot2Dnet``. A full description of each function and its arguments is available here: :ref:`analysis_functions`.
+
+
+.. _rec_config: 
+
+Recording configuration
+--------------------------
+
+You can record a wide variety of traces from any or all cells.  In order to record traces from cells, there are two parameters that must be set in the simConfig: ``recordCells`` and ``recordTraces``.
+
+simConfig.recordCells
+^^^^^^^^^^^^^^^^^^^^^
+
+The ``recordCells`` list specifies which cells to attempt to record traces from.  ``recordCells`` can include cell gids and/or population labels in any combination, or it can be set to ``['all']`` to record from all cells.  Only cells specified in this list will have any traces recorded from them.  (Note that any cells specified in the ``include`` parameter of ``simConfig.analysis['plotTraces']`` are automatically added to ``recordCells`` for convenience.)
+
+**Examples** 
+
+.. code-block:: python
+	
+	# record from all cells
+	simConfig.recordCells = ['all']       
+	
+	# record from cell 0 and cell 20
+	simConfig.recordCells = [0, 20]       
+	
+	# record from all cells in the population 'S'
+	simConfig.recordCells = ['S']         
+	
+	# record from all cells in the population 'M' and cells 0 and 20
+	simConfig.recordCells = ['M', 0, 20]
+
+	# record from the first cell in populations 'M' and 'S'  
+	simConfig.recordCells = [('M', [0]), ('S', [0])]  
+
+Once you have specified the cells to record from, you need to specify what to record.
+
+simConfig.recordTraces
+^^^^^^^^^^^^^^^^^^^^^^
+
+The ``recordTraces`` dictionary specifies which traces to record (and, if using 'conditions', which subset of cells in ``recordCells`` to record the traces from).  Each entry in ``recordTraces`` is also a dictionary, whose key is the name of the trace (an arbitrary string you may choose) and whose value is a dictionary with the specifications of the desired trace.
+
+For each entry in ``recordTraces``, the key becomes the name of a trace, while the value is another dictionary that specifies the details of the trace to be recorded and optionally sets conditions on which cells to record the trace from.  
+
+**Format overview**
+
+* **Section variables** (e.g. ``soma(0.5).v``):
+
+.. code-block:: python 
+
+	{"sec": [string], "loc": [float], "var": [string]} 
+
+* **Distributed mechanism variables** (e.g. ``soma(0.5).hh.gna``):
+
+.. code-block:: python 
+
+	{"sec": [string], "loc": [float], "mech": [string], "var": [string]} 
+
+* **Synaptic mechanism variables** (e.g. ``dend(1.0).AMPA._ref_g``):
+
+.. code-block:: python 
+
+	{"sec": [string], "loc": [float], "synMech": [string], "var": [string]} 
+
+* **Stimulation variables** (e.g. ``cells[0].stims[0]['hObj'].i``):
+
+.. code-block:: python 
+
+	{"sec": [string], "loc": [float], "stim": [string], "var": [string]}
+
+* **Point process variables** (e.g. ``soma.myPP.i``):
+
+.. code-block:: python 
+	
+	{"sec": [string], "pointp": [string], "var": [string]}
+
+
+In general, you will need to specify a section ('sec'), a location in that section ('loc') and the NEURON variable to record at that location ('var').  For example, the following will record the voltage ('v' in NEURON) in the center of the soma: 
+
+**Examples** 
+
+.. code-block:: python 
+	
+	# record voltage at the center of the 'soma' section
+	simConfig.recordTraces['soma_voltage'] = { "sec": "soma", "loc": 0.5, "var": "v"}    
+	
+	# record the sodium concentration at the distal end of the 'dend' section
+	simConfig.recordTraces['dend_Na'] =  { "sec": "dend", "loc": 1.0, "var": "nai"}      
+	
+	# record the potassium current at the proximal end of the first 'branch' section (branch[0])
+	simConfig.recordTraces['branch0_iK'] = {"sec": "branch_0", "loc": 0.0, "var": "ik"}   
+
+
+The above examples will attempt to record a trace from all the cells in ``recordCells``.  If you want to record a trace from just a subset of the cells being recorded, you can set conditions by including a ``'conds'`` dictionary in a trace dictionary.  Available conditions include ``'gid'`` (cell global identification number), ``'pop'`` (name of population or list of names), ``'cellType'`` (string name of the type of cell), and ``'cellList'`` (a list of cell gids).
+
+**Examples of Conditions** 
+
+.. code-block:: python 
+
+	# only record this trace from cell 0
+	simConfig.recordTraces['trace_name'] = {'conds': {'gid': [0]}, ... } 
+	
+	# only record this trace from populations 'M' and 'S'
+	simConfig.recordTraces['trace_name'] = {'conds': {'pop': ['M', 'S']}, ... } 
+	
+	# only record this trace from cells tagged with cellType as 'pyr'
+	simConfig.recordTraces['trace_name'] = {'conds': {'cellType': ['pyr']}, ... }  
+
+
+From a specific section and location, you can record section variables such as voltages, currents, and concentrations.  You can also record variables from NEURON mechanisms ('mech'), synaptic mechanisms ('synMech') and stimulations ('stim').
+
+**Examples of recording from mechanisms** 
+
+.. code-block:: python 
+
+	# record the 'gna' variable (sodium conductance) in the 'hh' (Hodgkin-Huxley) mechanism 
+	# located in the middle of the 'soma' section.  This is equivalent to recording 
+	# soma(0.5).hh._ref_gna in NEURON.
+	simConfig.recordTraces['gNa'] = {'sec': 'soma', 'loc': 0.5, 'mech': 'hh', 'var': 'gna'}  
+	
+	# record the 'g' variable (conductance) in the 'AMPA' synaptic mechanism located at the 
+	# distal end of the 'dend' section.  This is equivalent to recording 
+	# dend(1.0).AMPA._ref_g in NEURON.
+	simConfig.recordTraces['gAMPA'] = {'sec': 'dend', 'loc': 1.0, 'synMech': 'AMPA', 'var': 'g'}  
+	
+	# record the 'i' variable (current) from the 'IClamp0' stimulation source located in the 
+	# middle of the 'soma' section in cell 0.  This is equivalent to recording 
+	# cells[0].stims[0]['hObj'].i in NEURON.
+	simConfig.recordTraces['iStim'] = {'sec': 'soma', 'loc': 0.5, 'stim': 'IClamp0', 'var': 'i', 'conds': {'gid': 0}}  
+	
+	# record the 'V' variable from the 'myPP' point process in the 'soma' section.  This 
+	# is equivalent to recording soma.myPP.V in NEURON. 
+	simConfig.recordTraces['VmyPP'] = {'sec': 'soma', 'pointp': 'myPP', 'var': 'V'} 
+
 
 .. _package_functions:
 

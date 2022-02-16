@@ -1,4 +1,6 @@
 """
+Module with functions for spectral Granger causality
+
 This file contains all the function definitions necessary for running spectral
 Granger causality. It is based on Mingzhou Ding's Matlab code package BSMART,
 available from www.brain-smart.org.

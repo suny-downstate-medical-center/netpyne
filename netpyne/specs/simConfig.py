@@ -28,8 +28,7 @@ from .dicts import Dict, ODict
 
 class SimConfig(object):
     """
-    Class for/to <short description of `netpyne.specs.simConfig.SimConfig`>
-
+    Class to hold simulation configuration parameters
 
     """
 
@@ -40,8 +39,12 @@ class SimConfig(object):
         self.duration = self.tstop = 1*1e3 # Duration of the simulation, in ms
         self.dt = 0.025 # Internal integration timestep to use
         self.hParams = Dict({'celsius': 6.3, 'v_init': -65.0, 'clamp_resist': 0.001})  # parameters of h module
+        self.coreneuron = False  # use CoreNEURON to run the simulation (alpha version)
+        self.random123 = False # enable Random123 random number generator
         self.cache_efficient = False  # use CVode cache_efficient option to optimize load when running on many cores
+        self.gpu = False  # enable GPU execution in CoreNEURON
         self.cvode_active = False  # Use CVode variable time step
+        self.use_fast_imem = False  # use CVode fast_imem to record membrane voltage via i_membrane_
         self.cvode_atol = 0.001  # absolute error tolerance
         self.seeds = Dict({'conn': 1, 'stim': 1, 'loc': 1}) # Seeds for randomizers (connectivity, input stimulation and cell locations)
         self.rand123GlobalIndex = None  # Sets the global index used by all instances of the Random123 instances of Random
@@ -73,8 +76,12 @@ class SimConfig(object):
         self.recordCellsSpikes = -1  # cells to record spike times from (-1 to record from all)
         self.recordStim = False  # record spikes of cell stims
         self.recordLFP = []  # list of 3D locations to record LFP from
-        self.recordDipoles = False # record dipoles
-        self.saveLFPCells = False  # Store LFP generate individually by each cell
+        self.recordDipole = False # record dipoles using lfpykit method
+        self.recordDipolesHNN = False # record dipoles using HNN method
+        self.saveLFPCells = False  # Store LFP generated individually by each cell
+        self.saveLFPPops = False  # Store LFP generated individually by each population
+        self.saveDipoleCells = False  # Store LFP generated individually by each cell
+        self.saveDipolePops = False  # Store LFP generated individually by each population
         self.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
         self.recordTime = True  # record time step of recording
 
@@ -94,8 +101,9 @@ class SimConfig(object):
         self.backupCfgFile = [] # copy cfg file, list with [sourceFile,destFolder] (eg. ['cfg.py', 'backupcfg/'])
 
         # error checking
-        self.checkErrors = False # whether to validate the input parameters (will be turned off if num processors > 1)
-        self.checkErrorsVerbose = False # whether to print detailed errors during input parameter validation
+        self.validateNetParams = False  # whether to validate the input parameters (will be turned off if num processors > 1)
+        #self.checkErrors = False # whether to validate the input parameters (will be turned off if num processors > 1)
+        #self.checkErrorsVerbose = False # whether to print detailed errors during input parameter validation
         # self.exitOnError = False # whether to hard exit on error
 
         # Analysis and plotting
@@ -132,9 +140,20 @@ class SimConfig(object):
             print(('Saving simConfig to %s ... ' % (filename)))
             sim.saveJSON(filename, dataSave)
 
+    def setParam(self, param, value):
+        self.__dict__[param] = value
+
     def addAnalysis(self, func, params):
         self.analysis[func] =  params
 
     def todict(self):
         from ..sim import replaceDictODict
         return replaceDictODict(self.__dict__)
+
+    def validateDataSaveOptions(self, printWarning = True):
+        
+        if any([self.savePickle, self.saveJson, self.saveMat, self.saveCSV, self.saveDpk, self.saveHDF5, self.saveDat]):
+            return True
+        if printWarning:
+            print("Warning: data won't be saved. No output format specified (consider sim.cfg.savePickle, sim.cfg.saveJson etc.)")
+        return False

@@ -557,7 +557,7 @@ def asdOptim(self, pc):
                 # ----------------------------------------------------------------------
                 # MPI job commnand
                 # ----------------------------------------------------------------------
-                command = '%s -np %d nrniv -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
+                command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
 
                 # ----------------------------------------------------------------------
                 # run on local machine with <nodes*coresPerNode> cores

@@ -19,6 +19,7 @@ i386
 *.dll
 umac
 .DS_Store
+venv/
 
 /examples/HybridTut/*.nml
 /examples/HybridTut/*.mod
@@ -51,3 +52,6 @@ umac
 /examples/M1/*.pov
 /examples/HHTut/temp.json
 .vscode
+/examples/HHTut/HHTut_plot_2Dnet.png
+/examples/HHTut/HHTut_regen.py
+/examples/HHTut/HHTut_traces.png

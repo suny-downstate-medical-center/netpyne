@@ -227,7 +227,30 @@ def _connStrToFunc(self, preCellsTags, postCellsTags, connParam):
     # for each parameter containing a function, calculate lambda function and arguments
     for paramStrFunc in paramsStrFunc:
         strFunc = connParam[paramStrFunc]  # string containing function
-        for randmeth in self.stringFuncRandMethods: strFunc = strFunc.replace(randmeth, 'rand.'+randmeth) # append rand. to h.Random() methods
+        for randmeth in self.stringFuncRandMethods:
+            if randmeth != 'normal':
+                strFunc = strFunc.replace(randmeth, 'rand.'+randmeth) # prepend rand. to h.Random() methods
+            else:
+                # 'normal' requires special handling so as not to replace part of 'lognormal'
+                if 'lognormal' not in strFunc:
+                    strFunc = strFunc.replace(randmeth, 'rand.'+randmeth)
+                else:
+                    # this code finds all 'normal's in the strFunc, but only replaces them if
+                    # they are not 'lognormal's
+                    index = 0
+                    while index < len(strFunc):
+                        index = strFunc.find('normal', index)
+                        if index == -1:
+                            break
+                        if index < 3:
+                            strFunc = strFunc[:index] + 'rand.' + strFunc[index:]
+                            index += 10
+                        else:
+                            if strFunc[index-3:index] != 'log':
+                                strFunc = strFunc[:index] + 'rand.' + strFunc[index:]
+                                index += 10
+                        index += 1 
+
         strVars = [var for var in list(dictVars.keys()) if var in strFunc and var+'norm' not in strFunc]  # get list of variables used (eg. post_ynorm or dist_xyz)
         lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function
         lambdaFunc = eval(lambdaStr)
@@ -775,8 +798,10 @@ def _addCellConn(self, connParam, preCellGid, postCellGid):
         'synsPerConn': finalParam['synsPerConn']}
 
         # if 'threshold' in connParam: params['threshold'] = connParam.get('threshold')  # deprecated, use threshold in preSyn cell sec
-        if 'shape' in connParam: params['shape'] = connParam.get('shape')
+        if 'shape' in connParam: params['shape'] = connParam.get('shape')    
         if 'plast' in connParam: params['plast'] = connParam.get('plast')
+        if 'weightIndex' in connParam: params['weightIndex'] = connParam.get('weightIndex')        
+
         if 'gapJunction' in connParam:
             params['gapJunction'] = connParam.get('gapJunction')
             params['preLoc'] = connParam.get('preLoc')

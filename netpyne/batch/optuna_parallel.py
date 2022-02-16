@@ -215,7 +215,7 @@ def optunaOptim(self, pc):
             if mpiCommand == '':
                 command = '%s %s simConfig=%s netParams=%s ' % (nrnCommand, script, cfgSavePath, netParamsSavePath)
             else:
-                command = '%s -np %d %s %s simConfig=%s netParams=%s ' % (mpiCommand, numproc,  nrnCommand, script, cfgSavePath, netParamsSavePath)
+                command = '%s -n %d %s %s simConfig=%s netParams=%s ' % (mpiCommand, numproc,  nrnCommand, script, cfgSavePath, netParamsSavePath)
 
             # ----------------------------------------------------------------------
             # run on local machine with <nodes*coresPerNode> cores

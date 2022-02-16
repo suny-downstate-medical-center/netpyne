@@ -9,8 +9,7 @@ Usage:
 MPI usage:
     mpiexec -n 4 nrniv -python -mpi init.py
 """
-import sys 
-sys.path.insert(0,'../../../netpyne/')
+
 from netpyne import sim
 from netParams import netParams
 from cfg import cfg

@@ -11,11 +11,10 @@ from .plotter import MetaFigure
 import numpy as np
 
 
-#@exception
+@exception
 def plotLFPPSD(
     PSDData=None,
-    sim=None,
-    axis=None, 
+    axis=None,     
     timeRange=None,
     electrodes=['avg', 'all'],
     pop=None, 
@@ -36,10 +35,10 @@ def plotLFPPSD(
     filtOrder=3, 
     detrend=False, 
     transformMethod='morlet',
-    returnPlotter=False,
-    colorList=None,
     orderInverse=True,
     legend=True,
+    colorList=None,
+    returnPlotter=False,
     **kwargs):
     
 

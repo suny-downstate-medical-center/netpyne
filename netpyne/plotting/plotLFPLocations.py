@@ -12,7 +12,7 @@ import numpy as np
 
 
 
-#@exception
+@exception
 def plotLFPLocations(
     sim=None,
     axis=None, 

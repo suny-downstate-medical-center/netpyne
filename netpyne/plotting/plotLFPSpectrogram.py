@@ -11,10 +11,9 @@ from .plotter import MetaFigure
 import numpy as np
 
 
-#@exception
+@exception
 def plotLFPSpectrogram(
     SpectData=None,
-    sim=None,
     axis=None, 
     timeRange=None,
     electrodes=['avg', 'all'],

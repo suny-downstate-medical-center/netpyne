@@ -11,11 +11,10 @@ from .plotter import MetaFigure
 import numpy as np
 
 
-#@exception
+@exception
 def plotLFPTimeSeries(
     LFPData=None, 
     axis=None, 
-    sim=None,
     timeRange=None,
     electrodes=['avg', 'all'], 
     pop=None,
@@ -25,12 +24,12 @@ def plotLFPTimeSeries(
     filtFreq=False, 
     filtOrder=3, 
     detrend=False, 
-    returnPlotter=False,
-    colorList=None,
     orderInverse=True,
-    legend=True,
     overlay=False,
     scalebar=True,
+    legend=True,
+    colorList=None,
+    returnPlotter=False,
     **kwargs):
     
 
@@ -130,12 +129,6 @@ def plotLFPTimeSeries(
     # create Plotter object
     linesPlotter = LinesPlotter(data=linesData, kind='LFPTimeSeries', axis=axis, **axisArgs, **kwargs)
     metaFig = linesPlotter.metafig
-
-    # remove the y-axis
-    # linesPlotter.axis.get_yaxis().set_ticks([])
-    # linesPlotter.axis.spines['top'].set_visible(False)
-    # linesPlotter.axis.spines['right'].set_visible(False)
-    # linesPlotter.axis.spines['left'].set_visible(False)
 
     # Set up the default legend settings
     legendKwargs = {}

@@ -212,7 +212,7 @@ synaptic_spec = {
 
 
 stimulation_source_spec = {
-    str: {
+    Optional(str): {
         Optional('type'): And(str, Use(str.lower), lambda s: s in ['iclamp', 'vclamp', 'alphasynapse', 'netstim']),
         Optional('rate'): int,
         Optional('noise'): Or(int, float),
@@ -236,7 +236,7 @@ stimulation_source_spec = {
 
 
 stimulation_target_spec = {
-    str: {
+    Optional(str): {
         Optional('source'): str,
         Optional('conds'): {
             Optional('cellType'): Or(str, [str]),
@@ -375,6 +375,10 @@ rxd_spec = {
             Optional('regions'): Or(str,[str], [None]),
             Optional('membrane_flux'): bool
         }
+    },
+
+    Optional('constants'): {
+        str:Or(int,float)
     }
 
 }
@@ -394,14 +398,14 @@ net_param_schema = Schema(dict(ChainMap(*[cell_spec, population_spec, synaptic_s
 
 
 def validate_netparams(net_params):
-    # return general_schema.validate(net_params) and \
-    condition = cell_schema.validate(net_params.cellParams) and \
-        population_schema.validate(net_params.popParams) and \
-        synaptic_schema.validate(net_params.synMechParams) and \
-        stimulation_source_schema.validate(net_params.stimSourceParams) and \
-        stimulation_target_schema.validate(net_params.stimTargetParams)
+    # return general_schema.is_valid(net_params) and \
+    condition = cell_schema.is_valid(net_params.cellParams) and \
+        population_schema.is_valid(net_params.popParams) and \
+        synaptic_schema.is_valid(net_params.synMechParams) and \
+        stimulation_source_schema.is_valid(net_params.stimSourceParams) and \
+        stimulation_target_schema.is_valid(net_params.stimTargetParams)
     
     if len(net_params.rxdParams) == 0:
         return condition
     else:
-        return condition and rxd_schema.validate(net_params.rxdParams)
+        return condition and rxd_schema.is_valid(net_params.rxdParams)

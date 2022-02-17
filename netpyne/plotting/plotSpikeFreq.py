@@ -319,7 +319,7 @@ def plotSpikeFreq(
             histoCount = histoData[0]
 
             # Convert to firing frequency
-            histoCount = histoCount * (1000.0 / binSize) / (len(currentGids))
+            histoCount = histoCount * (1000.0 / binSize) / (len(allGids))
 
             # Optionally filter
             if filtFreq:

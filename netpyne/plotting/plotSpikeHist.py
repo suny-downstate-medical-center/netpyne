@@ -353,14 +353,11 @@ def plotSpikeHist(
     plotData['stacked']     = stacked
     plotData['data']        = histData.get('data', None)
 
-    # If we use a kwarg, we add it to the list to be removed from kwargs
-    kwargDels = []
-
     # If a kwarg matches a histogram input key, use the kwarg value instead of the default
-    for kwarg in kwargs:
+    for kwarg in list(kwargs.keys()):
         if kwarg in plotData:
             plotData[kwarg] = kwargs[kwarg]
-            kwargDels.append(kwarg)
+            kwargs.pop(kwarg)
 
     # Create a dictionary to hold axis inputs
     if not axisArgs:
@@ -372,15 +369,11 @@ def plotSpikeHist(
         axisArgs['ylim']   = None
 
     # If a kwarg matches an axis input key, use the kwarg value instead of the default
-    for kwarg in kwargs:
+    for kwarg in list(kwargs.keys()):
         if kwarg in axisArgs.keys():
             axisArgs[kwarg] = kwargs[kwarg]
-            kwargDels.append(kwarg)
+            kwargs.pop(kwarg)
     
-    # Delete any kwargs that have been used
-    for kwargDel in kwargDels:
-        kwargs.pop(kwargDel)
-
     # create Plotter object
     histPlotter = HistPlotter(data=plotData, kind='histogram', axis=axis, **axisArgs, **kwargs)
     metaFig = histPlotter.metafig
@@ -413,6 +406,7 @@ def plotSpikeHist(
         labels.append('All cells')
         handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=allCellsColor))
 
+    # Handle individual pops and grouped pops
     for subset in include:
 
         # if it's a single population
@@ -487,34 +481,22 @@ def plotSpikeHist(
     legendKwargs['handlelength'] = 0.5
     legendKwargs['fontsize'] = 'small'
 
-    # If 'legendKwargs' is found in kwargs, use those values instead of the defaults
-    if 'legendKwargs' in kwargs:
-        legendKwargs_input = kwargs['legendKwargs']
-        kwargs.pop('legendKwargs')
-        for key, value in legendKwargs_input:
-            if key in legendKwargs:
-                legendKwargs[key] = value
-
     # add legend
     if legend:
             
         # Add the legend
-        histPlotter.addLegend(handles, labels, **legendKwargs)
+        histPlotter.addLegend(handles, labels, **legendKwargs, **kwargs)
         
         # Adjust the plot to make room for the legend
         rightOffset = 0.8
         maxLabelLen = max([len(label) for label in popLabels])
         histPlotter.fig.subplots_adjust(right=(rightOffset - 0.012 * maxLabelLen))
 
-
     # Generate the figure
     histPlot = histPlotter.plot(**axisArgs, **kwargs)
 
-    if axis is None:
-        metaFig.finishFig(**kwargs)
-
     # Default is to return the figure, but you can also return the plotter
     if returnPlotter:
-        return histPlotter
+        return metaFig
     else:
         return histPlot

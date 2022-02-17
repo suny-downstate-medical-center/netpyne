@@ -175,14 +175,11 @@ def plotSpikeFreq(
     plotData['linewidth']   = 1.0
     plotData['alpha']       = 1.0
     
-    # If we use a kwarg, we add it to the list to be removed from kwargs
-    kwargDels = []
-
-    # If a kwarg matches an input key, use the kwarg value instead of the default
-    for kwarg in kwargs:
+    # If a kwarg matches a histogram input key, use the kwarg value instead of the default
+    for kwarg in list(kwargs.keys()):
         if kwarg in plotData:
             plotData[kwarg] = kwargs[kwarg]
-            kwargDels.append(kwarg)
+            kwargs.pop(kwarg)
 
     # Create a dictionary to hold axis inputs
     if not axisArgs:
@@ -193,16 +190,11 @@ def plotSpikeFreq(
         axisArgs['xlim']   = timeRange
         axisArgs['ylim']   = None
 
-
     # If a kwarg matches an axis input key, use the kwarg value instead of the default
-    for kwarg in kwargs:
+    for kwarg in list(kwargs.keys()):
         if kwarg in axisArgs.keys():
             axisArgs[kwarg] = kwargs[kwarg]
-            kwargDels.append(kwarg)
-    
-    # Delete any kwargs that have been used
-    for kwargDel in kwargDels:
-        kwargs.pop(kwargDel)
+            kwargs.pop(kwarg)
 
     # create Plotter object
     linesPlotter = LinesPlotter(data=plotData, kind='spikeFreq', axis=axis, **axisArgs, **kwargs)
@@ -231,7 +223,7 @@ def plotSpikeFreq(
         labels.append('All cells')
         handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=allCellsColor))
 
-
+    # Handle individual pops and grouped pops
     for subset in include:
 
         # if it's a single population
@@ -362,35 +354,22 @@ def plotSpikeFreq(
     legendKwargs['handlelength'] = 0.5
     legendKwargs['fontsize'] = 'small'
 
-    # If 'legendKwargs' is found in kwargs, use those values instead of the defaults
-    if 'legendKwargs' in kwargs:
-        legendKwargs_input = kwargs['legendKwargs']
-        kwargs.pop('legendKwargs')
-        for key, value in legendKwargs_input:
-            if key in legendKwargs:
-                legendKwargs[key] = value
-
     # add legend
     if legend:
             
         # Add the legend
-        linesPlotter.addLegend(handles, labels, **legendKwargs)
+        linesPlotter.addLegend(handles, labels, **legendKwargs, **kwargs)
         
         # Adjust the plot to make room for the legend
         rightOffset = 0.8
         maxLabelLen = max([len(label) for label in popLabels])
         linesPlotter.fig.subplots_adjust(right=(rightOffset - 0.012 * maxLabelLen))
 
-
-
     # Generate the figure
     freqPlot = linesPlotter.plot(**axisArgs, **kwargs)
 
-    if axis is None:
-        metaFig.finishFig(**kwargs)
-
     # Default is to return the figure, but you can also return the plotter
     if returnPlotter:
-        return linesPlotter
+        return metaFig
     else:
         return freqPlot

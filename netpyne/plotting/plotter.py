@@ -258,10 +258,18 @@ class GeneralPlotter:
 
         legendParams = ['loc', 'bbox_to_anchor', 'fontsize', 'numpoints', 'scatterpoints', 'scatteryoffsets', 'markerscale', 'markerfirst', 'frameon', 'fancybox', 'shadow', 'framealpha', 'facecolor', 'edgecolor', 'mode', 'bbox_transform', 'title', 'title_fontsize', 'borderpad', 'labelspacing', 'handlelength', 'handletextpad', 'borderaxespad', 'columnspacing', 'handler_map']
 
+        # Check for and apply any legend parameters in the kwargs
         legendKwargs = {}
         for kwarg in kwargs:
             if kwarg in legendParams:
                 legendKwargs[kwarg] = kwargs[kwarg]
+
+        # If 'legendKwargs' is found in kwargs, use those values instead of the defaults
+        if 'legendKwargs' in kwargs:
+            legendKwargs_new = kwargs['legendKwargs']
+            for key in legendKwargs_new:
+                if key in legendParams:
+                    legendKwargs[key] = legendKwargs_new[key]
 
         cur_handles, cur_labels = self.axis.get_legend_handles_labels()
 
@@ -300,7 +308,7 @@ class GeneralPlotter:
 
         if 'legend' in kwargs:
             if kwargs['legend'] is True:
-                self.addLegend()
+                self.addLegend(**kwargs)
             elif type(kwargs['legend']) == dict:
                 self.addLegend(**kwargs['legend'])
 
@@ -322,6 +330,11 @@ class GeneralPlotter:
                 self.axis.grid()
             elif type(kwargs['grid']) == dict:
                 self.axis.grid(**kwargs['grid'])
+
+        # If this is the only axis on the figure, finish the figure
+        if type(self.metafig.ax) != list:
+            self.metafig.finishFig(**kwargs)
+
 
 
         # Reset the matplotlib rcParams to their original settings
@@ -395,10 +408,10 @@ class LinesPlotter(GeneralPlotter):
         self.kind       = 'lines'
         self.x          = np.array(data.get('x'))
         self.y          = np.array(data.get('y'))
-        self.color      = data.get('colors')
-        self.marker     = data.get('markers')
-        self.markersize = data.get('markersizes')
-        self.linewidth  = data.get('linewidths')
+        self.color      = data.get('color')
+        self.marker     = data.get('marker')
+        self.markersize = data.get('markersize')
+        self.linewidth  = data.get('linewidth')
         self.alpha      = data.get('alphas')
 
         self.label      = data.get('label')

@@ -336,14 +336,11 @@ def plotRaster(
     scatterData['alpha'] = None
     scatterData['linewidths'] = None
 
-    # If we use a kwarg, we add it to the list to be removed from kwargs
-    kwargDels = []
-
     # If a kwarg matches a scatter input key, use the kwarg value instead of the default
-    for kwarg in kwargs:
+    for kwarg in list(kwargs.keys()):
         if kwarg in scatterData:
             scatterData[kwarg] = kwargs[kwarg]
-            kwargDels.append(kwarg)
+            kwargs.pop(kwarg)
 
     # Create a dictionary to hold axis inputs
     if not axisArgs:
@@ -357,14 +354,10 @@ def plotRaster(
         axisArgs['invert_yaxis'] = True 
 
     # If a kwarg matches an axis input key, use the kwarg value instead of the default
-    for kwarg in kwargs:
+    for kwarg in list(kwargs.keys()):
         if kwarg in axisArgs.keys():
             axisArgs[kwarg] = kwargs[kwarg]
-            kwargDels.append(kwarg)
-    
-    # Delete any kwargs that have been used
-    for kwargDel in kwargDels:
-        kwargs.pop(kwargDel)
+            kwargs.pop(kwarg)
 
     # create Plotter object
     rasterPlotter = ScatterPlotter(data=scatterData, kind='raster', axis=axis, **axisArgs, **kwargs)
@@ -397,17 +390,9 @@ def plotRaster(
         legendKwargs['borderaxespad'] = 0.0
         legendKwargs['handlelength'] = 0.5
         legendKwargs['fontsize'] = 'small'
-
-        # If 'legendKwargs' is found in kwargs, use those values instead of the defaults
-        if 'legendKwargs' in kwargs:
-            legendKwargs_input = kwargs['legendKwargs']
-            kwargs.pop('legendKwargs')
-            for key, value in legendKwargs_input:
-                if key in legendKwargs:
-                    legendKwargs[key] = value
             
         # Add the legend
-        rasterPlotter.addLegend(handles, labels, **legendKwargs)
+        rasterPlotter.addLegend(handles, labels, **legendKwargs, **kwargs)
         
         # Adjust the plot to make room for the legend
         rightOffset = 0.8
@@ -417,11 +402,8 @@ def plotRaster(
     # Generate the figure
     rasterPlot = rasterPlotter.plot(**axisArgs, **kwargs)
 
-    if axis is None:
-        metaFig.finishFig(**kwargs)
-
-    # Default is to return the figure, but you can also return the plotter
+    # Default is to return the figure, but you can also return the metaFig
     if returnPlotter:
-        return rasterPlotter
+        return metaFig
     else:
         return rasterPlot

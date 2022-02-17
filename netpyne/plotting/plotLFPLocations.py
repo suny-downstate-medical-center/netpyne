@@ -11,7 +11,6 @@ from .plotter import MetaFigure
 import numpy as np
 
 
-
 @exception
 def plotLFPLocations(
     sim=None,

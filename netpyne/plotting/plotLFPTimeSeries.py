@@ -114,17 +114,18 @@ def plotLFPTimeSeries(
     linesData = {}
     linesData['x'] = t
     linesData['y'] = lfps
-    linesData['colors'] = plotColors
-    linesData['markers'] = None
-    linesData['markersizes'] = None
-    linesData['linewidths'] = linewidths
-    linesData['alphas'] = alphas
+    linesData['color'] = plotColors
+    linesData['marker'] = None
+    linesData['markersize'] = None
+    linesData['linewidth'] = linewidths
+    linesData['alpha'] = alphas
     linesData['label'] = legendLabels
 
     # If a kwarg matches a lines input key, use the kwarg value instead of the default
-    for kwarg in kwargs:
+    for kwarg in list(kwargs.keys()):
         if kwarg in linesData:
             linesData[kwarg] = kwargs[kwarg]
+            kwargs.pop(kwarg)
 
     # create Plotter object
     linesPlotter = LinesPlotter(data=linesData, kind='LFPTimeSeries', axis=axis, **axisArgs, **kwargs)
@@ -139,14 +140,6 @@ def plotLFPTimeSeries(
     #legendKwargs['handlelength'] = 0.5
     legendKwargs['fontsize'] = 'small'
     legendKwargs['title_fontsize'] = 'small'
-
-    # If 'legendKwargs' is found in kwargs, use those values instead of the defaults
-    if 'legendKwargs' in kwargs:
-        legendKwargs_input = kwargs['legendKwargs']
-        kwargs.pop('legendKwargs')
-        for key, value in legendKwargs_input:
-            if key in legendKwargs:
-                legendKwargs[key] = value
     
     # add the legend
     if legend:
@@ -178,6 +171,7 @@ def plotLFPTimeSeries(
         axisArgs['scalebar'] = args
 
     if overlay:
+        kwargs['tightLayout'] = False
         for index, name in enumerate(names):
             linesPlotter.axis.text(t[0]-0.07*(t[-1]-t[0]), (index*offset), name, color=plotColors[index], ha='center', va='center', fontsize='large', fontweight='bold')
         linesPlotter.axis.spines['top'].set_visible(False)
@@ -189,12 +183,9 @@ def plotLFPTimeSeries(
     # Generate the figure
     LFPTimeSeriesPlot = linesPlotter.plot(**axisArgs, **kwargs)
 
-    if axis is None:
-        metaFig.finishFig(tightLayout=False, **kwargs)
-
     # Default is to return the figure, but you can also return the plotter
     if returnPlotter:
-        return linesPlotter
+        return metaFig
     else:
         return LFPTimeSeriesPlot
 

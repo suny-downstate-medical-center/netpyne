@@ -109,7 +109,6 @@ def plotLFPPSD(
         axisArgs['xlabel'] = 'Frequency (Hz)'
         axisArgs['ylabel'] = 'Power (arbitrary units)'
 
-
     axisArgs['grid'] = {'which': 'both'}
 
     # Link colors to traces, make avg plot black, add separation to traces
@@ -141,17 +140,18 @@ def plotLFPPSD(
     linesData = {}
     linesData['x'] = freq
     linesData['y'] = psds
-    linesData['colors'] = plotColors
-    linesData['markers'] = None
-    linesData['markersizes'] = None
-    linesData['linewidths'] = None
-    linesData['alphas'] = None
+    linesData['color'] = plotColors
+    linesData['marker'] = None
+    linesData['markersize'] = None
+    linesData['linewidth'] = None
+    linesData['alpha'] = None
     linesData['label'] = legendLabels
 
     # If a kwarg matches a lines input key, use the kwarg value instead of the default
-    for kwarg in kwargs:
+    for kwarg in list(kwargs.keys()):
         if kwarg in linesData:
             linesData[kwarg] = kwargs[kwarg]
+            kwargs.pop(kwarg)
 
     # create Plotter object
     linesPlotter = LinesPlotter(data=linesData, kind='LFPPSD', axis=axis, **axisArgs, **kwargs)
@@ -177,13 +177,8 @@ def plotLFPPSD(
     # Generate the figure
     PSDPlot = linesPlotter.plot(**axisArgs, **kwargs)
 
-    if axis is None:
-        metaFig.finishFig(**kwargs)
-
     # Default is to return the figure, but you can also return the plotter
     if returnPlotter:
-        return linesPlotter
+        return metaFig
     else:
         return PSDPlot
-
-

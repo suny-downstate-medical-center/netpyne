@@ -133,7 +133,6 @@ def plotLFPSpectrogram(
         axisArgs['colorbar'] = colorbarArgs
 
 
-
         plotaxis = axis
         if axis is None:
             if len(names) > 1:

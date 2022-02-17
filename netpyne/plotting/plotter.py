@@ -412,8 +412,7 @@ class LinesPlotter(GeneralPlotter):
         self.marker     = data.get('marker')
         self.markersize = data.get('markersize')
         self.linewidth  = data.get('linewidth')
-        self.alpha      = data.get('alphas')
-
+        self.alpha      = data.get('alpha')
         self.label      = data.get('label')
 
 

@@ -14,6 +14,8 @@ from builtins import next
 from builtins import dict
 from builtins import map
 from builtins import str
+
+from netpyne.support.recxelectrode import RecXElectrode
 try:
     basestring
 except NameError:
@@ -136,11 +138,22 @@ def timing(mode, processName):
 
     from .. import sim
 
-    if sim.rank == 0 and sim.cfg.timing:
-        if mode == 'start':
-            sim.timingData[processName] = time()
-        elif mode == 'stop':
-            sim.timingData[processName] = time() - sim.timingData[processName]
+    if not hasattr(sim, 'timingData'):
+        sim.timingData = {}
+
+    if hasattr(sim.cfg, 'timing'):
+        if sim.cfg.timing:
+            if hasattr(sim, 'rank'):
+                if sim.rank == 0:
+                    if mode == 'start':
+                        sim.timingData[processName] = time()
+                    elif mode == 'stop' and processName in sim.timingData:
+                        sim.timingData[processName] = time() - sim.timingData[processName]
+            else:
+                if mode == 'start':
+                    sim.timingData[processName] = time()
+                elif mode == 'stop' and processName in sim.timingData:
+                    sim.timingData[processName] = time() - sim.timingData[processName]                
 
 
 #------------------------------------------------------------------------------
@@ -202,6 +215,29 @@ def gitChangeset(show=True):
 
     return changeset
 
+#------------------------------------------------------------------------------
+# Print git info: branch, source_dir, version
+#------------------------------------------------------------------------------
+def gitInfo(show=True):
+    """
+    Function for/to <short description of `netpyne.sim.utils.gitInfo`>
+
+    Parameters
+    ----------
+    show : bool
+        <Short description of show>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+
+    """
+    import netpyne, os, subprocess
+    loc = os.path.dirname(netpyne.__file__)
+    vers, branch = subprocess.check_output(['git', '-C', loc, 'rev-parse', 'HEAD', '--abbrev-ref', 'HEAD']).decode('utf-8').split()
+    orig = subprocess.check_output(['git', '-C', loc, 'remote', 'get-url', 'origin']).decode('utf-8').strip()
+    if show: 
+        print(f'NetPyNE branch "{branch}" from {loc} (version:{vers[:8]} origin:{orig})')
+    else: 
+        return [branch, loc, vers, orig]
 
 #------------------------------------------------------------------------------
 # Hash function for string
@@ -840,6 +876,7 @@ def clearAll():
 
 
     from .. import sim
+    import numpy as np
 
     # clean up
     sim.pc.barrier()
@@ -853,12 +890,12 @@ def clearAll():
             sim.clearObj([stim for stim in sim.simData['stims']])
 
         for key in list(sim.simData.keys()): del sim.simData[key]
-    
+
+
     if hasattr(sim, 'net'):
         for c in sim.net.cells: del c
         for p in sim.net.pops: del p
         del sim.net.params
-
 
     # clean cells and simData gathered in master node
     if hasattr(sim, 'rank'):
@@ -884,6 +921,48 @@ def clearAll():
             matplotlib.pyplot.clf()
             matplotlib.pyplot.close('all')
 
+    # clean rxd components
+    if hasattr(sim.net, 'rxd'):
+        
+        sim.clearObj(sim.net.rxd)
+
+        if 'rxd' not in globals():
+            try:
+                from neuron import crxd as rxd 
+            except:
+                pass
+        #try:
+        for r in rxd.rxd._all_reactions[:]:
+            if r():
+                rxd.rxd._unregister_reaction(r)
+
+        for s in rxd.species._all_species:
+            if s():
+                s().__del__()
+                
+        rxd.region._all_regions = []
+        rxd.region._region_count = 0
+        rxd.region._c_region_lookup = None
+        rxd.species._species_counts = 0
+        rxd.section1d._purge_cptrs()
+        rxd.initializer.has_initialized = False
+        rxd.rxd.free_conc_ptrs()
+        rxd.rxd.free_curr_ptrs()
+        rxd.rxd.rxd_include_node_flux1D(0, None, None, None)
+        rxd.species._has_1d = False
+        rxd.species._has_3d = False
+        rxd.rxd._zero_volume_indices = np.ndarray(0, dtype=np.int_)
+        rxd.set_solve_type(dimension=1)
+        # clear reactions in case next sim does not use rxd
+        rxd.rxd.clear_rates()
+        
+        for obj in rxd.__dict__:
+            sim.clearObj(obj)
+        
+
+        #except:
+        #    pass
+
     if hasattr(sim, 'net'):
         del sim.net
 
@@ -904,11 +983,16 @@ class NpSerializer(json.JSONEncoder):
 
 
     def default(self, obj):
+        from neuron import hoc
         if isinstance(obj, np.integer):
             return int(obj)
         elif isinstance(obj, np.floating):
             return float(obj)
         elif isinstance(obj, np.ndarray):
             return obj.tolist()
+        elif isinstance(obj, hoc.HocObject):
+            return obj.to_python()
+        elif isinstance(obj, RecXElectrode):
+            return obj.toJSON()
         else:
             return super(NpSerializer, self).default(obj)

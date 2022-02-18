@@ -1,5 +1,5 @@
 name: Tests
-on: [push]
+on: [push, pull_request]
 jobs:
   Run-Tests:
     runs-on: ${{ matrix.os }}
@@ -7,7 +7,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: [2.7, 3.7]
+        #python-version: [2.7, 3.7]
+        python-version: [3.7]
 
     steps:
       - name: Check out repository code

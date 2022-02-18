@@ -87,12 +87,12 @@ def intervalSimulate(interval):
 
     from .. import sim
     sim.runSimWithIntervalFunc(interval, sim.intervalSave) # run parallel Neuron simulation
-    sim.fileGather() # gather spiking data and cell info from saved file
+    sim.gatherData() # gather spiking data and cell info from saved file
 
 #------------------------------------------------------------------------------
 # Wrapper to simulate network
 #------------------------------------------------------------------------------
-def distributedSimulate(filename=None, dataDir=None, includeLFP=True):
+def distributedSimulate(filename=None, includeLFP=True):
     """
     Wrapper function to run a simulation and save/load data to/from files by node
 
@@ -102,10 +102,6 @@ def distributedSimulate(filename=None, dataDir=None, includeLFP=True):
         name of saved data files.
         **Default:** ``None`` uses the name of the simulation.
 
-    dataDir : str
-        name of directory to save data to and load data from.
-        **Default:** ``None`` uses the simulation name.
-
     includeLFP : bool
         whether or not to include LFP data
         **Default:** ``True`` includes LFP data if available.
@@ -114,8 +110,8 @@ def distributedSimulate(filename=None, dataDir=None, includeLFP=True):
 
     from .. import sim
     sim.runSim()
-    sim.saveDataInNodes(filename=filename, saveLFP=includeLFP, removeTraces=False, dataDir=dataDir)
-    sim.gatherDataFromFiles(gatherLFP=includeLFP, dataDir=dataDir)
+    sim.saveDataInNodes(filename=filename, saveLFP=includeLFP, removeTraces=False)
+    sim.gatherDataFromFiles(gatherLFP=includeLFP)
     
 
 #------------------------------------------------------------------------------
@@ -262,7 +258,7 @@ def createSimulateAnalyzeInterval(netParams, simConfig, output=False, interval=N
 #------------------------------------------------------------------------------
 # Wrapper to create, simulate, and analyse network, while saving to master in intervals
 #------------------------------------------------------------------------------
-def createSimulateAnalyzeDistributed(netParams, simConfig, output=False, filename=None, dataDir=None, includeLFP=True):
+def createSimulateAnalyzeDistributed(netParams, simConfig, output=False, filename=None, includeLFP=True):
     """
     Wrapper function to run a simulation saving data in each node
 
@@ -306,9 +302,8 @@ def createSimulateAnalyzeDistributed(netParams, simConfig, output=False, filenam
     (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
     
     sim.runSim()
-    sim.saveDataInNodes(filename=filename, saveLFP=includeLFP, removeTraces=False, dataDir=dataDir)
-    sim.gatherDataFromFiles(gatherLFP=includeLFP, dataDir=dataDir)
-    sim.saveData()
+    sim.saveDataInNodes(filename=filename, saveLFP=includeLFP, removeTraces=False)
+    sim.gatherDataFromFiles(gatherLFP=includeLFP, saveMerged=True)
     sim.analysis.plotData()
 
     if output: 
@@ -497,25 +492,21 @@ def createExportNeuroML2(netParams=None, simConfig=None, output=False, reference
         **Default:** ``False`` does not return anything.
         **Options:** ``True`` returns output.
 
-    reference : <``None``?>
-        <Short description of reference>
-        **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
+    reference : str
+        Will be used for id of the network
 
     connections : bool
-        <Short description of connections>
+        Should connections also be exported?
         **Default:** ``True``
-        **Options:** ``<option>`` <description of option>
 
     stimulations : bool
-        <Short description of stimulations>
+        Should stimulations (current clamps etc) also be exported?
         **Default:** ``True``
-        **Options:** ``<option>`` <description of option>
 
     format : str
-        <Short description of format>
+        Which format, xml or hdf5
         **Default:** ``'xml'``
-        **Options:** ``<option>`` <description of option>
+        **Options:** ``'xml'`` Export as XML format ``'hdf5'`` Export as binary HDF5 format
 
     Returns
     -------
@@ -557,7 +548,7 @@ def importNeuroML2SimulateAnalyze(fileName, simConfig):
 
     simConfig : ``simConfig object``
         NetPyNE simConfig object specifying simulation configuration.
-        **Default:** ``None`` uses the current ``simConfig``. 
+        **Default:** *required*.
 
     """
 
@@ -567,35 +558,15 @@ def importNeuroML2SimulateAnalyze(fileName, simConfig):
     return sim.importNeuroML2(fileName, simConfig, simulate=True, analyze=True)
 
 
-#------------------------------------------------------------------------------
-# Wrapper to save and gather data by node
-#------------------------------------------------------------------------------
-def gatherDataFromNodes(filename=None, dataDir=None, includeLFP=True, removeTraces=False):
+
+def runSimIntervalSaving(interval=1000):
     """
-    Wrapper function to save data in a file for each node and gather data from files
-
-    Parameters
-    ----------
-    filename : str
-        name of data file to load.
-        **Default:** ``None`` uses the file name from the simulation configuration.
-
-    dataDir : str
-        name of directory to save data to and load data from.
-        **Default:** ``None`` uses the simulation name.
-
-    includeLFP : bool
-        whether or not to include LFP data
-        **Default:** ``True`` includes LFP data if available.
-
-    removeTraces : bool
-        whether to remove the trace data or not.
-        **Default:** ``False`` leaves any trace data in place.
-
+    Wrapper function to run a simulation while saving data at intervals
     """
 
     from .. import sim
 
-    sim.saveDataInNodes(filename=filename, saveLFP=includeLFP, removeTraces=removeTraces, dataDir=dataDir)
-    sim.gatherDataFromFiles(gatherLFP=includeLFP, dataDir=dataDir)
-    
+    sim.runSimWithIntervalFunc(interval, sim.intervalSave)
+
+
+

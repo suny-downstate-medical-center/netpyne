@@ -249,55 +249,95 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
     from .. import sim
 
     if not data: data = _loadFile(filename)
+    if not hasattr(sim, 'net'): sim.initialize()
+
     if 'net' in data and 'cells' in data['net'] and 'pops' in data['net']:
-        if sim.rank == 0:
+        loadNow = True
+        if hasattr(sim, 'rank'):
+            if sim.rank != 0:
+                loadNow = False
+        if loadNow:
             sim.timing('start', 'loadNetTime')
             print('Loading net...')
             if compactConnFormat:
                 compactToLongConnFormat(data['net']['cells'], compactConnFormat) # convert loaded data to long format
             sim.net.allPops = data['net']['pops']
+
+            loadedPops = data['net']['pops']
+            if loadedPops is ODict:
+                sim.net.allPops = loadedPops
+            else:
+                # if populations order is not preserved (for example if loaded from JSON), need to sort them again
+                sim.net.allPops = ODict()
+                loadedPops = list(loadedPops.items())
+                def sort(popKeyValue):
+                    # the assumption while sorting is that populations order corresponds to cell gids in this population
+                    cellGids = popKeyValue[1]['cellGids']
+                    if len(cellGids) > 0:
+                        return cellGids[0]
+                    else:
+                        return -1
+                loadedPops.sort(key = sort)
+
+                for pop in loadedPops:
+                    sim.net.allPops[pop[0]] = pop[1]
+
             sim.net.allCells = data['net']['cells']
         if instantiate:
-            # calculate cells to instantiate in this node
-            if isinstance(instantiate, list):
-                cellsNode = [data['net']['cells'][i] for i in range(int(sim.rank), len(data['net']['cells']), sim.nhosts) if i in instantiate]
-            else:
-                cellsNode = [data['net']['cells'][i] for i in range(int(sim.rank), len(data['net']['cells']), sim.nhosts)]
-            if sim.cfg.createPyStruct:
-                for popLoadLabel, popLoad in data['net']['pops'].items():
-                    pop = sim.Pop(popLoadLabel, popLoad['tags'])
-                    pop.cellGids = popLoad['cellGids']
-                    sim.net.pops[popLoadLabel] = pop
-                for cellLoad in cellsNode:
-                    # create new CompartCell object and add attributes, but don't create sections or associate gid yet
-                    # TO DO: assumes CompartCell -- add condition to load PointCell
-                    cell = sim.CompartCell(gid=cellLoad['gid'], tags=cellLoad['tags'], create=False, associateGid=False)
-                    try:
-                        if sim.cfg.saveCellSecs:
-                            cell.secs = Dict(cellLoad['secs'])
-                        else:
-                            createNEURONObjorig = sim.cfg.createNEURONObj
-                            sim.cfg.createNEURONObj = False  # avoid creating NEURON Objs now; just needpy struct
-                            cell.create()
-                            sim.cfg.createNEURONObj = createNEURONObjorig
-                    except:
-                        if sim.cfg.verbose: print(' Unable to load cell secs')
+            try:
+                # calculate cells to instantiate in this node
+                if hasattr(sim, 'rank'):
+                    if isinstance(instantiate, list):
+                        cellsNode = [data['net']['cells'][i] for i in range(int(sim.rank), len(data['net']['cells']), sim.nhosts) if i in instantiate]
+                    else:
+                        cellsNode = [data['net']['cells'][i] for i in range(int(sim.rank), len(data['net']['cells']), sim.nhosts)]
+                else:
+                    if isinstance(instantiate, list):
+                        cellsNode = [data['net']['cells'][i] for i in range(0, len(data['net']['cells']), 1) if i in instantiate]
+                    else:
+                        cellsNode = [data['net']['cells'][i] for i in range(0, len(data['net']['cells']), 1)]
+            except:
+                print('Unable to instantiate network...')
+            
+            try:
+                if sim.cfg.createPyStruct:
+                    for popLoadLabel, popLoad in data['net']['pops'].items():
+                        pop = sim.Pop(popLoadLabel, popLoad['tags'])
+                        pop.cellGids = popLoad['cellGids']
+                        sim.net.pops[popLoadLabel] = pop
+                    for cellLoad in cellsNode:
+                        # create new CompartCell object and add attributes, but don't create sections or associate gid yet
+                        # TO DO: assumes CompartCell -- add condition to load PointCell
+                        cell = sim.CompartCell(gid=cellLoad['gid'], tags=cellLoad['tags'], create=False, associateGid=False)
+                        try:
+                            if sim.cfg.saveCellSecs:
+                                cell.secs = Dict(cellLoad['secs'])
+                            else:
+                                createNEURONObjorig = sim.cfg.createNEURONObj
+                                sim.cfg.createNEURONObj = False  # avoid creating NEURON Objs now; just needpy struct
+                                cell.create()
+                                sim.cfg.createNEURONObj = createNEURONObjorig
+                        except:
+                            if sim.cfg.verbose: print(' Unable to load cell secs')
 
-                    try:
-                        cell.conns = [Dict(conn) for conn in cellLoad['conns']]
-                    except:
-                        if sim.cfg.verbose: print(' Unable to load cell conns')
+                        try:
+                            cell.conns = [Dict(conn) for conn in cellLoad['conns']]
+                        except:
+                            if sim.cfg.verbose: print(' Unable to load cell conns')
 
-                    try:
-                        cell.stims = [Dict(stim) for stim in cellLoad['stims']]
-                    except:
-                        if sim.cfg.verbose: print(' Unable to load cell stims')
+                        try:
+                            cell.stims = [Dict(stim) for stim in cellLoad['stims']]
+                        except:
+                            if sim.cfg.verbose: print(' Unable to load cell stims')
 
-                    sim.net.cells.append(cell)
-                print(('  Created %d cells' % (len(sim.net.cells))))
-                print(('  Created %d connections' % (sum([len(c.conns) for c in sim.net.cells]))))
-                print(('  Created %d stims' % (sum([len(c.stims) for c in sim.net.cells]))))
+                        sim.net.cells.append(cell)
+                    print(('  Created %d cells' % (len(sim.net.cells))))
+                    print(('  Created %d connections' % (sum([len(c.conns) for c in sim.net.cells]))))
+                    print(('  Created %d stims' % (sum([len(c.stims) for c in sim.net.cells]))))
+            except:
+                print('Unable to create Python structure...')
 
+            try:
                 # only create NEURON objs, if there is Python struc (fix so minimal Python struct is created)
                 if sim.cfg.createNEURONObj:
                     if sim.cfg.verbose: print("  Adding NEURON objects...")
@@ -316,8 +356,10 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
                             if sim.cfg.verbose: ' Unable to load instantiate cell conns or stims'
 
                     print(('  Added NEURON objects to %d cells' % (len(sim.net.cells))))
+            except:
+                print('Unable to create NEURON objects...')    
 
-            if sim.rank == 0 and sim.cfg.timing:
+            if loadNow and sim.cfg.timing:  #if sim.rank == 0 and sim.cfg.timing:
                 sim.timing('stop', 'loadNetTime')
                 print(('  Done; re-instantiate net time = %0.2f s' % sim.timingData['loadNetTime']))
     else:
@@ -325,38 +367,43 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
 
 
 #------------------------------------------------------------------------------
-# Load netParams from cell
+# Load simData from file
 #------------------------------------------------------------------------------
 def loadSimData(filename, data=None):
     """
-    Function for/to <short description of `netpyne.sim.load.loadSimData`>
+    Function to load simulation data from a file
 
     Parameters
     ----------
-    filename : <type>
-        <Short description of filename>
+    filename : str
+        The path and name of the file where the data is stored.
         **Default:** *required*
 
-    data : <``None``?>
-        <Short description of data>
+    data : dict
+        A dictionary containing a `simData` key.
         **Default:** ``None``
-        **Options:** ``<option>`` <description of option>
-
 
     """
 
-
     from .. import sim
 
-    if not data: data = _loadFile(filename)
+    if not data: 
+        data = _loadFile(filename)
+    
     print('Loading simData...')
+    
     if 'simData' in data:
         sim.allSimData = data['simData']
     else:
         print(('  simData not found in file %s'%(filename)))
 
-    pass
-
+    if 'net' in data:
+        if 'recXElectrode' in data['net']:
+            from netpyne.support.recxelectrode import RecXElectrode
+            xElectrode = data['net']['recXElectrode']
+            if False == isinstance(xElectrode, RecXElectrode):
+                xElectrode = RecXElectrode.fromJSON(xElectrode)
+            sim.net.recXElectrode = xElectrode
 
 #------------------------------------------------------------------------------
 # Load all data in file

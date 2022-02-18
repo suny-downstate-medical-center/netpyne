@@ -49,20 +49,18 @@ class RecXElectrode(object):
     """Extracellular electrode
 
     """
-    def __init__(self, sim):
-        """Create an array"""
-        self.cfg = sim.cfg
 
+    def __init__(self, locations):
         try:
-            self.pos = np.array(sim.cfg.recordLFP).T      # convert coordinates to ndarray, The first index is xyz and the second is the channel number
+            self.pos = locations
             assert len(self.pos.shape) == 2
             assert self.pos.shape[0] == 3
             self.pos[1,:] *= -1  # invert y-axis since by convention assume it refers to depth (eg cortical depth)
             self.nsites = self.pos.shape[0]
             self.transferResistances = {}
         except:
-               print('Error creating extracellular electrode: sim.cfg.recordLFP should contain a list of x,y,z locations')
-               return None
+            print('Error creating extracellular electrode: sim.cfg.recordLFP should contain a list of x,y,z locations')
+            return None
 
         self.nsites = self.pos.shape[1]
         self.transferResistances = {}   # V_e = transfer_resistance*Im
@@ -109,3 +107,23 @@ class RecXElectrode(object):
 
         tr *= 1/(4*math.pi*sigma)  # units: 1/um / (mS/mm) = mm/um / mS = 1e3 * kOhm = MOhm
         self.transferResistances[gid] = tr
+
+    def fromConfig(cfg):
+        # convert coordinates to ndarray, The first index is xyz and the second is the channel number
+        return RecXElectrode(np.array(cfg.recordLFP).T)
+
+    def toJSON(self):
+        pos = self.pos.tolist()
+        resistances = {}
+        for ind, res in self.transferResistances.items():
+            resistances[ind] = res.tolist()
+        return {'pos': pos, 'resistances': resistances}
+
+    def fromJSON(raw):
+        locs = np.array(raw['pos'])
+        instance = RecXElectrode(locs)
+
+        rawRes = raw.get('resistances', {})
+        for ind, res in rawRes.items():
+            instance.transferResistances[ind] = np.array(res)
+        return instance

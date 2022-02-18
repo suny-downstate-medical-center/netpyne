@@ -105,7 +105,8 @@ NEURON {
 	RANGE R, G, g
 	NONSPECIFIC_CURRENT i
 	GLOBAL Cmax, Cdur
-	GLOBAL K1, K2, K3, K4, KD, Erev, warn, cutoff
+	GLOBAL K1, K2, K3, K4, KD, Erev, cutoff
+        RANGE warn
 }
 UNITS {
 	(nA) = (nanoamp)
@@ -196,14 +197,14 @@ NET_RECEIVE(weight,  r0, t0 (ms)) {
 		r0 = weight*(Rinf + (r0 - Rinf)*exp(-(t - t0)/Rtau))
 		t0 = t
 		synon = synon - weight
-		state_discontinuity(Ron, Ron - r0)
-		state_discontinuity(Roff, Roff + r0)
+                Ron = Ron - r0
+                Roff =  Roff + r0
         }else{ : at beginning of Cdur pulse so turn on
 		r0 = weight*r0*exp(-Beta*(t - t0))
 		t0 = t
 		synon = synon + weight
-		state_discontinuity(Ron, Ron + r0)
-		state_discontinuity(Roff, Roff - r0)
+                Ron = Ron + r0
+                Roff =  Roff - r0
 		:come again in Cdur
 		net_send(Cdur, 1)
         }

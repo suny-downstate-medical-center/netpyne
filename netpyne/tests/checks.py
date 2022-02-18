@@ -14,18 +14,19 @@ standard_library.install_aliases()
 
 def checkOutput(modelName, verbose=False):
     """
-    Function for/to <short description of `netpyne.tests.checks.checkOutput`>
+    Function to compare the output of tutorials and examples with their expected output
+
+    This function is used for code testing and continuous integration.
 
     Parameters
     ----------
-    modelName : <type>
-        <Short description of modelName>
+    modelName : string
+        The name of the tutorial or example to be checked.
         **Default:** *required*
 
     verbose : bool
-        <Short description of verbose>
-        **Default:** ``False``
-        **Options:** ``<option>`` <description of option>
+        Whether to print messages during checking.
+        **Default:** ``False`` does not print messages.
 
     """
 
@@ -71,7 +72,7 @@ def checkOutput(modelName, verbose=False):
 
         # M1 expected output
         expectedAll['numSyns']['M1'] = 4887
-        expectedAll['numSpikes']['M1'] = 76135
+        expectedAll['numSpikes']['M1'] = 14439
 
         # M1 detailed expected output
         expectedAll['numSyns']['M1detailed'] = 49152

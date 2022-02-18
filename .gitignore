@@ -52,3 +52,6 @@ venv/
 /examples/M1/*.pov
 /examples/HHTut/temp.json
 .vscode
+/examples/HHTut/HHTut_plot_2Dnet.png
+/examples/HHTut/HHTut_regen.py
+/examples/HHTut/HHTut_traces.png

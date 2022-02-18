@@ -28,7 +28,7 @@ from neuron import h
 from .setup import initialize, setNet, setNetParams, setSimCfg, createParallelContext, readCmdLineArgs, setupRecording, setupRecordLFP, setGlobals
 
 # import run functions
-from .run import preRun, runSim, runSimWithIntervalFunc, loadBalance, calculateLFP
+from .run import preRun, runSim, runSimWithIntervalFunc, loadBalance, calculateLFP, calculateDipole
 
 # import gather functions
 from .gather import gatherData, _gatherAllCellTags, _gatherAllCellConnPreGids, _gatherCells, gatherDataFromFiles
@@ -46,7 +46,7 @@ from .utils import cellByGid, getCellsList, timing, version, gitChangeset, hashS
 from .utils import copyReplaceItemObj, copyRemoveItemObj, replaceFuncObj, replaceDictODict, rename, clearObj, clearAll
 
 # import wrapper functions
-from .wrappers import create, simulate, intervalSimulate, distributedSimulate, analyze, createSimulate, createSimulateAnalyze, createSimulateAnalyzeInterval, createSimulateAnalyzeDistributed, load, loadSimulate, loadSimulateAnalyze, createExportNeuroML2, importNeuroML2SimulateAnalyze, gatherDataFromNodes
+from .wrappers import create, simulate, intervalSimulate, distributedSimulate, analyze, createSimulate, createSimulateAnalyze, createSimulateAnalyzeInterval, createSimulateAnalyzeDistributed, load, loadSimulate, loadSimulateAnalyze, createExportNeuroML2, importNeuroML2SimulateAnalyze, runSimIntervalSaving
 
 
 #------------------------------------------------------------------------------
@@ -61,6 +61,9 @@ from ..network import Network, Pop
 
 # import analysis-related module
 from .. import analysis
+
+# import plotting-related module
+from .. import plotting
 
 # import testing related functions
 from .. import tests

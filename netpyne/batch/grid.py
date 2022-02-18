@@ -48,7 +48,7 @@ pc = h.ParallelContext() # use bulletin board master/slave
 # -------------------------------------------------------------------------------
 
 # func needs to be outside of class
-def runJob(script, cfgSavePath, netParamsSavePath, processes):
+def runJob(script, cfgSavePath, netParamsSavePath, processes, jobName):
     """
     Function for/to <short description of `netpyne.batch.grid.runJob`>
 
@@ -71,68 +71,63 @@ def runJob(script, cfgSavePath, netParamsSavePath, processes):
 
 
     print('\nJob in rank id: ',pc.id())
-    command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath)
+    command = "nrniv %s simConfig=%s netParams=%s" % (script, cfgSavePath, netParamsSavePath)
     print(command+'\n')
+
+    stdout=open(jobName+'.run','w')
+    stderr=open(jobName+'.err','w')
+    #proc = Popen(command.split(' '), stdout=stdout, stderr=stderr)
     proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
-    print(proc.stdout.read().decode())
+
+    stdout.write(proc.stdout.read().decode())
+    stderr.write(proc.stderr.read().decode())
+    
     processes.append(proc)
 
+# -------------------------------------------------------------------------------
+# Get parameter combinations
+# -------------------------------------------------------------------------------
+def getParamCombinations(self):
+
+    indices = []
+    values = []
+    filenames = []
+
+    combData = {}
+
+    # generate param combinations
+    groupedParams, ungroupedParams, indexCombGroups, valueCombGroups, indexCombinations, valueCombinations, labelList, valuesList = generateParamCombinations(self)
+
+    for iCombG, pCombG in zip(indexCombGroups, valueCombGroups):
+        for iCombNG, pCombNG in zip(indexCombinations, valueCombinations):
+            if groupedParams and ungroupedParams: # temporary hack - improve
+                iComb = iCombG+iCombNG
+                pComb = pCombG+pCombNG
+            elif ungroupedParams:
+                iComb = iCombNG
+                pComb = pCombNG
+            elif groupedParams:
+                iComb = iCombG
+                pComb = pCombG
+            else:
+                iComb = []
+                pComb = []
+
+            # set simLabel and jobName
+            simLabel = self.batchLabel+''.join([''.join('_'+str(i)) for i in iComb])
+            jobName = self.saveFolder+'/'+simLabel
+
+            indices.append(iComb)
+            values.append(pComb)
+            filenames.append(jobName)
+
+    return {'indices': indices, 'values': values, 'labels': labelList, 'filenames': filenames}
 
 
 # -------------------------------------------------------------------------------
-# Grid Search optimization
+# Generate parameter combinations
 # -------------------------------------------------------------------------------
-def gridSearch(self, pc):
-    """
-    Function for/to <short description of `netpyne.batch.grid.gridSearch`>
-
-    Parameters
-    ----------
-    self : <type>
-        <Short description of self>
-        **Default:** *required*
-
-    pc : <type>
-        <Short description of pc>
-        **Default:** *required*
-
-
-    """
-
-
-    createFolder(self.saveFolder)
-
-    # save Batch dict as json
-    targetFile = self.saveFolder+'/'+self.batchLabel+'_batch.json'
-    self.save(targetFile)
-
-    # copy this batch script to folder
-    targetFile = self.saveFolder+'/'+self.batchLabel+'_batchScript.py'
-    os.system('cp ' + os.path.realpath(__file__) + ' ' + targetFile)
-
-    # copy netParams source to folder
-    netParamsSavePath = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
-    os.system('cp ' + self.netParamsFile + ' ' + netParamsSavePath)
-
-    # import cfg
-    if self.cfg is None:
-        cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
-
-        try:
-            loader = importlib.machinery.SourceFileLoader(cfgModuleName, self.cfgFile)
-            cfgModule = types.ModuleType(loader.name)
-            loader.exec_module(cfgModule)
-        except:
-            cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
-
-        self.cfg = cfgModule.cfg
-    
-    self.cfg.checkErrors = False  # avoid error checking during batch
-
-    # set initial cfg initCfg
-    if len(self.initCfg) > 0:
-        for paramLabel, paramVal in self.initCfg.items():
-            self.setCfgNestedParam(paramLabel, paramVal)
+def generateParamCombinations(self):
 
     # iterate over all param combinations
     if self.method == 'grid':
@@ -163,6 +158,40 @@ def gridSearch(self, pc):
         else:
             valueCombGroups = [(0,)] # this is a hack -- improve!
             indexCombGroups = [(0,)]
+
+    return groupedParams, ungroupedParams, indexCombGroups, valueCombGroups, indexCombinations, valueCombinations, labelList, valuesList
+
+
+# -------------------------------------------------------------------------------
+# Grid Search optimization
+# -------------------------------------------------------------------------------
+def gridSearch(self, pc):
+    """
+    Function for/to <short description of `netpyne.batch.grid.gridSearch`>
+
+    Parameters
+    ----------
+    self : <type>
+        <Short description of self>
+        **Default:** *required*
+
+    pc : <type>
+        <Short description of pc>
+        **Default:** *required*
+
+
+    """
+    # create main sim directory and save scripts
+    self.saveScripts()
+    netParamsSavePath = self.netParamsSavePath
+
+    # set initial cfg initCfg
+    if len(self.initCfg) > 0:
+        for paramLabel, paramVal in self.initCfg.items():
+            self.setCfgNestedParam(paramLabel, paramVal)
+
+    # generate param combinations
+    groupedParams, ungroupedParams, indexCombGroups, valueCombGroups, indexCombinations, valueCombinations, labelList, valuesList = generateParamCombinations(self)
 
     # if using pc bulletin board, initialize all workers
     if self.runCfg.get('type', None) == 'mpi_bulletin':
@@ -202,7 +231,7 @@ def gridSearch(self, pc):
             sleepInterval = 1
 
             # skip if output file already exists
-            if self.runCfg.get('skip', False) and glob.glob(jobName+'.json'):
+            if self.runCfg.get('skip', False) and glob.glob(jobName+'_data.json'):
                 print('Skipping job %s since output file already exists...' % (jobName))
             elif self.runCfg.get('skipCfg', False) and glob.glob(jobName+'_cfg.json'):
                 print('Skipping job %s since cfg file already exists...' % (jobName))
@@ -339,10 +368,12 @@ wait
                 elif self.runCfg.get('type',None) == 'mpi_bulletin':
                     jobName = self.saveFolder+'/'+simLabel
                     printOutput = self.runCfg.get('printOutput', False)
-                    print('Submitting job ',jobName)
+                    print('Submitting job ', jobName)
                     # master/slave bulletin board schedulling of jobs
-                    pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath, processes)
-
+                    pc.submit(runJob, self.runCfg.get('script', 'init.py'), cfgSavePath, netParamsSavePath, processes, jobName)
+                    print('Saving output to: ', jobName+'.run')
+                    print('Saving errors to: ', jobName+'.err')
+                    print('')
                 else:
                     print(self.runCfg)
                     print("Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'")
@@ -350,6 +381,7 @@ wait
                     sys.exit(0)
 
             sleep(sleepInterval) # avoid saturating scheduler
+
     print("-"*80)
     print("   Finished submitting jobs for grid parameter exploration   ")
     print("-" * 80)
@@ -359,7 +391,11 @@ wait
     outfiles = []
     for procFile in processFiles:
         outfiles.append(open(procFile, 'r'))
-        
+    
+    # note: while the process is running the poll() method will return None  
+    # depending on the platform or the way the source file is executed (e.g. if run using mpiexec), 
+    # the stored processes ids might correspond to completed processes  
+    # and therefore return 1 (even though nrniv processes are still running)
     while any([proc.poll() is None for proc in processes]):
         for i, proc in enumerate(processes):
                 newline = outfiles[i].readline()

@@ -29,14 +29,13 @@ from .utils import colorList, exception, _saveFigData, _showFigure, _smooth1d
 from ..support.scalebar import add_scalebar
 
 
-#@exception
+@exception
 def prepareLFP(
     sim=None,
     timeRange=None,
     electrodes=['avg', 'all'],
     pop=None,
     LFPData=None, 
-    logx=False, 
     logy=False, 
     normSignal=False, 
     filtFreq=False, 
@@ -141,7 +140,7 @@ def prepareLFP(
     return data
 
 
-#@exception
+@exception
 def preparePSD(
     LFPData=None, 
     sim=None,
@@ -155,7 +154,6 @@ def preparePSD(
     maxFreq=100, 
     stepFreq=1, 
     smooth=0,
-    logx=False, 
     logy=False, 
     normSignal=False, 
     normPSD=False, 
@@ -248,7 +246,7 @@ def preparePSD(
 
 
 
-#@exception
+@exception
 def prepareSpectrogram(
     sim=None,
     timeRange=None,
@@ -263,7 +261,6 @@ def prepareSpectrogram(
     stepFreq=1, 
     smooth=0, 
     includeAxon=True, 
-    logx=False, 
     logy=False, 
     normSignal=False, 
     normPSD=False, 

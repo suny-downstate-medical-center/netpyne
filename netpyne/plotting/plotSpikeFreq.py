@@ -92,7 +92,7 @@ def plotSpikeFreq(
         *Default:* ``5``
 
     norm : bool
-        Size of bin in ms to use for spike histogram.
+        Whether to normalize the data.
 
         *Default:* ``False``
 

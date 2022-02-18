@@ -373,13 +373,13 @@ def plotRaster(
 
         # Create the labels and handles for the legend
         # (use rectangles instead of markers because some markers don't show up well)
-        labels = []
+        leg_labels = []
         handles = []
         for popIndex, popLabel in enumerate(popLabels):
             if legendLabels:
-                labels.append(legendLabels[popIndex])
+                leg_labels.append(legendLabels[popIndex])
             else:
-                labels.append(popLabel)            
+                leg_labels.append(popLabel)            
             handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=popColors[popLabel]))
 
         # Set up the default legend settings
@@ -392,7 +392,7 @@ def plotRaster(
         legendKwargs['fontsize'] = 'small'
             
         # Add the legend
-        rasterPlotter.addLegend(handles, labels, **legendKwargs, **kwargs)
+        rasterPlotter.addLegend(handles, leg_labels, **legendKwargs, **kwargs)
         
         # Adjust the plot to make room for the legend
         rightOffset = 0.8

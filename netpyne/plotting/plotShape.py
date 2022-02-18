@@ -33,7 +33,7 @@ from ..analysis.utils import _saveFigData, _showFigure
 from .plotter import MetaFigure
 
 
-#@exception
+@exception
 def plotShape(
     axis=None,
     includePre=['all'], 
@@ -58,7 +58,7 @@ def plotShape(
     returnPlotter=False, 
     **kwargs):
     """
-    Function for/to <short description of `netpyne.analysis.network.plotShape`>
+    Function to plot morphology of network>
     """
 
     from .. import sim

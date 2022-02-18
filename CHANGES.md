@@ -2,6 +2,16 @@
 
 **New features**
 
+- Added new plotting module with custom plotters
+
+- Separated analysis.plotSpikeRaster into analysis.prepareRaster and plotting.plotRaster
+
+- Separated analysis.plotSpikeHist into analysis.prepareSpikeData, analysis.prepareSpikeHist, plotting.plotSpikeHist and plotting.plotSpikeFreq
+
+- Separated analysis.plotLFP into analysis.prepareLFP, analysis.preparePSD, analysis.prepareSpectrogram, plotting.plotLFPTimeSeries, plotting.plotLFPPSD, plotting.plotLFPSpectrogram, and plotting.plotLFPLocations
+
+- Mapped old analysis.plots onto new ones
+
 - Interfaced with LFPkit to enable recording/plotting of dipole current moments and EEG signals
 
 - Added Current Source Density (CSD) analysis and plots

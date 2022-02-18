@@ -24,112 +24,12 @@ def plotRaster(
     **kwargs):
     """Function to produce a raster plot of cell spiking
 
-    Parameters
-    ----------
-    rasterData : list, tuple, dict, str
-        the data necessary to plot the raster (spike times and spike indices, at minimum).  
-
-        *Default:* ``None`` uses ``analysis.prepareRaster`` to produce ``rasterData`` using the current NetPyNE sim object.
-
-        *Options:* if a *list* or a *tuple*, the first item must be a *list* of spike times and the second item must be a *list* the same length of spike indices (the id of the cell corresponding to that spike time).  Optionally, a third item may be a *list* of *ints* representing the number of cells in each population (in lieu of ``popNumCells``).  Optionally, a fourth item may be a *list* of *strs* representing the population names (in lieu of ``popLabels``). 
-        
-        If a *dict* it must have keys ``'spkTimes'`` and ``'spkInds'`` and may optionally include ``'popNumCells'`` and ``'popLabels'``.
-        
-        If a *str* it must represent a file path to previously saved data.
-        
-    popNumCells : list
-        a *list* of *ints* representing the number of cells in each population.
-        
-        *Default:* ``None`` puts all cells into a single population.
-
-    popLabels : list
-        a *list* of *strs* of population names.  Must be the same length as ``popNumCells``.
-        
-        *Default:* ``None`` uses generic names.
-
-    popColors : dict
-        a *dict* of ``popLabels`` and their desired color.
-        
-        *Default:* ``None`` draws from the NetPyNE default colorList.
-
-    axis : matplotlib axis
-        the axis to plot into, allowing overlaying of plots.
-        
-        *Default:* ``None`` produces a new figure and axis.
-
-    legend : bool
-        whether or not to add a legend to the plot.
-        
-        *Default:* ``True`` adds a legend.
-
-    colorList : list
-        a *list* of colors to draw from when plotting.
-        
-        *Default:* ``None`` uses the default NetPyNE colorList.
-
-    orderInverse : bool
-        whether or not to invert the y axis (useful if populations are defined top-down).
-        
-        *Default:* ``False`` does not invert the y-axis.
-
-    returnPlotter : bool
-        whether to return the figure or the NetPyNE Plotter object.
-        
-        *Default:* ``False`` returns the figure.
-
-
-    Plot Options
-    ------------
-    title : str
-        the axis title.
-
-        *Default:* ``'Raster Plot of Spiking'``
-    
-    xlabel : str
-        label for x-axis.
-
-        *Default:* ``'Time (ms)'``
-    
-    ylabel : str
-        label for y-axis.
-        
-        *Default:* ``'Cells'``
-
-    s : int
-        marker size.
-
-        *Default:* ``5``
-
-    marker : str
-        marker symbol.
-
-        *Default:* ``'|'``
-
-    linewidth : int
-        line width (affects other sizes).
-        
-        *Default:* ``2``
-
-    legendKwargs : dict
-        a *dict* containing any or all legend kwargs.  These include ``'title'``, ``'loc'``, ``'fontsize'``, ``'bbox_to_anchor'``, ``'borderaxespad'``, and ``'handlelength'``.
-
-    rcParams : dict
-        a *dict* containing any or all matplotlib rcParams.  To see all options, execute ``import matplotlib; print(matplotlib.rcParams)`` in Python.  Any options in this *dict* will be used for this current figure and then returned to their prior settings.
-
-    overwrite : bool
-        whether to overwrite existing figure files.
-
-        *Default:* ``True`` overwrites the figure file
-
-        *Options:* ``False`` adds a number to the file name to prevent overwriting
-
-
     NetPyNE Options
     ---------------
     include : str, int, list
-        cells and/or NetStims to return information from
+        Cells and/or NetStims to return information from.
         
-        *Default:* ``'allCells'`` includes all cells and no NetStims
+        *Default:* ``['allCells']`` includes all cells and no NetStims
         
         *Options:* 
         (1) ``'all'`` includes all cells and all NetStims, 
@@ -140,18 +40,41 @@ def plotRaster(
         (6) a *list* of *ints* includes the cells with those GIDS,
         (7) a *list* with two items, the first of which is a *str* matching a popLabel and the second of which is an *int* (or a *list* of *ints*), includes the relative cell(s) from that population (e.g. (``['popName', [0, 1]]``) includes the first two cells in popName.
 
+    sim : NetPyNE sim object
+        The *sim object* from which to get data.
+        
+        *Default:* ``None`` uses the current NetPyNE sim object
+
+    Parameters
+    ----------
+    rasterData : list, tuple, dict, str
+        The data necessary to plot the raster (spike times and spike indices, at minimum). 
+
+        *Default:* ``None`` uses ``analysis.prepareRaster`` to produce ``rasterData`` using the current NetPyNE sim object.
+
+        *Options:* if a *list* or a *tuple*, the first item must be a *list* of spike times and the second item must be a *list* the same length of spike indices (the id of the cell corresponding to that spike time).  Optionally, a third item may be a *list* of *ints* representing the number of cells in each population (in lieu of ``popNumCells``).  Optionally, a fourth item may be a *list* of *strs* representing the population names (in lieu of ``popLabels``). 
+        
+        If a *dict* it must have keys ``'spkTimes'`` and ``'spkInds'`` and may optionally include ``'popNumCells'`` and ``'popLabels'``.
+        
+        If a *str* it must represent a file path to previously saved data.
+        
+    axis : matplotlib axis
+        The axis to plot into, allowing overlaying of plots.
+        
+        *Default:* ``None`` produces a new figure and axis.
+
     timeRange : list
-        time range to include in the raster: ``[min, max]``.
+        Time range to include in the raster: ``[min, max]``.
         
         *Default:* ``None`` uses the entire simulation
 
     maxSpikes : int
-        the maximum number of spikes to include (by reducing the max time range).
+        The maximum number of spikes to include (by reducing the max time range).
 
         *Default:* ``1e8``
 
     orderBy : str
-        how to order the cells along the y-axis.
+        How to order the cells along the y-axis.
         
         *Default:* ``'gid'`` orders cells by their index
         
@@ -166,63 +89,92 @@ def plotRaster(
         ``False`` only includes pop names.
         ``'minimal'`` includes minimal pop information.
 
-    saveData : bool
-        whether to save to a file the data used to create the figure.
+    popNumCells : list
+        A *list* of *ints* representing the number of cells in each population.
         
-        *Default:* ``False`` does not save the data to file
+        *Default:* ``None`` puts all cells into a single population.
 
-    fileName : str
-        if ``saveData`` is ``True``, this is the name of the saved file.
+    popLabels : list
+        A *list* of *strs* of population names.  Must be the same length as ``popNumCells``.
         
-        *Default:* ``None`` a file name is automatically generated.
+        *Default:* ``None`` uses generic names.
 
-    fileDesc : str
-        an additional *str* to include in the file name just before the file extension.
-
-        *Default:* ``None`` includes no extra text in the file name.
-
-    fileType : str
-        the type of file to save the data to.
-
-        *Default:* ``json`` saves the file in JSON format.
-
-        *Options:* ``pkl`` saves the file in Python Pickle format.
-
-    fileDir : str
-        the directory to save the data to.
-
-        *Default:* ``None`` saves to the current directory.
-
-    sim : NetPyNE sim object
-        the *sim object* from which to get data.
+    popColors : dict
+        A *dict* of ``popLabels`` and their desired color.
         
-        *Default:* ``None`` uses the current NetPyNE sim object
+        *Default:* ``None`` draws from the NetPyNE default colorList.
+
+    legend : bool
+        Whether or not to add a legend to the plot.
+        
+        *Default:* ``True`` adds a legend.
+
+    colorList : list
+        A *list* of colors to draw from when plotting.
+        
+        *Default:* ``None`` uses the default NetPyNE colorList.
+
+    orderInverse : bool
+        Whether or not to invert the y axis (useful if populations are defined top-down).
+        
+        *Default:* ``False`` does not invert the y-axis.
+
+    returnPlotter : bool
+        Whether to return the figure or the NetPyNE MetaFig object.
+        
+        *Default:* ``False`` returns the figure.
+
+
+    Plot Options
+    ------------
+    showFig : bool
+        Whether to show the figure.
+
+        *Default:* ``False``
+
+    saveFig : bool
+        Whether to save the figure.
+
+        *Default:* ``False``
+
+    overwrite : bool
+        whether to overwrite existing figure files.
+
+        *Default:* ``True`` overwrites the figure file
+
+        *Options:* ``False`` adds a number to the file name to prevent overwriting
+
+    legendKwargs : dict
+        a *dict* containing any or all legend kwargs.  These include ``'title'``, ``'loc'``, ``'fontsize'``, ``'bbox_to_anchor'``, ``'borderaxespad'``, and ``'handlelength'``.
+
+    rcParams : dict
+        a *dict* containing any or all matplotlib rcParams.  To see all options, execute ``import matplotlib; print(matplotlib.rcParams)`` in Python.  Any options in this *dict* will be used for this current figure and then returned to their prior settings.
+
+    title : str
+        the axis title
+    
+    xlabel : str
+        label for x-axis
+    
+    ylabel : str
+        label for y-axis
+        
+    s : int
+        marker size
+
+    marker : str
+        marker symbol
+
+    linewidth : int
+        line width
+        
     
 
     Returns
     -------
     rasterPlot : *matplotlib figure*
-        By default, returns the *figure*.  If ``returnPlotter`` is ``True``, instead returns the NetPyNE *Plotter object* used.
+        By default, returns the *figure*.  If ``returnPlotter`` is ``True``, instead returns the NetPyNE MetaFig.
 
-
-    Examples
-    --------
-    There are many options available in plotRaster.  To run a variety of examples, enter the following::
-
-        from netpyne.plotting import plotRaster
-        from netpyne.plotting.examples import spikeSim
-        sim = spikeSim()
-        
-    First, let's just use mostly the default settings, though we will save the figure and the data.  If ``rasterData`` is ``None`` (default), NetPyNE uses ``analysis.prepareRaster`` to generate the ``rasterData`` used in the plot::
-
-        plot = plotRaster(showFig=True, saveData=True)
-
-    Because we will just be looking at data from one example simulation, we don't need to reprocess the data every time.  Let's save the output data, and then we can use that to generate more plots::
-
-        plot = plotRaster(showFig=True, saveFig=True overwrite=True, saveData=True)
-
-    This will save a data file with the raster data.           
-    
 
     """
 

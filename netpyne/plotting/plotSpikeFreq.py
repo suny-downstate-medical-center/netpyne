@@ -25,8 +25,153 @@ def plotSpikeFreq(
     colorList=None, 
     returnPlotter=False, 
     **kwargs):
-    """
-    Function to produce a plot of cell spiking frequency, grouped by population
+    """Function to produce a line plot of cell spiking frequency
+
+    NetPyNE Options
+    ---------------
+    include : str, int, list
+        Cells and/or NetStims to return information from.
+        
+        *Default:* ``['allCells', 'eachPop']`` includes average of all cells and each population of cells
+        
+        *Options:* 
+        (1) ``'all'`` includes all cells and all NetStims, 
+        (2) ``'allNetStims'`` includes all NetStims but no cells, 
+        (3) a *str* which matches a popLabel includes all cells in that pop,
+        (4) a *str* which matches a NetStim name includes that NetStim, 
+        (5) an *int* includes the cell with that global identifier (GID), 
+        (6) a *list* of *ints* includes the cells with those GIDS,
+        (7) a *list* with two items, the first of which is a *str* matching a popLabel and the second of which is an *int* (or a *list* of *ints*), includes the relative cell(s) from that population (e.g. (``['popName', [0, 1]]``) includes the first two cells in popName.
+
+    sim : NetPyNE sim object
+        The *sim object* from which to get data.
+        
+        *Default:* ``None`` uses the current NetPyNE sim object
+
+    Parameters
+    ----------
+    freqData : list, tuple, dict, str
+        The data necessary to plot the raster (spike times and spike indices, at minimum). 
+
+        *Default:* ``None`` uses ``analysis.prepareRaster`` to produce ``rasterData`` using the current NetPyNE sim object.
+
+        *Options:* if a *list* or a *tuple*, the first item must be a *list* of spike times and the second item must be a *list* the same length of spike indices (the id of the cell corresponding to that spike time).  Optionally, a third item may be a *list* of *ints* representing the number of cells in each population (in lieu of ``popNumCells``).  Optionally, a fourth item may be a *list* of *strs* representing the population names (in lieu of ``popLabels``). 
+        
+        If a *dict* it must have keys ``'spkTimes'`` and ``'spkInds'`` and may optionally include ``'popNumCells'`` and ``'popLabels'``.
+        
+        If a *str* it must represent a file path to previously saved data.
+        
+    axis : matplotlib axis
+        The axis to plot into, allowing overlaying of plots.
+        
+        *Default:* ``None`` produces a new figure and axis.
+
+    timeRange : list
+        Time range to include in the raster: ``[min, max]``.
+        
+        *Default:* ``None`` uses the entire simulation
+
+    popNumCells : list
+        A *list* of *ints* representing the number of cells in each population.
+        
+        *Default:* ``None`` puts all cells into a single population.
+
+    popLabels : list
+        A *list* of *strs* of population names.  Must be the same length as ``popNumCells``.
+        
+        *Default:* ``None`` uses generic names.
+
+    popColors : dict
+        A *dict* of ``popLabels`` and their desired color.
+        
+        *Default:* ``None`` draws from the NetPyNE default colorList.
+
+    binSize : int
+        Size of bin in ms to use for spike histogram.
+
+        *Default:* ``5``
+
+    norm : bool
+        Size of bin in ms to use for spike histogram.
+
+        *Default:* ``False``
+
+    smooth : int
+        Window width for smoothing.
+        
+        *Default:* ``None`` does not smooth the data
+
+    filtFreq : int or list
+        Frequency for low-pass filter (int) or frequencies for bandpass filter in a list: [low, high]
+        
+        *Default:* ``None`` does not filter the data
+
+    filtOrder : int
+        Order of the filter defined by `filtFreq`.
+
+        *Default:* ``3``    
+
+    legend : bool
+        Whether or not to add a legend to the plot.
+        
+        *Default:* ``True`` adds a legend.
+
+    colorList : list
+        A *list* of colors to draw from when plotting.
+        
+        *Default:* ``None`` uses the default NetPyNE colorList.
+
+    returnPlotter : bool
+        Whether to return the figure or the NetPyNE MetaFig object.
+        
+        *Default:* ``False`` returns the figure.
+
+
+    Plot Options
+    ------------
+    showFig : bool
+        Whether to show the figure.
+
+        *Default:* ``False``
+
+    saveFig : bool
+        Whether to save the figure.
+
+        *Default:* ``False``
+
+    overwrite : bool
+        whether to overwrite existing figure files.
+
+        *Default:* ``True`` overwrites the figure file
+
+        *Options:* ``False`` adds a number to the file name to prevent overwriting
+
+    legendKwargs : dict
+        a *dict* containing any or all legend kwargs.  These include ``'title'``, ``'loc'``, ``'fontsize'``, ``'bbox_to_anchor'``, ``'borderaxespad'``, and ``'handlelength'``.
+
+    rcParams : dict
+        a *dict* containing any or all matplotlib rcParams.  To see all options, execute ``import matplotlib; print(matplotlib.rcParams)`` in Python.  Any options in this *dict* will be used for this current figure and then returned to their prior settings.
+
+    title : str
+        the axis title
+    
+    xlabel : str
+        label for x-axis
+    
+    ylabel : str
+        label for y-axis
+
+    linewidth : int
+        line width
+
+    alpha : float
+        line opacity (0-1)
+        
+    
+    Returns
+    -------
+    freqPlot : *matplotlib figure*
+        By default, returns the *figure*.  If ``returnPlotter`` is ``True``, instead returns the NetPyNE MetaFig.
         
     """
 

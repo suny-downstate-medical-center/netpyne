@@ -2,7 +2,7 @@
 
 import numpy as np
 import matplotlib.patches as mpatches
-from ..analysis.utils import exception #, loadData
+from ..analysis.utils import exception
 from ..analysis.tools import loadData
 from .plotter import HistPlotter
 
@@ -10,28 +10,50 @@ from .plotter import HistPlotter
 @exception
 def plotSpikeHist(
     histData=None, 
+    axis=None, 
+    timeRange=None, 
     popNumCells=None, 
     popLabels=None, 
     popColors=None, 
-    axis=None, 
-    legend=True, 
-    colorList=None, 
-    returnPlotter=False,
+    binSize=5, 
     histType='step',
-    binSize=50, 
     stacked=False,
     cumulative=False,
     log=False,
     density=False,
+    legend=True, 
+    colorList=None, 
+    returnPlotter=False,
     **kwargs):
-    """Function to produce a histogram of cell spiking, grouped by population
+    """Function to produce a histogram plot of cell spiking
+
+    NetPyNE Options
+    ---------------
+    include : str, int, list
+        Cells and/or NetStims to return information from.
+        
+        *Default:* ``['allCells', 'eachPop']`` includes average of all cells and each population of cells
+        
+        *Options:* 
+        (1) ``'all'`` includes all cells and all NetStims, 
+        (2) ``'allNetStims'`` includes all NetStims but no cells, 
+        (3) a *str* which matches a popLabel includes all cells in that pop,
+        (4) a *str* which matches a NetStim name includes that NetStim, 
+        (5) an *int* includes the cell with that global identifier (GID), 
+        (6) a *list* of *ints* includes the cells with those GIDS,
+        (7) a *list* with two items, the first of which is a *str* matching a popLabel and the second of which is an *int* (or a *list* of *ints*), includes the relative cell(s) from that population (e.g. (``['popName', [0, 1]]``) includes the first two cells in popName.
+
+    sim : NetPyNE sim object
+        The *sim object* from which to get data.
+        
+        *Default:* ``None`` uses the current NetPyNE sim object
 
     Parameters
     ----------
     histData : list, tuple, dict, str
-        the data necessary to plot the spike histogram (spike times and spike indices, at minimum).  
+        The data necessary to plot the raster (spike times and spike indices, at minimum). 
 
-        *Default:* ``None`` uses ``analysis.prepareSpikeHist`` to produce ``histData`` using the current NetPyNE sim object.
+        *Default:* ``None`` uses ``analysis.prepareRaster`` to produce ``rasterData`` using the current NetPyNE sim object.
 
         *Options:* if a *list* or a *tuple*, the first item must be a *list* of spike times and the second item must be a *list* the same length of spike indices (the id of the cell corresponding to that spike time).  Optionally, a third item may be a *list* of *ints* representing the number of cells in each population (in lieu of ``popNumCells``).  Optionally, a fourth item may be a *list* of *strs* representing the population names (in lieu of ``popLabels``). 
         
@@ -39,106 +61,88 @@ def plotSpikeHist(
         
         If a *str* it must represent a file path to previously saved data.
         
+    axis : matplotlib axis
+        The axis to plot into, allowing overlaying of plots.
+        
+        *Default:* ``None`` produces a new figure and axis.
+
+    timeRange : list
+        Time range to include in the raster: ``[min, max]``.
+        
+        *Default:* ``None`` uses the entire simulation
+
     popNumCells : list
-        a *list* of *ints* representing the number of cells in each population.
+        A *list* of *ints* representing the number of cells in each population.
         
         *Default:* ``None`` puts all cells into a single population.
 
     popLabels : list
-        a *list* of *strs* of population names.  Must be the same length as ``popNumCells``.
+        A *list* of *strs* of population names.  Must be the same length as ``popNumCells``.
         
         *Default:* ``None`` uses generic names.
 
     popColors : dict
-        a *dict* of ``popLabels`` and their desired color.
+        A *dict* of ``popLabels`` and their desired color.
         
         *Default:* ``None`` draws from the NetPyNE default colorList.
 
-    axis : matplotlib axis
-        the axis to plot into, allowing overlaying of plots.
-        
-        *Default:* ``None`` produces a new figure and axis.
+    binSize : int
+        Size of bin in ms to use for spike histogram.
+
+        *Default:* ``5``
+
+    histType : str
+        Type of histogram to plot ('step', 'stepfilled', 'bar', 'barstacked')
+
+        *Default:* ``'step'``
+
+    stacked : bool
+        Whether to stack populations on top of each other
+
+        *Default:* ``False``
+
+    cumulative : bool
+        Whether each bin is cumulative
+
+        *Default:* ``False``
+
+    log : bool
+        Whether to use a log axis
+
+        *Default:* ``False``
+
+    density : bool
+        Whether to normalize data
+
+        *Default:* ``False``
 
     legend : bool
-        whether or not to add a legend to the plot.
+        Whether or not to add a legend to the plot.
         
         *Default:* ``True`` adds a legend.
 
     colorList : list
-        a *list* of colors to draw from when plotting.
+        A *list* of colors to draw from when plotting.
         
         *Default:* ``None`` uses the default NetPyNE colorList.
 
     returnPlotter : bool
-        whether to return the figure or the NetPyNE Plotter object.
+        Whether to return the figure or the NetPyNE MetaFig object.
         
         *Default:* ``False`` returns the figure.
-
-    histType : str
-        type of histogram to produce.
-
-        *Default:* ``'step'`` produces an unfilled histogram plot.
-
-        *Options:* ``'bar'`` produces a side-by-side bar plot, ``'barstacked'`` produces a stacked bar plot, ``'stepfilled'`` produces a filled histogram. 
-    
-    binSize : int
-        the width of bins to use (in ms)
-
-        *Default:* ``50`` 
-
-    stacked : bool
-        whether to stack the spikes from different populations.
-
-        *Default:* ``False`` does not stack the spikes. 
-    
-    cumulative : bool
-        whether to produce a cumulative spike histogram.
-    
-        *Default:* ``False`` does not sum the spikes.
-    
-    log : bool
-        whether to take the log of spike values.
-
-        *Default:* ``False`` does not take the log.
-    
-    density : bool
-        whether to normalize the spike data.
-
-        *Default:* ``False`` does not normalize the data.
 
 
     Plot Options
     ------------
-    title : str
-        the axis title.
+    showFig : bool
+        Whether to show the figure.
 
-        *Default:* ``'Histogram Plot of Spiking'``
-    
-    xlabel : str
-        label for x-axis.
+        *Default:* ``False``
 
-        *Default:* ``'Time (ms)'``
+    saveFig : bool
+        Whether to save the figure.
 
-    ylabel : str
-        label for y-axis.
-        
-        *Default:* ``'Cells'``
-
-    linewidth : int
-        line width for the plots.
-        
-        *Default:* ``2.0``
-
-    alpha : int
-        The opacity of the plots.
-
-        *Default:* ``1.0``
-
-    legendKwargs : dict
-        a *dict* containing any or all legend kwargs.  These include ``'title'``, ``'loc'``, ``'fontsize'``, ``'bbox_to_anchor'``, ``'borderaxespad'``, and ``'handlelength'``.
-
-    rcParams : dict
-        a *dict* containing any or all matplotlib rcParams.  To see all options, execute ``import matplotlib; print(matplotlib.rcParams)`` in Python.  Any options in this *dict* will be used for this current figure and then returned to their prior settings.
+        *Default:* ``False``
 
     overwrite : bool
         whether to overwrite existing figure files.
@@ -147,90 +151,28 @@ def plotSpikeHist(
 
         *Options:* ``False`` adds a number to the file name to prevent overwriting
 
+    legendKwargs : dict
+        a *dict* containing any or all legend kwargs.  These include ``'title'``, ``'loc'``, ``'fontsize'``, ``'bbox_to_anchor'``, ``'borderaxespad'``, and ``'handlelength'``.
 
-    NetPyNE Options
-    ---------------
-    include : list
-        cells and/or NetStims to return information from
-        
-        include=['eachPop', 'allCells'],   # ['eachPop', 'allCells']
+    rcParams : dict
+        a *dict* containing any or all matplotlib rcParams.  To see all options, execute ``import matplotlib; print(matplotlib.rcParams)`` in Python.  Any options in this *dict* will be used for this current figure and then returned to their prior settings.
 
-        *Default:* ``['eachPop', 'allCells']`` includes each population as well as a sum of spiking across all populations.
-        
-        *Options:* 
-        A list with the names of populations to include.  Including 'eachPop' automatically plots all populations.  Including 'allCells' adds a histogram of the sum of spiking across all populations.
-
-    timeRange : list
-        time range to include in the raster: ``[min, max]``.
-        
-        *Default:* ``None`` uses the entire simulation
-
-    popRates : bool
-        whether to include the spiking rates in the plot title and legend.
-        
-        *Default:* ``True`` includes detailed pop information on plot.
-        
-        *Options:* 
-        ``False`` only includes pop names.
-        ``'minimal'`` includes minimal pop information.
-
-    saveData : bool
-        whether to save to a file the data used to create the figure.
-        
-        *Default:* ``False`` does not save the data to file
-
-    fileName : str
-        if ``saveData`` is ``True``, this is the name of the saved file.
-        
-        *Default:* ``None`` a file name is automatically generated.
-
-    fileDesc : str
-        an additional *str* to include in the file name just before the file extension.
-
-        *Default:* ``None`` includes no extra text in the file name.
-
-    fileType : str
-        the type of file to save the data to.
-
-        *Default:* ``json`` saves the file in JSON format.
-
-        *Options:* ``pkl`` saves the file in Python Pickle format.
-
-    fileDir : str
-        the directory to save the data to.
-
-        *Default:* ``None`` saves to the current directory.
-
-
-    sim : NetPyNE sim object
-        the *sim object* from which to get data.
-        
-        *Default:* ``None`` uses the current NetPyNE sim object
+    title : str
+        the axis title
     
+    xlabel : str
+        label for x-axis
+    
+    ylabel : str
+        label for y-axis
 
+    
     Returns
     -------
-    histPlot : *matplotlib figure*
-        By default, returns the *figure*.  If ``returnPlotter`` is ``True``, instead returns the NetPyNE *Plotter object* used.
-
-
-    Examples
-    --------
-    There are many options available in plotSpikeHist.  To run a variety of examples, enter the following::
-
-        from netpyne.plotting.examples import plotRasterSim, plotRasterExamples
-        sim = plotRasterSim()
+    freqPlot : *matplotlib figure*
+        By default, returns the *figure*.  If ``returnPlotter`` is ``True``, instead returns the NetPyNE MetaFig.
         
     """
-
-    # Ensure that include is a list if it is in kwargs
-    if 'include' in kwargs:
-        include = kwargs['include']
-        if type(include) != list:
-            include = [include]
-            kwargs['include'] = include
-    else:
-        include = ['eachPop', 'allCells']
 
     # If there is no input data, get the data from the NetPyNE sim object
     if histData is None:
@@ -239,7 +181,16 @@ def plotSpikeHist(
         else:
             sim = kwargs['sim']
 
-        histData = sim.analysis.prepareSpikeHist(legend=legend, popLabels=popLabels, **kwargs)
+        histData = sim.analysis.prepareSpikeHist(
+            timeRange=timeRange,
+            binSize=binSize, 
+            **kwargs)
+
+    # Ensure that include is a list if it is in kwargs
+    if 'include' in kwargs:
+        include = kwargs['include']
+    else:
+        include = ['eachPop', 'allCells']
 
     print('Plotting spike histogram...')
 
@@ -257,6 +208,8 @@ def plotSpikeHist(
             popNumCells = histData.get('popNumCells')
         if not popLabels:
             popLabels = histData.get('popLabels')
+
+        numNetStims = histData.get('numNetStims', 0)
 
         axisArgs = histData.get('axisArgs')
         legendLabels = histData.get('legendLabels')
@@ -320,22 +273,15 @@ def plotSpikeHist(
     gidPops = {cellGid: indPop[cellGid] for cellGid in cellGids}  
     
     # Set the time range appropriately
-    if 'timeRange' in kwargs:
-        timeRange = kwargs['timeRange']
-    elif 'timeRange' in histData:
+    if 'timeRange' in histData:
         timeRange = histData['timeRange']
-    else:
+    if timeRange is None:
         timeRange = [0, np.ceil(max(spkTimes))]
 
     # Bin the data using Numpy
     histoData = np.histogram(spkTimes, bins=np.arange(timeRange[0], timeRange[1], binSize))
     histoBins = histoData[1]
     histoCount = histoData[0]
-
-    # Check for a couple kwargs
-    alpha = None
-    if 'alpha' in kwargs:
-        alpha = kwargs['alpha']
 
     # Create a dictionary with the inputs for a histogram plot
     plotData = {}
@@ -352,19 +298,16 @@ def plotSpikeHist(
     plotData['rwidth']      = histData.get('rwidth', None)
     plotData['log']         = log
     plotData['color']       = histData.get('color', None)
-    plotData['alpha']       = alpha
+    plotData['alpha']       = histData.get('alpha', None)
     plotData['label']       = histData.get('label', None)
     plotData['stacked']     = stacked
     plotData['data']        = histData.get('data', None)
 
-    # If we use a kwarg, we add it to the list to be removed from kwargs
-    kwargDels = []
-
     # If a kwarg matches a histogram input key, use the kwarg value instead of the default
-    for kwarg in kwargs:
-        if kwarg in histData:
-            histData[kwarg] = kwargs[kwarg]
-            kwargDels.append(kwarg)
+    for kwarg in list(kwargs.keys()):
+        if kwarg in plotData:
+            plotData[kwarg] = kwargs[kwarg]
+            kwargs.pop(kwarg)
 
     # Create a dictionary to hold axis inputs
     if not axisArgs:
@@ -376,103 +319,134 @@ def plotSpikeHist(
         axisArgs['ylim']   = None
 
     # If a kwarg matches an axis input key, use the kwarg value instead of the default
-    for kwarg in kwargs:
+    for kwarg in list(kwargs.keys()):
         if kwarg in axisArgs.keys():
             axisArgs[kwarg] = kwargs[kwarg]
-            kwargDels.append(kwarg)
+            kwargs.pop(kwarg)
     
-    # Delete any kwargs that have been used
-    for kwargDel in kwargDels:
-        kwargs.pop(kwargDel)
-
     # create Plotter object
-    histPlotter = HistPlotter(data=plotData, axis=axis, **axisArgs, **kwargs)
-    histPlotter.type = 'histogram'
+    histPlotter = HistPlotter(data=plotData, kind='histogram', axis=axis, **axisArgs, **kwargs)
+    metaFig = histPlotter.metafig
 
-    # add legend
-    if legend:
+    # Set up a dictionary of population colors
+    if not popColors:
+        colorList = colorList
+        popColors = {popLabel: colorList[ipop % len(colorList)] for ipop, popLabel in enumerate(popLabels)}
 
-        # Set up a dictionary of population colors
-        if not popColors:
-            colorList = colorList
-            popColors = {popLabel: colorList[ipop % len(colorList)] for ipop, popLabel in enumerate(popLabels)}
+    # Create the labels and handles for the legend
+    # (use rectangles instead of markers because some markers don't show up well)
+    labels = []
+    handles = []
 
-        # Create the labels and handles for the legend
-        # (use rectangles instead of markers because some markers don't show up well)
-        labels = []
-        handles = []
+    # Remove the sum of all population spiking when stacking
+    if stacked or histType == 'barstacked':
+        if 'allCells' in include:
+            include.remove('allCells')
 
-        # Remove the sum of all population spiking when stacking
-        if stacked or histType == 'barstacked':
-            if 'allCells' in include:
-                include.remove('allCells')
+    # Deal with the sum of all population spiking (allCells)
+    if 'allCells' not in include:
+        histPlotter.x = []
+        histPlotter.color = []
+    else:
+        histPlotter.x = [histPlotter.x]
+        allCellsColor = 'black'
+        if 'allCellsColor' in kwargs:
+            allCellsColor = kwargs['allCellsColor']
+        histPlotter.color = [allCellsColor]
+        labels.append('All cells')
+        handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=allCellsColor))
 
-        # Deal with the sum of all population spiking (allCells)
-        if 'allCells' not in include:
-            histPlotter.x = []
-            histPlotter.color = []
+    # Handle individual pops and grouped pops
+    for subset in include:
+
+        # if it's a single population
+        if type(subset) != list:
+
+            for popIndex, popLabel in enumerate(popLabels):
+
+                if popLabel == subset:
+                
+                    # Get GIDs for this population
+                    currentGids = popGids[popIndex]
+
+                    # Use GIDs to get a spiketimes list for this population
+                    spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in currentGids]))
+
+                    # Append the population spiketimes list to histPlotter.x
+                    histPlotter.x.append(spkts)
+
+                    # Append the population color to histPlotter.color
+                    histPlotter.color.append(popColors[popLabel])
+
+                    # Append the legend labels and handles
+                    if legendLabels:
+                        labels.append(legendLabels[popIndex])
+                    else:
+                        labels.append(popLabel)
+                    handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=popColors[popLabel]))
+
+        # if it's a group of populations
         else:
-            histPlotter.x = [histPlotter.x]
-            allCellsColor = 'black'
-            if 'allCellsColor' in kwargs:
-                allCellsColor = kwargs['allCellsColor']
-            histPlotter.color = [allCellsColor]
-            labels.append('All cells')
-            handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=allCellsColor))
 
-        # Go through each population
-        for popIndex, popLabel in enumerate(popLabels):
-            
-            # Get GIDs for this population
-            currentGids = popGids[popIndex]
+            allGids = []
+            groupLabel = None
+            groupColor = None
+
+            for popIndex, popLabel in enumerate(popLabels):
+
+                if popLabel in subset:
+                
+                    # Get GIDs for this population
+                    currentGids = popGids[popIndex]
+                    allGids.extend(currentGids)
+
+                    if not groupLabel:
+                        groupLabel = popLabel
+                    else:
+                        groupLabel += ', ' + popLabel
+
+                    if not groupColor:
+                        groupColor = popColors[popLabel]
 
             # Use GIDs to get a spiketimes list for this population
-            spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in currentGids]))
+            spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in allGids]))
 
             # Append the population spiketimes list to histPlotter.x
             histPlotter.x.append(spkts)
 
             # Append the population color to histPlotter.color
-            histPlotter.color.append(popColors[popLabel])
+            histPlotter.color.append(groupColor)
 
             # Append the legend labels and handles
-            if legendLabels:
-                labels.append(legendLabels[popIndex])
-            else:
-                labels.append(popLabel)
-            handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=popColors[popLabel]))
+            labels.append(groupLabel)
+            handles.append(mpatches.Rectangle((0, 0), 1, 1, fc=groupColor))
 
-        # Set up the default legend settings
-        legendKwargs = {}
-        legendKwargs['title'] = 'Populations'
-        legendKwargs['bbox_to_anchor'] = (1.025, 1)
-        legendKwargs['loc'] = 2
-        legendKwargs['borderaxespad'] = 0.0
-        legendKwargs['handlelength'] = 0.5
-        legendKwargs['fontsize'] = 'small'
 
-        # If 'legendKwargs' is found in kwargs, use those values instead of the defaults
-        if 'legendKwargs' in kwargs:
-            legendKwargs_input = kwargs['legendKwargs']
-            kwargs.pop('legendKwargs')
-            for key, value in legendKwargs_input:
-                if key in legendKwargs:
-                    legendKwargs[key] = value
+    # Set up the default legend settings
+    legendKwargs = {}
+    legendKwargs['title'] = 'Populations'
+    legendKwargs['bbox_to_anchor'] = (1.025, 1)
+    legendKwargs['loc'] = 2
+    legendKwargs['borderaxespad'] = 0.0
+    legendKwargs['handlelength'] = 0.5
+    legendKwargs['fontsize'] = 'small'
+
+    # add legend
+    if legend:
             
         # Add the legend
-        histPlotter.addLegend(handles, labels, **legendKwargs)
+        histPlotter.addLegend(handles, labels, **legendKwargs, **kwargs)
         
         # Adjust the plot to make room for the legend
         rightOffset = 0.8
         maxLabelLen = max([len(label) for label in popLabels])
         histPlotter.fig.subplots_adjust(right=(rightOffset - 0.012 * maxLabelLen))
 
-
     # Generate the figure
     histPlot = histPlotter.plot(**axisArgs, **kwargs)
 
     # Default is to return the figure, but you can also return the plotter
     if returnPlotter:
-        return histPlotter
+        return metaFig
     else:
         return histPlot

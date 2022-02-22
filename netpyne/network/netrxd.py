@@ -75,7 +75,8 @@ def addRxD (self, nthreads=None):
         if 'regions' in rxdParams:
             self._addRegions(rxdParams['regions'])
         if 'extracellular' in rxdParams:
-            self._addExtracellular(rxdParams['extracellular'])
+            #self._addExtracellular(rxdParams['extracellular'])
+            self._addExtracellularRegion('extracellular', rxdParams['extracellular'])
         if 'species' in rxdParams:
             self._addSpecies(rxdParams['species'])
         if 'states' in rxdParams:
@@ -111,7 +112,7 @@ def _addRegions(self, params):
 
         # cells
         if 'cells' not in param:
-            param['cells'] = 'all'
+            param['cells'] = ['all']
 
         # secs
         if 'secs' not in param:
@@ -200,7 +201,10 @@ def _addExtracellularRegion(self, label, param):
         param['tortuosity'] = 1
 
     # call rxd method to create Region
-    self.rxd['regions'][label]['hObj'] = rxd.Extracellular(**{k:v for k,v in param.items() if k != 'extracellular'})
+    if 'extracellular' in self.rxd:
+        self.rxd['extracellular']['hObj'] = rxd.Extracellular(**{k:v for k,v in param.items() if k != 'extracellular'})
+    else:
+        self.rxd['regions'][label]['hObj'] = rxd.Extracellular(**{k:v for k,v in param.items() if k != 'extracellular'})
 
     print('  Created Extracellular Region %s'%(label))
 
@@ -503,7 +507,7 @@ def _addRates(self, params):
             exec('species = ' + speciesStr, dynamicVars)
             if 'species' not in dynamicVars: dynamicVars['species']  # fix for python 2
         else:
-            print('  Error creating Rate %s: "species" parameter should be a string'%(param['species']))
+            print('  Error creating Rate %s: "species" parameter should be a string'%(label))
             continue
 
         # rate

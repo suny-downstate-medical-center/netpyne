@@ -113,6 +113,15 @@ def preRun():
         sim.recordLFPHandler = recordLFPHandler
         sim.fih.append(h.FInitializeHandler(0, sim.recordLFPHandler))  # initialize imemb
 
+    # handler for recording LFP
+    if sim.cfg.recordDipole:
+        def recordDipoleHandler():
+            sim.cvode.event(h.t + float(sim.cfg.recordStep), sim.calculateDipole)
+            sim.cvode.event(h.t + float(sim.cfg.recordStep), sim.recordDipoleHandler)
+
+        sim.recordDipoleHandler = recordDipoleHandler
+        sim.fih.append(h.FInitializeHandler(0, sim.recordDipoleHandler))  # initialize imemb
+
 
 #------------------------------------------------------------------------------
 # Run Simulation
@@ -160,13 +169,28 @@ def runSim(skipPreRun=False):
             coreneuron.cell_permute = 2
     else:
         if sim.rank == 0: print('\nRunning simulation using NEURON for %s ms...'%sim.cfg.duration)
-    sim.pc.psolve(sim.cfg.duration)
+
+    postRun()
+
+def postRun(stopTime=None):
+    """
+    Function for/to <short description of `netpyne.sim.run.postRun`>
+
+
+    """
+
+
+
+    from .. import sim
+    if (stopTime is None) or (stopTime != sim.cfg.duration):
+        sim.pc.psolve(sim.cfg.duration)
 
     sim.pc.barrier() # Wait for all hosts to get to this point
     sim.timing('stop', 'runTime')
     if sim.rank==0:
         print('  Done; run time = %0.2f s; real-time ratio: %0.2f.' %
             (sim.timingData['runTime'], sim.cfg.duration/1000/sim.timingData['runTime']))
+
 
 
 #------------------------------------------------------------------------------
@@ -197,6 +221,22 @@ def runSimWithIntervalFunc(interval, func, timeRange=None, funcArgs=None):
     """
 
 
+    stopTime, kwargs = prepareSimWithIntervalFunc(timeRange, funcArgs)
+
+    while round(h.t) < stopTime:
+        runForInterval(interval, func, **kwargs)
+
+    postRun(stopTime)
+
+def prepareSimWithIntervalFunc(timeRange=None, funcArgs=None):
+    """
+    Function for/to <short description of `netpyne.sim.run.prepareSimWithIntervalFunc`>
+
+
+    """
+
+
+
     from .. import sim
     sim.pc.barrier()
     sim.timing('start', 'runTime')
@@ -214,25 +254,26 @@ def runSimWithIntervalFunc(interval, func, timeRange=None, funcArgs=None):
     if type(funcArgs) == dict:
         kwargs.update(funcArgs)
 
-    if sim.rank == 0: 
-        print('\nRunning with interval func  ...')
+    if sim.cfg.coreneuron == True:
+        if sim.rank == 0: print('\nRunning with interval func using CoreNEURON for %s ms...'%sim.cfg.duration)
+        from neuron import coreneuron
+        coreneuron.enable = True
+        if sim.cfg.gpu == True:
+            coreneuron.gpu = True
+            coreneuron.cell_permute = 2
+    else:
+        if sim.rank == 0: print('\nRunning with interval func using NEURON for %s ms...'%sim.cfg.duration)
     
     if int(startTime) != 0:
         sim.pc.psolve(startTime)
         sim.pc.barrier()
 
-    while round(h.t) < stopTime:
-        sim.pc.psolve(min(sim.cfg.duration, h.t+interval))
-        func(simTime=h.t, **kwargs) # function to be called at intervals
+    return stopTime, kwargs
 
-    if stopTime != sim.cfg.duration:
-        sim.pc.psolve(sim.cfg.duration)
-
-    sim.pc.barrier() # Wait for all hosts to get to this point
-    sim.timing('stop', 'runTime')
-    if sim.rank==0:
-        print(('  Done; run time = %0.2f s; real-time ratio: %0.2f.' %
-            (sim.timingData['runTime'], sim.cfg.duration/1000/sim.timingData['runTime'])))
+def runForInterval(interval, func, **kwargs):
+    from .. import sim
+    sim.pc.psolve(min(sim.cfg.duration, h.t+interval))
+    func(simTime=h.t, **kwargs) # function to be called at intervals
 
 
 #------------------------------------------------------------------------------
@@ -269,6 +310,44 @@ def calculateLFP():
             sim.simData['LFPCells'][gid][saveStep - 1,:] = ecp  # contribution of individual cells (stored optionally)
 
         sim.simData['LFP'][saveStep - 1,:] += ecp  # sum of all cells
+
+
+#------------------------------------------------------------------------------
+# Calculate LFP (fucntion called at every time step)
+#------------------------------------------------------------------------------
+def calculateDipole():
+    """
+    Function for/to <short description of `netpyne.sim.run.calculateLFP`>
+
+
+    """
+
+
+    from .. import sim
+    import lfpykit
+
+    # Set pointers to i_membrane in each cell (required for LFP calc )
+    for cell in sim.net.compartCells:
+        cell.setImembPtr()
+
+    #import IPython as ipy; ipy.embed()
+
+    # compute
+    saveStep = int(np.floor(h.t / sim.cfg.recordStep))
+    for cell in sim.net.compartCells: # compute ecp only from the biophysical cells
+        gid = cell.gid
+        im = cell.getImemb() # in nA
+        p = cell.M @ im
+
+        if sim.cfg.saveDipolePops:
+            if cell.gid in sim.net.popForEachGid:
+                pop = sim.net.popForEachGid[cell.gid]
+                sim.simData['dipolePops'][pop][saveStep - 1] += p  # contribution of individual cells (stored optionally)
+
+        if sim.cfg.saveDipoleCells and gid in sim.simData['dipoleCells']:
+            sim.simData['dipoleCells'][gid][saveStep - 1] = p  # contribution of individual cells (stored optionally)
+
+        sim.simData['dipoleSum'][saveStep - 1] += p  # sum of all cells
 
 
 

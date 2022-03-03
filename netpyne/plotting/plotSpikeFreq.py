@@ -8,7 +8,7 @@ from ..analysis.tools import loadData
 from .plotter import LinesPlotter
 
 
-#@exception
+@exception
 def plotSpikeFreq(
     freqData=None, 
     axis=None, 

@@ -8,7 +8,7 @@ from ..analysis.tools import loadData
 from .plotter import LinesPlotter
 
 
-@exception
+#@exception
 def plotSpikeFreq(
     freqData=None, 
     axis=None, 
@@ -382,7 +382,10 @@ def plotSpikeFreq(
                     currentGids = popGids[popIndex]
 
                     # Use GIDs to get a spiketimes list for this population
-                    spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in currentGids]))
+                    try:
+                        spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in currentGids]))
+                    except:
+                        spkinds, spkts = [], []
 
                     # Bin the data using Numpy
                     histoData = np.histogram(spkts, bins=np.arange(timeRange[0], timeRange[1], binSize))
@@ -449,7 +452,10 @@ def plotSpikeFreq(
                         groupColor = popColors[popLabel]
 
             # Use GIDs to get a spiketimes list for this population
-            spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in allGids]))
+            try:
+                spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in allGids]))
+            except:
+                spkinds, spkts = [], []
 
             # Bin the data using Numpy
             histoData = np.histogram(spkts, bins=np.arange(timeRange[0], timeRange[1], binSize))

@@ -370,7 +370,10 @@ def plotSpikeHist(
                     currentGids = popGids[popIndex]
 
                     # Use GIDs to get a spiketimes list for this population
-                    spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in currentGids]))
+                    try:
+                        spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in currentGids]))
+                    except:
+                        spkinds, spkts = [], []
 
                     # Append the population spiketimes list to histPlotter.x
                     histPlotter.x.append(spkts)
@@ -409,7 +412,10 @@ def plotSpikeHist(
                         groupColor = popColors[popLabel]
 
             # Use GIDs to get a spiketimes list for this population
-            spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in allGids]))
+            try:
+                spkinds, spkts = list(zip(*[(spkgid, spkt) for spkgid, spkt in zip(spkInds, spkTimes) if spkgid in allGids]))
+            except:
+                spkinds, spkts = [], []
 
             # Append the population spiketimes list to histPlotter.x
             histPlotter.x.append(spkts)

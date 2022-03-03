@@ -78,3 +78,6 @@ simConfig.saveJson = True
 simConfig.analysis['plotRaster'] = {'saveData': 'raster_data.json', 'saveFig': True, 'showFig': True} # Plot raster
 simConfig.analysis['plotTraces'] = {'include': [2], 'saveFig': True, 'showFig': True} # Plot cell traces
 simConfig.analysis['plot2Dnet'] = {'saveFig': True, 'showFig': True} # Plot 2D cells and connections
+
+
+simConfig.validateNetParams=True

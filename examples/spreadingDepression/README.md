@@ -6,8 +6,7 @@ ported to NetPyNE from [Kelley et al. 2022](https://github.com/suny-downstate-me
 We use NetPyNE to interface with the NEURON simulator's reaction-diffusion framework to embed thousands of neurons 
 (based on the the model from Wei et al. 2014)
 in the extracellular space of a brain slice, which is itself embedded in an bath solution.
-![model schematic](https://github.com/suny-downstate-medical-center/netpyne/tree/sd_example/examples/spreadingDepression/schematic.png)
-
+![model schematic](https://github.com/suny-downstate-medical-center/netpyne/blob/sd_example/examples/spreadingDepression/schematic.png)
 We initiate SD in the slice by elevating extracellular K+ in a spherical region at the center of the slice.
 Effects of hypoxia and propionate on the slice were modeled by appropriate changes to the volume fraction 
 and tortuosity of the extracellular space and oxygen/chloride concentrations.

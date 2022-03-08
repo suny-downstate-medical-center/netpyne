@@ -1442,10 +1442,54 @@ Cell class
 		- 'delay'
 
 
-Simulation output data (spikes, etc)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Simulation output data
+^^^^^^^^^^^^^^^^^^^^^^
 
-- sim.allSimData (Dict)
+The output data of simulation is stored in dictionaries ``sim.simData`` and ``sim.allSimData``. The former should be used in sinlge process environment, while the latter contains data gathered from all nodes from parallel context.
+The contents of simulation output data depend on the settings in ``simConfig``, and may contain the following.
+
+**1. Traces of cells**
+
+Keys of ``simData`` correspond to keys of ``simConfig.recordTraces`` (e.g. 'V_soma'), with the value of each trace containing in turn a dictionary with the list of cells for which this traces was recorded. The recorded traces will be stored as ``h.Vector`` for each cell. For example, for simConfig setting::
+
+	simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'},
+                          	  'Ina_soma':{'sec':'soma','loc':0.5,'var':'ina'}}
+	simConfig.recordCells = [1, 3]
+	simConfig.recordStep = 0.1
+
+the ``simData`` dictionary will contain (among others)::
+
+	{'V_soma': {'cell_1': <h.Vector>, 'cell_3': <h.Vector>},
+ 	 'Ina_soma': {'cell_1': <h.Vector>, 'cell_3': <h.Vector>}
+
+where the length of each Vector depends on ``simConfig.duration``  and ``simConfig.recordStep``
+
+**2. Spikes**
+
+``spkt``, ``spkid`` - ordered lists of spike times and cell gids for each spike. 
+The ``simConfig.recordCellsSpikes`` (True, by default) can be used to record only from a subset of cells or turn off spike recordig.
+
+**3. Stimuli to the network**
+
+``stims``. For each population of ``NetStim`` or ``VecStim`` it contains the list of spike times (``h.Vector``) for each target cell. 
+Only available if ``simConfig.recordStim`` is ``True``.
+
+**4. LFP-related data**
+
+``LFP``, ``LFPCells``, ``LFPPops``. Depend on the ``recordLFP``, ``saveLFPCells``, ``saveLFPPops`` options in ``simConfig``.
+
+- ``LFP`` - is an np.array of LFP values of shape ``(num timesteps, num electrodes)``
+- ``LFPCells`` - dictionary of LFP data recorded from each cell (LFP data is in format as above)
+- ``LFPPops`` - dictionary of average LFP data recorded from each population (LFP data is in format as above)
+
+**5. Dipole-related data**
+
+``dipoleSum``, ``dipoleCells``, ``dipolePops``. Depend on the ``recordDipole``, ``saveDipoleCells``, ``saveDipolePops`` options in ``simConfig``
+
+- ``dipoleSum`` - sum of current dipole moments at each timestep ``(num timesteps, 3)``; can be used for EEG/MEG calculation
+- ``dipoleCells`` - dictionary of current dipole moments recorded for each cell (dipoles data is in format as above)
+- ``dipolePops`` - dictionary of average current dipole moments recorded for each population (dipoles data is in format as above)	
+
 
 
 Data saved to file

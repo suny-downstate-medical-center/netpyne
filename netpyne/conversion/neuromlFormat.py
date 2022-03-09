@@ -1,5 +1,5 @@
 """
-Module for importing and exporting NeuroML
+Module for importing and exporting NeuroML 2
 
 """
 

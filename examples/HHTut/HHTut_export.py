@@ -21,3 +21,5 @@ validate_neuroml2('HHTut.net.nml')
 
 from netpyne.conversion import createPythonScript
 createPythonScript('HHTut_regen.py', HHTut.netParams, HHTut.simConfig)
+
+

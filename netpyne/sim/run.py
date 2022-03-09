@@ -151,7 +151,7 @@ def runSim(skipPreRun=False):
 
     h.finitialize(float(sim.cfg.hParams['v_init']))
 
-    if sim.cfg.dump_model:
+    if sim.cfg.dump_coreneuron_model:
         sim.pc.nrnbbcore_write("coredat")
         if sim.rank == 0: print('\nDumping model and exiting simulation...')
         sim.pc.barrier()

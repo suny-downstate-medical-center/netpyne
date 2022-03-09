@@ -6,6 +6,8 @@
 
 - Updated conversion to/from NeuroML 2
 
+- Added RxD-based spreading depression example model
+
 **Bug fixes**
 
 - Avoid exception in plotSpikeHist() and plotSpikeFreq() when pop has no spikes

@@ -4,6 +4,8 @@
 
 - Added back the syncLines argument to plotRaster()
 
+- Updated conversion to/from NeuroML 2
+
 **Bug fixes**
 
 - Avoid exception in plotSpikeHist() and plotSpikeFreq() when pop has no spikes

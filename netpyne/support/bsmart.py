@@ -29,10 +29,11 @@ more typically they are used by pwcausalr in intermediate calculations. Note tha
 sampling rate of the returned quantities is calculated as fs/2.
 
 To calculate the power spectrum powspec of a single time series x over the frequency range 0:freq,
-use the following (NB: now accessible via "from spectrum import ar")
-from bsmart import armorf, spectrum_AR
-[A,Z,tmp]=armorf(x,ntrls,npts,p) # Calculate autoregressive fit
-for i in range(freq+1): # Loop over frequencies
+use the following (NB: now accessible via "from spectrum import ar"):
+
+    from bsmart import armorf, spectrum_AR
+    [A,Z,tmp]=armorf(x,ntrls,npts,p) # Calculate autoregressive fit
+    for i in range(freq+1): # Loop over frequencies
     [S,H]=spectrum_AR(A,Z,p,i,fs) # Calculate spectrum
     powspec[i]=abs(S**2) # Calculate and store power
 

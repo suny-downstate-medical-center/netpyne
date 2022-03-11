@@ -199,7 +199,7 @@ Cite NetPyNE
 
 - Gast, R., Rose, D., Salomon, C., Möller, H.E., Weiskopf, N. and Knösche, T.R.. **PyRates—A Python framework for rate-based neural simulations.** PLoS ONE, 14(12), *2019*. doi: `<https://doi.org/10.1371/journal.pone.0225900>`_.
 
-- Tejada J, Roque AC, **Conductance-based models and the fragmentation problem: A case study based on hippocampal CA1 pyramidal cell models and epilepsy** `Epilepsy & Behavior, 106841, *2019*. doi: `<https://doi.org/10.1016/j.yebeh.2019.106841>`_.
+- Tejada J, Roque AC, **Conductance-based models and the fragmentation problem: A case study based on hippocampal CA1 pyramidal cell models and epilepsy** Epilepsy & Behavior, 106841, *2019*. doi: `<https://doi.org/10.1016/j.yebeh.2019.106841>`_.
 
 - Kuhl E, Alber M, Tepole BA, Cannon WR, De S, Dura-Bernal S, Garikipati K, Karniadakis GE, Lytton WW, Perdikaris P, Petzold L. **Multiscale modeling meets machine learning: What can we learn?** arXiv:1911.11958. doi: `<https://doi.org/10.1007/s11831-020-09405-5>`_. [Preprint]. *Under review in Computer Methods in Applied Mechanics and Engineering. 2019*
 

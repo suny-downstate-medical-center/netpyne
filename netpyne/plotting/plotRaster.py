@@ -17,6 +17,7 @@ def plotRaster(
     popNumCells=None, 
     popLabels=None, 
     popColors=None,  
+    syncLines=False,
     legend=True, 
     colorList=None, 
     orderInverse=False, 
@@ -103,6 +104,11 @@ def plotRaster(
         A *dict* of ``popLabels`` and their desired color.
         
         *Default:* ``None`` draws from the NetPyNE default colorList.
+
+    syncLines : bool
+        Calculate synchrony measure and plot vertical lines for each spike to evidence synchrony if ``True``.
+        
+        *Default:* ``False``
 
     legend : bool
         Whether or not to add a legend to the plot.
@@ -314,6 +320,10 @@ def plotRaster(
     # create Plotter object
     rasterPlotter = ScatterPlotter(data=scatterData, kind='raster', axis=axis, **axisArgs, **kwargs)
     metaFig = rasterPlotter.metafig
+
+    # add spike lines
+    for spkt in spkTimes:
+        metaFig.ax.plot((spkt, spkt), (0, len(cellInds)), 'r-', linewidth=0.1)
 
     # add legend
     if legend:

@@ -55,8 +55,7 @@ def add_scalebar(ax, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=''
     Adds a set of scale bars to *ax*, matching the size to the ticks of the plot
     and optionally hiding the x and y axes
     - ax : the axis to attach ticks to
-    - matchx,matchy : if True, set size of scale bars to spacing between ticks
-                    if False, size should be set using sizex and sizey params
+    - matchx,matchy : if True, set size of scale bars to spacing between ticks, if False, size should be set using sizex and sizey params
     - hidex,hidey : if True, hide x-axis and y-axis of parent
     - **kwargs : additional arguments passed to AnchoredScaleBars
     Returns created scalebar object

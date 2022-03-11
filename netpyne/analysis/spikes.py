@@ -27,7 +27,7 @@ except NameError:
 import pandas as pd
 import numpy as np
 from numbers import Number
-from .utils import exception 
+from .utils import exception, syncMeasure
 from .tools import getInclude, getSpktSpkid
 from .tools import saveData as saveFigData
 from ..support.scalebar import add_scalebar
@@ -41,6 +41,7 @@ def prepareSpikeData(
     maxSpikes=1e8, 
     orderBy='gid', 
     popRates=True,
+    syncLines=True,
     saveData=False, 
     fileName=None, 
     fileDesc=None, 
@@ -199,6 +200,9 @@ def prepareSpikeData(
         else:
             legendLabels = [popLabel + '\n  cells: %i\n  syn/cell: %0.1f\n  rate: %.3g Hz' % (popNumCells[popIndex], popConnsPerCell[popIndex], avgRates[popLabel]) for popIndex, popLabel in enumerate(popLabels) if popLabel in avgRates]
             title = 'cells: %i   syn/cell: %0.1f   rate: %0.1f Hz' % (numCells, connsPerCell, firingRate)
+
+        if syncLines:
+            title = '%s    sync=%0.2f' % (title, syncMeasure())
 
         if 'title' in kwargs:
             title = kwargs['title']

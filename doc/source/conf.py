@@ -43,6 +43,8 @@ extensions = [
 # Add custom sections to Napoleon
 napoleon_custom_sections = [('NetPyNE Options', 'params_style'), ('Plot Options', 'params_style')]
 
+# Change from default alphabetical order to order within the module
+autodoc_member_order = 'bysource'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

@@ -33,6 +33,15 @@ class MetaFigure:
 
         *Default:* ``None`` creates a figure with one axis.
 
+    sharex, sharey : bool or {'none', 'all', 'row', 'col'}
+        Controls sharing of properties among x (sharex) or y (sharey) axes:
+        True or 'all': x- or y-axis will be shared among all subplots.
+        False or 'none': each subplot x- or y-axis will be independent.
+        'row': each subplot row will share an x- or y-axis.
+        'col': each subplot column will share an x- or y-axis.
+        When subplots have a shared x-axis along a column, only the x tick labels of the bottom subplot are created. Similarly, when subplots have a shared y-axis along a row, only the y tick labels of the first column subplot are created. To later turn other subplots' ticklabels on, use tick_params.
+        *Default:* ``False``
+
     rcParams : dict
         A dictionary containing any or all Matplotlib settings to use for this figure.  To see all settings and their defaults, execute ``import matplotlib; matplotlib.rcParams``. 
 
@@ -53,7 +62,7 @@ class MetaFigure:
 
     """
 
-    def __init__(self, kind, sim=None, subplots=None, rcParams=None, autosize=0.35, **kwargs):
+    def __init__(self, kind, sim=None, subplots=None, sharex=False, sharey=False, rcParams=None, autosize=0.35, **kwargs):
 
         if not sim:
             from .. import sim
@@ -101,7 +110,7 @@ class MetaFigure:
             figSize1 = figSize[1] + (maxplots-1)*(figSize[1]*autosize)
             figSize = [figSize0, figSize1]
 
-        self.fig, self.ax = plt.subplots(nrows, ncols, figsize=figSize, dpi=dpi)
+        self.fig, self.ax = plt.subplots(nrows, ncols, sharex=sharex, sharey=sharey, figsize=figSize, dpi=dpi)
 
         # Add a metafig attribute to each axis
         if (type(self.ax) != np.ndarray) and (type(self.ax) != list):

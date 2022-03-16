@@ -322,8 +322,9 @@ def plotRaster(
     metaFig = rasterPlotter.metafig
 
     # add spike lines
-    for spkt in spkTimes:
-        metaFig.ax.plot((spkt, spkt), (0, len(cellInds)), 'r-', linewidth=0.1)
+    if syncLines:
+        for spkt in spkTimes:
+            axis.plot((spkt, spkt), (0, len(cellInds)), 'r-', linewidth=0.1)
 
     # add legend
     if legend:

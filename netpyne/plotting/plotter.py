@@ -73,6 +73,13 @@ class MetaFigure:
 
         self.fig, self.ax = plt.subplots(nrows, ncols, figsize=figSize, dpi=dpi)
 
+        # Add a metafig attribute to each axis
+        if (type(self.ax) != np.ndarray) and (type(self.ax) != list):
+            self.ax.metafig = self
+        else:
+            for each in self.ax:
+                each.metafig = self
+
         self.plotters = []
 
 
@@ -202,21 +209,22 @@ class GeneralPlotter:
         
         self.sim = sim
         self.axis = axis
-
-        if metafig:
-            self.metafig = metafig
+        self.metafig = metafig
 
         # If an axis is input, plot there; otherwise make a new figure and axis
         if self.axis is None:
-            final = True
-            self.metafig = MetaFigure(kind=self.kind, **kwargs)
+            if self.metafig is None:
+                self.metafig = MetaFigure(kind=self.kind, **kwargs)
             self.fig = self.metafig.fig
             self.axis = self.metafig.ax
         else:
             self.fig = self.axis.figure
+            if hasattr(self.axis, 'metafig'):
+                self.metafig = self.axis.metafig
 
         # Attach plotter to its MetaFigure
         self.metafig.plotters.append(self)
+
 
 
     def loadData(self, fileName, fileDir=None, sim=None):
@@ -332,10 +340,8 @@ class GeneralPlotter:
                 self.axis.grid(**kwargs['grid'])
 
         # If this is the only axis on the figure, finish the figure
-        if type(self.metafig.ax) != list:
+        if (type(self.metafig.ax) != np.ndarray) and (type(self.metafig.ax) != list):
             self.metafig.finishFig(**kwargs)
-
-
 
         # Reset the matplotlib rcParams to their original settings
         mpl.style.use(self.metafig.orig_rcParams)

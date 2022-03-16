@@ -1,5 +1,5 @@
 """
-Module for plotting analyses
+Module for plotting analysed data
 
 """
 
@@ -20,9 +20,38 @@ except NameError:
 colorList = [[0.42, 0.67, 0.84], [0.90, 0.76, 0.00], [0.42, 0.83, 0.59], [0.90, 0.32, 0.00], [0.34, 0.67, 0.67], [0.90, 0.59, 0.00], [0.42, 0.82, 0.83], [1.00, 0.85, 0.00], [0.33, 0.67, 0.47], [1.00, 0.38, 0.60], [0.57, 0.67, 0.33], [0.50, 0.20, 0.00], [0.71, 0.82, 0.41], [0.00, 0.20, 0.50], [0.70, 0.32, 0.10]] * 3
 
 
-
 class MetaFigure:
-    """A class which defines a figure object"""
+    """NetPyNE object to hold a figure along with its axes, settings, and standardized methods
+
+    Parameters
+    ----------
+    kind : str
+        The kind of figure, used in saving
+
+    subplots : int, list
+        The number of subplots in the figure.  If an ``int``, it is the number of rows of subplots.  If a ``list``, specifies ``[nrows, ncols]``.
+
+        *Default:* ``None`` creates a figure with one axis.
+
+    rcParams : dict
+        A dictionary containing any or all Matplotlib settings to use for this figure.  To see all settings and their defaults, execute ``import matplotlib; matplotlib.rcParams``. 
+
+    autosize : float
+        Automatically increases figure size by this fraction when there are multiple subplots to reduce white space between axes.  Set to ``False`` or ``0.0`` to turn off.
+
+        *Default:* ``0.35`` increases figure size.
+
+    figSize : list
+        Size of figure in inches ``[width, height]``.
+
+        *Default:* Matplotlib default.
+
+    dpi : int
+        Resolution of figure in dots per inch.
+
+        *Default:* Matplotlib default.
+
+    """
 
     def __init__(self, kind, sim=None, subplots=None, rcParams=None, autosize=0.35, **kwargs):
 
@@ -55,11 +84,12 @@ class MetaFigure:
             nrows = subplots[0]
             ncols = subplots[1] 
 
-        # Create figure
+        # Accept figure inputs
         if 'figSize' in kwargs:
             figSize = kwargs['figSize']
         else:
             figSize = self.rcParams['figure.figsize']
+        
         if 'dpi' in kwargs:
             dpi = kwargs['dpi']
         else:
@@ -84,20 +114,49 @@ class MetaFigure:
 
 
     def saveFig(self, sim=None, fileName=None, fileDesc=None, fileType='png', fileDir=None, overwrite=True, **kwargs):
-        """
-        'eps': 'Encapsulated Postscript',
-        'jpg': 'Joint Photographic Experts Group',
-        'jpeg': 'Joint Photographic Experts Group',
-        'pdf': 'Portable Document Format',
-        'pgf': 'PGF code for LaTeX',
-        'png': 'Portable Network Graphics',
-        'ps': 'Postscript',
-        'raw': 'Raw RGBA bitmap',
-        'rgba': 'Raw RGBA bitmap',
-        'svg': 'Scalable Vector Graphics',
-        'svgz': 'Scalable Vector Graphics',
-        'tif': 'Tagged Image File Format',
-        'tiff': 'Tagged Image File Format'
+        """Method to save the figure
+
+        Parameters
+        ----------
+        fileName : str
+            Name of the file to be saved.
+
+            *Default:* ``None`` uses the name of the simulation from ``simConfig.filename``.
+
+        fileDesc: str
+            Description of the file to be saved.
+
+            *Default:* ``None`` uses ``metaFig.kind``.
+
+        fileType : str
+            Type of file to save figure as.
+
+            *Default:* ``'png'``
+            *Options:*
+                ``'eps'``: 'Encapsulated Postscript',
+                ``'jpg'``: 'Joint Photographic Experts Group',
+                ``'jpeg'``: 'Joint Photographic Experts Group',
+                ``'pdf'``: 'Portable Document Format',
+                ``'pgf'``: 'PGF code for LaTeX',
+                ``'png'``: 'Portable Network Graphics',
+                ``'ps'``: 'Postscript',
+                ``'raw'``: 'Raw RGBA bitmap',
+                ``'rgba'``: 'Raw RGBA bitmap',
+                ``'svg'``: 'Scalable Vector Graphics',
+                ``'svgz'``: 'Scalable Vector Graphics',
+                ``'tif'``: 'Tagged Image File Format',
+                ``'tiff'``: 'Tagged Image File Format'
+
+        fileDir : str
+            Directory where figure is to be saved.
+
+            *Default:* ``None`` uses the current directory.
+
+        overwrite : bool
+            Whether to overwrite an existing figure with the same name.
+
+            *Default:* ``True`` overwrites.
+        
         """
 
         if not sim:
@@ -143,6 +202,9 @@ class MetaFigure:
 
 
     def showFig(self, **kwargs):
+        """Method to display the figure
+        """
+
         try:
             self.fig.show(block=False)
         except:
@@ -150,10 +212,65 @@ class MetaFigure:
 
 
     def addSuptitle(self, **kwargs):
+        """Method to add a super title to the figure
+
+        Parameters
+        ----------
+        t : str
+            The suptitle text.
+
+        x : float
+            The x location of the text in figure coordinates.
+            *Default:* 0.5
+
+        y : float
+            The y location of the text in figure coordinates.
+            *Default:* 0.98
+
+        horizontalalignment, ha : {'center', 'left', 'right'}
+            The horizontal alignment of the text relative to (x, y).
+            *Default:* 'center'
+
+        verticalalignment, va : {'top', 'center', 'bottom', 'baseline'}
+            The vertical alignment of the text relative to (x, y).
+            *Default:* 'top'
+
+        fontsize, sizedefault: rcParams["figure.titlesize"]
+            The font size of the text. See Text.set_size for possible values.
+            *Default:* 'large'
+
+        fontweight, weightdefault: rcParams["figure.titleweight"]
+            The font weight of the text. See Text.set_weight for possible values.
+            *Default:* 'normal'
+
+        """
+
         self.fig.suptitle(**kwargs)
 
 
     def finishFig(self, **kwargs):
+        """Method to finalize a figure 
+
+        Adds supertitle, tight_layout, saves fig, shows fig as per kwarg inputs.
+
+        Parameters
+        ----------
+        suptitle : dict
+            Dictionary with values for supertitle.
+
+        tightLayout : bool
+            Whether to apply tight_layout.
+            *Default:* ``True``
+
+        saveFig : bool
+            Whether to save the figure.
+            *Default:* ``False``
+
+        showFig : bool
+            Whether to display the figure.
+            *Default:* ``False``
+
+        """
 
         if 'suptitle' in kwargs:
             if kwargs['suptitle']:
@@ -179,20 +296,28 @@ class MetaFigure:
 
 
 
-
 class GeneralPlotter:
-    """A class used for plotting"""
+    """NetPyNE object to hold a Matplotlib axis along with its settings and standardized methods
+
+    Parameters
+    ----------
+    data : dict, str
+        The data to be used in the plot.  If a ``str``, it must be the path and filename of a previously saved data set.
+
+    kind : str
+        The kind of figure, used in saving.
+
+    axis : matplotlib axis
+        The axis to plot into.  If axis is set to ``None``, a new figure and axis are created and plotted into.  
+
+    rcParams : dict
+        A dictionary containing any or all Matplotlib settings to use for this figure.  To see all settings and their defaults, execute ``import matplotlib; matplotlib.rcParams``.
+
+
+    """
 
     def __init__(self, data, kind, axis=None, sim=None, rcParams=None, metafig=None, **kwargs):
-        """
-        Parameters
-        ----------
-        data : dict, str
-
-        axis : matplotlib axis
-            The axis to plot into.  If axis is set to None, a new figure and axis are created and plotted into.  If plotting into an existing axis, more options are available: xtwin, ytwin,
         
-        """
         self.kind = kind
 
         # Load data
@@ -223,22 +348,89 @@ class GeneralPlotter:
                 self.metafig = self.axis.metafig
 
         # Attach plotter to its MetaFigure
-        self.metafig.plotters.append(self)
-
+        if self.metafig:
+            self.metafig.plotters.append(self)
 
 
     def loadData(self, fileName, fileDir=None, sim=None):
+        """Method to load data from file
+
+        Parameters
+        ----------
+        fileName : str
+            Name of the file to be loaded.
+
+        fileDir : str
+            Path of the file to be loaded.
+
+            *Default:* ``None`` uses the current directory.
+
+        """
+
         from ..analysis import loadData
         self.data = loadData(fileName=fileName, fileDir=fileDir, sim=None)
         
 
 
     def saveData(self, fileName=None, fileDesc=None, fileType=None, fileDir=None, sim=None, **kwargs):
+        """Method to save data to file
+
+        Parameters
+        ----------
+        fileName : str
+            Name of the file to be saved.
+
+            *Default:* ``None`` uses ``simConfig.filename``.
+
+        fileDesc : str
+            String to be appended to fileName.
+
+            *Default:* ``None`` adds the 'kind' of MetaFigure.
+
+        fileType : str
+            Extension of file type to save.
+
+            *Default:* ``None`` chooses automatically.
+
+        fileDir : str
+            Path to save the file to.
+
+            *Default:* ``None`` uses the current directory.
+
+        """
+
         from ..analysis import saveData as saveFigData
         saveFigData(self.data, fileName=fileName, fileDesc=fileDesc, fileType=fileType, fileDir=fileDir, sim=sim, **kwargs)
     
 
     def formatAxis(self, **kwargs):
+        """Method to format the axis
+
+        Parameters
+        ----------
+        title : str
+            Title to add to the axis.
+
+        xlabel : str
+            Label to add to the x axis.
+
+        ylabel : str
+            Label to add to the y axis.
+
+        ylabelRight : bool
+            Whether to move y label to the right side. 
+            *Default:* ``False`` keeps the y label on the left.
+
+        xlim : list
+            ``[min, max]`` for x axis.
+
+        ylim : list
+            ``[min, max]`` for y axis.
+
+        invert_yaxis : bool
+            Whether to invert the y axis.
+
+        """
         
         if 'title' in kwargs:
             self.axis.set_title(kwargs['title'])
@@ -263,6 +455,27 @@ class GeneralPlotter:
 
 
     def addLegend(self, handles=None, labels=None, **kwargs):
+        """Method to add a legend to the axis
+
+        Parameters
+        ----------
+        handles : list
+            List of Matplotlib legend handles.
+
+            *Default:* ``None`` finds handles in the current axis.
+
+        labels : list
+            List of Matplotlib legend labels.
+
+            *Default:* ``None`` finds labels in the current axis.
+
+        legendKwargs : dict
+            Dictionary of Matplotlib legend parameters with their values.
+
+        kwargs : str
+            You can enter any Matplotlib legend parameter as a kwarg.  See https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.pyplot.legend.html
+
+        """
 
         legendParams = ['loc', 'bbox_to_anchor', 'fontsize', 'numpoints', 'scatterpoints', 'scatteryoffsets', 'markerscale', 'markerfirst', 'frameon', 'fancybox', 'shadow', 'framealpha', 'facecolor', 'edgecolor', 'mode', 'bbox_transform', 'title', 'title_fontsize', 'borderpad', 'labelspacing', 'handlelength', 'handletextpad', 'borderaxespad', 'columnspacing', 'handler_map']
 
@@ -290,29 +503,119 @@ class GeneralPlotter:
 
 
     def addScalebar(self, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=None, unitsy=None, scalex=1.0, scaley=1.0, xmax=None, ymax=None, space=None, **kwargs):
+        """Method to add a scale bar to the axis
 
-        add_scalebar(self.axis, matchx=matchx, matchy=matchy, hidex=hidex, hidey=hidey, unitsx=unitsx, unitsy=unitsy, scalex=scalex, scaley=scaley, xmax=xmax, ymax=ymax, space=space, **kwargs)
+        Parameters
+        ----------
+        matchx : bool
+            If True, set size of scale bar to spacing between ticks, if False, set size using sizex params.
+
+            *Default:* ``True``
+
+        matchy : bool
+            If True, set size of scale bar to spacing between ticks, if False, set size using sizey params.
+
+            *Default:* ``True``
+
+        sizex : float
+            The size of the x scale bar if matchx is False.
+
+        sizey : float
+            The size of the y scale bar if matchy is False.
+
+        hidex : bool
+            Whether to hide the x-axis labels and ticks.
+
+            *Default:* ``True``
+
+        hidey : bool
+            Whether to hide the x-axis labels and ticks.
+
+            *Default:* ``True``
+
+        unitsx : str
+            The units to use on the scale bar label.
+
+            *Default:* ``None``
+
+        unitsy : str
+            The units to use on the scale bar label.
+
+            *Default:* ``None``
+
+        scalex : float
+            Desired scaling in x direction.
+
+            *Default:* ``1.0``
+
+        scaley : float
+            Desired scaling in y direction.
+
+            *Default:* ``1.0``
+
+        xmax : float
+            Maximum size of x scale bar.
+
+            *Default:* ``None``
+
+        ymax : float
+            Maximum size of y scale bar.
+
+            *Default:* ``None``
+
+        space : float
+            Amount of space to add to y axis for scale bar.
+
+            *Default:* ``None``
+
+        """
+
+        _add_scalebar(self.axis, matchx=matchx, matchy=matchy, hidex=hidex, hidey=hidey, unitsx=unitsx, unitsy=unitsy, scalex=scalex, scaley=scaley, xmax=xmax, ymax=ymax, space=space, **kwargs)
 
 
     def addColorbar(self, **kwargs):
+        """Method to add a color bar to the axis
+
+        Parameters
+        ----------
+        kwargs : str
+            You can enter any Matplotlib colorbar parameter as a kwarg.  See https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.pyplot.colorbar.html
+        """
         plt.colorbar(mappable=self.axis.get_images()[0], ax=self.axis, **kwargs)
 
 
     def finishAxis(self, **kwargs):
+        """Method to finalize an axis
+
+        Parameters
+        ----------
+        saveData : bool
+            Whether to save the data.
+            *Default:* ``False``
+
+        legend : bool, dict
+            Whether to add a legend.  If a ``dict``, must be legend parameters and their values.
+            *Default:* ``False``
+
+        scalebar : bool, dict
+            Whether to add a scale bar.  If a ``dict``, must be scalebar parameters and their values.
+            *Default:* ``False``
+
+        colorbar : bool, dict
+            Whether to add a color bar.  If a ``dict``, must be colorbar parameters and their values.
+            *Default:* ``False``
+
+        grid : bool, dict
+            Whether to add a grid lines to the axis.  If a ``dict``, must be grid parameters and their values.
+            *Default:* ``False``
+
+        """
 
         self.formatAxis(**kwargs)
         
         if 'saveData' in kwargs:
             if kwargs['saveData']:
                 self.saveData(**kwargs)
-
-        if 'dpi' in kwargs:
-            if kwargs['dpi']:
-                self.fig.set_dpi(kwargs['dpi'])
-
-        if 'figSize' in kwargs:
-            if kwargs['figSize']:
-                self.fig.set_size_inches(kwargs['figSize'])
 
         if 'legend' in kwargs:
             if kwargs['legend'] is True:
@@ -348,7 +651,9 @@ class GeneralPlotter:
                 
 
 class ScatterPlotter(GeneralPlotter):
-    """A class used for scatter plotting"""
+    """NetPyNE plotter for scatter plots
+
+    """
 
     def __init__(self, data, axis=None, **kwargs):
         
@@ -377,7 +682,7 @@ class ScatterPlotter(GeneralPlotter):
 
 
 class LinePlotter(GeneralPlotter):
-    """A class used for plotting one line per subplot"""
+    """NetPyNE plotter for plotting one line per axis"""
 
     def __init__(self, data, axis=None, options={}, **kwargs):
         
@@ -405,7 +710,7 @@ class LinePlotter(GeneralPlotter):
 
 
 class LinesPlotter(GeneralPlotter):
-    """A class used for plotting multiple lines on the same axis"""
+    """NetPyNE plotter for plotting multiple lines on the same axis"""
 
     def __init__(self, data, axis=None, options={}, **kwargs):
         
@@ -475,7 +780,7 @@ class LinesPlotter(GeneralPlotter):
 
 
 class HistPlotter(GeneralPlotter):
-    """A class used for histogram plotting"""
+    """NetPyNE plotter for histogram plotting"""
 
     def __init__(self, data, axis=None, options={}, **kwargs):
         
@@ -511,7 +816,7 @@ class HistPlotter(GeneralPlotter):
 
 
 class ImagePlotter(GeneralPlotter):
-    """A class used for image plotting using plt.imshow"""
+    """NetPyNE plotter for image plotting using plt.imshow"""
 
     def __init__(self, data, axis=None, options={}, **kwargs):
         
@@ -547,9 +852,11 @@ class ImagePlotter(GeneralPlotter):
 
 
 
-class AnchoredScaleBar(AnchoredOffsetbox):
+class _AnchoredScaleBar(AnchoredOffsetbox):
     """
     A class used for adding scale bars to plots
+
+    Modified from here: https://gist.github.com/dmeliza/3251476
     """
     
     def __init__(self, axis, sizex=0, sizey=0, labelx=None, labely=None, loc=4, pad=0.1, borderpad=0.1, sep=2, prop=None, barcolor="black", barwidth=None, **kwargs):
@@ -587,7 +894,7 @@ class AnchoredScaleBar(AnchoredOffsetbox):
         AnchoredOffsetbox.__init__(self, loc, pad=pad, borderpad=borderpad, child=bars, prop=prop, frameon=False, **kwargs)
 
 
-def add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=None, unitsy=None, scalex=1.0, scaley=1.0, xmax=None, ymax=None, space=None, **kwargs):
+def _add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=None, unitsy=None, scalex=1.0, scaley=1.0, xmax=None, ymax=None, space=None, **kwargs):
     """
     Add scalebars to axes
 
@@ -599,6 +906,8 @@ def add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=
     - **kwargs : additional arguments passed to AnchoredScaleBars
 
     Returns created scalebar object
+
+    Modified from here: https://gist.github.com/dmeliza/3251476
     """
     def get_tick_size(subaxis):
         tick_size = None
@@ -653,7 +962,7 @@ def add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=
             ylim = (ylim0 + space, ylim1)
         axis.set_ylim(ylim)
 
-    scalebar = AnchoredScaleBar(axis, **kwargs)
+    scalebar = _AnchoredScaleBar(axis, **kwargs)
     axis.add_artist(scalebar)
 
     if hidex: 

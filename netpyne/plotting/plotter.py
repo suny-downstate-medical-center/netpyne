@@ -310,13 +310,21 @@ class GeneralPlotter:
     axis : matplotlib axis
         The axis to plot into.  If axis is set to ``None``, a new figure and axis are created and plotted into.  
 
+    twinx : bool
+        If plotting into an existing axis, whether to twin that x axis (i.e. allow plotting at a different y scale).
+        *Default:* ``False``
+    
+    twiny : bool
+        If plotting into an existing axis, whether to twin that y axis (i.e. allow plotting at a different x scale).
+        *Default:* ``False``
+
     rcParams : dict
         A dictionary containing any or all Matplotlib settings to use for this figure.  To see all settings and their defaults, execute ``import matplotlib; matplotlib.rcParams``.
 
 
     """
 
-    def __init__(self, data, kind, axis=None, sim=None, rcParams=None, metafig=None, **kwargs):
+    def __init__(self, data, kind, axis=None, twinx=False, twiny=False, sim=None, rcParams=None, metafig=None, **kwargs):
         
         self.kind = kind
 
@@ -346,6 +354,13 @@ class GeneralPlotter:
             self.fig = self.axis.figure
             if hasattr(self.axis, 'metafig'):
                 self.metafig = self.axis.metafig
+            if twinx:
+                if twiny:
+                    self.axis = axis.twinx().twiny()
+                else:
+                    self.axis = axis.twinx()
+            elif twiny:
+                self.axis = axis.twiny()
 
         # Attach plotter to its MetaFigure
         if self.metafig:

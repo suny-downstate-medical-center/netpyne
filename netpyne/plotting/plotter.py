@@ -112,6 +112,9 @@ class MetaFigure:
 
         self.fig, self.ax = plt.subplots(nrows, ncols, sharex=sharex, sharey=sharey, figsize=figSize, dpi=dpi)
 
+        # Add a metafig attribute to the figure
+        self.fig.metafig = self
+
         # Add a metafig attribute to each axis
         if (type(self.ax) != np.ndarray) and (type(self.ax) != list):
             self.ax.metafig = self

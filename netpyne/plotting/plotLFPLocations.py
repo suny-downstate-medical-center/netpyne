@@ -110,12 +110,12 @@ def plotLFPLocations(
 
     includePost = [c.gid for c in sim.net.compartCells]
     
-    metaFig = sim.plotting.plotShape(includePost=includePost, showElectrodes=electrodes, cvals=cvals, includeAxon=includeAxon, kind='LFPLocations', returnPlotter=True, **kwargs)
+    fig, data = sim.plotting.plotShape(axis=axis, includePost=includePost, showElectrodes=electrodes, cvals=cvals, includeAxon=includeAxon, kind='LFPLocations', **kwargs)
 
     if returnPlotter:
-        return metaFig
+        return fig.metafig
     else:
-        return metaFig.fig
+        return fig
 
 
 

@@ -116,8 +116,8 @@ class MetaFigure:
         if (type(self.ax) != np.ndarray) and (type(self.ax) != list):
             self.ax.metafig = self
         else:
-            for each in self.ax:
-                each.metafig = self
+            for eachAx in self.ax.ravel():
+                eachAx.metafig = self
 
         self.plotters = []
 
@@ -210,10 +210,24 @@ class MetaFigure:
         return fileName
 
 
-    def showFig(self, **kwargs):
+    def showFig(self):
         """Method to display the figure
         """
+        try:
+            self.fig.show(block=False)
+        except:
+            self.fig.show()
 
+
+    def reshowFig(self):
+        """Method to display the figure after it has been closed
+        """
+        plt.close(self.fig)
+        figsize = self.fig.get_size_inches()
+        dummy = plt.figure(figsize=figsize)
+        new_manager = dummy.canvas.manager
+        new_manager.canvas.figure = self.fig
+        self.fig.set_canvas(new_manager.canvas)
         try:
             self.fig.show(block=False)
         except:

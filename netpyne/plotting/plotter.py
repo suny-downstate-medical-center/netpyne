@@ -210,7 +210,7 @@ class MetaFigure:
         return fileName
 
 
-    def showFig(self):
+    def showFig(self, **kwargs):
         """Method to display the figure
         """
         try:
@@ -219,7 +219,7 @@ class MetaFigure:
             self.fig.show()
 
 
-    def reshowFig(self):
+    def reshowFig(self, **kwargs):
         """Method to display the figure after it has been closed
         """
         plt.close(self.fig)

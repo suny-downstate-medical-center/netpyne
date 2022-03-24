@@ -125,7 +125,7 @@ class MetaFigure:
         self.plotters = []
 
 
-    def saveFig(self, sim=None, fileName=None, fileDesc=None, fileType='png', fileDir=None, overwrite=True, **kwargs):
+    def saveFig(self, sim=None, fileName=None, fileDesc=True, fileType='png', fileDir=None, overwrite=True, **kwargs):
         """Method to save the figure
 
         Parameters
@@ -138,7 +138,7 @@ class MetaFigure:
         fileDesc: str
             Description of the file to be saved.
 
-            *Default:* ``None`` uses ``metaFig.kind``.
+            *Default:* ``True`` uses ``metaFig.kind``.
 
         fileType : str
             Type of file to save figure as.
@@ -174,16 +174,31 @@ class MetaFigure:
         if not sim:
             from .. import sim
 
-        if fileDesc is not None:
+        if 'saveFig' in kwargs:
+            saveFig = kwargs['saveFig']
+            if not saveFig:
+                return
+            elif type(saveFig) == str:
+                fileDesc = False
+                if '.' in saveFig:
+                    fileType = saveFig.split('.')[-1]
+                    fileName = saveFig.split('.')[0]
+                else:
+                    fileName = saveFig
+                    
+        if fileType: # 'png' by default
+            if fileType not in self.fig.canvas.get_supported_filetypes():
+                raise Exception('fileType not recognized in saveFig')
+            else:
+                fileExt = '.' + fileType
+        
+        if fileDesc is True:
+            fileDesc = '_' + self.kind
+        elif fileDesc:
             fileDesc = '_' + str(fileDesc)
         else:
-            fileDesc = '_' + self.kind
-
-        if fileType not in self.fig.canvas.get_supported_filetypes():
-            raise Exception('fileType not recognized in saveFig')
-        else:
-            fileExt = '.' + fileType
-
+            fileDesc = ''
+            
         if not fileName or not isinstance(fileName, basestring):
             fileName = self.sim.cfg.filename + fileDesc + fileExt
         else:

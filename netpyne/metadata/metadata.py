@@ -1160,6 +1160,489 @@ metadata = {
                         "type": "str"
                     },
                 }
+            },
+            # ---------------------------------------------------------------------------------------------------------------------
+            # netParams.rxdParams
+            # ---------------------------------------------------------------------------------------------------------------------
+            "rxdParams": {
+                "label": "Reaction-Diffusion (RxD) parameters",
+                "suggestions": "",
+                "help": "",
+                "hintText": "",
+                "children": {
+                    "regions": {
+                        "label": "Dictionary with RxD Regions (may also be used to define 'extracellular' regions.",
+                        "help": "",
+                        "suggestions": "",
+                        "hintText": "",
+                        "children": {
+                            "extracellular": {
+                                "label": "Boolean option (False if not specified) indicating whether the simulation is 1D or 3D.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "bool"
+                            },
+                            "cells": {
+                                "label": "List of cells relevant for the definition of intracellular domain where species, reaction and others need to be specified.",
+                                "help": "This list can include all cell gids (e.g [1] or ([0, 3]), population labels (e.g. ['S'] or ['all']), or a miix (e.g. [['S', [0, 2]]] or [('S', [0,2])]).",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "list(str)"
+                            },
+                            "secs": {
+                                "label": "List of sections to be included for the cells.",
+                                "help": "Example ['soma', 'Bdend'].",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "list"
+                            },
+                            "nrn_region": {
+                                "label": "An option that defines whether the region corresponds to the intracellular/cytosolic domain of the cell (for which the transmembrane voltage is being computed) or not.",
+                                "help": "Available options are 'i' (just inside the plasma membrane), 'o'  (just outside the plasma), or None (none of the above, for example, an intracellular organelle).",
+                                "suggestions": "",
+                                "hintText": "",
+                                "options": [
+                                    "i",
+                                    "o",
+                                    "None"
+                                ],
+                                "type": "str"
+                            },
+                            "geometry": {
+                                "label": "This entry defines the geometry associated to the region.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "options": [
+                                    "inside",
+                                    "membrane",
+                                    "DistributedBoundary",
+                                    "FractionalVolume",
+                                    "FixedCrossSection",
+                                    "ScalableBorder",
+                                    "Shell",
+                                ],
+                                "type": "list"
+                            },
+                            "dimension": {
+                                "label": "This is an integer (1 or 3), indicating whether the simulation is 1D or 3D.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "int"
+                            },
+                            "dx": {
+                                "label": "A float (or int) specifying the discretization.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "xlo": {
+                                "label": "Value indicating the left-bottom-back corner of the box specifying the extracellular domain.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "ylo": {
+                                "label": "Value indicating the left-bottom-back corner of the box specifying the extracellular domain.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "zlo": {
+                                "label": "Value indicating the left-bottom-back corner of the box specifying the extracellular domain.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "xhi": {
+                                "label": "Value indicating the right-upper-front corner of the box specifying the extracellular domain.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "yhi": {
+                                "label": "Value indicating the right-upper-front corner of the box specifying the extracellular domain.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "zhi": {
+                                "label": "Value indicating the right-upper-front corner of the box specifying the extracellular domain.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "volume_fraction": {
+                                "label": "Value indicating the available space to diffuse.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "tortuosity": {
+                                "label": "Value indicating how restricted are the straight pathways to diffuse.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float"
+                            },   
+                        }
+                    },
+                    "extracellular": {
+                        "label": "Dictionary with the parameters necessary to specify the RxD Extracellular region.",
+                        "help": "",
+                        "suggestions": "",
+                        "hintText": "",
+                        "children": {
+                            "xlo": {
+                                "label": "Value indicating the left-bottom-back corner of the box specifying the extracellular domain.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "ylo": {
+                                "label": "Value indicating the left-bottom-back corner of the box specifying the extracellular domain.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "zlo": {
+                                "label": "Value indicating the left-bottom-back corner of the box specifying the extracellular domain.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "xhi": {
+                                "label": "Value indicating the right-upper-front corner of the box specifying the extracellular domain.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "yhi": {
+                                "label": "Value indicating the right-upper-front corner of the box specifying the extracellular domain.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "zhi": {
+                                "label": "Value indicating the right-upper-front corner of the box specifying the extracellular domain.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "dx": {
+                                "label": "A float (or int) specifying the discretization.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "volume_fraction": {
+                                "label": "Value indicating the available space to diffuse.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "tortuosity": {
+                                "label": "Value indicating how restricted are the straight pathways to diffuse.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                        }
+                    },
+                    "species": {
+                        "label": "This component corresponds to a dictionary with all the definitions to specify relevant species and the domains where they are involved.",
+                        "help": "",
+                        "suggestions": "",
+                        "hintText": "",
+                        "children": {
+                            "regions": {
+                                "label": "A list of the regions (listed in rxdParams['regions']) where the species are present. If it is a single region, it may be specified without listing.",
+                                "help": "Example: 'cty' or ['cyt', 'er']",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "list(str)"
+                            },
+                            "d": {
+                                "label": "Diffusion coefficient of the species.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "charge": {
+                                "label": "Signed charge, if any, of the species.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "int"
+                            },
+                            "initial": {
+                                "label": "Initial state of the concentration field, in mM. It may be a single value for all of its definition domain or a string-based function, where the variable is a node (in RxD's framework) property.",
+                                "help": "For example, 1 if (0.4 < node.x < 0.6) else 0.",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "esc_boundary_conditions": {
+                                "label": "If an Extracellular region is defined, boundary conditions should be given.",
+                                "help": "Options are None (default) for zero flux condition (Neumann type) or a value indicating the concentration at the boundary (Dirichlet).",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "atolscale": {
+                                "label": "A number (default = 1) indicating the scale factor ffor absolute tolerance in variable step integrations for this particular species' concentration.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "name": {
+                                "label": "A string labeling this species.",
+                                "help": "Important when RxD will be sharing species with hoc models, as this name has to be the same as the NEURON range variable.",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "str"
+                            }
+                        }
+                    },
+                    "states": {
+                        "label": "Dictionary declaring State variables that evolve, through other than reactions, during the simulation.",
+                        "help": "",
+                        "suggestions": "",
+                        "hintText": "",
+                        "children": {
+                            "regions": {
+                                "label": "A list of regions where the State variable is relevant (i.e. it evolves three). If it is a single region, it may be specified without listing.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "list(str)"
+                            },
+                            "initial": {
+                                "label": "Initial state of this variable. Either a single-value valid in the entire domain (where this variablle is specified) or a string-based function with node properties as independent variable.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "name": {
+                                "label": "A string internally labeling this variable.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "str"
+                            }
+                        }
+                    },
+                    "reactions": {
+                        "label": "Dictionary specifying the reaction, who and where, under analysis.",
+                        "help": "",
+                        "suggestions": "",
+                        "hintText": "",
+                        "children": {
+                            "reactant": {
+                                "label": "A string declaring the left-hand side of the chemical reaction, with the species and the proper stechiometry.",
+                                "help": "For example, ca + 2 * cl, where 'ca' and 'cl' are defined in the 'species' entry and are available in the region where the reaction takes places.",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "str",
+                            },
+                            "product": {
+                                "label": "A string declaring the right-hand side of the chemical reaction, with the species and the proper stechiometry.",
+                                "help": "For example, where 'cacl2' is a species properly defined.",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "str",
+                            },
+                            "rate_f": {
+                                "label": "Rate for the forward reaction. It can be either a numerical value or a string-based function.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "str",
+                            },
+                            "rate_b": {
+                                "label": "Rate for the backward reaction. It can be either a numerical value or a string-based function.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "str",
+                            },
+                            "regions": {
+                                "label": "This entry is used to constrain the reaction to proceed only in a list of regions. If is a single region, it may be specified without listing. If not provvided, the reaction proceeds in all (plausible) regions.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "lis(str)",
+                            },
+                            "custom_dynamics": {
+                                "label": "This boolean entry specifies whether law of mass-action for elementary reactions does apply or not. If 'True', dynamicsf each species'  conncentrratino satisfy a mass-action scheme.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "bool",
+                            }
+                        }
+                    },
+                    "parameters": { #help not mentioned in the package reference file
+                        "label": "",
+                        "help": "",
+                        "suggestions": "",
+                        "hintText": "",
+                        "children": {
+                            "regions": {
+                                "label": "",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "list(str)"
+                            },
+                            "name": {
+                                "label": "",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "charge": {
+                                "label": "",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "int"
+                            },
+                            "value": {
+                                "label": "",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "str"
+                            }
+                        }
+                    },
+                    "multicompartmentReactions": { #help other than membrane and membrane_flux, nothing else mentioned in the reference package
+                        "label": "Dictionary specifying reactions with species belonging to different regions.",
+                        "help": "",
+                        "suggestions": "",
+                        "hintText": "",
+                        "children": {
+                            "reactant": {
+                                "label": "",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "product": {
+                                "label": "",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "rate_f": {
+                                "label": "",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "regions": {
+                                "label": "",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "list(str)"
+                            },
+                            "custom_dynamics": {
+                                "label": "",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "bool"
+                            },
+                            "membrane": {
+                                "label": "The region (with a geometry compatible with a membrance or a border) involved in the passage of ions from one region to another.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "membrane_flux": {
+                                "label": "This boolean entry indicates whether the reaction produces a current across the plasma membrane that should affect the membrance potential.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "bool"
+                            }
+                        }
+                    },
+                    "rates": {
+                        "label": "",
+                        "help": "",
+                        "suggestions": "",
+                        "hintText": "",
+                        "children": {
+                            "species": {
+                                "label": "A string indicating which species or states is being considered.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "list(str)"
+                            },
+                            "rate": {
+                                "label": "Value for the rate in the dynamics to proceed only in a list of regions. If it a single reionn, it may be specified without listing.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "regions": {
+                                "label": "This entry is used to constrain the dynamics to proceed only in  a list of regions. If it is a single region, it may be specified without listing.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "list(str)"
+                            },
+                            "membrane_flux": {
+                                "label": "A boolean entry specifying whether a current should be considered or not. If 'True', the 'region' entry should correspond to a unique region with a membrane-like geometry.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "bool"
+                            }
+                        }
+                    },
+                    "constants": { #help with children
+                        "label": "",
+                        "help": "",
+                        "suggestions": "",
+                        "hintText": "",
+                        "children": {
+                            ""
+                        }
+                    }
+                }
             }
         }
     },

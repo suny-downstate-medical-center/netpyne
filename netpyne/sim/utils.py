@@ -14,6 +14,8 @@ from builtins import next
 from builtins import dict
 from builtins import map
 from builtins import str
+
+from netpyne.support.recxelectrode import RecXElectrode
 try:
     basestring
 except NameError:
@@ -145,12 +147,12 @@ def timing(mode, processName):
                 if sim.rank == 0:
                     if mode == 'start':
                         sim.timingData[processName] = time()
-                    elif mode == 'stop':
+                    elif mode == 'stop' and processName in sim.timingData:
                         sim.timingData[processName] = time() - sim.timingData[processName]
             else:
                 if mode == 'start':
                     sim.timingData[processName] = time()
-                elif mode == 'stop':
+                elif mode == 'stop' and processName in sim.timingData:
                     sim.timingData[processName] = time() - sim.timingData[processName]                
 
 
@@ -213,6 +215,29 @@ def gitChangeset(show=True):
 
     return changeset
 
+#------------------------------------------------------------------------------
+# Print git info: branch, source_dir, version
+#------------------------------------------------------------------------------
+def gitInfo(show=True):
+    """
+    Function for/to <short description of `netpyne.sim.utils.gitInfo`>
+
+    Parameters
+    ----------
+    show : bool
+        <Short description of show>
+        **Default:** ``True``
+        **Options:** ``<option>`` <description of option>
+
+    """
+    import netpyne, os, subprocess
+    loc = os.path.dirname(netpyne.__file__)
+    vers, branch = subprocess.check_output(['git', '-C', loc, 'rev-parse', 'HEAD', '--abbrev-ref', 'HEAD']).decode('utf-8').split()
+    orig = subprocess.check_output(['git', '-C', loc, 'remote', 'get-url', 'origin']).decode('utf-8').strip()
+    if show: 
+        print(f'NetPyNE branch "{branch}" from {loc} (version:{vers[:8]} origin:{orig})')
+    else: 
+        return [branch, loc, vers, orig]
 
 #------------------------------------------------------------------------------
 # Hash function for string
@@ -958,11 +983,16 @@ class NpSerializer(json.JSONEncoder):
 
 
     def default(self, obj):
+        from neuron import hoc
         if isinstance(obj, np.integer):
             return int(obj)
         elif isinstance(obj, np.floating):
             return float(obj)
         elif isinstance(obj, np.ndarray):
             return obj.tolist()
+        elif isinstance(obj, hoc.HocObject):
+            return obj.to_python()
+        elif isinstance(obj, RecXElectrode):
+            return obj.toJSON()
         else:
             return super(NpSerializer, self).default(obj)

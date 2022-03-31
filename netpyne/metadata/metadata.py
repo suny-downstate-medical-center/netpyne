@@ -1827,6 +1827,36 @@ metadata = {
                 "suggestions": "",
                 "type": "list(list(float))"
             },
+            "recordDipolesHNN": {
+                "label": "Record dipoles HNN",
+                "help": "Store dipoles HNN generated individually by each cell in sim.allSimData['recordDipolesHNN'].",
+                "suggestions": "",
+                "type": "bool"
+            },
+            "recordDipole": {
+                "label": "Record dipoles using lfpykit method",
+                "help": "Store dipoles generated individually by each cell in sim.allSimData['recordDipole'].",
+                "suggestions": "",
+                "type": "bool"
+            },
+            "saveLFPPops": {
+                "label": "Store LFP generated individually by each population",
+                "help": "Store LFP generated individually by each population in sim.allSimData['saveLFPPops'].",
+                "suggestions": "",
+                "type": "bool"
+            },
+            "saveDipoleCells": {
+                "label": "Store Dipole Cells of individual cells",
+                "help": "Store Dipole Cells generated individually by each cell in sim.allSimData['saveDipoleCells'].",
+                "suggestions": "",
+                "type": "bool"
+            },
+            "saveDipolePops": {
+                "label": "Store Dipole Pops of individual cells",
+                "help": "Store Dipole Pops generated individually by each cell in sim.allSimData['saveDipolePops'].",
+                "suggestions": "",
+                "type": "bool"
+            },
             "saveLFPCells": {
                 "label": "Store LFP of individual cells",
                 "help": "Store LFP generated individually by each cell in sim.allSimData['LFPCells'].",

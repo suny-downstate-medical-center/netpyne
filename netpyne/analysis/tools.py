@@ -179,11 +179,15 @@ def getSpktSpkid(cellGids=[], timeRange=None, sim=None):
     if not sim:
         from .. import sim
 
-    try: # Pandas 0.24 and later
-        from pandas import _lib as pandaslib
-    except: # Pandas 0.23 and earlier
-        from pandas import lib as pandaslib
-    
+    try: # Pandas 1.4.0
+        from pandas._libs import lib as pandaslib
+    except:
+        try: # Pandas 0.24 and later
+            from pandas import _lib as pandaslib
+        except: # Pandas 0.23 and earlier
+            from pandas import lib as pandaslib
+            
+
     df = pd.DataFrame(pandaslib.to_object_array([sim.allSimData['spkt'], sim.allSimData['spkid']]).transpose(), columns=['spkt', 'spkid'])
 
     if timeRange:
@@ -236,8 +240,8 @@ def plotData(sim=None):
                 try:
                     func = getattr(sim.analysis, funcName)
                     out = func(**kwargs)  # call function with user arguments
-                except:
-                    print('Unable to run', funcName, 'from sim.plotting and sim.analysis')
+                except Exception as e:
+                    print('Unable to run', funcName, 'from sim.plotting and sim.analysis. Reason:', e)
                 
 
         # Print timings

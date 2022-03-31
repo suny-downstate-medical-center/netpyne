@@ -72,8 +72,12 @@ simConfig.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, et
 simConfig.filename = 'HHTut'  # Set file output name
 simConfig.saveFileStep = 1000 # step size in ms to save data to disk
 simConfig.savePickle = False # Whether or not to write spikes etc. to a .mat file
+simConfig.saveJson = True
 
 # Analysis and plotting
 simConfig.analysis['plotRaster'] = {'saveData': 'raster_data.json', 'saveFig': True, 'showFig': True} # Plot raster
 simConfig.analysis['plotTraces'] = {'include': [2], 'saveFig': True, 'showFig': True} # Plot cell traces
 simConfig.analysis['plot2Dnet'] = {'saveFig': True, 'showFig': True} # Plot 2D cells and connections
+
+
+simConfig.validateNetParams=True

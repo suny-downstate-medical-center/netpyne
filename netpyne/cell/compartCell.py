@@ -442,7 +442,7 @@ class CompartCell (Cell):
                     sec['hObj'].connect(self.secs[sectParams['topol']['parentSec']]['hObj'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
 
         # add dipoles
-        if sim.cfg.recordDipoles:
+        if sim.cfg.recordDipolesHNN:
 
             # create a 1-element Vector to store the dipole value for this cell and record from this Vector
             self.dipole = {'hRef': h.Vector(1)}#_ref_[0]} #h._ref_dpl_ref}  #h.Vector(1)
@@ -497,7 +497,7 @@ class CompartCell (Cell):
             if stimParams['type'] == 'NetStim':
                 self.addNetStim(stimParams, stimContainer=stimParams)
 
-            elif stimParams['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
+            else: #if stimParams['type'] in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse']:
                 stim = getattr(h, stimParams['type'])(self.secs[stimParams['sec']]['hObj'](stimParams['loc']))
                 stimProps = {k:v for k,v in stimParams.items() if k not in ['label', 'type', 'source', 'loc', 'sec', 'hObj']}
                 for stimPropName, stimPropValue in stimProps.items(): # set mechanism internal stimParams
@@ -593,7 +593,7 @@ class CompartCell (Cell):
                 del nc # discard netcon
         sim.net.gid2lid[self.gid] = len(sim.net.gid2lid)
 
-    
+
     def addSynMech (self, synLabel, secLabel, loc):
         from .. import sim
 
@@ -1083,23 +1083,27 @@ class CompartCell (Cell):
                     print("Can't set point process paramaters of type vector eg. VClamp.amp[3]")
                     pass
                     #setattr(stim, stimParamName._ref_[0], stimParamValue[0])
-                elif 'originalFormat' in params and stimParamName=='originalFormat' and params['originalFormat']=='NeuroML2_stochastic_input':
-                    if sim.cfg.verbose: print(('   originalFormat: %s'%(params['originalFormat'])))
+                elif 'originalFormat' in params and stimParamName=='originalFormat':
+                    if params['originalFormat']=='NeuroML2_stochastic_input':
+                        if sim.cfg.verbose: print(('   originalFormat: %s'%(params['originalFormat'])))
 
-                    rand = h.Random()
-                    stim_ref = params['label'][:params['label'].rfind(self.tags['pop'])]
+                        rand = h.Random()
+                        stim_ref = params['label'][:params['label'].rfind(self.tags['pop'])]
 
-                    # e.g. Stim3_2_popPyrS_2_soma_0_5 -> 2
-                    index_in_stim = int(stim_ref.split('_')[-2])
-                    stim_id = stim_ref.split('_')[0]
-                    sim._init_stim_randomizer(rand, stim_id, index_in_stim, sim.cfg.seeds['stim'])
-                    rand.negexp(1)
-                    stim.noiseFromRandom(rand)
-                    params['h%s'%params['originalFormat']] = rand
+                        # e.g. Stim3_2_popPyrS_2_soma_0_5 -> 2
+                        index_in_stim = int(stim_ref.split('_')[-2])
+                        stim_id = stim_ref.split('_')[0]
+                        sim._init_stim_randomizer(rand, stim_id, index_in_stim, sim.cfg.seeds['stim'])
+                        rand.negexp(1)
+                        stim.noiseFromRandom(rand)
+                        params['h%s'%params['originalFormat']] = rand
                 else:
                     if stimParamName in ['weight']:
                         setattr(stim, stimParamName, stimParamValue)
                         stringParams = stringParams + ', ' + stimParamName +'='+ str(stimParamValue)
+                    else:
+                        setattr(stim, stimParamName, stimParamValue)
+
 
             self.stims.append(params) # add to python structure
             self.stims[-1]['hObj'] = stim  # add stim object to dict in stims list
@@ -1355,19 +1359,23 @@ class CompartCell (Cell):
 
         p3dsoma = self.getSomaPos()
         pop = self.tags['pop']
-        
+
         self._segCoords = {}
         p3dsoma = p3dsoma[np.newaxis].T  # trasnpose 1d array to enable matrix calculation
 
         if hasattr(sim.net.pops[pop], '_morphSegCoords'):
-            # rotated coordinates around z axis first then shift relative to the soma            
+            # rotated coordinates around z axis first then shift relative to the soma
             morphSegCoords = sim.net.pops[pop]._morphSegCoords
             self._segCoords['p0'] = p3dsoma + morphSegCoords['p0']
             self._segCoords['p1'] = p3dsoma + morphSegCoords['p1']
         else:
-            # rotated coordinates around z axis 
-            self._segCoords['p0'] = p3dsoma 
+            # rotated coordinates around z axis
+            self._segCoords['p0'] = p3dsoma
             self._segCoords['p1'] = p3dsoma
+
+        self._segCoords['d0'] = morphSegCoords['d0']
+        self._segCoords['d1'] = morphSegCoords['d1']
+
 
     def setImembPtr(self):
         """Set PtrVector to point to the i_membrane_"""

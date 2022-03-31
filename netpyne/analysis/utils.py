@@ -414,10 +414,14 @@ def getSpktSpkid(cellGids=[], timeRange=None, sim = None):
 
     import pandas as pd
 
-    try: # Pandas 0.24 and later
-        from pandas import _lib as pandaslib
-    except: # Pandas 0.23 and earlier
-        from pandas import lib as pandaslib
+    try: # Pandas 1.4.0
+        from pandas._libs import lib as pandaslib
+    except:
+        try: # Pandas 0.24 and later
+            from pandas import _lib as pandaslib
+        except: # Pandas 0.23 and earlier
+            from pandas import lib as pandaslib
+            
     df = pd.DataFrame(pandaslib.to_object_array([sim.allSimData['spkt'], sim.allSimData['spkid']]).transpose(), columns=['spkt', 'spkid'])
     #df = pd.DataFrame(pd.lib.to_object_array([sim.allSimData['spkt'], sim.allSimData['spkid']]).transpose(), columns=['spkt', 'spkid'])
 
@@ -459,7 +463,9 @@ def checkAvailablePlots(requireCfg=False):
              'plotSpikeStats': False,
              'plotLFP': False,
              'granger': False,
-             'plotRxDConcentration': False}
+             'plotRxDConcentration': False,
+             'plotDipole': False,
+             'plotEEG': False}
 
     # plot conn
     if hasattr(sim, 'net') and hasattr(sim.net, 'allCells') and len(sim.net.allCells) > 0:
@@ -489,6 +495,12 @@ def checkAvailablePlots(requireCfg=False):
     if hasattr(sim, 'allSimData') and 'LFP' in sim.allSimData and len(sim.allSimData['LFP']) > 0:
 
         avail['plotLFP'] = True
+
+    # plot dipole/EEG 
+    if hasattr(sim, 'allSimData') and 'dipoleSum' in sim.allSimData and len(sim.allSimData['dipoleSum']) > 0:
+
+        avail['plotDipole'] = True
+        avail['plotEEG'] = True
 
     # rxd concentation 
     if hasattr(sim, 'net') and hasattr(sim.net, 'rxd') and 'species' in sim.net.rxd and 'regions' in sim.net.rxd \

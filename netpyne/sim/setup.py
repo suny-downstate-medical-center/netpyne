@@ -18,7 +18,7 @@ import numpy as np
 from neuron import h # Import NEURON
 from .. import specs
 from ..specs import Dict, ODict
-from . import utils
+from . import utils, validator
 try:
     from datetime import datetime
 except:
@@ -51,7 +51,6 @@ def initialize(netParams = None, simConfig = None, net = None):
 
     """
 
-
     from .. import sim
 
     if netParams is None: netParams = {} # If not specified, initialize as empty dict
@@ -60,9 +59,6 @@ def initialize(netParams = None, simConfig = None, net = None):
         print('Error: seems like the sim.initialize() arguments are in the wrong order, try initialize(netParams, simConfig)')
         sys.exit()
 
-    # for testing validation
-    # if simConfig.exitOnError:
-    #sys.exit()
 
     sim.simData = Dict()  # used to store output simulation data (spikes etc)
     sim.fih = []  # list of func init handlers
@@ -74,6 +70,10 @@ def initialize(netParams = None, simConfig = None, net = None):
     sim.cvode = h.CVode()
 
     sim.setSimCfg(simConfig)  # set simulation configuration
+
+    # for testing validation
+    # if simConfig.exitOnError:
+    #sys.exit()
 
     if sim.rank == 0:
         try:
@@ -90,16 +90,16 @@ def initialize(netParams = None, simConfig = None, net = None):
 
     sim.setNetParams(netParams)  # set network parameters
 
-    if sim.nhosts > 1: sim.cfg.checkErrors = False  # turn of error chceking if using multiple cores
+    if sim.nhosts > 1: sim.cfg.validateNetParams = False  # turn of error chceking if using multiple cores
 
-    if hasattr(sim.cfg, 'checkErrors') and sim.cfg.checkErrors: # whether to validate the input parameters
+    if hasattr(sim.cfg, 'validateNetParams') and sim.cfg.validateNetParams: # whether to validate the input parameters
         try:
-            simTestObj = sim.SimTestObj(sim.cfg.checkErrorsVerbose)
-            simTestObj.simConfig = sim.cfg
-            simTestObj.netParams = sim.net.params
-            simTestObj.runTests()
+            if validator.validate_netparams(netParams):
+                print("\nNetParams validation successful ...")
+            else:
+                print("\nNetParams validation identified some potential issues; see above for details...")
         except:
-            print("\nAn exception occurred during the error checking process...")
+            print("\nAn exception occurred during the netParams validation process...")
 
     sim.timing('stop', 'initialTime')
 
@@ -156,6 +156,9 @@ def setNetParams(params):
     else:
         sim.net.params = specs.NetParams()
 
+    # set mapping from netParams variables to cfg (used in batch)
+    sim.net.params.setCfgMapping(sim.cfg) 
+
 
 #------------------------------------------------------------------------------
 # Set simulation config
@@ -206,7 +209,6 @@ def createParallelContext():
     sim.pc.done()
     sim.nhosts = int(sim.pc.nhost()) # Find number of hosts
     sim.rank = int(sim.pc.id())     # rank or node number (0 will be the master)
-
     if sim.rank==0:
         sim.pc.gid_clear()
 
@@ -336,7 +338,7 @@ def setupRecordLFP():
 
     if not sim.net.params.defineCellShapes: sim.net.defineCellShapes()  # convert cell shapes (if not previously done already)
     sim.net.calcSegCoords()  # calculate segment coords for each cell
-    sim.net.recXElectrode = RecXElectrode(sim)  # create exctracellular recording electrode
+    sim.net.recXElectrode = RecXElectrode.fromConfig(sim.cfg)  # create exctracellular recording electrode
 
     if sim.cfg.createNEURONObj:
         for cell in sim.net.compartCells:
@@ -349,6 +351,66 @@ def setupRecordLFP():
         sim.cvode.use_fast_imem(True)   # make i_membrane_ a range variable
         sim.cfg.use_fast_imem = True
 
+
+
+#------------------------------------------------------------------------------
+# Setup Dipoles Recording (needed for EEG/MEG)
+#------------------------------------------------------------------------------
+def setupRecordDipole():
+    """
+    Function for/to <short description of `netpyne.sim.setup.setupRecordDipole`>
+
+
+    """
+
+
+    from .. import sim
+    import lfpykit
+
+    saveSteps = int(np.ceil(sim.cfg.duration/sim.cfg.recordStep))
+    sim.simData['dipoleSum'] = np.zeros((saveSteps, 3))
+
+    if sim.cfg.saveDipoleCells:
+        if sim.cfg.saveDipoleCells == True:
+            cellsRecordDipole = utils.getCellsList(['all']) # record all cells
+        elif isinstance(sim.cfg.saveDipoleCells, list):
+            cellsRecordDipole = utils.getCellsList(sim.cfg.saveDipoleCells)
+        for c in cellsRecordDipole:
+            sim.simData['dipoleCells'][c.gid] = np.zeros((saveSteps, 3))
+
+    if sim.cfg.saveDipolePops:
+        if sim.cfg.saveDipolePops == True:
+            popsRecordDipole = list(sim.net.pops.keys()) # record all pops
+        elif isinstance(sim.cfg.saveDipolePops, list):
+            popsRecordDipole = [p for p in sim.cfg.saveDipolePops if p in list(sim.net.pops.keys())] # only pops that exist
+            sim.net.popForEachGid = {}
+            for pop in popsRecordDipole:
+                sim.net.popForEachGid.update({gid: pop for gid in sim.net.pops[pop].cellGids})
+        for pop in popsRecordDipole:
+            sim.simData['dipolePops'][pop] = np.zeros((saveSteps, 3))
+
+
+    if not sim.net.params.defineCellShapes: sim.net.defineCellShapes()  # convert cell shapes (if not previously done already)
+    sim.net.calcSegCoords()  # calculate segment coords for each cell
+
+    if sim.cfg.createNEURONObj:
+        for cell in sim.net.compartCells:
+            lfpykitCell = lfpykit.CellGeometry(x=np.array([[p0,p1] for p0,p1 in zip(cell._segCoords['p0'][0], cell._segCoords['p1'][0])]),
+                                        y=np.array([[p0,p1] for p0,p1 in zip(cell._segCoords['p0'][1], cell._segCoords['p1'][1])]),
+                                        z=np.array([[p0,p1] for p0,p1 in zip(cell._segCoords['p0'][2], cell._segCoords['p1'][2])]),
+                                        d=np.array([[d0,d1] for d0,d1 in zip(cell._segCoords['d0'], cell._segCoords['d1'])]))
+
+            cdm = lfpykit.CurrentDipoleMoment(cell=lfpykitCell)
+            cell.M = cdm.get_transformation_matrix()
+                    
+            # set up recording of membrane currents (duplicate with setupRecordLFP -- unifiy and avoid calling twice)
+            nseg = cell._segCoords['p0'].shape[1]
+            cell.imembPtr = h.PtrVector(nseg)  # pointer vector
+            cell.imembPtr.ptr_update_callback(cell.setImembPtr)   # used for gathering an array of  i_membrane values from the pointer vector
+            cell.imembVec = h.Vector(nseg)
+
+        sim.cvode.use_fast_imem(True)   # make i_membrane_ a range variable
+        sim.cfg.use_fast_imem = True
 
 #------------------------------------------------------------------------------
 # Setup Recording
@@ -450,6 +512,10 @@ def setupRecording():
     # set LFP recording
     if sim.cfg.recordLFP:
         setupRecordLFP()
+
+    # set dipole recording
+    if sim.cfg.recordDipole:
+        setupRecordDipole()
 
     sim.timing('stop', 'setrecordTime')
 

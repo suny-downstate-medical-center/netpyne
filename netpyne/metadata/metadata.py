@@ -1205,7 +1205,6 @@ metadata = {
                                 "options": [
                                     "i",
                                     "o",
-                                    "None"
                                 ],
                                 "type": "str"
                             },
@@ -1504,7 +1503,7 @@ metadata = {
                             }
                         }
                     },
-                    "parameters": { #help not mentioned in the package reference file
+                    "parameters": {
                         "label": "",
                         "help": "",
                         "suggestions": "",
@@ -1540,7 +1539,7 @@ metadata = {
                             }
                         }
                     },
-                    "multicompartmentReactions": { #help other than membrane and membrane_flux, nothing else mentioned in the reference package
+                    "multicompartmentReactions": {
                         "label": "Dictionary specifying reactions with species belonging to different regions.",
                         "help": "",
                         "suggestions": "",
@@ -1633,7 +1632,7 @@ metadata = {
                             }
                         }
                     },
-                    "constants": { #help with children
+                    "constants": {
                         "label": "",
                         "help": "",
                         "suggestions": "",

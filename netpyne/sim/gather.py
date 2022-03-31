@@ -469,6 +469,12 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
                             for p in value:
                                 allSimData['LFPPops'][p] += np.array(value[p])
 
+                        elif key == 'dipoleSum':
+                            if key not in allSimData.keys():
+                                allSimData[key] = value
+                            else:
+                                allSimData[key] += value
+
                         elif key not in singleNodeVecs:
                             allSimData[key].update(value)
 

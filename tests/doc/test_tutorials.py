@@ -6,8 +6,8 @@ sys.path.append('examples/HHTut/')
 import netpyne
 
 
-def test_tutorial_1():
-    import tut1
+# def test_tutorial_1():
+#     import tut1
 
 def test_tutorial_2():
     import tut2

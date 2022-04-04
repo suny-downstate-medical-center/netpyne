@@ -17,6 +17,3 @@ from cfg import cfg
 from netParams import netParams
 
 sim.createSimulateAnalyze(netParams, cfg) #SimulateAnalyze(netParams, cfg)
-
-# Check the model output: sim.checkOutput is used for testing purposes.  Please comment out the following line if you are exploring the example.
-sim.checkOutput('PTcell')

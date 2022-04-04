@@ -35,6 +35,10 @@ def checkOutput(modelName, verbose=False):
         expectedAll = {'numSyns': {}, 'numSpikes': {}}
 
         # tut2 expected output
+        expectedAll['numSyns']['tut1'] = 1823
+        expectedAll['numSpikes']['tut1'] = 2052
+
+        # tut2 expected output
         expectedAll['numSyns']['tut2'] = 280
         expectedAll['numSpikes']['tut2'] = 931
 

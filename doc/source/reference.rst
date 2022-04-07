@@ -860,6 +860,7 @@ The ``rxdParams`` ordered dictionary can be used to define the different RxD com
 
 			netParams.rxdParams['rates'] = {'h_evol':{'species': h_gate, 'rate': '(1. / (1 + 1000. * ca[cyt] / (0.3)) - h_gate) / tau'}}
 
+* **constants** - Dictionary specifying constants used by the user in, for example, string-based functions.
 
 The parameters of each dictionary follow the same structure as described in the RxD package: https://www.neuron.yale.edu/neuron/static/docs/rxd/index.html 
 

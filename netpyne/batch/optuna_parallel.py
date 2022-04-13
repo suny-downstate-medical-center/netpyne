@@ -302,14 +302,14 @@ def optunaOptim(self, pc):
             for candidate_index in unfinished:
                 try: # load simData and evaluate fitness
                     jobNamePath = genFolderPath + "/trial_" + str(ngen)
-                    if os.path.isfile(jobNamePath+'.json'):
-                        with open('%s.json'% (jobNamePath)) as file:
+                    if os.path.isfile(jobNamePath+'_data.json'):
+                        with open('%s_data.json'% (jobNamePath)) as file:
                             simData = json.load(file)['simData']
                         fitness[candidate_index] = fitnessFunc(simData, **fitnessFuncArgs)
                         jobs_completed += 1
                         print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
-                    elif os.path.isfile(jobNamePath+'.pkl'):
-                        with open('%s.pkl'% (jobNamePath), 'rb') as file:
+                    elif os.path.isfile(jobNamePath+'_data.pkl'):
+                        with open('%s_data.pkl'% (jobNamePath), 'rb') as file:
                             simData = pickle.load(file)['simData']
                         fitness[candidate_index] = fitnessFunc(simData, **fitnessFuncArgs)
                         jobs_completed += 1

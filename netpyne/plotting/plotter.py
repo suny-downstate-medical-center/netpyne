@@ -145,19 +145,19 @@ class MetaFigure:
 
             *Default:* ``'png'``
             *Options:*
-                ``'eps'``: 'Encapsulated Postscript',
-                ``'jpg'``: 'Joint Photographic Experts Group',
-                ``'jpeg'``: 'Joint Photographic Experts Group',
-                ``'pdf'``: 'Portable Document Format',
-                ``'pgf'``: 'PGF code for LaTeX',
-                ``'png'``: 'Portable Network Graphics',
-                ``'ps'``: 'Postscript',
-                ``'raw'``: 'Raw RGBA bitmap',
-                ``'rgba'``: 'Raw RGBA bitmap',
-                ``'svg'``: 'Scalable Vector Graphics',
-                ``'svgz'``: 'Scalable Vector Graphics',
-                ``'tif'``: 'Tagged Image File Format',
-                ``'tiff'``: 'Tagged Image File Format'
+            ``'eps'``: 'Encapsulated Postscript',
+            ``'jpg'``: 'Joint Photographic Experts Group',
+            ``'jpeg'``: 'Joint Photographic Experts Group',
+            ``'pdf'``: 'Portable Document Format',
+            ``'pgf'``: 'PGF code for LaTeX',
+            ``'png'``: 'Portable Network Graphics',
+            ``'ps'``: 'Postscript',
+            ``'raw'``: 'Raw RGBA bitmap',
+            ``'rgba'``: 'Raw RGBA bitmap',
+            ``'svg'``: 'Scalable Vector Graphics',
+            ``'svgz'``: 'Scalable Vector Graphics',
+            ``'tif'``: 'Tagged Image File Format',
+            ``'tiff'``: 'Tagged Image File Format'
 
         fileDir : str
             Directory where figure is to be saved.

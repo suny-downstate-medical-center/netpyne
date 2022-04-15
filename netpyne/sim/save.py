@@ -406,6 +406,8 @@ def intervalSave(simTime, gatherLFP=True):
         for k in list(gather[0]['simData'].keys()):  # initialize all keys of allSimData dict
             if gatherLFP and k == 'LFP':
                 sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
+            elif gatherLFP and k == 'LFPPops':
+                sim.allSimData[k] = {p: np.zeros(gather[0]['simData']['LFP'].shape) for p in gather[0]['simData']['LFPPops'].keys()}
             elif sim.cfg.recordDipolesHNN and k == 'dipole':
                 for dk in sim.cfg.recordDipolesHNN:
                     sim.allSimData[k][dk] = np.zeros(len(gather[0]['simData']['dipole'][dk]))
@@ -439,7 +441,10 @@ def intervalSave(simTime, gatherLFP=True):
                         sim.allSimData[key] = list(sim.allSimData[key])+list(val) # udpate simData dicts which are Vectors
                 elif gatherLFP and key == 'LFP':
                     sim.allSimData[key] += np.array(val)
-                elif sim.cfg.recordDipole and key == 'dipoleSum':
+                elif gatherLFP and key == 'LFPPops':
+                    for p in val:
+                        sim.allSimData[key][p] += np.array(val[p])
+                elif key == 'dipoleSum':
                     sim.allSimData[key] += val
                 elif key not in singleNodeVecs:
                     sim.allSimData[key].update(val)           # update simData dicts which are not Vectors

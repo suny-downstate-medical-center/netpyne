@@ -10,7 +10,7 @@
 
 - Added clearAll argument to sim.create()
 
-- Changed ordering of documentation to “by source”. Updated docs in plotter
+- Changed ordering of documentation to “by source”
 
 **Bug fixes**
 
@@ -21,6 +21,8 @@
 - Fixed bugs in MultiFigs (2D subplots, bug in LFP with multi axis)
 
 - Fixed bug in checkAvailablePlots()
+
+- Fixed gathering dipoleSum and LFPPops data from nodes
 
 # Version 1.0.2
 

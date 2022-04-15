@@ -287,10 +287,8 @@ def plotLFPSpectrogram(
             else:
                 plotaxis = metaFig.ax
         
-        imagePlotter = ImagePlotter(data=imageData, kind='spect', metafig=metaFig, axis=plotaxis, **axisArgs, **kwargs)
+        imagePlotter = ImagePlotter(data=imageData, kind='spect', axis=plotaxis, **axisArgs, **kwargs)
         spectPlot = imagePlotter.plot(**axisArgs, **kwargs)
-
-        metaFig.plotters.append(imagePlotter)
 
     suptitle = {'t':'LFP Spectrogram'}
 

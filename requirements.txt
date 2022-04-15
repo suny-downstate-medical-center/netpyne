@@ -9,3 +9,4 @@ pyneuroml
 neuron
 pytest
 schema
+lfpykit

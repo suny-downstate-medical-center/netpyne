@@ -150,11 +150,16 @@ def plotShape(
             metaFig.ax.remove()
             shapeax = fig.add_subplot(111, projection='3d')
             metaFig.ax = shapeax
-            #fig=plt.figure(figsize=figSize)
-            #shapeax = plt.subplot(111, projection='3d')
         else:
             shapeax = axis
             fig = axis.figure
+            metafig = fig.metafig
+            numRows = np.shape(metafig.ax)[0]
+            numCols = np.shape(metafig.ax)[1]
+            axisLoc = np.where(metafig.ax.ravel() == shapeax)[0][0] + 1
+            plt.delaxes(shapeax)
+            figIndex = int(str(numRows) + str(numCols) + str(axisLoc))
+            shapeax = fig.add_subplot(figIndex, projection='3d')
 
         shapeax.elev = elev # 90
         shapeax.azim = azim  # -90

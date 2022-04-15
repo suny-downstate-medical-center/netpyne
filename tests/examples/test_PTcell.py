@@ -2,6 +2,7 @@ import pytest
 import os
 import subprocess
 import sys
+from netpyne import sim
 if '-nogui' not in sys.argv:
     sys.argv.append('-nogui')
 
@@ -12,3 +13,4 @@ from .utils import pkg_setup
 class TestPTcell:
     def test_init(self, pkg_setup):
         import init
+        sim.checkOutput('PTcell')

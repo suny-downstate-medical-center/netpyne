@@ -1,3 +1,29 @@
+# Version 1.0.2.1
+
+**New features**
+
+- Added axis sharing and twinning capability
+
+- Updated metadata with dipole specs
+
+- Updated some LFP examples
+
+- Added clearAll argument to sim.create()
+
+- Changed ordering of documentation to “by source”
+
+**Bug fixes**
+
+- Fixed bug in plotting when overlaying axis
+
+- Fixed bug with syncLines option in plotter
+
+- Fixed bugs in MultiFigs (2D subplots, bug in LFP with multi axis)
+
+- Fixed bug in checkAvailablePlots()
+
+- Fixed gathering dipoleSum and LFPPops data from nodes
+
 # Version 1.0.2
 
 **New features**

@@ -497,7 +497,7 @@ def checkAvailablePlots(requireCfg=False):
         avail['plotLFP'] = True
 
     # plot dipole/EEG 
-    if hasattr(sim, 'allSimData') and 'dipoleSum' in sim.allSimData and len(sim.allSimData['dipole']) > 0:
+    if hasattr(sim, 'allSimData') and 'dipoleSum' in sim.allSimData and len(sim.allSimData['dipoleSum']) > 0:
 
         avail['plotDipole'] = True
         avail['plotEEG'] = True

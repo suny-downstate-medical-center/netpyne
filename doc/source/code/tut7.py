@@ -99,6 +99,3 @@ from netpyne import __gui__
 if __gui__:
     sim.analysis.plotRaster(syncLines=True)
     sim.analysis.plotTraces(include = [1])
-
-# Check the model output: sim.checkOutput is used for testing purposes.  Please comment out the following line if you are exploring the tutorial.
-sim.checkOutput('tut7')

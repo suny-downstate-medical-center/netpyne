@@ -137,7 +137,7 @@ def _loadFile(filename):
 #------------------------------------------------------------------------------
 # Load simulation config from file
 #------------------------------------------------------------------------------
-def loadSimCfg(filename, data=None, setLoaded=True):
+def loadSimCfg(filename, data=None, variable='simConfig', setLoaded=True):
     """
     Function for/to <short description of `netpyne.sim.load.loadSimCfg`>
 
@@ -164,20 +164,21 @@ def loadSimCfg(filename, data=None, setLoaded=True):
     if not data:
         data = _loadFile(filename)
     print('Loading simConfig...')
-    if 'simConfig' in data:
+    if variable in data:
+        rawSimConfig = data[variable]
         if setLoaded:
-            setup.setSimCfg(data['simConfig'])
+            setup.setSimCfg(rawSimConfig)
         else:
-            return specs.SimConfig(data['simConfig'])
+            return specs.SimConfig(rawSimConfig)
     else:
-        print(('  simConfig not found in file %s'%(filename)))
+        print(f'  {variable} not found in file {filename}')
     pass
 
 
 #------------------------------------------------------------------------------
 # Load netParams from cell
 #------------------------------------------------------------------------------
-def loadNetParams(filename, data=None, setLoaded=True):
+def loadNetParams(filename, data=None, variable=None, setLoaded=True):
     """
     Function for/to <short description of `netpyne.sim.load.loadNetParams`>
 
@@ -203,15 +204,18 @@ def loadNetParams(filename, data=None, setLoaded=True):
 
     if not data: data = _loadFile(filename)
     print('Loading netParams...')
-    if 'net' in data and 'params' in data['net']:
-        if setLoaded:
-            setup.setNetParams(data['net']['params'])
-        else:
-            return specs.NetParams(data['net']['params'])
+    if variable is not None and variable in data:
+        rawNetParams = data[variable]
+    elif 'net' in data and 'params' in data['net']:
+        rawNetParams = data['net']['params']
     else:
         print(('netParams not found in file %s'%(filename)))
+        return
 
-    pass
+    if setLoaded:
+        setup.setNetParams(rawNetParams)
+    else:
+        return specs.NetParams(rawNetParams)
 
 
 #------------------------------------------------------------------------------
@@ -450,6 +454,49 @@ def loadAll(filename, data=None, instantiate=True, createNEURONObj=True):
         sys.exit()
     loadNet(filename, data=data, instantiate=instantiate, compactConnFormat=connFormat)
     loadSimData(filename, data=data)
+
+def loadFromIndexFile(index, method='python'):
+
+    import __main__
+    import json, os, importlib, types
+    from .. import sim
+
+    print(f'Loading index file {index} ... ')
+    with open(index, 'r') as fileObj:
+        indexData = json.load(fileObj)
+
+        if method == 'python':
+            simConfigFile = indexData['simConfig_python']
+            print(f'\n    Loading simConfig: {simConfigFile} ... ')
+            loader = importlib.machinery.SourceFileLoader(os.path.basename(simConfigFile).split('.')[0], simConfigFile)
+            cfgModule = types.ModuleType(loader.name)
+            loader.exec_module(cfgModule)
+            cfg = cfgModule.cfg
+            __main__.cfg = cfg
+
+            netParamsFile = indexData['netParams_python']
+            print(f'\n    Loading netParams: {netParamsFile} ... ')
+            loader = importlib.machinery.SourceFileLoader(os.path.basename(netParamsFile).split('.')[0], netParamsFile)
+            netParamsModule = types.ModuleType(loader.name)
+            loader.exec_module(netParamsModule)
+            netParams = netParamsModule.netParams
+
+        elif method == 'json':
+            configFile = indexData['simConfig_json']
+            print(f'\n    Loading simConfig: {configFile} ... ')
+            configVar = indexData['simConfig_variable']
+            cfg = sim.loadSimCfg(configFile, variable=configVar, setLoaded=False)
+
+            paramsFile = indexData['netParams_json']
+            print(f'\n    Loading netParams: {paramsFile} ... ')
+            paramsVar = indexData['netParams_variable']
+            netParams = sim.loadNetParams(paramsFile, variable=paramsVar, setLoaded=False)
+
+        else:
+            print("Unsupported method. Use `python` or `json`")
+            return
+
+        return cfg, netParams
 
 
 #------------------------------------------------------------------------------

@@ -37,7 +37,7 @@ from .gather import gatherData, _gatherAllCellTags, _gatherAllCellConnPreGids, _
 from .save import saveJSON, saveData, distributedSaveHDF5, compactConnFormat, intervalSave, saveDataInNodes
 
 # import loading functions
-from .load import loadSimCfg, loadNetParams, loadNet, loadSimData, loadAll, loadHDF5, ijsonLoad
+from .load import loadSimCfg, loadNetParams, loadNet, loadSimData, loadAll, loadHDF5, ijsonLoad, loadFromIndexFile
 
 # import utils functions (general)
 from .utils import cellByGid, getCellsList, timing, version, gitChangeset, hashStr, hashList, _init_stim_randomizer, unique, checkMemory

@@ -368,10 +368,22 @@ def load(filename, simConfig=None, output=False, instantiate=True, instantiateCe
     """
 
     from .. import sim
-    sim.initialize()  # create network object and set cfg and net params
-    sim.cfg.createNEURONObj = createNEURONObj
-    sim.loadAll(filename, instantiate=instantiate, createNEURONObj=createNEURONObj)
-    if simConfig: sim.setSimCfg(simConfig)  # set after to replace potentially loaded cfg
+
+    netParams = None
+    ext = filename.split('.')[-1]
+    if ext == 'npjson' or ext == 'np':
+        config, netParams = sim.loadFromIndexFile(filename)
+        if simConfig is None:
+            simConfig = config
+        sim.initialize(netParams=netParams, simConfig=simConfig)
+        sim.cfg.createNEURONObj = createNEURONObj
+
+    else:
+        sim.initialize()  # create network object and set cfg and net params
+        sim.cfg.createNEURONObj = createNEURONObj
+        sim.loadAll(filename, instantiate=instantiate, createNEURONObj=createNEURONObj)
+        if simConfig: sim.setSimCfg(simConfig)  # set after to replace potentially loaded cfg
+
     if len(sim.net.cells) == 0 and instantiate:
         pops = sim.net.createPops()  # instantiate network populations
         if instantiateCells:

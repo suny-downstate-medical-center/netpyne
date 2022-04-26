@@ -586,3 +586,24 @@ def runSimIntervalSaving(interval=1000):
 
 
 
+def runFromIndexFile(index):
+
+    import json, os, sys, importlib
+
+    with open(index, 'r') as fileObj:
+        indexData = json.load(fileObj)
+        pathToScript = indexData['python_run'] # e.g. 'src/init.py'
+
+        dir, _ = os.path.split(pathToScript) # e.g. 'src'
+
+        module, _ = os.path.splitext(pathToScript)
+        module = module.replace('/', '.') # e.g. 'src.init'
+
+        sys.argv.append('-fromIndex')
+
+        sys.path.append(dir)
+        importlib.import_module(module)
+            
+
+
+

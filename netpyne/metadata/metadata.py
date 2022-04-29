@@ -1546,39 +1546,46 @@ metadata = {
                         "hintText": "",
                         "children": {
                             "reactant": {
-                                "label": "",
-                                "help": "",
+                                "label": "A string declaring the left-hand side of the chemical reaction, with the species and the proper stechiometry.",
+                                "help": "For example, ca + 2 * cl, where 'ca' and 'cl' are defined in the 'species' entry and are available in the region where the reaction takes places.",
                                 "suggestions": "",
                                 "hintText": "",
-                                "type": "str"
+                                "type": "str",
                             },
                             "product": {
-                                "label": "",
-                                "help": "",
+                                "label": "A string declaring the right-hand side of the chemical reaction, with the species and the proper stechiometry.",
+                                "help": "For example, where 'cacl2' is a species properly defined.",
                                 "suggestions": "",
                                 "hintText": "",
-                                "type": "str"
+                                "type": "str",
                             },
                             "rate_f": {
-                                "label": "",
+                                "label": "Rate for the forward reaction. It can be either a numerical value or a string-based function.",
                                 "help": "",
                                 "suggestions": "",
                                 "hintText": "",
-                                "type": "str"
+                                "type": "str",
+                            },
+                            "rate_b": {
+                                "label": "Rate for the backward reaction. It can be either a numerical value or a string-based function.",
+                                "help": "",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "str",
                             },
                             "regions": {
-                                "label": "",
+                                "label": "This entry is used to constrain the reaction to proceed only in a list of regions. If is a single region, it may be specified without listing. If not provvided, the reaction proceeds in all (plausible) regions.",
                                 "help": "",
                                 "suggestions": "",
                                 "hintText": "",
-                                "type": "list(str)"
+                                "type": "lis(str)",
                             },
                             "custom_dynamics": {
-                                "label": "",
+                                "label": "This boolean entry specifies whether law of mass-action for elementary reactions does apply or not. If 'True', dynamicsf each species'  conncentrratino satisfy a mass-action scheme.",
                                 "help": "",
                                 "suggestions": "",
                                 "hintText": "",
-                                "type": "bool"
+                                "type": "bool",
                             },
                             "membrane": {
                                 "label": "The region (with a geometry compatible with a membrance or a border) involved in the passage of ions from one region to another.",

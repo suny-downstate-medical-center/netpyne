@@ -586,7 +586,7 @@ def runSimIntervalSaving(interval=1000):
 
 
 # OPTION 1
-def runFromIndexFile(index):
+def runFromIndexFile_opt1(index):
 
     import json, os, sys, importlib
 
@@ -605,7 +605,7 @@ def runFromIndexFile(index):
         importlib.import_module(module)
 
 # OPTION 2
-def runFromIndexFile(index):
+def runFromIndexFile_opt2(index):
 
     import json, os, sys, importlib
 

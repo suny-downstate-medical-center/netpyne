@@ -1,0 +1,6 @@
+{
+    "mod_folder": "mod",
+    "simConfig_python": "src/cfg.py",
+    "netParams_python": "../M1/src/netParams.py",
+    "python_run": "src/init.py"
+}

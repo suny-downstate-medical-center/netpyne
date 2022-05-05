@@ -4,14 +4,6 @@
 NetPyNE Modeling Specification v1.0
 =======================================
 
-
-The list of authors and contributors is in the body of the specification document.
-A brief description of the specification in the heading section of the specification
-A link to the main publication reference, and any other relevant publications.
-A table of contents
-This specification can be independent of the reference web document, and prior versions should be archived and maintained addressable.
-
-
 Table of Contents
 ------------------
 
@@ -23,15 +15,32 @@ Table of Contents
 Overview of Specification
 -------------------------------
 
-* Reference publication:
+The NetPyNE modeling specification provides a standardized declarative language to define the biological parameters of neuronal networks from the molecular to the circuit scales.
 
-* Specification metadata (JSON-based): 
+These standardized specification employs a human-readable, clean, compact, rule-base and JSON-compatible format consisting 
+of Python lists and dictionaries. 
+Thos declarative language allows users to accurately describe the properties and patterns observed at each biological scale, 
+while hiding all the complex technical aspects required to implement them in NEURON. 
+For example, one can define a probabilistic connectivity rule between two populations, 
+instead of creating potentially millions of cell-to-cell connections with Python or hoc for loops. 
+The declarative language enables structured specification of all the model parameters: 
+populations, cell properties, connectivity, stimulation, and molecular reaction-diffusion.
 
-* Specification validation code via Schema: 
+* Reference publication: Dura-Bernal S, Suter B, Gleeson P, Cantarelli M, Quintana A, Rodriguez F, Kedziora DJ, Chadderdon GL, Kerr CC, Neymotin SA, McDougal R, Hines M, Shepherd GMG, Lytton WW. (2019) 
+NetPyNE: a tool for data-driven multiscale modeling of brain circuits. eLife 2019;8:e44494 - https://elifesciences.org/articles/44494
+
+* Specification metadata (JSON-based): https://github.com/suny-downstate-medical-center/netpyne/blob/development/netpyne/metadata/metadata.py
+
+* Specification validation code via Schema: https://github.com/suny-downstate-medical-center/netpyne/blob/development/netpyne/sim/validator.py
 
 
 Authors and contributors
 -------------------------------
+
+The original author of the specification is Salvador Dura-Bernal (salvadordura@gmail.com). Contributors to the specification include:
+Padraig Gleeson, Joe W Graham, Eugenio Urdapilleta, Valery Bragin, William W Lytton, Michael L Hines, Ben Suter, Greg Patrick, 
+Matteo Cantarelli, Dario del Piano, Filippo Ledda, Facundo Rodriguez, Nicolas Gomez, Afonso Pinto, Craig Kelley, Adrian Quintana, Siddartha Mitra, 
+Adam Newton, Joao Vitor, Cliff Kerr and David Kedziora.
 
 
 Network parameters

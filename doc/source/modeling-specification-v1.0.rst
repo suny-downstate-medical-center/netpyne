@@ -25,10 +25,10 @@ instead of creating potentially millions of cell-to-cell connections with Python
 The declarative language enables structured specification of all the model parameters: 
 populations, cell properties, connectivity, stimulation, and molecular reaction-diffusion.
 
-* Reference publication: Dura-Bernal S, Suter B, Gleeson P, Cantarelli M, Quintana A, Rodriguez F, Kedziora DJ, Chadderdon GL, Kerr CC, Neymotin SA, McDougal R, Hines M, Shepherd GMG, Lytton WW. (2019) 
-NetPyNE: a tool for data-driven multiscale modeling of brain circuits. eLife 2019;8:e44494 - https://elifesciences.org/articles/44494
+* Reference publication: Dura-Bernal S, Suter B, Gleeson P, Cantarelli M, Quintana A, Rodriguez F, Kedziora DJ, Chadderdon GL, Kerr CC, Neymotin SA, McDougal R, Hines M, Shepherd GMG, Lytton WW. (2019) NetPyNE: a tool for data-driven multiscale modeling of brain circuits. eLife 2019;8:e44494 - https://elifesciences.org/articles/44494
 
 * Specification metadata (JSON-based): https://github.com/suny-downstate-medical-center/netpyne/blob/development/netpyne/metadata/metadata.py
+
 
 * Specification validation code via Schema: https://github.com/suny-downstate-medical-center/netpyne/blob/development/netpyne/sim/validator.py
 

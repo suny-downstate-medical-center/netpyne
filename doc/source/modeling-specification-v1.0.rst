@@ -17,8 +17,7 @@ Overview of Specification
 
 The NetPyNE modeling specification provides a standardized declarative language to define the biological parameters of neuronal networks from the molecular to the circuit scales.
 
-These standardized specification employs a human-readable, clean, compact, rule-base and JSON-compatible format consisting 
-of Python lists and dictionaries. 
+These standardized specification employs a human-readable, clean, compact, rule-base and JSON-compatible format. 
 Thos declarative language allows users to accurately describe the properties and patterns observed at each biological scale, 
 while hiding all the complex technical aspects required to implement them in NEURON. 
 For example, one can define a probabilistic connectivity rule between two populations, 

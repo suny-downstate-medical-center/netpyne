@@ -10,7 +10,7 @@ Table of Contents
 .. toctree::
    :maxdepth: 3
 
-   specification_v1.0
+   modeling-specification-v1.0
 
 Overview of Specification
 -------------------------------

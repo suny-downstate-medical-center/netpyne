@@ -284,7 +284,7 @@ def plotLFPPSD(
             title += ' - Population: ' + pop
         axisArgs['title'] = title
         axisArgs['xlabel'] = 'Frequency (Hz)'
-        axisArgs['ylabel'] = 'Power (arbitrary units)'
+        axisArgs['ylabel'] = 'Power (mVˆ2 / Hz )'
 
     axisArgs['grid'] = {'which': 'both'}
 
@@ -335,7 +335,7 @@ def plotLFPPSD(
     metaFig = linesPlotter.metafig
 
     # remove the y-axis tick labels
-    linesPlotter.axis.get_yaxis().set_ticklabels([])
+    # linesPlotter.axis.get_yaxis().set_ticklabels([])
 
     # Set up the default legend settings
     legendKwargs = {}

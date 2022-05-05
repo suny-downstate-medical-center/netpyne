@@ -40,7 +40,7 @@ Table of Contents
    reference
    advanced
    package_index
-
+   specification_v1.0
 
 
 

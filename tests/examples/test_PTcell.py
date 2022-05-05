@@ -12,3 +12,5 @@ from .utils import pkg_setup
 class TestPTcell:
     def test_init(self, pkg_setup):
         import init
+        from netpyne import sim
+        sim.checkOutput('PTcell')

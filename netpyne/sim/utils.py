@@ -909,10 +909,12 @@ def clearAll():
                 if 'stims' in list(sim.allSimData.keys()):
                     sim.clearObj([stim for stim in sim.allSimData['stims']])
             
-            if hasattr(sim, 'net'):
+            if hasattr(sim.net, 'allCells'):
                 for c in sim.net.allCells: del c
-                for p in sim.net.allPops: del p
                 del sim.net.allCells
+            if hasattr(sim.net, 'allPops'):
+                for p in sim.net.allPops: del p
+                del sim.net.allPops
             
             if hasattr(sim, 'allSimData'):
                 del sim.allSimData

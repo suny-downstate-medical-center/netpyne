@@ -314,6 +314,26 @@ def createSimulateAnalyzeDistributed(netParams, simConfig, output=False, filenam
         return (pops, cells, conns, stims, simData)
 
 
+def runFromIndexFile(index):
+
+    import json, os, sys, importlib
+
+    with open(index, 'r') as fileObj:
+        indexData = json.load(fileObj)
+
+        sys.argv.append('netParams=' + indexData['netParams_python'])
+        sys.argv.append('simConfig=' + indexData['simConfig_python'])
+
+        pathToScript = indexData['python_run'] # e.g. 'src/init.py'
+        dir, _ = os.path.split(pathToScript) # e.g. 'src'
+
+        module, _ = os.path.splitext(pathToScript)
+        module = module.replace('/', '.') # e.g. 'src.init'
+
+        sys.path.append(dir)
+        importlib.import_module(module)
+
+
 #------------------------------------------------------------------------------
 # Wrapper to load all, ready for simulation
 #------------------------------------------------------------------------------

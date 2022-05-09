@@ -40,13 +40,13 @@ from .save import saveJSON, saveData, distributedSaveHDF5, compactConnFormat, in
 from .load import loadSimCfg, loadNetParams, loadNet, loadSimData, loadAll, loadHDF5, ijsonLoad, loadFromIndexFile
 
 # import utils functions (general)
-from .utils import cellByGid, getCellsList, timing, version, gitChangeset, hashStr, hashList, _init_stim_randomizer, unique, checkMemory
+from .utils import loadPythonModule, cellByGid, getCellsList, timing, version, gitChangeset, hashStr, hashList, _init_stim_randomizer, unique, checkMemory
 
 # import utils functions to manipulate objects
 from .utils import copyReplaceItemObj, copyRemoveItemObj, replaceFuncObj, replaceDictODict, rename, clearObj, clearAll
 
 # import wrapper functions
-from .wrappers import create, simulate, intervalSimulate, distributedSimulate, analyze, createSimulate, createSimulateAnalyze, createSimulateAnalyzeInterval, createSimulateAnalyzeDistributed, load, loadSimulate, loadSimulateAnalyze, createExportNeuroML2, importNeuroML2SimulateAnalyze, runSimIntervalSaving
+from .wrappers import create, simulate, intervalSimulate, distributedSimulate, analyze, createSimulate, createSimulateAnalyze, createSimulateAnalyzeInterval, createSimulateAnalyzeDistributed, runFromIndexFile, load, loadSimulate, loadSimulateAnalyze, createExportNeuroML2, importNeuroML2SimulateAnalyze, runSimIntervalSaving
 
 
 #------------------------------------------------------------------------------

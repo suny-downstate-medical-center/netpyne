@@ -208,14 +208,8 @@ class Batch(object):
         # set cfg
         if self.cfg is None:
             # import cfg
-            cfgModuleName = os.path.basename(self.cfgFile).split('.')[0]
-
-            try:  # py3
-                loader = importlib.machinery.SourceFileLoader(cfgModuleName, self.cfgFile)
-                cfgModule = types.ModuleType(loader.name)
-                loader.exec_module(cfgModule)
-            except:  # py2
-                cfgModule = imp.load_source(cfgModuleName, self.cfgFile)
+            from netpyne import sim
+            cfgModule = sim.loadPythonModule(self.cfgFile)
 
             if hasattr(cfgModule, 'cfg'):
                 self.cfg = cfgModule.cfg

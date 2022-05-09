@@ -30,7 +30,15 @@ from collections import OrderedDict
 from neuron import h# Import NEURON
 from ..specs import Dict, ODict
 
-
+#------------------------------------------------------------------------------
+# Load python module
+#------------------------------------------------------------------------------
+def loadPythonModule(path):
+    import importlib, types, os
+    loader = importlib.machinery.SourceFileLoader(os.path.basename(path).split('.')[0], path)
+    module = types.ModuleType(loader.name)
+    loader.exec_module(module)
+    return module
 
 #------------------------------------------------------------------------------
 # Convert dict strings to utf8 so can be saved in HDF5 format

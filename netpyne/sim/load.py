@@ -458,7 +458,7 @@ def loadAll(filename, data=None, instantiate=True, createNEURONObj=True):
 def loadFromIndexFile(index, method='python'):
 
     import __main__
-    import json, os, importlib, types
+    import json
     from .. import sim
 
     print(f'Loading index file {index} ... ')
@@ -468,17 +468,13 @@ def loadFromIndexFile(index, method='python'):
         if method == 'python':
             simConfigFile = indexData['simConfig_python']
             print(f'\n    Loading simConfig: {simConfigFile} ... ')
-            loader = importlib.machinery.SourceFileLoader(os.path.basename(simConfigFile).split('.')[0], simConfigFile)
-            cfgModule = types.ModuleType(loader.name)
-            loader.exec_module(cfgModule)
+            cfgModule = sim.loadPythonModule(simConfigFile)
             cfg = cfgModule.cfg
             __main__.cfg = cfg
 
             netParamsFile = indexData['netParams_python']
             print(f'\n    Loading netParams: {netParamsFile} ... ')
-            loader = importlib.machinery.SourceFileLoader(os.path.basename(netParamsFile).split('.')[0], netParamsFile)
-            netParamsModule = types.ModuleType(loader.name)
-            loader.exec_module(netParamsModule)
+            netParamsModule = sim.loadPythonModule(netParamsFile)
             netParams = netParamsModule.netParams
 
         elif method == 'json':

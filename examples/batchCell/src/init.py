@@ -10,7 +10,7 @@ MPI usage:  mpiexec -n 4 nrniv -python -mpi init.py
 
 from netpyne import sim
 
-cfg, netParams = sim.readCmdLineArgs(simConfigDefault='cfg.py', netParamsDefault='netParams.py')
+cfg, netParams = sim.readCmdLineArgs(simConfigDefault='src/cfg.py', netParamsDefault='src/netParams.py')
 
 # sim.createSimulateAnalyze(netParams, cfg)
 #​

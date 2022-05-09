@@ -59,7 +59,7 @@ def batchEvol(networkType):
 		return fitness
 
 	# create Batch object with paramaters to modify, and specifying files to use
-	b = Batch(params=params)
+	b = Batch(cfgFile='src/cfg.py', netParamsFile='src/netParams.py', params=params)
 
 	# Set output folder, grid method (all param combinations), and run configuration
 	b.batchLabel = 'simple'
@@ -67,7 +67,7 @@ def batchEvol(networkType):
 	b.method = 'evol'
 	b.runCfg = {
 		'type': 'mpi_bulletin',#'hpc_slurm',
-		'script': 'init.py',
+		'script': 'src/init.py',
 		# options required only for hpc
 		'mpiCommand': 'mpirun',
 		'nodes': 1,

@@ -16,7 +16,7 @@ def batchRxd():
 
     initCfg = {'duration' : 0.5*1e3}
 
-    b = Batch(params=params, initCfg=initCfg)
+    b = Batch(cfgFile='src/cfg.py', netParamsFile='src/netParams.py', params=params, initCfg=initCfg)
     
     b.batchLabel = 'batchRxd'
     b.saveFolder = 'data/'+b.batchLabel

@@ -32,7 +32,7 @@ netParams.popParams['I5'] = {'cellType': 'I', 'numCells': 10, 'ynormRange': [0.6
 
 #------------------------------------------------------------------------------
 ## Cell property rules
-netParams.loadCellParamsRule(label='CellRule', fileName='CSTR_cellParams.json')
+netParams.loadCellParamsRule(label='CellRule', fileName='cells/CSTR_cellParams.json')
 
 #------------------------------------------------------------------------------
 ## Synaptic mechanism parameters

@@ -27,7 +27,7 @@ netParams = specs.NetParams()   # object of class NetParams to store the network
 #------------------------------------------------------------------------------
 
 # cell params
-netParams.loadCellParamsRule('NGF_reduced', 'NGF_reduced_cellParams.json')
+netParams.loadCellParamsRule('NGF_reduced', 'cells/NGF_reduced_cellParams.json')
 netParams.cellParams['NGF_reduced']['conds'] = {'cellType': 'NGF'}
 
 for sec, secDict in netParams.cellParams['NGF_reduced']['secs'].items():

@@ -38,7 +38,7 @@ def batchASD():
         return fitness
 
     # create Batch object with paramaters to modify, and specifying files to use
-    b = Batch(params=params)
+    b = Batch(cfgFile='src/cfg.py', netParamsFile='src/netParams.py', params=params)
 
     # Set output folder, grid method (all param combinations), and run configuration
     b.batchLabel = 'simple'
@@ -46,7 +46,7 @@ def batchASD():
     b.method = 'asd'
     b.runCfg = {
         'type': 'mpi_direct',#'hpc_slurm',
-        'script': 'init.py',
+        'script': 'src/init.py',
         # options required only for mpi_direct or hpc
         'mpiCommand': 'mpiexec',
         'nodes': 1,

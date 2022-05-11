@@ -62,7 +62,7 @@ class MetaFigure:
 
     """
 
-    def __init__(self, kind, sim=None, subplots=None, sharex=False, sharey=False, rcParams=None, autosize=0.35, **kwargs):
+    def __init__(self, kind, sim=None, subplots=None, sharex=False, sharey=False, autosize=0.35, **kwargs):
 
         if not sim:
             from .. import sim
@@ -72,13 +72,15 @@ class MetaFigure:
 
         # Make a copy of the current matplotlib rcParams and update them
         self.orig_rcParams = deepcopy(mpl.rcParamsDefault)
-        if rcParams:
-            for rcParam in rcParams:
-                if rcParam in mpl.rcParams:
-                    mpl.rcParams[rcParam] = rcParams[rcParam]
-                else:
-                    print(rcParam, 'not found in matplotlib.rcParams')
-            self.rcParams = rcParams
+        if 'rcParams' in kwargs:
+            new_rcParams = kwargs['rcParams']
+            if type(new_rcParams) == dict:
+                for rcParam in new_rcParams:
+                    if rcParam in mpl.rcParams:
+                        mpl.rcParams[rcParam] = new_rcParams[rcParam]
+                    else:
+                        print('  Not found in matplotlib.rcParams:', rcParam, )
+                self.rcParams = mpl.rcParams
         else:
             self.rcParams = self.orig_rcParams
 
@@ -365,7 +367,7 @@ class GeneralPlotter:
 
     """
 
-    def __init__(self, data, kind, axis=None, twinx=False, twiny=False, sim=None, rcParams=None, metafig=None, **kwargs):
+    def __init__(self, data, kind, axis=None, twinx=False, twiny=False, sim=None, metafig=None, **kwargs):
         
         self.kind = kind
 

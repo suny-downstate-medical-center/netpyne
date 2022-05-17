@@ -485,7 +485,7 @@ def loadFromIndexFile(index, method='python'):
 
             paramsFile = indexData['netParams_json']
             print(f'\n    Loading netParams: {paramsFile} ... ')
-            paramsVar = indexData['netParams_variable']
+            paramsVar = indexData.get('netParams_variable', None)
             netParams = sim.loadNetParams(paramsFile, variable=paramsVar, setLoaded=False)
 
         else:

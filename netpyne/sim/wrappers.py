@@ -9,6 +9,7 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
+
 standard_library.install_aliases()
 
 #------------------------------------------------------------------------------
@@ -316,22 +317,29 @@ def createSimulateAnalyzeDistributed(netParams, simConfig, output=False, filenam
 
 def runFromIndexFile(index):
 
-    import json, os, sys, importlib
-
+    import json
     with open(index, 'r') as fileObj:
         indexData = json.load(fileObj)
 
-        sys.argv.append('netParams=' + indexData['netParams_python'])
-        sys.argv.append('simConfig=' + indexData['simConfig_python'])
+        pathToScript = indexData.get('python_run', None) # e.g. 'src/init.py'
+        if pathToScript is None:
+            from netpyne import sim
+            cfg, netParams = sim.loadFromIndexFile(index)
+            sim.createSimulateAnalyze(simConfig=cfg, netParams=netParams)
+        else:
+            import os, sys, importlib
 
-        pathToScript = indexData['python_run'] # e.g. 'src/init.py'
-        dir, _ = os.path.split(pathToScript) # e.g. 'src'
+            # TODO: handle json case
+            sys.argv.append('netParams=' + indexData['netParams_python'])
+            sys.argv.append('simConfig=' + indexData['simConfig_python'])
 
-        module, _ = os.path.splitext(pathToScript)
-        module = module.replace('/', '.') # e.g. 'src.init'
+            dir, _ = os.path.split(pathToScript) # e.g. 'src'
 
-        sys.path.append(dir)
-        importlib.import_module(module)
+            module, _ = os.path.splitext(pathToScript)
+            module = module.replace('/', '.') # e.g. 'src.init'
+
+            sys.path.append(dir)
+            importlib.import_module(module)
 
 
 #------------------------------------------------------------------------------

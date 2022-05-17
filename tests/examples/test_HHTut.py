@@ -1,5 +1,6 @@
 import pytest
 import sys
+from netpyne import sim
 if '-nogui' not in sys.argv:
     sys.argv.append('-nogui')
 
@@ -15,6 +16,8 @@ def pkg_setup():
 class TestHHTut():
     def test_run(self, pkg_setup):
         import HHTut_run
+        sim.checkOutput('HHTut')
+
 
     def test_export(self, pkg_setup):
         import HHTut_export

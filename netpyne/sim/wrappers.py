@@ -14,7 +14,7 @@ standard_library.install_aliases()
 #------------------------------------------------------------------------------
 # Wrapper to create network
 #------------------------------------------------------------------------------
-def create(netParams=None, simConfig=None, output=False):
+def create(netParams=None, simConfig=None, output=False, clearAll=False):
     """
     Wrapper function to create a simulation
 
@@ -41,6 +41,10 @@ def create(netParams=None, simConfig=None, output=False):
     """
 
     from .. import sim
+
+    if clearAll:
+        sim.clearAll()
+
     import __main__ as top
     if not netParams: netParams = top.netParams
     if not simConfig: simConfig = top.simConfig

@@ -1,6 +1,7 @@
 import pytest
 import subprocess
 import sys
+from netpyne import sim
 if '-nogui' not in sys.argv:
     sys.argv.append('-nogui')
 
@@ -12,6 +13,7 @@ pkg = 'examples/M1/'
 class TestM1:
     def test_run(self, pkg_setup):
         import M1_run
+        sim.checkOutput('M1')
 
     def test_export(self, pkg_setup):
         import M1_export

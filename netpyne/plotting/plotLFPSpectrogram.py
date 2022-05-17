@@ -222,13 +222,8 @@ def plotLFPSpectrogram(
         vmax = SpectData['electrodes']['spectrogram']['vmax']
         axisArgs = SpectData.get('axisArgs')
 
-    if 'rcParams' in kwargs:
-        rcParams = kwargs['rcParams']
-    else:
-        rcParams = None
-
     if axis is None:
-        metaFig = MetaFigure(kind='LFPSpectrogram', subplots=len(names), rcParams=rcParams, **kwargs)
+        metaFig = MetaFigure(kind='LFPSpectrogram', subplots=len(names), **kwargs)
 
     if 'morlet' in SpectData['electrodes']['spectrogram'].keys():
         spect = SpectData['electrodes']['spectrogram']['morlet']

@@ -111,15 +111,17 @@ class Network(object):
                 cellModel = cellRule['conds'].get('CellModel', None)
                 pop = cellRule['conds'].get('pop', None)
 
+                correction = 1e-12
+
                 if (cellType, cellModel, pop) in condFracs:
                     startFrac = float(condFracs[(cellType, cellModel, pop)])
                     endFrac = startFrac + divFrac
-                    cellRule['conds']['fraction'] = [startFrac, endFrac]
+                    cellRule['conds']['fraction'] = [startFrac - correction, endFrac - correction]
                     condFracs[(cellType, cellModel, pop)] = endFrac
                 else:
                     startFrac = 0
                     endFrac = startFrac + divFrac
-                    cellRule['conds']['fraction'] = [startFrac, endFrac]
+                    cellRule['conds']['fraction'] = [startFrac, endFrac - correction]
                     condFracs[(cellType, cellModel, pop)] = endFrac
 
     # -----------------------------------------------------------------------------

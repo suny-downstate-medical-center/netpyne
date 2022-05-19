@@ -555,7 +555,7 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
     # flag to avoid saving sections data for each cell (saves gather time and space; cannot inspect cell secs or re-simulate)
     if not sim.cfg.saveCellSecs:
         for cell in sim.net.cells:
-            cell.secs = None
+            cell.secs = {}
             cell.secLists = None
 
     # flag to avoid saving conns data for each cell (saves gather time and space; cannot inspect cell conns or re-simulate)

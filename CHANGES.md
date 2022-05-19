@@ -1,3 +1,13 @@
+# Unreleased
+
+**New features**
+
+- Added ability to load PointCell from saved network
+
+**Bug fixes**
+
+- Fixed bug with loading CompartCell with custom mechanisms from saved network
+
 # Version 1.0.2.1
 
 **New features**

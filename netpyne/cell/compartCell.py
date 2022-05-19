@@ -61,8 +61,11 @@ class CompartCell (Cell):
     def __repr__ (self):
         return self.__str__()
 
-    def create (self):
+    def create(self, createNEURONObj=None):
         from .. import sim
+
+        if createNEURONObj is None:
+             createNEURONObj = sim.cfg.createNEURONObj
 
         # generate random rotation angle for each cell
         if sim.net.params.rotateCellsRandomly:
@@ -103,7 +106,7 @@ class CompartCell (Cell):
                         self.tags['label'].append(propLabel)  # add label of cell property set to list of property sets for this cell
                 if sim.cfg.createPyStruct:
                     self.createPyStruct(prop)
-                if sim.cfg.createNEURONObj:
+                if createNEURONObj:
                     self.createNEURONObj(prop)  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
 
 
@@ -420,19 +423,26 @@ class CompartCell (Cell):
             if 'pointps' in sectParams:
                 for pointpName,pointpParams in sectParams['pointps'].items():
                     #if self.tags['cellModel'] == pointpParams:  # only required if want to allow setting various cell models in same rule
+
+                    # warning: `pointpParams object is the same as `sec['pointps'][pointpName]` if came here from `loadNet()` (see also TODO there)
+                    # beware of implicit modification
+
                     if pointpName not in sec['pointps']:
                         sec['pointps'][pointpName] = Dict()
-                    pointpObj = getattr(h, pointpParams['mod'])
                     loc = pointpParams['loc'] if 'loc' in pointpParams else 0.5  # set location
-                    sec['pointps'][pointpName]['hObj'] = pointpObj(loc, sec = sec['hObj'])  # create h Pointp object (eg. h.Izhi2007b)
+                    Pointp = getattr(h, pointpParams['mod'])
+                    pointpObj = Pointp(loc, sec = sec['hObj'])  # create h Pointp object (eg. h.Izhi2007b)
+
                     for pointpParamName,pointpParamValue in pointpParams.items():  # add params of the point process
                         if pointpParamValue == 'gid':
                             pointpParamValue = self.gid
                         if pointpParamName not in ['mod', 'loc', 'vref', 'synList'] and not pointpParamName.startswith('_'):
-                            setattr(sec['pointps'][pointpName]['hObj'], pointpParamName, pointpParamValue)
+                            setattr(pointpObj, pointpParamName, pointpParamValue)
                     if 'params' in self.tags.keys(): # modify cell specific params
                       for pointpParamName,pointpParamValue in self.tags['params'].items():
-                        setattr(sec['pointps'][pointpName]['hObj'], pointpParamName, pointpParamValue)
+                        setattr(pointpObj, pointpParamName, pointpParamValue)
+
+                    sec['pointps'][pointpName]['hObj'] = pointpObj
 
         # set topology
         for sectName,sectParams in prop['secs'].items():  # iterate sects again for topology (ensures all exist)

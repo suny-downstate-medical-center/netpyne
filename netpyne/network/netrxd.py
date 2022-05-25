@@ -530,10 +530,14 @@ def _addRates(self, params):
         if 'regions' not in param:
             # param['regions'] = [None]
             # Following Craig's suggestion (in concordance with the default in NEURON)
-            param['regions'] = [self.rxd['species'][species]['regions'] for species in self.rxd['species'].keys() if param['species']==species] + \
-                [self.rxd['states'][states]['regions'] for states in self.rxd['states'].keys() if param['species']==states ]
-            if len(param['regions'])==1 and isinstance(param['regions'][0],list):
-                param['regions'] = [val for elem in param['regions'] for val in elem]
+            try:
+                param['regions'] = [self.rxd['species'][species]['regions'] for species in self.rxd['species'].keys() if param['species']==species]
+                if 'states' in self.rxd:
+                    param['regions'] = param['regions'] + [self.rxd['states'][states]['regions'] for states in self.rxd['states'].keys() if param['species']==states ]
+                if len(param['regions'])==1 and isinstance(param['regions'][0],list):
+                    param['regions'] = [val for elem in param['regions'] for val in elem]
+            except:
+                param['regions'] = [None]
         elif not isinstance(param['regions'], list):
             param['regions'] = [param['regions']]
         try:

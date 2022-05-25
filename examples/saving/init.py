@@ -33,6 +33,3 @@ sim.saveData(include=['simData'], filename='out_simData')
 sim.cfg.compactConnFormat = ['preGid', 'sec', 'loc', 'synMech', 'weight', 'delay']
 sim.gatherData()
 sim.saveData(include=['net'], filename='out_netInstanceCompact')
-
-# Check the model output: sim.checkOutput is used for testing purposes.  Please comment out the following line if you are exploring the example.
-sim.checkOutput('saving')

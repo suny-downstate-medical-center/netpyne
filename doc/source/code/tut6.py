@@ -49,6 +49,3 @@ simConfig.analysis['plotTraces'] = {'include': [('S',0), ('M',0)], 'saveFig': Tr
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)
 
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty
-
-# Check the model output: sim.checkOutput is used for testing purposes.  Please comment out the following line if you are exploring the tutorial.
-sim.checkOutput('tut6')

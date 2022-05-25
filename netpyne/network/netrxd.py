@@ -133,8 +133,8 @@ def _addRegions(self, params):
         if isinstance(geometry, dict):
             try:
                 if 'args' in geometry:
-                    geometry['hObj'] = getattr(rxd, param['geometry']['class'])(**param['geometry']['args'])
-                    geometry = geometry['hObj']
+                    self.rxd['regions'][label]['geometry']['hObj'] = getattr(rxd, param['geometry']['class'])(**param['geometry']['args'])
+                    geometry = self.rxd['regions'][label]['geometry']['hObj']
             except:
                 print('  Error creating %s Region geometry using %s class'%(label, param['geometry']['class']))
         elif isinstance(param['geometry'], str):

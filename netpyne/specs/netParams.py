@@ -228,8 +228,6 @@ class RxDParams(ODict):
     Class to hold reaction-diffusion (RxD) parameters
 
     """
-
-
     def setParam(self, label, param, value):
         if label in self:
             d = self[label]
@@ -300,7 +298,7 @@ class NetParams(object):
         self.stimSourceParams = StimSourceParams()
         self.stimTargetParams = StimTargetParams()
 
-        # RxD params dicts
+        # RxD params dicts and start up
         self.rxdParams = RxDParams()
 
         # fill in params from dict passed as argument

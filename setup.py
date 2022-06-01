@@ -74,7 +74,7 @@ else:
         # your project is installed. For an analysis of "install_requires" vs pip's
         # requirements files see:
         # https://packaging.python.org/en/latest/requirements.html
-        install_requires=["numpy", "scipy", "matplotlib", "matplotlib-scalebar", "future", "pandas", "bokeh", "schema"],
+        install_requires=["numpy", "scipy", "matplotlib<=3.5.1", "matplotlib-scalebar", "future", "pandas", "bokeh", "schema", "lfpykit"],
         # List additional groups of dependencies here (e.g. development
         # dependencies). You can install these using the following syntax,
         # for example:

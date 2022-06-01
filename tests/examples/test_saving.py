@@ -1,5 +1,6 @@
 import pytest
 import sys
+from netpyne import sim
 if '-nogui' not in sys.argv:
     sys.argv.append('-nogui')
 
@@ -15,3 +16,4 @@ def pkg_setup():
 class Test_saving():
     def test_init(self, pkg_setup):
         import init
+        sim.checkOutput('saving')

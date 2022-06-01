@@ -72,7 +72,7 @@ print('Deleting build directory.')
 shutil.rmtree('build', ignore_errors=True)
 
 # All .rst files but those listed here will be deleted during this process
-keep = ['about.rst', 'advanced.rst', 'index.rst', 'install.rst', 'reference.rst', 'tutorial.rst']
+keep = ['about.rst', 'advanced.rst', 'index.rst', 'install.rst', 'reference.rst', 'tutorial.rst', 'contrib.rst', 'modeling-specification-v1.0.rst']
 
 print('Deleting old .rst files.')
 for file in os.listdir('source'):

@@ -13,7 +13,7 @@ standard_library.install_aliases()
 import warnings
 warnings.filterwarnings("ignore")
 
-from .plotter import MultiFigure, GeneralPlotter, ScatterPlotter, LinePlotter, HistPlotter, ImagePlotter
+from .plotter import MetaFigure, GeneralPlotter, ScatterPlotter, LinePlotter, HistPlotter, ImagePlotter
 from .plotRaster import plotRaster
 from .plotSpikeHist import plotSpikeHist
 from .plotSpikeFreq import plotSpikeFreq

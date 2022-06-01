@@ -169,13 +169,28 @@ def runSim(skipPreRun=False):
             coreneuron.cell_permute = 2
     else:
         if sim.rank == 0: print('\nRunning simulation using NEURON for %s ms...'%sim.cfg.duration)
-    sim.pc.psolve(sim.cfg.duration)
+
+    postRun()
+
+def postRun(stopTime=None):
+    """
+    Function for/to <short description of `netpyne.sim.run.postRun`>
+
+
+    """
+
+
+
+    from .. import sim
+    if (stopTime is None) or (stopTime != sim.cfg.duration):
+        sim.pc.psolve(sim.cfg.duration)
 
     sim.pc.barrier() # Wait for all hosts to get to this point
     sim.timing('stop', 'runTime')
     if sim.rank==0:
         print('  Done; run time = %0.2f s; real-time ratio: %0.2f.' %
             (sim.timingData['runTime'], sim.cfg.duration/1000/sim.timingData['runTime']))
+
 
 
 #------------------------------------------------------------------------------
@@ -206,6 +221,22 @@ def runSimWithIntervalFunc(interval, func, timeRange=None, funcArgs=None):
     """
 
 
+    stopTime, kwargs = prepareSimWithIntervalFunc(timeRange, funcArgs)
+
+    while round(h.t) < stopTime:
+        runForInterval(interval, func, **kwargs)
+
+    postRun(stopTime)
+
+def prepareSimWithIntervalFunc(timeRange=None, funcArgs=None):
+    """
+    Function for/to <short description of `netpyne.sim.run.prepareSimWithIntervalFunc`>
+
+
+    """
+
+
+
     from .. import sim
     sim.pc.barrier()
     sim.timing('start', 'runTime')
@@ -223,25 +254,26 @@ def runSimWithIntervalFunc(interval, func, timeRange=None, funcArgs=None):
     if type(funcArgs) == dict:
         kwargs.update(funcArgs)
 
-    if sim.rank == 0: 
-        print('\nRunning with interval func  ...')
+    if sim.cfg.coreneuron == True:
+        if sim.rank == 0: print('\nRunning with interval func using CoreNEURON for %s ms...'%sim.cfg.duration)
+        from neuron import coreneuron
+        coreneuron.enable = True
+        if sim.cfg.gpu == True:
+            coreneuron.gpu = True
+            coreneuron.cell_permute = 2
+    else:
+        if sim.rank == 0: print('\nRunning with interval func using NEURON for %s ms...'%sim.cfg.duration)
     
     if int(startTime) != 0:
         sim.pc.psolve(startTime)
         sim.pc.barrier()
 
-    while round(h.t) < stopTime:
-        sim.pc.psolve(min(sim.cfg.duration, h.t+interval))
-        func(simTime=h.t, **kwargs) # function to be called at intervals
+    return stopTime, kwargs
 
-    if stopTime != sim.cfg.duration:
-        sim.pc.psolve(sim.cfg.duration)
-
-    sim.pc.barrier() # Wait for all hosts to get to this point
-    sim.timing('stop', 'runTime')
-    if sim.rank==0:
-        print(('  Done; run time = %0.2f s; real-time ratio: %0.2f.' %
-            (sim.timingData['runTime'], sim.cfg.duration/1000/sim.timingData['runTime'])))
+def runForInterval(interval, func, **kwargs):
+    from .. import sim
+    sim.pc.psolve(min(sim.cfg.duration, h.t+interval))
+    func(simTime=h.t, **kwargs) # function to be called at intervals
 
 
 #------------------------------------------------------------------------------

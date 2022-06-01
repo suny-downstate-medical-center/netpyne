@@ -1,6 +1,56 @@
+# Version 1.0.2.1
+
+**New features**
+
+- Added axis sharing and twinning capability
+
+- Updated metadata with dipole specs
+
+- Updated some LFP examples
+
+- Added clearAll argument to sim.create()
+
+- Changed ordering of documentation to “by source”
+
+**Bug fixes**
+
+- Fixed bug in plotting when overlaying axis
+
+- Fixed bug with syncLines option in plotter
+
+- Fixed bugs in MultiFigs (2D subplots, bug in LFP with multi axis)
+
+- Fixed bug in checkAvailablePlots()
+
+- Fixed gathering dipoleSum and LFPPops data from nodes
+
+# Version 1.0.2
+
+**New features**
+
+- Added back the syncLines argument to plotRaster()
+
+- Updated conversion to/from NeuroML 2
+
+- Added RxD-based spreading depression example model
+
+**Bug fixes**
+
+- Avoid exception in plotSpikeHist() and plotSpikeFreq() when pop has no spikes
+
 # Version 1.0.1
 
 **New features**
+
+- Added new plotting module with custom plotters
+
+- Separated analysis.plotSpikeRaster into analysis.prepareRaster and plotting.plotRaster
+
+- Separated analysis.plotSpikeHist into analysis.prepareSpikeData, analysis.prepareSpikeHist, plotting.plotSpikeHist and plotting.plotSpikeFreq
+
+- Separated analysis.plotLFP into analysis.prepareLFP, analysis.preparePSD, analysis.prepareSpectrogram, plotting.plotLFPTimeSeries, plotting.plotLFPPSD, plotting.plotLFPSpectrogram, and plotting.plotLFPLocations
+
+- Mapped old analysis.plots onto new ones
 
 - Interfaced with LFPkit to enable recording/plotting of dipole current moments and EEG signals
 

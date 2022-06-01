@@ -7,15 +7,14 @@ from ..analysis.utils import exception #, loadData
 from ..analysis.tools import loadData
 from .plotter import LinesPlotter
 from .plotter import ImagePlotter
-from .plotter import MultiFigure
+from .plotter import MetaFigure
 import numpy as np
 
 
-#@exception
+@exception
 def plotLFPPSD(
     PSDData=None,
-    sim=None,
-    axis=None, 
+    axis=None,     
     timeRange=None,
     electrodes=['avg', 'all'],
     pop=None, 
@@ -28,7 +27,6 @@ def plotLFPPSD(
     maxFreq=100, 
     stepFreq=1, 
     smooth=0,
-    logx=False,
     logy=False, 
     normSignal=False,
     normPSD=False, 
@@ -36,12 +34,191 @@ def plotLFPPSD(
     filtOrder=3, 
     detrend=False, 
     transformMethod='morlet',
-    returnPlotter=False,
-    colorList=None,
     orderInverse=True,
     legend=True,
+    colorList=None,
+    returnPlotter=False,
     **kwargs):
+    """Function to produce a line plot of LFP electrode signals
+
+    NetPyNE Options
+    ---------------
+    sim : NetPyNE sim object
+        The *sim object* from which to get data.
+        
+        *Default:* ``None`` uses the current NetPyNE sim object
+
+    Parameters
+    ----------
+    PSDData : dict, str
+        The data necessary to plot the LFP PSD. 
+
+        *Default:* ``None`` uses ``analysis.preparePSD`` to produce ``PSDData`` using the current NetPyNE sim object.
+        
+        If a *str* it must represent a file path to previously saved data.
+        
+    axis : matplotlib axis
+        The axis to plot into, allowing overlaying of plots.
+        
+        *Default:* ``None`` produces a new figure and axis.
+
+    timeRange : list
+        Time range to include in the raster: ``[min, max]``.
+        
+        *Default:* ``None`` uses the entire simulation
+
+    electrodes : list
+        A *list* of the electrodes to plot from.
+        
+        *Default:* ``['avg', 'all']`` plots each electrode as well as their average
+
+    pop : str
+        A population name to calculate PSD from.
+        
+        *Default:* ``None`` uses all populations.
+
+    separation : float
+        Use to increase or decrease distance between signals on the plot.
     
+        *Default:* ``1.0``
+
+    roundOffset : bool
+        Attempts to line up PSD signals with gridlines
+    
+        *Default:* ``True``
+
+    NFFT : int (power of 2)
+        Number of data points used in each block for the PSD and time-freq FFT.
+        **Default:** ``256``
+
+    noverlap : int (<nperseg)
+        Number of points of overlap between segments for PSD and time-freq.
+        **Default:** ``128``
+
+    nperseg : int
+        Length of each segment for time-freq.
+        **Default:** ``256``
+
+    minFreq : float
+        Minimum frequency shown in plot for PSD and time-freq.
+        **Default:** ``1``
+
+    maxFreq : float
+        Maximum frequency shown in plot for PSD and time-freq.
+        **Default:** ``100``
+
+    stepFreq : float
+        Step frequency.
+        **Default:** ``1``
+
+    smooth : int
+        Window size for smoothing LFP; no smoothing if ``0``
+        **Default:** ``0``
+
+    logy : bool
+        Whether to use a log axis.
+
+        *Default:* ``False`` 
+    
+    normSignal : bool
+        Whether to normalize the LFP data.
+
+        *Default:* ``False``
+
+    normPSD : bool
+        Whether to normalize the PSD data.
+
+        *Default:* ``False``
+
+    filtFreq : int or list
+        Frequency for low-pass filter (int) or frequencies for bandpass filter in a list: [low, high]
+        
+        *Default:* ``None`` does not filter the data
+
+    filtOrder : int
+        Order of the filter defined by `filtFreq`.
+
+        *Default:* ``3``    
+
+    detrend : bool
+        Whether to detrend the data.
+
+        *Default:* ``False``
+
+    transformMethod : str
+        The transformation method to use, either 'morlet' or 'fft'.
+
+        *Default:* ``'morlet'`` 
+
+    orderInverse : bool
+        Whether to invert the order of plotting.
+
+        *Default:* ``True``
+
+    legend : bool
+        Whether or not to add a legend to the plot.
+        
+        *Default:* ``True`` adds a legend.
+
+    colorList : list
+        A *list* of colors to draw from when plotting.
+        
+        *Default:* ``None`` uses the default NetPyNE colorList.
+
+    returnPlotter : bool
+        Whether to return the figure or the NetPyNE MetaFig object.
+        
+        *Default:* ``False`` returns the figure.
+
+
+    Plot Options
+    ------------
+    showFig : bool
+        Whether to show the figure.
+
+        *Default:* ``False``
+
+    saveFig : bool
+        Whether to save the figure.
+
+        *Default:* ``False``
+
+    overwrite : bool
+        whether to overwrite existing figure files.
+
+        *Default:* ``True`` overwrites the figure file
+
+        *Options:* ``False`` adds a number to the file name to prevent overwriting
+
+    legendKwargs : dict
+        a *dict* containing any or all legend kwargs.  These include ``'title'``, ``'loc'``, ``'fontsize'``, ``'bbox_to_anchor'``, ``'borderaxespad'``, and ``'handlelength'``.
+
+    rcParams : dict
+        a *dict* containing any or all matplotlib rcParams.  To see all options, execute ``import matplotlib; print(matplotlib.rcParams)`` in Python.  Any options in this *dict* will be used for this current figure and then returned to their prior settings.
+
+    title : str
+        the axis title
+    
+    xlabel : str
+        label for x-axis
+    
+    ylabel : str
+        label for y-axis
+
+    linewidth : int
+        line width
+
+    alpha : float
+        line opacity (0-1)
+
+    
+    Returns
+    -------
+    LFPPSDPlot : *matplotlib figure*
+        By default, returns the *figure*.  If ``returnPlotter`` is ``True``, instead returns the NetPyNE MetaFig.
+        
+    """
+
 
     # If there is no input data, get the data from the NetPyNE sim object
     if PSDData is None:
@@ -63,7 +240,6 @@ def plotLFPPSD(
             maxFreq=maxFreq, 
             stepFreq=stepFreq, 
             smooth=smooth, 
-            logx=logx,
             logy=logy, 
             normSignal=normSignal, 
             normPSD=normPSD, 
@@ -108,8 +284,7 @@ def plotLFPPSD(
             title += ' - Population: ' + pop
         axisArgs['title'] = title
         axisArgs['xlabel'] = 'Frequency (Hz)'
-        axisArgs['ylabel'] = 'Power (arbitrary units)'
-
+        axisArgs['ylabel'] = 'Power (mVˆ2 / Hz )'
 
     axisArgs['grid'] = {'which': 'both'}
 
@@ -142,24 +317,25 @@ def plotLFPPSD(
     linesData = {}
     linesData['x'] = freq
     linesData['y'] = psds
-    linesData['colors'] = plotColors
-    linesData['markers'] = None
-    linesData['markersizes'] = None
-    linesData['linewidths'] = None
-    linesData['alphas'] = None
+    linesData['color'] = plotColors
+    linesData['marker'] = None
+    linesData['markersize'] = None
+    linesData['linewidth'] = None
+    linesData['alpha'] = None
     linesData['label'] = legendLabels
 
     # If a kwarg matches a lines input key, use the kwarg value instead of the default
-    for kwarg in kwargs:
+    for kwarg in list(kwargs.keys()):
         if kwarg in linesData:
             linesData[kwarg] = kwargs[kwarg]
+            kwargs.pop(kwarg)
 
     # create Plotter object
     linesPlotter = LinesPlotter(data=linesData, kind='LFPPSD', axis=axis, **axisArgs, **kwargs)
-    multiFig = linesPlotter.multifig
+    metaFig = linesPlotter.metafig
 
     # remove the y-axis tick labels
-    linesPlotter.axis.get_yaxis().set_ticklabels([])
+    # linesPlotter.axis.get_yaxis().set_ticklabels([])
 
     # Set up the default legend settings
     legendKwargs = {}
@@ -178,13 +354,8 @@ def plotLFPPSD(
     # Generate the figure
     PSDPlot = linesPlotter.plot(**axisArgs, **kwargs)
 
-    if axis is None:
-        multiFig.finishFig(**kwargs)
-
     # Default is to return the figure, but you can also return the plotter
     if returnPlotter:
-        return linesPlotter
+        return metaFig
     else:
         return PSDPlot
-
-

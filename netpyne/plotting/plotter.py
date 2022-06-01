@@ -1,5 +1,5 @@
 """
-Module for plotting analyses
+Module for plotting analysed data
 
 """
 
@@ -20,11 +20,49 @@ except NameError:
 colorList = [[0.42, 0.67, 0.84], [0.90, 0.76, 0.00], [0.42, 0.83, 0.59], [0.90, 0.32, 0.00], [0.34, 0.67, 0.67], [0.90, 0.59, 0.00], [0.42, 0.82, 0.83], [1.00, 0.85, 0.00], [0.33, 0.67, 0.47], [1.00, 0.38, 0.60], [0.57, 0.67, 0.33], [0.50, 0.20, 0.00], [0.71, 0.82, 0.41], [0.00, 0.20, 0.50], [0.70, 0.32, 0.10]] * 3
 
 
+class MetaFigure:
+    """NetPyNE object to hold a figure along with its axes, settings, and standardized methods
 
-class MultiFigure:
-    """A class which defines a figure object"""
+    Parameters
+    ----------
+    kind : str
+        The kind of figure, used in saving
 
-    def __init__(self, kind, sim=None, subplots=None, rcParams=None, autosize=0.35, **kwargs):
+    subplots : int, list
+        The number of subplots in the figure.  If an ``int``, it is the number of rows of subplots.  If a ``list``, specifies ``[nrows, ncols]``.
+
+        *Default:* ``None`` creates a figure with one axis.
+
+    sharex, sharey : bool or {'none', 'all', 'row', 'col'}
+        Controls sharing of properties among x (sharex) or y (sharey) axes:
+        True or 'all': x- or y-axis will be shared among all subplots.
+        False or 'none': each subplot x- or y-axis will be independent.
+        'row': each subplot row will share an x- or y-axis.
+        'col': each subplot column will share an x- or y-axis.
+        When subplots have a shared x-axis along a column, only the x tick labels of the bottom subplot are created. Similarly, when subplots have a shared y-axis along a row, only the y tick labels of the first column subplot are created. To later turn other subplots' ticklabels on, use tick_params.
+        *Default:* ``False``
+
+    rcParams : dict
+        A dictionary containing any or all Matplotlib settings to use for this figure.  To see all settings and their defaults, execute ``import matplotlib; matplotlib.rcParams``. 
+
+    autosize : float
+        Automatically increases figure size by this fraction when there are multiple subplots to reduce white space between axes.  Set to ``False`` or ``0.0`` to turn off.
+
+        *Default:* ``0.35`` increases figure size.
+
+    figSize : list
+        Size of figure in inches ``[width, height]``.
+
+        *Default:* Matplotlib default.
+
+    dpi : int
+        Resolution of figure in dots per inch.
+
+        *Default:* Matplotlib default.
+
+    """
+
+    def __init__(self, kind, sim=None, subplots=None, sharex=False, sharey=False, autosize=0.35, **kwargs):
 
         if not sim:
             from .. import sim
@@ -34,13 +72,15 @@ class MultiFigure:
 
         # Make a copy of the current matplotlib rcParams and update them
         self.orig_rcParams = deepcopy(mpl.rcParamsDefault)
-        if rcParams:
-            for rcParam in rcParams:
-                if rcParam in mpl.rcParams:
-                    mpl.rcParams[rcParam] = rcParams[rcParam]
-                else:
-                    print(rcParam, 'not found in matplotlib.rcParams')
-            self.rcParams = rcParams
+        if 'rcParams' in kwargs:
+            new_rcParams = kwargs['rcParams']
+            if type(new_rcParams) == dict:
+                for rcParam in new_rcParams:
+                    if rcParam in mpl.rcParams:
+                        mpl.rcParams[rcParam] = new_rcParams[rcParam]
+                    else:
+                        print('  Not found in matplotlib.rcParams:', rcParam, )
+                self.rcParams = mpl.rcParams
         else:
             self.rcParams = self.orig_rcParams
 
@@ -55,11 +95,12 @@ class MultiFigure:
             nrows = subplots[0]
             ncols = subplots[1] 
 
-        # Create figure
+        # Accept figure inputs
         if 'figSize' in kwargs:
             figSize = kwargs['figSize']
         else:
             figSize = self.rcParams['figure.figsize']
+        
         if 'dpi' in kwargs:
             dpi = kwargs['dpi']
         else:
@@ -71,41 +112,95 @@ class MultiFigure:
             figSize1 = figSize[1] + (maxplots-1)*(figSize[1]*autosize)
             figSize = [figSize0, figSize1]
 
-        self.fig, self.ax = plt.subplots(nrows, ncols, figsize=figSize, dpi=dpi)
+        self.fig, self.ax = plt.subplots(nrows, ncols, sharex=sharex, sharey=sharey, figsize=figSize, dpi=dpi)
+
+        # Add a metafig attribute to the figure
+        self.fig.metafig = self
+
+        # Add a metafig attribute to each axis
+        if (type(self.ax) != np.ndarray) and (type(self.ax) != list):
+            self.ax.metafig = self
+        else:
+            for eachAx in self.ax.ravel():
+                eachAx.metafig = self
 
         self.plotters = []
 
 
-    def saveFig(self, sim=None, fileName=None, fileDesc=None, fileType='png', fileDir=None, overwrite=True, **kwargs):
-        """
-        'eps': 'Encapsulated Postscript',
-        'jpg': 'Joint Photographic Experts Group',
-        'jpeg': 'Joint Photographic Experts Group',
-        'pdf': 'Portable Document Format',
-        'pgf': 'PGF code for LaTeX',
-        'png': 'Portable Network Graphics',
-        'ps': 'Postscript',
-        'raw': 'Raw RGBA bitmap',
-        'rgba': 'Raw RGBA bitmap',
-        'svg': 'Scalable Vector Graphics',
-        'svgz': 'Scalable Vector Graphics',
-        'tif': 'Tagged Image File Format',
-        'tiff': 'Tagged Image File Format'
+    def saveFig(self, sim=None, fileName=None, fileDesc=True, fileType='png', fileDir=None, overwrite=True, **kwargs):
+        """Method to save the figure
+
+        Parameters
+        ----------
+        fileName : str
+            Name of the file to be saved.
+
+            *Default:* ``None`` uses the name of the simulation from ``simConfig.filename``.
+
+        fileDesc: str
+            Description of the file to be saved.
+
+            *Default:* ``True`` uses ``metaFig.kind``.
+
+        fileType : str
+            Type of file to save figure as.
+
+            *Default:* ``'png'``
+            *Options:*
+            ``'eps'``: 'Encapsulated Postscript',
+            ``'jpg'``: 'Joint Photographic Experts Group',
+            ``'jpeg'``: 'Joint Photographic Experts Group',
+            ``'pdf'``: 'Portable Document Format',
+            ``'pgf'``: 'PGF code for LaTeX',
+            ``'png'``: 'Portable Network Graphics',
+            ``'ps'``: 'Postscript',
+            ``'raw'``: 'Raw RGBA bitmap',
+            ``'rgba'``: 'Raw RGBA bitmap',
+            ``'svg'``: 'Scalable Vector Graphics',
+            ``'svgz'``: 'Scalable Vector Graphics',
+            ``'tif'``: 'Tagged Image File Format',
+            ``'tiff'``: 'Tagged Image File Format'
+
+        fileDir : str
+            Directory where figure is to be saved.
+
+            *Default:* ``None`` uses the current directory.
+
+        overwrite : bool
+            Whether to overwrite an existing figure with the same name.
+
+            *Default:* ``True`` overwrites.
+        
         """
 
         if not sim:
             from .. import sim
 
-        if fileDesc is not None:
+        if 'saveFig' in kwargs:
+            saveFig = kwargs['saveFig']
+            if not saveFig:
+                return
+            elif type(saveFig) == str:
+                fileDesc = False
+                if '.' in saveFig:
+                    fileType = saveFig.split('.')[-1]
+                    fileName = saveFig.split('.')[0]
+                else:
+                    fileName = saveFig
+                    
+        if fileType: # 'png' by default
+            if fileType not in self.fig.canvas.get_supported_filetypes():
+                raise Exception('fileType not recognized in saveFig')
+            else:
+                fileExt = '.' + fileType
+        
+        if fileDesc is True:
+            fileDesc = '_' + self.kind
+        elif fileDesc:
             fileDesc = '_' + str(fileDesc)
         else:
-            fileDesc = '_' + self.kind
-
-        if fileType not in self.fig.canvas.get_supported_filetypes():
-            raise Exception('fileType not recognized in saveFig')
-        else:
-            fileExt = '.' + fileType
-
+            fileDesc = ''
+            
         if not fileName or not isinstance(fileName, basestring):
             fileName = self.sim.cfg.filename + fileDesc + fileExt
         else:
@@ -136,6 +231,23 @@ class MultiFigure:
 
 
     def showFig(self, **kwargs):
+        """Method to display the figure
+        """
+        try:
+            self.fig.show(block=False)
+        except:
+            self.fig.show()
+
+
+    def reshowFig(self, **kwargs):
+        """Method to display the figure after it has been closed
+        """
+        plt.close(self.fig)
+        figsize = self.fig.get_size_inches()
+        dummy = plt.figure(figsize=figsize)
+        new_manager = dummy.canvas.manager
+        new_manager.canvas.figure = self.fig
+        self.fig.set_canvas(new_manager.canvas)
         try:
             self.fig.show(block=False)
         except:
@@ -143,10 +255,65 @@ class MultiFigure:
 
 
     def addSuptitle(self, **kwargs):
+        """Method to add a super title to the figure
+
+        Parameters
+        ----------
+        t : str
+            The suptitle text.
+
+        x : float
+            The x location of the text in figure coordinates.
+            *Default:* 0.5
+
+        y : float
+            The y location of the text in figure coordinates.
+            *Default:* 0.98
+
+        horizontalalignment, ha : {'center', 'left', 'right'}
+            The horizontal alignment of the text relative to (x, y).
+            *Default:* 'center'
+
+        verticalalignment, va : {'top', 'center', 'bottom', 'baseline'}
+            The vertical alignment of the text relative to (x, y).
+            *Default:* 'top'
+
+        fontsize, sizedefault: rcParams["figure.titlesize"]
+            The font size of the text. See Text.set_size for possible values.
+            *Default:* 'large'
+
+        fontweight, weightdefault: rcParams["figure.titleweight"]
+            The font weight of the text. See Text.set_weight for possible values.
+            *Default:* 'normal'
+
+        """
+
         self.fig.suptitle(**kwargs)
 
 
     def finishFig(self, **kwargs):
+        """Method to finalize a figure 
+
+        Adds supertitle, tight_layout, saves fig, shows fig as per kwarg inputs.
+
+        Parameters
+        ----------
+        suptitle : dict
+            Dictionary with values for supertitle.
+
+        tightLayout : bool
+            Whether to apply tight_layout.
+            *Default:* ``True``
+
+        saveFig : bool
+            Whether to save the figure.
+            *Default:* ``False``
+
+        showFig : bool
+            Whether to display the figure.
+            *Default:* ``False``
+
+        """
 
         if 'suptitle' in kwargs:
             if kwargs['suptitle']:
@@ -172,20 +339,36 @@ class MultiFigure:
 
 
 
-
 class GeneralPlotter:
-    """A class used for plotting"""
+    """NetPyNE object to hold a Matplotlib axis along with its settings and standardized methods
 
-    def __init__(self, data, kind, axis=None, sim=None, rcParams=None, multifig=None, **kwargs):
-        """
-        Parameters
-        ----------
-        data : dict, str
+    Parameters
+    ----------
+    data : dict, str
+        The data to be used in the plot.  If a ``str``, it must be the path and filename of a previously saved data set.
 
-        axis : matplotlib axis
-            The axis to plot into.  If axis is set to None, a new figure and axis are created and plotted into.  If plotting into an existing axis, more options are available: xtwin, ytwin,
+    kind : str
+        The kind of figure, used in saving.
+
+    axis : matplotlib axis
+        The axis to plot into.  If axis is set to ``None``, a new figure and axis are created and plotted into.  
+
+    twinx : bool
+        If plotting into an existing axis, whether to twin that x axis (i.e. allow plotting at a different y scale).
+        *Default:* ``False``
+    
+    twiny : bool
+        If plotting into an existing axis, whether to twin that y axis (i.e. allow plotting at a different x scale).
+        *Default:* ``False``
+
+    rcParams : dict
+        A dictionary containing any or all Matplotlib settings to use for this figure.  To see all settings and their defaults, execute ``import matplotlib; matplotlib.rcParams``.
+
+
+    """
+
+    def __init__(self, data, kind, axis=None, twinx=False, twiny=False, sim=None, metafig=None, **kwargs):
         
-        """
         self.kind = kind
 
         # Load data
@@ -202,35 +385,110 @@ class GeneralPlotter:
         
         self.sim = sim
         self.axis = axis
-
-        if multifig:
-            self.multifig = multifig
+        self.metafig = metafig
 
         # If an axis is input, plot there; otherwise make a new figure and axis
         if self.axis is None:
-            final = True
-            self.multifig = MultiFigure(kind=self.kind, **kwargs)
-            self.fig = self.multifig.fig
-            self.axis = self.multifig.ax
+            if self.metafig is None:
+                self.metafig = MetaFigure(kind=self.kind, **kwargs)
+            self.fig = self.metafig.fig
+            self.axis = self.metafig.ax
         else:
             self.fig = self.axis.figure
+            if hasattr(self.axis, 'metafig'):
+                self.metafig = self.axis.metafig
+            if twinx:
+                if twiny:
+                    self.axis = axis.twinx().twiny()
+                else:
+                    self.axis = axis.twinx()
+            elif twiny:
+                self.axis = axis.twiny()
 
-        # Attach plotter to its MultiFigure
-        self.multifig.plotters.append(self)
+        # Attach plotter to its MetaFigure
+        if self.metafig:
+            self.metafig.plotters.append(self)
 
 
     def loadData(self, fileName, fileDir=None, sim=None):
+        """Method to load data from file
+
+        Parameters
+        ----------
+        fileName : str
+            Name of the file to be loaded.
+
+        fileDir : str
+            Path of the file to be loaded.
+
+            *Default:* ``None`` uses the current directory.
+
+        """
+
         from ..analysis import loadData
         self.data = loadData(fileName=fileName, fileDir=fileDir, sim=None)
         
 
 
     def saveData(self, fileName=None, fileDesc=None, fileType=None, fileDir=None, sim=None, **kwargs):
+        """Method to save data to file
+
+        Parameters
+        ----------
+        fileName : str
+            Name of the file to be saved.
+
+            *Default:* ``None`` uses ``simConfig.filename``.
+
+        fileDesc : str
+            String to be appended to fileName.
+
+            *Default:* ``None`` adds the 'kind' of MetaFigure.
+
+        fileType : str
+            Extension of file type to save.
+
+            *Default:* ``None`` chooses automatically.
+
+        fileDir : str
+            Path to save the file to.
+
+            *Default:* ``None`` uses the current directory.
+
+        """
+
         from ..analysis import saveData as saveFigData
         saveFigData(self.data, fileName=fileName, fileDesc=fileDesc, fileType=fileType, fileDir=fileDir, sim=sim, **kwargs)
     
 
     def formatAxis(self, **kwargs):
+        """Method to format the axis
+
+        Parameters
+        ----------
+        title : str
+            Title to add to the axis.
+
+        xlabel : str
+            Label to add to the x axis.
+
+        ylabel : str
+            Label to add to the y axis.
+
+        ylabelRight : bool
+            Whether to move y label to the right side. 
+            *Default:* ``False`` keeps the y label on the left.
+
+        xlim : list
+            ``[min, max]`` for x axis.
+
+        ylim : list
+            ``[min, max]`` for y axis.
+
+        invert_yaxis : bool
+            Whether to invert the y axis.
+
+        """
         
         if 'title' in kwargs:
             self.axis.set_title(kwargs['title'])
@@ -255,13 +513,42 @@ class GeneralPlotter:
 
 
     def addLegend(self, handles=None, labels=None, **kwargs):
+        """Method to add a legend to the axis
+
+        Parameters
+        ----------
+        handles : list
+            List of Matplotlib legend handles.
+
+            *Default:* ``None`` finds handles in the current axis.
+
+        labels : list
+            List of Matplotlib legend labels.
+
+            *Default:* ``None`` finds labels in the current axis.
+
+        legendKwargs : dict
+            Dictionary of Matplotlib legend parameters with their values.
+
+        kwargs : str
+            You can enter any Matplotlib legend parameter as a kwarg.  See https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.pyplot.legend.html
+
+        """
 
         legendParams = ['loc', 'bbox_to_anchor', 'fontsize', 'numpoints', 'scatterpoints', 'scatteryoffsets', 'markerscale', 'markerfirst', 'frameon', 'fancybox', 'shadow', 'framealpha', 'facecolor', 'edgecolor', 'mode', 'bbox_transform', 'title', 'title_fontsize', 'borderpad', 'labelspacing', 'handlelength', 'handletextpad', 'borderaxespad', 'columnspacing', 'handler_map']
 
+        # Check for and apply any legend parameters in the kwargs
         legendKwargs = {}
         for kwarg in kwargs:
             if kwarg in legendParams:
                 legendKwargs[kwarg] = kwargs[kwarg]
+
+        # If 'legendKwargs' is found in kwargs, use those values instead of the defaults
+        if 'legendKwargs' in kwargs:
+            legendKwargs_new = kwargs['legendKwargs']
+            for key in legendKwargs_new:
+                if key in legendParams:
+                    legendKwargs[key] = legendKwargs_new[key]
 
         cur_handles, cur_labels = self.axis.get_legend_handles_labels()
 
@@ -274,15 +561,113 @@ class GeneralPlotter:
 
 
     def addScalebar(self, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=None, unitsy=None, scalex=1.0, scaley=1.0, xmax=None, ymax=None, space=None, **kwargs):
+        """Method to add a scale bar to the axis
 
-        add_scalebar(self.axis, matchx=matchx, matchy=matchy, hidex=hidex, hidey=hidey, unitsx=unitsx, unitsy=unitsy, scalex=scalex, scaley=scaley, xmax=xmax, ymax=ymax, space=space, **kwargs)
+        Parameters
+        ----------
+        matchx : bool
+            If True, set size of scale bar to spacing between ticks, if False, set size using sizex params.
+
+            *Default:* ``True``
+
+        matchy : bool
+            If True, set size of scale bar to spacing between ticks, if False, set size using sizey params.
+
+            *Default:* ``True``
+
+        sizex : float
+            The size of the x scale bar if matchx is False.
+
+        sizey : float
+            The size of the y scale bar if matchy is False.
+
+        hidex : bool
+            Whether to hide the x-axis labels and ticks.
+
+            *Default:* ``True``
+
+        hidey : bool
+            Whether to hide the x-axis labels and ticks.
+
+            *Default:* ``True``
+
+        unitsx : str
+            The units to use on the scale bar label.
+
+            *Default:* ``None``
+
+        unitsy : str
+            The units to use on the scale bar label.
+
+            *Default:* ``None``
+
+        scalex : float
+            Desired scaling in x direction.
+
+            *Default:* ``1.0``
+
+        scaley : float
+            Desired scaling in y direction.
+
+            *Default:* ``1.0``
+
+        xmax : float
+            Maximum size of x scale bar.
+
+            *Default:* ``None``
+
+        ymax : float
+            Maximum size of y scale bar.
+
+            *Default:* ``None``
+
+        space : float
+            Amount of space to add to y axis for scale bar.
+
+            *Default:* ``None``
+
+        """
+
+        _add_scalebar(self.axis, matchx=matchx, matchy=matchy, hidex=hidex, hidey=hidey, unitsx=unitsx, unitsy=unitsy, scalex=scalex, scaley=scaley, xmax=xmax, ymax=ymax, space=space, **kwargs)
 
 
     def addColorbar(self, **kwargs):
+        """Method to add a color bar to the axis
+
+        Parameters
+        ----------
+        kwargs : str
+            You can enter any Matplotlib colorbar parameter as a kwarg.  See https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.pyplot.colorbar.html
+        """
         plt.colorbar(mappable=self.axis.get_images()[0], ax=self.axis, **kwargs)
 
 
     def finishAxis(self, **kwargs):
+        """Method to finalize an axis
+
+        Parameters
+        ----------
+        saveData : bool
+            Whether to save the data.
+            *Default:* ``False``
+
+        legend : bool, dict
+            Whether to add a legend.  If a ``dict``, must be legend parameters and their values.
+            *Default:* ``False``
+
+        scalebar : bool, dict
+            Whether to add a scale bar.  If a ``dict``, must be scalebar parameters and their values.
+            *Default:* ``False``
+
+        colorbar : bool, dict
+            Whether to add a color bar.  If a ``dict``, must be colorbar parameters and their values.
+            *Default:* ``False``
+
+        grid : bool, dict
+            Whether to add a grid lines to the axis.  If a ``dict``, must be grid parameters and their values.
+            *Default:* ``False``
+
+        """
 
         self.formatAxis(**kwargs)
         
@@ -290,17 +675,9 @@ class GeneralPlotter:
             if kwargs['saveData']:
                 self.saveData(**kwargs)
 
-        if 'dpi' in kwargs:
-            if kwargs['dpi']:
-                self.fig.set_dpi(kwargs['dpi'])
-
-        if 'figSize' in kwargs:
-            if kwargs['figSize']:
-                self.fig.set_size_inches(kwargs['figSize'])
-
         if 'legend' in kwargs:
             if kwargs['legend'] is True:
-                self.addLegend()
+                self.addLegend(**kwargs)
             elif type(kwargs['legend']) == dict:
                 self.addLegend(**kwargs['legend'])
 
@@ -323,13 +700,18 @@ class GeneralPlotter:
             elif type(kwargs['grid']) == dict:
                 self.axis.grid(**kwargs['grid'])
 
+        # If this is the only axis on the figure, finish the figure
+        if (type(self.metafig.ax) != np.ndarray) and (type(self.metafig.ax) != list):
+            self.metafig.finishFig(**kwargs)
 
         # Reset the matplotlib rcParams to their original settings
-        mpl.style.use(self.multifig.orig_rcParams)
+        mpl.style.use(self.metafig.orig_rcParams)
                 
 
 class ScatterPlotter(GeneralPlotter):
-    """A class used for scatter plotting"""
+    """NetPyNE plotter for scatter plots
+
+    """
 
     def __init__(self, data, axis=None, **kwargs):
         
@@ -358,7 +740,7 @@ class ScatterPlotter(GeneralPlotter):
 
 
 class LinePlotter(GeneralPlotter):
-    """A class used for plotting one line per subplot"""
+    """NetPyNE plotter for plotting one line per axis"""
 
     def __init__(self, data, axis=None, options={}, **kwargs):
         
@@ -386,7 +768,7 @@ class LinePlotter(GeneralPlotter):
 
 
 class LinesPlotter(GeneralPlotter):
-    """A class used for plotting multiple lines on the same axis"""
+    """NetPyNE plotter for plotting multiple lines on the same axis"""
 
     def __init__(self, data, axis=None, options={}, **kwargs):
         
@@ -395,12 +777,11 @@ class LinesPlotter(GeneralPlotter):
         self.kind       = 'lines'
         self.x          = np.array(data.get('x'))
         self.y          = np.array(data.get('y'))
-        self.color      = data.get('colors')
-        self.marker     = data.get('markers')
-        self.markersize = data.get('markersizes')
-        self.linewidth  = data.get('linewidths')
-        self.alpha      = data.get('alphas')
-
+        self.color      = data.get('color')
+        self.marker     = data.get('marker')
+        self.markersize = data.get('markersize')
+        self.linewidth  = data.get('linewidth')
+        self.alpha      = data.get('alpha')
         self.label      = data.get('label')
 
 
@@ -457,7 +838,7 @@ class LinesPlotter(GeneralPlotter):
 
 
 class HistPlotter(GeneralPlotter):
-    """A class used for histogram plotting"""
+    """NetPyNE plotter for histogram plotting"""
 
     def __init__(self, data, axis=None, options={}, **kwargs):
         
@@ -493,7 +874,7 @@ class HistPlotter(GeneralPlotter):
 
 
 class ImagePlotter(GeneralPlotter):
-    """A class used for image plotting using plt.imshow"""
+    """NetPyNE plotter for image plotting using plt.imshow"""
 
     def __init__(self, data, axis=None, options={}, **kwargs):
         
@@ -529,9 +910,11 @@ class ImagePlotter(GeneralPlotter):
 
 
 
-class AnchoredScaleBar(AnchoredOffsetbox):
+class _AnchoredScaleBar(AnchoredOffsetbox):
     """
     A class used for adding scale bars to plots
+
+    Modified from here: https://gist.github.com/dmeliza/3251476
     """
     
     def __init__(self, axis, sizex=0, sizey=0, labelx=None, labely=None, loc=4, pad=0.1, borderpad=0.1, sep=2, prop=None, barcolor="black", barwidth=None, **kwargs):
@@ -569,7 +952,7 @@ class AnchoredScaleBar(AnchoredOffsetbox):
         AnchoredOffsetbox.__init__(self, loc, pad=pad, borderpad=borderpad, child=bars, prop=prop, frameon=False, **kwargs)
 
 
-def add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=None, unitsy=None, scalex=1.0, scaley=1.0, xmax=None, ymax=None, space=None, **kwargs):
+def _add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=None, unitsy=None, scalex=1.0, scaley=1.0, xmax=None, ymax=None, space=None, **kwargs):
     """
     Add scalebars to axes
 
@@ -581,6 +964,8 @@ def add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=
     - **kwargs : additional arguments passed to AnchoredScaleBars
 
     Returns created scalebar object
+
+    Modified from here: https://gist.github.com/dmeliza/3251476
     """
     def get_tick_size(subaxis):
         tick_size = None
@@ -635,7 +1020,7 @@ def add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=
             ylim = (ylim0 + space, ylim1)
         axis.set_ylim(ylim)
 
-    scalebar = AnchoredScaleBar(axis, **kwargs)
+    scalebar = _AnchoredScaleBar(axis, **kwargs)
     axis.add_artist(scalebar)
 
     if hidex: 

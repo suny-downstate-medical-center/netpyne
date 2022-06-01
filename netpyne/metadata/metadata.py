@@ -1222,7 +1222,34 @@ metadata = {
                                     "ScalableBorder",
                                     "Shell",
                                 ],
-                                "type": "list"
+                                "type": "",
+                                "children": {
+                                    "class": {
+                                        "label": "geometry class",
+                                        "help": "This is string",
+                                        "suggestions": "",
+                                        "hintText": "",
+                                        "options": [
+                                            "inside",
+                                            "membrane",
+                                            "DistributedBoundary",
+                                            "FractionalVolume",
+                                            "FixedCrossSection",
+                                            "ScalableBorder",
+                                            "Shell",
+                                        ],
+                                        "type": "str"
+                                    },
+                                    "args": {
+                                        "label": "geometry class",
+                                        "help": "This is string",
+                                        "suggestions": "",
+                                        "hintText": "",
+                                        "children": {
+                                            ""
+                                        }
+                                    },
+                                }
                             },
                             "dimension": {
                                 "label": "dimension",
@@ -1492,7 +1519,7 @@ metadata = {
                                 "help": "This entry is used to constrain the reaction to proceed only in a list of regions. If is a single region, it may be specified without listing. If not provvided, the reaction proceeds in all (plausible) regions.",
                                 "suggestions": "",
                                 "hintText": "",
-                                "type": "lis(str)",
+                                "type": "list(str)",
                             },
                             "custom_dynamics": {
                                 "label": "custom_dynamics",
@@ -1578,7 +1605,7 @@ metadata = {
                                 "help": "This entry is used to constrain the reaction to proceed only in a list of regions. If is a single region, it may be specified without listing. If not provvided, the reaction proceeds in all (plausible) regions.",
                                 "suggestions": "",
                                 "hintText": "",
-                                "type": "lis(str)",
+                                "type": "list(str)",
                             },
                             "custom_dynamics": {
                                 "label": "custom_dynamics",

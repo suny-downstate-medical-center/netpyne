@@ -68,35 +68,36 @@ def prepareSpikeData(
 
     # Select cells to include
     cells, cellGids, netStimLabels = getInclude(include)
+    popLabels = []
+    if cells:
+        df = pd.DataFrame.from_records(cells)
+        df = pd.concat([df.drop('tags', axis=1), pd.DataFrame.from_records(df['tags'].tolist())], axis=1)
 
-    df = pd.DataFrame.from_records(cells)
-    df = pd.concat([df.drop('tags', axis=1), pd.DataFrame.from_records(df['tags'].tolist())], axis=1)
+        keep = ['pop', 'gid', 'conns']
 
-    keep = ['pop', 'gid', 'conns']
-
-    # if orderBy property doesn't exist or is not numeric, use gid
-    if isinstance(orderBy, basestring) and orderBy not in cells[0]['tags']:  
-        orderBy = 'gid'
-    elif orderBy == 'pop':
-        df['popInd'] = df['pop'].astype('category')
-        df['popInd'].cat.set_categories(sim.net.pops.keys(), inplace=True)
-        orderBy='popInd'
-    elif isinstance(orderBy, basestring) and not isinstance(cells[0]['tags'][orderBy], Number):
-        orderBy = 'gid'
-
-    if isinstance(orderBy, list):
-        if 'pop' in orderBy:
+        # if orderBy property doesn't exist or is not numeric, use gid
+        if isinstance(orderBy, basestring) and orderBy not in cells[0]['tags']:  
+            orderBy = 'gid'
+        elif orderBy == 'pop':
             df['popInd'] = df['pop'].astype('category')
             df['popInd'].cat.set_categories(sim.net.pops.keys(), inplace=True)
-            orderBy[orderBy.index('pop')] = 'popInd'
-        keep = keep + list(set(orderBy) - set(keep))
-    elif orderBy not in keep:
-        keep.append(orderBy)
+            orderBy='popInd'
+        elif isinstance(orderBy, basestring) and not isinstance(cells[0]['tags'][orderBy], Number):
+            orderBy = 'gid'
 
-    df = df[keep]
+        if isinstance(orderBy, list):
+            if 'pop' in orderBy:
+                df['popInd'] = df['pop'].astype('category')
+                df['popInd'].cat.set_categories(sim.net.pops.keys(), inplace=True)
+                orderBy[orderBy.index('pop')] = 'popInd'
+            keep = keep + list(set(orderBy) - set(keep))
+        elif orderBy not in keep:
+            keep.append(orderBy)
+
+        df = df[keep]
         
-    # preserves original ordering:
-    popLabels = [pop for pop in sim.net.allPops if pop in df['pop'].unique()] 
+        # preserves original ordering:
+        popLabels = [pop for pop in sim.net.allPops if pop in df['pop'].unique()] 
 
     if netStimLabels: 
         popLabels.append('NetStims')
@@ -113,7 +114,7 @@ def prepareSpikeData(
         df.set_index('gid', inplace=True)
 
     # Order by
-    if len(df) > 0:
+    if cells and len(df) > 0:
         ylabelText = 'Cells (ordered by %s)'%(orderBy)
         df = df.sort_values(by=orderBy)
         sel['spkind'] = sel['spkid'].apply(df.index.get_loc)
@@ -125,19 +126,21 @@ def prepareSpikeData(
     numCellSpks = len(sel)
     numNetStims = 0
     for netStimLabel in netStimLabels:
-        print(netStimLabel)
-        stims = sim.allSimData['stims'].items()
-        print(stims)
-        netStimSpks = [spk for cell, stims in sim.allSimData['stims'].items() for stimLabel, stimSpks in stims.items() for spk in stimSpks if stimLabel == netStimLabel]
-        print(netStimSpks)
+        #print(netStimLabel)
+        #stims = sim.allSimData['stims'].items()
+        #print(stims)
+        #netStimSpks = [spk for cell, stims in sim.allSimData['stims'].items() for stimLabel, stimSpks in stims.items() for spk in stimSpks if stimLabel == netStimLabel]
+        #print(netStimSpks)
+        netStimSpks = [stimSpks for cell,stims in sim.allSimData['stims'].items() for stimLabel,stimSpks in stims.items() if stimLabel == netStimLabel]
         if len(netStimSpks) > 0:
-            lastInd = sel['spkind'].max() if len(sel['spkind']) > 0 else 0
-            spktsNew = netStimSpks
+            lastInd = sel['spkind'].max() if len(sel['spkind']) > 0 else -1  # to start with 0, valid for 'allNetStims'
             spkindsNew = [lastInd+1+i for i in range(len(netStimSpks))]
-            ns = pd.DataFrame(list(zip(spktsNew, spkindsNew)), columns=['spkt', 'spkind'])
-            ns['spkgidColor'] = popColors['netStims']
+            spikesNew = [(spkt,spkindsNew[icell_stim]) for icell_stim,cell_stim in enumerate(netStimSpks) for spkt in cell_stim]
+            ns = pd.DataFrame(spikesNew, columns=['spkt', 'spkind'])
+            #ns['spkgidColor'] = [popColors['NetStims']]*len(spikesNew)
+            ns['pop'] = ['NetStims']*len(spikesNew)
             sel = pd.concat([sel, ns])
-            numNetStims += 1
+            numNetStims +=len(spkindsNew)
         
     if len(cellGids) > 0 and numNetStims:
         ylabelText = ylabelText + ' and NetStims (at the end)'
@@ -165,17 +168,25 @@ def prepareSpikeData(
         timeRange[1] =  sel['spkt'].max()
 
     # Calculate plot statistics
-    gidPops = df['pop'].tolist()
-    conns = df['conns'].tolist()
-    popNumCells = [float(gidPops.count(pop)) for pop in popLabels] if numCellSpks else [0] * len(popLabels)
     totalSpikes = len(sel)
-    cellNumConns = [len(conn) for conn in conns]
-    popNumConns = [sum([cellNumConn for cellIndex, cellNumConn in enumerate(cellNumConns) if gidPops[cellIndex] == pop]) for pop in popLabels]
-    totalConnections = sum([len(conns) for conns in df['conns']])
     numCells = len(cells)
     firingRate = float(totalSpikes)/(numCells+numNetStims)/(timeRange[1]-timeRange[0])*1e3 if totalSpikes>0 else 0
-    connsPerCell = totalConnections/float(numCells) if numCells>0 else 0
-    popConnsPerCell = [popNumConns[popIndex]/popNumCells[popIndex] for popIndex, pop in enumerate(popLabels)]
+    if cells:
+        gidPops = df['pop'].tolist()
+        conns = df['conns'].tolist()
+        popNumCells = [float(gidPops.count(pop)) for pop in popLabels] if numCellSpks else [0] * len(popLabels)
+        cellNumConns = [len(conn) for conn in conns]
+        popNumConns = [sum([cellNumConn for cellIndex, cellNumConn in enumerate(cellNumConns) if gidPops[cellIndex] == pop]) for pop in popLabels]
+        totalConnections = sum([len(conns) for conns in df['conns']])
+        connsPerCell = totalConnections/float(numCells) if numCells>0 else 0
+        popConnsPerCell = [popNumConns[popIndex]/popNumCells[popIndex] if popNumConns[popIndex]>0 else 0 for popIndex, pop in enumerate(popLabels)]
+        #popConnsPerCell = [popNumConns[popIndex]/popNumCells[popIndex] for popIndex, pop in enumerate(popLabels)]
+
+    if numNetStims:
+        try:
+            popNumCells[-1] = numNetStims
+        except:
+            popNumCells = [numNetStims]
 
     title = 'Raster plot of spiking'
     legendLabels = []
@@ -191,15 +202,15 @@ def prepareSpikeData(
                 else:
                     avgRates[pop] = len([spkid for spkid in sel['spkind'].iloc[:numCellSpks-1] if df['pop'].iloc[int(spkid)]==pop])/popNum/tsecs
         if numNetStims:
-            popNumCells[-1] = numNetStims
             avgRates['NetStims'] = len([spkid for spkid in sel['spkind'].iloc[numCellSpks:]])/numNetStims/tsecs
 
-        if popRates == 'minimal':
-            legendLabels = [popLabel + ' (%.3g Hz)' % (avgRates[popLabel]) for popIndex, popLabel in enumerate(popLabels) if popLabel in avgRates]
-            title = 'cells: %i   syn/cell: %0.1f   rate: %0.1f Hz' % (numCells, connsPerCell, firingRate)
-        else:
-            legendLabels = [popLabel + '\n  cells: %i\n  syn/cell: %0.1f\n  rate: %.3g Hz' % (popNumCells[popIndex], popConnsPerCell[popIndex], avgRates[popLabel]) for popIndex, popLabel in enumerate(popLabels) if popLabel in avgRates]
-            title = 'cells: %i   syn/cell: %0.1f   rate: %0.1f Hz' % (numCells, connsPerCell, firingRate)
+        if numCells > 0:
+            if popRates == 'minimal':
+                legendLabels = [popLabel + ' (%.3g Hz)' % (avgRates[popLabel]) for popIndex, popLabel in enumerate(popLabels) if popLabel in avgRates]
+                title = 'cells: %i   syn/cell: %0.1f   rate: %0.1f Hz' % (numCells, connsPerCell, firingRate)
+            else:
+                legendLabels = [popLabel + '\n  cells: %i\n  syn/cell: %0.1f\n  rate: %.3g Hz' % (popNumCells[popIndex], popConnsPerCell[popIndex], avgRates[popLabel]) for popIndex, popLabel in enumerate(popLabels) if popLabel in avgRates]
+                title = 'cells: %i   syn/cell: %0.1f   rate: %0.1f Hz' % (numCells, connsPerCell, firingRate)
 
         if syncLines:
             title = '%s    sync=%0.2f' % (title, syncMeasure())

@@ -8,6 +8,8 @@
 
 - Fixed bug with loading CompartCell with custom mechanisms from saved network
 
+- Fixed bug with accessing proper sim data file during batch parameters optimization
+
 # Version 1.0.2.1
 
 **New features**

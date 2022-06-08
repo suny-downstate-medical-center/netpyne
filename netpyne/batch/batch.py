@@ -37,7 +37,6 @@ import importlib, types
 from neuron import h
 from netpyne import specs
 
-from .utils import bashTemplate
 from .utils import createFolder
 from .grid import gridSearch, getParamCombinations, generateParamCombinations
 from .evol import evolOptim
@@ -267,3 +266,9 @@ class Batch(object):
                 optunaOptim(self, pc)
             except:
                 print(' Warning: an exception occurred when running Optuna optimization...')
+
+    @property
+    def mpiCommandDefault(self):
+        return {'asd': 'ibrun',
+                'evol': 'mpirun',
+                'optuna': 'mpiexec'}.get(self.method)

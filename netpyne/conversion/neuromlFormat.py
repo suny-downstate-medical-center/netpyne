@@ -1454,7 +1454,7 @@ try:
     ###############################################################################
     # Import network from NeuroML2
     ###############################################################################
-    def importNeuroML2(fileName, simConfig, simulate=True, analyze=True):
+    def importNeuroML2(fileName, simConfig, simulate=True, analyze=True, return_net_params_also=False):
         """
         Import network from NeuroML2 and convert internally to NetPyNE format
 
@@ -1629,7 +1629,10 @@ try:
             h('forall  if (ismembrane("k_ion")) { print "K ions: ", secname(), ": ek: ", ek, ", ki: ", ki, ", ko: ", ko } ')
             h('forall  if (ismembrane("ca_ion")) { print "Ca ions: ", secname(), ": eca: ", eca, ", cai: ", cai, ", cao: ", cao } ')'''
 
-        return nmlHandler.gids
+        if return_net_params_also:
+            return nmlHandler.gids, netParams
+        else:
+            return nmlHandler.gids
 
 
 except:

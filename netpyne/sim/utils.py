@@ -582,39 +582,6 @@ def replaceFuncObj(obj):
 
 
 #------------------------------------------------------------------------------
-# Replace None from dict or list with [](so can be saved to .mat)
-#------------------------------------------------------------------------------
-def replaceNoneObj(obj):
-    """
-    Function for/to <short description of `netpyne.sim.utils.replaceNoneObj`>
-
-    Parameters
-    ----------
-    obj : <type>
-        <Short description of obj>
-        **Default:** *required*
-
-
-    """
-
-
-    if type(obj) == list:# or type(obj) == tuple:
-        for item in obj:
-            if isinstance(item, (list, dict, Dict, ODict)):
-                replaceNoneObj(item)
-
-    elif isinstance(obj, (dict, Dict, ODict)):
-        for key,val in obj.items():
-            if isinstance(val, (list, dict, Dict, ODict)):
-                replaceNoneObj(val)
-            if val == None:
-                obj[key] = []
-            elif val == {}:
-                obj[key] = [] # also replace empty dicts with empty list
-    return obj
-
-
-#------------------------------------------------------------------------------
 # Replace Dict with dict and Odict with OrderedDict
 #------------------------------------------------------------------------------
 def replaceDictODict(obj):
@@ -632,11 +599,12 @@ def replaceDictODict(obj):
 
 
     if type(obj) == list:
-        for item in obj:
+        for ind, item in enumerate(obj):
             if type(item) == Dict:
                 item = item.todict()
             elif type(item) == ODict:
                 item = item.toOrderedDict()
+            obj[ind] = item
             if type(item) in [list, dict, OrderedDict]:
                 replaceDictODict(item)
 
@@ -794,46 +762,105 @@ def clearObj(obj):
 #------------------------------------------------------------------------------
 # Support funcs to load from mat
 #------------------------------------------------------------------------------
-def _mat2dict(obj):
+
+def _ensureMatCompatible(obj):
+    """
+    Function for/to <short description of `netpyne.sim.utils._ensureMatCompatible`>
+
+    Parameters
+    ----------
+    obj : <type>
+        <Short description of obj>
+        **Default:** *required*
+
+
+    """
+
+
+    if type(obj) == list:# or type(obj) == tuple:
+        for item in obj:
+            if isinstance(item, (list, dict, Dict, ODict)):
+                _ensureMatCompatible(item)
+
+    elif isinstance(obj, (dict, Dict, ODict)):
+        for key,val in obj.items():
+            if isinstance(val, (list, dict, Dict, ODict)):
+                _ensureMatCompatible(val)
+            if val is None:
+                obj[key] = '__np_none__'
+            elif isinstance(val, list) and len(val) > 0 and all(isinstance(s, str) for s in val):
+                # string arrays get corrupted while saving to mat, so converting it to csv beforehand
+                elements = ','.join(val)
+                obj[key] = f'[{elements}]'
+    return obj
+
+def _restoreFromMat(obj):
+    """
+    Function for/to <short description of `netpyne.sim.utils._restoreFromMat`>
+
+    Parameters
+    ----------
+    obj : <type>
+        <Short description of obj>
+        **Default:** *required*
+
+
+    """
+
+
+    if type(obj) == list:
+        for item in obj:
+            if isinstance(item, (list, dict, Dict, ODict)):
+                _restoreFromMat(item)
+
+    elif isinstance(obj, (dict, Dict, ODict)):
+        for key,val in obj.items():
+            if isinstance(val, (list, dict, Dict, ODict)):
+                _restoreFromMat(val)
+            if val == '__np_none__':
+                obj[key] = None
+            elif isinstance(val, str) and val.startswith('[') and val.endswith(']'):
+                obj[key] = val[1:-1].split(',')
+    return obj
+
+def _mat2dict(obj, parentKey=None):
     """
     A recursive function which constructs from matobjects nested dictionaries
     Enforce lists for conns, synMechs and stims even if 1 element (matlab converts to dict otherwise)
     """
 
-    import scipy.io as spio
+    from scipy.io.matlab.mio5_params import mat_struct
     import numpy as np
 
-    if isinstance(obj, dict):
+    isMatStruct = isinstance(obj, mat_struct)
+    if isinstance(obj, (dict, mat_struct)):
         out = {}
-        for key in obj:
-            if isinstance(obj[key], spio.matlab.mio5_params.mat_struct):
-                if key in ['conns', 'stims', 'synMechs']:
-                    out[key] = [_mat2dict(obj[key])]  # convert to 1-element list
-                else:
-                    out[key] = _mat2dict(obj[key])
-            elif isinstance(obj[key], np.ndarray):
-                out[key] = _mat2dict(obj[key])
-            else:
-                out[key] = obj[key]
+        if isMatStruct: fieldNames = obj._fieldnames
+        else: fieldNames = obj
 
-    elif isinstance(obj, spio.matlab.mio5_params.mat_struct):
-        out = {}
-        for key in obj._fieldnames:
-            val = obj.__dict__[key]
-            if isinstance(val, spio.matlab.mio5_params.mat_struct):
-                if key in ['conns', 'stims', 'synMechs']:
-                    out[key] = [_mat2dict(val)]  # convert to 1-element list
+        keysOfLists = ['conns', 'stims', 'synMechs', 'cells', 'cellGids', 'include']
+        if parentKey == 'tags':
+            keysOfLists.append('label')
+        for key in fieldNames:
+            if isMatStruct: val = obj.__dict__[key]
+            else: val = obj[key]
+
+            if isinstance(val, mat_struct):
+                if key in keysOfLists:
+                    out[key] = [_mat2dict(val, parentKey=key)]  # convert to 1-element list
                 else:
-                    out[key] = _mat2dict(val)
+                    out[key] = _mat2dict(val, parentKey=key)
             elif isinstance(val, np.ndarray):
-                out[key] = _mat2dict(val)
+                out[key] = _mat2dict(val, parentKey=key)
+            elif key in keysOfLists: # isinstance(val, Number) and 
+                out[key] = [val]   # convert to 1-element list
             else:
                 out[key] = val
 
     elif isinstance(obj, np.ndarray):
         out = []
         for item in obj:
-            if isinstance(item, spio.matlab.mio5_params.mat_struct) or isinstance(item, np.ndarray):
+            if isinstance(item, mat_struct) or isinstance(item, np.ndarray):
                 out.append(_mat2dict(item))
             else:
                 out.append(item)
@@ -852,13 +879,14 @@ def _dict2utf8(obj):
     #print obj
     import collections
     if isinstance(obj, basestring):
-        return obj.decode('utf8')
+        return obj
     elif isinstance(obj, collections.Mapping):
         for key in list(obj.keys()):
             if isinstance(key, Number):
-                obj[str(key).decode('utf8')] = obj[key]
-                obj.pop(key)
+                obj[str(key)] = obj.pop(key)
         return dict(list(map(_dict2utf8, iter(obj.items()))))
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
     elif isinstance(obj, collections.Iterable):
         return type(obj)(list(map(_dict2utf8, obj)))
     else:

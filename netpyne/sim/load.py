@@ -87,16 +87,14 @@ def _loadFile(filename):
         print(('Loading file %s ... ' % (filename)))
         dataraw = loadmat(filename, struct_as_record=False, squeeze_me=True)
         data = utils._mat2dict(dataraw)
-        #savemat(sim.cfg.filename+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
-        print('Finished saving!')
+        data = utils._restoreFromMat(data)
 
     # load HDF5 file (uses very inefficient hdf5storage module which supports dicts)
-    elif ext == 'saveHDF5':
-        #dataSaveUTF8 = _dict2utf8(replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
+    elif ext in ['hdf5', 'h5']:
         import hdf5storage
         print(('Loading file %s ... ' % (filename)))
-        #hdf5storage.writes(dataSaveUTF8, filename=sim.cfg.filename+'.hdf5')
-        print('NOT IMPLEMENTED!')
+        keys = hdf5storage.read('keys', filename=filename)
+        data = {k: hdf5storage.read(k, filename=filename) for k in keys}
 
     # load CSV file (currently only saves spikes)
     elif ext == 'csv':

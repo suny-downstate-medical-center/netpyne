@@ -38,6 +38,10 @@ def plotDipole(showCell=None, showPop=None,  timeRange=None, dpi=300, figSize=(6
     else:
         p = sim.allSimData['dipoleSum']
 
+    # if list (as a result of side-effect of some of save-load operations), make sure to convert to np.array
+    if isinstance(p, list):
+        p = np.array(p)
+
     p = p/1000.0 # convert from nA to mA
 
     if timeRange is None:

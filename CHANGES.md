@@ -4,6 +4,8 @@
 
 - Added ability to load PointCell from saved network
 
+- Support saving and loading data in .mat and .hdf5 formats
+
 **Bug fixes**
 
 - Fixed bug with loading CompartCell with custom mechanisms from saved network

@@ -8,6 +8,7 @@ from ..analysis.tools import loadData
 from .plotter import LinesPlotter
 from .plotter import ImagePlotter
 from .plotter import MetaFigure
+from .plotter import MultiPlotter
 import numpy as np
 
 
@@ -286,13 +287,18 @@ def plotLFPPSD(
         axisArgs['xlabel'] = 'Frequency (Hz)'
         axisArgs['ylabel'] = 'Power (mVˆ2 / Hz )'
 
-    axisArgs['grid'] = {'which': 'both'}
+    if axis != 'multi':
+        axisArgs['grid'] = {'which': 'both'}
 
     # Link colors to traces, make avg plot black, add separation to traces
     plotColors = []
     legendLabels = []
     colorIndex = 0
     offset = np.absolute(psds).max() * separation
+
+    if axis == 'multi':
+        offset = 0
+        roundOffset = False
 
     if roundOffset:
         sigfigs = 1
@@ -331,11 +337,15 @@ def plotLFPPSD(
             kwargs.pop(kwarg)
 
     # create Plotter object
-    linesPlotter = LinesPlotter(data=linesData, kind='LFPPSD', axis=axis, **axisArgs, **kwargs)
-    metaFig = linesPlotter.metafig
+    if axis != 'multi':
+        plotter = LinesPlotter(data=linesData, kind='LFPPSD', axis=axis, **axisArgs, **kwargs)
+    else:
+        plotter = MultiPlotter(data=linesData, kind='LFPPSD', metaFig=None, **axisArgs, **kwargs)
+
+    metaFig = plotter.metafig
 
     # remove the y-axis tick labels
-    # linesPlotter.axis.get_yaxis().set_ticklabels([])
+    # plotter.axis.get_yaxis().set_ticklabels([])
 
     # Set up the default legend settings
     legendKwargs = {}
@@ -352,7 +362,7 @@ def plotLFPPSD(
         axisArgs['legend'] = legendKwargs
 
     # Generate the figure
-    PSDPlot = linesPlotter.plot(**axisArgs, **kwargs)
+    PSDPlot = plotter.plot(**axisArgs, **kwargs)
 
     # Default is to return the figure, but you can also return the plotter
     if returnPlotter:

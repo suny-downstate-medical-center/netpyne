@@ -1,11 +1,3 @@
-# To access folder that has the backend code use the following:
-
-# Path to conda env to make changes
-# ~/anaconda3/envs/dev_test/lib/python3.8/site-packages/netpyne/batch
-# Using python 3.8.8
-# dev_test is the venv name
-
-
 from netpyne import specs
 from netpyne.batch import Batch
 from scipy.stats import kurtosis
@@ -21,12 +13,12 @@ def batchOptuna():
 
     ## simple net
     params = specs.ODict()
-    params['prob'] = [0.01, 0.5]  # can add 3rd value for starting value (0)
+    params['prob'] = [0.01, 0.5]
     params['weight'] = [0.001, 0.1]
     params['delay'] = [1, 20]
 
-    pops = {}
-    pops['S'] = {'target': 5, 'width': 2, 'min': 2}
+    pops = {} 
+    pops['S'] = {'target': 5, 'width': 2, 'min': 2} #If 'Observed' parameter is given include those given PopRates in 'target'
     pops['M'] = {'target': 15, 'width': 2, 'min': 0.2}
 
     # fitness function
@@ -51,10 +43,11 @@ def batchOptuna():
     # SummaryStat function
     SummaryStatisticArg = {}
     SummaryStatisticArg['pops'] = pops
-    SummaryStatisticArg['length'] = len(pops) + 7
-    SummaryStatisticArg['observed'] = [None] #Only inlclude this if there is an observed parameter else None
+    SummaryStatisticArg['length'] = len(pops) + 7 #change '7' according to the length of your statistics
+    SummaryStatisticArg['observed'] = [None] # If 'Observed' parameter pass in those values else None
 
-    # No metrics that are compared to 'Observed Parameter data' can be used, metrics have to be self-sufficient and non changing in terms of vector size
+    # No metrics that are compared to 'Observed Parameter data' can be used, metrics have to be self-sufficient and non changing in terms of vector size 
+    # Change this according to problem but output must be a list
     def SummaryStats(simData, **kwargs):
         import numpy as np
         from scipy.stats import kurtosis
@@ -118,8 +111,8 @@ def batchOptuna():
         'maxiter_wait': 3,
         'time_sleep': 5,
         'sbi_method': 'SNPE', # SNPE, SNLE, or SNRE
-        'inference_type': 'multi', # single or multi 
-        'rounds': 2, # If multi, choose a round amount else 0
+        'inference_type': 'single', # single or multi 
+        'rounds': 2, # If multi, choose a round amount else unused
         'popsize': 1  # unused - run with mpi
     }
 

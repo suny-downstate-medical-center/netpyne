@@ -1,6 +1,5 @@
 """
-Module for SBI optimization (SBI Mackelab)
-
+Module for SBI optimization
 """
 
 from __future__ import print_function
@@ -39,12 +38,11 @@ import importlib, types
 import numpy.random as nr
 import numpy as np
 from scipy.stats import kurtosis
-#changed to dill as pickle
+
 import dill as pickle
 
 from neuron import h
 from netpyne import sim, specs
-#~~~~~~~~~~~~SBI imports~~~~~~~~~~~~
 from sbi import utils as utils
 from sbi import analysis as analysis
 from sbi.inference.base import infer
@@ -58,11 +56,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from scipy.stats import kurtosis
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 import time
 import multiprocessing
-
 
 
 from .utils import createFolder
@@ -71,15 +66,11 @@ from .utils import dcp, sigfig
 
 pc = h.ParallelContext() # use bulletin board master/slave
 
-# from joblib.externals.loky import set_loky_pickler
-# set_loky_pickler("dill")
-
 
 # -------------------------------------------------------------------------------
 # Simulation-Based-Inference (SBI) optimization
 # -------------------------------------------------------------------------------
 
-# func needs to be outside of class
 def runJob(nrnCommand, script, cfgSavePath, netParamsSavePath, simDataPath):
     """
     Function for/to <short description of `netpyne.batch.optuna_parallel.runJob`>
@@ -117,8 +108,6 @@ def runJob(nrnCommand, script, cfgSavePath, netParamsSavePath, simDataPath):
 
 
     
-
-
 def sbiOptim(self, pc):
     """
     Function for/to <short description of `netpyne.batch.sbi_parallel.sbiOptim`>
@@ -135,12 +124,10 @@ def sbiOptim(self, pc):
 
 
     """
-
     import sys
 
     best_fit = []
 
-    
     # -------------------------------------------------------------------------------
     # SBI optimization: Parallel evaluation
     # -------------------------------------------------------------------------------
@@ -158,10 +145,8 @@ def sbiOptim(self, pc):
         # options slurm, mpi
         type = args.get('type', 'mpi_direct')
 
-        # params
+        # parameters
         paramLabels = args.get('paramLabels', [])
-        #minVals = args.get('minVals', [])
-        #maxVals = args.get('maxVals', [])
 
         # paths to required scripts
         script = args.get('script', 'init.py')
@@ -194,13 +179,6 @@ def sbiOptim(self, pc):
         SummaryStatisticLength =  args.get('SummaryStatisticLength')
         SummaryStatisticObserved = args.get('SummaryStatisticObserved')
 
-        # sbi method call-up
-        #objective.sbi_method = args.get('sbi_method') #perhaps move this with args get but outside since not used within function
-        #objective.sbi_md = {'SNPE': SNPE, 'SNLE': SNLE, 'SNRE': SNRE} 
-
-        # sbi inference type/rounds
-        #objective.inference_type = args.get('inference_type')
-        #objective.rounds = args.get('rounds')
 
         # read params or set defaults
         sleepInterval = args.get('sleepInterval', 0.2)
@@ -208,29 +186,9 @@ def sbiOptim(self, pc):
         # create folder if it does not exist
         createFolder(genFolderPath)
 
-        # --------------------------------------
-        # generate param values for SBI trial
-
-        #Take a look at how it passes, make sure that brackets or dimension are correct
+        # Candidate
         candidate = []
-
-        #Need to change data type for param since it comes in as a tensor which is not serializable
-        param = np.asarray(param)
-        candidate = param
-
-        print(candidate)
-
-        #Validate this, perhaps a solution would be to candidate = np.asarray(param) at the beginnnig of this function
-        '''
-        if ngen >= 1:
-            for value in param:
-                candidate.append(value)
-        else: #For ngen = 0 was importing two candidate lists instead of one
-            for value in param[0]:
-                candidate.append(value)
-
-        '''
-
+        candidate = np.asarray(param)
 
         # remember pids and jobids in a list
         pids = []
@@ -363,7 +321,6 @@ def sbiOptim(self, pc):
         # print "PID's: %r" %(pids)
         # start fitness calculation
 
-
         while jobs_completed < total_jobs:
             unfinished = [i for i, x in enumerate(fitness) if x is None ]
             for candidate_index in unfinished:
@@ -376,7 +333,7 @@ def sbiOptim(self, pc):
                         sum_statistics = SummaryStats(simData, **SummaryStatisticArg) 
                         jobs_completed += 1
                         print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
-                    #for files that files are .json vs _data.json
+                    #for files .json vs _data.json
                     elif os.path.isfile(jobNamePath+'.json'):
                         with open('%s.json'% (jobNamePath)) as file:
                             simData = json.load(file)['simData']                  
@@ -391,7 +348,7 @@ def sbiOptim(self, pc):
                         sum_statistics = SummaryStats(simData, **fitnessFuncArgs)
                         jobs_completed += 1
                         print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
-                    # for files that are .json vs _data.json
+                    # for files .json vs _data.json
                     elif os.path.isfile(jobNamePath+'.pkl'):
                         with open('%s.pkl'% (jobNamePath), 'rb') as file:
                             simData = pickle.load(file)['simData']
@@ -460,7 +417,7 @@ def sbiOptim(self, pc):
         print("  Completed a generation  ")
         print("-" * 80)
 
-        # Rewrite in different manner?
+        # Rewrite in different manner? 
         if None in SummaryStatisticObserved:
             if not best_fit:
                 best_fit.append(candidate)
@@ -472,10 +429,8 @@ def sbiOptim(self, pc):
         else:
             if not best_fit:
                 best_fit.append(SummaryStatisticObserved)
-                best_fit.append(0)
-    
-        # fitness is missing in the output, might not be needed yet or at all for summary_statistics but needed for best_fit
-        return torch.as_tensor(sum_statistics)
+                
+        return torch.as_tensor(fitness + sum_statistics)
 
     # -------------------------------------------------------------------------------
     # SBI optimization: Main code
@@ -544,9 +499,9 @@ def sbiOptim(self, pc):
 
     try:
 
-        sbi_method = args.get('sbi_method') # Either SNPE, SNLE, or SNRE
+        sbi_method = args.get('sbi_method') # SNPE, SNLE, or SNRE
         sbi_md = {'SNPE': SNPE, 'SNLE': SNLE, 'SNRE': SNRE} # sbi_MethodDictionary
-        inference_type = args.get('inference_type') # Either Single or Multi
+        inference_type = args.get('inference_type') # Single or Multi
 
         prior = utils.torchutils.BoxUniform(low=torch.as_tensor(np.array(args['minVals'])), 
                                     high=torch.as_tensor(np.array(args['maxVals'])))
@@ -554,21 +509,12 @@ def sbiOptim(self, pc):
         simulator, prior = prepare_for_sbi(lambda param: objective(param, args), prior)
         inference = sbi_md[sbi_method](prior = prior)   
 
-        #observable_param = best_fit[0]
-        #observable_stats = objective(best_fit[0], args)
-
-        '''
-        if args.get('SummaryStatisticObserved') != [None]:
-            observable_stats[0] = 0 # Since the parameter being passed is 'observed' this fitness will be calculated not realizing this is actually 0 since observed
-        # Might not need the above 
-        '''
 
         if inference_type == 'single':
             theta, x = simulate_for_sbi(simulator, proposal = prior, num_simulations= args['maxiters'])
             density_estimator = inference.append_simulations(theta, x).train()
             posterior = inference.build_posterior(density_estimator)
 
-            #Needs to be inside here or else will not get the best_fit that is needed since it will run the sim with the first candidate entered if moved above
             observable_stats = objective(best_fit[0], args)
             samples = posterior.sample((10000,),   
                                         x = observable_stats)
@@ -580,9 +526,7 @@ def sbiOptim(self, pc):
             posteriors = []
             proposal = prior
             for round_iter in range(rounds):
-                
                 theta, x = simulate_for_sbi(simulator, proposal = prior, num_simulations= args['maxiters'])
-
                 if sbi_method == 'SNPE':
                     density_estimator = inference.append_simulations(theta, x, proposal=proposal).train()
                 else:
@@ -590,9 +534,8 @@ def sbiOptim(self, pc):
                 posterior = inference.build_posterior(density_estimator)
                 posteriors.append(posterior)
                 
-                if round_iter < 2: #This is done so it only runs this simulation once, needs to be in this spot or else it will not pick up the candidate with the best fitness/observed
+                if round_iter < 2: 
                     observable_stats = objective(best_fit[0], args)
-
                 proposal = posterior.set_default_x(observable_stats)
 
             samples = posterior.sample((10000,),   
@@ -602,16 +545,9 @@ def sbiOptim(self, pc):
         else:
             print('Error on sbi simulation')
         
-        print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-        print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-        print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-
-        import matplotlib.pyplot as plt
-        plt.figure()
-        _ = analysis.pairplot(samples, limits=[[0.01,0.5],[0.001, 0.1],[1,20]], #Take out these limits at one point
-                           figsize=(16,14)) 
-        plt.show() #Take this out at one point
-        plt.savefig('PairPlot.png')
+        print('~' * 80)
+        print('~' * 80)
+        print('~' * 80)
 
 
     except Exception as e:
@@ -619,19 +555,23 @@ def sbiOptim(self, pc):
 
     # print best and finish
     if rank == size-1:
-  
-        #SBI does not have importance so get a parameter set from posterior to see how it did.
-  
-        #BEST TRAIL WILL BE PULLED FROM POSTERIOR SAMPLE OF SBI
-        print('\nPosterior Distribution Sample: ', posterior_sample) #Need to save this/ other distribution samples?
-   
-        #See if i can do this without the sqlite database or if not look at grid and see how it is done there
-        #print('\nBest Solution with fitness = %.4g: \n' % (study.best_value), study.best_params)
+        import matplotlib.pyplot as plt
+        plt.figure()
+        _ = analysis.pairplot(samples, 
+                           figsize=(16,14)) 
+        plt.savefig('PairPlot.png')
 
-        # print('\nSaving to output.pkl...\n')
-        # output = {'study': study, 'df': df, 'importance': importance}
-        # with open('%s/%s_output.pkl' % (self.saveFolder, self.batchLabel), 'wb') as f:
-        #     pickle.dump(output, f)
+        #SAMPLE WILL BE PULLED FROM POSTERIOR SAMPLE OF SBI
+        print('\n"Observed" Parameter Where SBI Takes Place Around:', best_fit[0])
+        print("-" * 80)
+        print('\nPosterior Distribution Sample: ', posterior_sample[0])
+        print("-" * 80)
+
+   
+        print('\nSaving to output.pkl...\n')
+        output = {samples} #All 10000 parameter samples will be saved
+        with open('%s/%s_output.pkl' % (self.saveFolder, self.batchLabel), 'wb') as f:
+            pickle.dump(output, f)
 
         sleep(1)
 

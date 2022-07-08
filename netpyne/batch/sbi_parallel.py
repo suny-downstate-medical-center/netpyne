@@ -44,6 +44,7 @@ import dill as pickle
 
 from neuron import h
 from netpyne import sim, specs
+#~~~~~~~~~~~~SBI imports~~~~~~~~~~~~
 from sbi import utils as utils
 from sbi import analysis as analysis
 from sbi.inference.base import infer
@@ -115,6 +116,7 @@ def runJob(nrnCommand, script, cfgSavePath, netParamsSavePath, simDataPath):
         file.write(str(pid) + ' ')
 
 
+    
 
 
 def sbiOptim(self, pc):
@@ -192,6 +194,14 @@ def sbiOptim(self, pc):
         SummaryStatisticLength =  args.get('SummaryStatisticLength')
         SummaryStatisticObserved = args.get('SummaryStatisticObserved')
 
+        # sbi method call-up
+        #objective.sbi_method = args.get('sbi_method') #perhaps move this with args get but outside since not used within function
+        #objective.sbi_md = {'SNPE': SNPE, 'SNLE': SNLE, 'SNRE': SNRE} 
+
+        # sbi inference type/rounds
+        #objective.inference_type = args.get('inference_type')
+        #objective.rounds = args.get('rounds')
+
         # read params or set defaults
         sleepInterval = args.get('sleepInterval', 0.2)
 
@@ -206,9 +216,21 @@ def sbiOptim(self, pc):
 
         #Need to change data type for param since it comes in as a tensor which is not serializable
         param = np.asarray(param)
+        candidate = param
 
-        for value in param:
-            candidate.append(value)
+        print(candidate)
+
+        #Validate this, perhaps a solution would be to candidate = np.asarray(param) at the beginnnig of this function
+        '''
+        if ngen >= 1:
+            for value in param:
+                candidate.append(value)
+        else: #For ngen = 0 was importing two candidate lists instead of one
+            for value in param[0]:
+                candidate.append(value)
+
+        '''
+
 
         # remember pids and jobids in a list
         pids = []
@@ -393,7 +415,7 @@ def sbiOptim(self, pc):
                 print("Max iterations reached, the %d unfinished jobs will be canceled and set to default fitness" % (len(unfinished)))
                 for canditade_index in unfinished:
                     fitness[canditade_index] = maxFitness # rerun those that didn't complete;
-                    sum_statistics= [-1*maxFitness for j in range(SummaryStatisticLength)] #-MaxFitness for size of summ stats
+                    sum_statistics= [-1*maxFitness for _ in range(SummaryStatisticLength)] #-MaxFitness for size of summ stats
                     jobs_completed += 1
                     try:
                         if 'scancelUser' in kwargs:
@@ -434,15 +456,13 @@ def sbiOptim(self, pc):
                 except:
                     pass
 
-        # don't want to to this for hpcs since jobs are running on compute nodes not master
-
         print("-" * 80)
         print("  Completed a generation  ")
         print("-" * 80)
 
-        # Make this better, rough implementation?
-        if SummaryStatisticObserved == [None]:
-            if best_fit == []:
+        # Rewrite in different manner?
+        if None in SummaryStatisticObserved:
+            if not best_fit:
                 best_fit.append(candidate)
                 best_fit.append(fitness[0])
             else:
@@ -450,13 +470,12 @@ def sbiOptim(self, pc):
                     best_fit[0] = candidate
                     best_fit[1] = fitness[0]
         else:
-            best_fit.append(SummaryStatisticObserved) #If an issue occurs remove the brackets
-            best_fit.append(0)
-
-
-        print(fitness + sum_statistics)
-
-        return fitness + sum_statistics
+            if not best_fit:
+                best_fit.append(SummaryStatisticObserved)
+                best_fit.append(0)
+    
+        # fitness is missing in the output, might not be needed yet or at all for summary_statistics but needed for best_fit
+        return torch.as_tensor(sum_statistics)
 
     # -------------------------------------------------------------------------------
     # SBI optimization: Main code
@@ -482,11 +501,10 @@ def sbiOptim(self, pc):
     sim_number = -1
 
     # gather **kwargs
-
     args = {}
     args['popsize'] = self.optimCfg.get('popsize', 1)
-    args['minVals'] = [x['values'][0] for x in self.params] #Do not need
-    args['maxVals'] = [x['values'][1] for x in self.params] #Do not need
+    args['minVals'] = np.array([x['values'][0] for x in self.params]) 
+    args['maxVals'] = np.array([x['values'][1] for x in self.params]) 
     args['cfg'] = self.cfg  # include here args/params to pass to evaluator function
     args['paramLabels'] = [x['label'] for x in self.params]
     args['netParamsSavePath'] = self.saveFolder + '/' + self.batchLabel + '_netParams.py'
@@ -504,7 +522,8 @@ def sbiOptim(self, pc):
     args['sbi_method'] = self.optimCfg['sbi_method']
     args['inference_type'] = self.optimCfg['inference_type']
     args['rounds'] = self.optimCfg['rounds']
- 
+
+
 
     for key, value in self.optimCfg.items():
         args[key] = value
@@ -521,7 +540,6 @@ def sbiOptim(self, pc):
     # -------------------------------------------------------------------------------
     # Run algorithm
     # -------------------------------------------------------------------------------
-
     sleep(rank) # each process wiats a different time to avoid saturating sqlite database
 
     try:
@@ -536,24 +554,22 @@ def sbiOptim(self, pc):
         simulator, prior = prepare_for_sbi(lambda param: objective(param, args), prior)
         inference = sbi_md[sbi_method](prior = prior)   
 
-        observable_param = best_fit[0]
-        observable_stats = objective(observable_param, args)
+        #observable_param = best_fit[0]
+        #observable_stats = objective(best_fit[0], args)
 
         '''
         if args.get('SummaryStatisticObserved') != [None]:
             observable_stats[0] = 0 # Since the parameter being passed is 'observed' this fitness will be calculated not realizing this is actually 0 since observed
-        # Might not need this. Verify if this implementation is accurate
+        # Might not need the above 
         '''
-
 
         if inference_type == 'single':
             theta, x = simulate_for_sbi(simulator, proposal = prior, num_simulations= args['maxiters'])
-
-            #theta = prior.sample((args['maxiters'],)) #Instead of using simulatr_for_sbi thess two lines can be used if issues arise on cluster with simulate_for_sbi
-            #x = simulator(theta)
-
             density_estimator = inference.append_simulations(theta, x).train()
             posterior = inference.build_posterior(density_estimator)
+
+            #Needs to be inside here or else will not get the best_fit that is needed since it will run the sim with the first candidate entered if moved above
+            observable_stats = objective(best_fit[0], args)
             samples = posterior.sample((10000,),   
                                         x = observable_stats)
             posterior_sample = posterior.sample((1,),
@@ -563,15 +579,20 @@ def sbiOptim(self, pc):
             rounds = args.get('rounds')
             posteriors = []
             proposal = prior
-            for _ in range(rounds):
+            for round_iter in range(rounds):
                 
                 theta, x = simulate_for_sbi(simulator, proposal = prior, num_simulations= args['maxiters'])
+
                 if sbi_method == 'SNPE':
                     density_estimator = inference.append_simulations(theta, x, proposal=proposal).train()
                 else:
                     density_estimator = inference.append_simulations(theta, x).train()
                 posterior = inference.build_posterior(density_estimator)
                 posteriors.append(posterior)
+                
+                if round_iter < 2: #This is done so it only runs this simulation once, needs to be in this spot or else it will not pick up the candidate with the best fitness/observed
+                    observable_stats = objective(best_fit[0], args)
+
                 proposal = posterior.set_default_x(observable_stats)
 
             samples = posterior.sample((10000,),   
@@ -585,15 +606,12 @@ def sbiOptim(self, pc):
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 
-        # This will be considered the observable params since it will be holding the best fitness
         import matplotlib.pyplot as plt
-        plt.figure(1)
-        _ = analysis.pairplot(samples, limits=[[0.01,0.5],[0.001, 0.1],[1,20]], 
+        plt.figure()
+        _ = analysis.pairplot(samples, limits=[[0.01,0.5],[0.001, 0.1],[1,20]], #Take out these limits at one point
                            figsize=(16,14)) 
-
-        plt.show()
+        plt.show() #Take this out at one point
         plt.savefig('PairPlot.png')
-
 
 
     except Exception as e:
@@ -601,9 +619,11 @@ def sbiOptim(self, pc):
 
     # print best and finish
     if rank == size-1:
-    
+  
+        #SBI does not have importance so get a parameter set from posterior to see how it did.
+  
         #BEST TRAIL WILL BE PULLED FROM POSTERIOR SAMPLE OF SBI
-        print('\nBest Posterior Distribution Sample: ', posterior_sample)
+        print('\nPosterior Distribution Sample: ', posterior_sample) #Need to save this/ other distribution samples?
    
         #See if i can do this without the sqlite database or if not look at grid and see how it is done there
         #print('\nBest Solution with fitness = %.4g: \n' % (study.best_value), study.best_params)

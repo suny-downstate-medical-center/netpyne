@@ -97,7 +97,6 @@ def batchOptuna():
     }
 
 
-    #Check to see if summary stats passes in directly or need to define else where.
     b.optimCfg = {
         'fitnessFunc': fitnessFunc, # fitness expression (should read simData)
         'fitnessFuncArgs': fitnessFuncArgs,

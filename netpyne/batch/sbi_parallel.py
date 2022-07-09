@@ -73,7 +73,7 @@ pc = h.ParallelContext() # use bulletin board master/slave
 
 def runJob(nrnCommand, script, cfgSavePath, netParamsSavePath, simDataPath):
     """
-    Function for/to <short description of `netpyne.batch.optuna_parallel.runJob`>
+    Function for/to <short description of `netpyne.batch.sbi_parallel.runJob`>
 
     Parameters
     ----------
@@ -451,7 +451,7 @@ def sbiOptim(self, pc):
     # create main sim directory and save scripts
     self.saveScripts()
 
-    global ngen #ngen will not be used
+    global ngen 
     ngen = -1
     sim_number = -1
 
@@ -495,7 +495,7 @@ def sbiOptim(self, pc):
     # -------------------------------------------------------------------------------
     # Run algorithm
     # -------------------------------------------------------------------------------
-    sleep(rank) # each process wiats a different time to avoid saturating sqlite database
+    sleep(rank) # each process waits a different time to avoid saturating sqlite database
 
     try:
 

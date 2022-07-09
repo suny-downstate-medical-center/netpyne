@@ -55,7 +55,8 @@ except:
 try:
     from .sbi_parallel import sbiOptim
 except:
-    print('Error @ the batch.py file import section')
+    pass
+    #print('Error @ the batch.py file import section')
 
 
 
@@ -158,11 +159,6 @@ class Batch(object):
         if 'optimCfg' in odict:
             odict['optimCfg']['fitnessFunc'] = 'removed'
 
-        #This will be for Summary_Statistics
-        #if 'optimCfg' in odict:
-        #    odict['optimCfg']['SummaryStats'] = 'removed'
-
-        # See if this works. Need to make sure it does to remove this if sometyhing else is used within batch
         if 'optimCfg' in odict:
             if 'SummaryStats' in odict['optimCfg']:
                 odict['optimCfg']['SummaryStats'] = 'removed'
@@ -296,4 +292,4 @@ class Batch(object):
             try:
                 sbiOptim(self, pc)
             except:
-                print(' Warning: an exception occurred when running SBI optimization has accure in the batch.py bottom of the file...')
+                print(' Warning: an exception occurred when running SBI...')

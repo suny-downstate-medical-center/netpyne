@@ -8,6 +8,8 @@
 
 - Added option to use separate axis for each PSD trace (set axis='multi')
 
+- Added support for string functions in synMech parameters
+
 
 **Bug fixes**
 

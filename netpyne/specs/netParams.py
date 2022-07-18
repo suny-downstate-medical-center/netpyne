@@ -143,6 +143,36 @@ class SynMechParams(ODict):
     def rename(self, old, new, label=None):
         return self.__rename__(old, new, label)
 
+    def replaceStringFunctions(self):
+        from .utils import generateStringFunction
+        from .. import sim
+        for (key, synMech) in self.items():
+            paramsKeyVal = [(k, v) for (k, v) in synMech.items()
+                                if k not in SynMechParams.reservedKeys()
+                                and isinstance(v, basestring)]
+            for k, v in paramsKeyVal:
+                func, vars = generateStringFunction(v, list(SynMechParams.stringFuncVariables().keys()))
+                if 'pre_loc' in vars and key not in sim.net.params.synMechsReferringPreLoc:
+                    sim.net.params.synMechsReferringPreLoc.append(key)
+                if func is not None:
+                    synMech[k+'Func'] = func, vars
+                    synMech.pop(k)
+
+    @staticmethod
+    def reservedKeys():
+        return ['label', 'mod', 'selfNetCon', 'loc']
+
+    @staticmethod
+    def stringFuncVariables():
+        return {
+            'rand': lambda cellTags, prePostLoc, rand: rand,
+            'pre_loc': lambda cellTags, prePostLoc, rand: prePostLoc[0],
+            'post_loc': lambda cellTags, prePostLoc, rand: prePostLoc[1],
+            'post_xnorm': lambda cellTags, prePostLoc, rand: cellTags['xnorm'],
+            'post_ynorm': lambda cellTags, prePostLoc, rand: cellTags['ynorm'],
+            'post_znorm': lambda cellTags, prePostLoc, rand: cellTags['znorm'],
+        }
+
 
 # ----------------------------------------------------------------------------
 # SubConnParams class
@@ -300,6 +330,9 @@ class NetParams(object):
 
         # RxD params dicts and start up
         self.rxdParams = RxDParams()
+
+        # list of labels of synMechsParams that require preLoc
+        self.synMechsReferringPreLoc = []
 
         # fill in params from dict passed as argument
         if netParamsDict:

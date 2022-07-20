@@ -24,6 +24,7 @@ try:
     from neuron.crxd import rxdmath
 except:
     print('Warning: Could not import rxdmath module')
+from ..specs import Dict, ODict
 
 # -----------------------------------------------------------------------------
 # Add RxD
@@ -75,7 +76,8 @@ def addRxD (self, nthreads=None):
         if 'regions' in rxdParams:
             self._addRegions(rxdParams['regions'])
         if 'extracellular' in rxdParams:
-            self._addExtracellular(rxdParams['extracellular'])
+            #self._addExtracellular(rxdParams['extracellular'])
+            self._addExtracellularRegion('extracellular', rxdParams['extracellular'])
         if 'species' in rxdParams:
             self._addSpecies(rxdParams['species'])
         if 'states' in rxdParams:
@@ -111,7 +113,7 @@ def _addRegions(self, params):
 
         # cells
         if 'cells' not in param:
-            param['cells'] = 'all'
+            param['cells'] = ['all']
 
         # secs
         if 'secs' not in param:
@@ -131,8 +133,8 @@ def _addRegions(self, params):
         if isinstance(geometry, dict):
             try:
                 if 'args' in geometry:
-                    geometry['hObj'] = getattr(rxd, param['geometry']['class'])(**param['geometry']['args'])
-                    geometry = geometry['hObj']
+                    self.rxd['regions'][label]['geometry']['hObj'] = getattr(rxd, param['geometry']['class'])(**param['geometry']['args'])
+                    geometry = self.rxd['regions'][label]['geometry']['hObj']
             except:
                 print('  Error creating %s Region geometry using %s class'%(label, param['geometry']['class']))
         elif isinstance(param['geometry'], str):
@@ -200,7 +202,16 @@ def _addExtracellularRegion(self, label, param):
         param['tortuosity'] = 1
 
     # call rxd method to create Region
-    self.rxd['regions'][label]['hObj'] = rxd.Extracellular(**{k:v for k,v in param.items() if k != 'extracellular'})
+    if 'extracellular' in self.rxd:
+        # we want to put the object in the "regions", to simplify afterwards the procedure to collect nrnRegions.
+        self.rxd['regions']['extracellular'] = ODict()
+        self.rxd['regions']['extracellular']['extracellular'] = True
+        self.rxd['regions']['extracellular'] = {**param}
+        self.rxd['regions']['extracellular']['hObj'] = rxd.Extracellular(**{k:v for k,v in param.items()})
+        # accesible also from the entry
+        self.rxd['extracellular']['hObj'] = self.rxd['regions']['extracellular']['hObj']
+    else:
+        self.rxd['regions'][label]['hObj'] = rxd.Extracellular(**{k:v for k,v in param.items() if k != 'extracellular'})
 
     print('  Created Extracellular Region %s'%(label))
 
@@ -503,7 +514,7 @@ def _addRates(self, params):
             exec('species = ' + speciesStr, dynamicVars)
             if 'species' not in dynamicVars: dynamicVars['species']  # fix for python 2
         else:
-            print('  Error creating Rate %s: "species" parameter should be a string'%(param['species']))
+            print('  Error creating Rate %s: "species" parameter should be a string'%(label))
             continue
 
         # rate
@@ -515,9 +526,18 @@ def _addRates(self, params):
             exec('rate = ' + rateStr, dynamicVars)
             if 'rate' not in dynamicVars: dynamicVars['rate']  # fix for python 2
 
-        # regions
+        # regions        
         if 'regions' not in param:
-            param['regions'] = [None]
+            # param['regions'] = [None]
+            # Following Craig's suggestion (in concordance with the default in NEURON)
+            try:
+                param['regions'] = [self.rxd['species'][species]['regions'] for species in self.rxd['species'].keys() if param['species']==species]
+                if 'states' in self.rxd:
+                    param['regions'] = param['regions'] + [self.rxd['states'][states]['regions'] for states in self.rxd['states'].keys() if param['species']==states ]
+                if len(param['regions'])==1 and isinstance(param['regions'][0],list):
+                    param['regions'] = [val for elem in param['regions'] for val in elem]
+            except:
+                param['regions'] = [None]
         elif not isinstance(param['regions'], list):
             param['regions'] = [param['regions']]
         try:

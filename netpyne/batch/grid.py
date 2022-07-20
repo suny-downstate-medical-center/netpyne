@@ -50,7 +50,7 @@ pc = h.ParallelContext() # use bulletin board master/slave
 # -------------------------------------------------------------------------------
 
 # func needs to be outside of class
-def runJob(script, cfgSavePath, netParamsSavePath, processes): #, jobName):
+def runJob(script, cfgSavePath, netParamsSavePath, processes, jobName):
     """
     Function for/to <short description of `netpyne.batch.grid.runJob`>
 
@@ -75,13 +75,54 @@ def runJob(script, cfgSavePath, netParamsSavePath, processes): #, jobName):
     command = "nrniv %s simConfig=%s netParams=%s" % (script, cfgSavePath, netParamsSavePath)
     print(command+'\n')
 
-    proc = subprocess.run(command.split(' '), stdout=PIPE, stderr=PIPE, check=False)
-    processes.append(proc)
+    stdout=open(jobName+'.run','w')
+    stderr=open(jobName+'.err','w')
+    proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
+
+    stdout.write(proc.stdout.read().decode())
+    stderr.write(proc.stderr.read().decode())
     
-    #stdout=open(jobName+'.run','w')
-    #stderr=open(jobName+'.err','w')
-    #proc = Popen(command.split(' '), stdout=stdout, stderr=stderr)
-    #processes.append(proc)
+    processes.append(proc)
+
+# -------------------------------------------------------------------------------
+# Get parameter combinations
+# -------------------------------------------------------------------------------
+def getParamCombinations(batch):
+
+    indices = []
+    values = []
+    filenames = []
+
+    combData = {}
+
+    # generate param combinations
+    groupedParams, ungroupedParams, indexCombGroups, valueCombGroups, indexCombinations, valueCombinations, labelList, valuesList = generateParamCombinations(batch)
+
+    for iCombG, pCombG in zip(indexCombGroups, valueCombGroups):
+        for iCombNG, pCombNG in zip(indexCombinations, valueCombinations):
+            if groupedParams and ungroupedParams: # temporary hack - improve
+                iComb = iCombG+iCombNG
+                pComb = pCombG+pCombNG
+            elif ungroupedParams:
+                iComb = iCombNG
+                pComb = pCombNG
+            elif groupedParams:
+                iComb = iCombG
+                pComb = pCombG
+            else:
+                iComb = []
+                pComb = []
+
+            # set simLabel and jobName
+            simLabel = batch.batchLabel+''.join([''.join('_'+str(i)) for i in iComb])
+            jobName = batch.saveFolder+'/'+simLabel
+
+            indices.append(iComb)
+            values.append(pComb)
+            filenames.append(jobName)
+
+    return {'indices': indices, 'values': values, 'labels': labelList, 'filenames': filenames}
+
 
 # -------------------------------------------------------------------------------
 # Generate parameter combinations
@@ -120,7 +161,7 @@ def generateParamCombinations(batch):
     return groupedParams, ungroupedParams, indexCombGroups, valueCombGroups, indexCombinations, valueCombinations, labelList, valuesList
 
 # -------------------------------------------------------------------------------
-# Grid Search optimization
+# Get parameter combinations
 # -------------------------------------------------------------------------------
 def gridSearch(batch, pc):
     """
@@ -199,42 +240,24 @@ def gridSearch(batch, pc):
             # set simLabel and jobName
             simLabel = f'{batch.batchLabel}{row.Index}'
             jobName = f'{batch.saveFolder}/{simLabel}'
+
             gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles)
 
     elif batch.method == 'grid': # iterate over all param combinations
-        
-      
-      
-        for iCombG, pCombG in zip(indexCombGroups, valueCombGroups):
-            for iCombNG, pCombNG in zip(indexCombinations, valueCombinations):
-                if groupedParams and ungroupedParams: # temporary hack - improve
-                    iComb = iCombG+iCombNG
-                    pComb = pCombG+pCombNG
-                elif ungroupedParams:
-                    iComb = iCombNG
-                    pComb = pCombNG
-                elif groupedParams:
-                    iComb = iCombG
-                    pComb = pCombG
-                else:
-                    iComb = []
-                    pComb = []
+        # generate param combinations
+        combinationsData = getParamCombinations(batch)
+        for jobName, iComb, comb in zip(combinationsData['filenames'],
+                                                   combinationsData['indices'],
+                                                   combinationsData['values']):
+            print(iComb, comb)
+            for i, paramVal in enumerate(comb):
+                paramLabel = combinationsData['labels'][i]
+                batch.setCfgNestedParam(paramLabel, paramVal)
+                print(str(paramLabel)+' = '+str(paramVal))
+            simLabel = jobName.split('/')[-1]
 
-                print(iComb, pComb)
+            gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles)
 
-                for i, paramVal in enumerate(pComb):
-                    paramLabel = labelList[i]
-                    batch.setCfgNestedParam(paramLabel, paramVal)
-
-                    print(str(paramLabel)+' = '+str(paramVal))
-
-                # set simLabel and jobName
-                simLabel = batch.batchLabel+''.join([''.join('_'+str(i)) for i in iComb])
-                jobName = batch.saveFolder+'/'+simLabel
-
-                sleepInterval = 1
-                
-                gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles)
         print("-"*80)
         print("   Finished creating jobs for parameter exploration   ")
         print("-" * 80)
@@ -269,7 +292,7 @@ def gridSearch(batch, pc):
 def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles):
 
     # skip if output file already exists
-    if batch.runCfg.get('skip', False) and glob.glob(jobName+'.json'):
+    if batch.runCfg.get('skip', False) and glob.glob(jobName+'_data.json'):
         print('Skipping job %s since output file already exists...' % (jobName))
     elif batch.runCfg.get('skipCfg', False) and glob.glob(jobName+'_cfg.json'):
         print('Skipping job %s since cfg file already exists...' % (jobName))
@@ -314,7 +337,7 @@ echo $PBS_O_WORKDIR
             """ % (jobName, walltime, queueName, nodesppn, jobName, jobName, custom, command)
 
         # Send job_string to qsub
-        print('Submitting job ',jobName)
+        print('Submitting0 job ',jobName)
         print(jobString+'\n')
 
         batchfile = '%s.pbs'%(jobName)
@@ -369,7 +392,7 @@ wait
 
         # Send job_string to sbatch
 
-        print('Submitting job ',jobName)
+        print('Submitting1 job ',jobName)
         print(jobString+'\n')
 
         batchfile = '%s.sbatch'%(jobName)
@@ -408,7 +431,10 @@ wait
         printOutput = batch.runCfg.get('printOutput', False)
         print('Submitting job ',jobName)
         # master/slave bulletin board scheduling of jobs
-        pc.submit(runJob, script, cfgSavePath, netParamsSavePath, processes)
+        pc.submit(runJob, script, cfgSavePath, netParamsSavePath, processes, jobName)
+        print('Saving output to: ', jobName+'.run')
+        print('Saving errors to: ', jobName+'.err')
+        print('')
     else:
         print(batch.runCfg)
         print("Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'")

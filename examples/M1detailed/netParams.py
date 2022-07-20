@@ -54,7 +54,7 @@ layer = {'2': [0.12,0.31], '4': [0.31,0.42], '5A': [0.42,0.52], '45A':[0.31,0.52
 cellParamLabels = ['IT5A_full', 'IT2_reduced', 'IT4_reduced', 'IT5A_reduced', 'IT5B_reduced',
     'PT5B_reduced',  'IT6_reduced', 'CT6_reduced', 'PV_simple', 'SOM_simple']#, 'PT5B_full'] #  # list of cell rules to load from file
 loadCellParams = cellParamLabels
-saveCellParams = False #True
+saveCellParams = False
 
 for ruleLabel in loadCellParams:
     netParams.loadCellParamsRule(label=ruleLabel, fileName='cells/'+ruleLabel+'_cellParams.pkl')
@@ -67,6 +67,8 @@ for ruleLabel in ['IT2_reduced', 'IT4_reduced', 'IT5A_reduced', 'IT5B_reduced', 
     cellRule['secs']['axon']['geom']['pt3d'][1][1] = cellRule['secs']['axon']['geom']['pt3d'][1][1]*0.01
     sec = cellRule['secs']['Bdend']
     cellRule['secs']['Bdend']['geom']['pt3d'][1] = [0.5*sec['geom']['L'], -0.5*sec['geom']['L'], 0, sec['geom']['diam']]
+
+
 #------------------------------------------------------------------------------
 # Specification of cell rules not previously loaded
 # Includes importing from hoc template or python class, and setting additional params

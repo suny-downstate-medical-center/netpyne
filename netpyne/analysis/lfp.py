@@ -1,5 +1,5 @@
 """
-Module for analyzing and plotting LFP-related results
+Module for analyzing LFP-related results
 
 """
 
@@ -29,15 +29,13 @@ from .utils import colorList, exception, _saveFigData, _showFigure, _smooth1d
 from ..support.scalebar import add_scalebar
 
 
-#@exception
+@exception
 def prepareLFP(
     sim=None,
     timeRange=None,
     electrodes=['avg', 'all'],
     pop=None,
     LFPData=None, 
-    separation=1.0, 
-    logx=False, 
     logy=False, 
     normSignal=False, 
     filtFreq=False, 
@@ -71,6 +69,7 @@ def prepareLFP(
 
     # accept input lfp data
     if LFPData is not None:
+        # loading LFPData is not yet functional
         lfp = LFPData[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
     else:
         if pop and pop in sim.allSimData['LFPPops']:
@@ -111,46 +110,53 @@ def prepareLFP(
         electrodes.remove('all')
         electrodes.extend(list(range(int(sim.net.recXElectrode.nsites))))
     
-    if 'avg' in electrodes:
-        electrodes.remove('avg')
-        data['electrodes']['names'].append('avg')
-        data['electrodes']['locs'].append(None)
-        data['electrodes']['lfps'].append(np.mean(lfp, axis=1))
+    # if 'avg' in electrodes:
+    #     electrodes.remove('avg')
+    #     data['electrodes']['names'].append('avg')
+    #     data['electrodes']['locs'].append(None)
+    #     data['electrodes']['lfps'].append(np.mean(lfp, axis=1))
 
     for i, elec in enumerate(electrodes):
+        
         if isinstance(elec, Number) and (LFPData is not None or elec <= sim.net.recXElectrode.nsites):
             lfpSignal = lfp[:, elec]
+            loc = sim.cfg.recordLFP[elec]
+        elif elec == 'avg':
+            lfpSignal = np.mean(lfp, axis=1)
+            loc = None
+        elif isinstance(elec, list) and (LFPData is not None or all([x <= sim.net.recXElectrode.nsites for x in elec])):
+                lfpSignal = np.mean(lfp[:, elec], axis=1)
+                loc = None
 
         if len(t) < len(lfpSignal):
             lfpSignal = lfpSignal[:len(t)]
 
         data['electrodes']['names'].append(str(elec))
-        data['electrodes']['locs'].append(sim.cfg.recordLFP[i])
+        data['electrodes']['locs'].append(loc)
         data['electrodes']['lfps'].append(lfpSignal)
+
+    #data['electrodes']['lfps'] = np.transpose(np.array(data['electrodes']['lfps']))
 
     return data
 
 
-#@exception
+@exception
 def preparePSD(
+    LFPData=None, 
     sim=None,
     timeRange=None,
     electrodes=['avg', 'all'], 
-    inputLFP=None, 
+    pop=None,
     NFFT=256, 
     noverlap=128, 
     nperseg=256, 
     minFreq=1, 
     maxFreq=100, 
     stepFreq=1, 
-    smooth=0, 
-    separation=1.0, 
-    includeAxon=True, 
-    logx=False, 
+    smooth=0,
     logy=False, 
     normSignal=False, 
     normPSD=False, 
-    normSpec=False, 
     filtFreq=False, 
     filtOrder=3, 
     detrend=False, 
@@ -160,48 +166,73 @@ def preparePSD(
     Function to prepare data for plotting of power spectral density (PSD)
     """
 
-    print('Preparing PSD data...')
+    if not sim:
+        from .. import sim
 
     data = prepareLFP(
-    sim=sim,
-    timeRange=timeRange,
-    electrodes=electrodes, 
-    inputLFP=inputLFP, 
-    NFFT=NFFT, 
-    noverlap=noverlap, 
-    nperseg=nperseg, 
-    minFreq=minFreq, 
-    maxFreq=maxFreq, 
-    stepFreq=stepFreq, 
-    smooth=smooth, 
-    separation=separation, 
-    includeAxon=includeAxon, 
-    logx=logx, 
-    logy=logy, 
-    normSignal=normSignal, 
-    normPSD=normPSD, 
-    normSpec=normSpec, 
-    filtFreq=filtFreq, 
-    filtOrder=filtOrder, 
-    detrend=detrend, 
-    transformMethod=transformMethod, 
-    **kwargs)
+        sim=sim,
+        timeRange=timeRange,
+        electrodes=electrodes,
+        pop=pop,
+        LFPData=LFPData, 
+        logy=logy, 
+        normSignal=normSignal, 
+        filtFreq=filtFreq, 
+        filtOrder=filtOrder, 
+        detrend=detrend,
+        **kwargs)
 
-    allFreqs = data['allFreqs']
-    allSignal = data['allSignal']
-    electrodes = data['electrodes']
+    print('Preparing PSD data...')
+
+    names = data['electrodes']['names']
+    lfps = data['electrodes']['lfps']
+
+    allFreqs = []
+    allSignal = []
+    allNames = []
+
+    # Used in both transforms
+    fs = int(1000.0/sim.cfg.recordStep)
+    
+    for index, lfp in enumerate(lfps):
+
+        # Morlet wavelet transform method
+        if transformMethod == 'morlet':
+            
+            from ..support.morlet import MorletSpec, index2ms
+            morletSpec = MorletSpec(lfp, fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq)
+            freqs = morletSpec.f
+            spec = morletSpec.TFR
+            signal = np.mean(spec, 1)
+            ylabel = 'Power'
+
+        # FFT transform method
+        elif transformMethod == 'fft':
+            
+            power = mlab.psd(lfp, Fs=fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning, noverlap=noverlap, pad_to=None, sides='default', scale_by_freq=None)
+
+            if smooth:
+                signal = _smooth1d(10 * np.log10(power[0]), smooth)
+            else:
+                signal = 10 * np.log10(power[0])
+            freqs = power[1]
+            ylabel = 'Power (dB/Hz)'
+
+        allFreqs.append(freqs)
+        allSignal.append(signal)
+        allNames.append(names[index])
 
     if normPSD:
         vmax = np.max(allSignal)
-        for i, s in enumerate(allSignal):
-            allSignal[i] = allSignal[i]/vmax
+        for index, signal in enumerate(allSignal):
+            allSignal[index] = allSignal[index]/vmax
 
     psdFreqs = []
     psdSignal = []
     
-    for i, elec in enumerate(electrodes):
-        freqs = allFreqs[i]
-        signal = allSignal[i]
+    for index, name in enumerate(names):
+        freqs = allFreqs[index]
+        signal = allSignal[index]
         
         psdFreqs.append(freqs[freqs<maxFreq])
         psdSignal.append(signal[freqs<maxFreq])
@@ -209,17 +240,19 @@ def preparePSD(
     data = {}
     data['psdFreqs'] = psdFreqs
     data['psdSignal'] = psdSignal
+    data['psdNames'] = names
 
     return data
 
 
 
-#@exception
+@exception
 def prepareSpectrogram(
     sim=None,
     timeRange=None,
     electrodes=['avg', 'all'], 
-    inputLFP=None, 
+    pop=None,
+    LFPData=None, 
     NFFT=256, 
     noverlap=128, 
     nperseg=256, 
@@ -227,9 +260,7 @@ def prepareSpectrogram(
     maxFreq=100, 
     stepFreq=1, 
     smooth=0, 
-    separation=1.0, 
     includeAxon=True, 
-    logx=False, 
     logy=False, 
     normSignal=False, 
     normPSD=False, 
@@ -243,13 +274,12 @@ def prepareSpectrogram(
     Function to prepare data for plotting of the spectrogram
     """
 
-    print('Preparing spectrogram data...')
-
     data = prepareLFP(
     sim=sim,
     timeRange=timeRange,
     electrodes=electrodes, 
-    inputLFP=inputLFP, 
+    pop=pop,
+    LFPData=LFPData, 
     NFFT=NFFT, 
     noverlap=noverlap, 
     nperseg=nperseg, 
@@ -257,9 +287,7 @@ def prepareSpectrogram(
     maxFreq=maxFreq, 
     stepFreq=stepFreq, 
     smooth=smooth, 
-    separation=separation, 
     includeAxon=includeAxon, 
-    logx=logx, 
     logy=logy, 
     normSignal=normSignal, 
     normPSD=normPSD, 
@@ -270,109 +298,89 @@ def prepareSpectrogram(
     transformMethod=transformMethod, 
     **kwargs)
 
-    lfp = data['lfp']
-    allFreqs = data['allFreqs']
-    allSignal = data['allSignal']
+    print('Preparing spectrogram data...')
+
+    if not sim:
+        from .. import sim
+
+    if not timeRange:
+        timeRange = [0, sim.cfg.duration]
+
+    lfps = np.array(data['electrodes']['lfps'])
+    names = data['electrodes']['names']
     electrodes = data['electrodes']
+
+    spect_data = {}
+    spect_data['vmin'] = None
+    spect_data['vmax'] = None
 
     # Morlet wavelet transform method
     if transformMethod == 'morlet':
+        
         from ..support.morlet import MorletSpec, index2ms
 
+        fs = int(1000.0/sim.cfg.recordStep)
+
         spec = []
+        spect_data['morlet'] = []
+        spect_data['extent'] = []
+
         freqList = None
         if logy:
             freqList = np.logspace(np.log10(minFreq), np.log10(maxFreq), int((maxFreq-minFreq)/stepFreq))
 
-        for i, elec in enumerate(electrodes):
-            if elec == 'avg':
-                lfpPlot = np.mean(lfp, axis=1)
-            elif isinstance(elec, Number) and (inputLFP is not None or elec <= sim.net.recXElectrode.nsites):
-                lfpPlot = lfp[:, elec]
-            fs = int(1000.0 / sim.cfg.recordStep)
-            t_spec = np.linspace(0, index2ms(len(lfpPlot), fs), len(lfpPlot))
-            spec.append(MorletSpec(lfpPlot, fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq, lfreq=freqList))
-
-        f = freqList if freqList is not None else np.array(range(minFreq, maxFreq+1, stepFreq))   # only used as output for user
+        for i, elec in enumerate(names):
+            lfp_elec = lfps[i, :]
+            t_spec = np.linspace(0, index2ms(len(lfp_elec), fs), len(lfp_elec))
+            spec.append(MorletSpec(lfp_elec, fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq, lfreq=freqList))
 
         vmin = np.array([s.TFR for s in spec]).min()
         vmax = np.array([s.TFR for s in spec]).max()
 
-        for i, elec in enumerate(electrodes):
+        if normSpec:
+            vmin = 0
+            vmax = 1
+
+        spect_data['vmin'] = vmin
+        spect_data['vmax'] = vmax
+
+        for i, elec in enumerate(names):
             T = timeRange
             F = spec[i].f
             if normSpec:
-                spec[i].TFR = spec[i].TFR / vmax
-                S = spec[i].TFR
-                vc = [0, 1]
+                S = spec[i].TFR / vmax
             else:
                 S = spec[i].TFR
-                vc = [vmin, vmax]
-
-            plt.imshow(S, extent=(np.amin(T), np.amax(T), np.amin(F), np.amax(F)), origin='lower', interpolation='None', aspect='auto', vmin=vc[0], vmax=vc[1], cmap=plt.get_cmap('viridis'))
+            spect_data['morlet'].append(S)
+            spect_data['extent'].append([np.amin(T), np.amax(T), np.amin(F), np.amax(F)])
             
-
     # FFT transform method
     elif transformMethod == 'fft':
 
         from scipy import signal as spsig
-        spec = []
+        
+        spect_data['fft'] = []
 
-        for i, elec in enumerate(electrodes):
-            if elec == 'avg':
-                lfpPlot = np.mean(lfp, axis=1)
-            elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
-                lfpPlot = lfp[:, elec]
-            # creates spectrogram over a range of data
-            # from: http://joelyancey.com/lfp-python-practice/
+        for i, elec in enumerate(names):
+            lfp_elec = lfps[:, i]
             fs = int(1000.0/sim.cfg.recordStep)
-            f, t_spec, x_spec = spsig.spectrogram(lfpPlot, fs=fs, window='hanning', detrend=mlab.detrend_none, nperseg=nperseg, noverlap=noverlap, nfft=NFFT,  mode='psd')
+            f, t_spec, x_spec = spsig.spectrogram(lfp_elec, fs=fs, window='hanning', detrend=mlab.detrend_none, nperseg=nperseg, noverlap=noverlap, nfft=NFFT,  mode='psd')
             x_mesh, y_mesh = np.meshgrid(t_spec*1000.0, f[f<maxFreq])
-            spec.append(10*np.log10(x_spec[f<maxFreq]))
+            spect_data['fft'].append(10*np.log10(x_spec[f<maxFreq]))
 
-        vmin = np.array(spec).min()
-        vmax = np.array(spec).max()
+        vmin = np.array(spect_data['fft']).min()
+        vmax = np.array(spect_data['fft']).max()
+        
+        spect_data['vmin'] = vmin
+        spect_data['vmax'] = vmax
 
-        for i, elec in enumerate(electrodes):
-            plt.pcolormesh(x_mesh, y_mesh, spec[i], cmap=cm.viridis, vmin=vmin, vmax=vmax)
+        spect_data['xmesh'] = x_mesh
+        spect_data['ymesh'] = y_mesh
+
+        #for i, elec in enumerate(electrodes):
+        #    plt.pcolormesh(x_mesh, y_mesh, spec[i], cmap=cm.viridis, vmin=vmin, vmax=vmax)
             
+    data['electrodes']['spectrogram'] = spect_data
 
     return data
     
-        
-
-    # # locations ------------------------------
-    # if 'locations' in plots:
-    #     try:
-    #         cvals = [] # used to store total transfer resistance
-
-    #         for cell in sim.net.compartCells:
-    #             trSegs = list(np.sum(sim.net.recXElectrode.getTransferResistance(cell.gid)*1e3, axis=0)) # convert from Mohm to kilohm
-    #             if not includeAxon:
-    #                 i = 0
-    #                 for secName, sec in cell.secs.items():
-    #                     nseg = sec['hObj'].nseg #.geom.nseg
-    #                     if 'axon' in secName:
-    #                         for j in range(i,i+nseg): del trSegs[j]
-    #                     i+=nseg
-    #             cvals.extend(trSegs)
-
-    #         includePost = [c.gid for c in sim.net.compartCells]
-    #         fig = sim.analysis.plotShape(includePost=includePost, showElectrodes=electrodes, cvals=cvals, includeAxon=includeAxon, dpi=dpi,
-    #         fontSize=fontSize, saveFig=saveFig, showFig=showFig, figSize=figSize)[0]
-    #         figs.append(fig)
-    #     except:
-    #         print('  Failed to plot LFP locations...')
-
-
-
-    # outputData = {'LFP': lfp, 'electrodes': electrodes, 'timeRange': timeRange, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
-
-    # if 'timeSeries' in plots:
-    #     outputData.update({'t': t})
-
-    # if 'PSD' in plots:
-    #     outputData.update({'allFreqs': allFreqs, 'allSignal': allSignal})
-
-    # if 'spectrogram' in plots:
-    #     outputData.update({'spec': spec, 't': t_spec*1000.0, 'freqs': f[f<=maxFreq]})

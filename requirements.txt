@@ -1,5 +1,5 @@
 numpy
-matplotlib
+matplotlib<=3.5.1
 scipy
 pandas
 future
@@ -9,3 +9,5 @@ pyneuroml
 neuron
 pytest
 inspyred
+schema
+lfpykit

@@ -1,12 +1,119 @@
+# Unreleased
+
+**New features**
+
+- Added ability to load PointCell from saved network
+
+- Added MultiPlotter class to allow plotting line data on multiple axes
+
+- Added option to use separate axis for each PSD trace (set axis='multi')
+
+
+**Bug fixes**
+
+- Fixed bug with loading CompartCell with custom mechanisms from saved network
+
+# Version 1.0.2.1
+
+**New features**
+
+- Added axis sharing and twinning capability
+
+- Updated metadata with dipole specs
+
+- Updated some LFP examples
+
+- Added clearAll argument to sim.create()
+
+- Changed ordering of documentation to “by source”
+
+**Bug fixes**
+
+- Fixed bug in plotting when overlaying axis
+
+- Fixed bug with syncLines option in plotter
+
+- Fixed bugs in MultiFigs (2D subplots, bug in LFP with multi axis)
+
+- Fixed bug in checkAvailablePlots()
+
+- Fixed gathering dipoleSum and LFPPops data from nodes
+
+# Version 1.0.2
+
+**New features**
+
+- Added back the syncLines argument to plotRaster()
+
+- Updated conversion to/from NeuroML 2
+
+- Added RxD-based spreading depression example model
+
+**Bug fixes**
+
+- Avoid exception in plotSpikeHist() and plotSpikeFreq() when pop has no spikes
+
 # Version 1.0.1
 
 **New features**
+
+- Added new plotting module with custom plotters
+
+- Separated analysis.plotSpikeRaster into analysis.prepareRaster and plotting.plotRaster
+
+- Separated analysis.plotSpikeHist into analysis.prepareSpikeData, analysis.prepareSpikeHist, plotting.plotSpikeHist and plotting.plotSpikeFreq
+
+- Separated analysis.plotLFP into analysis.prepareLFP, analysis.preparePSD, analysis.prepareSpectrogram, plotting.plotLFPTimeSeries, plotting.plotLFPPSD, plotting.plotLFPSpectrogram, and plotting.plotLFPLocations
+
+- Mapped old analysis.plots onto new ones
+
+- Interfaced with LFPkit to enable recording/plotting of dipole current moments and EEG signals
+
+- Added Current Source Density (CSD) analysis and plots
 
 - Enabled selecting a subset of cells to save individual LFP signal from via cfg.saveLFPCells = [...] 
 
 - Added cfg.saveLFPPops to store LFP generated individually by each population
 
+- Function to return batch parameter combinations (used for GUI)
+
+- Added jupyter nb tutorials 
+
+- Added hippocampus CA3 model example
+
+- Updated SONATA importing
+
+- Improved distributed saving and interval saving (more robust)
+
+- Added mapping of netParams values within cfg (used for batch sims in GUI)
+
+- Extended Action tests to pull requests (not just push)
+
+
 **Bug fixes**
+
+- Fixed setting cfgMapping nested params when not string
+
+- Fixed defineCellShapes when sec['hObj'] is not a h.Section()
+
+- Fixed bug when using lognormal in string functions
+
+- Added rxdmath to avoid RxD error
+
+- Fixed bug in Tutorial 8 (batch)
+
+- When saving to JSON wait until file exists before returning (to avoid exiting before saving finished)
+
+
+# Version 1.0.0.2
+
+**New features**
+
+- Added function to get list of batch grid search parameter combinations 
+
+- Save output of mpi_bulletin batches to .run and .err files
+
+- Fixed bug in loading exotic stim param values
 
 - Fixed bug in loading where sim was required to have rank attribute
 

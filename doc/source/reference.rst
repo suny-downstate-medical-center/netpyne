@@ -723,17 +723,144 @@ Reaction-Diffusion (RxD) parameters
 
 The ``rxdParams`` ordered dictionary can be used to define the different RxD components:
 
-	* **regions** - dictionary with RxD Regions (also used to define 'extracellular' regions)
+* **regions** - Dictionary with RxD Regions (may be also used to define 'extracellular' regions)
 
-	* **species** - dictionary with RxD Species
+	This component is mandatory and is required to define where the reactions are taken place. Each item of the ``rxdParams['regions']`` is a dictionary in which the key specifies the name of the region (to be used in further definitions) and the value is a dictionary containing the following fields:
 
-	* **states** - dictionary with RxD States
+	* ``cells``: List of cells relevant for the definition of intracellular domains where species, reactions and others need to be specified. This list can include cell gids (e.g. ``[1]`` or ``[0, 3]``), population labels (e.g. ``['S']`` or ``['all']``), or a mix (e.g. ``[['S',[0,2]]]`` or ``[('S',[0,2])]``).
 
-	* **reactions** - dictionary with RxD Reactions
+	* ``secs``: List of sections to be included for the cells listed above (to be valid, they should be in the "secs" of the cells). For example, ['soma','Bdend'].
 
-	* **multicompartmentReactions** - dictionary with RxD MultiCompartmentReactions
+	Both ``cells`` and ``secs`` are used to specify the NEURON Sections where (intracellular) RxD is a relevant component.
 
-	* **rates** - dictionary with RxD Rates
+	* ``nrn_region``: An option that defines whether the region corresponds to the intracellular/cytosolic domain of the cell (for which the transmembrane voltage is being computed) or not. Available options are: `'i'` (just inside the plasma membrane), `'o'` (just outside the plasma), or `None` (none of the above, for example, an intracellular organelle).
+
+	* ``geometry``: This entry defines the geometry associated to the region. According to different options in NEURON, it can be either a string (`'inside'` or `'membrane'`) or a dictionary with two entries: the `'class'` indicating the kind of geometry (`'DistributedBoundary'`, `'FractionalVolume'`, `'FixedCrossSection'`, `'FixedPerimeter'`, `'ScalableBorder'`, `'Shell'`) and the `'args'` with the particular arguments neccessary to define it, structured in a dictionary. For example,
+
+		.. code-block:: python
+
+			netParams.rxdParams['regions'] = {'membrane_in':{'cells': 'all', 'secs': 'all', 'geometry': {'class': 'ScalableBorder', 'args': {'scale': 1, 'on_cell_surface': False}}}}.
+
+	* ``dimension``: This is an integer (1 or 3), indicating whether the simulation is 1D or 3D.
+
+	* ``dx``: A float (or int) specifying the discretization.
+
+	* ``extracellular``: Boolean option (``False`` if not specified) indicating whether the region represents the extracellular space or not. If ``True``, all the previous extries should not be specified. Instead, the entries corresponding to ``rxdParams['extracellular']`` (see next) has to be considered, but at the same level of the dictionary hierarchy. For example, ``rxdParams['regions']={'ext':{'extracellular':True, 'xlo': -100, ...}}``.
+
+
+	Example,
+
+		.. code-block:: python
+
+			netParams.rxdParams['regions'] = {'cyt':{'cells': ['all'], 'secs': ['soma','Bdend'], 'nrn_region': 'i'}}
+
+
+* **extracellular** - Dictionary with the parameters neccessary to specify the RxD Extracellular region.
+
+	* ``xlo``, ``ylo``, ``zlo``: Values indicating the left-bottom-back corner of the box specifying the extracellular domain.
+
+	* ``xhi``, ``yhi``, ``zhi``: Values indicating the right-upper-front corner of the box specifying the extracellular domain.
+
+	* ``dx``: Value (int, float) specifying the discretization. In this case, the extracellular region, it could be a 3D-tuple if other than square voxels are needed.
+
+	The previous entries are mandatory. Next ones are optional (default values are considered, see NEURON).
+
+	* ``volume_fraction``: Value indicating the available space to diffuse.
+
+	* ``tortuosity``: Value indicating how restricted are the stright pathways to diffuse.
+
+	For example,
+
+		.. code-block:: python
+
+			netParams.rxdParams['extracellular'] = {'xlo':-100, 'ylo':-100, 'zlo':-100, 'xhi':100, 'yhi':100, 'zhi':100, 'dx':(0.2,0.2,0.4), 'volume_fraction':0.2, 'tortuosity': 1.6}.
+
+
+* **species** - This component is also mandatory and it corresponds to a dictionary with all the definitions to specify relevant species and the domains where they are involved. The key is the name/label of the species and the value is a dictionary with the following entries:
+
+	* ``regions``: A list of the regions (listed in ``rxdParams['regions']``) where the species are present. If it is a single region, it may be specified without listing. For example, ``'cyt'`` or ``['cyt','er']``.
+
+	* ``d``: Diffusion coefficient of the species.
+
+	* ``charge``: Signed charge, if any, of the species.
+
+	* ``initial``: Initial state of the concentration field, in mM. It may be a single value for all of its definition domain or a string-based function, where the variable is a node (in RxD's framework) property. For example, ``'1 if (0.4 < node.x < 0.6) else 0'``.
+
+	* ``ecs_boundary_conditions``: If an Extracellular region is defined, boundary conditions should be given. Options are ``None`` (default) for zero flux condition (Neumann type) or a value indicating the concentration at the boundary (Dirichlet).
+
+	* ``atolscale``: A number (default = 1) indicating the scale factor for absolute tolerance in variable step integrations for this particular species' concentration.
+
+	* ``name``: A string labeling this species. Important when RxD will be sharing species with hoc models, as this name has to be the same as the NEURON range variable.
+
+
+	Example,
+
+		.. code-block:: python
+
+			netParams.rxdParams['species'] = {'ca':{'regions': 'cyt', 'd': 0.25, 'charge': 2, 'name': 'ca', 'initial': '1 if node.sec in ['Bdend'] else 0'}}
+
+
+* **states** - Dictionary declaring State variables that evolve, through other than reactions, during the simulation. The key is the name assigned to this variable and the value is a dictionary with the following entries:
+
+	* ``regions``: A list of the regions where the State variable is relevant (i.e. it evolves there). If it is a single region, it may be specified without listing.
+
+	* ``initial``: Initial state of this variable. Either a single-value valid in the entire domain (where this variable is specified) or a string-based function with node properties as the independent variable.
+
+	* ``name``:  A string internally labeling this variable.
+
+	Example,
+
+		.. code-block:: python
+
+			netParams.rxdParams['states'] = {'mgate':{'regions': 'cyt', 'initial': 0.05, 'name': 'mgate'}}
+
+
+* **reactions** - Dictionary specifying the reactions, who and where, under analysis. The key labels the reaction and the value is a dictionary with the following entries:
+
+	* ``reactant``: A string declaring the left-hand side of the chemical reaction, with the species and the proper stechiometry. For example, ``ca + 2 * cl``, where 'ca' and 'cl' are defined in the 'species' entry and are available in the region where the reaction takes place (see next).
+
+	* ``product``: The same, for the right-hand side of the chemical reaction. For example, ``cacl2``, where 'cacl2' is a species properly defined.
+
+	* ``rate_f``: Rate for the forward reaction, for the scheme defined above. It can be either a numerical value or a string-based function (depending on species, etcetera; for example to implement a Hill equation).
+
+	* ``rate_b``: Same as above, for the backward reaction. This entry is optional.
+
+	* ``regions``: This entry is used to constrain the reaction to proceed only in a list of regions. If it is a single region, it may be specified without listing. If not provided, the reaction proceeds in all (plausible) regions.
+
+	* ``custom_dynamics``: This boolean entry specifies whether law of mass-action for elementary reactions does apply or not. If 'True', dynamics of each species' concentration satisfy a mass-action scheme.
+
+	Example,
+
+		.. code-block:: python
+
+			netParams.rxdParams['reactions'] = {'phosphorylation':{'reactant': 'E', 'product': 'EP', 'rate_f': 'kmax1 * E/ (k1 + E)', 'rate_b': 'kmax2 * EP/ (k2 + EP)','custom_dynamics': True}}
+
+
+* **multicompartmentReactions** - Dictionary specifying reactions with species belonging to different regions. As in the previous case, the key labels the reaction and the value is a dictionary with exactly the same entries as before plus two further (optional) entries:
+
+	* ``membrane``: The region (with a geometry compatible with a membrane or a border) involved in the passage of ions from one region to another.
+
+	* ``membrane_flux``: This boolen entry indicates whether the reaction produces a current across the plasma membrane that should affect the membrane potential.
+.
+	Note: Take into account that species appearing in the 'reactant' or 'product' entries should be specified along with the region from which they are taken in the reaction scheme. For example, ``'ca[cyt]'``.
+
+* **rates** - Dictionary specifying rates controlling the dynamics of selected species or states. The key labels the dynamical scheme and the value is a dictionary with the following entries:
+
+	* ``species``: A string indicating which species or states is being considered.
+
+	* ``rate``: Value for the rate in the dynamical equation governing the temporal evolution of the species/state.
+
+	* ``regions``: This entry is used to constrain the dynamics to proceed only in a list of regions. If it is a single region, it may be specified without listing.
+
+	* ``membrane_flux``: As before, a boolean entry specifying whether a current should be considered or not. If 'True' the 'region' entry should correspond to a unique region with a membrane-like geometry.
+	
+	Example,
+
+		.. code-block:: python
+
+			netParams.rxdParams['rates'] = {'h_evol':{'species': h_gate, 'rate': '(1. / (1 + 1000. * ca[cyt] / (0.3)) - h_gate) / tau'}}
+
+* **constants** - Dictionary specifying constants used by the user in, for example, string-based functions.
 
 The parameters of each dictionary follow the same structure as described in the RxD package: https://www.neuron.yale.edu/neuron/static/docs/rxd/index.html 
 
@@ -782,7 +909,7 @@ Related to recording:
 * **recordTraces** - Dict of traces to record (default: {} ; example: {'V_soma':{'sec':'soma','loc':0.5,'var':'v'}})
 * **recordSpikesGids** - List of cells to record spike times from  (-1 to record from all). Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. (default: -1)
 * **recordStim** - Record spikes of cell stims (default: False)
-* **recordLFP** - 3D locations of local field potential (LFP) electrodes, e.g. [[50, 100, 50], [50, 200, 50]] (note the y coordinate represents depth, so will be represented as a negative value when plotted). The LFP signal in each electrode is obtained by summing the extracellular potential contributed by each neuronal segment, calculated using the "line source approximation" and assuming an Ohmic medium with conductivity |sigma| = 0.3 mS/mm. Stored in ``sim.allSimData['LFP']``. (default: False).
+* **recordLFP** - 3D locations of local field potential (LFP) electrodes, e.g. [[50, 100, 50], [50, 200, 50]] (note the y coordinate represents depth, so will be represented as a negative value when plotted). The LFP signal in each electrode is obtained by summing the extracellular potential contributed by each neuronal segment, calculated using the "line source approximation" and assuming an Ohmic medium with conductivity sigma = 0.3 mS/mm. Stored in ``sim.allSimData['LFP']``. (default: False).
 * **saveLFPCells** - Store LFP generated individually by each cell in ``sim.allSimData['LFPCells']``; can select a subset of cells to save e.g. [3, 'PYR', ('PV2', 5)] 
 * **recordStep** - Step size in ms for data recording (default: 0.1)
 
@@ -1161,6 +1288,163 @@ A representation of the instantiated network structure generated by NetPyNE is s
 	:align: center
 
 
+NetPyNE data model: Structure of instantiated network
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The model is instantiated in **sim.net** as a **Network** object. This object has a number of intrisic attributes, and others may or may not be present depending on particular implementations. The two basic elements composing "sim.net" are:
+
+* **pops** - An ordered dictionary describing all populations implemented in the network. Its entries are a key labeling the population (as defined in ``netParams.popParams``) and a value referencing the **Pop** object. This object has a number of attributes:
+
+	* **tags**: Dictionary describing different attributes of the population, related to the declaration rule that defines it. For example:
+
+		``sim.net.pops['Exc_L4'].tags = {'cellType': 'PYR', 'numCells': 100, 'pop': 'Exc_L4'}``
+
+	* **cellGids**: List of neuron identifiers (global ids) composing the population. For example:
+
+		``sim.net.pops['Exc_L4'].cellGids = [0, 1, 2, 3, 4]``
+
+	* **cellModelClass**: Type describing which particular cell model class was implemented (e.g. ``compartCell`` or ``pointCell``).
+
+* **cells** - A list of cells instantiated **locally** (this disctinction is important when implementing parallel computing). Each element in the list is a **Cell** object (among different cell model classes). As a Cell object, there are a number of intrinsic attributes:
+
+	* **gid**: cell global identification number
+
+	* **tags**: Dictionary describing different attributes of the cell, which may include some tags from the population it belongs to (tags list in ``netParams.popTagsCopiedToCells``, for example 'cellType'). These attributes are:
+
+		* **pop**: Label of the population it belongs to. For example:
+
+			``sim.net.cells[0].tags['pop'] = 'Exc_L4'``
+
+		* **x**, **y**, **z**: Cell's x-, y-, z-coordinates. For example:
+
+			``sim.net.cells[0].tags['x'] = -2.3535``
+
+		* **xnorm**, **ynorm**, **znorm**: Cell's x-, y-, z-normalized coordinates.
+
+		* Other tags depending on particular situations (for example, declaring populations in ``netParams.popParams`` with a ``cellsList``, including ``params``).
+
+	* **conns**: List of connections (this cell at the post-synaptic side). Each element in this list (a particular connection) is a dictionary with the following entries:
+
+		* **preGid**: Identity of the presynaptic cell (Gid). In the case this connection arises from a stimulation that requires a connection, the value will correspond to 'NetStim'. 
+
+		* **weight**: Weight of the connection.
+
+		* **delay**: Delay of the connection.
+
+		* **synMech**: Label of the synaptic mechanism governing this connection.
+
+		* Depending on different scenarios, other entries will appear:
+
+			* If the cell model class is NOT a point process, there will be a section/location where the synapse is put on. Then, these entries will appear:
+				* **sec**: Section hosting the synapse. 
+
+				* **loc**: Location within this section where the synapse is displayed.
+
+			* If the connection is specified as a gap junction (``netParams.connParams['rule']['gapJunction']= True``, only available for 'compartCell' cell model class), entries associated to this kind of connections will appear:
+ 
+				* **gapJunction**: Connection side ('pre' or 'post'), as specified by the rule.
+
+				* **preLoc**: Gap junction location at pre-synaptic side, as specified by the rule (for cells at 'post').
+
+				* **gapId**: Id of the cell at its connection side.
+
+				* **preGapId**: Id of the cell at other connection side.
+
+			* **shape**, **plast**, **weightIndex**: Entries used for implementing specific connectivity patterns or processes.
+
+		* **hObj**: Except for the case of gap junctions, all other connections are implemented via NEURON ``NetCon`` objects. The object itself is the value correspoding to this 'hObj' key. So, the NEURON object can be accessed (and modified) with, for example,
+
+			``sim.net.cells[0].conns[0]['hObj']``
+
+		In particular, methods corresponding to these objects can be called from command line (once the network has been instantiated). For example: 
+
+			``sim.net.cells[0].conns[0]['hObj'].syn()``.
+
+	* **stims**: List of stimuli incoming to the cell. Each element in this list is a dictionary with the following entries:
+
+		* **label**: Label of the rule specifying target parameters
+
+		* **source**: Label of the source rule that defines the incoming stimulus.
+
+		* **type**: Type of stimulus. For example:
+
+			``sim.net.cells[0].stims[0]['type'] = 'NetStim'`` or ``sim.net.cells[0].stims[0]['type'] = 'IClamp'``
+
+		* **sec**: Section where the stimulus is targeting.
+
+		* **loc**: Location within the section where the stimulus is impinging on.
+
+		* Properties defining the incoming stimuli. For example, 'rate', 'noise', 'start', and 'number' for **NetStim** (plus 'seed' to initialize the random generator).
+
+		* **hObj**: NEURON object associated to the stimuli. For example:
+
+			``sim.net.cells[0].stims[0]['hObj']``
+
+		Methods associated to the NEURON object are readily available. For example, if the object is an 'IClamp', then we can change its duration via ``sim.net.cells[0].stims[0]['hObj'].dur``
+
+
+	* Depending on the cell model class, other entries are available. In particular, for the **'compartCell'** cell model class, the following one:
+
+		* **secs**: Dictionary with the sections composing the cell. Within this dictionary, the following entries:
+
+			* **geom**: Dictionary with the geometrical properties of the cylinder composing the section. For example,
+
+				``sim.net.cells[0].secs['soma']['geom'] = {diam: 18.8, L: 18.8, Ra: 123.0}``
+	
+			* **topol**: Dictionary with the specifications of the topology (how is it connected to other sections).
+
+			* **mechs**: Dictionary with distributed mechanisms. For example,
+
+ 				``sim.net.cells[0].secs['soma']['mechs']['hh'] = {gnabar: 0.12, gkbar: 0.036, gl: 0.003, el: -70}``
+
+			* **ions**: Dictionary specyfing ionic mechanisms included in the section.
+
+			* **synMechs**: List of all synapses located at this section. Each element in this list is a dictionary with all the information related to it:
+
+				* **label**: Label describing the rule that specifies the synaptic dynamics.
+
+				* **loc**: Location within the section where the synapse is displayed
+
+				* properties associated to the definition of the synaptic model. For example, 'tau1', 'e', etcetera.
+
+				* **hObj**: NEURON object associated to the synapse. For example 
+
+					``sim.net.cells[0].secs['soma']['synMechs'][0]['hObj'] = Exp2Syn[0]``
+
+			* **pointps**: Dictionary specifying a point process governing the voltage dynamics of the section, including the name of the 'mod' where the nonlinear mechanism is defined and all neccessary parameters. 
+
+			* Other scalar properties: **spikeGenLoc**, **vinit**, etcetera.
+
+			* **hObj**: NEURON object associated to the section. For example,
+
+				``type(sim.net.cells[0].secs['soma']['hObj']) = nrn.Section``
+
+
+* Beyond these two elements ('pops' and 'cells'), there are a number of elements also defining and composing "sim.net":
+
+	* **allPops**: Dictionary with all populations composing the network. Each key correspond to a defined population, and its value is a dictionary with information about it ('tags', 'cellGids', etc).
+
+	* **allCells**: List with information about all cells (global). Each element/cell is a dictionary with all the information defining this cell.
+
+
+	* **params**: netParams specifying the network.
+
+	* **rxd**: Dictionary with all the specifications of a Reaction-Diffusion model (same format as in ``netParams.rxdParams``) PLUS the associated NEURON objects.
+
+	* **recXElectrode**: Object associated to recording LFP (if any).
+
+	* **compartCells** and **popForEachGid**: Object cells and a dictionary, {'gid': 'pop'}, for use during LFP and dipole recording.
+
+	* **cells_dpls** and **cells_dpl**: Dictionary with vectors of dipoles for each cell, over time and at one time, for use during LFP and dipole recording.
+
+	* **gid2lid**: Dictionary mapping global to local ids, {'gid': 'lid'}.
+
+	* **lastGid**: Last cell's Gid defined. Useful during development of the network.
+
+	* **lastGapId**: Last gap junction defined. Useful during development of the network.
+
+	* **preGapJunctions**: List storing information about presynaptic side, according to the direction written in the connectivity rule, for gap junctions.
+
+
 .. _dicts_dotnotation:
 
 Accessing dictionaries using dot notation: Dict and ODict classes 
@@ -1316,10 +1600,57 @@ Cell class
 		- 'delay'
 
 
-Simulation output data (spikes, etc)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Simulation output data
+^^^^^^^^^^^^^^^^^^^^^^
 
-- sim.allSimData (Dict)
+The output data of simulation is stored in dictionaries ``sim.simData`` and ``sim.allSimData``. The former should be used in sinlge process environment, while the latter contains data gathered from all nodes from parallel context.
+The contents of simulation output data depend on the settings in ``simConfig``, and may contain the following.
+
+**1. Traces of cells**
+
+Keys of ``simData`` correspond to keys of ``simConfig.recordTraces`` (e.g. 'V_soma'), with the value of each trace containing in turn a dictionary with the list of cells for which this traces was recorded. The recorded traces will be stored as ``h.Vector`` for each cell. For example, for simConfig setting::
+
+	simConfig.recordTraces = {'V_soma':{'sec':'soma','loc':0.5,'var':'v'},
+                          	  'Ina_soma':{'sec':'soma','loc':0.5,'var':'ina'}}
+	simConfig.recordCells = [1, 3]
+	simConfig.recordStep = 0.1
+
+the ``simData`` dictionary will contain (among others)::
+
+	{'V_soma': {'cell_1': <h.Vector>, 'cell_3': <h.Vector>},
+ 	 'Ina_soma': {'cell_1': <h.Vector>, 'cell_3': <h.Vector>}
+
+
+where the length of each Vector depends on ``simConfig.duration``  and ``simConfig.recordStep``
+
+**2. Spikes**
+
+``spkt``, ``spkid`` - ordered lists of spike times and cell gids for each spike. 
+
+The ``simConfig.recordCellsSpikes`` (True, by default) can be used to record only from a subset of cells or turn off spike recordig.
+
+**3. Stimuli to the network**
+
+``stims``. For each population of ``NetStim`` or ``VecStim`` it contains the list of spike times (``h.Vector``) for each target cell. 
+Only available if ``simConfig.recordStim`` is ``True``.
+
+**4. LFP-related data**
+
+``LFP``, ``LFPCells``, ``LFPPops``. Depend on the ``recordLFP``, ``saveLFPCells``, ``saveLFPPops`` options in ``simConfig``.
+
+- ``LFP`` - is an np.array of LFP values of shape ``(num timesteps, num electrodes)``
+- ``LFPCells`` - dictionary of LFP data recorded from each cell (LFP data is in format as above)
+- ``LFPPops`` - dictionary of average LFP data recorded from each population (LFP data is in format as above)
+
+**5. Dipole-related data**
+
+``dipoleSum``, ``dipoleCells``, ``dipolePops``. Depend on the ``recordDipole``, ``saveDipoleCells``, ``saveDipolePops`` options in ``simConfig``
+
+- ``dipoleSum`` - sum of current dipole moments at each timestep ``(num timesteps, 3)``; can be used for EEG/MEG calculation
+- ``dipoleCells`` - dictionary of current dipole moments recorded for each cell (dipoles data is in format as above)
+- ``dipolePops`` - dictionary of average current dipole moments recorded for each population (dipoles data is in format as above)	
+
+
 
 
 Data saved to file

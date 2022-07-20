@@ -32,4 +32,3 @@ FUNCTION ghk(v(mV), ci(mM), co(mM), z) (.001 coul/cm3) {
     }
     ghk = (.001)*z*FARADAY*(ci*exi - co)*fxi
 }
-

@@ -337,7 +337,7 @@ echo $PBS_O_WORKDIR
             """ % (jobName, walltime, queueName, nodesppn, jobName, jobName, custom, command)
 
         # Send job_string to qsub
-        print('Submitting0 job ',jobName)
+        print('Submitting job ',jobName)
         print(jobString+'\n')
 
         batchfile = '%s.pbs'%(jobName)
@@ -392,7 +392,7 @@ wait
 
         # Send job_string to sbatch
 
-        print('Submitting1 job ',jobName)
+        print('Submitting job ',jobName)
         print(jobString+'\n')
 
         batchfile = '%s.sbatch'%(jobName)

@@ -4,6 +4,11 @@
 
 - Added ability to load PointCell from saved network
 
+- Added MultiPlotter class to allow plotting line data on multiple axes
+
+- Added option to use separate axis for each PSD trace (set axis='multi')
+
+
 **Bug fixes**
 
 - Fixed bug with loading CompartCell with custom mechanisms from saved network

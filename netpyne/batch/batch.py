@@ -201,7 +201,7 @@ class Batch(object):
 
         # save initial seed
         with open(self.saveFolder + '/_seed.seed', 'w') as seed_file:
-            if not self.seed: self.seed = int(time())
+            if self.seed is None: self.seed = int(time())
             seed_file.write(str(self.seed))
 
         # set cfg

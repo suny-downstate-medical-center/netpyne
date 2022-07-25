@@ -82,10 +82,10 @@ def addRxD (self, nthreads=None):
             self._addSpecies(rxdParams['species'])
         if 'states' in rxdParams:
             self._addStates(rxdParams['states'])
-        if 'reactions' in rxdParams:
-            self._addReactions(rxdParams['reactions'])
         if 'parameters' in rxdParams:
             self._addParameters(rxdParams['parameters'])
+        if 'reactions' in rxdParams:
+            self._addReactions(rxdParams['reactions'])
         if 'multicompartmentReactions' in rxdParams:
             self._addReactions(rxdParams['multicompartmentReactions'], multicompartment=True)
         if 'rates' in rxdParams:
@@ -133,8 +133,7 @@ def _addRegions(self, params):
         if isinstance(geometry, dict):
             try:
                 if 'args' in geometry:
-                    self.rxd['regions'][label]['geometry']['hObj'] = getattr(rxd, param['geometry']['class'])(**param['geometry']['args'])
-                    geometry = self.rxd['regions'][label]['geometry']['hObj']
+                    geometry = getattr(rxd, param['geometry']['class'])(**param['geometry']['args'])
             except:
                 print('  Error creating %s Region geometry using %s class'%(label, param['geometry']['class']))
         elif isinstance(param['geometry'], str):
@@ -379,11 +378,16 @@ def _addParameters(self, params):
         else:
             value = param['value']
         
+        if 'name' not in param:
+            name = label
+        else:
+            name = param['name'] 
+        
         # call rxd method to create Region
         self.rxd['parameters'][label]['hObj'] = rxd.Parameter(regions=nrnRegions, 
                                                     value=value,
                                                     charge=param['charge'],
-                                                    name=param['name'])
+                                                    name=name)
         print('  Created Parameter %s'%(label))
 
 # -----------------------------------------------------------------------------

@@ -781,6 +781,7 @@ def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags):
         if 'gapJunction' in connParam:
             params['gapJunction'] = connParam.get('gapJunction')
             params['preLoc'] = connParam.get('preLoc')
+            params['gapJuncPointer'] = connParam.get('gapJuncPointer')
         elif synMech in self.params.synMechsReferringPreLoc:
             # save synapse pre-cell location to be used in stringFunc for synMech.
             # for optimization purpose, do it only if preLoc is referenced for a given synMech

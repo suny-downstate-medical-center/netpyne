@@ -807,7 +807,8 @@ class CompartCell (Cell):
                                 'preGid': self.gid,
                                 'sec': params.get('preSec', 'soma'),
                                 'loc': params.get('preLoc', 0.5),
-                                'weight': params['weight'],
+                                'gapJuncPointer': params.get('gapJuncPointer'),
+                                'weight': params.get('weight', 0.0),
                                 'gapId': preGapId,
                                 'preGapId': postGapId,
                                 'synMech': params['synMech'],
@@ -836,10 +837,13 @@ class CompartCell (Cell):
             # NEURON objects
             if sim.cfg.createNEURONObj:
                 # gap junctions
-                if params.get('gapJunction', 'False') in [True, 'pre', 'post']:  # create NEURON obj for pre and post
-                    synMechs[i]['hObj'].weight = weights[i]
+                if params.get('gapJunction', False) in [True, 'pre', 'post']:  # create NEURON obj for pre and post
+                    try: # weight for gap junction is optional
+                        synMechs[i]['hObj'].weight = weights[i]
+                    except:
+                        pass
                     sourceVar = self.secs[synMechSecs[i]]['hObj'](synMechLocs[i])._ref_v
-                    targetVar = synMechs[i]['hObj']._ref_vpeer  # assumes variable is vpeer -- make a parameter
+                    targetVar = getattr(synMechs[i]['hObj'], '_ref_' + params.get('gapJuncPointer', 'vpeer'))
                     sec = self.secs[synMechSecs[i]]
                     sim.pc.target_var(targetVar, connParams['gapId'])
                     self.secs[synMechSecs[i]]['hObj'].push()

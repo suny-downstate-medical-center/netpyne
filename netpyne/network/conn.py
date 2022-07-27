@@ -722,7 +722,7 @@ def fromListConn(self, preCellsTags, postCellsTags, connParam):
 # -----------------------------------------------------------------------------
 # Set parameters and create connection
 # -----------------------------------------------------------------------------
-def _addCellConn(self, connParam, preCellGid, postCellGid, preCellTags):
+def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags):
     from .. import sim
 
     # set final param values

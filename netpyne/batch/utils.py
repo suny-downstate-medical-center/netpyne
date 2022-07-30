@@ -313,6 +313,12 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
             indexToRerun = args.get('defaultFitness')
         else:
             indexToRerun = args.get('maxFitness')
+        # summary statistics
+        collectSummaryStats = batch.method == 'sbi'
+        if collectSummaryStats:
+            summaryStatsFunc = args.get('summaryStats')
+            summaryStatsArgs = args.get('summaryStatisticArg')
+            summaryStatsLength =  args.get('summaryStatisticLength')
 
         # read params or set defaults
         sleepInterval = args.get('sleepInterval', 0.2)
@@ -324,7 +330,7 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
         jobids = {}
 
         def jobPathAndNameForCand(index):
-            if batch.method == 'optuna':
+            if batch.method in ['optuna', 'sbi']:
                 jobName = "trial_" + str(ngen)
             else:
                 jobName = "gen_" + str(ngen) + "_cand_" + str(candidate_index)
@@ -463,6 +469,8 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
                                 simData = pickle.load(file)['simData']
                     if simData:
                         fitness[candidate_index] = fitnessFunc(simData, **fitnessFuncArgs)
+                        if collectSummaryStats:
+                            sum_statistics = summaryStatsFunc(simData, **summaryStatsArgs)
                         jobs_completed += 1
                         print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
                 except Exception as e:
@@ -474,6 +482,8 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
                 print("Max iterations reached, the %d unfinished jobs will be canceled and set to default fitness" % (len(unfinished)))
                 for canditade_index in unfinished:
                     fitness[canditade_index] = indexToRerun # rerun those that didn't complete;
+                    if collectSummaryStats:
+                        sum_statistics = [-1*indexToRerun for _ in range(summaryStatsLength)] # -indexToRerun (i.e. -maxFitness) for size of summ stats
                     jobs_completed += 1
                     try:
                         if 'scancelUser' in kwargs:
@@ -512,4 +522,7 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
         print("  Completed a generation  ")
         print("-" * 80)
 
-        return fitness
+        if collectSummaryStats:
+            return fitness, sum_statistics
+        else:
+            return fitness

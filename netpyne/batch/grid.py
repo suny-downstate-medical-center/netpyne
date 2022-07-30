@@ -33,6 +33,7 @@ import importlib, types
 
 from neuron import h
 from .utils import jobStringHPCSlurm, jobStringHPCTorque
+from .utils import createFolder
 
 pc = h.ParallelContext() # use bulletin board master/slave
 

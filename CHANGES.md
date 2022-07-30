@@ -8,6 +8,8 @@
 
 - Added option to use separate axis for each PSD trace (set axis='multi')
 
+- Added new Batch method named SBI (Simulation Based Inference) with example folder (sbiOptim)
+
 
 **Bug fixes**
 

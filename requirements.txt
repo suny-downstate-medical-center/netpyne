@@ -8,5 +8,6 @@ bokeh
 pyneuroml
 neuron
 pytest
+inspyred
 schema
 lfpykit

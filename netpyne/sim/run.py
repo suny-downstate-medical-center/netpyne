@@ -207,7 +207,9 @@ def runSimWithIntervalFunc(interval, func, timeRange=None, funcArgs=None):
         **Default:** *required*
 
     func : function
-        The function to be executed at intervals
+        The function to be executed at intervals. It must have the argument `simTime` (float),
+        which is the current progress of simulation in ms.
+        The rest of the arguments have to correspond to those optionally provided in `funcArgs`.
         **Default:** *required*
 
     timeRange : list
@@ -249,7 +251,6 @@ def prepareSimWithIntervalFunc(timeRange=None, funcArgs=None):
         startTime = timeRange[0]
         stopTime = timeRange[1]
 
-    #kwargs = {'simTime': h.t}
     kwargs = {}
     if type(funcArgs) == dict:
         kwargs.update(funcArgs)

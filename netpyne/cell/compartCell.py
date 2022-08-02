@@ -469,12 +469,15 @@ class CompartCell (Cell):
             print("ERROR: Some mechanisms and/or ions were not inserted (for details run with cfg.verbose=True). Make sure the required mod files are compiled.")
 
 
-    def addSynMechNEURONObj(self, synMech, synMechParams, sec, loc):
+    def addSynMechNEURONObj(self, synMech, synMechParams, sec, loc, preLoc=None):
+        from ..specs.netParams import SynMechParams
         if not synMech.get('hObj'):  # if synMech doesn't have NEURON obj, then create
             synObj = getattr(h, synMechParams['mod'])
             synMech['hObj'] = synObj(loc, sec=sec['hObj'])  # create h Syn object (eg. h.Exp2Syn)
             for synParamName,synParamValue in synMechParams.items():  # add params of the synaptic mechanism
-                if synParamName not in ['label', 'mod', 'selfNetCon', 'loc']:
+                if synParamName not in SynMechParams.reservedKeys():
+                    if synParamName.endswith('Func'):
+                        synParamName, synParamValue = self.__replaceSynMechStringFuncs(synParamName, synParamValue, loc, preLoc)
                     setattr(synMech['hObj'], synParamName, synParamValue)
                 elif synParamName == 'selfNetcon':  # create self netcon required for some synapses (eg. homeostatic)
                     secLabelNetCon = synParamValue.get('sec', 'soma')
@@ -486,6 +489,37 @@ class CompartCell (Cell):
                             synMech['hObj'].weight[0] = paramValue
                         elif paramName not in ['sec', 'loc']:
                             setattr(synMech['hObj'], paramName, paramValue)
+
+
+    def __replaceSynMechStringFuncs(self, paramName, paramValue, loc, preLoc=None):
+        from ..specs.netParams import SynMechParams
+        from .. import sim
+        allPossibleVars = SynMechParams.stringFuncVariables()
+
+        paramName = paramName[:-4] # truncate 'Func' in the end
+
+        func, varNames = paramValue
+        args = {}
+        for varName in varNames:
+            if not preLoc and varName == 'pre_loc':
+                preLoc = 0.5
+                if sim.cfg.verbose: print('No preLoc for synMech string function provided. Defaulting to 0.5')
+            obtainVarValue = allPossibleVars[varName]
+            args[varName] = obtainVarValue(self.tags, (preLoc, loc), self.__randomizerForSynMechs())
+
+        paramValue = func(**args)
+        return paramName, paramValue
+
+
+    def __randomizerForSynMechs(self):
+        try:
+            return self.__synMechRand
+        except:
+            from .. import sim
+            rand = h.Random()
+            rand.Random123(sim.hashStr('synMechParams'), self.gid, sim.cfg.seeds.get('synMech', 1))
+            self.__synMechRand = rand
+            return rand
 
 
     def addSynMechsNEURONObj(self):
@@ -571,6 +605,18 @@ class CompartCell (Cell):
             if conn.get('plast'):
                 self._addConnPlasticity(conn['plast'], self.secs[conn['sec']], netcon, 0)
 
+    @staticmethod
+    def spikeGenLocAndSec(secs):
+
+        sec = next((secParams for secName,secParams in secs.items() if 'spikeGenLoc' in secParams), None) # check if any section has been specified as spike generator
+        if sec:
+            loc = sec['spikeGenLoc']  # get location of spike generator within section
+        else:
+            #sec = self.secs['soma'] if 'soma' in self.secs else self.secs[self.secs.keys()[0]]  # use soma if exists, otherwise 1st section
+            sec = next((sec for secName, sec in secs.items() if len(sec['topol']) == 0), secs[list(secs.keys())[0]])  # root sec (no parents)
+            loc = 0.5
+        return loc, sec
+
 
     def associateGid (self, threshold = None):
         from .. import sim
@@ -581,13 +627,7 @@ class CompartCell (Cell):
                     sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
                 else:
                     sim.pc.set_gid2node(self.gid, 0)
-                sec = next((secParams for secName,secParams in self.secs.items() if 'spikeGenLoc' in secParams), None) # check if any section has been specified as spike generator
-                if sec:
-                    loc = sec['spikeGenLoc']  # get location of spike generator within section
-                else:
-                    #sec = self.secs['soma'] if 'soma' in self.secs else self.secs[self.secs.keys()[0]]  # use soma if exists, otherwise 1st section
-                    sec = next((sec for secName, sec in self.secs.items() if len(sec['topol']) == 0), self.secs[list(self.secs.keys())[0]])  # root sec (no parents)
-                    loc = 0.5
+                loc, sec = CompartCell.spikeGenLocAndSec(self.secs)
                 nc = None
                 if 'pointps' in sec:  # if no syns, check if point processes with 'vref' (artificial cell)
                     for pointpName, pointpParams in sec['pointps'].items():
@@ -604,7 +644,7 @@ class CompartCell (Cell):
         sim.net.gid2lid[self.gid] = len(sim.net.gid2lid)
 
 
-    def addSynMech (self, synLabel, secLabel, loc):
+    def addSynMech (self, synLabel, secLabel, loc, preLoc=None):
         from .. import sim
 
         synMechParams = sim.net.params.synMechParams.get(synLabel)  # get params for this synMech
@@ -636,10 +676,12 @@ class CompartCell (Cell):
                     synMech = Dict()
                     sec['synMechs'].append(synMech)
                 # add the NEURON object
-                self.addSynMechNEURONObj(synMech, synMechParams, sec, loc)
+                self.addSynMechNEURONObj(synMech, synMechParams, sec, loc, preLoc)
             else:
                 synMech = None
-            return synMech
+        else:
+            synMech = None
+        return synMech
 
 
     def modifySynMechs (self, params):
@@ -701,6 +743,7 @@ class CompartCell (Cell):
         # threshold = params.get('threshold', sim.net.params.defaultThreshold)  # depreacated -- use threshold in preSyn cell sec
         if params.get('weight') is None: params['weight'] = sim.net.params.defaultWeight # if no weight, set default
         if params.get('delay') is None: params['delay'] = sim.net.params.defaultDelay # if no delay, set default
+        if params.get('preLoc') is None: params['preLoc'] = 0.5 # if no preLoc, set default
         if params.get('loc') is None: params['loc'] = 0.5 # if no loc, set default
         if params.get('synsPerConn') is None: params['synsPerConn'] = 1  # if no synsPerConn, set default
 
@@ -1259,8 +1302,8 @@ class CompartCell (Cell):
                                 randLocPos = sim.net.randUniqueInt(rand, synsPerConn, 0, len(synMechLocs)-1)
                                 synMechLocs = [synMechLocs[i] for i in randLocPos]
                             else:
-                                randLoc = rand.uniform(0, 1)
-                                synMechLocs = [rand.uniform(0, 1) for i in range(synsPerConn)]
+                                rand.uniform(0, 1)
+                                synMechLocs = [rand.repick() for i in range(synsPerConn)]
                         else:
                                 print("\nError: The length of the list of sections needs to be greater or equal to the synsPerConn (with cfg.connRandomSecFromList = True")
                                 return
@@ -1281,7 +1324,11 @@ class CompartCell (Cell):
                     synMechLocs[pos], synMechLocs[0] = synMechLocs[0], synMechLocs[pos]
 
         # add synaptic mechanism to section based on synMechSecs and synMechLocs (if already exists won't be added unless nonLinear set to True)
-        synMechs = [self.addSynMech(synLabel=params['synMech'], secLabel=synMechSecs[i], loc=synMechLocs[i]) for i in range(synsPerConn)]
+        synMechs = [self.addSynMech(synLabel=params['synMech'],
+                                    secLabel=synMechSecs[i],
+                                    loc=synMechLocs[i],
+                                    preLoc=params['preLoc'])
+                        for i in range(synsPerConn)]
         return synMechs, synMechSecs, synMechLocs
 
 

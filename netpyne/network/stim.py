@@ -186,13 +186,11 @@ def _stimStrToFunc(self, postCellsTags, sourceParams, targetParams):
             dictVars[k] = v
 
     # for each parameter containing a function, calculate lambda function and arguments
+    from netpyne.specs.utils import generateStringFunction
     strParams = {}
     for paramStrFunc in paramsStrFunc:
         strFunc = params[paramStrFunc]  # string containing function
-        for randmeth in self.stringFuncRandMethods: strFunc = strFunc.replace(randmeth, 'rand.'+randmeth)  # append rand. to h.Random() methods
-        strVars = [var for var in list(dictVars.keys()) if var in strFunc and var+'norm' not in strFunc]  # get list of variables used (eg. post_ynorm or dist_xyz)
-        lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function
-        lambdaFunc = eval(lambdaStr)
+        lambdaFunc, strVars = generateStringFunction(strFunc, list(dictVars.keys()))
 
         # store lambda function and func vars in connParam (for weight, delay and synsPerConn since only calculated for certain conns)
         params[paramStrFunc+'Func'] = lambdaFunc

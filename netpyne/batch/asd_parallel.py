@@ -22,33 +22,20 @@ try:
 except NameError:
     to_unicode = str
 
-import imp
-import json
-import logging
-import datetime
-import os
-import signal
-import glob
-from copy import copy
-from random import Random
 from time import sleep, time
-from itertools import product
-from subprocess import Popen, PIPE
-import importlib, types
+from subprocess import Popen
 import numpy.random as nr
 import numpy as np
 
 from neuron import h
-from netpyne import sim,specs
-from .utils import createFolder
-from .utils import bashTemplate
-from .utils import dcp, sigfig
+from netpyne import sim
+from .utils import dcp, sigfig, evaluator
 
 pc = h.ParallelContext() # use bulletin board master/slave
 
 
 
-def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, pinc=2, pdec=2,
+def asd(batch, function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, pinc=2, pdec=2,
     pinitial=None, sinitial=None, xmin=None, xmax=None, maxiters=None, maxtime=None,
     abstol=1e-6, reltol=1e-3, stalliters=None, stoppingfunc=None, randseed=None,
     label=None, maxFitness=None, verbose=2, **kwargs):
@@ -248,7 +235,7 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
     if args is None: args = {} # Reset if no function arguments supplied
 
     # evaluate initial values
-    fvalPop = function(xPop, args)
+    fvalPop = function(batch, xPop, args, 0, pc, **kwargs)
     fvalorigPop = [float(fval) for fval in fvalPop]
     fvaloldPop = [float(fval) for fval in fvalPop]
     fvalnewPop = [float(fval) for fval in fvalPop]
@@ -313,7 +300,7 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
 
             xPop[icand], fvalPop[icand], probabilitiesPop[icand], stepsizesPop[icand] = x, fval, probabilities, stepsizes
 
-        fvalnewPop = function(xnewPop, args)  # Calculate the objective function for the new parameter sets
+        fvalnewPop = function(batch, xnewPop, args, count, pc, **kwargs)  # Calculate the objective function for the new parameter sets
 
         print('\n')
         for icand, (x, xnew, fval, fvalorig, fvalnew, fvalold, fvals, probabilities, stepsizes, abserrorhistory, relerrorhistory) in \
@@ -409,53 +396,14 @@ def asd(function, xPop, saveFile=None, args=None, stepsize=0.1, sinc=2, sdec=2, 
 # Adaptive Stochastic Descente (ASD) optimization
 # -------------------------------------------------------------------------------
 
-# func needs to be outside of class
-def runASDJob(script, cfgSavePath, netParamsSavePath, simDataPath):
-    """
-    Function for/to <short description of `netpyne.batch.asd_parallel.runASDJob`>
-
-    Parameters
-    ----------
-    script : <type>
-        <Short description of script>
-        **Default:** *required*
-
-    cfgSavePath : <type>
-        <Short description of cfgSavePath>
-        **Default:** *required*
-
-    netParamsSavePath : <type>
-        <Short description of netParamsSavePath>
-        **Default:** *required*
-
-    simDataPath : <type>
-        <Short description of simDataPath>
-        **Default:** *required*
-
-
-    """
-
-
-    import os
-    print('\nJob in rank id: ',pc.id())
-    command = 'nrniv %s simConfig=%s netParams=%s' % (script, cfgSavePath, netParamsSavePath)
-    print(command)
-
-    with open(simDataPath+'.run', 'w') as outf, open(simDataPath+'.err', 'w') as errf:
-        pid = Popen(command.split(' '), stdout=outf, stderr=errf, preexec_fn=os.setsid).pid
-
-    with open('./pids.pid', 'a') as file:
-        file.write(str(pid) + ' ')
-
-
-def asdOptim(self, pc):
+def asdOptim(batch, pc):
     """
     Function for/to <short description of `netpyne.batch.asd_parallel.asdOptim`>
 
     Parameters
     ----------
-    self : <type>
-        <Short description of self>
+    batch : <type>
+        <Short description of batch>
         **Default:** *required*
 
     pc : <type>
@@ -469,258 +417,10 @@ def asdOptim(self, pc):
     import sys
 
     # -------------------------------------------------------------------------------
-    # ASD optimization: Parallel evaluation
-    # -------------------------------------------------------------------------------
-    def evaluator(candidates, args):
-
-        import os
-
-        global ngen
-        ngen += 1
-        total_jobs = 0
-
-        # options slurm, mpi
-        type = args.get('type', 'mpi_direct')
-
-        # paths to required scripts
-        script = args.get('script', 'init.py')
-        netParamsSavePath =  args.get('netParamsSavePath')
-        genFolderPath = self.saveFolder + '/gen_' + str(ngen)
-
-        # mpi command setup
-        nodes = args.get('nodes', 1)
-        paramLabels = args.get('paramLabels', [])
-        coresPerNode = args.get('coresPerNode', 1)
-        mpiCommand = args.get('mpiCommand', 'ibrun')
-        numproc = nodes*coresPerNode
-
-        # slurm setup
-        custom = args.get('custom', '')
-        folder = args.get('folder', '.')
-        email = args.get('email', 'a@b.c')
-        walltime = args.get('walltime', '00:01:00')
-        reservation = args.get('reservation', None)
-        allocation = args.get('allocation', 'csd403') # NSG account
-
-        # fitness function
-        fitnessFunc = args.get('fitnessFunc')
-        fitnessFuncArgs = args.get('fitnessFuncArgs')
-        maxFitness = args.get('maxFitness')
-
-        # read params or set defaults
-        sleepInterval = args.get('sleepInterval', 0.2)
-
-        # create folder if it does not exist
-        createFolder(genFolderPath)
-
-        # remember pids and jobids in a list
-        pids = []
-        jobids = {}
-
-        # create a job for each candidate
-        for candidate_index, candidate in enumerate(candidates):
-            # required for slurm
-            sleep(sleepInterval)
-
-            # name and path
-            jobName = "gen_" + str(ngen) + "_cand_" + str(candidate_index)
-            jobPath = genFolderPath + '/' + jobName
-
-            # set initial cfg initCfg
-            if len(self.initCfg) > 0:
-                for paramLabel, paramVal in self.initCfg.items():
-                    self.setCfgNestedParam(paramLabel, paramVal)
-
-            # modify cfg instance with candidate values
-            print(paramLabels, candidate)
-            for label, value in zip(paramLabels, candidate):
-                print('set %s=%s' % (label, value))
-                self.setCfgNestedParam(label, value)
-
-            #self.setCfgNestedParam("filename", jobPath)
-            self.cfg.simLabel = jobName
-            self.cfg.saveFolder = genFolderPath
-
-            # save cfg instance to file
-            cfgSavePath = jobPath + '_cfg.json'
-            self.cfg.save(cfgSavePath)
-
-
-            if type=='mpi_bulletin':
-                # ----------------------------------------------------------------------
-                # MPI master-slaves
-                # ----------------------------------------------------------------------
-                pc.submit(runASDJob, script, cfgSavePath, netParamsSavePath, jobPath)
-                print('-'*80)
-
-            else:
-                # ----------------------------------------------------------------------
-                # MPI job commnand
-                # ----------------------------------------------------------------------
-                command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s ' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
-
-                # ----------------------------------------------------------------------
-                # run on local machine with <nodes*coresPerNode> cores
-                # ----------------------------------------------------------------------
-                if type=='mpi_direct':
-                    executer = '/bin/bash'
-                    jobString = bashTemplate('mpi_direct') %(custom, folder, command)
-
-                # ----------------------------------------------------------------------
-                # run on HPC through slurm
-                # ----------------------------------------------------------------------
-                elif type=='hpc_slurm':
-                    executer = 'sbatch'
-                    res = '#SBATCH --res=%s' % (reservation) if reservation else ''
-                    jobString = bashTemplate('hpc_slurm') % (jobName, allocation, walltime, nodes, coresPerNode, jobPath, jobPath, email, res, custom, folder, command)
-
-                # ----------------------------------------------------------------------
-                # run on HPC through PBS
-                # ----------------------------------------------------------------------
-                elif type=='hpc_torque':
-                    executer = 'qsub'
-                    queueName = args.get('queueName', 'default')
-                    nodesppn = 'nodes=%d:ppn=%d' % (nodes, coresPerNode)
-                    jobString = bashTemplate('hpc_torque') % (jobName, walltime, queueName, nodesppn, jobPath, jobPath, custom, command)
-
-                # ----------------------------------------------------------------------
-                # save job and run
-                # ----------------------------------------------------------------------
-                print('Submitting job ', jobName)
-                print(jobString)
-                print('-'*80)
-                # save file
-                batchfile = '%s.sbatch' % (jobPath)
-                with open(batchfile, 'w') as text_file:
-                    text_file.write("%s" % jobString)
-
-                if type == 'mpi_direct':
-                    with open(jobPath+'.run', 'a+') as outf, open(jobPath+'.err', 'w') as errf:
-                        pids.append(Popen([executer, batchfile], stdout=outf, stderr=errf, preexec_fn=os.setsid).pid)
-                else:
-                    with open(jobPath+'.jobid', 'w') as outf, open(jobPath+'.err', 'w') as errf:
-                        pids.append(Popen([executer, batchfile], stdout=outf, stderr=errf, preexec_fn=os.setsid).pid)
-
-                #proc = Popen(command.split([executer, batchfile]), stdout=PIPE, stderr=PIPE)
-                sleep(0.1)
-                #read = proc.stdout.read()
-
-                if type == 'mpi_direct':
-                    with open('./pids.pid', 'a') as file:
-                        file.write(str(pids))
-                else:
-                    with open(jobPath+'.jobid', 'r') as outf:
-                        read=outf.readline()
-                    print(read)
-                    if len(read) > 0:
-                        jobid = int(read.split()[-1])
-                        jobids[candidate_index] = jobid
-                    print('jobids', jobids)
-            total_jobs += 1
-            sleep(0.1)
-
-
-        # ----------------------------------------------------------------------
-        # gather data and compute fitness
-        # ----------------------------------------------------------------------
-        if type == 'mpi_bulletin':
-            # wait for pc bulletin board jobs to finish
-            try:
-                while pc.working():
-                    sleep(1)
-                #pc.done()
-            except:
-                pass
-
-        num_iters = 0
-        jobs_completed = 0
-        fitness = [None for cand in candidates]
-        # print outfilestem
-        print("Waiting for jobs from generation %d/%d ..." %(ngen, args.get('maxiters')))
-        # print "PID's: %r" %(pids)
-        # start fitness calculation
-        while jobs_completed < total_jobs:
-            unfinished = [i for i, x in enumerate(fitness) if x is None ]
-            for candidate_index in unfinished:
-                try: # load simData and evaluate fitness
-                    jobNamePath = genFolderPath + "/gen_" + str(ngen) + "_cand_" + str(candidate_index)
-                    if os.path.isfile(jobNamePath+'.json'):
-                        with open('%s.json'% (jobNamePath)) as file:
-                            simData = json.load(file)['simData']
-                        fitness[candidate_index] = fitnessFunc(simData, **fitnessFuncArgs)
-                        jobs_completed += 1
-                        print('  Candidate %d fitness = %.1f' % (candidate_index, fitness[candidate_index]))
-                except Exception as e:
-                    # print
-                    err = "There was an exception evaluating candidate %d:"%(candidate_index)
-                    print(("%s \n %s"%(err,e)))
-                    #pass
-                    #print 'Error evaluating fitness of candidate %d'%(candidate_index)
-            num_iters += 1
-            print('completed: %d' %(jobs_completed))
-            if num_iters >= args.get('maxiter_wait', 5000):
-                print("Max iterations reached, the %d unfinished jobs will be canceled and set to default fitness" % (len(unfinished)))
-                for canditade_index in unfinished:
-                    fitness[canditade_index] = maxFitness # rerun those that didn't complete;
-                    jobs_completed += 1
-                    try:
-                        if 'scancelUser' in kwargs:
-                            os.system('scancel -u %s'%(kwargs['scancelUser']))
-                        else:
-                            os.system('scancel %d' % (jobids[candidate_index]))  # terminate unfinished job (resubmitted jobs not terminated!)
-                    except:
-                        pass
-            sleep(args.get('time_sleep', 1))
-
-        # kill all processes
-        if type == 'mpi_bulletin':
-            try:
-                with open("./pids.pid", 'r') as file: # read pids for mpi_bulletin
-                    pids = [int(i) for i in file.read().split(' ')[:-1]]
-
-                with open("./pids.pid", 'w') as file: # delete content
-                    pass
-                for pid in pids:
-                    try:
-                        os.killpg(os.getpgid(pid), signal.SIGTERM)
-                    except:
-                        pass
-            except:
-                pass
-
-        elif type == 'mpi_direct':
-
-            import psutil
-
-            PROCNAME = "nrniv"
-
-            for proc in psutil.process_iter():
-                # check whether the process name matches
-                try:
-                    if proc.name() == PROCNAME:
-                        proc.kill()
-                except:
-                    pass
-
-        # don't want to to this for hpcs since jobs are running on compute nodes not master
-
-        print("-" * 80)
-        print("  Completed a generation  ")
-        print("-" * 80)
-
-        return fitness # single candidate for now
-
-
-
-    # -------------------------------------------------------------------------------
     # ASD optimization: Main code
     # -------------------------------------------------------------------------------
-    import os
     # create main sim directory and save scripts
-    self.saveScripts()
-
-    global ngen
-    ngen = -1
+    batch.saveScripts()
 
     # gather **kwargs
     kwargs = {}
@@ -745,55 +445,55 @@ def asdOptim(self, pc):
       label          None    A label to use to annotate the output
     '''
 
-    kwargs['xmin'] = [x['values'][0] for x in self.params]
-    kwargs['xmax'] = [x['values'][1] for x in self.params]
+    kwargs['xmin'] = [x['values'][0] for x in batch.params]
+    kwargs['xmax'] = [x['values'][1] for x in batch.params]
 
 
     # 3rd value is list with initial values
-    if len(self.params[0]['values']) > 2 and isinstance(self.params[0]['values'][2], list):
-        popsize = len(self.params[0]['values'][2])
+    if len(batch.params[0]['values']) > 2 and isinstance(batch.params[0]['values'][2], list):
+        popsize = len(batch.params[0]['values'][2])
         x0 = []
         for i in range(popsize):
-            x0.append([x['values'][2][i] for x in self.params])
+            x0.append([x['values'][2][i] for x in batch.params])
 
     # if no 3rd value, calculate random values
     else:
-        popsize = self.optimCfg.get('popsize', 1)
+        popsize = batch.optimCfg.get('popsize', 1)
         x0 = []
         for p in range(popsize):
-            x0.append([np.random.uniform(x['values'][0], x['values'][1]) for x in self.params])
+            x0.append([np.random.uniform(x['values'][0], x['values'][1]) for x in batch.params])
 
 
     if 'args' not in kwargs: kwargs['args'] = {}
-    kwargs['args']['cfg'] = self.cfg  # include here args/params to pass to evaluator function
-    kwargs['args']['paramLabels'] = [x['label'] for x in self.params]
-    kwargs['args']['netParamsSavePath'] = self.saveFolder + '/' + self.batchLabel + '_netParams.py'
-    kwargs['args']['maxiters'] = self.optimCfg['maxiters'] if 'maxiters' in self.optimCfg else 1000
-    kwargs['args']['fitnessFunc'] = self.optimCfg['fitnessFunc']
-    kwargs['args']['fitnessFuncArgs'] = self.optimCfg['fitnessFuncArgs']
-    kwargs['args']['maxiter_wait'] = self.optimCfg['maxiter_wait']
-    kwargs['args']['time_sleep'] = self.optimCfg['time_sleep']
+    kwargs['args']['cfg'] = batch.cfg  # include here args/params to pass to evaluator function
+    kwargs['args']['paramLabels'] = [x['label'] for x in batch.params]
+    kwargs['args']['netParamsSavePath'] = batch.saveFolder + '/' + batch.batchLabel + '_netParams.py'
+    kwargs['args']['maxiters'] = batch.optimCfg['maxiters'] if 'maxiters' in batch.optimCfg else 1000
+    kwargs['args']['fitnessFunc'] = batch.optimCfg['fitnessFunc']
+    kwargs['args']['fitnessFuncArgs'] = batch.optimCfg['fitnessFuncArgs']
+    kwargs['args']['maxiter_wait'] = batch.optimCfg['maxiter_wait']
+    kwargs['args']['time_sleep'] = batch.optimCfg['time_sleep']
     kwargs['args']['popsize'] = popsize
-    kwargs['args']['maxFitness'] = self.optimCfg.get('maxFitness', 1000)
+    kwargs['args']['maxFitness'] = batch.optimCfg.get('maxFitness', 1000)
 
 
-    for key, value in self.optimCfg.items():
+    for key, value in batch.optimCfg.items():
         kwargs[key] = value
 
-    for key, value in self.runCfg.items():
+    for key, value in batch.runCfg.items():
         kwargs['args'][key] = value
 
 
     # if using pc bulletin board, initialize all workers
-    if self.runCfg.get('type', None) == 'mpi_bulletin':
+    if batch.runCfg.get('type', None) == 'mpi_bulletin':
         for iworker in range(int(pc.nhost())):
             pc.runworker()
 
     # -------------------------------------------------------------------------------
     # Run algorithm
     # -------------------------------------------------------------------------------
-    saveFile = '%s/%s_temp_output.json' % (self.saveFolder, self.batchLabel)
-    output = asd(evaluator, x0, saveFile, **kwargs)
+    saveFile = '%s/%s_temp_output.json' % (batch.saveFolder, batch.batchLabel)
+    output = asd(batch, evaluator, x0, saveFile, **kwargs)
 
     # print best and finish
     bestFval = np.min(output['fval'])
@@ -804,7 +504,7 @@ def asdOptim(self, pc):
     print("   Completed adaptive stochasitc parameter optimization   ")
     print("-" * 80)
 
-    sim.saveJSON('%s/%s_output.json' % (self.saveFolder, self.batchLabel), output)
+    sim.saveJSON('%s/%s_output.json' % (batch.saveFolder, batch.batchLabel), output)
     #sleep(1)
 
     sys.exit()

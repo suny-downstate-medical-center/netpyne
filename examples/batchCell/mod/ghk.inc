@@ -1,3 +1,6 @@
+: from
+:  http://senselab.med.yale.edu/modeldb/ShowModel.asp?model=144490&file=\bpap\ghk.inc
+
 COMMENT
     GHK function that returns effective driving force
     Slope at low voltages is 1
@@ -29,12 +32,3 @@ FUNCTION ghk(v(mV), ci(mM), co(mM), z) (.001 coul/cm3) {
     }
     ghk = (.001)*z*FARADAY*(ci*exi - co)*fxi
 }
-
-
-
-
-
-
-
-
-

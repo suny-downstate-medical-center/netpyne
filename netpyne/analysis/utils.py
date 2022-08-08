@@ -465,7 +465,8 @@ def checkAvailablePlots(requireCfg=False):
              'granger': False,
              'plotRxDConcentration': False,
              'plotDipole': False,
-             'plotEEG': False}
+             'plotEEG': False,
+             'plotRateSpectrogram':False}
 
     # plot conn
     if hasattr(sim, 'net') and hasattr(sim.net, 'allCells') and len(sim.net.allCells) > 0:
@@ -489,6 +490,7 @@ def checkAvailablePlots(requireCfg=False):
         avail['plotSpikeStats'] = True
         avail['plotRatePSD'] = True
         avail['granger'] = True
+        avail['plotRateSpectrogram'] = True
 
 
     # plot lfp 

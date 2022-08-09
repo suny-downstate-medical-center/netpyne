@@ -515,7 +515,7 @@ def checkAvailablePlots(requireCfg=False):
         for k in avail:
             if k not in sim.cfg.analysis:
                 avail[k] = False
-
+    
     return avail
 
 

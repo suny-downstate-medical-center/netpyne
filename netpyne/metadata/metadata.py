@@ -2516,28 +2516,28 @@ metadata = {
                                 "suggestions": "",
                                 "help": "Size of bin in ms to use for spectrogram (int).",
                                 "hintText": "",
-                                "type": "int"
+                                "type": "float"
                             },
                             "minFreq": {
                                 "label": "Minimum frequency",
                                 "suggestions": "",
                                 "help": "Minimum firing rate frequency to show in plot (int).",
                                 "hintText": "",
-                                "type": "int"
+                                "type": "float"
                             },
                             "maxFreq": {
                                 "label": "Maximum frequency",
                                 "suggestions": "",
                                 "help": "Maximum firing rate frequency to show in plot (int).",
                                 "hintText": "",
-                                "type": "int"
+                                "type": "float"
                             },
                             "stepFreq": {
                                 "label": "Frequency step",
                                 "suggestions": "",
                                 "help": "Frequency step on spectrogram (int).",
                                 "hintText": "",
-                                "type": "int"
+                                "type": "float"
                             },
                             "transformation": {
                                 "label": "Type of transformation",
@@ -2554,28 +2554,28 @@ metadata = {
                                 "suggestions": "",
                                 "help": "Font size (pt)",
                                 "hintText": "",
-                                "type": "int"
+                                "type": "float"
                             },
                             "figSize": {
                                 "label": "Figure size",
                                 "suggestions": "",
                                 "help": "Size of figure ((width, height))",
                                 "hintText": "",
-                                "type": "str"
+                                "type": "tuple"
                             },
                             "saveData": {
                                 "label": "Save data",
                                 "suggestions": "",
                                 "help": "File name where to save the final data used to generate the figure (None|'fileName').",
                                 "hintText": "",
-                                "type": "str"
+                                "type": "bool"
                             },
                             "saveFig": {
                                 "label": "Save figure file name",
                                 "suggestions": "",
                                 "help": "File name where to save the figure (None|'fileName')",
                                 "hintText": "",
-                                "type": "str"
+                                "type": "bool"
                             },
                             "showFig": {
                                 "label": "Show figure",

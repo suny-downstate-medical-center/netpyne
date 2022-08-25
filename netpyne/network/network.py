@@ -36,10 +36,6 @@ class Network(object):
         self.stimStringFuncParams = ['delay', 'dur', 'amp', 'gain', 'rstim', 'tau1', 'tau2',
         'onset', 'tau', 'gmax', 'e', 'i', 'interval', 'rate', 'number', 'start', 'noise']
 
-        # list of h.Random() methods allowed in string-based functions (both for conns and stims)
-        self.stringFuncRandMethods = ['binomial', 'discunif', 'erlang', 'geometric', 'hypergeo',
-        'lognormal', 'negexp', 'normal', 'poisson', 'uniform', 'weibull']
-
         self.rand = h.Random()  # random number generator
 
         self.pops = ODict()  # list to store populations ('Pop' objects)
@@ -111,15 +107,17 @@ class Network(object):
                 cellModel = cellRule['conds'].get('CellModel', None)
                 pop = cellRule['conds'].get('pop', None)
 
+                correction = 1e-12
+
                 if (cellType, cellModel, pop) in condFracs:
                     startFrac = float(condFracs[(cellType, cellModel, pop)])
                     endFrac = startFrac + divFrac
-                    cellRule['conds']['fraction'] = [startFrac, endFrac]
+                    cellRule['conds']['fraction'] = [startFrac - correction, endFrac - correction]
                     condFracs[(cellType, cellModel, pop)] = endFrac
                 else:
                     startFrac = 0
                     endFrac = startFrac + divFrac
-                    cellRule['conds']['fraction'] = [startFrac, endFrac]
+                    cellRule['conds']['fraction'] = [startFrac, endFrac - correction]
                     condFracs[(cellType, cellModel, pop)] = endFrac
 
     # -----------------------------------------------------------------------------

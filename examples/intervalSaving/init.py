@@ -23,9 +23,5 @@ print("Starting sim ...")
 # saveInterval defines how often the data is saved
 sim.runSimWithIntervalFunc(cfg.saveInterval, sim.intervalSave)
 
-# we run fileGather() instead of gather
-sim.fileGather()
+sim.gatherData()
 sim.analyze()
-
-# Check the model output: sim.checkOutput is used for testing purposes.  Please comment out the following line if you are exploring the example.
-sim.checkOutput('M1detailed')

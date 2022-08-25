@@ -37,9 +37,8 @@ import importlib, types
 from neuron import h
 from netpyne import specs
 
-from .utils import bashTemplate
 from .utils import createFolder
-from .grid import gridSearch
+from .grid import gridSearch, getParamCombinations
 from .evol import evolOptim
 from .asd_parallel import asdOptim
 
@@ -48,6 +47,15 @@ try:
 except:
     pass
     # print('Warning: Could not import "optuna" package...')
+
+
+try:
+    from .sbi_parallel import sbiOptim
+except:
+    pass
+    #print('Error @ the batch.py file import section')
+
+
 
 
 pc = h.ParallelContext() # use bulletin board master/slave
@@ -97,10 +105,11 @@ class Batch(object):
     """
 
 
-    def __init__(self, cfgFile='cfg.py', netParamsFile='netParams.py', cfg=None, params=None, groupedParams=None, initCfg={}, seed=None):
+    def __init__(self, cfgFile='cfg.py', netParamsFile='netParams.py', cfg=None, netParams=None, params=None, groupedParams=None, initCfg={}, seed=None):
         self.batchLabel = 'batch_'+str(datetime.date.today())
         self.cfgFile = cfgFile
         self.cfg = cfg
+        self.netParams = netParams
         self.initCfg = initCfg
         self.netParamsFile = netParamsFile
         self.saveFolder = '/'+self.batchLabel
@@ -139,13 +148,18 @@ class Batch(object):
         createFolder(folder)
 
         # make copy of batch object to save it; but skip cfg (since instance of SimConfig and can't be copied)
-        odict = deepcopy({k:v for k,v in self.__dict__.items() if k != 'cfg'})  
+        odict = deepcopy({k:v for k,v in self.__dict__.items() if k != 'cfg' and k != 'netParams'})  
 
         if 'evolCfg' in odict:
             odict['evolCfg']['fitnessFunc'] = 'removed'
+
         if 'optimCfg' in odict:
             odict['optimCfg']['fitnessFunc'] = 'removed'
 
+        if 'optimCfg' in odict:
+            if 'summaryStats' in odict['optimCfg']:
+                odict['optimCfg']['summaryStats'] = 'removed'
+        
         odict['initCfg'] = tupleToStr(odict['initCfg'])
         dataSave = {'batch': tupleToStr(odict)}
 
@@ -187,14 +201,21 @@ class Batch(object):
         # copy this batch script to folder, netParams and simConfig
         #os.system('cp ' + self.netParamsFile + ' ' + self.saveFolder + '/netParams.py')
 
-        netParamsSavePath = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
-        os.system('cp ' + self.netParamsFile + ' ' + netParamsSavePath)
+        # if user provided a netParams object as input argument
+        if self.netParams:
+            self.netParamsSavePath = self.saveFolder+'/'+self.batchLabel+'_netParams.json'
+            self.netParams.save(self.netParamsSavePath)
+
+        # if not, use netParamsFile           
+        else:
+            self.netParamsSavePath = self.saveFolder+'/'+self.batchLabel+'_netParams.py'
+            os.system('cp ' + self.netParamsFile + ' ' + self.netParamsSavePath)
 
         os.system('cp ' + os.path.realpath(__file__) + ' ' + self.saveFolder + '/batchScript.py')
 
         # save initial seed
         with open(self.saveFolder + '/_seed.seed', 'w') as seed_file:
-            if not self.seed: self.seed = int(time())
+            if self.seed is None: self.seed = int(time())
             seed_file.write(str(self.seed))
 
         # set cfg
@@ -217,6 +238,7 @@ class Batch(object):
         self.cfg.checkErrors = False  # avoid error checking during batch
 
 
+
     def openFiles2SaveStats(self):
         stat_file_name = '%s/%s_stats.csv' %(self.saveFolder, self.batchLabel)
         ind_file_name = '%s/%s_stats_indiv.csv' %(self.saveFolder, self.batchLabel)
@@ -226,6 +248,9 @@ class Batch(object):
         individual.write('#gen  #ind  fitness  [candidate]\n')
         return stats, individual
 
+    def getParamCombinations(self):
+        if self.method in 'grid':
+            return getParamCombinations(self)
 
     def run(self):
 
@@ -255,3 +280,24 @@ class Batch(object):
                 optunaOptim(self, pc)
             except:
                 print(' Warning: an exception occurred when running Optuna optimization...')
+
+        # -------------------------------------------------------------------------------
+        # SBI optimization 
+        # -------------------------------------------------------------------------------
+        elif self.method == 'sbi':
+            try:
+                sbiOptim(self, pc)
+            except:
+                print(' Warning: an exception occurred when running SBI...')
+
+    @property
+    def mpiCommandDefault(self):
+        return {'asd': 'ibrun',
+                'evol': 'mpirun',
+                'optuna': 'mpiexec',
+                'sbi': 'mpiexec',
+            }.get(self.method)
+
+
+
+

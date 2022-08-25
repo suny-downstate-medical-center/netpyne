@@ -40,6 +40,7 @@ NEURON {
   SUFFIX ih
   NONSPECIFIC_CURRENT i
   RANGE i,gbar,ascale,bscale,ashift,aslope,bslope
+  GLOBAL erev
 }
 
 STATE {

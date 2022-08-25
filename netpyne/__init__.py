@@ -4,7 +4,7 @@ NetPyNE (Networks using Python and NEURON) is a Python package to facilitate the
 NetPyNE consists of a number of sub-packages and modules.
 """
 
-__version__ = '1.0.0.2_osbv2a'
+__version__ = '1.0.2.1_osbv2'
 import os, sys
 display = os.getenv('DISPLAY')
 nogui = (sys.argv.count('-nogui')>0)

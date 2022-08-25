@@ -272,7 +272,7 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
 
         # format plot
         if len(electrodes) > 1:
-            plt.text(timeRange[0]-0.14*(timeRange[1]-timeRange[0]), (len(electrodes)*ydisp)/2.0, 'LFP electrode', color='k', ha='left', va='bottom', fontSize=fontSize, rotation=90)
+            plt.text(timeRange[0]-0.14*(timeRange[1]-timeRange[0]), (len(electrodes)*ydisp)/2.0, 'LFP electrode', color='k', ha='left', va='bottom', fontsize=fontSize, rotation=90)
             plt.ylim(-offset, (len(electrodes))*ydisp)
         else:
             plt.suptitle('LFP Signal', fontSize=fontSize, fontweight='bold')
@@ -375,7 +375,7 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
 
         for i,elec in enumerate(electrodes):
             if not overlay:
-                plt.subplot(np.ceil(len(electrodes)/numCols), numCols,i+1)
+                plt.subplot(int(np.ceil(len(electrodes)/numCols)), numCols,i+1)
             if elec == 'avg':
                 color = 'k'
             elif isinstance(elec, Number) and (inputLFP is not None or elec <= sim.net.recXElectrode.nsites):
@@ -438,7 +438,7 @@ def plotLFP(timeRange=None, electrodes=['avg', 'all'], plots=['timeSeries', 'PSD
             vmax = np.array([s.TFR for s in spec]).max()
 
             for i,elec in enumerate(electrodes):
-                plt.subplot(np.ceil(len(electrodes) / numCols), numCols, i + 1)
+                plt.subplot(int(np.ceil(len(electrodes) / numCols)), numCols, i + 1)
                 T = timeRange
                 F = spec[i].f
                 if normSpec:

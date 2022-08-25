@@ -722,7 +722,7 @@ def fromListConn(self, preCellsTags, postCellsTags, connParam):
 # -----------------------------------------------------------------------------
 # Set parameters and create connection
 # -----------------------------------------------------------------------------
-def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags):
+def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags={}):
     from .. import sim
 
     # set final param values
@@ -774,9 +774,9 @@ def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags):
         'synsPerConn': finalParam['synsPerConn']}
 
         # if 'threshold' in connParam: params['threshold'] = connParam.get('threshold')  # deprecated, use threshold in preSyn cell sec
-        if 'shape' in connParam: params['shape'] = connParam.get('shape')    
+        if 'shape' in connParam: params['shape'] = connParam.get('shape')
         if 'plast' in connParam: params['plast'] = connParam.get('plast')
-        if 'weightIndex' in connParam: params['weightIndex'] = connParam.get('weightIndex')        
+        if 'weightIndex' in connParam: params['weightIndex'] = connParam.get('weightIndex')
 
         if 'gapJunction' in connParam:
             params['gapJunction'] = connParam.get('gapJunction')

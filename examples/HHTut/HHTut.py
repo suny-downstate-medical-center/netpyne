@@ -33,7 +33,7 @@ netParams.cellParams['PYR'] = PYRcell # add dict to list of cell params
 
 
 # Synaptic mechanism parameters
-netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}
+netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 'uniform(0.8, 1.2)', 'e': 0}
 
 
 # Stimulation parameters

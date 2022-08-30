@@ -93,6 +93,87 @@ class CellParams(ODict):
         except:
             return False
 
+    @staticmethod
+    def pointpParamsReservedKeys():
+        return ['mod', 'loc', 'vref', 'synList']
+
+
+    def preprocessStringFunctions(self):
+        from .utils import generateStringFuncsFromParams
+        from ..cell.compartCell import CompartCell
+        from ..cell.pointCell import PointCell
+
+        stringFuncs = {}
+        for (cellType, cellParams) in self.items():
+            funcsForCell = {}
+
+            # compartCell
+            varNames = CompartCell.stringFuncVarNames()
+            for secKey, secVal in [(secKey, secVal) for (secKey, secVal) in cellParams.get('secs', {}).items()]:
+                funcsForSec = {}
+
+                # find string functions among geom params
+                generateStringFuncsFromParams(secVal.get('geom', {}), varNames,
+                    storeIn=funcsForSec, key='geom')
+
+                # find string functions among mechs
+                funcsForMechs = {}
+                for mechK, mech in secVal.get('mechs', {}).items():
+                    generateStringFuncsFromParams(mech, varNames,
+                        funcsForMechs, mechK)
+                if len(funcsForMechs) > 0:
+                    funcsForSec['mechs'] = funcsForMechs
+
+                # find string functions among pointps
+                funcsForPointps = {}
+                for pointpK, pointp in secVal.get('pointps', {}).items():
+                    generateStringFuncsFromParams(pointp, varNames,
+                        storeIn=funcsForPointps, key=pointpK,
+                        excludeParams=CellParams.pointpParamsReservedKeys())
+                if len(funcsForPointps) > 0:
+                    funcsForSec['pointps'] = funcsForPointps
+
+                if len(funcsForSec) > 0:
+                    funcsForCell[secKey] = funcsForSec
+
+            if len(funcsForCell) > 0:
+                stringFuncs[cellType] = funcsForCell
+
+            # pointCell
+            generateStringFuncsFromParams(cellParams.get('params', {}),
+                PointCell.stringFuncVarNames(),
+                stringFuncs, cellType)
+
+        from .. import sim
+        sim.net.params._cellParamStringFuncs = stringFuncs
+
+
+    @staticmethod
+    def stringFuncAndVarsForGeom(cellType, section, param):
+        from .. import sim
+        funcs = sim.net.params._cellParamStringFuncs
+        return funcs.get(cellType, {}) \
+            .get(section, {}) \
+            .get('geom', {}) \
+            .get(param, (None, []))
+
+    @staticmethod
+    def stringFuncAndVarsForMod(cellType, section, modType, mod, param): # modType: 'mechs' | 'pointps'
+        from .. import sim
+        funcs = sim.net.params._cellParamStringFuncs
+        return funcs.get(cellType, {}) \
+            .get(section, {}) \
+            .get(modType, {}) \
+            .get(mod, {}) \
+            .get(param, (None, []))
+
+    @staticmethod
+    def stringFuncAndVarsForPointCell(cellType, param):
+        from .. import sim
+        funcs = sim.net.params._cellParamStringFuncs
+        return funcs.get(cellType, {}) \
+            .get(param, (None, []))
+
 
 # ----------------------------------------------------------------------------
 # ConnParams class
@@ -144,22 +225,17 @@ class SynMechParams(ODict):
         return self.__rename__(old, new, label)
 
     def preprocessStringFunctions(self):
-        from .utils import generateStringFunction
+        from .utils import generateStringFuncsFromParams
         stringFuncs = {}
         for (mechKey, mech) in self.items():
-            stringFuncs[mechKey] = {}
-            paramsKeyVal = [(k, v) for (k, v) in mech.items()
-                                if k not in SynMechParams.reservedKeys()
-                                and isinstance(v, basestring)]
-            for paramKey, paramVal in paramsKeyVal:
-                func, vars = generateStringFunction(paramVal, list(SynMechParams.stringFuncVariables().keys()))
-                if func is not None:
-                    stringFuncs[mechKey][paramKey] = func, vars
+            generateStringFuncsFromParams(mech, SynMechParams.stringFuncVarNames(),
+                stringFuncs, mechKey,
+                excludeParams=SynMechParams.reservedKeys())
         from .. import sim
         sim.net.params._synMechStringFuncs = stringFuncs
 
     @staticmethod
-    def stringFunctionAndVars(synMechName, paramName):
+    def stringFuncAndVars(synMechName, paramName):
         from .. import sim
         funcs = sim.net.params._synMechStringFuncs
         if not synMechName in funcs:
@@ -173,8 +249,14 @@ class SynMechParams(ODict):
     def reservedKeys():
         return ['label', 'mod', 'selfNetCon', 'loc']
 
+
     @staticmethod
-    def stringFuncVariables():
+    def stringFuncVarNames():
+        return list(SynMechParams.stringFuncVarsEvaluators().keys())
+
+
+    @staticmethod
+    def stringFuncVarsEvaluators():
         return {
             'rand': lambda cell, dist, rand: rand,
             'post_dist_path': lambda cell, dist, rand: dist,
@@ -186,11 +268,13 @@ class SynMechParams(ODict):
             'post_ynorm': lambda cell, dist, rand: cell.tags['ynorm'],
             'post_znorm': lambda cell, dist, rand: cell.tags['znorm'],
         }
-    
+
+
     @staticmethod
     def stringFuncVarsReferringPreLoc():
         # no such vars as for now. To be extended in future
         return []
+
 
     @staticmethod
     def stringFuncsReferPreLoc(synMech):

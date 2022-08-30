@@ -15,6 +15,8 @@ from builtins import range
 
 from builtins import round
 from builtins import str
+
+from netpyne.specs.netParams import CellParams, SynMechParams
 try:
   basestring
 except NameError:
@@ -29,6 +31,7 @@ import numpy as np
 from math import sin, cos, sqrt
 from .cell import Cell
 from ..specs import Dict
+from ..specs import utils
 
 
 ###############################################################################
@@ -345,6 +348,9 @@ class CompartCell (Cell):
             if 'geom' in sectParams:
                 for geomParamName,geomParamValue in sectParams['geom'].items():
                     if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
+                        func, vars = CellParams.stringFuncAndVarsForGeom(self.tags['cellType'], sectName, geomParamName)
+                        if func:
+                            geomParamValue = self.__evaluateCellParamsStringFunc(func, vars, sec)
                         setattr(sec['hObj'], geomParamName, geomParamValue)
 
                 # set 3d geometry
@@ -381,6 +387,10 @@ class CompartCell (Cell):
                                 else:
                                     mechParamValueFinal = mechParamValue[iseg]
                             if mechParamValueFinal is not None:  # avoid setting None values
+                                if isinstance(mechParamValueFinal, basestring):
+                                    func, vars = CellParams.stringFuncAndVarsForMod(self.tags['cellType'], sectName, 'mechs', mechName, mechParamName)
+                                    if func:
+                                        mechParamValueFinal = self.__evaluateCellParamsStringFunc(func, vars, sec, seg.x)
                                 setattr(getattr(seg, mechName), mechParamName,mechParamValueFinal)
 
             # add ions
@@ -436,7 +446,10 @@ class CompartCell (Cell):
                     for pointpParamName,pointpParamValue in pointpParams.items():  # add params of the point process
                         if pointpParamValue == 'gid':
                             pointpParamValue = self.gid
-                        if pointpParamName not in ['mod', 'loc', 'vref', 'synList'] and not pointpParamName.startswith('_'):
+                        if pointpParamName not in CellParams.pointpParamsReservedKeys() and not pointpParamName.startswith('_'):
+                            func, vars = CellParams.stringFuncAndVarsForMod(self.tags['cellType'], sectName, 'pointps', pointpName, pointpParamName)
+                            if func:
+                                pointpParamValue = self.__evaluateCellParamsStringFunc(func, vars, sec)
                             setattr(pointpObj, pointpParamName, pointpParamValue)
                     if 'params' in self.tags.keys(): # modify cell specific params
                       for pointpParamName,pointpParamValue in self.tags['params'].items():
@@ -486,10 +499,51 @@ class CompartCell (Cell):
                         elif paramName not in ['sec', 'loc']:
                             setattr(synMech['hObj'], paramName, paramValue)
                 elif synParamName not in SynMechParams.reservedKeys():
-                    func, vars = SynMechParams.stringFunctionAndVars(synMech['label'], synParamName)
+                    func, vars = SynMechParams.stringFuncAndVars(synMech['label'], synParamName)
                     if func:
                         synParamValue = self.__evaluateSynMechStringFuncs(func, vars, sec, loc, preLoc)
                     setattr(synMech['hObj'], synParamName, synParamValue)
+
+    @staticmethod
+    def stringFuncVarNames():
+        return list(CompartCell.__stringFuncVarsEvaluators().keys())
+
+
+    @staticmethod
+    def __stringFuncVarsEvaluators():
+        return {
+            'rand': lambda cell, dist, rand: rand,
+            'dist_path': lambda cell, dist, rand: dist,
+            'dist_cartesian': lambda cell, dist, rand: dist,
+            'x': lambda cell, dist, rand: cell.tags['x'],
+            'y': lambda cell, dist, rand: cell.tags['y'],
+            'z': lambda cell, dist, rand: cell.tags['z'],
+            'xnorm': lambda cell, dist, rand: cell.tags['xnorm'],
+            'ynorm': lambda cell, dist, rand: cell.tags['ynorm'],
+            'znorm': lambda cell, dist, rand: cell.tags['znorm'],
+        }
+
+
+    def __evaluateCellParamsStringFunc(self, func, varNames, sec, loc=0.5):
+        from ..network.subconn import pathDistance, posFromLoc
+
+        args = {}
+        for varName in varNames:
+            if varName == 'dist_cartesian':
+                # euclidian distance
+                x0, y0, z0 = posFromLoc(self.originSec(), 0.5)
+                x, y, z = posFromLoc(sec, sec['hObj'](loc).x)
+                dist = sqrt((x-x0)**2 + (y-y0)**2 + (z-z0)**2)
+            elif varName == 'dist_path':
+                # distance based on the topology
+                segOrigObj = self.originSec()['hObj'](0.5)
+                dist = pathDistance(segOrigObj, sec['hObj'](loc))
+            else:
+                dist = None
+            varEvaluator = CompartCell.__stringFuncVarsEvaluators()[varName]
+            args[varName] = varEvaluator(self, dist, self._randomizer())
+
+        return func(**args)
 
 
     def __evaluateSynMechStringFuncs(self, func, varNames, sec, loc, preLoc=None):
@@ -513,21 +567,10 @@ class CompartCell (Cell):
                 dist = pathDistance(segOrigObj, sec['hObj'](loc))
             else:
                 dist = None
-            obtainVarValue = SynMechParams.stringFuncVariables()[varName]
-            args[varName] = obtainVarValue(self, dist, self.__randomizerForSynMechs())
+            varEvaluator = SynMechParams.stringFuncVarsEvaluators()[varName]
+            args[varName] = varEvaluator(self, dist, self._randomizer())
 
         return func(**args)
-
-
-    def __randomizerForSynMechs(self):
-        try:
-            return self.__synMechRand
-        except:
-            from .. import sim
-            rand = h.Random()
-            rand.Random123(sim.hashStr('synMechParams'), self.gid, sim.cfg.seeds.get('synMech', 1))
-            self.__synMechRand = rand
-            return rand
 
 
     def addSynMechsNEURONObj(self):
@@ -732,7 +775,7 @@ class CompartCell (Cell):
                                 break
 
                     if conditionsMet:  # if all conditions are met, set values for this cell
-                        exclude = ['conds', 'cellConds', 'label', 'mod', 'selfNetCon', 'loc']
+                        exclude = ['conds', 'cellConds'] + SynMechParams.reservedKeys()
                         for synParamName,synParamValue in {k: v for k,v in params.items() if k not in exclude}.items():
                             if sim.cfg.createPyStruct:
                                 synMech[synParamName] = synParamValue

@@ -23,38 +23,47 @@ from neuron import h
 # -----------------------------------------------------------------------------
 # Calculate distance between 2 segments
 # -----------------------------------------------------------------------------
-def fromtodistance(self, origin_segment, to_segment):
+def pathDistance(from_segment, to_segment):
     """
-    Function for/to <short description of `netpyne.network.subconn.fromtodistance`>
+    Compute the path distance between two points on a neuron based on h.distance()
 
     Parameters
     ----------
-    self : <type>
-        <Short description of self>
-        **Default:** *required*
 
-    origin_segment : <type>
+    from_segment : <type>
         <Short description of origin_segment>
         **Default:** *required*
 
     to_segment : <type>
         <Short description of to_segment>
         **Default:** *required*
-
-
     """
 
-
-    h.distance(0, origin_segment.x, sec=origin_segment.sec)
-    return h.distance(to_segment.x, sec=to_segment.sec)
+    return h.distance(from_segment, to_segment)
 
 
 # -----------------------------------------------------------------------------
-# Calculate 2d point from segment location
+# Calculate position from segment location
 # -----------------------------------------------------------------------------
-def _posFromLoc(self, sec, x):
-    sec.push()
-    s = x * sec.L
+def posFromLoc(sec, x):
+    """
+    Compute absolute 3D position of given section at location x
+
+    Parameters
+    ----------
+
+    sec : dict
+        <Short description of origin_segment>
+        **Default:** *required*
+
+    x : float
+        <Short description of to_segment>
+        **Default:** *required*
+    """
+
+    secObj = sec['hObj']
+    secObj.push()
+    s = x * secObj.L
     numpts = int(h.n3d())
     b = -1
     for ii in range(numpts):
@@ -85,7 +94,7 @@ def _interpolateSegmentSigma(self, cell, secList, gridX, gridY, gridSigma):
         sec = cell.secs[secName]
         segNumSyn[secName] = []
         for seg in sec['hObj']:
-            x, y, z = self._posFromLoc(sec['hObj'], seg.x)
+            x, y, z = posFromLoc(sec, seg.x)
             if gridX and gridY: # 2D
                 distX = [abs(gx-x) for gx in gridX]
                 distY = [abs(gy-y) for gy in gridY]
@@ -208,7 +217,7 @@ def subcellularConn(self, allCellTags, allPopTags):
 
                         gridY = subConnParam['density']['gridY']
                         gridSigma = subConnParam['density']['gridValues']
-                        somaX, somaY, _ = self._posFromLoc(postCell.secs['soma']['hObj'], 0.5) # get cell pos move method to Cell!
+                        somaX, somaY, _ = posFromLoc(postCell.secs['soma'], 0.5) # get cell pos move method to Cell!
                         if 'fixedSomaY' in subConnParam['density']:  # is fixed cell soma y, adjust y grid accordingly
                             fixedSomaY = subConnParam['density'].get('fixedSomaY')
                             gridY = [y+(somaY-fixedSomaY) for y in gridY] # adjust grid so cell soma is at fixedSomaY
@@ -256,38 +265,37 @@ def subcellularConn(self, allCellTags, allPopTags):
                     # Distance-based
                     elif isinstance(subConnParam.get('density', None), dict) and subConnParam['density']['type'] == 'distance':
                         # find origin section
-                        # default
-                        if 'soma' in postCell.secs:
-                            secOrig = 'soma'
-                        elif any([secName.startswith('som') for secName in list(postCell.secs.keys())]):
-                            secOrig = next(secName for secName in list(postCell.secs.keys()) if secName.startswith('soma'))
-                        else:
-                            secOrig = list(postCell.secs.keys())[0]
                         # giving argument
                         if 'ref_sec' in subConnParam['density']:
                             if subConnParam['density']['ref_sec'] in list(postCell.secs.keys()):
-                                secOrig = subConnParam['density']['ref_sec']
+                                secOrigName = subConnParam['density']['ref_sec']
                             else:
                                 print('  Warning: Redistributing synapses based on inexistent information for neuron %d - section %s not found' %(postCell.gid,subConnParam['density']['ref_sec']))
+                        # default
+                        if not secOrigName:
+                            secOrigName = postCell.originSecName()
 
                         # find origin segment
                         segOrig = 0.5    # default
                         if 'ref_seg' in subConnParam['density']:
                             segOrig = subConnParam['density']['ref_seg']
+                        secOrig = postCell.secs[secOrigName]
+                        segOrigObj = secOrig['hObj'](segOrig)
                             
                         # target
                         target_distance = 0.0
                         if 'target_distance' in subConnParam['density']:
                             target_distance = subConnParam['density']['target_distance']
 
-                        newSec, newLoc = secOrig, segOrig
+                        newSec, newLoc = secOrigName, segOrig
                         min_dist = target_distance
                         if 'coord' in subConnParam['density'] and subConnParam['density']['coord'] == 'cartesian':
                             # calculate euclidean distance from reference
-                            x0, y0, z0 = self._posFromLoc(postCell.secs[secOrig]['hObj'], postCell.secs[secOrig]['hObj'](segOrig).x)
+                            x0, y0, z0 = posFromLoc(secOrig, segOrigObj.x)
                             for secName in secList:
-                                for seg in postCell.secs[secName]['hObj']:
-                                    x, y, z = self._posFromLoc(postCell.secs[secName]['hObj'], seg.x)
+                                sec = postCell.secs[secName]
+                                for seg in sec['hObj']:
+                                    x, y, z = posFromLoc(sec, seg.x)
                                     dist = np.sqrt((x-x0)**2 + (y-y0)**2 + (z-z0)**2)
                                     if abs(dist-target_distance) <= min_dist:
                                         min_dist = abs(dist-target_distance)
@@ -296,8 +304,9 @@ def subcellularConn(self, allCellTags, allPopTags):
                         else:
                             # (default) calculate distance based on the topology
                             for secName in secList:
-                                for seg in postCell.secs[secName]['hObj']:
-                                    dist = self.fromtodistance(postCell.secs[secOrig]['hObj'](segOrig), seg)
+                                sec = postCell.secs[secName]
+                                for seg in sec['hObj']:
+                                    dist = pathDistance(segOrigObj, seg)
                                     if abs(dist-target_distance) <= min_dist:
                                         min_dist = abs(dist-target_distance)
                                         newSec, newLoc = secName, seg.x

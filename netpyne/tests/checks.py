@@ -39,11 +39,11 @@ def checkOutput(modelName, verbose=False):
                         'M1detailed': 49152, 'PTcell': 1, 'cell_lfp': 1, 'saving': 1538}
         # There is a descrepancy in generated time-sereies for different NEURON versions, which results in spikes mismatch (https://github.com/neuronsimulator/nrn/issues/1764)
         if neuron.__version__ < '8.1.0':
-            expectedSpikes = {'tut1': 2052, 'tut2': 931, 'tut3': 560, 'tut4': 1197, 'tut5': 4879, 'tut6': 134,
+            expectedSpikes = {'tut1': 2052, 'tut2': 931, 'tut3': 560, 'tut4': 1197, 'tut5': 4879, 'tut6': 135,
                               'tut7': 332, 'tut_import': 3135, 'HHTut': 2052, 'HybridTut': 2561, 'M1': 14439,
                               'M1detailed': 2880, 'PTcell': 4, 'cell_lfp': 1, 'saving': 3699}
         else:
-            expectedSpikes = {'tut1': 2052, 'tut2': 928, 'tut3': 560, 'tut4': 1197, 'tut5': 4893, 'tut6': 136,
+            expectedSpikes = {'tut1': 2052, 'tut2': 928, 'tut3': 560, 'tut4': 1197, 'tut5': 4893, 'tut6': 134,
                               'tut7': 334, 'tut_import': 3135, 'HHTut': 2052, 'HybridTut': 2629, 'M1': 14439,
                               'M1detailed': 2880, 'PTcell': 4, 'cell_lfp': 1, 'saving': 3624}
         expectedAll = {'numSyns': expectedSyns, 'numSpikes': expectedSpikes}

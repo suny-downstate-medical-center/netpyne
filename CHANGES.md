@@ -1581,3 +1581,7 @@ First version that was uploaded to pypi. Includes following features:
 	- Simulation results
 
 - Distance-based redistribution of synapses (subConn)
+
+-------------------------------------------------------
+
+- Massive change of schemas. For this update, validation of plain specifications is available (conditional validation in dev)

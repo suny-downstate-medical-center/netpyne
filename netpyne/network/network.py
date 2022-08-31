@@ -33,8 +33,8 @@ class Network(object):
         self.connStringFuncParams = ['weight', 'delay', 'synsPerConn', 'loc']
 
         # params that can be expressed using string-based functions in stims
-        self.stimStringFuncParams = ['delay', 'dur', 'amp', 'gain', 'rstim', 'tau1', 'tau2',
-        'onset', 'tau', 'gmax', 'e', 'i', 'interval', 'rate', 'number', 'start', 'noise']
+        self.stimStringFuncParams = ['del', 'dur', 'amp', 'gain', 'rstim', 'tau1', 'tau2',
+        'onset', 'tau', 'gmax', 'e', 'interval', 'rate', 'number', 'start', 'noise']
 
         # list of h.Random() methods allowed in string-based functions (both for conns and stims)
         self.stringFuncRandMethods = ['binomial', 'discunif', 'erlang', 'geometric', 'hypergeo',

@@ -408,7 +408,7 @@ class Pop (object):
             try: # check if cellModel corresponds to an existing point process mechanism; if so, use PointCell
                     tmp = getattr(h, cellModel)
                     self.cellModelClass = sim.PointCell
-                    excludeTags = ['pop', 'cellModel', 'cellType', 'numCells', 'density', 'cellsList',
+                    excludeTags = ['pop', 'cellModel', 'cellType', 'numCells', 'density', 'cellsList', 'gridSpacing',
                                 'xRange', 'yRange', 'zRange', 'xnormRange', 'ynormRange', 'znormRange', 'vref', 'spkTimes', 'dynamicRates']
                     params = {k: v for k,v in self.tags.items() if k not in excludeTags}
                     self.tags['params'] = params

@@ -815,7 +815,6 @@ def _addCellConn(self, connParam, preCellGid, postCellGid):
                 secs = self.params.cellParams[cellType].secs
                 loc, _ = CompartCell.spikeGenLocAndSec(secs)
                 params['preLoc'] = loc
->>>>>>> Stashed changes
 
         if sim.cfg.includeParamsLabel: params['label'] = connParam.get('label')
 

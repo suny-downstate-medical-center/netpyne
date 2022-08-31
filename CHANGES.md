@@ -12,6 +12,7 @@
 
 - Added support for string functions in synMech parameters
 
+- Massive update of schemas (validator.py and setup.py) 
 
 **Bug fixes**
 
@@ -20,6 +21,16 @@
 - Fixed bug with accessing proper sim data file during batch parameters optimization
 
 - Fixed bug where most batch optimization methods used to misname simulation output file
+
+- Fixed bug in pop.py: "gridSpacing" is in the list of excludeTags
+
+- Fixed bug in network.py: in the list "stimStringFuncParams" --> 'del' instead of 'delay', and removed 'i'
+
+- Fixed bug in conn.py: included "params['preSec'] = connParam.get('preSec')" in gapJunctions
+
+- Fixed bug in stim.py: 'Loc' with capital letter, for making 'synMechLocFactor'
+
+- Fixed some misinformation in reference.rst about the subconn
 
 # Version 1.0.2.1
 

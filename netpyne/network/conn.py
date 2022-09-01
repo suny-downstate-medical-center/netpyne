@@ -60,7 +60,7 @@ def connectCells(self):
         sim.cfg.createNEURONObj = False
         sim.cfg.addSynMechs = False
 
-    gapJunctions = False  # assume no gap junctions by default
+    gapJunctions = self.params.synMechParams.hasGapJunctions()
 
     self.params.synMechParams.replaceStringFunctions()
 
@@ -89,7 +89,7 @@ def connectCells(self):
             self._connStrToFunc(preCellsTags, postCellsTags, connParam)  # convert strings to functions (for the delay, and probability params)
             connFunc(preCellsTags, postCellsTags, connParam)  # call specific conn function
 
-        # check if gap junctions in any of the conn rules
+        # check if gap junctions in any of the conn rules (deprecated)
         if not gapJunctions and 'gapJunction' in connParam: gapJunctions = True
 
         if sim.cfg.printSynsAfterRule:
@@ -97,7 +97,7 @@ def connectCells(self):
             print(('  Number of synaptic contacts on node %i after conn rule %s: %i ' % (sim.rank, connParamLabel, nodeSynapses)))
 
 
-    # add presynaptoc gap junctions
+    # add presynaptic gap junctions
     if gapJunctions:
         # distribute info on presyn gap junctions across nodes
         if not getattr(sim.net, 'preGapJunctions', False):
@@ -778,10 +778,11 @@ def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags):
         if 'plast' in connParam: params['plast'] = connParam.get('plast')
         if 'weightIndex' in connParam: params['weightIndex'] = connParam.get('weightIndex')        
 
-        if 'gapJunction' in connParam:
-            params['gapJunction'] = connParam.get('gapJunction')
+        if self.params.synMechParams.isGapJunction(params['synMech']):
             params['preLoc'] = connParam.get('preLoc')
-            params['gapJuncPointer'] = connParam.get('gapJuncPointer')
+        elif 'gapJunction' in connParam: # deprecated way of defining gapJunction
+            params['preLoc'] = connParam.get('preLoc')
+            params['gapJunction'] = connParam['gapJunction']
         elif synMech in self.params.synMechsReferringPreLoc:
             # save synapse pre-cell location to be used in stringFunc for synMech.
             # for optimization purpose, do it only if preLoc is referenced for a given synMech

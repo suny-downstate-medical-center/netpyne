@@ -29,6 +29,8 @@ import numpy as np
 from math import sin, cos
 from .cell import Cell
 from ..specs import Dict
+from ..specs.netParams import SynMechParams
+from .. import sim
 
 
 ###############################################################################
@@ -470,7 +472,6 @@ class CompartCell (Cell):
 
 
     def addSynMechNEURONObj(self, synMech, synMechParams, sec, loc, preLoc=None):
-        from ..specs.netParams import SynMechParams
         if not synMech.get('hObj'):  # if synMech doesn't have NEURON obj, then create
             synObj = getattr(h, synMechParams['mod'])
             synMech['hObj'] = synObj(loc, sec=sec['hObj'])  # create h Syn object (eg. h.Exp2Syn)
@@ -492,7 +493,6 @@ class CompartCell (Cell):
 
 
     def __replaceSynMechStringFuncs(self, paramName, paramValue, loc, preLoc=None):
-        from ..specs.netParams import SynMechParams
         from .. import sim
         allPossibleVars = SynMechParams.stringFuncVariables()
 
@@ -530,7 +530,7 @@ class CompartCell (Cell):
             if 'synMechs' in sectParams:
                 for synMech in sectParams['synMechs']:
                     if 'label' in synMech and 'loc' in synMech:
-                        synMechParams = sim.net.params.synMechParams.get(synMech['label'])  # get params for this synMech
+                        synMechParams = sim.net.params.synMechParams.get(synMech['label'])  # get params for this synMech # hia sim!
                         self.addSynMechNEURONObj(synMech, synMechParams, sec, synMech['loc'])
 
 
@@ -724,7 +724,7 @@ class CompartCell (Cell):
                                 break
 
                     if conditionsMet:  # if all conditions are met, set values for this cell
-                        exclude = ['conds', 'cellConds', 'label', 'mod', 'selfNetCon', 'loc']
+                        exclude = ['conds', 'cellConds'] + SynMechParams.reservedKeys()
                         for synParamName,synParamValue in {k: v for k,v in params.items() if k not in exclude}.items():
                             if sim.cfg.createPyStruct:
                                 synMech[synParamName] = synParamValue
@@ -739,6 +739,15 @@ class CompartCell (Cell):
 
     def addConn (self, params, netStimParams = None):
         from .. import sim
+
+        # gap junction params (if applicable)
+        pointerConn, isReverseGapJunc = self.__parseGapJunction(params)
+        if pointerConn and pointerConn['unidirectional'] and isReverseGapJunc:
+            preGapId, _ = self.__handleGapJunc(pointerConn, isReverseGapJunc, params)
+
+            sec = self.secs[params['sec']]
+            self.__addGapJunctionSource(pointerConn['source_var'], preGapId, sec, params['loc'])
+            return
 
         # threshold = params.get('threshold', sim.net.params.defaultThreshold)  # depreacated -- use threshold in preSyn cell sec
         if params.get('weight') is None: params['weight'] = sim.net.params.defaultWeight # if no weight, set default
@@ -794,26 +803,8 @@ class CompartCell (Cell):
             if netStimParams:
                     netstim = self.addNetStim(netStimParams)
 
-            if params.get('gapJunction', False) == True:  # only run for post gap junc (not pre)
-                if hasattr(sim, 'rank'):
-                    preGapId = 1e9*sim.rank + sim.net.lastGapId  # global index for presyn gap junc
-                else:
-                    preGapId = sim.net.lastGapId
-                postGapId = preGapId + 1  # global index for postsyn gap junc
-                sim.net.lastGapId += 2  # keep track of num of gap juncs in this node
-                if not getattr(sim.net, 'preGapJunctions', False):
-                    sim.net.preGapJunctions = []  # if doesn't exist, create list to store presynaptic cell gap junctions
-                preGapParams = {'gid': params['preGid'],
-                                'preGid': self.gid,
-                                'sec': params.get('preSec', 'soma'),
-                                'loc': params.get('preLoc', 0.5),
-                                'gapJuncPointer': params.get('gapJuncPointer'),
-                                'weight': params.get('weight', 0.0),
-                                'gapId': preGapId,
-                                'preGapId': postGapId,
-                                'synMech': params['synMech'],
-                                'gapJunction': 'pre'}
-                sim.net.preGapJunctions.append(preGapParams)  # add conn params to add pre gap junction later
+            if pointerConn:
+                preGapId, postGapId = self.__handleGapJunc(pointerConn, isReverseGapJunc, params)
 
             # Python Structure
             if sim.cfg.createPyStruct:
@@ -826,10 +817,15 @@ class CompartCell (Cell):
                 if netStimParams:
                     connParams['preGid'] = 'NetStim'
                     connParams['preLabel'] = netStimParams['source']
-                if params.get('gapJunction', 'False') == True:  # only run for post gap junc (not pre)
-                    connParams['gapId'] = postGapId
-                    connParams['preGapId'] = preGapId
-                    connParams['gapJunction'] = 'post'
+
+                if pointerConn:
+                    if not isReverseGapJunc:
+                        connParams['gapId'] = postGapId
+                        connParams['preGapId'] = preGapId
+                        connParams['gapUnidirectional'] = pointerConn['unidirectional']
+                        connParams['gapSourceRef'] = pointerConn['source_var']
+                        connParams['gapTargetRef'] = pointerConn['target_var']
+
                 self.conns.append(Dict(connParams))
             else:  # do not fill in python structure (just empty dict for NEURON obj)
                 self.conns.append(Dict())
@@ -837,19 +833,14 @@ class CompartCell (Cell):
             # NEURON objects
             if sim.cfg.createNEURONObj:
                 # gap junctions
-                if params.get('gapJunction', False) in [True, 'pre', 'post']:  # create NEURON obj for pre and post
-                    try: # weight for gap junction is optional
-                        synMechs[i]['hObj'].weight = weights[i]
-                    except:
-                        pass
-                    sourceVar = self.secs[synMechSecs[i]]['hObj'](synMechLocs[i])._ref_v
-                    targetVar = getattr(synMechs[i]['hObj'], '_ref_' + params.get('gapJuncPointer', 'vpeer'))
+                if pointerConn:
                     sec = self.secs[synMechSecs[i]]
-                    sim.pc.target_var(targetVar, connParams['gapId'])
-                    self.secs[synMechSecs[i]]['hObj'].push()
-                    sim.pc.source_var(sourceVar, connParams['preGapId'])
-                    h.pop_section()
                     netcon = None
+
+                    self.__addGapJunctionTarget(pointerConn['target_var'], postGapId, synMechs[i], weights[i])
+
+                    if not pointerConn['unidirectional']:
+                        self.__addGapJunctionSource(pointerConn['source_var'], preGapId, sec, synMechLocs[i])
 
                 # connections using NetCons
                 else:
@@ -916,6 +907,90 @@ class CompartCell (Cell):
                         % (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i])))
                 except:
                     print(('  Created connection preGid=%s' % (preGid)))
+
+
+    def __parseGapJunction(self, params):
+        pointerConn = params.get('__reversePointerConn__')
+        if pointerConn:
+            # forward gap junnction was already created earlier, 
+            # now create reverse from prefilled params 
+            isReverseGapJunc = True
+        else:
+            isReverseGapJunc = False
+            # try getting gap junc params from synMech
+            from .. import sim
+            synLabel = params['synMech']
+            synMech = sim.net.params.synMechParams[synLabel]
+            pointerConn = synMech.get('pointerParams', None)
+
+            # if no, try to get from connParams (deprecated) for backward compatibility
+            if pointerConn is None and params.get('gapJunction'):
+                pointerConn = True
+
+            if pointerConn == True: # True is a shortcut for 'use all defaults'
+                pointerConn = {}
+
+            if isinstance(pointerConn, dict): # populate each absent params with default one
+                if 'source_var' not in pointerConn: pointerConn['source_var'] = 'v'
+                if 'target_var' not in pointerConn: pointerConn['target_var'] = 'vpeer'
+                if 'unidirectional' not in pointerConn: pointerConn['unidirectional'] = False
+        return pointerConn, isReverseGapJunc
+
+
+    def __handleGapJunc(self, pointerConn, isReverseGapJunc, params):
+        from .. import sim
+
+        if isReverseGapJunc:
+            # use pre-generated
+            preGapId = pointerConn['preGapId']
+            postGapId = pointerConn['gapId']
+        else:
+            # generate new ids
+            if hasattr(sim, 'rank'):
+                preGapId = 1e9*sim.rank + sim.net.lastGapId  # global index for presyn gap junc
+            else:
+                preGapId = sim.net.lastGapId
+            postGapId = preGapId + 1  # global index for postsyn gap junc
+            sim.net.lastGapId += 2  # keep track of num of gap juncs in this node
+
+            # save to create reverse connection later
+            # if False == pointerConn['unidirectional']:
+            if not getattr(sim.net, 'preGapJunctions', False):
+                sim.net.preGapJunctions = []  # if doesn't exist, create list to store presynaptic cell gap junctions
+
+            reverseConn = deepcopy(pointerConn)
+            reverseConn['gapId'] = preGapId
+            reverseConn['preGapId'] = postGapId
+            
+            preGapParams = {
+                'gid': params['preGid'],
+                'preGid': self.gid,
+                'sec': params.get('preSec', 'soma'),
+                'loc': params.get('preLoc', 0.5),
+                'weight': params.get('weight', 0.0),
+                'synMech': params['synMech'],
+                '__reversePointerConn__': reverseConn
+            }
+            sim.net.preGapJunctions.append(preGapParams)  # add conn params to add pre gap junction later
+        return preGapId, postGapId
+
+
+    def __addGapJunctionTarget(self, ref, gapId, synMech, weight):
+        synObj = synMech['hObj']
+        try: # weight for gap junction is optional
+            synObj.weight = weight
+        except:
+            pass
+        targetVar = getattr(synObj, '_ref_' + ref)
+        sim.pc.target_var(synObj, targetVar, gapId)
+
+
+    def __addGapJunctionSource(self, ref, gapId, sec, loc):
+        secObj = sec['hObj'] 
+        sourceVar = getattr(secObj(loc), '_ref_' + ref)
+        secObj.push()
+        sim.pc.source_var(sourceVar, gapId)
+        h.pop_section()
 
 
     def modifyConns (self, params):

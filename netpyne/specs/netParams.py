@@ -158,9 +158,20 @@ class SynMechParams(ODict):
                     synMech[k+'Func'] = func, vars
                     synMech.pop(k)
 
+
+    def isGapJunction(self, synMechLabel):
+        if synMechLabel not in self:
+            return False
+        return 'pointerParams' in self[synMechLabel]
+
+    def hasGapJunctions(self):
+        for label in self:
+            if self.isGapJunction(label): return True
+        return False
+
     @staticmethod
     def reservedKeys():
-        return ['label', 'mod', 'selfNetCon', 'loc']
+        return ['label', 'mod', 'selfNetCon', 'loc', 'pointerParams']
 
     @staticmethod
     def stringFuncVariables():

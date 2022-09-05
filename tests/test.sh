@@ -3,9 +3,7 @@
 set -e 
 set -o pipefail
 
-pytest tests/doc
-
-for entry in "tests/examples/test_"*
+for entry in tests/*/test_*
 do
   # Tests have to run separately bc of the NEURON package linking
   echo "Testing $entry"

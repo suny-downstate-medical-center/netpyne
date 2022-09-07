@@ -32,7 +32,7 @@ def generateStringFunction(sourceStr, vars):
 
     if original == sourceStr and len(strVars) == 0:
         # no functions or variables recognized
-        return None, None
+        return None, []
     else:
         lambdaFunc = eval(lambdaStr)
         return lambdaFunc, strVars

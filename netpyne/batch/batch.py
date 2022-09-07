@@ -37,9 +37,8 @@ import importlib, types
 from neuron import h
 from netpyne import specs
 
-from .utils import bashTemplate
 from .utils import createFolder
-from .grid import gridSearch, getParamCombinations, generateParamCombinations
+from .grid import gridSearch, getParamCombinations
 from .evol import evolOptim
 from .asd_parallel import asdOptim
 
@@ -48,6 +47,15 @@ try:
 except:
     pass
     # print('Warning: Could not import "optuna" package...')
+
+
+try:
+    from .sbi_parallel import sbiOptim
+except:
+    pass
+    #print('Error @ the batch.py file import section')
+
+
 
 
 pc = h.ParallelContext() # use bulletin board master/slave
@@ -144,9 +152,14 @@ class Batch(object):
 
         if 'evolCfg' in odict:
             odict['evolCfg']['fitnessFunc'] = 'removed'
+
         if 'optimCfg' in odict:
             odict['optimCfg']['fitnessFunc'] = 'removed'
 
+        if 'optimCfg' in odict:
+            if 'summaryStats' in odict['optimCfg']:
+                odict['optimCfg']['summaryStats'] = 'removed'
+        
         odict['initCfg'] = tupleToStr(odict['initCfg'])
         dataSave = {'batch': tupleToStr(odict)}
 
@@ -267,3 +280,24 @@ class Batch(object):
                 optunaOptim(self, pc)
             except:
                 print(' Warning: an exception occurred when running Optuna optimization...')
+
+        # -------------------------------------------------------------------------------
+        # SBI optimization 
+        # -------------------------------------------------------------------------------
+        elif self.method == 'sbi':
+            try:
+                sbiOptim(self, pc)
+            except:
+                print(' Warning: an exception occurred when running SBI...')
+
+    @property
+    def mpiCommandDefault(self):
+        return {'asd': 'ibrun',
+                'evol': 'mpirun',
+                'optuna': 'mpiexec',
+                'sbi': 'mpiexec',
+            }.get(self.method)
+
+
+
+

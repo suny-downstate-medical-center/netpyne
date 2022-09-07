@@ -62,7 +62,7 @@ def connectCells(self):
 
     gapJunctions = self.params.synMechParams.hasGapJunctions()
 
-    self.params.synMechParams.replaceStringFunctions()
+    self.params.synMechParams.preprocessStringFunctions()
 
     for connParamLabel,connParamTemp in self.params.connParams.items():  # for each conn rule or parameter set
         connParam = connParamTemp.copy()
@@ -724,6 +724,7 @@ def fromListConn(self, preCellsTags, postCellsTags, connParam):
 # -----------------------------------------------------------------------------
 def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags):
     from .. import sim
+    from ..specs.netParams import SynMechParams
 
     # set final param values
     paramStrFunc = self.connStringFuncParams
@@ -783,7 +784,8 @@ def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags):
         elif 'gapJunction' in connParam: # deprecated way of defining gapJunction
             params['preLoc'] = connParam.get('preLoc')
             params['gapJunction'] = connParam['gapJunction']
-        elif synMech in self.params.synMechsReferringPreLoc:
+        # TODO: synMech can be None here (meaning 'use default'). Then need to use default label while checking below
+        elif SynMechParams.stringFuncsReferPreLoc(synMech):
             # save synapse pre-cell location to be used in stringFunc for synMech.
             # for optimization purpose, do it only if preLoc is referenced for a given synMech
             cellType = preCellsTags[preCellGid].get('cellType')

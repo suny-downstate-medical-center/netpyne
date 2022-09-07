@@ -143,20 +143,31 @@ class SynMechParams(ODict):
     def rename(self, old, new, label=None):
         return self.__rename__(old, new, label)
 
-    def replaceStringFunctions(self):
+    def preprocessStringFunctions(self):
         from .utils import generateStringFunction
-        from .. import sim
-        for (key, synMech) in self.items():
-            paramsKeyVal = [(k, v) for (k, v) in synMech.items()
+        stringFuncs = {}
+        for (mechKey, mech) in self.items():
+            stringFuncs[mechKey] = {}
+            paramsKeyVal = [(k, v) for (k, v) in mech.items()
                                 if k not in SynMechParams.reservedKeys()
                                 and isinstance(v, basestring)]
-            for k, v in paramsKeyVal:
-                func, vars = generateStringFunction(v, list(SynMechParams.stringFuncVariables().keys()))
-                if 'pre_loc' in vars and key not in sim.net.params.synMechsReferringPreLoc:
-                    sim.net.params.synMechsReferringPreLoc.append(key)
+            for paramKey, paramVal in paramsKeyVal:
+                func, vars = generateStringFunction(paramVal, list(SynMechParams.stringFuncVariables().keys()))
                 if func is not None:
-                    synMech[k+'Func'] = func, vars
-                    synMech.pop(k)
+                    stringFuncs[mechKey][paramKey] = func, vars
+        from .. import sim
+        sim.net.params._synMechStringFuncs = stringFuncs
+
+    @staticmethod
+    def stringFunctionAndVars(synMechName, paramName):
+        from .. import sim
+        funcs = sim.net.params._synMechStringFuncs
+        if not synMechName in funcs:
+            return None, []
+        if not paramName in funcs[synMechName]:
+            return None, []
+        return funcs[synMechName][paramName]
+
 
 
     def isGapJunction(self, synMechLabel):
@@ -176,13 +187,31 @@ class SynMechParams(ODict):
     @staticmethod
     def stringFuncVariables():
         return {
-            'rand': lambda cellTags, prePostLoc, rand: rand,
-            'pre_loc': lambda cellTags, prePostLoc, rand: prePostLoc[0],
-            'post_loc': lambda cellTags, prePostLoc, rand: prePostLoc[1],
-            'post_xnorm': lambda cellTags, prePostLoc, rand: cellTags['xnorm'],
-            'post_ynorm': lambda cellTags, prePostLoc, rand: cellTags['ynorm'],
-            'post_znorm': lambda cellTags, prePostLoc, rand: cellTags['znorm'],
+            'rand': lambda cell, dist, rand: rand,
+            'post_dist_path': lambda cell, dist, rand: dist,
+            'post_dist_cartesian': lambda cell, dist, rand: dist,
+            'post_x': lambda cell, dist, rand: cell.tags['x'],
+            'post_y': lambda cell, dist, rand: cell.tags['y'],
+            'post_z': lambda cell, dist, rand: cell.tags['z'],
+            'post_xnorm': lambda cell, dist, rand: cell.tags['xnorm'],
+            'post_ynorm': lambda cell, dist, rand: cell.tags['ynorm'],
+            'post_znorm': lambda cell, dist, rand: cell.tags['znorm'],
         }
+    
+    @staticmethod
+    def stringFuncVarsReferringPreLoc():
+        # no such vars as for now. To be extended in future
+        return []
+
+    @staticmethod
+    def stringFuncsReferPreLoc(synMech):
+        from .. import sim
+        mechFuncs = sim.net.params._synMechStringFuncs.get(synMech, {})
+        for preLocVar in SynMechParams.stringFuncVarsReferringPreLoc():
+            for _, (_, vars) in mechFuncs.items():
+                if preLocVar in vars: return True
+        return False
+
 
 
 # ----------------------------------------------------------------------------
@@ -341,9 +370,6 @@ class NetParams(object):
 
         # RxD params dicts and start up
         self.rxdParams = RxDParams()
-
-        # list of labels of synMechsParams that require preLoc
-        self.synMechsReferringPreLoc = []
 
         # fill in params from dict passed as argument
         if netParamsDict:

@@ -928,7 +928,9 @@ class CompartCell (Cell):
             # try getting gap junc params from synMech
             from .. import sim
             synLabel = params['synMech']
-            synMech = sim.net.params.synMechParams[synLabel]
+            synMech = sim.net.params.synMechParams.get(synLabel)
+            if not synMech:
+                return None, False
             pointerConn = synMech.get('pointerParams', None)
 
             # if no, try to get from connParams (deprecated) for backward compatibility

@@ -135,7 +135,7 @@ class Network(object):
     # -----------------------------------------------------------------------------
     # Import subconn methods
     # -----------------------------------------------------------------------------
-    from .subconn import fromtodistance, _posFromLoc, _interpolateSegmentSigma, subcellularConn
+    from .subconn import pathDistance, posFromLoc, _interpolateSegmentSigma, subcellularConn
 
     # -----------------------------------------------------------------------------
     # Import rxd methods

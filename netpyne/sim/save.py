@@ -139,12 +139,15 @@ def saveData(include=None, filename=None, saveLFP=True):
         if not include: include = sim.cfg.saveDataInclude
         dataSave = {}
         net = {}
+        synMechStringFuncs = None
 
         dataSave['netpyne_version'] = sim.version(show=False)
         dataSave['netpyne_changeset'] = sim.gitChangeset(show=False)
 
         if getattr(sim.net.params, 'version', None): dataSave['netParams_version'] = sim.net.params.version
         if 'netParams' in include:
+            # exclude from dataSave but keep in synMechParams later, for integrity
+            synMechStringFuncs = sim.net.params.__dict__.pop('_synMechStringFuncs', None)
             sim.net.params.__dict__.pop('_labelid', None)
             net['params'] = utils.replaceFuncObj(sim.net.params.__dict__)
         if 'net' in include: include.extend(['netPops', 'netCells'])
@@ -277,7 +280,9 @@ def saveData(include=None, filename=None, saveLFP=True):
 
         else:
             print('Nothing to save')
-        
+
+        if synMechStringFuncs:
+            sim.net.params._synMechStringFuncs = synMechStringFuncs
         return savedFiles
 
 

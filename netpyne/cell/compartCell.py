@@ -26,7 +26,7 @@ from numbers import Number
 from copy import deepcopy
 from neuron import h # Import NEURON
 import numpy as np
-from math import sin, cos
+from math import sin, cos, sqrt
 from .cell import Cell
 from ..specs import Dict
 
@@ -475,11 +475,7 @@ class CompartCell (Cell):
             synObj = getattr(h, synMechParams['mod'])
             synMech['hObj'] = synObj(loc, sec=sec['hObj'])  # create h Syn object (eg. h.Exp2Syn)
             for synParamName,synParamValue in synMechParams.items():  # add params of the synaptic mechanism
-                if synParamName not in SynMechParams.reservedKeys():
-                    if synParamName.endswith('Func'):
-                        synParamName, synParamValue = self.__replaceSynMechStringFuncs(synParamName, synParamValue, loc, preLoc)
-                    setattr(synMech['hObj'], synParamName, synParamValue)
-                elif synParamName == 'selfNetcon':  # create self netcon required for some synapses (eg. homeostatic)
+                if synParamName == 'selfNetcon':  # create self netcon required for some synapses (eg. homeostatic)
                     secLabelNetCon = synParamValue.get('sec', 'soma')
                     locNetCon = synParamValue.get('loc', 0.5)
                     secNetCon = self.secs.get(secLabelNetCon, None)
@@ -489,26 +485,38 @@ class CompartCell (Cell):
                             synMech['hObj'].weight[0] = paramValue
                         elif paramName not in ['sec', 'loc']:
                             setattr(synMech['hObj'], paramName, paramValue)
+                elif synParamName not in SynMechParams.reservedKeys():
+                    func, vars = SynMechParams.stringFunctionAndVars(synMech['label'], synParamName)
+                    if func:
+                        synParamValue = self.__evaluateSynMechStringFuncs(func, vars, sec, loc, preLoc)
+                    setattr(synMech['hObj'], synParamName, synParamValue)
 
 
-    def __replaceSynMechStringFuncs(self, paramName, paramValue, loc, preLoc=None):
+    def __evaluateSynMechStringFuncs(self, func, varNames, sec, loc, preLoc=None):
         from ..specs.netParams import SynMechParams
         from .. import sim
-        allPossibleVars = SynMechParams.stringFuncVariables()
+        from ..network.subconn import pathDistance, posFromLoc
 
-        paramName = paramName[:-4] # truncate 'Func' in the end
-
-        func, varNames = paramValue
         args = {}
         for varName in varNames:
-            if not preLoc and varName == 'pre_loc':
+            if not preLoc and varName in SynMechParams.stringFuncVarsReferringPreLoc():
                 preLoc = 0.5
                 if sim.cfg.verbose: print('No preLoc for synMech string function provided. Defaulting to 0.5')
-            obtainVarValue = allPossibleVars[varName]
-            args[varName] = obtainVarValue(self.tags, (preLoc, loc), self.__randomizerForSynMechs())
+            if varName == 'post_dist_cartesian':
+                # euclidian distance
+                x0, y0, z0 = posFromLoc(self.originSec(), 0.5)
+                x, y, z = posFromLoc(sec, sec['hObj'](loc).x)
+                dist = sqrt((x-x0)**2 + (y-y0)**2 + (z-z0)**2)
+            elif varName == 'post_dist_path':
+                # distance based on the topology
+                segOrigObj = self.originSec()['hObj'](0.5)
+                dist = pathDistance(segOrigObj, sec['hObj'](loc))
+            else:
+                dist = None
+            obtainVarValue = SynMechParams.stringFuncVariables()[varName]
+            args[varName] = obtainVarValue(self, dist, self.__randomizerForSynMechs())
 
-        paramValue = func(**args)
-        return paramName, paramValue
+        return func(**args)
 
 
     def __randomizerForSynMechs(self):
@@ -1265,7 +1273,7 @@ class CompartCell (Cell):
                     if len(params['loc']) == synsPerConn:
                         synMechLocs = params['loc']
                     else:
-                        print("Error: The length of the list of locations does not match synsPerConn (distributing uniformly)")
+                        if sim.cfg.verbose: print("Error: The length of the list of locations does not match synsPerConn (distributing uniformly)")
                         synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
                 else:
                     synMechLocs = [i*(1.0/synsPerConn)+1.0/synsPerConn/2 for i in range(synsPerConn)]
@@ -1470,3 +1478,15 @@ class CompartCell (Cell):
                     sec['geom']['pt3d'].append(pt3d)
                     h.pt3dchange(i, x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hObj'])
                 h.pop_section()
+
+    def originSecName(self):
+        if 'soma' in self.secs:
+            secOrig = 'soma'
+        elif any([secName.startswith('som') for secName in list(self.secs.keys())]):
+            secOrig = next(secName for secName in list(self.secs.keys()) if secName.startswith('soma'))
+        else:
+            secOrig = list(self.secs.keys())[0]
+        return secOrig
+
+    def originSec(self):
+        return self.secs[self.originSecName()]

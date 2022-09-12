@@ -21,6 +21,8 @@
 
 - Fixed bug where most batch optimization methods used to misname simulation output file
 
+- Fixed bug in dipole calculation units - changed from mA to uA 
+
 # Version 1.0.2.1
 
 **New features**

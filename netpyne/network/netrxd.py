@@ -355,7 +355,9 @@ def _addParameters(self, params):
            print('  Error creating State %s: could not find regions %s'%(label, param['regions']))
 
         if 'name' not in param:
-            param['name'] = None
+            name = label
+        else:
+            name = param['name']
         
         if 'charge' not in param:
             param['charge'] = 0
@@ -377,11 +379,6 @@ def _addParameters(self, params):
                 continue
         else:
             value = param['value']
-        
-        if 'name' not in param:
-            name = label
-        else:
-            name = param['name'] 
         
         # call rxd method to create Region
         self.rxd['parameters'][label]['hObj'] = rxd.Parameter(regions=nrnRegions, 
@@ -475,6 +472,10 @@ def _addReactions(self, params, multicompartment=False):
         if 'membrane_flux' not in param:
             param['membrane_flux'] = False
 
+        # scale by area
+        if 'scale_by_area' not in param:
+            param['scale_by_area'] = True
+
         if rate_b is None and dynamicVars.get('rate_b', None) is None:
             # omit positional argument 'rate_b'
             self.rxd[reactionDictKey][label]['hObj'] = getattr(rxd, reactionStr)(dynamicVars['reactant'],
@@ -483,6 +484,7 @@ def _addReactions(self, params, multicompartment=False):
                                                                             regions=nrnRegions,
                                                                             custom_dynamics=param['custom_dynamics'],
                                                                             membrane_flux=param['membrane_flux'],
+                                                                            scale_by_area=param['scale_by_area'],
                                                                             membrane=nrnMembraneRegion)
 
         else:
@@ -494,6 +496,7 @@ def _addReactions(self, params, multicompartment=False):
                                                                             regions=nrnRegions,
                                                                             custom_dynamics=param['custom_dynamics'],
                                                                             membrane_flux=param['membrane_flux'],
+                                                                            scale_by_area=param['scale_by_area'],
                                                                             membrane=nrnMembraneRegion)
 
 

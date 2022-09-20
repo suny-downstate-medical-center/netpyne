@@ -36,10 +36,6 @@ class Network(object):
         self.stimStringFuncParams = ['delay', 'dur', 'amp', 'gain', 'rstim', 'tau1', 'tau2',
         'onset', 'tau', 'gmax', 'e', 'i', 'interval', 'rate', 'number', 'start', 'noise']
 
-        # list of h.Random() methods allowed in string-based functions (both for conns and stims)
-        self.stringFuncRandMethods = ['binomial', 'discunif', 'erlang', 'geometric', 'hypergeo',
-        'lognormal', 'negexp', 'normal', 'poisson', 'uniform', 'weibull']
-
         self.rand = h.Random()  # random number generator
 
         self.pops = ODict()  # list to store populations ('Pop' objects)
@@ -139,7 +135,7 @@ class Network(object):
     # -----------------------------------------------------------------------------
     # Import subconn methods
     # -----------------------------------------------------------------------------
-    from .subconn import fromtodistance, _posFromLoc, _interpolateSegmentSigma, subcellularConn
+    from .subconn import pathDistance, posFromLoc, _interpolateSegmentSigma, subcellularConn
 
     # -----------------------------------------------------------------------------
     # Import rxd methods

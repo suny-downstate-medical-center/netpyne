@@ -38,7 +38,7 @@ def plotDipole(showCell=None, showPop=None,  timeRange=None, dpi=300, figSize=(6
     else:
         p = sim.allSimData['dipoleSum']
 
-    p = p/1000.0 # convert from nA to mA
+    p = p/1000.0 # convert from nA to uA
 
     if timeRange is None:
         timeRange = [0, sim.cfg.duration]
@@ -50,7 +50,7 @@ def plotDipole(showCell=None, showPop=None,  timeRange=None, dpi=300, figSize=(6
     plt.plot(np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep), np.array(p)[timeSteps[0]:timeSteps[1]])
     #plt.legend([r'$P_x$ (mA um)', r'$P_y$ (mA um)', r'$P_z$ (mA um)'])
     plt.legend([r'$P_x$', r'$P_y$', r'$P_z$'])
-    plt.ylabel(r'$\mathbf{P}(t)$ (mA $\mu$m)')
+    plt.ylabel(r'$\mathbf{P}(t)$ ($\mu$A $\mu$m)')
     plt.xlabel('$t$ (ms)')
     ax=plt.gca()
     ax.grid(False)

@@ -417,7 +417,7 @@ class CompartCell (Cell):
                 for synMech in sectParams['synMechs']:
                     if 'label' in synMech and 'loc' in synMech:
                         synMechParams = sim.net.params.synMechParams.get(synMech['label'])  # get params for this synMech
-                        self.addSynMechNEURONObj(synMech, synMechParams, sec, synMech['loc'])
+                        self.addSynMechNEURONObj(synMech, synMech['label'], synMechParams, sec, synMech['loc'])
 
             # add point processes
             if 'pointps' in sectParams:
@@ -469,7 +469,7 @@ class CompartCell (Cell):
             print("ERROR: Some mechanisms and/or ions were not inserted (for details run with cfg.verbose=True). Make sure the required mod files are compiled.")
 
 
-    def addSynMechNEURONObj(self, synMech, synMechParams, sec, loc, preLoc=None):
+    def addSynMechNEURONObj(self, synMech, synMechLabel, synMechParams, sec, loc, preLoc=None):
         from ..specs.netParams import SynMechParams
         if not synMech.get('hObj'):  # if synMech doesn't have NEURON obj, then create
             synObj = getattr(h, synMechParams['mod'])
@@ -486,7 +486,7 @@ class CompartCell (Cell):
                         elif paramName not in ['sec', 'loc']:
                             setattr(synMech['hObj'], paramName, paramValue)
                 elif synParamName not in SynMechParams.reservedKeys():
-                    func, vars = SynMechParams.stringFunctionAndVars(synMech['label'], synParamName)
+                    func, vars = SynMechParams.stringFunctionAndVars(synMechLabel, synParamName)
                     if func:
                         synParamValue = self.__evaluateSynMechStringFuncs(func, vars, sec, loc, preLoc)
                     setattr(synMech['hObj'], synParamName, synParamValue)
@@ -539,7 +539,7 @@ class CompartCell (Cell):
                 for synMech in sectParams['synMechs']:
                     if 'label' in synMech and 'loc' in synMech:
                         synMechParams = sim.net.params.synMechParams.get(synMech['label'])  # get params for this synMech
-                        self.addSynMechNEURONObj(synMech, synMechParams, sec, synMech['loc'])
+                        self.addSynMechNEURONObj(synMech, synMech['label'], synMechParams, sec, synMech['loc'])
 
 
     # Create NEURON objs for conns and syns if included in prop (used when loading)
@@ -684,7 +684,7 @@ class CompartCell (Cell):
                     synMech = Dict()
                     sec['synMechs'].append(synMech)
                 # add the NEURON object
-                self.addSynMechNEURONObj(synMech, synMechParams, sec, loc, preLoc)
+                self.addSynMechNEURONObj(synMech, synLabel, synMechParams, sec, loc, preLoc)
             else:
                 synMech = None
         else:

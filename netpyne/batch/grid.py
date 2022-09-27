@@ -291,12 +291,11 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
         print('Skipping job %s since cfg file already exists...' % (jobName))
     elif batch.runCfg.get('skipCustom', None) and glob.glob(jobName+batch.runCfg['skipCustom']):
         print('Skipping job %s since %s file already exists...' % (jobName, batch.runCfg['skipCustom']))
-    else:
-        # save simConfig json to saveFolder
-        batch.cfg.simLabel = simLabel
-        batch.cfg.saveFolder = batch.saveFolder
-        cfgSavePath = batch.saveFolder+'/'+simLabel+'_cfg.json'
-        batch.cfg.save(cfgSavePath)
+    # save simConfig json to saveFolder
+    batch.cfg.simLabel = simLabel
+    batch.cfg.saveFolder = batch.saveFolder
+    cfgSavePath = batch.saveFolder+'/'+simLabel+'_cfg.json'
+    batch.cfg.save(cfgSavePath)
 
     # read params or set defaults
     sleepInterval = batch.runCfg.get('sleepInterval', 1)

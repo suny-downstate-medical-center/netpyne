@@ -169,9 +169,20 @@ class SynMechParams(ODict):
         return funcs[synMechName][paramName]
 
 
+
+    def isPointerConn(self, synMechLabel):
+        if synMechLabel not in self:
+            return False
+        return 'pointerParams' in self[synMechLabel]
+
+    def hasPointerConns(self):
+        for label in self:
+            if self.isPointerConn(label): return True
+        return False
+
     @staticmethod
     def reservedKeys():
-        return ['label', 'mod', 'selfNetCon', 'loc']
+        return ['label', 'mod', 'selfNetCon', 'loc', 'pointerParams']
 
     @staticmethod
     def stringFuncVariables():

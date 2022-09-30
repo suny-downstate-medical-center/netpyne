@@ -12,6 +12,8 @@
 
 - Added support for string functions in synMech parameters
 
+- More control over POINTER variables through synMechParams (e.g. for gap junctions)
+
 
 **Bug fixes**
 

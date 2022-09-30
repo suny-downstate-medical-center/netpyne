@@ -235,7 +235,7 @@ class SynMechParams(ODict):
         sim.net.params._synMechStringFuncs = stringFuncs
 
     @staticmethod
-    def stringFuncAndVars(synMechName, paramName):
+    def stringFunctionAndVars(synMechName, paramName):
         from .. import sim
         funcs = sim.net.params._synMechStringFuncs
         if not synMechName in funcs:
@@ -245,9 +245,19 @@ class SynMechParams(ODict):
         return funcs[synMechName][paramName]
 
 
+    def isPointerConn(self, synMechLabel):
+        if synMechLabel not in self:
+            return False
+        return 'pointerParams' in self[synMechLabel]
+
+    def hasPointerConns(self):
+        for label in self:
+            if self.isPointerConn(label): return True
+        return False
+
     @staticmethod
     def reservedKeys():
-        return ['label', 'mod', 'selfNetCon', 'loc']
+        return ['label', 'mod', 'selfNetCon', 'loc', 'pointerParams']
 
 
     @staticmethod
@@ -268,6 +278,21 @@ class SynMechParams(ODict):
             'post_ynorm': lambda cell, dist, rand: cell.tags['ynorm'],
             'post_znorm': lambda cell, dist, rand: cell.tags['znorm'],
         }
+    
+    @staticmethod
+    def stringFuncVarsReferringPreLoc():
+        # no such vars as for now. To be extended in future
+        return []
+
+    @staticmethod
+    def stringFuncsReferPreLoc(synMech):
+        from .. import sim
+        mechFuncs = sim.net.params._synMechStringFuncs.get(synMech, {})
+        for preLocVar in SynMechParams.stringFuncVarsReferringPreLoc():
+            for _, (_, vars) in mechFuncs.items():
+                if preLocVar in vars: return True
+        return False
+
 
 
     @staticmethod

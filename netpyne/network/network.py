@@ -45,7 +45,7 @@ class Network(object):
 
         self.gid2lid = {} # Empty dict for storing GID -> local index (key = gid; value = local id) -- ~x6 faster than .index()
         self.lastGid = 0  # keep track of last cell gid
-        self.lastGapId = 0  # keep track of last gap junction gid
+        self.lastPointerId = 0  # keep track of last gap junction gid
 
 
     # -----------------------------------------------------------------------------

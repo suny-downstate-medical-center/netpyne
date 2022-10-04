@@ -97,7 +97,44 @@ def plotCSD(
 
     """
 
+
+    # If there is no input data, get the data from the NetPyNE sim object
+    if CSD_data is None:
+        if 'sim' not in kwargs:
+            from .. import sim
+        else:
+            sim = kwargs['sim']
+
+        CSD_data = sim.analysis.prepareCSD(
+            LFP_input_data=None, 
+            LFP_input_file=None, 
+            sampr=None, 
+            dt=None, 
+            spacing_um=None, 
+            minf=0.05, 
+            maxf=300, 
+            norm=True, 
+            vaknin=True, 
+            save_to_sim=True, 
+            getAllData=False,
+            **kwargs)
+            ### vv sim.analysis.prepareLFP args --> 
+            # sim=sim,
+            # timeRange=timeRange,
+            # electrodes=electrodes, 
+            # pop=pop,
+            # LFPData=LFPData, 
+            # logy=logy, 
+            # normSignal=normSignal, 
+            # filtFreq=filtFreq, 
+            # filtOrder=filtOrder, 
+            # detrend=detrend, 
+            # **kwargs
+
+
+
     print('Plotting CSD... ')
+
   
     # DEFAULT -- CONDITION 1 : GET CSD DATA FROM SIM
     if CSD_data is None:

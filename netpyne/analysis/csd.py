@@ -33,8 +33,53 @@ from .filter import lowpass,bandpass
 from .utils import exception, _saveFigData 
 
 
+
+
 @exception
 def prepareCSD(
+    sim=None,
+    timeRange=None,
+    electrodes=['avg', 'all'],
+    pop=None,
+
+
+
+    LFP_input_data=None, 
+    LFP_input_file=None, 
+    sampr=None, 
+    dt=None, 
+    spacing_um=None, 
+    minf=0.05, 
+    maxf=300, 
+    norm=True, 
+    vaknin=True, 
+    save_to_sim=True, 
+    getAllData=False,
+    **kwargs): 
+
+    """
+    Function to prepare data for plotting of current source density (CSD) data
+    """
+
+    print('Preparing CSD data... ')
+
+    # if not sim:
+    #     from .. import sim
+    if not sim:
+        try:
+            from .. import sim
+        except:
+            raise Exception('Cannot access sim')
+
+
+    # set time range
+    if timeRange is None:
+        timeRange = [0, sim.cfg.duration]
+
+
+
+@exception
+def prepareCSD_DRAFT1(
     LFP_input_data=None, 
     LFP_input_file=None, 
     sampr=None, 

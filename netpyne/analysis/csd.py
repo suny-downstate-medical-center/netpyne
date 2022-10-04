@@ -34,7 +34,19 @@ from .utils import exception, _saveFigData
 
 
 @exception
-def prepareCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, spacing_um=None, minf=0.05, maxf=300, norm=True, vaknin=True, save_to_sim=True, getAllData=False): 
+def prepareCSD(
+    LFP_input_data=None, 
+    LFP_input_file=None, 
+    sampr=None, 
+    dt=None, 
+    spacing_um=None, 
+    minf=0.05, 
+    maxf=300, 
+    norm=True, 
+    vaknin=True, 
+    save_to_sim=True, 
+    getAllData=False,
+    **kwargs): 
     ## Seems like the goal is to output data that can then be used for plotting 
     """
     Function to extract CSD values from simulated LFP data 
@@ -250,7 +262,11 @@ def prepareCSD(LFP_input_data=None, LFP_input_file=None, sampr=None, dt=None, sp
     if getAllData is False:
         return CSD_data
 
-def getbandpass(lfps, sampr, minf=0.05, maxf=300):
+def getbandpass(
+    lfps, 
+    sampr, 
+    minf=0.05, 
+    maxf=300):
     """
     Function to bandpass filter data
 
@@ -287,7 +303,6 @@ def getbandpass(lfps, sampr, minf=0.05, maxf=300):
 
     return datband
 
-
 def Vaknin(x):
     """ 
     Function to perform the Vaknin correction for CSD analysis
@@ -319,7 +334,6 @@ def Vaknin(x):
     x_new[1:-1, :] = x
 
     return x_new
-
 
 def removemean(x, ax=1):
     """

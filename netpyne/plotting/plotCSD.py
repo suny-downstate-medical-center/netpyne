@@ -1,5 +1,9 @@
 # PLOTTING CSD 
 
+from ..analysis.utils import exception
+import numpy as np
+import scipy
+from matplotlib import pyplot as plt 
 
 
 
@@ -99,7 +103,7 @@ def plotCSD(
     if CSD_data is None:
     
         from .. import sim
-        LFP_data, CSD_data, sampr, spacing_um, dt = getCSD(getAllData=True) #getCSD(sampr=sampr, spacing_um=spacing_um, dt=dt, getAllData=True)
+        LFP_data, CSD_data, sampr, spacing_um, dt = prepareCSD(getAllData=True) #getCSD(sampr=sampr, spacing_um=spacing_um, dt=dt, getAllData=True)
 
         if timeRange is None:
             timeRange = [0,sim.cfg.duration] 

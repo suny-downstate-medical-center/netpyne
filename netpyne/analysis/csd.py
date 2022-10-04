@@ -47,7 +47,7 @@ def prepareCSD(
     save_to_sim=True, 
     getAllData=False,
     **kwargs): 
-    ## Seems like the goal is to output data that can then be used for plotting 
+    ## Output data that can be used for plotting (plotting/plotCSD.py)
     """
     Function to extract CSD values from simulated LFP data 
 

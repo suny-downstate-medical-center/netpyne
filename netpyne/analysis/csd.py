@@ -41,26 +41,19 @@ def prepareCSD(
     timeRange=None,
     dt=None, 
     sampr=None,
-    spacing_um=None, 
-
-
-    electrodes=['avg', 'all'],
-    pop=None,
-
-
-
-    LFP_input_data=None, 
-    LFP_input_file=None, 
-     
-    
-    
-    minf=0.05, 
-    maxf=300, 
-    norm=True, 
-    vaknin=True, 
-    save_to_sim=True, 
-    getAllData=False,
-    **kwargs): 
+    spacing_um=None,
+    **kwargs):
+    # electrodes=['avg', 'all'],
+    # pop=None,
+    # LFP_input_data=None, 
+    # LFP_input_file=None, 
+    # minf=0.05, 
+    # maxf=300, 
+    # norm=True, 
+    # vaknin=True, 
+    # save_to_sim=True, 
+    # getAllData=False,
+    # **kwargs): 
 
     """
     Function to prepare data for plotting of current source density (CSD) data
@@ -68,8 +61,6 @@ def prepareCSD(
 
     print('Preparing CSD data... ')
 
-    # if not sim:
-    #     from .. import sim
     if not sim:
         try:
             from .. import sim
@@ -78,9 +69,35 @@ def prepareCSD(
             raise Exception('Cannot access sim')
 
 
+    ## Get LFP data from sim and instantiate as a numpy array 
+    simDataCategories = sim.allSimData.keys()
+    
+    if 'LFP' in simDataCategories:
+        LFPData = np.array(sim.allSimData['LFP'])
+        print('LFPData extracted!')
+    else:
+        raise Exception('NO LFP DATA!! Need to re-run simulation with cfg.recordLFP enabled.')
+    print(str(type(LFPData)))
+    print(str(LFPData.shape))
+
+
+    # ## ALTERNATIVE: Get LFP data by doing prepareLFP --> 
+    # LFPData_prepareLFP_notArray = sim.analysis.prepareLFP(
+    #     sim=sim)
+    # LFPData_prepareLFP_notTransposed = np.array(LFPData_prepareLFP_notArray['electrodes']['lfps'])
+    # LFPData_prepareLFP_notTruncated = np.transpose(LFPData_prepareLFP_notTransposed)
+    # LFPData_prepareLFP = LFPData_prepareLFP_notTruncated[:, 1:]
+
+    # if (LFPData == LFPData_prepareLFP).all():
+    #     print('LFPData == LFP_prepareLFP')
+    # if np.array_equal(LFPData, LFPData_prepareLFP):
+    #     print('double equal check')
+
+
     # set time range
     if timeRange is None:
         timeRange = [0, sim.cfg.duration]
+    # else:   ## LFP DATA CROPPED BY TIME RANGE?? OR DO THIS LATER ONLY TO CSD DATA? 
 
 
     # time step used in simulation recording (in ms)
@@ -102,32 +119,10 @@ def prepareCSD(
 
     print('timeRange, dt, sampr, spacing_um, spacing_mm values all determined')
 
-    ## Get LFP data from sim and instantiate as a numpy array 
-    # sim_data_categories = sim.allSimData.keys()
-    
-    # if 'LFP' in sim_data_categories:
-    #     LFPData = np.array(sim.allSimData['LFP'])        # lfp_data = np.array(sim.allSimData['LFP'])
-    # else:
-    #     raise Exception('NO LFP DATA!! Need to re-run simulation with cfg.recordLFP enabled.')
-
-
-    ## Get LFP data by doing prepareLFP...? 
-    # LFPData = prepareLFP(
-        # sim=sim,
-        # timeRange=timeRange,
-        # electrodes=electrodes,
-        # pop=pop,
-        # LFPData=LFPData, 
-        # logy=logy, 
-        # normSignal=normSignal, 
-        # filtFreq=filtFreq, 
-        # filtOrder=filtOrder, 
-        # detrend=detrend,
-        # **kwargs)
-
 
     ## This retrieves: 
-    #   lfp_data (as an array)
+    #   LFPData (as an array)
+    #   timeRange --> list [startTime, endTime]
     #   dt --> recording time step (in ms)
     #   sampr --> sampling rate of data recording (in Hz)
     #   spacing_um --> spacing btwn electrodes (in um)

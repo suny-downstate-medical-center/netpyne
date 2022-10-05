@@ -106,19 +106,26 @@ def plotCSD(
         else:
             sim = kwargs['sim']
 
-        CSDData = sim.analysis.prepareCSD(
-            LFP_input_data=None, 
-            LFP_input_file=None, 
-            sampr=None, 
+
+        CSDData = sim.analysis.prepareCSD(sim=sim,
+            timeRange=None,
             dt=None, 
-            spacing_um=None, 
-            minf=0.05, 
-            maxf=300, 
-            norm=True, 
-            vaknin=True, 
-            save_to_sim=True, 
-            getAllData=False,
-            **kwargs)
+            sampr=None,
+            spacing_um=None,
+            **kwargs):
+        # CSDData = sim.analysis.prepareCSD(
+        #     LFP_input_data=None, 
+        #     LFP_input_file=None, 
+        #     sampr=None, 
+        #     dt=None, 
+        #     spacing_um=None, 
+        #     minf=0.05, 
+        #     maxf=300, 
+        #     norm=True, 
+        #     vaknin=True, 
+        #     save_to_sim=True, 
+        #     getAllData=False,
+        #     **kwargs)
             ### vv sim.analysis.prepareLFP args --> 
             # sim=sim,
             # timeRange=timeRange,

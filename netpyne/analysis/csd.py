@@ -153,23 +153,20 @@ def prepareCSD(
 
     # now each column (or row) is an electrode -- take CSD along electrodes
     CSDData = -np.diff(datband, n=2, axis=ax)/spacing_mm**2  
-
+    #### PARTITION BY timeRange!!!!!!! 
 
     #### noBandpass ###
     datband_noBandpass = LFPData.T   # ? 
-  
     if datband_noBandpass.shape[0] > datband_noBandpass.shape[1]:
         ax = 1
     else:
         ax = 0
-  
     if vaknin:
         datband_noBandpass = Vaknin(datband_noBandpass)
-  
     if norm:
         removemean(datband_noBandpass, ax=ax)
-  
     CSDData_noBandpass = -np.diff(datband_noBandpass,n=2,axis=ax)/spacing_mm**2
+
 
     ##### SAVE DATA #######
     # Add CSD and other param values to sim.allSimData for later access

@@ -99,7 +99,6 @@ def prepareCSD(
     # set time range
     if timeRange is None:
         timeRange = [0, sim.cfg.duration]
-    # else:   ## LFP DATA CROPPED BY TIME RANGE?? OR DO THIS LATER ONLY TO CSD DATA? 
 
 
     # time step used in simulation recording (in ms)

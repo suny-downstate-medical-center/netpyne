@@ -646,6 +646,7 @@ class GeneralPlotter:
         if not labels:
             labels = cur_labels
 
+        ## EYG 10/05 DEBUGGING LFP PSD PLOT LEGEND ERROR (see nb) -- THIS IS THE LINE WHERE ERROR OCCURS
         self.axis.legend(handles, labels, **legendKwargs)
 
 
@@ -795,7 +796,7 @@ class GeneralPlotter:
 
         # Reset the matplotlib rcParams to their original settings
         mpl.style.use(self.metafig.orig_rcParams)
-                
+        
 
 class ScatterPlotter(GeneralPlotter):
     """NetPyNE plotter for scatter plots

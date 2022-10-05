@@ -39,6 +39,11 @@ from .utils import exception, _saveFigData
 def prepareCSD(
     sim=None,
     timeRange=None,
+    dt=None, 
+    sampr=None,
+    spacing_um=None, 
+
+
     electrodes=['avg', 'all'],
     pop=None,
 
@@ -46,9 +51,9 @@ def prepareCSD(
 
     LFP_input_data=None, 
     LFP_input_file=None, 
-    sampr=None, 
-    dt=None, 
-    spacing_um=None, 
+     
+    
+    
     minf=0.05, 
     maxf=300, 
     norm=True, 
@@ -68,6 +73,7 @@ def prepareCSD(
     if not sim:
         try:
             from .. import sim
+            print('sim import successful')
         except:
             raise Exception('Cannot access sim')
 
@@ -75,6 +81,65 @@ def prepareCSD(
     # set time range
     if timeRange is None:
         timeRange = [0, sim.cfg.duration]
+
+
+    # time step used in simulation recording (in ms)
+    if dt is None:
+        dt = sim.cfg.recordStep  
+
+    # Sampling rate of data recording during the simulation 
+    if sampr is None:
+        # divide by 1000.0 to turn denominator from units of ms to s
+        sampr = 1.0/(dt/1000.0) # sim.cfg.recordStep == dt
+
+
+    # Spacing between electrodes (in microns)
+    if spacing_um is None:
+        spacing_um = sim.cfg.recordLFP[1][1] - sim.cfg.recordLFP[0][1]
+    
+    # Convert spacing from microns to mm 
+    spacing_mm = spacing_um/1000
+
+    print('timeRange, dt, sampr, spacing_um, spacing_mm values all determined')
+
+    ## Get LFP data from sim and instantiate as a numpy array 
+    # sim_data_categories = sim.allSimData.keys()
+    
+    # if 'LFP' in sim_data_categories:
+    #     LFPData = np.array(sim.allSimData['LFP'])        # lfp_data = np.array(sim.allSimData['LFP'])
+    # else:
+    #     raise Exception('NO LFP DATA!! Need to re-run simulation with cfg.recordLFP enabled.')
+
+
+    ## Get LFP data by doing prepareLFP...? 
+    # LFPData = prepareLFP(
+        # sim=sim,
+        # timeRange=timeRange,
+        # electrodes=electrodes,
+        # pop=pop,
+        # LFPData=LFPData, 
+        # logy=logy, 
+        # normSignal=normSignal, 
+        # filtFreq=filtFreq, 
+        # filtOrder=filtOrder, 
+        # detrend=detrend,
+        # **kwargs)
+
+
+    ## This retrieves: 
+    #   lfp_data (as an array)
+    #   dt --> recording time step (in ms)
+    #   sampr --> sampling rate of data recording (in Hz)
+    #   spacing_um --> spacing btwn electrodes (in um)
+
+
+    ####################################
+
+
+
+    
+
+
 
 
 

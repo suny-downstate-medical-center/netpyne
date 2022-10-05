@@ -12,7 +12,8 @@ from matplotlib import pyplot as plt
 ### copied from netpyne/netpyne/analysis/csd_legacy.py
 @exception
 def plotCSD(
-    CSD_data=None, 
+    CSDData=None,
+    #CSD_data=None, 
     LFP_input_data=None, 
     overlay=None, 
     timeRange=None, 
@@ -99,13 +100,13 @@ def plotCSD(
 
 
     # If there is no input data, get the data from the NetPyNE sim object
-    if CSD_data is None:
+    if CSDData is None:
         if 'sim' not in kwargs:
             from .. import sim
         else:
             sim = kwargs['sim']
 
-        CSD_data = sim.analysis.prepareCSD(
+        CSDData = sim.analysis.prepareCSD(
             LFP_input_data=None, 
             LFP_input_file=None, 
             sampr=None, 
@@ -135,7 +136,8 @@ def plotCSD(
 
     print('Plotting CSD... ')
 
-  
+
+    ################################################# ^^ CONSTRUCTING NEW PLOTCSD FX
     # DEFAULT -- CONDITION 1 : GET CSD DATA FROM SIM
     if CSD_data is None:
     

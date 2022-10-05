@@ -355,7 +355,7 @@ def plotLFPPSD(
     #legendKwargs['borderaxespad'] = 0.0
     #legendKwargs['handlelength'] = 0.5
     legendKwargs['fontsize'] = 'small'
-    legendKwargs['title_fontsize'] = 'small'
+    # legendKwargs['title_fontsize'] = 'small'  ### NOTE: EYG 10/03 COMMENTING THIS OUT TO PREVENT ERROR 
     
     # add the legend
     if legend:

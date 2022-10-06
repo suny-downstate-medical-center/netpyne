@@ -118,7 +118,6 @@ def plotCSD(
             spacing_um=spacing_um,
             getAllData=True,
             **kwargs)
-            # timeRange=timeRange ### <-- TOOK THIS ARG OUT OF prepareCSD()
 
 
     print('CSDData extracted!')
@@ -200,25 +199,35 @@ def plotCSD(
 
         if overlay == 'CSD': 
             # axs[0].set_title('CSD with time series overlay', fontsize=fontSize)
+            print('Overlaying with CSD time series data')
             axs[0].set_title(csdTitle, fontsize=fontSize)  
+            legendLabel=True
             for chan in range(nrow):
                 subaxs.append(plt.Subplot(fig, gs_inner[chan], frameon=False))
                 fig.add_subplot(subaxs[chan])
                 subaxs[chan].margins(0.0,0.01)
                 subaxs[chan].get_xaxis().set_visible(False)
                 subaxs[chan].get_yaxis().set_visible(False)
-                subaxs[chan].plot(X, CSDData[chan,:], color='green', linewidth=0.3) # 'blue'
+                subaxs[chan].plot(X, CSDData[chan,:], color='green', linewidth=0.3, label='CSD timeSeries')
+                if legendLabel:
+                    subaxs[chan].legend(loc='upper right', fontsize='small')
+                    legendLabel=False
 
         elif overlay == 'LFP':
             # axs[0].set_title('CSD with LFP overlay', fontsize=fontSize) 
+            print('Overlaying with LFP time series data')
             axs[0].set_title(csdTitle, fontsize=fontSize) 
+            legendLabel=True
             for chan in range(nrow):
                 subaxs.append(plt.Subplot(fig, gs_inner[chan], frameon=False))
                 fig.add_subplot(subaxs[chan])
                 subaxs[chan].margins(0.0,0.01)
                 subaxs[chan].get_xaxis().set_visible(False)
                 subaxs[chan].get_yaxis().set_visible(False)
-                subaxs[chan].plot(X, LFPData[:,chan], color='gray', linewidth=0.3)
+                subaxs[chan].plot(X, LFPData[:,chan], color='gray', linewidth=0.3, label='LFP timeSeries')
+                if legendLabel:
+                    subaxs[chan].legend(loc='upper right', fontsize='small')
+                    legendLabel=False
 
     else:
         print('Invalid option specified for overlay argument -- no data overlaid')

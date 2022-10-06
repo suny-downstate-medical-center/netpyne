@@ -39,7 +39,6 @@ from .utils import exception, _saveFigData
 def prepareCSD(
     sim=None,
     pop=None,
-    timeRange=None,
     dt=None, 
     sampr=None,
     spacing_um=None,
@@ -50,6 +49,7 @@ def prepareCSD(
     saveData=True,
     getAllData=False,
     **kwargs):
+    # timeRange=None,  ### <- this is now an arg only in netpyne/plotting/plotCSD.py
     # electrodes=['avg', 'all'],
     # LFP_input_data=None, 
     # LFP_input_file=None, 
@@ -85,39 +85,28 @@ def prepareCSD(
             if pop in simLFPPops:
                 print('LFP data available for cell pop ' + str(pop))
                 LFPData = sim.allSimData['LFPPops'][pop]
+                print(str(type(LFPData)))
+                print(str(LFPData.shape))
             else:
                 raise Exception('No LFP data for ' + str(pop) + ' cell pop; CANNOT GENERATE CSD DATA OR PLOT')
+        else:
+            raise Exception('No pop-specific LFP data recorded! CANNOT GENERATE POP-SPECIFIC CSD DATA OR PLOT')
+    
 
-    # print(str(type(LFPData)))
-    # print(str(LFPData.shape))
-
-
-    # ## ALTERNATIVE: Get LFP data by doing prepareLFP --> 
-    # LFPData_prepareLFP_notArray = sim.analysis.prepareLFP(
-    #     sim=sim)
-    # LFPData_prepareLFP_notTransposed = np.array(LFPData_prepareLFP_notArray['electrodes']['lfps'])
-    # LFPData_prepareLFP_notTruncated = np.transpose(LFPData_prepareLFP_notTransposed)
-    # LFPData_prepareLFP = LFPData_prepareLFP_notTruncated[:, 1:]
-
-    # if (LFPData == LFPData_prepareLFP).all():
-    #     print('LFPData == LFP_prepareLFP')
-    # if np.array_equal(LFPData, LFPData_prepareLFP):
-    #     print('double equal check')
-
-
-    # set time range
-    if timeRange is None:
-        timeRange = [0, sim.cfg.duration]
+    ## NOTE: timeRange now only relevant for plotCSD() in netpyne/plotting/plotCSD.py
+    # # set timeRange
+    # if timeRange is None:
+    #     timeRange = [0, sim.cfg.duration]
 
 
     # time step used in simulation recording (in ms)
     if dt is None:
-        dt = sim.cfg.recordStep  
+        dt = sim.cfg.recordStep    # recordStep or dt? I think recordStep but BE SURE
 
     # Sampling rate of data recording during the simulation 
     if sampr is None:
         # divide by 1000.0 to turn denominator from units of ms to s
-        sampr = 1.0/(dt/1000.0) # sim.cfg.recordStep == dt
+        sampr = 1.0/(dt/1000.0) # sim.cfg.recordStep == dt 
 
 
     # Spacing between electrodes (in microns)
@@ -127,12 +116,11 @@ def prepareCSD(
     # Convert spacing from microns to mm 
     spacing_mm = spacing_um/1000
 
-    print('timeRange, dt, sampr, spacing_um, spacing_mm values all determined')
+    print('dt, sampr, spacing_um, spacing_mm values all determined')
 
 
     ## This retrieves: 
     #   LFPData (as an array)
-    #   timeRange --> list [startTime, endTime]
     #   dt --> recording time step (in ms)
     #   sampr --> sampling rate of data recording (in Hz)
     #   spacing_um --> spacing btwn electrodes (in um)
@@ -161,7 +149,6 @@ def prepareCSD(
 
     # now each column (or row) is an electrode -- take CSD along electrodes
     CSDData = -np.diff(datband, n=2, axis=ax)/spacing_mm**2  
-    #### PARTITION BY timeRange!!!!!!! 
 
 
     ##### SAVE DATA #######

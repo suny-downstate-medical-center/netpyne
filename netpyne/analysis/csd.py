@@ -83,6 +83,7 @@ def prepareCSD(
         if 'LFPPops' in simDataCategories:
             simLFPPops = sim.allSimData['LFPPops'].keys()
             if pop in simLFPPops:
+                print('LFP data available for cell pop ' + str(pop))
                 LFPData = sim.allSimData['LFPPops'][pop]
             else:
                 # print('No LFP data recorded for ' + str(pop) + ' cell population')

@@ -14,6 +14,7 @@ from matplotlib import pyplot as plt
 def plotCSD(
     CSDData=None,
     LFPData=None,
+    pop=None,   ### kwargs...? 
     timeRange=None,
     dt=None,
     sampr=None,
@@ -111,6 +112,7 @@ def plotCSD(
 
         CSDData, LFPData, sampr, spacing_um, dt = sim.analysis.prepareCSD(
             sim=sim,
+            pop=pop,
             timeRange=timeRange,   ### timeRange here or...? 
             dt=dt, 
             sampr=sampr,
@@ -136,7 +138,7 @@ def plotCSD(
     print('Plotting CSD... ')
 
     # PLOTTING 
-    X = np.arange(timeRange[0], timeRange[1], dt)
+    X = np.arange(timeRange[0], timeRange[1], dt)  # same as tt above 
     Y = np.arange(CSDData.shape[0])
 
     # interpolation

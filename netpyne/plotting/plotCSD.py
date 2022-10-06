@@ -118,15 +118,6 @@ def plotCSD(
             getAllData=True,
             **kwargs)
 
-        # CSDData = sim.analysis.prepareCSD(
-        #     sim=sim,
-        #     timeRange=timeRange,
-        #     dt=dt, 
-        #     sampr=sampr,
-        #     spacing_um=spacing_um,
-        #     getAllData=False,
-        #     **kwargs)
-
     print('CSDData extracted!')
     # print('CSDData shape: ' + str(CSDData.shape))
     # print('LFPData shape: ' + str(LFPData.shape))

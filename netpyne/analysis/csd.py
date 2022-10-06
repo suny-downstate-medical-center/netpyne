@@ -38,6 +38,7 @@ from .utils import exception, _saveFigData
 @exception
 def prepareCSD(
     sim=None,
+    pop=None,
     timeRange=None,
     dt=None, 
     sampr=None,
@@ -50,12 +51,10 @@ def prepareCSD(
     getAllData=False,
     **kwargs):
     # electrodes=['avg', 'all'],
-    # pop=None,
     # LFP_input_data=None, 
     # LFP_input_file=None, 
-    # save_to_sim=True, 
-    # getAllData=False,
-    # **kwargs): 
+
+
 
     """
     Function to prepare data for plotting of current source density (CSD) data
@@ -74,11 +73,21 @@ def prepareCSD(
     ## Get LFP data from sim and instantiate as a numpy array 
     simDataCategories = sim.allSimData.keys()
     
-    if 'LFP' in simDataCategories:
-        LFPData = np.array(sim.allSimData['LFP'])
-        print('LFPData extracted!')
+    if pop is None:
+        if 'LFP' in simDataCategories:
+            LFPData = np.array(sim.allSimData['LFP'])
+            print('LFPData extracted!')
+        else:
+            raise Exception('NO LFP DATA!! Need to re-run simulation with cfg.recordLFP enabled')
     else:
-        raise Exception('NO LFP DATA!! Need to re-run simulation with cfg.recordLFP enabled.')
+        if 'LFPPops' in simDataCategories:
+            simLFPPops = sim.allSimData['LFPPops'].keys()
+            if pop in simLFPPops:
+                LFPData = sim.allSimData['LFPPops'][pop]
+            else:
+                # print('No LFP data recorded for ' + str(pop) + ' cell population')
+                raise Exception('No LFP data recorded for ' + str(pop) + ' cell population')
+
     # print(str(type(LFPData)))
     # print(str(LFPData.shape))
 
@@ -154,34 +163,27 @@ def prepareCSD(
     CSDData = -np.diff(datband, n=2, axis=ax)/spacing_mm**2  
     #### PARTITION BY timeRange!!!!!!! 
 
-    #### noBandpass ###
-    datband_noBandpass = LFPData.T   # ? 
-    if datband_noBandpass.shape[0] > datband_noBandpass.shape[1]:
-        ax = 1
-    else:
-        ax = 0
-    if vaknin:
-        datband_noBandpass = Vaknin(datband_noBandpass)
-    if norm:
-        removemean(datband_noBandpass, ax=ax)
-    CSDData_noBandpass = -np.diff(datband_noBandpass,n=2,axis=ax)/spacing_mm**2
-
 
     ##### SAVE DATA #######
-    # Add CSD and other param values to sim.allSimData for later access
+    # Add CSDData to sim.allSimData for later access
     if saveData:
-        # from .. import sim 
-        sim.allSimData['CSD'] = {}
-        sim.allSimData['CSD']['sampr'] = sampr
-        sim.allSimData['CSD']['spacing_um'] = spacing_um 
-        sim.allSimData['CSD']['CSDData'] = CSDData
-        sim.allSimData['CSD']['CSDData_noBandpass'] = CSDData_noBandpass 
-        # except:
-        #     print('NOTE: No sim.allSimData construct available to store CSD data.')
+        if pop is None:
+            sim.allSimData['CSD'] = CSDData 
+            # sim.allSimData['CSD'] = {}
+            # sim.allSimData['CSD']['sampr'] = sampr
+            # sim.allSimData['CSD']['spacing_um'] = spacing_um 
+            # sim.allSimData['CSD']['CSDData'] = CSDData
+        else:
+            sim.allSimData['CSDPops'] = {}
+            sim.allSimData['CSDPops'][pop] = CSDData 
 
     # return CSD_data or all data
     if getAllData is True:
         return CSDData, LFPData, sampr, spacing_um, dt
+        # if pop is None:
+        #     return CSDData, LFPData, sampr, spacing_um, dt
+        # else:
+        #     return CSDData, LFPData, sampr, spacing_um, dt, pop
     if getAllData is False:
         return CSDData
 

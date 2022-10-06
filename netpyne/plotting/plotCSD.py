@@ -109,7 +109,7 @@ def plotCSD(
         else:
             sim = kwargs['sim']
 
-
+        ### TO DO: ADD RAISE EXCEPTION HERE?  E.G. IN CASE POP DOESN'T WORK??
         CSDData, LFPData, sampr, spacing_um, dt = sim.analysis.prepareCSD(
             sim=sim,
             pop=pop,
@@ -181,17 +181,24 @@ def plotCSD(
 
 
     # OVERLAY DATA ('LFP', 'CSD', or None) & Set title of plot 
+    if pop is None:
+        csdTitle = 'Current Source Density (CSD)'
+    else:
+        csdTitle = 'Current Source Density (CSD) for ' + str(pop) + ' Population'
+
     if overlay is None:
         print('No overlay')
-        axs[0].set_title('Current Source Density (CSD)', fontsize=fontSize)
+        axs[0].set_title(csdTitle, fontsize=fontSize)
+        # axs[0].set_title('Current Source Density (CSD)', fontsize=fontSize)
 
-    elif overlay is 'CSD' or overlay is 'LFP':
+    elif overlay is 'CSD' or overlay is 'LFP': ## TO DO: ADD LEGEND!!!! 
         nrow = LFPData.shape[1]
         gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(nrow, 1, subplot_spec=gs_outer[0:2], wspace=0.0, hspace=0.0)
         subaxs = []
 
-        if overlay == 'CSD':
-            axs[0].set_title('CSD with time series overlay', fontsize=fontSize) 
+        if overlay == 'CSD': 
+            # axs[0].set_title('CSD with time series overlay', fontsize=fontSize)
+            axs[0].set_title(csdTitle, fontsize=fontSize)  
             for chan in range(nrow):
                 subaxs.append(plt.Subplot(fig, gs_inner[chan], frameon=False))
                 fig.add_subplot(subaxs[chan])
@@ -201,7 +208,8 @@ def plotCSD(
                 subaxs[chan].plot(X, CSDData[chan,:], color='green', linewidth=0.3) # 'blue'
 
         elif overlay == 'LFP':
-            axs[0].set_title('CSD with LFP overlay', fontsize=fontSize) 
+            # axs[0].set_title('CSD with LFP overlay', fontsize=fontSize) 
+            axs[0].set_title(csdTitle, fontsize=fontSize) 
             for chan in range(nrow):
                 subaxs.append(plt.Subplot(fig, gs_inner[chan], frameon=False))
                 fig.add_subplot(subaxs[chan])

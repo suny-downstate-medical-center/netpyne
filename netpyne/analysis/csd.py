@@ -86,8 +86,7 @@ def prepareCSD(
                 print('LFP data available for cell pop ' + str(pop))
                 LFPData = sim.allSimData['LFPPops'][pop]
             else:
-                # print('No LFP data recorded for ' + str(pop) + ' cell population')
-                raise Exception('No LFP data recorded for ' + str(pop) + ' cell population')
+                raise Exception('No LFP data for ' + str(pop) + ' cell pop; CANNOT GENERATE CSD DATA OR PLOT')
 
     # print(str(type(LFPData)))
     # print(str(LFPData.shape))
@@ -170,10 +169,6 @@ def prepareCSD(
     if saveData:
         if pop is None:
             sim.allSimData['CSD'] = CSDData 
-            # sim.allSimData['CSD'] = {}
-            # sim.allSimData['CSD']['sampr'] = sampr
-            # sim.allSimData['CSD']['spacing_um'] = spacing_um 
-            # sim.allSimData['CSD']['CSDData'] = CSDData
         else:
             sim.allSimData['CSDPops'] = {}
             sim.allSimData['CSDPops'][pop] = CSDData 

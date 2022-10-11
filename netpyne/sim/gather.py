@@ -65,9 +65,12 @@ def gatherData(gatherLFP=True, gatherDipole=True):
         sim.compactConnFormat()
 
     # remove data structures used to calculate LFP or Dipoles
-    if (gatherLFP and sim.cfg.recordLFP) or (gatherDipole and sim.cfg.recordDipole) \
+    if ((gatherLFP and sim.cfg.recordLFP) or (gatherDipole and sim.cfg.recordDipole)) \
     and hasattr(sim.net, 'compartCells') \
     and sim.cfg.createNEURONObj:
+        
+        import IPython as ipy; ipy.embed()
+
         for cell in sim.net.compartCells:
             try:
                 del cell.imembVec

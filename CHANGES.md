@@ -25,6 +25,8 @@
 
 - Fixed bug in dipole calculation units - changed from mA to uA 
 
+- Fixed bug in conditional logic when gathering LFP / dipoles 
+
 # Version 1.0.2.1
 
 **New features**

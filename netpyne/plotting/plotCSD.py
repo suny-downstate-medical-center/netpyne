@@ -7,14 +7,11 @@ import matplotlib
 from matplotlib import pyplot as plt 
 
 
-
-
-### copied from netpyne/netpyne/analysis/csd_legacy.py
 @exception
 def plotCSD(
     CSDData=None,
     LFPData=None,
-    pop=None,   ### kwargs...? 
+    pop=None,
     timeRange=None,
     dt=None,
     sampr=None,
@@ -44,6 +41,10 @@ def plotCSD(
     LFPData : list or numpy array 
         LFP data provided by user (mV).  Each element of the list/array must be a list/array containing LFP data for an electrode. 
         **Default:** ``None`` pulls the data from the current NetPyNE sim object.
+    
+    pop : WHAT TYPE --> LIST OR STRING? 
+        Cell population. 'None' plots overall CSD data. 
+        **Default:** None 
 
     timeRange : list
         Time range to plot [start, stop].
@@ -61,17 +62,16 @@ def plotCSD(
         Electrode contact spacing in units of microns.
         **Default:** ``None`` pulls the information from the current NetPyNE sim object.  If the data is empirical, defaults to ``100`` (microns).
 
-
-
-
-    stim_start_time : float 
-        Time when stimulus is applied (ms). 
-        **Default:** ``None`` does not add anything to plot. 
-        **Options:** a float adds a vertical dashed line to the plot at stimulus onset. 
+    fontSize : int
+        **Default:** 12 
 
     ymax : float
         The upper y-limit.
         **Default:** ``None`` 
+
+    figSize: ??
+        Size of figure for CSD plot. 
+        **Default:** (8,8)
 
     overlay : str
         Option to include LFP data overlaid on CSD color map plot. 
@@ -90,10 +90,19 @@ def plotCSD(
         Dictionary containing layer labels as keys, and layer boundaries as values, e.g. {'L1':100, 'L2': 160, 'L3': 950, 'L4': 1250, 'L5A': 1334, 'L5B': 1550, 'L6': 2000}
         **Default:** ``None``
 
+    stimTimes : list OR float 
+        Time(s) when stimulus is applied (ms). 
+        **Default:** ``None`` does not add anything to plot. 
+        **Options:** a float adds a vertical dashed line to the plot at stimulus onset. 
+
     saveFig : bool or str
         Whether and where to save the figure. 
         **Default:** ``True`` autosaves the figure.
         **Options:** ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``.
+
+    dpi : int
+        Resolution for saving figures. 
+        **Default:** 200 
 
     showFig : bool
         Whether to show the figure. 
@@ -139,7 +148,7 @@ def plotCSD(
     print('Plotting CSD... ')
 
     # PLOTTING 
-    X = np.arange(timeRange[0], timeRange[1], dt)  # same as tt above 
+    X = np.arange(timeRange[0], timeRange[1], dt)  # X == tt 
     Y = np.arange(CSDData.shape[0])
 
     # interpolation
@@ -151,7 +160,7 @@ def plotCSD(
     # plotting options
     plt.rcParams.update({'font.size': fontSize})
     xmin = int(X[0])
-    xmax = int(X[-1]) + 1  #int(sim.allSimData['t'][-1])
+    xmax = int(X[-1]) + 1
     ymin = 0 # TO DO: Electrode min...? 
     if ymax is None:
         ymax = sim.cfg.recordLFP[-1][1] + spacing_um 
@@ -163,7 +172,7 @@ def plotCSD(
     # create plots w/ common axis labels and tick marks
     axs = []
     numplots = 1
-    gs_outer = matplotlib.gridspec.GridSpec(1,1)                #(2, 2, wspace=0.4, hspace=0.2, height_ratios=[20, 1])
+    gs_outer = matplotlib.gridspec.GridSpec(1,1)    # (2, 2, wspace=0.4, hspace=0.2, height_ratios=[20, 1])
 
 
     for i in range(numplots):
@@ -190,15 +199,13 @@ def plotCSD(
     if overlay is None:
         print('No overlay')
         axs[0].set_title(csdTitle, fontsize=fontSize)
-        # axs[0].set_title('Current Source Density (CSD)', fontsize=fontSize)
 
-    elif overlay is 'CSD' or overlay is 'LFP': ## TO DO: ADD LEGEND!!!! 
+    elif overlay is 'CSD' or overlay is 'LFP':
         nrow = LFPData.shape[1]
         gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(nrow, 1, subplot_spec=gs_outer[0:2], wspace=0.0, hspace=0.0)
         subaxs = []
 
         if overlay == 'CSD': 
-            # axs[0].set_title('CSD with time series overlay', fontsize=fontSize)
             print('Overlaying with CSD time series data')
             axs[0].set_title(csdTitle, fontsize=fontSize)  
             legendLabel=True
@@ -214,7 +221,6 @@ def plotCSD(
                     legendLabel=False
 
         elif overlay == 'LFP':
-            # axs[0].set_title('CSD with LFP overlay', fontsize=fontSize) 
             print('Overlaying with LFP time series data')
             axs[0].set_title(csdTitle, fontsize=fontSize) 
             legendLabel=True
@@ -266,7 +272,7 @@ def plotCSD(
 
 
 
-    # save figure  ### NOTE: Make this more elaborate? 
+    # save figure ## IMPROVE THIS 
     if saveFig:
         if isinstance(saveFig, basestring):
             filename = saveFig

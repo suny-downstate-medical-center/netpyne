@@ -49,11 +49,6 @@ def prepareCSD(
     saveData=True,
     getAllData=False,
     **kwargs):
-    # timeRange=None,  ### <- this is now an arg only in netpyne/plotting/plotCSD.py
-    # electrodes=['avg', 'all'],
-    # LFP_input_data=None, 
-    # LFP_input_file=None, 
-
 
 
     """
@@ -91,12 +86,6 @@ def prepareCSD(
                 raise Exception('No LFP data for ' + str(pop) + ' cell pop; CANNOT GENERATE CSD DATA OR PLOT')
         else:
             raise Exception('No pop-specific LFP data recorded! CANNOT GENERATE POP-SPECIFIC CSD DATA OR PLOT')
-    
-
-    ## NOTE: timeRange now only relevant for plotCSD() in netpyne/plotting/plotCSD.py
-    # # set timeRange
-    # if timeRange is None:
-    #     timeRange = [0, sim.cfg.duration]
 
 
     # time step used in simulation recording (in ms)
@@ -163,11 +152,7 @@ def prepareCSD(
     # return CSD_data or all data
     if getAllData is True:
         return CSDData, LFPData, sampr, spacing_um, dt
-        # if pop is None:
-        #     return CSDData, LFPData, sampr, spacing_um, dt
-        # else:
-        #     return CSDData, LFPData, sampr, spacing_um, dt, pop
-    if getAllData is False:
+    elif getAllData is False:
         return CSDData
 
 

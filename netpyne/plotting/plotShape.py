@@ -192,7 +192,7 @@ def plotShape(
             ax.set_ylim3d([y - radius, y + radius])
             ax.set_zlim3d([z - radius, z + radius])
 
-        #ax.set_box_aspect([1,1,1]) # IMPORTANT - this is the new, key line ## EYG 10/05 commented out to prevent error 
+        ax.set_box_aspect([1,1,1]) # IMPORTANT - this is the new, key line
         set_axes_equal(ax) 
 
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)

@@ -27,7 +27,7 @@ def plotCSD(
     saveFig=True, 
     dpi=200, 
     showFig=True,
-    smooth=True, #### SMOOTH ISN'T IN USE RIGHT NOW 
+    smooth=True,
     **kwargs): 
     """
     Function to plot CSD values extracted from simulated LFP data 
@@ -43,8 +43,8 @@ def plotCSD(
         **Default:** ``None`` pulls the data from the current NetPyNE sim object.
     
     pop : WHAT TYPE --> LIST OR STRING? 
-        Cell population. 'None' plots overall CSD data. 
-        **Default:** None 
+        Plot CSD data from a specific cell population
+        **Default:** ``None``plots overall CSD data
 
     timeRange : list
         Time range to plot [start, stop].
@@ -106,6 +106,10 @@ def plotCSD(
 
     showFig : bool
         Whether to show the figure. 
+        **Default:** ``True``
+
+    smooth : bool 
+        Whether or not to plot the smoothed interpoloation
         **Default:** ``True``
 
     """
@@ -182,9 +186,9 @@ def plotCSD(
         axs[i].tick_params(axis='y', which='major', labelsize=fontSize)
         axs[i].tick_params(axis='x', which='major', labelsize=fontSize)
 
-    ## plot interpolated CSD color map 
-    #if smooth:
-    #    Z = scipy.ndimage.filters.gaussian_filter(Z, sigma = 5, mode='nearest')#smooth, mode='nearest')
+    # plot interpolated CSD color map 
+    if smooth:
+       Z = scipy.ndimage.filters.gaussian_filter(Z, sigma = 5, mode='nearest')
 
     spline=axs[0].imshow(Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r', alpha=0.9) 
     axs[0].set_ylabel('Contact depth (um)', fontsize=fontSize)

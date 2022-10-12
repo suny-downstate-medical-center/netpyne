@@ -42,7 +42,7 @@ def plotCSD(
         LFP data provided by user (mV).  Each element of the list/array must be a list/array containing LFP data for an electrode. 
         **Default:** ``None`` pulls the data from the current NetPyNE sim object.
     
-    pop : WHAT TYPE --> LIST OR STRING? 
+    pop : str
         Plot CSD data from a specific cell population
         **Default:** ``None``plots overall CSD data
 
@@ -69,8 +69,8 @@ def plotCSD(
         The upper y-limit.
         **Default:** ``None`` 
 
-    figSize: ??
-        Size of figure for CSD plot. 
+    figSize: tuple 
+        Size of CSD plot figure 
         **Default:** (8,8)
 
     overlay : str
@@ -90,10 +90,10 @@ def plotCSD(
         Dictionary containing layer labels as keys, and layer boundaries as values, e.g. {'L1':100, 'L2': 160, 'L3': 950, 'L4': 1250, 'L5A': 1334, 'L5B': 1550, 'L6': 2000}
         **Default:** ``None``
 
-    stimTimes : list OR float 
-        Time(s) when stimulus is applied (ms). 
-        **Default:** ``None`` does not add anything to plot. 
-        **Options:** a float adds a vertical dashed line to the plot at stimulus onset. 
+    stimTimes : list OR float / int 
+        Time(s) when stimulus is applied (ms)
+        **Default:** ``None`` does not add anything to plot
+        **Options:** Adds vertical dashed line(s) to the plot at stimulus onset(s) 
 
     saveFig : bool or str
         Whether and where to save the figure. 

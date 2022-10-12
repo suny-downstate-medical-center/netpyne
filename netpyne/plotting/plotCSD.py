@@ -25,7 +25,7 @@ def plotCSD(
     stimTimes=None,
     saveFig=True, 
     dpi=200, 
-    showFig=True,
+    showFig=False,
     smooth=True,
     **kwargs): 
     """
@@ -126,12 +126,6 @@ def plotCSD(
             getAllData=True,
             **kwargs)
 
-
-    print('CSDData extracted!')
-    # print('CSDData shape: ' + str(CSDData.shape))
-    # print('LFPData shape: ' + str(LFPData.shape))
-    
-
     if timeRange is None:
         timeRange = [0,sim.cfg.duration] 
     else:
@@ -170,7 +164,7 @@ def plotCSD(
     # create plots w/ common axis labels and tick marks
     axs = []
     numplots = 1
-    gs_outer = matplotlib.gridspec.GridSpec(1,1)    # (2, 2, wspace=0.4, hspace=0.2, height_ratios=[20, 1])
+    gs_outer = matplotlib.gridspec.GridSpec(1,1)
 
 
     for i in range(numplots):
@@ -251,7 +245,6 @@ def plotCSD(
     else:
         layerKeys = []
         for i in layerBounds.keys():
-            # print('layer boundary for ' + str(i))
             axs[0].hlines(layerBounds[i][1], xmin, xmax, colors='black', linewidth=1, linestyles='dotted') 
             layerKeys.append(i) # makes a list with names of each layer, as specified in layerBounds dict argument 
 
@@ -271,12 +264,12 @@ def plotCSD(
 
 
 
-    # save figure ## IMPROVE THIS 
+    # save figure 
     if saveFig:
-        if isinstance(saveFig, basestring):
+        if isinstance(saveFig, str):
             filename = saveFig
         else:
-            filename = sim.cfg.filename + '_CSD.png'
+            filename = str(sim.cfg.filename) + '_CSD.png'
         try:
             plt.savefig(filename, dpi=dpi)
         except:

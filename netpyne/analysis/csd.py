@@ -45,14 +45,59 @@ def prepareCSD(
     minf=0.05, 
     maxf=300, 
     vaknin=True,
-    norm=True,
+    norm=False,
     saveData=True,
-    getAllData=False,
+    getAllData=True,
     **kwargs):
 
 
     """
     Function to prepare data for plotting of current source density (CSD) data
+
+    Parameters
+    ----------
+    sim : NetPyNE object
+        **Default:** ``None``
+
+    pop : str
+        Retrieves CSD data from a specific cell population
+        **Default:** ``None`` retrieves overall CSD data 
+
+    dt : float or int
+        Time between recording points (ms). 
+        **Default:** ``None`` uses ``sim.cfg.recordStep`` from the current NetPyNE sim object.
+
+    sampr : float or int
+        Sampling rate for data recording (Hz). 
+        **Default:** ``None`` uses ``1.0/sim.cfg.recordStep`` from the current NetPyNE sim object. 
+
+    spacing_um : float or int
+        Electrode contact spacing in units of microns.
+        **Default:** ``None`` pulls the information from the current NetPyNE sim object.  If the data is empirical, defaults to ``100`` (microns).
+
+    minf : float or int
+        Minimum frequency for bandpassing the LFP data. 
+        **Default:** ``0.05``
+
+    maxf : float or int
+        Maximum frequency for bandpassing the LFP data. 
+        **Default:** ``300``
+
+    vaknin : bool 
+        Allows CSD to be performed on all N contacts instead of N-2 contacts
+        **Default:** ``True``
+
+    norm : bool 
+        Subtracts the mean from the CSD data
+        **Default:** ``False``
+
+    saveData : bool 
+        Saves CSD data to sim object 
+        **Default:** ``True``
+
+    getAllData : bool 
+        Returns CSDData as well as LFPData, sampr, spacing_um, and dt
+        **Default:** ``True``
     """
 
     print('Preparing CSD data... ')
@@ -60,7 +105,6 @@ def prepareCSD(
     if not sim:
         try:
             from .. import sim
-            print('sim import successful')
         except:
             raise Exception('Cannot access sim')
 
@@ -71,17 +115,13 @@ def prepareCSD(
     if pop is None:
         if 'LFP' in simDataCategories:
             LFPData = np.array(sim.allSimData['LFP'])
-            print('LFPData extracted!')
         else:
             raise Exception('NO LFP DATA!! Need to re-run simulation with cfg.recordLFP enabled')
     else:
         if 'LFPPops' in simDataCategories:
             simLFPPops = sim.allSimData['LFPPops'].keys()
             if pop in simLFPPops:
-                print('LFP data available for cell pop ' + str(pop))
                 LFPData = sim.allSimData['LFPPops'][pop]
-                print(str(type(LFPData)))
-                print(str(LFPData.shape))
             else:
                 raise Exception('No LFP data for ' + str(pop) + ' cell pop; CANNOT GENERATE CSD DATA OR PLOT')
         else:
@@ -105,7 +145,7 @@ def prepareCSD(
     # Convert spacing from microns to mm 
     spacing_mm = spacing_um/1000
 
-    print('dt, sampr, spacing_um, spacing_mm values all determined')
+    print('dt, sampr, spacing_um, spacing_mm values determined')
 
 
     ## This retrieves: 
@@ -119,14 +159,12 @@ def prepareCSD(
 
     # Bandpass filter the LFP data with getbandpass() fx defined above
     datband = getbandpass(LFPData,sampr,minf,maxf) 
-    print('LFP data bandpassed between ' + str(minf) + ' and ' + str(maxf))
 
     # Take CSD along smaller dimension
     if datband.shape[0] > datband.shape[1]:
         ax = 1
     else:
         ax = 0
-    print('ax = ' + str(ax))
 
     # Vaknin correction
     if vaknin: 

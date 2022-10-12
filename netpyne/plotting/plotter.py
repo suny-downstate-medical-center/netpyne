@@ -795,7 +795,7 @@ class GeneralPlotter:
 
         # Reset the matplotlib rcParams to their original settings
         mpl.style.use(self.metafig.orig_rcParams)
-
+                
 
 class ScatterPlotter(GeneralPlotter):
     """NetPyNE plotter for scatter plots

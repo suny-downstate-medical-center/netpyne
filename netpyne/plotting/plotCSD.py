@@ -21,7 +21,6 @@ def plotCSD(
     figSize=(8,8),
     overlay=None,
     hlines=False,
-    layerLines=False,
     layerBounds=None,
     stimTimes=None,
     saveFig=True, 
@@ -82,11 +81,7 @@ def plotCSD(
         Option to include horizontal lines on plot to indicate electrode positions. 
         **Default:** ``False`` 
 
-    layerLines : bool 
-        Whether to plot horizontal lines over CSD plot at layer boundaries. 
-        **Default:** ``False`` 
-
-    layerBounds : dict
+    layerBounds : dict  #### <-- SHOULD FIX THIS SO L1 IS A LIST 
         Dictionary containing layer labels as keys, and layer boundaries as values, e.g. {'L1':100, 'L2': 160, 'L3': 950, 'L4': 1250, 'L5A': 1334, 'L5B': 1550, 'L6': 2000}
         **Default:** ``None``
 
@@ -122,7 +117,6 @@ def plotCSD(
         else:
             sim = kwargs['sim']
 
-        ### TO DO: ADD RAISE EXCEPTION HERE?  E.G. IN CASE POP DOESN'T WORK??
         CSDData, LFPData, sampr, spacing_um, dt = sim.analysis.prepareCSD(
             sim=sim,
             pop=pop,
@@ -251,20 +245,21 @@ def plotCSD(
 
 
 
-    if layerLines:  
-        if layerBounds is None:
-            print('No layer boundaries given -- will not overlay layer boundaries on CSD plot')
-        else:
-            layerKeys = []
-            for i in layerBounds.keys():
-                axs[0].hlines(layerBounds[i], xmin, xmax, colors='black', linewidth=1, linestyles='dotted') 
-                layerKeys.append(i) # makes a list with names of each layer, as specified in layerBounds dict argument 
+    #if layerBounds:  
+    if layerBounds is None:
+        print('No layer boundaries given -- will not overlay layer boundaries on CSD plot')
+    else:
+        layerKeys = []
+        for i in layerBounds.keys():
+            # print('layer boundary for ' + str(i))
+            axs[0].hlines(layerBounds[i][1], xmin, xmax, colors='black', linewidth=1, linestyles='dotted') 
+            layerKeys.append(i) # makes a list with names of each layer, as specified in layerBounds dict argument 
 
-            for n in range(len(layerKeys)): # label the horizontal layer lines with the proper layer label 
-                if n == 0:
-                    axs[0].text(xmax+5, layerBounds[layerKeys[n]]/2, layerKeys[n], color='black', fontsize=fontSize)
-                else:
-                    axs[0].text(xmax+5, (layerBounds[layerKeys[n]] + layerBounds[layerKeys[n-1]])/2, layerKeys[n], color='black', fontsize=fontSize, verticalalignment='center')
+        for n in range(len(layerKeys)): # label the horizontal layer lines with the proper layer label 
+            if n == 0:
+                axs[0].text(xmax+5, layerBounds[layerKeys[n]][1]/2, layerKeys[n], color='black', fontsize=fontSize)
+            else:
+                axs[0].text(xmax+5, (layerBounds[layerKeys[n]][1] + layerBounds[layerKeys[n-1]][1])/2, layerKeys[n], color='black', fontsize=fontSize, verticalalignment='center')
 
 
     # set vertical line(s) at stimulus onset(s)

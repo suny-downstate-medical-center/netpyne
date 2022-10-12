@@ -90,12 +90,12 @@ def prepareCSD(
 
     # time step used in simulation recording (in ms)
     if dt is None:
-        dt = sim.cfg.recordStep    # recordStep or dt? I think recordStep but BE SURE
+        dt = sim.cfg.recordStep
 
     # Sampling rate of data recording during the simulation 
     if sampr is None:
         # divide by 1000.0 to turn denominator from units of ms to s
-        sampr = 1.0/(dt/1000.0) # sim.cfg.recordStep == dt 
+        sampr = 1.0/(dt/1000.0) # dt == sim.cfg.recordStep, unless specified otherwise by user 
 
 
     # Spacing between electrodes (in microns)

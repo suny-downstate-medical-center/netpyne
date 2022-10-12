@@ -137,7 +137,7 @@ def plotCSD(
     else:
         LFPData = np.array(LFPData)[int(timeRange[0]/dt):int(timeRange[1]/dt),:]  # NOTE: THIS SHOULD ALREADY BE AN ARRAY
         CSDData = CSDData[:,int(timeRange[0]/dt):int(timeRange[1]/dt)]
-        ## RECALL: dt == sim.cfg.recordStep <-- do I want the above to be sim.cfg.dt or sim.cfg.recordStep? 
+
 
     tt = np.arange(timeRange[0], timeRange[1], dt)
 
@@ -159,7 +159,7 @@ def plotCSD(
     plt.rcParams.update({'font.size': fontSize})
     xmin = int(X[0])
     xmax = int(X[-1]) + 1
-    ymin = 0 # TO DO: Electrode min...? 
+    ymin = 0
     if ymax is None:
         ymax = sim.cfg.recordLFP[-1][1] + spacing_um 
     extent_xy = [xmin, xmax, ymax, ymin]

@@ -160,6 +160,12 @@ def runSim(skipPreRun=False):
 
     h.finitialize(float(sim.cfg.hParams['v_init']))
 
+    if sim.cfg.dump_coreneuron_model:
+        sim.pc.nrnbbcore_write("coredat")
+        if sim.rank == 0: print('\nDumping model and exiting simulation...')
+        sim.pc.barrier()
+        return
+
     if sim.cfg.coreneuron == True:
         if sim.rank == 0: print('\nRunning simulation using CoreNEURON for %s ms...'%sim.cfg.duration)
         from neuron import coreneuron

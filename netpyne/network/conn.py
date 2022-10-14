@@ -62,8 +62,6 @@ def connectCells(self):
 
     hasPointerConns = self.params.synMechParams.hasPointerConns()
 
-    self.params.synMechParams.preprocessStringFunctions()
-
     for connParamLabel,connParamTemp in self.params.connParams.items():  # for each conn rule or parameter set
         connParam = connParamTemp.copy()
         connParam['label'] = connParamLabel

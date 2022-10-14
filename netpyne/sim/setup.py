@@ -89,6 +89,7 @@ def initialize(netParams = None, simConfig = None, net = None):
         sim.setNet(sim.Network())  # or create new network
 
     sim.setNetParams(netParams)  # set network parameters
+    sim.net.params.synMechParams.preprocessStringFunctions()
 
     if sim.nhosts > 1: sim.cfg.validateNetParams = False  # turn of error chceking if using multiple cores
 

@@ -143,6 +143,76 @@ class SynMechParams(ODict):
     def rename(self, old, new, label=None):
         return self.__rename__(old, new, label)
 
+    def preprocessStringFunctions(self):
+        from .utils import generateStringFunction
+        stringFuncs = {}
+        for (mechKey, mech) in self.items():
+            stringFuncs[mechKey] = {}
+            paramsKeyVal = [(k, v) for (k, v) in mech.items()
+                                if k not in SynMechParams.reservedKeys()
+                                and isinstance(v, basestring)]
+            for paramKey, paramVal in paramsKeyVal:
+                func, vars = generateStringFunction(paramVal, list(SynMechParams.stringFuncVariables().keys()))
+                if func is not None:
+                    stringFuncs[mechKey][paramKey] = func, vars
+        from .. import sim
+        sim.net.params._synMechStringFuncs = stringFuncs
+
+    @staticmethod
+    def stringFunctionAndVars(synMechName, paramName):
+        from .. import sim
+        funcs = sim.net.params._synMechStringFuncs
+        if not synMechName in funcs:
+            return None, []
+        if not paramName in funcs[synMechName]:
+            return None, []
+        return funcs[synMechName][paramName]
+
+
+
+    def isPointerConn(self, synMechLabel):
+        if synMechLabel not in self:
+            return False
+        return 'pointerParams' in self[synMechLabel]
+
+    def hasPointerConns(self):
+        for label in self:
+            if self.isPointerConn(label): return True
+        return False
+
+    @staticmethod
+    def reservedKeys():
+        return ['label', 'mod', 'selfNetCon', 'loc', 'pointerParams']
+
+    @staticmethod
+    def stringFuncVariables():
+        return {
+            'rand': lambda cell, dist, rand: rand,
+            'post_dist_path': lambda cell, dist, rand: dist,
+            'post_dist_cartesian': lambda cell, dist, rand: dist,
+            'post_x': lambda cell, dist, rand: cell.tags['x'],
+            'post_y': lambda cell, dist, rand: cell.tags['y'],
+            'post_z': lambda cell, dist, rand: cell.tags['z'],
+            'post_xnorm': lambda cell, dist, rand: cell.tags['xnorm'],
+            'post_ynorm': lambda cell, dist, rand: cell.tags['ynorm'],
+            'post_znorm': lambda cell, dist, rand: cell.tags['znorm'],
+        }
+    
+    @staticmethod
+    def stringFuncVarsReferringPreLoc():
+        # no such vars as for now. To be extended in future
+        return []
+
+    @staticmethod
+    def stringFuncsReferPreLoc(synMech):
+        from .. import sim
+        mechFuncs = sim.net.params._synMechStringFuncs.get(synMech, {})
+        for preLocVar in SynMechParams.stringFuncVarsReferringPreLoc():
+            for _, (_, vars) in mechFuncs.items():
+                if preLocVar in vars: return True
+        return False
+
+
 
 # ----------------------------------------------------------------------------
 # SubConnParams class
@@ -228,8 +298,6 @@ class RxDParams(ODict):
     Class to hold reaction-diffusion (RxD) parameters
 
     """
-
-
     def setParam(self, label, param, value):
         if label in self:
             d = self[label]
@@ -300,7 +368,7 @@ class NetParams(object):
         self.stimSourceParams = StimSourceParams()
         self.stimTargetParams = StimTargetParams()
 
-        # RxD params dicts
+        # RxD params dicts and start up
         self.rxdParams = RxDParams()
 
         # fill in params from dict passed as argument

@@ -26,9 +26,11 @@ from numbers import Number
 from copy import deepcopy
 from neuron import h # Import NEURON
 import numpy as np
-from math import sin, cos
+from math import sin, cos, sqrt
 from .cell import Cell
 from ..specs import Dict
+from ..specs.netParams import SynMechParams
+from .. import sim
 
 
 ###############################################################################
@@ -61,8 +63,11 @@ class CompartCell (Cell):
     def __repr__ (self):
         return self.__str__()
 
-    def create (self):
+    def create(self, createNEURONObj=None):
         from .. import sim
+
+        if createNEURONObj is None:
+             createNEURONObj = sim.cfg.createNEURONObj
 
         # generate random rotation angle for each cell
         if sim.net.params.rotateCellsRandomly:
@@ -103,7 +108,7 @@ class CompartCell (Cell):
                         self.tags['label'].append(propLabel)  # add label of cell property set to list of property sets for this cell
                 if sim.cfg.createPyStruct:
                     self.createPyStruct(prop)
-                if sim.cfg.createNEURONObj:
+                if createNEURONObj:
                     self.createNEURONObj(prop)  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
 
 
@@ -414,25 +419,32 @@ class CompartCell (Cell):
                 for synMech in sectParams['synMechs']:
                     if 'label' in synMech and 'loc' in synMech:
                         synMechParams = sim.net.params.synMechParams.get(synMech['label'])  # get params for this synMech
-                        self.addSynMechNEURONObj(synMech, synMechParams, sec, synMech['loc'])
+                        self.addSynMechNEURONObj(synMech, synMech['label'], synMechParams, sec, synMech['loc'])
 
             # add point processes
             if 'pointps' in sectParams:
                 for pointpName,pointpParams in sectParams['pointps'].items():
                     #if self.tags['cellModel'] == pointpParams:  # only required if want to allow setting various cell models in same rule
+
+                    # warning: `pointpParams object is the same as `sec['pointps'][pointpName]` if came here from `loadNet()` (see also TODO there)
+                    # beware of implicit modification
+
                     if pointpName not in sec['pointps']:
                         sec['pointps'][pointpName] = Dict()
-                    pointpObj = getattr(h, pointpParams['mod'])
                     loc = pointpParams['loc'] if 'loc' in pointpParams else 0.5  # set location
-                    sec['pointps'][pointpName]['hObj'] = pointpObj(loc, sec = sec['hObj'])  # create h Pointp object (eg. h.Izhi2007b)
+                    Pointp = getattr(h, pointpParams['mod'])
+                    pointpObj = Pointp(loc, sec = sec['hObj'])  # create h Pointp object (eg. h.Izhi2007b)
+
                     for pointpParamName,pointpParamValue in pointpParams.items():  # add params of the point process
                         if pointpParamValue == 'gid':
                             pointpParamValue = self.gid
                         if pointpParamName not in ['mod', 'loc', 'vref', 'synList'] and not pointpParamName.startswith('_'):
-                            setattr(sec['pointps'][pointpName]['hObj'], pointpParamName, pointpParamValue)
+                            setattr(pointpObj, pointpParamName, pointpParamValue)
                     if 'params' in self.tags.keys(): # modify cell specific params
                       for pointpParamName,pointpParamValue in self.tags['params'].items():
-                        setattr(sec['pointps'][pointpName]['hObj'], pointpParamName, pointpParamValue)
+                        setattr(pointpObj, pointpParamName, pointpParamValue)
+
+                    sec['pointps'][pointpName]['hObj'] = pointpObj
 
         # set topology
         for sectName,sectParams in prop['secs'].items():  # iterate sects again for topology (ensures all exist)
@@ -459,14 +471,12 @@ class CompartCell (Cell):
             print("ERROR: Some mechanisms and/or ions were not inserted (for details run with cfg.verbose=True). Make sure the required mod files are compiled.")
 
 
-    def addSynMechNEURONObj(self, synMech, synMechParams, sec, loc):
+    def addSynMechNEURONObj(self, synMech, synMechLabel, synMechParams, sec, loc, preLoc=None):
         if not synMech.get('hObj'):  # if synMech doesn't have NEURON obj, then create
             synObj = getattr(h, synMechParams['mod'])
             synMech['hObj'] = synObj(loc, sec=sec['hObj'])  # create h Syn object (eg. h.Exp2Syn)
             for synParamName,synParamValue in synMechParams.items():  # add params of the synaptic mechanism
-                if synParamName not in ['label', 'mod', 'selfNetCon', 'loc']:
-                    setattr(synMech['hObj'], synParamName, synParamValue)
-                elif synParamName == 'selfNetcon':  # create self netcon required for some synapses (eg. homeostatic)
+                if synParamName == 'selfNetcon':  # create self netcon required for some synapses (eg. homeostatic)
                     secLabelNetCon = synParamValue.get('sec', 'soma')
                     locNetCon = synParamValue.get('loc', 0.5)
                     secNetCon = self.secs.get(secLabelNetCon, None)
@@ -476,6 +486,48 @@ class CompartCell (Cell):
                             synMech['hObj'].weight[0] = paramValue
                         elif paramName not in ['sec', 'loc']:
                             setattr(synMech['hObj'], paramName, paramValue)
+                elif synParamName not in SynMechParams.reservedKeys():
+                    func, vars = SynMechParams.stringFunctionAndVars(synMechLabel, synParamName)
+                    if func:
+                        synParamValue = self.__evaluateSynMechStringFuncs(func, vars, sec, loc, preLoc)
+                    setattr(synMech['hObj'], synParamName, synParamValue)
+
+
+    def __evaluateSynMechStringFuncs(self, func, varNames, sec, loc, preLoc=None):
+        from .. import sim
+        from ..network.subconn import pathDistance, posFromLoc
+
+        args = {}
+        for varName in varNames:
+            if not preLoc and varName in SynMechParams.stringFuncVarsReferringPreLoc():
+                preLoc = 0.5
+                if sim.cfg.verbose: print('No preLoc for synMech string function provided. Defaulting to 0.5')
+            if varName == 'post_dist_cartesian':
+                # euclidian distance
+                x0, y0, z0 = posFromLoc(self.originSec(), 0.5)
+                x, y, z = posFromLoc(sec, sec['hObj'](loc).x)
+                dist = sqrt((x-x0)**2 + (y-y0)**2 + (z-z0)**2)
+            elif varName == 'post_dist_path':
+                # distance based on the topology
+                segOrigObj = self.originSec()['hObj'](0.5)
+                dist = pathDistance(segOrigObj, sec['hObj'](loc))
+            else:
+                dist = None
+            obtainVarValue = SynMechParams.stringFuncVariables()[varName]
+            args[varName] = obtainVarValue(self, dist, self.__randomizerForSynMechs())
+
+        return func(**args)
+
+
+    def __randomizerForSynMechs(self):
+        try:
+            return self.__synMechRand
+        except:
+            from .. import sim
+            rand = h.Random()
+            rand.Random123(sim.hashStr('synMechParams'), self.gid, sim.cfg.seeds.get('synMech', 1))
+            self.__synMechRand = rand
+            return rand
 
 
     def addSynMechsNEURONObj(self):
@@ -487,7 +539,7 @@ class CompartCell (Cell):
                 for synMech in sectParams['synMechs']:
                     if 'label' in synMech and 'loc' in synMech:
                         synMechParams = sim.net.params.synMechParams.get(synMech['label'])  # get params for this synMech
-                        self.addSynMechNEURONObj(synMech, synMechParams, sec, synMech['loc'])
+                        self.addSynMechNEURONObj(synMech, synMech['label'], synMechParams, sec, synMech['loc'])
 
 
     # Create NEURON objs for conns and syns if included in prop (used when loading)
@@ -561,6 +613,18 @@ class CompartCell (Cell):
             if conn.get('plast'):
                 self._addConnPlasticity(conn['plast'], self.secs[conn['sec']], netcon, 0)
 
+    @staticmethod
+    def spikeGenLocAndSec(secs):
+
+        sec = next((secParams for secName,secParams in secs.items() if 'spikeGenLoc' in secParams), None) # check if any section has been specified as spike generator
+        if sec:
+            loc = sec['spikeGenLoc']  # get location of spike generator within section
+        else:
+            #sec = self.secs['soma'] if 'soma' in self.secs else self.secs[self.secs.keys()[0]]  # use soma if exists, otherwise 1st section
+            sec = next((sec for secName, sec in secs.items() if len(sec['topol']) == 0), secs[list(secs.keys())[0]])  # root sec (no parents)
+            loc = 0.5
+        return loc, sec
+
 
     def associateGid (self, threshold = None):
         from .. import sim
@@ -571,13 +635,7 @@ class CompartCell (Cell):
                     sim.pc.set_gid2node(self.gid, sim.rank) # this is the key call that assigns cell gid to a particular node
                 else:
                     sim.pc.set_gid2node(self.gid, 0)
-                sec = next((secParams for secName,secParams in self.secs.items() if 'spikeGenLoc' in secParams), None) # check if any section has been specified as spike generator
-                if sec:
-                    loc = sec['spikeGenLoc']  # get location of spike generator within section
-                else:
-                    #sec = self.secs['soma'] if 'soma' in self.secs else self.secs[self.secs.keys()[0]]  # use soma if exists, otherwise 1st section
-                    sec = next((sec for secName, sec in self.secs.items() if len(sec['topol']) == 0), self.secs[list(self.secs.keys())[0]])  # root sec (no parents)
-                    loc = 0.5
+                loc, sec = CompartCell.spikeGenLocAndSec(self.secs)
                 nc = None
                 if 'pointps' in sec:  # if no syns, check if point processes with 'vref' (artificial cell)
                     for pointpName, pointpParams in sec['pointps'].items():
@@ -594,7 +652,7 @@ class CompartCell (Cell):
         sim.net.gid2lid[self.gid] = len(sim.net.gid2lid)
 
 
-    def addSynMech (self, synLabel, secLabel, loc):
+    def addSynMech (self, synLabel, secLabel, loc, preLoc=None):
         from .. import sim
 
         synMechParams = sim.net.params.synMechParams.get(synLabel)  # get params for this synMech
@@ -626,10 +684,12 @@ class CompartCell (Cell):
                     synMech = Dict()
                     sec['synMechs'].append(synMech)
                 # add the NEURON object
-                self.addSynMechNEURONObj(synMech, synMechParams, sec, loc)
+                self.addSynMechNEURONObj(synMech, synLabel, synMechParams, sec, loc, preLoc)
             else:
                 synMech = None
-            return synMech
+        else:
+            synMech = None
+        return synMech
 
 
     def modifySynMechs (self, params):
@@ -672,7 +732,7 @@ class CompartCell (Cell):
                                 break
 
                     if conditionsMet:  # if all conditions are met, set values for this cell
-                        exclude = ['conds', 'cellConds', 'label', 'mod', 'selfNetCon', 'loc']
+                        exclude = ['conds', 'cellConds'] + SynMechParams.reservedKeys()
                         for synParamName,synParamValue in {k: v for k,v in params.items() if k not in exclude}.items():
                             if sim.cfg.createPyStruct:
                                 synMech[synParamName] = synParamValue
@@ -688,9 +748,21 @@ class CompartCell (Cell):
     def addConn (self, params, netStimParams = None):
         from .. import sim
 
+        # try getting params of pointer-based connection (if applicable)
+        pointerParams, isPreToPostPointerConn = self.__parsePointerParams(params)
+
+        if pointerParams and not pointerParams['bidirectional'] and not isPreToPostPointerConn:
+            # If this is a second iteration and connection is unidirectional (pre->post only), use appropriate variable of this cell (normally, voltage)
+            # as a source of pointer connection. 
+            # see comments in `__parsePointerParams()` for more details
+            sec = self.secs[params['sec']]
+            self.__setPointerSource(pointerParams['source_var'], pointerParams['postToPreId'], sec, params['loc'])
+            return # the rest was already done on postCell side (firs step)
+
         # threshold = params.get('threshold', sim.net.params.defaultThreshold)  # depreacated -- use threshold in preSyn cell sec
         if params.get('weight') is None: params['weight'] = sim.net.params.defaultWeight # if no weight, set default
         if params.get('delay') is None: params['delay'] = sim.net.params.defaultDelay # if no delay, set default
+        if params.get('preLoc') is None: params['preLoc'] = 0.5 # if no preLoc, set default
         if params.get('loc') is None: params['loc'] = 0.5 # if no loc, set default
         if params.get('synsPerConn') is None: params['synsPerConn'] = 1  # if no synsPerConn, set default
 
@@ -741,25 +813,14 @@ class CompartCell (Cell):
             if netStimParams:
                     netstim = self.addNetStim(netStimParams)
 
-            if params.get('gapJunction', False) == True:  # only run for post gap junc (not pre)
-                if hasattr(sim, 'rank'):
-                    preGapId = 1e9*sim.rank + sim.net.lastGapId  # global index for presyn gap junc
+            if pointerParams:
+                if isPreToPostPointerConn:
+                    # generate new ids
+                    preToPostPointerId, postToPrePointerId = self.__generatePointerIds(pointerParams, params)
                 else:
-                    preGapId = sim.net.lastGapId
-                postGapId = preGapId + 1  # global index for postsyn gap junc
-                sim.net.lastGapId += 2  # keep track of num of gap juncs in this node
-                if not getattr(sim.net, 'preGapJunctions', False):
-                    sim.net.preGapJunctions = []  # if doesn't exist, create list to store presynaptic cell gap junctions
-                preGapParams = {'gid': params['preGid'],
-                                'preGid': self.gid,
-                                'sec': params.get('preSec', 'soma'),
-                                'loc': params.get('preLoc', 0.5),
-                                'weight': params['weight'],
-                                'gapId': preGapId,
-                                'preGapId': postGapId,
-                                'synMech': params['synMech'],
-                                'gapJunction': 'pre'}
-                sim.net.preGapJunctions.append(preGapParams)  # add conn params to add pre gap junction later
+                    # use pre-generated
+                    preToPostPointerId = pointerParams['preToPostId']
+                    postToPrePointerId = pointerParams.get('postToPreId')  
 
             # Python Structure
             if sim.cfg.createPyStruct:
@@ -772,28 +833,31 @@ class CompartCell (Cell):
                 if netStimParams:
                     connParams['preGid'] = 'NetStim'
                     connParams['preLabel'] = netStimParams['source']
-                if params.get('gapJunction', 'False') == True:  # only run for post gap junc (not pre)
-                    connParams['gapId'] = postGapId
-                    connParams['preGapId'] = preGapId
-                    connParams['gapJunction'] = 'post'
+                if pointerParams:
+                    connParams['pointer'] = {
+                        'id': preToPostPointerId,
+                        'source': 'pre' if isPreToPostPointerConn else 'post',
+                        'sourceVar': pointerParams['source_var'],
+                        'targetVar': pointerParams['target_var']
+                    }
+                    if postToPrePointerId is not None:
+                        connParams['pointer']['reverseConnId'] = postToPrePointerId
+
                 self.conns.append(Dict(connParams))
             else:  # do not fill in python structure (just empty dict for NEURON obj)
                 self.conns.append(Dict())
 
             # NEURON objects
             if sim.cfg.createNEURONObj:
-                # gap junctions
-                if params.get('gapJunction', 'False') in [True, 'pre', 'post']:  # create NEURON obj for pre and post
-                    synMechs[i]['hObj'].weight = weights[i]
-                    sourceVar = self.secs[synMechSecs[i]]['hObj'](synMechLocs[i])._ref_v
-                    targetVar = synMechs[i]['hObj']._ref_vpeer  # assumes variable is vpeer -- make a parameter
+                # pointer-based connection (e.g. gap junctions)
+                if pointerParams:
                     sec = self.secs[synMechSecs[i]]
-                    sim.pc.target_var(targetVar, connParams['gapId'])
-                    self.secs[synMechSecs[i]]['hObj'].push()
-                    sim.pc.source_var(sourceVar, connParams['preGapId'])
-                    h.pop_section()
                     netcon = None
-
+                    # set appropriate synMech's variable as target of pointer connection (see comments in `__parsePointerParams()` for more details)
+                    self.__setPointerTarget(pointerParams['target_var'], preToPostPointerId, synMechs[i], weights[i])
+                    if postToPrePointerId is not None: # i.e. connection is bidirectional
+                        # set this cell as a source of inverse pointer connection
+                        self.__setPointerSource(pointerParams['source_var'], postToPrePointerId, sec, synMechLocs[i])
                 # connections using NetCons
                 else:
                     if pointp:
@@ -859,6 +923,92 @@ class CompartCell (Cell):
                         % (preGid, self.gid, sec, loc, params['synMech'], weights[i], delays[i])))
                 except:
                     print(('  Created connection preGid=%s' % (preGid)))
+
+
+    def __parsePointerParams(self, params):
+        from .. import sim
+        # Establishing pointer connection requires two steps, performed in separate iterations of `addConn()`
+        # On first step, appropriate variable of current postsynaptic cell's synapse is used as a target for forward pointer connection (pre->post), 
+        # Additionally, if connection is bidirectional, variable of current cell (normally, voltage) is used as a source of reverse connection (post->pre).
+        # On the second step, variable of presynaptic cell is used as a source of forward connection,
+        # and if connection is bidirectional, var of synapse of presynaptic cell is set as a target of reverse connection.
+
+        # Try getting prepopulated params, created on previous step. If it's there, then this is the second step.
+        if '__preCellSidePointerParams__' in params:
+            return params['__preCellSidePointerParams__'], False
+
+        # if no, this is the first step. Try getting pointer params from synMechParams
+        synLabel = params['synMech']
+        synMech = sim.net.params.synMechParams.get(synLabel, {})
+        pointerParams = synMech.get('pointerParams', None)
+
+        # if no, try to get from connParams (deprecated) for backward compatibility
+        if pointerParams is None and params.get('gapJunction'):
+            pointerParams = {'source_var': 'v', 'target_var': 'vpeer'}
+
+        # populate absent params with default values
+        if isinstance(pointerParams, dict):
+            if 'source_var' not in pointerParams: pointerParams['source_var'] = 'v'
+            if 'bidirectional' not in pointerParams: pointerParams['bidirectional'] = True
+
+        return pointerParams, True
+
+
+    def __generatePointerIds(self, pointerParams, params):
+        from .. import sim
+        # see comments in `__parsePointerParams()` for more details
+        if hasattr(sim, 'rank'):
+            preToPostId = 1e9*sim.rank + sim.net.lastPointerId  # global index for presyn gap junc
+        else:
+            preToPostId = sim.net.lastPointerId
+        sim.net.lastPointerId += 1  # keep track of num of gap juncs in this node
+
+        if pointerParams['bidirectional']:
+            postToPreId = preToPostId + 1  # global index for postsyn gap junc
+            sim.net.lastPointerId += 1  # keep track of num of gap juncs in this node
+        else:
+            postToPreId = None
+
+        # save to be used on second step (see comments in `__parsePointerParams()` above)
+        preCellSideParams = deepcopy(pointerParams)
+        # at the preCell side, source and target are swapped
+        preCellSideParams['postToPreId'] = preToPostId
+        if postToPreId is not None: # i.e. connection is bidirectional
+            preCellSideParams['preToPostId'] = postToPreId
+
+        preGapParams = {
+            'gid': params['preGid'],
+            'preGid': self.gid,
+            'sec': params.get('preSec', 'soma'),
+            'loc': params.get('preLoc', 0.5),
+            'weight': params.get('weight', 0.0),
+            'synMech': params['synMech'],
+            '__preCellSidePointerParams__': preCellSideParams
+        }
+
+        if not getattr(sim.net, 'preCellPointerConns', False):
+            sim.net.preCellPointerConns = []  # if doesn't exist, create list to store pointer connections targeting presynaptic cells
+        sim.net.preCellPointerConns.append(preGapParams)
+
+        return preToPostId, postToPreId
+
+
+    def __setPointerTarget(self, ref, id, synMech, weight):
+        synObj = synMech['hObj']
+        try: # weight is optional
+            synObj.weight = weight
+        except:
+            pass
+        targetVar = getattr(synObj, '_ref_' + ref)
+        sim.pc.target_var(synObj, targetVar, id)
+
+
+    def __setPointerSource(self, ref, id, sec, loc):
+        secObj = sec['hObj'] 
+        sourceVar = getattr(secObj(loc), '_ref_' + ref)
+        secObj.push()
+        sim.pc.source_var(sourceVar, id)
+        h.pop_section()
 
 
     def modifyConns (self, params):
@@ -1212,7 +1362,7 @@ class CompartCell (Cell):
                     if len(params['loc']) == synsPerConn:
                         synMechLocs = params['loc']
                     else:
-                        print("Error: The length of the list of locations does not match synsPerConn (distributing uniformly)")
+                        if sim.cfg.verbose: print("Error: The length of the list of locations does not match synsPerConn (distributing uniformly)")
                         synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
                 else:
                     synMechLocs = [i*(1.0/synsPerConn)+1.0/synsPerConn/2 for i in range(synsPerConn)]
@@ -1249,8 +1399,8 @@ class CompartCell (Cell):
                                 randLocPos = sim.net.randUniqueInt(rand, synsPerConn, 0, len(synMechLocs)-1)
                                 synMechLocs = [synMechLocs[i] for i in randLocPos]
                             else:
-                                randLoc = rand.uniform(0, 1)
-                                synMechLocs = [rand.uniform(0, 1) for i in range(synsPerConn)]
+                                rand.uniform(0, 1)
+                                synMechLocs = [rand.repick() for i in range(synsPerConn)]
                         else:
                                 print("\nError: The length of the list of sections needs to be greater or equal to the synsPerConn (with cfg.connRandomSecFromList = True")
                                 return
@@ -1271,7 +1421,11 @@ class CompartCell (Cell):
                     synMechLocs[pos], synMechLocs[0] = synMechLocs[0], synMechLocs[pos]
 
         # add synaptic mechanism to section based on synMechSecs and synMechLocs (if already exists won't be added unless nonLinear set to True)
-        synMechs = [self.addSynMech(synLabel=params['synMech'], secLabel=synMechSecs[i], loc=synMechLocs[i]) for i in range(synsPerConn)]
+        synMechs = [self.addSynMech(synLabel=params['synMech'],
+                                    secLabel=synMechSecs[i],
+                                    loc=synMechLocs[i],
+                                    preLoc=params['preLoc'])
+                        for i in range(synsPerConn)]
         return synMechs, synMechSecs, synMechLocs
 
 
@@ -1413,3 +1567,15 @@ class CompartCell (Cell):
                     sec['geom']['pt3d'].append(pt3d)
                     h.pt3dchange(i, x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hObj'])
                 h.pop_section()
+
+    def originSecName(self):
+        if 'soma' in self.secs:
+            secOrig = 'soma'
+        elif any([secName.startswith('som') for secName in list(self.secs.keys())]):
+            secOrig = next(secName for secName in list(self.secs.keys()) if secName.startswith('soma'))
+        else:
+            secOrig = list(self.secs.keys())[0]
+        return secOrig
+
+    def originSec(self):
+        return self.secs[self.originSecName()]

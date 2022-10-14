@@ -15,7 +15,12 @@ netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'
 netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}
 
 ## Synaptic mechanism parameters
-netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0}  # excitatory synaptic mechanism
+netParams.synMechParams['exc'] = {
+    'mod': 'Exp2Syn',
+    'tau1': '0.1 + 0.01*post_ynorm',
+    'tau2': 'abs(normal(5.0, 0.5))',
+    'e': 0
+}  # excitatory synaptic mechanism
 
 ## Stimulation parameters
 netParams.stimSourceParams['Input_1'] = {'type': 'IClamp', 'del': 300, 'dur': 100, 'amp': 'uniform(0.4,0.5)'}

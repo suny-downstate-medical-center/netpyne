@@ -40,13 +40,14 @@ class SimConfig(object):
         self.dt = 0.025 # Internal integration timestep to use
         self.hParams = Dict({'celsius': 6.3, 'v_init': -65.0, 'clamp_resist': 0.001})  # parameters of h module
         self.coreneuron = False  # use CoreNEURON to run the simulation (alpha version)
+        self.dump_coreneuron_model = False # dump CoreNEURON model
         self.random123 = False # enable Random123 random number generator
         self.cache_efficient = False  # use CVode cache_efficient option to optimize load when running on many cores
         self.gpu = False  # enable GPU execution in CoreNEURON
         self.cvode_active = False  # Use CVode variable time step
         self.use_fast_imem = False  # use CVode fast_imem to record membrane voltage via i_membrane_
         self.cvode_atol = 0.001  # absolute error tolerance
-        self.seeds = Dict({'conn': 1, 'stim': 1, 'loc': 1}) # Seeds for randomizers (connectivity, input stimulation and cell locations)
+        self.seeds = Dict({'conn': 1, 'stim': 1, 'loc': 1, 'synMech': 1}) # Seeds for randomizers (connectivity, input stimulation, cell locations and synaptic mechanisms)
         self.rand123GlobalIndex = None  # Sets the global index used by all instances of the Random123 instances of Random
         self.createNEURONObj = True  #  create runnable network in NEURON when instantiating netpyne network metadata
         self.createPyStruct = True  # create Python structure (simulator-independent) when instantiating network

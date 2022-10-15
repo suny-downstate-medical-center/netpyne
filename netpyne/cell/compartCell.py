@@ -111,7 +111,7 @@ class CompartCell (Cell):
                 if sim.cfg.createPyStruct:
                     self.createPyStruct(prop)
                 if createNEURONObj:
-                    self.createNEURONObj(prop)  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
+                    self.createNEURONObj(prop, propLabel)  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
 
 
     def modify (self, prop):
@@ -330,11 +330,25 @@ class CompartCell (Cell):
 
 
 
-    def createNEURONObj (self, prop):
+    def createNEURONObj (self, prop, propLabel=None):
         from .. import sim
 
         excludeMechs = ['dipole']  # dipole is special case
         mechInsertError = False  # flag to print error inserting mechanisms
+
+        if propLabel and propLabel in sim.net.params.cellParams:
+            cellType = propLabel
+        else:
+            cellType = self.tags['cellType']
+
+        cellVars = {}
+        cvars = sim.net.params.cellParams[cellType].get('vars', {})
+        # cellVars get evaluated once per cell. If there are multiple sections or segments referring to it, all they will use this same value
+        for name, val in cvars.items():
+            func, vars = CellParams.stringFuncAndVarsForCellVar(cellType, name)
+            if func:
+                val = self.__evaluateCellParamsStringFunc(func, vars)
+            cellVars[name] = val
 
         # set params for all sections
         for sectName,sectParams in prop['secs'].items():
@@ -349,9 +363,9 @@ class CompartCell (Cell):
             if 'geom' in sectParams:
                 for geomParamName,geomParamValue in sectParams['geom'].items():
                     if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
-                        func, vars = CellParams.stringFuncAndVarsForGeom(self.tags['cellType'], sectName, geomParamName)
+                        func, vars = CellParams.stringFuncAndVarsForGeom(cellType, sectName, geomParamName)
                         if func:
-                            geomParamValue = self.__evaluateCellParamsStringFunc(func, vars, sec)
+                            geomParamValue = self.__evaluateCellParamsStringFunc(func, vars, sec, cellVars=cellVars)
                         setattr(sec['hObj'], geomParamName, geomParamValue)
 
                 # set 3d geometry
@@ -380,18 +394,19 @@ class CompartCell (Cell):
                             print('# Error inserting %s mechanims in %s section! (check mod files are compiled)'%(mechName, sectName))
                         continue
                     for mechParamName,mechParamValue in mechParams.items():  # add params of the mechanism
-                        mechParamValueFinal = mechParamValue
                         for iseg,seg in enumerate(sec['hObj']):  # set mech params for each segment
                             if type(mechParamValue) in [list]:
                                 if len(mechParamValue) == 1:
                                     mechParamValueFinal = mechParamValue[0]
                                 else:
                                     mechParamValueFinal = mechParamValue[iseg]
+                            else:
+                                mechParamValueFinal = mechParamValue
                             if mechParamValueFinal is not None:  # avoid setting None values
                                 if isinstance(mechParamValueFinal, basestring):
-                                    func, vars = CellParams.stringFuncAndVarsForMod(self.tags['cellType'], sectName, 'mechs', mechName, mechParamName)
+                                    func, vars = CellParams.stringFuncAndVarsForMod(cellType, sectName, 'mechs', mechName, mechParamName)
                                     if func:
-                                        mechParamValueFinal = self.__evaluateCellParamsStringFunc(func, vars, sec, seg.x)
+                                        mechParamValueFinal = self.__evaluateCellParamsStringFunc(func, vars, sec, seg.x, cellVars)
                                 setattr(getattr(seg, mechName), mechParamName,mechParamValueFinal)
 
             # add ions
@@ -448,9 +463,9 @@ class CompartCell (Cell):
                         if pointpParamValue == 'gid':
                             pointpParamValue = self.gid
                         if pointpParamName not in CellParams.pointpParamsReservedKeys() and not pointpParamName.startswith('_'):
-                            func, vars = CellParams.stringFuncAndVarsForMod(self.tags['cellType'], sectName, 'pointps', pointpName, pointpParamName)
+                            func, vars = CellParams.stringFuncAndVarsForMod(cellType, sectName, 'pointps', pointpName, pointpParamName)
                             if func:
-                                pointpParamValue = self.__evaluateCellParamsStringFunc(func, vars, sec)
+                                pointpParamValue = self.__evaluateCellParamsStringFunc(func, vars, sec, cellVars=cellVars)
                             setattr(pointpObj, pointpParamName, pointpParamValue)
                     if 'params' in self.tags.keys(): # modify cell specific params
                       for pointpParamName,pointpParamValue in self.tags['params'].items():
@@ -508,6 +523,10 @@ class CompartCell (Cell):
     def stringFuncVarNames():
         return list(CompartCell.__stringFuncVarsEvaluators().keys())
 
+    @staticmethod
+    def stringFuncVarNamesForCellVars():
+        # segment-specific vars are not applicable for cellVars
+        return [v for v in CompartCell.stringFuncVarNames() if v not in ['dist_path', 'dist_cartesian']]
 
     @staticmethod
     def __stringFuncVarsEvaluators():
@@ -524,25 +543,30 @@ class CompartCell (Cell):
         }
 
 
-    def __evaluateCellParamsStringFunc(self, func, varNames, sec, loc=0.5):
+    def __evaluateCellParamsStringFunc(self, func, varNames, sec=None, loc=0.5, cellVars={}):
         from ..network.subconn import pathDistance, posFromLoc
 
         args = {}
         for varName in varNames:
-            if varName == 'dist_cartesian':
-                # euclidian distance
-                x0, y0, z0 = posFromLoc(self.originSec(), 0.5)
-                x, y, z = posFromLoc(sec, sec['hObj'](loc).x)
-                dist = sqrt((x-x0)**2 + (y-y0)**2 + (z-z0)**2)
-            elif varName == 'dist_path':
-                # distance based on the topology
-                segOrigObj = self.originSec()['hObj'](0.5)
-                dist = pathDistance(segOrigObj, sec['hObj'](loc))
+            if varName in cellVars:
+                # cellVars are already evaluated
+                args[varName] = cellVars[varName]
             else:
-                dist = None
-            varEvaluator = CompartCell.__stringFuncVarsEvaluators()[varName]
-            args[varName] = varEvaluator(self, dist, self._randomizer())
-
+                # rest of vars should be evaluated
+                if varName == 'dist_cartesian':
+                    # euclidian distance
+                    x0, y0, z0 = posFromLoc(self.originSec(), 0.5)
+                    x, y, z = posFromLoc(sec, sec['hObj'](loc).x)
+                    dist = sqrt((x-x0)**2 + (y-y0)**2 + (z-z0)**2)
+                elif varName == 'dist_path':
+                    # distance based on the topology
+                    segOrigObj = self.originSec()['hObj'](0.5)
+                    dist = pathDistance(segOrigObj, sec['hObj'](loc))
+                else:
+                    dist = None
+                varEvaluator = CompartCell.__stringFuncVarsEvaluators()[varName]
+                args[varName] = varEvaluator(self, dist, self._randomizer())
+        # once vars are evaluated, evaluate function value
         return func(**args)
 
 

@@ -106,7 +106,7 @@ class PointCell (Cell):
         params = {k: v for k,v in self.params.items()}
         for paramName, paramValue in params.items():
             try:
-                func, vars = CellParams.stringFuncAndVarsForPointCell(self.tags['cellType'], paramName)
+                func, vars = CellParams.stringFuncAndVarsForPointCell(self.tags.get('cellType'), paramName)
                 if func:
                     paramValue = self.__evaluateStringFunc(func, vars)
 

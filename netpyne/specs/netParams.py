@@ -108,7 +108,12 @@ class CellParams(ODict):
             funcsForCell = {}
 
             # compartCell
-            varNames = CompartCell.stringFuncVarNames()
+            cellVars = cellParams.get('vars', {})
+            varNames = CompartCell.stringFuncVarNames() + list(cellVars.keys())
+
+            # cellVars themselves may contain random distributions or vars
+            generateStringFuncsFromParams(cellVars, CompartCell.stringFuncVarNamesForCellVars(), storeIn=funcsForCell, key='cellVars')
+
             for secKey, secVal in [(secKey, secVal) for (secKey, secVal) in cellParams.get('secs', {}).items()]:
                 funcsForSec = {}
 
@@ -146,6 +151,14 @@ class CellParams(ODict):
 
         from .. import sim
         sim.net.params._cellParamStringFuncs = stringFuncs
+
+    @staticmethod
+    def stringFuncAndVarsForCellVar(cellType, cellVarName):
+        from .. import sim
+        funcs = sim.net.params._cellParamStringFuncs
+        return funcs.get(cellType, {}) \
+            .get('cellVars', {}) \
+            .get(cellVarName, (None, []))
 
 
     @staticmethod

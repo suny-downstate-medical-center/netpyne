@@ -62,8 +62,6 @@ def connectCells(self):
 
     hasPointerConns = self.params.synMechParams.hasPointerConns()
 
-    self.params.synMechParams.preprocessStringFunctions()
-
     for connParamLabel,connParamTemp in self.params.connParams.items():  # for each conn rule or parameter set
         connParam = connParamTemp.copy()
         connParam['label'] = connParamLabel
@@ -721,7 +719,7 @@ def fromListConn(self, preCellsTags, postCellsTags, connParam):
 # -----------------------------------------------------------------------------
 # Set parameters and create connection
 # -----------------------------------------------------------------------------
-def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags):
+def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags={}):
     from .. import sim
     from ..specs.netParams import SynMechParams
 
@@ -774,9 +772,9 @@ def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags):
         'synsPerConn': finalParam['synsPerConn']}
 
         # if 'threshold' in connParam: params['threshold'] = connParam.get('threshold')  # deprecated, use threshold in preSyn cell sec
-        if 'shape' in connParam: params['shape'] = connParam.get('shape')    
+        if 'shape' in connParam: params['shape'] = connParam.get('shape')
         if 'plast' in connParam: params['plast'] = connParam.get('plast')
-        if 'weightIndex' in connParam: params['weightIndex'] = connParam.get('weightIndex')        
+        if 'weightIndex' in connParam: params['weightIndex'] = connParam.get('weightIndex')
 
         isGapJunction = 'gapJunction' in connParam # deprecated way of defining gap junction
         if self.params.synMechParams.isPointerConn(params['synMech']) or isGapJunction:

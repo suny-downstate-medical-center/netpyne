@@ -112,7 +112,6 @@ def batchSBI():
         'sbi_method': 'SNPE', # SNPE, SNLE, or SNRE
         'inference_type': 'single', # single or multi 
         'rounds': 2, # If multi, choose a round amount else unused
-        'popsize': 1  # unused - run with mpi
     }
 
     # Run batch simulations

@@ -152,6 +152,20 @@ class CellParams(ODict):
         from .. import sim
         sim.net.params._cellParamStringFuncs = stringFuncs
 
+
+    @staticmethod
+    def updateStringFuncsWithPopParams(popLabel, params):
+        from .. import sim
+        from ..specs.utils import generateStringFuncsFromParams
+        from ..cell.pointCell import PointCell
+        try:
+            cellStringFuncs = sim.net.params._cellParamStringFuncs
+        except:
+            cellStringFuncs = sim.net.params._cellParamStringFuncs = {}
+        popKey = '__pop__' + popLabel # use pop label as key, but add special prefix to not mix with cellParams labels normally used as keys in string funcs dictionary
+        generateStringFuncsFromParams(params, PointCell.stringFuncVarNames(), cellStringFuncs, popKey)
+
+
     @staticmethod
     def stringFuncAndVarsForCellVar(cellType, cellVarName):
         from .. import sim
@@ -181,10 +195,10 @@ class CellParams(ODict):
             .get(param, (None, []))
 
     @staticmethod
-    def stringFuncAndVarsForPointCell(cellType, param):
+    def stringFuncAndVarsForPointCell(cellTypeOrPop, param):
         from .. import sim
         funcs = sim.net.params._cellParamStringFuncs
-        return funcs.get(cellType, {}) \
+        return funcs.get(cellTypeOrPop, {}) \
             .get(param, (None, []))
 
 

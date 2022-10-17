@@ -77,7 +77,6 @@ class Network(object):
             print(("\nCreating network of %i cell populations on %i hosts..." % (len(self.pops), sim.nhosts)))
 
         self._setDiversityRanges()  # update fractions for rules
-        self.params.cellParams.preprocessStringFunctions()
 
         for ipop in list(self.pops.values()): # For each pop instantiate the network cells (objects of class 'Cell')
             newCells = ipop.createCells() # create cells for this pop using Pop method

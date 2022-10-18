@@ -418,6 +418,11 @@ class Pop (object):
                     self.tags['params'] = params
                     for k in self.tags['params']: self.tags.pop(k)
                     sim.net.params.popTagsCopiedToCells.append('params')
+
+                    # if point cell params defined directly in pop params, need to scan them for string functions
+                    if len(params):
+                        from .. specs.netParams import CellParams
+                        CellParams.updateStringFuncsWithPopParams(self.tags['pop'], params)
             except:
                 if getattr(self.tags, 'cellModel', None) in ['NetStim', 'DynamicNetStim', 'VecStim', 'IntFire1', 'IntFire2', 'IntFire4']:
                     print('Warning: could not find %s point process mechanism required for population %s' % (cellModel, self.tags['pop']))

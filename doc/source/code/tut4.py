@@ -21,7 +21,7 @@ PYR_Izhi['secs']['soma']['geom'] = {'diam': 10.0, 'L': 10.0, 'cm': 31.831}    # 
 PYR_Izhi['secs']['soma']['pointps']['Izhi'] = {                               # soma Izhikevich properties
     'mod':'Izhi2007b',
     'C':1,
-    'k':0.7,
+    'k': 'normal(0.7, 0.05)',
     'vr':-60,
     'vt':-40,
     'vpeak':35,

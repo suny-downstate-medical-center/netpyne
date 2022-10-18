@@ -90,6 +90,7 @@ def initialize(netParams = None, simConfig = None, net = None):
 
     sim.setNetParams(netParams)  # set network parameters
     sim.net.params.synMechParams.preprocessStringFunctions()
+    sim.net.params.cellParams.preprocessStringFunctions()
 
     if sim.nhosts > 1: sim.cfg.validateNetParams = False  # turn of error chceking if using multiple cores
 

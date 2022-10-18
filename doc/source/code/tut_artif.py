@@ -64,7 +64,7 @@ netParams.popParams['pop_NetStim'] = {
     'numCells': 100,
     'rate': 10, 
     'noise': 0.8, 
-    'start': 1, 
+    'start': 'uniform(1,3)',
     'seed': 2}  # pop of NEtSims
 
 netParams.popParams['pop_VecStim'] = {

@@ -552,14 +552,14 @@ class CompartCell (Cell):
     @staticmethod
     def stringFuncVarNamesForCellVars():
         # segment-specific vars are not applicable for cellVars
-        return [v for v in CompartCell.stringFuncVarNames() if v not in ['dist_path', 'dist_cartesian']]
+        return [v for v in CompartCell.stringFuncVarNames() if v not in ['dist_path', 'dist_euclidean']]
 
     @staticmethod
     def __stringFuncVarsEvaluators():
         return {
             'rand': lambda cell, dist, rand: rand,
             'dist_path': lambda cell, dist, rand: dist,
-            'dist_cartesian': lambda cell, dist, rand: dist,
+            'dist_euclidean': lambda cell, dist, rand: dist,
             'x': lambda cell, dist, rand: cell.tags['x'],
             'y': lambda cell, dist, rand: cell.tags['y'],
             'z': lambda cell, dist, rand: cell.tags['z'],
@@ -579,7 +579,7 @@ class CompartCell (Cell):
                 args[varName] = cellVars[varName]
             else:
                 # rest of vars should be evaluated
-                if varName == 'dist_cartesian':
+                if varName == 'dist_euclidean':
                     # euclidian distance
                     x0, y0, z0 = posFromLoc(self.originSec(), 0.5)
                     x, y, z = posFromLoc(sec, sec['hObj'](loc).x)
@@ -605,7 +605,7 @@ class CompartCell (Cell):
             if not preLoc and varName in SynMechParams.stringFuncVarsReferringPreLoc():
                 preLoc = 0.5
                 if sim.cfg.verbose: print('No preLoc for synMech string function provided. Defaulting to 0.5')
-            if varName == 'post_dist_cartesian':
+            if varName == 'post_dist_euclidean':
                 # euclidian distance
                 x0, y0, z0 = posFromLoc(self.originSec(), 0.5)
                 x, y, z = posFromLoc(sec, sec['hObj'](loc).x)

@@ -96,7 +96,7 @@ class TestSynMechParams():
         netParams.synMechParams['syn1'] = {
             'mod': 'Exp2Syn',
             'tau1': 'post_dist_path',
-            'tau2': 'post_dist_cartesian',
+            'tau2': 'post_dist_euclidean',
             'e': 0
         }
 
@@ -130,5 +130,5 @@ class TestSynMechParams():
                 # path distance from center of soma
                 assert syn.tau1 == expectedDistPath, "synMechParams: post_dist_path variable handled incorrectly in string function"
                 # euclidian distance
-                assert syn.tau2**2 == expectedDictEuclSquared, "synMechParams: post_dist_cartesian variable handled incorrectly in string function"
+                assert syn.tau2**2 == expectedDictEuclSquared, "synMechParams: post_dist_euclidean variable handled incorrectly in string function"
 

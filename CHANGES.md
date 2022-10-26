@@ -10,10 +10,24 @@
 
 - Added option to use separate axis for each PSD trace (set axis='multi')
 
+- Added new Batch method named SBI (Simulation Based Inference) with example folder (sbiOptim)
+
+- Added support for string functions in synMech parameters
+
+- More control over POINTER variables through synMechParams (e.g. for gap junctions)
+
 
 **Bug fixes**
 
 - Fixed bug with loading CompartCell with custom mechanisms from saved network
+
+- Fixed bug with accessing proper sim data file during batch parameters optimization
+
+- Fixed bug where most batch optimization methods used to misname simulation output file
+
+- Fixed bug in dipole calculation units - changed from mA to uA 
+
+- Fixed bug in conditional logic when gathering LFP / dipoles 
 
 # Version 1.0.2.1
 

@@ -24,23 +24,16 @@ except NameError:
 
 import pandas as pd
 import imp
-import json
-import logging
-import datetime
 import os, sys
 import glob
-from copy import copy
-from random import Random
-from time import sleep, time
+from time import sleep
 from itertools import product
 from subprocess import Popen, PIPE
-import subprocess
 import importlib, types
 
 from neuron import h
-from netpyne import specs
+from .utils import jobStringHPCSlurm, jobStringHPCTorque
 from .utils import createFolder
-from .utils import bashTemplate
 
 pc = h.ParallelContext() # use bulletin board master/slave
 
@@ -305,36 +298,26 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
         cfgSavePath = batch.saveFolder+'/'+simLabel+'_cfg.json'
         batch.cfg.save(cfgSavePath)
 
+    # read params or set defaults
+    sleepInterval = batch.runCfg.get('sleepInterval', 1)
+    nodes = batch.runCfg.get('nodes', 1)
+    script = batch.runCfg.get('script', 'init.py')
+    walltime = batch.runCfg.get('walltime', '00:30:00')
+    folder = batch.runCfg.get('folder', '.')
+    custom = batch.runCfg.get('custom', '')
+    printOutput = batch.runCfg.get('printOutput', False)
+
     # hpc torque job submission
     if batch.runCfg.get('type',None) == 'hpc_torque':
 
-        # read params or set defaults
-        sleepInterval = batch.runCfg.get('sleepInterval', 1)
-        nodes = batch.runCfg.get('nodes', 1)
         ppn = batch.runCfg.get('ppn', 1)
-        script = batch.runCfg.get('script', 'init.py')
         mpiCommand = batch.runCfg.get('mpiCommand', 'mpiexec')
-        walltime = batch.runCfg.get('walltime', '00:30:00')
         queueName = batch.runCfg.get('queueName', 'default')
-        nodesppn = 'nodes=%d:ppn=%d'%(nodes,ppn)
-        custom = batch.runCfg.get('custom', '')
-        printOutput = batch.runCfg.get('printOutput', False)
         numproc = nodes*ppn
 
         command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
 
-        jobString = """#!/bin/bash
-#PBS -N %s
-#PBS -l walltime=%s
-#PBS -q %s
-#PBS -l %s
-#PBS -o %s.run
-#PBS -e %s.err
-%s
-cd $PBS_O_WORKDIR
-echo $PBS_O_WORKDIR
-%s
-            """ % (jobName, walltime, queueName, nodesppn, jobName, jobName, custom, command)
+        jobString = jobStringHPCTorque(jobName, walltime, queueName, nodes, ppn, jobName, custom, command)
 
         # Send job_string to qsub
         print('Submitting job ',jobName)
@@ -351,44 +334,16 @@ echo $PBS_O_WORKDIR
     elif batch.runCfg.get('type',None) == 'hpc_slurm':
 
         # read params or set defaults
-        sleepInterval = batch.runCfg.get('sleepInterval', 1)
         allocation = batch.runCfg.get('allocation', 'csd403') # NSG account
-        nodes = batch.runCfg.get('nodes', 1)
         coresPerNode = batch.runCfg.get('coresPerNode', 1)
         email = batch.runCfg.get('email', 'a@b.c')
-        folder = batch.runCfg.get('folder', '.')
-        script = batch.runCfg.get('script', 'init.py')
         mpiCommand = batch.runCfg.get('mpiCommand', 'ibrun')
-        walltime = batch.runCfg.get('walltime', '00:30:00')
         reservation = batch.runCfg.get('reservation', None)
-        custom = batch.runCfg.get('custom', '')
-        printOutput = batch.runCfg.get('printOutput', False)
-        if reservation:
-            res = '#SBATCH --res=%s'%(reservation)
-        else:
-            res = ''
 
         numproc = nodes*coresPerNode
         command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, numproc, script, cfgSavePath, netParamsSavePath)
 
-        jobString = """#!/bin/bash
-#SBATCH --job-name=%s
-#SBATCH -A %s
-#SBATCH -t %s
-#SBATCH --nodes=%d
-#SBATCH --ntasks-per-node=%d
-#SBATCH -o %s.run
-#SBATCH -e %s.err
-#SBATCH --mail-user=%s
-#SBATCH --mail-type=end
-%s
-%s
-
-source ~/.bashrc
-cd %s
-%s
-wait
-                    """  % (simLabel, allocation, walltime, nodes, coresPerNode, jobName, jobName, email, res, custom, folder, command)
+        jobString = jobStringHPCSlurm(simLabel, allocation, walltime, nodes, coresPerNode, jobName, email, reservation, custom, folder, command)
 
         # Send job_string to sbatch
 
@@ -410,10 +365,7 @@ wait
         jobName = batch.saveFolder+'/'+simLabel
         print('Running job ',jobName)
         cores = batch.runCfg.get('cores', 1)
-        folder = batch.runCfg.get('folder', '.')
-        script = batch.runCfg.get('script', 'init.py')
         mpiCommand = batch.runCfg.get('mpiCommand', 'mpirun')
-        printOutput = batch.runCfg.get('printOutput', False)
 
         command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (mpiCommand, cores, script, cfgSavePath, netParamsSavePath)
 
@@ -428,7 +380,6 @@ wait
         script = batch.runCfg.get('script', 'init.py')
 
         jobName = batch.saveFolder+'/'+simLabel
-        printOutput = batch.runCfg.get('printOutput', False)
         print('Submitting job ',jobName)
         # master/slave bulletin board scheduling of jobs
         pc.submit(runJob, script, cfgSavePath, netParamsSavePath, processes, jobName)

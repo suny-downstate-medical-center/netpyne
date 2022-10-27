@@ -1,4 +1,3 @@
-from cmath import exp
 import numpy as np
 import pytest
 import sys
@@ -28,7 +27,7 @@ class TestSynMechParams():
             'tau2': f'5 + 10 * uniform({expectedRange[0]}, {expectedRange[1]})',
             'e': 'lognormal(0, 0.01)' # just to check 'lognormal' parsed correctly (not messed with 'normal')
         }
-        numCells = 100
+        numCells = 60
         netParams.popParams['src'] = {'cellModel': 'NetStim', 'numCells': 1}
         netParams.popParams['trg'] = {'cellType': 'PYR', 'numCells': numCells}
 
@@ -53,7 +52,7 @@ class TestSynMechParams():
         # ensure tau1 comes from normal distribution with given parameters
         assert np.allclose([expectedMean, expectedVar],
             [np.mean(tau1), np.var(tau1)],
-            rtol=0.05), "synMechParams: normal distribution in string function failed"
+            rtol=0.1), "synMechParams: normal distribution in string function failed"
 
         # ensure tau2 belongs to range [13.0, 15.0] (i.e. '5 + 10 * uniform(0.8, 1.0))
         assert np.min(tau2) >= 13.0 and np.max(tau2) <= 15.0, "synMechParams: uniform distribution in string function failed"

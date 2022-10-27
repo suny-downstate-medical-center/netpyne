@@ -12,6 +12,8 @@
 
 - Added support for string functions in synMech parameters
 
+- More control over POINTER variables through synMechParams (e.g. for gap junctions)
+
 
 **Bug fixes**
 
@@ -22,6 +24,8 @@
 - Fixed bug where most batch optimization methods used to misname simulation output file
 
 - Fixed bug in dipole calculation units - changed from mA to uA 
+
+- Fixed bug in conditional logic when gathering LFP / dipoles 
 
 # Version 1.0.2.1
 

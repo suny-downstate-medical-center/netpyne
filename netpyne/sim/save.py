@@ -140,6 +140,7 @@ def saveData(include=None, filename=None, saveLFP=True):
         dataSave = {}
         net = {}
         synMechStringFuncs = None
+        cellParamStringFuncs = None
 
         dataSave['netpyne_version'] = sim.version(show=False)
         dataSave['netpyne_changeset'] = sim.gitChangeset(show=False)
@@ -147,6 +148,7 @@ def saveData(include=None, filename=None, saveLFP=True):
         if getattr(sim.net.params, 'version', None): dataSave['netParams_version'] = sim.net.params.version
         if 'netParams' in include:
             # exclude from dataSave but keep in synMechParams later, for integrity
+            cellParamStringFuncs = sim.net.params.__dict__.pop('_cellParamStringFuncs', None)
             synMechStringFuncs = sim.net.params.__dict__.pop('_synMechStringFuncs', None)
             sim.net.params.__dict__.pop('_labelid', None)
             net['params'] = utils.replaceFuncObj(sim.net.params.__dict__)
@@ -283,6 +285,9 @@ def saveData(include=None, filename=None, saveLFP=True):
 
         if synMechStringFuncs:
             sim.net.params._synMechStringFuncs = synMechStringFuncs
+        if cellParamStringFuncs:
+            sim.net.params._cellParamStringFuncs = cellParamStringFuncs
+
         return savedFiles
 
 

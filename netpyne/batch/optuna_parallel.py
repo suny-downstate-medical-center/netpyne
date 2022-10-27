@@ -25,7 +25,11 @@ except NameError:
 import pickle
 
 from neuron import h
-import optuna
+try:
+    import optuna
+except ModuleNotFoundError as e:
+    print("\nERROR: Module 'optuna' not installed\n")
+    raise e
 
 pc = h.ParallelContext() # use bulletin board master/slave
 
@@ -77,7 +81,6 @@ def optunaOptim(batch, pc):
     batch.saveScripts()
 
     args = {}
-    args['popsize'] = batch.optimCfg.get('popsize', 1)
     args['minVals'] = [x['values'][0] for x in batch.params]
     args['maxVals'] = [x['values'][1] for x in batch.params]
     args['cfg'] = batch.cfg  # include here args/params to pass to evaluator function

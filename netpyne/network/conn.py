@@ -60,9 +60,7 @@ def connectCells(self):
         sim.cfg.createNEURONObj = False
         sim.cfg.addSynMechs = False
 
-    gapJunctions = False  # assume no gap junctions by default
-
-    self.params.synMechParams.replaceStringFunctions()
+    hasPointerConns = self.params.synMechParams.hasPointerConns()
 
     for connParamLabel,connParamTemp in self.params.connParams.items():  # for each conn rule or parameter set
         connParam = connParamTemp.copy()
@@ -89,28 +87,27 @@ def connectCells(self):
             self._connStrToFunc(preCellsTags, postCellsTags, connParam)  # convert strings to functions (for the delay, and probability params)
             connFunc(preCellsTags, postCellsTags, connParam)  # call specific conn function
 
-        # check if gap junctions in any of the conn rules
-        if not gapJunctions and 'gapJunction' in connParam: gapJunctions = True
+        # check if gap junctions in any of the conn rules (deprecated)
+        if 'gapJunction' in connParam: hasPointerConns = True
 
         if sim.cfg.printSynsAfterRule:
             nodeSynapses = sum([len(cell.conns) for cell in sim.net.cells])
             print(('  Number of synaptic contacts on node %i after conn rule %s: %i ' % (sim.rank, connParamLabel, nodeSynapses)))
 
-
-    # add presynaptoc gap junctions
-    if gapJunctions:
-        # distribute info on presyn gap junctions across nodes
-        if not getattr(sim.net, 'preGapJunctions', False):
-            sim.net.preGapJunctions = []  # if doesn't exist, create list to store presynaptic cell gap junctions
-        data = [sim.net.preGapJunctions]*sim.nhosts  # send cells data to other nodes
+    # add pointer conns targeting presynaptic cells
+    if hasPointerConns:
+        # distribute info across nodes
+        if not getattr(sim.net, 'preCellPointerConns', False):
+            sim.net.preCellPointerConns = []
+        data = [sim.net.preCellPointerConns]*sim.nhosts  # send cells data to other nodes
         data[sim.rank] = None
         gather = sim.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)
         sim.pc.barrier()
         for dataNode in gather:
-            if dataNode: sim.net.preGapJunctions.extend(dataNode)
+            if dataNode: sim.net.preCellPointerConns.extend(dataNode)
 
-        # add gap junctions of presynaptic cells (need to do separately because could be in different ranks)
-        for preGapParams in getattr(sim.net, 'preGapJunctions', []):
+        # add connections (need to do separately because could be in different ranks)
+        for preGapParams in getattr(sim.net, 'preCellPointerConns', []):
             if preGapParams['gid'] in self.gid2lid:  # only cells in this rank
                 cell = self.cells[self.gid2lid[preGapParams['gid']]]
                 cell.addConn(preGapParams)
@@ -724,6 +721,7 @@ def fromListConn(self, preCellsTags, postCellsTags, connParam):
 # -----------------------------------------------------------------------------
 def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags={}):
     from .. import sim
+    from ..specs.netParams import SynMechParams
 
     # set final param values
     paramStrFunc = self.connStringFuncParams
@@ -778,10 +776,13 @@ def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags={}):
         if 'plast' in connParam: params['plast'] = connParam.get('plast')
         if 'weightIndex' in connParam: params['weightIndex'] = connParam.get('weightIndex')
 
-        if 'gapJunction' in connParam:
-            params['gapJunction'] = connParam.get('gapJunction')
+        isGapJunction = 'gapJunction' in connParam # deprecated way of defining gap junction
+        if self.params.synMechParams.isPointerConn(params['synMech']) or isGapJunction:
             params['preLoc'] = connParam.get('preLoc')
-        elif synMech in self.params.synMechsReferringPreLoc:
+            params['preSec'] = connParam.get('preSec')
+            if isGapJunction: params['gapJunction'] = connParam['gapJunction']
+        # TODO: synMech can be None here (meaning 'use default'). Then need to use default label while checking below
+        elif SynMechParams.stringFuncsReferPreLoc(synMech):
             # save synapse pre-cell location to be used in stringFunc for synMech.
             # for optimization purpose, do it only if preLoc is referenced for a given synMech
             cellType = preCellsTags[preCellGid].get('cellType')

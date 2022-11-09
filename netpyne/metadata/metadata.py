@@ -3006,6 +3006,101 @@ metadata = {
                                 "type": "bool"
                             }
                         }
+                    },
+                    "plotRateSpectrogram": {
+                        "label": "Rate Spectrogram Plot",
+                        "suggestions": "",
+                        "help": "Plot firing rate spectrogram.",
+                        "hintText": "",
+                        "children": {
+                            "include": {
+                                "label": "Cells to include",
+                                "suggestions": "",
+                                "help": "List of cells to include (['all'|,'allCells'|,'allNetStims'|,120|,'L4'|,('L2', 56)|,('L5',[4,5,6])])",
+                                "hintText": "",
+                                "type": "str"
+                            },
+                            "timeRange": {
+                                "label": "Time range [min,max] (ms)",
+                                "suggestions": "",
+                                "help": "Time range of spikes shown; if None shows all ([start,stop])",
+                                "hintText": "",
+                                "type": "list(float)"
+                            },
+                            "binSize": {
+                                "label": "Bin size",
+                                "suggestions": "",
+                                "help": "Size of bin in ms to use for spectrogram (int).",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "minFreq": {
+                                "label": "Minimum frequency",
+                                "suggestions": "",
+                                "help": "Minimum firing rate frequency to show in plot (int).",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "maxFreq": {
+                                "label": "Maximum frequency",
+                                "suggestions": "",
+                                "help": "Maximum firing rate frequency to show in plot (int).",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "stepFreq": {
+                                "label": "Frequency step",
+                                "suggestions": "",
+                                "help": "Frequency step on spectrogram (int).",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "transformation": {
+                                "label": "Type of transformation",
+                                "suggestions": "",
+                                "help": "Type of transformation ('morlet')",
+                                "hintText": "",
+                                "options": [
+                                    "morlet"
+                                ],
+                                "type": "str"
+                            },
+                            "fontSize": {
+                                "label": "Font size",
+                                "suggestions": "",
+                                "help": "Font size (pt)",
+                                "hintText": "",
+                                "type": "float"
+                            },
+                            "figSize": {
+                                "label": "Figure size",
+                                "suggestions": "",
+                                "help": "Size of figure ((width, height))",
+                                "hintText": "",
+                                "type": "tuple"
+                            },
+                            "saveData": {
+                                "label": "Save data",
+                                "suggestions": "",
+                                "help": "File name where to save the final data used to generate the figure (None|'fileName').",
+                                "hintText": "",
+                                "type": "bool"
+                            },
+                            "saveFig": {
+                                "label": "Save figure file name",
+                                "suggestions": "",
+                                "help": "File name where to save the figure (None|'fileName')",
+                                "hintText": "",
+                                "type": "bool"
+                            },
+                            "showFig": {
+                                "label": "Show figure",
+                                "suggestions": "",
+                                "help": "Whether to show the figure or not (True|False).",
+                                "hintText": "",
+                                "type": "bool"
+                            }
+                        }
                     }
                 }
             }

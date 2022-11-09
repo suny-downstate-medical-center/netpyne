@@ -68,7 +68,10 @@ def gatherData(gatherLFP=True, gatherDipole=True):
     if ((gatherLFP and sim.cfg.recordLFP) or (gatherDipole and sim.cfg.recordDipole)) \
     and hasattr(sim.net, 'compartCells') \
     and sim.cfg.createNEURONObj:
+<<<<<<< HEAD
 
+=======
+>>>>>>> cfbd6eaa1784be1b524a66f587d8e1fa8c2f5306
         for cell in sim.net.compartCells:
             try:
                 del cell.imembVec

@@ -894,7 +894,7 @@ try:
         #
         def handle_population(self, population_id, component, size, component_obj, properties={}):
 
-            if self.verbose: print("A population: %s with %i of %s (%s)"%(population_id,size,component,component_obj))
+            if self.verbose: print("A population: %s with %i of %s (%s) "%(population_id,size,component,str(component_obj).strip()))
 
             self.pop_ids_vs_components[population_id] = component_obj
 
@@ -1454,7 +1454,7 @@ try:
     ###############################################################################
     # Import network from NeuroML2
     ###############################################################################
-    def importNeuroML2(fileName, simConfig, simulate=True, analyze=True):
+    def importNeuroML2(fileName, simConfig, simulate=True, analyze=True, return_net_params_also=False):
         """
         Import network from NeuroML2 and convert internally to NetPyNE format
 
@@ -1599,7 +1599,7 @@ try:
                 connParam['synMech'] = synapse
 
                 if post_id in sim.net.gid2lid:  # check if postsyn is in this node's list of gids
-                    sim.net._addCellConn(connParam, pre_id, post_id)
+                    sim.net._addCellConn(connParam, pre_id, post_id, preCellsTags={})
 
 
         # add gap junctions of presynaptic cells (need to do separately because could be in different ranks)
@@ -1629,7 +1629,10 @@ try:
             h('forall  if (ismembrane("k_ion")) { print "K ions: ", secname(), ": ek: ", ek, ", ki: ", ki, ", ko: ", ko } ')
             h('forall  if (ismembrane("ca_ion")) { print "Ca ions: ", secname(), ": eca: ", eca, ", cai: ", cai, ", cao: ", cao } ')'''
 
-        return nmlHandler.gids
+        if return_net_params_also:
+            return nmlHandler.gids, netParams
+        else:
+            return nmlHandler.gids
 
 
 except:

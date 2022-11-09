@@ -15,6 +15,8 @@ from builtins import range
 
 from builtins import round
 from builtins import str
+
+from netpyne.specs.netParams import CellParams, SynMechParams
 try:
   basestring
 except NameError:
@@ -109,7 +111,7 @@ class CompartCell (Cell):
                 if sim.cfg.createPyStruct:
                     self.createPyStruct(prop)
                 if createNEURONObj:
-                    self.createNEURONObj(prop)  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
+                    self.createNEURONObj(prop, propLabel)  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
 
 
     def modify (self, prop):
@@ -328,11 +330,24 @@ class CompartCell (Cell):
 
 
 
-    def createNEURONObj (self, prop):
+    def createNEURONObj (self, prop, propLabel=None):
         from .. import sim
 
-        excludeMechs = ['dipole']  # dipole is special case
         mechInsertError = False  # flag to print error inserting mechanisms
+
+        if propLabel and propLabel in sim.net.params.cellParams:
+            cellType = propLabel
+        else:
+            cellType = self.tags['cellType']
+
+        cellVars = {}
+        cvars = sim.net.params.cellParams[cellType].get('vars', {})
+        # cellVars get evaluated once per cell. If there are multiple sections or segments referring to it, all they will use this same value
+        for name, val in cvars.items():
+            func, vars = CellParams.stringFuncAndVarsForCellVar(cellType, name)
+            if func:
+                val = self.__evaluateCellParamsStringFunc(func, vars)
+            cellVars[name] = val
 
         # set params for all sections
         for sectName,sectParams in prop['secs'].items():
@@ -341,78 +356,27 @@ class CompartCell (Cell):
                 self.secs[sectName] = Dict()  # create sect dict if doesn't exist
             if 'hObj' not in self.secs[sectName] or self.secs[sectName]['hObj'] in [None, {}, []]:
                 self.secs[sectName]['hObj'] = h.Section(name=sectName, cell=self)  # create h Section object
+
+        # set topology
+        for sectName,sectParams in prop['secs'].items():  # iterate sects again for topology (ensures all exist)
+            sec = self.secs[sectName]  # pointer to section # pointer to child sec
+            if 'topol' in sectParams:
+                if sectParams['topol']:
+                    sec['hObj'].connect(self.secs[sectParams['topol']['parentSec']]['hObj'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
+
+        for sectName,sectParams in prop['secs'].items():
             sec = self.secs[sectName]  # pointer to section
 
-            # set geometry params
             if 'geom' in sectParams:
-                for geomParamName,geomParamValue in sectParams['geom'].items():
-                    if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
-                        setattr(sec['hObj'], geomParamName, geomParamValue)
-
-                # set 3d geometry
-                if 'pt3d' in sectParams['geom']:
-                    h.pt3dclear(sec=sec['hObj'])
-                    if sim.cfg.pt3dRelativeToCellLocation:
-                        x = self.tags['x']
-                        y = -self.tags['y'] if sim.cfg.invertedYCoord else self.tags['y'] # Neuron y-axis positive = upwards, so assume pia=0 and cortical depth = neg
-                        z = self.tags['z']
-                    else:
-                        x = y = z = 0
-                    for pt3d in sectParams['geom']['pt3d']:
-                        h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hObj'])
+                self._setGeometryParams(sectName, sectParams, cellType, cellVars)
 
             # add distributed mechanisms
             if 'mechs' in sectParams:
-                mechsInclude = {k: v for k,v in sectParams['mechs'].items() if k not in excludeMechs}
-                for mechName, mechParams in mechsInclude.items():
-                    if mechName not in sec['mechs']:
-                        sec['mechs'][mechName] = Dict()
-                    try:
-                        sec['hObj'].insert(mechName)
-                    except:
-                        mechInsertError = True
-                        if sim.cfg.verbose:
-                            print('# Error inserting %s mechanims in %s section! (check mod files are compiled)'%(mechName, sectName))
-                        continue
-                    for mechParamName,mechParamValue in mechParams.items():  # add params of the mechanism
-                        mechParamValueFinal = mechParamValue
-                        for iseg,seg in enumerate(sec['hObj']):  # set mech params for each segment
-                            if type(mechParamValue) in [list]:
-                                if len(mechParamValue) == 1:
-                                    mechParamValueFinal = mechParamValue[0]
-                                else:
-                                    mechParamValueFinal = mechParamValue[iseg]
-                            if mechParamValueFinal is not None:  # avoid setting None values
-                                setattr(getattr(seg, mechName), mechParamName,mechParamValueFinal)
+                mechInsertError |= self._addDistributedMechs(sectName, sectParams, cellType, cellVars)
 
             # add ions
             if 'ions' in sectParams:
-                for ionName,ionParams in sectParams['ions'].items():
-                    if ionName not in sec['ions']:
-                        sec['ions'][ionName] = Dict()
-                    try:
-                        sec['hObj'].insert(ionName+'_ion')    # insert mechanism
-                    except:
-                        mechInsertError = True
-                        if sim.cfg.verbose:
-                            print('# Error inserting %s ion in %s section!'%(ionName, sectName))
-                        continue
-                    for ionParamName,ionParamValue in ionParams.items():  # add params of the mechanism
-                        ionParamValueFinal = ionParamValue
-                        for iseg,seg in enumerate(sec['hObj']):  # set ion params for each segment
-                            if type(ionParamValue) in [list]:
-                                ionParamValueFinal = ionParamValue[iseg]
-                            if ionParamName == 'e':
-                                setattr(seg, ionParamName+ionName, ionParamValueFinal)
-                            elif ionParamName == 'o':
-                                setattr(seg, '%so'%ionName, ionParamValueFinal)
-                                h('%so0_%s_ion = %s'%(ionName,ionName,ionParamValueFinal))  # e.g. cao0_ca_ion, the default initial value
-                            elif ionParamName == 'i':
-                                setattr(seg, '%si'%ionName, ionParamValueFinal)
-                                h('%si0_%s_ion = %s'%(ionName,ionName,ionParamValueFinal))  # e.g. cai0_ca_ion, the default initial value
-
-                    #if sim.cfg.verbose: print("Updated ion: %s in %s, e: %s, o: %s, i: %s" % \
-                    #         (ionName, sectName, seg.__getattribute__('e'+ionName), seg.__getattribute__(ionName+'o'), seg.__getattribute__(ionName+'i')))
+                mechInsertError |= self._addIons(sectName, sectParams)
 
             # add synMechs (only used when loading because python synMechs already exist)
             if 'synMechs' in sectParams:
@@ -423,35 +387,7 @@ class CompartCell (Cell):
 
             # add point processes
             if 'pointps' in sectParams:
-                for pointpName,pointpParams in sectParams['pointps'].items():
-                    #if self.tags['cellModel'] == pointpParams:  # only required if want to allow setting various cell models in same rule
-
-                    # warning: `pointpParams object is the same as `sec['pointps'][pointpName]` if came here from `loadNet()` (see also TODO there)
-                    # beware of implicit modification
-
-                    if pointpName not in sec['pointps']:
-                        sec['pointps'][pointpName] = Dict()
-                    loc = pointpParams['loc'] if 'loc' in pointpParams else 0.5  # set location
-                    Pointp = getattr(h, pointpParams['mod'])
-                    pointpObj = Pointp(loc, sec = sec['hObj'])  # create h Pointp object (eg. h.Izhi2007b)
-
-                    for pointpParamName,pointpParamValue in pointpParams.items():  # add params of the point process
-                        if pointpParamValue == 'gid':
-                            pointpParamValue = self.gid
-                        if pointpParamName not in ['mod', 'loc', 'vref', 'synList'] and not pointpParamName.startswith('_'):
-                            setattr(pointpObj, pointpParamName, pointpParamValue)
-                    if 'params' in self.tags.keys(): # modify cell specific params
-                      for pointpParamName,pointpParamValue in self.tags['params'].items():
-                        setattr(pointpObj, pointpParamName, pointpParamValue)
-
-                    sec['pointps'][pointpName]['hObj'] = pointpObj
-
-        # set topology
-        for sectName,sectParams in prop['secs'].items():  # iterate sects again for topology (ensures all exist)
-            sec = self.secs[sectName]  # pointer to section # pointer to child sec
-            if 'topol' in sectParams:
-                if sectParams['topol']:
-                    sec['hObj'].connect(self.secs[sectParams['topol']['parentSec']]['hObj'], sectParams['topol']['parentX'], sectParams['topol']['childX'])  # make topol connection
+                self._addPointProcesses(sectName, sectParams, cellType, cellVars)
 
         # add dipoles
         if sim.cfg.recordDipolesHNN:
@@ -469,6 +405,123 @@ class CompartCell (Cell):
         # Print message about error inserting mechanisms
         if mechInsertError:
             print("ERROR: Some mechanisms and/or ions were not inserted (for details run with cfg.verbose=True). Make sure the required mod files are compiled.")
+
+
+    def _setGeometryParams(self, sectName, sectParams, cellType, cellVars):
+        sec = self.secs[sectName]
+
+        for geomParamName,geomParamValue in sectParams['geom'].items():
+            if not type(geomParamValue) in [list, dict]:  # skip any list or dic params
+                func, vars = CellParams.stringFuncAndVarsForGeom(cellType, sectName, geomParamName)
+                if func:
+                    geomParamValue = self.__evaluateCellParamsStringFunc(func, vars, sec, cellVars=cellVars)
+                setattr(sec['hObj'], geomParamName, geomParamValue)
+
+        # set 3d geometry
+        if 'pt3d' in sectParams['geom']:
+            h.pt3dclear(sec=sec['hObj'])
+            if sim.cfg.pt3dRelativeToCellLocation:
+                x = self.tags['x']
+                y = -self.tags['y'] if sim.cfg.invertedYCoord else self.tags['y'] # Neuron y-axis positive = upwards, so assume pia=0 and cortical depth = neg
+                z = self.tags['z']
+            else:
+                x = y = z = 0
+            for pt3d in sectParams['geom']['pt3d']:
+                h.pt3dadd(x+pt3d[0], y+pt3d[1], z+pt3d[2], pt3d[3], sec=sec['hObj'])
+
+
+    def _addDistributedMechs(self, sectName, sectParams, cellType, cellVars):
+        mechInsertError = False
+        excludeMechs = ['dipole']  # dipole is special case
+        sec = self.secs[sectName]
+        mechsInclude = {k: v for k,v in sectParams['mechs'].items() if k not in excludeMechs}
+        for mechName, mechParams in mechsInclude.items():
+            if mechName not in sec['mechs']:
+                sec['mechs'][mechName] = Dict()
+            try:
+                sec['hObj'].insert(mechName)
+            except:
+                mechInsertError = True
+                if sim.cfg.verbose:
+                    print('# Error inserting %s mechanims in %s section! (check mod files are compiled)'%(mechName, sectName))
+                continue
+            for mechParamName,mechParamValue in mechParams.items():  # add params of the mechanism
+                for iseg,seg in enumerate(sec['hObj']):  # set mech params for each segment
+                    if type(mechParamValue) in [list]:
+                        if len(mechParamValue) == 1:
+                            mechParamValueFinal = mechParamValue[0]
+                        else:
+                            mechParamValueFinal = mechParamValue[iseg]
+                    else:
+                        mechParamValueFinal = mechParamValue
+                    if mechParamValueFinal is not None:  # avoid setting None values
+                        if isinstance(mechParamValueFinal, basestring):
+                            func, vars = CellParams.stringFuncAndVarsForMod(cellType, sectName, 'mechs', mechName, mechParamName)
+                            if func:
+                                mechParamValueFinal = self.__evaluateCellParamsStringFunc(func, vars, sec, seg.x, cellVars)
+                        setattr(getattr(seg, mechName), mechParamName,mechParamValueFinal)
+        return mechInsertError
+
+
+    def _addIons(self, sectName, sectParams):
+        mechInsertError = False
+        sec = self.secs[sectName]
+        for ionName,ionParams in sectParams['ions'].items():
+            if ionName not in sec['ions']:
+                sec['ions'][ionName] = Dict()
+            try:
+                sec['hObj'].insert(ionName+'_ion')    # insert mechanism
+            except:
+                mechInsertError = True
+                if sim.cfg.verbose:
+                    print('# Error inserting %s ion in %s section!'%(ionName, sectName))
+                continue
+            for ionParamName,ionParamValue in ionParams.items():  # add params of the mechanism
+                ionParamValueFinal = ionParamValue
+                for iseg,seg in enumerate(sec['hObj']):  # set ion params for each segment
+                    if type(ionParamValue) in [list]:
+                        ionParamValueFinal = ionParamValue[iseg]
+                    if ionParamName == 'e':
+                        setattr(seg, ionParamName+ionName, ionParamValueFinal)
+                    elif ionParamName == 'o':
+                        setattr(seg, '%so'%ionName, ionParamValueFinal)
+                        h('%so0_%s_ion = %s'%(ionName,ionName,ionParamValueFinal))  # e.g. cao0_ca_ion, the default initial value
+                    elif ionParamName == 'i':
+                        setattr(seg, '%si'%ionName, ionParamValueFinal)
+                        h('%si0_%s_ion = %s'%(ionName,ionName,ionParamValueFinal))  # e.g. cai0_ca_ion, the default initial value
+
+            #if sim.cfg.verbose: print("Updated ion: %s in %s, e: %s, o: %s, i: %s" % \
+            #         (ionName, sectName, seg.__getattribute__('e'+ionName), seg.__getattribute__(ionName+'o'), seg.__getattribute__(ionName+'i')))
+        return mechInsertError
+
+
+    def _addPointProcesses(self, sectName, sectParams, cellType, cellVars):
+        sec = self.secs[sectName]
+        for pointpName,pointpParams in sectParams['pointps'].items():
+            #if self.tags['cellModel'] == pointpParams:  # only required if want to allow setting various cell models in same rule
+
+            # warning: `pointpParams object is the same as `sec['pointps'][pointpName]` if came here from `loadNet()` (see also TODO there)
+            # beware of implicit modification
+
+            if pointpName not in sec['pointps']:
+                sec['pointps'][pointpName] = Dict()
+            loc = pointpParams['loc'] if 'loc' in pointpParams else 0.5  # set location
+            Pointp = getattr(h, pointpParams['mod'])
+            pointpObj = Pointp(loc, sec = sec['hObj'])  # create h Pointp object (eg. h.Izhi2007b)
+
+            for pointpParamName,pointpParamValue in pointpParams.items():  # add params of the point process
+                if pointpParamValue == 'gid':
+                    pointpParamValue = self.gid
+                if pointpParamName not in CellParams.pointpParamsReservedKeys() and not pointpParamName.startswith('_'):
+                    func, vars = CellParams.stringFuncAndVarsForMod(cellType, sectName, 'pointps', pointpName, pointpParamName)
+                    if func:
+                        pointpParamValue = self.__evaluateCellParamsStringFunc(func, vars, sec, cellVars=cellVars)
+                    setattr(pointpObj, pointpParamName, pointpParamValue)
+            if 'params' in self.tags.keys(): # modify cell specific params
+                for pointpParamName,pointpParamValue in self.tags['params'].items():
+                    setattr(pointpObj, pointpParamName, pointpParamValue)
+
+            sec['pointps'][pointpName]['hObj'] = pointpObj
 
 
     def addSynMechNEURONObj(self, synMech, synMechLabel, synMechParams, sec, loc, preLoc=None):
@@ -492,6 +545,56 @@ class CompartCell (Cell):
                         synParamValue = self.__evaluateSynMechStringFuncs(func, vars, sec, loc, preLoc)
                     setattr(synMech['hObj'], synParamName, synParamValue)
 
+    @staticmethod
+    def stringFuncVarNames():
+        return list(CompartCell.__stringFuncVarsEvaluators().keys())
+
+    @staticmethod
+    def stringFuncVarNamesForCellVars():
+        # segment-specific vars are not applicable for cellVars
+        return [v for v in CompartCell.stringFuncVarNames() if v not in ['dist_path', 'dist_euclidean']]
+
+    @staticmethod
+    def __stringFuncVarsEvaluators():
+        return {
+            'rand': lambda cell, dist, rand: rand,
+            'dist_path': lambda cell, dist, rand: dist,
+            'dist_euclidean': lambda cell, dist, rand: dist,
+            'x': lambda cell, dist, rand: cell.tags['x'],
+            'y': lambda cell, dist, rand: cell.tags['y'],
+            'z': lambda cell, dist, rand: cell.tags['z'],
+            'xnorm': lambda cell, dist, rand: cell.tags['xnorm'],
+            'ynorm': lambda cell, dist, rand: cell.tags['ynorm'],
+            'znorm': lambda cell, dist, rand: cell.tags['znorm'],
+        }
+
+
+    def __evaluateCellParamsStringFunc(self, func, varNames, sec=None, loc=0.5, cellVars={}):
+        from ..network.subconn import pathDistance, posFromLoc
+
+        args = {}
+        for varName in varNames:
+            if varName in cellVars:
+                # cellVars are already evaluated
+                args[varName] = cellVars[varName]
+            else:
+                # rest of vars should be evaluated
+                if varName == 'dist_euclidean':
+                    # euclidian distance
+                    x0, y0, z0 = posFromLoc(self.originSec(), 0.5)
+                    x, y, z = posFromLoc(sec, sec['hObj'](loc).x)
+                    dist = sqrt((x-x0)**2 + (y-y0)**2 + (z-z0)**2)
+                elif varName == 'dist_path':
+                    # distance based on the topology
+                    segOrigObj = self.originSec()['hObj'](0.5)
+                    dist = pathDistance(segOrigObj, sec['hObj'](loc))
+                else:
+                    dist = None
+                varEvaluator = CompartCell.__stringFuncVarsEvaluators()[varName]
+                args[varName] = varEvaluator(self, dist, self._randomizer())
+        # once vars are evaluated, evaluate function value
+        return func(**args)
+
 
     def __evaluateSynMechStringFuncs(self, func, varNames, sec, loc, preLoc=None):
         from .. import sim
@@ -502,7 +605,7 @@ class CompartCell (Cell):
             if not preLoc and varName in SynMechParams.stringFuncVarsReferringPreLoc():
                 preLoc = 0.5
                 if sim.cfg.verbose: print('No preLoc for synMech string function provided. Defaulting to 0.5')
-            if varName == 'post_dist_cartesian':
+            if varName == 'post_dist_euclidean':
                 # euclidian distance
                 x0, y0, z0 = posFromLoc(self.originSec(), 0.5)
                 x, y, z = posFromLoc(sec, sec['hObj'](loc).x)
@@ -513,21 +616,10 @@ class CompartCell (Cell):
                 dist = pathDistance(segOrigObj, sec['hObj'](loc))
             else:
                 dist = None
-            obtainVarValue = SynMechParams.stringFuncVariables()[varName]
-            args[varName] = obtainVarValue(self, dist, self.__randomizerForSynMechs())
+            varEvaluator = SynMechParams.stringFuncVarsEvaluators()[varName]
+            args[varName] = varEvaluator(self, dist, self._randomizer())
 
         return func(**args)
-
-
-    def __randomizerForSynMechs(self):
-        try:
-            return self.__synMechRand
-        except:
-            from .. import sim
-            rand = h.Random()
-            rand.Random123(sim.hashStr('synMechParams'), self.gid, sim.cfg.seeds.get('synMech', 1))
-            self.__synMechRand = rand
-            return rand
 
 
     def addSynMechsNEURONObj(self):

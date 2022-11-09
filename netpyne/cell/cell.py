@@ -312,6 +312,15 @@ class Cell (object):
         #    if sim.cfg.verbose: print '  NOT recording ', key, 'from cell ', self.gid, ' with parameters: ',str(params)
 
 
+    def _randomizer(self):
+        try:
+            return self.__cellParamsRand
+        except:
+            from .. import sim
+            rand = h.Random()
+            rand.Random123(sim.hashStr('cellParams'), self.gid, sim.cfg.seeds.get('cell', 1))
+            self.__cellParamsRand = rand
+            return rand
 
     def __getstate__ (self):
         """
@@ -321,7 +330,7 @@ class Cell (object):
         from .. import sim
 
         odict = self.__dict__.copy() # copy the dict since we change it
-        odict.pop('_CompartCell__synMechRand', None)
+        odict.pop('_Cell__cellParamsRand', None)
         odict = sim.copyRemoveItemObj(odict, keystart='h', exclude_list=['hebbwt']) #, newval=None)  # replace h objects with None so can be pickled
         odict = sim.copyReplaceItemObj(odict, keystart='NeuroML', newval='---Removed_NeuroML_obj---')  # replace NeuroML objects with str so can be pickled
         return odict

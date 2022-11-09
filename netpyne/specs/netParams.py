@@ -297,7 +297,7 @@ class SynMechParams(ODict):
         return {
             'rand': lambda cell, dist, rand: rand,
             'post_dist_path': lambda cell, dist, rand: dist,
-            'post_dist_cartesian': lambda cell, dist, rand: dist,
+            'post_dist_euclidean': lambda cell, dist, rand: dist,
             'post_x': lambda cell, dist, rand: cell.tags['x'],
             'post_y': lambda cell, dist, rand: cell.tags['y'],
             'post_z': lambda cell, dist, rand: cell.tags['z'],

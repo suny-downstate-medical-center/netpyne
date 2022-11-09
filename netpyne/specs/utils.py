@@ -13,6 +13,11 @@ from numbers import Number
 from neuron import h
 from numpy import array, sin, cos, tan, exp, sqrt, mean, inf, dstack, unravel_index, argsort, zeros, ceil, copy
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 def generateStringFunction(sourceStr, vars):
     original = sourceStr
     # to avoid misreplacement of 'normal' in 'lognormal', first screen it out:
@@ -36,6 +41,17 @@ def generateStringFunction(sourceStr, vars):
     else:
         lambdaFunc = eval(lambdaStr)
         return lambdaFunc, strVars
+
+def generateStringFuncsFromParams(params, varNames, storeIn, key, excludeParams=[]):
+    from .utils import generateStringFunction
+    funcs = {}
+    for k, v in params.items():
+        if isinstance(v, basestring) and k not in excludeParams:
+            func, vars = generateStringFunction(v, varNames)
+            if func is not None:
+                funcs[k] = func, vars
+    if len(funcs) > 0:
+        storeIn[key] = funcs
 
 
 def validateFunction(strFunc, netParamsVars):

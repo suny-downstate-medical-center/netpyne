@@ -139,7 +139,6 @@ def sbiOptim(batch, pc):
 
     # gather **kwargs
     args = {}
-    args['popsize'] = batch.optimCfg.get('popsize', 1)
     args['minVals'] = np.array([x['values'][0] for x in batch.params])
     args['maxVals'] = np.array([x['values'][1] for x in batch.params])
     args['cfg'] = batch.cfg  # include here args/params to pass to evaluator function

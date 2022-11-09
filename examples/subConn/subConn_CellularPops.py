@@ -16,17 +16,26 @@ PYRcell['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 
 PYRcell['secs']['dend1'] = {'geom': {}, 'topol': {}, 'mechs': {}}
 PYRcell['secs']['dend1']['geom'] = {'diam': 1.0, 'L': 250.0, 'Ra': 150.0, 'nseg': 5, 'cm': 1}
 PYRcell['secs']['dend1']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}
-PYRcell['secs']['dend1']['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
+
+# example of usage of cell vars
+PYRcell['vars'] = {'g_base': 'normal(3.57e-5, 1e-8)',
+                   'g_decay_const': 'uniform(100, 110)'}
+# The expression for 'g' below is evaluated for each segment, but values of cell vars in it (here: g_base and g_decay_const)
+# are calculated once per cell and preserved across all segments of this cell (thus, all random distributions in cell vars get repicked only once per cell)
+# I the expression below, segment-dependant variables like dist_path will get its per-segment value are evaluated per segment, as well as any random distributions that appear 
+# On the other hand, if expression explicitly contains random function, new random value will be generated per segment (likewise, segment-dependant variables like 'dist_path' will get their per-segment values)
+PYRcell['secs']['dend1']['mechs']['pas'] = {'g': 'g_base + uniform(1.1e-5, 1.2e-5) * exp(-dist_path/g_decay_const)', 'e': -70}
+
 
 PYRcell['secs']['dend2'] = {'geom': {}, 'topol': {}, 'mechs': {}}
 PYRcell['secs']['dend2']['geom'] = {'diam': 0.8, 'L': 200.0, 'Ra': 150.0, 'nseg': 5, 'cm': 1}
 PYRcell['secs']['dend2']['topol'] = {'parentSec': 'dend1', 'parentX': 1.0, 'childX': 0}
-PYRcell['secs']['dend2']['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
+PYRcell['secs']['dend2']['mechs']['pas'] = {'g': 'g_base', 'e': -70}
 
 PYRcell['secs']['dend3'] = {'geom': {}, 'topol': {}, 'mechs': {}}
 PYRcell['secs']['dend3']['geom'] = {'diam': 0.5, 'L': 150.0, 'Ra': 150.0, 'nseg': 5, 'cm': 1}
 PYRcell['secs']['dend3']['topol'] = {'parentSec': 'dend2', 'parentX': 1.0,  'childX': 0}
-PYRcell['secs']['dend3']['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
+PYRcell['secs']['dend3']['mechs']['pas'] = {'g': 'g_base', 'e': -70}
 
 netParams.cellParams['PYR'] = PYRcell
 

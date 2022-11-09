@@ -455,4 +455,4 @@ def plotSpikeHist(
     if returnPlotter:
         return metaFig
     else:
-        return histPlot
+        return histPlotter

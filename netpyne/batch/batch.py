@@ -278,8 +278,10 @@ class Batch(object):
         elif self.method == 'optuna':
             try:
                 optunaOptim(self, pc)
-            except:
-                print(' Warning: an exception occurred when running Optuna optimization...')
+            except Exception as e:
+                import traceback
+                print(f' Warning: an exception occurred when running Optuna optimization:')
+                traceback.print_exc()
 
         # -------------------------------------------------------------------------------
         # SBI optimization 
@@ -287,8 +289,10 @@ class Batch(object):
         elif self.method == 'sbi':
             try:
                 sbiOptim(self, pc)
-            except:
-                print(' Warning: an exception occurred when running SBI...')
+            except Exception as e:
+                import traceback
+                print(f' Warning: an exception occurred when running SBI optimization:')
+                traceback.print_exc()
 
     @property
     def mpiCommandDefault(self):

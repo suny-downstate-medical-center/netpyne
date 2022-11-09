@@ -1603,7 +1603,7 @@ try:
 
 
         # add gap junctions of presynaptic cells (need to do separately because could be in different ranks)
-        for preGapParams in getattr(sim.net, 'preGapJunctions', []):
+        for preGapParams in getattr(sim.net, 'preCellPointerConns', []):
             if preGapParams['gid'] in sim.net.gid2lid:  # only cells in this rank
                 cell = sim.net.cells[sim.net.gid2lid[preGapParams['gid']]]
                 cell.addConn(preGapParams)

@@ -108,6 +108,7 @@ Each item of the ``cellParams`` ordered dictionary consists of a key and a value
 
 	* **geom**: Dictionary with geometry properties, such as ``diam``, ``L`` or ``Ra``. 
 		Can optionally include a field ``pt3d`` with a list of 3D points, each defined as a tuple of the form ``(x,y,z,diam)``
+		Values of ``diam``, ``L`` or ``Ra`` can be defined as functions (see :ref:`function_string`).
 
 	* **topol**: Dictionary with topology properties.
 		Includes ``parentSec`` (label of parent section), ``parentX`` (parent location where to make connection) and ``childX`` (current section --child-- location where to make connection).
@@ -115,6 +116,7 @@ Each item of the ``cellParams`` ordered dictionary consists of a key and a value
 	* **mechs**: Dictionary of density/distributed mechanisms.
 		The key contains the name of the mechanism (e.g. 'hh' or 'pas')
 		The value contains a dictionary with the properties of the mechanism (e.g. ``{'g': 0.003, 'e': -70}``).
+		These properties can be defined as functions (see :ref:`function_string`).
 
 	* **ions**: Dictionary of ions.
 		The key contains the name of the ion (e.g. 'na' or 'k')
@@ -124,6 +126,7 @@ Each item of the ``cellParams`` ordered dictionary consists of a key and a value
 	* **pointps**: Dictionary of point processes (excluding synaptic mechanisms). 
 		The key contains an arbitrary label (e.g. 'Izhi')
 		The value contains a dictionary with the point process properties (e.g. ``{'mod':'Izhi2007a', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1})``. 
+		These properties can be defined as functions (see :ref:`function_string`).
 		
 		Apart from internal point process variables, the following properties can be specified for each point process:
 
@@ -143,6 +146,14 @@ Each item of the ``cellParams`` ordered dictionary consists of a key and a value
 
 * **secLists** - (optional) Dictionary of sections lists (e.g. {'all': ['soma', 'dend']})
 
+* **vars** - (optional) Dictionary of user-defined variables that can be referenced in properties of any section of this cell type.
+	Example of usage::
+
+		cellRule['secs']['dend1']['mechs']['pas'] = {'g': 'g_default + 1e-6'}  # cell variable 'g_default' referenced
+		cellRule['secs']['dend2']['mechs']['pas'] = {'g': 'g_default + 1.5e-6'}  # cell variable 'g_default' referenced
+		cellRule['vars'] = {'g_default': 0.0000357} # cell variable 'g_default' defined
+
+	Values of cell variables themselves can also be defined as functions (see :ref:`function_string`), e.g. ``cellRule['vars'] = {'g_default': 'normal(3.57e-5, 1e-7)}``
 
 Example of adding two different cell types::
 
@@ -275,7 +286,7 @@ To define the parameters of a synaptic mechanism, add items to the ``synMechPara
 
 * ``mod`` - the NMODL mechanism name (e.g. 'ExpSyn'); note this does not always coincide with the name of the mod file.
 
-* mechanism parameters (e.g. ``tau`` or ``e``) - these will depend on the specific NMODL mechanism.
+* mechanism parameters (e.g. ``tau`` or ``e``) - these will depend on the specific NMODL mechanism. Values of these parameters can be defined as a function (see :ref:`function_string`).
 
 * ``selfNetCon`` (optional) - dictionary with the parameters of a NetCon between the cell voltage and the synapse, required by some synaptic mechanisms such as the homeostatic synapse (hsyn). e.g. ``'selfNetCon': {'sec': 'soma' , 'threshold': -15, 'weight': -1, 'delay': 0}`` (by default, the source section is set to the soma, e.g. ``'sec': 'soma'``)
 
@@ -472,7 +483,7 @@ Here is an example of connectivity rules:
 Functions as strings
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Some of the parameters (``weight``, ``delay``, ``probability``, ``convergence`` and ``divergence``) can be provided using a string that contains a function. The string will be interpreted internally by NetPyNE and converted to the appropriate `lambda function <https://docs.python.org/3/tutorial/controlflow.html#lambda-expressions>`_. This string may contain the following elements:
+Some of parameters of cells, synapses and connectivity rules can be provided using a string that contains a function. The string will be interpreted internally by NetPyNE and converted to the appropriate `lambda function <https://docs.python.org/3/tutorial/controlflow.html#lambda-expressions>`_. This string may contain the following elements:
 
 * Numerical values, e.g. '3.56'
 
@@ -482,7 +493,22 @@ Some of the parameters (``weight``, ``delay``, ``probability``, ``convergence`` 
 
 * NEURON h.Random() methods: ``binomial``, ``discunif``, ``erlang``, ``geometric``, ``hypergeo``, ``lognormal``, ``negexp``, ``normal``, ``poisson``, ``uniform``, ``weibull`` (see https://www.neuron.yale.edu/neuron/static/py_doc/programming/math/random.html)
 
-* Cell location variables:
+* Single-valued numerical network parameters defined in the ``netParams`` dictionary. Existing ones can be customized, and new arbitrary ones can be added. The following parameters are available by default:
+
+	* ``sizeX``, ``sizeY``, ``sizeZ``: network size in um (default: 100)
+
+	* ``defaultWeight``: Default connection weight (default: 1)
+
+	* ``defaultDelay``: Default connection delay, in ms (default: 1)
+
+	* ``propVelocity``: Conduction velocity in um/ms (default: 500)
+
+* Contextual variables like cell location, segment position in cell, distance between connected cells etc. Such variables' names are pre-defined and specific to where the function is used (see below).
+
+
+Functios as strings can be used as parameters in the entries of the following model components (in each case, there is a specific set of variables that can be contained in the function, in addition to elements listed above).
+
+* ``weight``, ``delay``, ``probability``, ``convergence`` and ``divergence`` in connectivity rules. Available variables are:
 	
 	* ``pre_x``, ``pre_y``, ``pre_z``: pre-synaptic cell x, y or z location.
 
@@ -500,16 +526,41 @@ Some of the parameters (``weight``, ``delay``, ``probability``, ``convergence`` 
 
 	* ``dist_norm2D``, ``dist_norm3D``: absolute Euclidean 2D (x and z) or 3D (x, y and z) distance between normalized pre- and postsynaptic cells.
 
+* Properties of ``mechs`` and ``pointps``, section's ``geom`` parameters (except ``pt3d``) in ``cellParams`` dictionary. Available variables are:
+
+	* ``x``, ``y``, ``z``: cell x, y or z location.
 	
-* Single-valued numerical network parameters defined in the ``netParams`` dictionary. Existing ones can be customized, and new arbitrary ones can be added. The following parameters are available by default:
+	* ``xnorm``, ``ynorm``, ``znorm``: normalized cell x, y or z location.
 
-	* ``sizeX``, ``sizeY``, ``sizeZ``: network size in um (default: 100)
+	* ``post_dist_euclidean``: euclidean distance from center of soma to the given segment (makes sense for ``CompartCell`` only)
 
-	* ``defaultWeight``: Default connection weight (default: 1)
+	* ``post_dist_path``: distance from center of soma to the given segment, defined as sum of intermediary sections' lengths along the topological path (makes sense for ``CompartCell`` only)
 
-	* ``defaultDelay``: Default connection delay, in ms (default: 1)
+	*  custom cell variables, that can defined by user in ``vars`` dictionary in ``cellParams``.
 
-	* ``propVelocity``: Conduction velocity in um/ms (default: 500)
+* Cell variables in ``cellParams`` dictionary (see :ref:`cell_types`). May in turn include variables ``x``, ``y``, ``z``, ``xnorm``, ``ynorm``, ``znorm`` with same meaning as above.
+
+.. note::
+	Each property in ``mechs``  or ``pointps`` in cell params, defined as function, gets evaluated per each section or segment. On the other hand, the values of cell variables are obtained once for a given cell instance, so that for every segment of given cell the same value is substituted to every function which references this variable. This distinction may be essential if functions contain random distributions. Consider the following example:
+
+	``PYRcell['secs']['dend1']['mechs']['pas'] = {'g': 'g_base + uniform(1.1e-5, 1.2e-5) * exp(-dist_path/g_decay_const)', 'e': -70}``
+	
+	``PYRcell['vars'] = {'g_base': 'normal(3.57e-5, 1e-8)', 'g_decay_const': 'uniform(100, 110)'}``
+
+	The expression for `g` is evaluated for each segment, so if expression explicitly contains random function, new random value will be generated per segment (likewise, segment-dependant variables like `dist_path` will get their per-segment values). On the other hand, values of cell vars in it (here: `g_base` and `g_decay_const`) are calculated once per cell and preserved across all segments of this cell, which means that all random distributions in cell variables get repicked only once per cell).
+
+* Properties of synaptic mechanism (entries of ``synMechParams`` dictionary). Available variables are:
+
+	* ``post_x``, ``post_y``, ``post_z``: post-synaptic cell x, y or z location.
+	
+	* ``post_xnorm``, ``post_ynorm``, ``post_znorm``: normalized post-synaptic cell x, y or z location.
+
+	* ``post_dist_euclidean``: euclidean distance from center of soma to the synapse location on post-synaptic cell
+
+	* ``post_dist_path``: distance from center of soma to the synapse location on post-synaptic cell, defined as sum of intermediary sections' lengths along the topological path
+
+	
+
 
 
 String-based functions add great flexibility and power to NetPyNE connectivity rules. They enable the user to define a wide variety of connectivity features, such as cortical-depth dependent probability of connection, or distance-dependent connection weights. Below are some illustrative examples:

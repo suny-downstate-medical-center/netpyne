@@ -14,6 +14,8 @@
 
 - Massive update of schemas (validator.py and setup.py) 
 
+- More control over POINTER variables through synMechParams (e.g. for gap junctions)
+
 **Bug fixes**
 
 - Fixed bug with loading CompartCell with custom mechanisms from saved network
@@ -31,6 +33,10 @@
 - Fixed bug in stim.py: 'Loc' with capital letter, for making 'synMechLocFactor'
 
 - Fixed some misinformation in reference.rst about the subconn
+
+- Fixed bug in dipole calculation units - changed from mA to uA 
+
+- Fixed bug in conditional logic when gathering LFP / dipoles 
 
 # Version 1.0.2.1
 

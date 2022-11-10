@@ -175,11 +175,11 @@ def cell_specs():
             Optional('secs'): {     ## It is optional because it may NOT be a compartCell, but for compartCells this entry is mandatory
                 str: {
                     Optional('geom'): {
-                        Optional('diam'): Or(int, float),
-                        Optional('L'): Or(int, float),
-                        Optional('Ra'): Or(int, float),
-                        Optional('cm'): Or(int, float),
-                        Optional('nseg'): Or(int, float),
+                        Optional('diam'): Or(int, float,str),
+                        Optional('L'): Or(int, float,str),
+                        Optional('Ra'): Or(int, float,str),
+                        Optional('cm'): Or(int, float,str),
+                        Optional('nseg'): Or(int, float,str),
                         Optional('pt3d'): [And( lambda s: len(s)==4,   # list of (list or tuples), each with 4 components
                                                 Or( [Or(int,float),Or(int,float),Or(int,float),Or(int,float)],
                                                     (Or(int,float),Or(int,float),Or(int,float),Or(int,float)) )
@@ -193,15 +193,15 @@ def cell_specs():
 
                     Optional('mechs'): {
                         Optional('hh'): {     # one possible built-in mechanism, very used
-                            Optional('gnabar'): Or(int,float),
-                            Optional('gkbar'): Or(int,float),
-                            Optional('gl'): Or(int,float),
-                            Optional('el'): Or(int,float)
+                            Optional('gnabar'): Or(int,float,str),
+                            Optional('gkbar'): Or(int,float,str),
+                            Optional('gl'): Or(int,float,str),
+                            Optional('el'): Or(int,float,str)
                         },
 
                         Optional('pas'): {    # another one
-                            Optional('g') : Or(int,float),
-                            Optional('e') : Or(int,float)
+                            Optional('g') : Or(int,float,str),
+                            Optional('e') : Or(int,float,str)
                         },
 
 
@@ -316,6 +316,10 @@ def cell_specs():
                 Optional(str): object
             },
 
+            Optional('vars'): {
+                Optional(str): Or(int,float,str)
+            },
+
             Optional(str): object
         }
     }
@@ -337,15 +341,21 @@ def synmech_specs():
             },
 
             # Options for ExpSyn
-            Optional('tau'): Or(int,float),
-            Optional('e'): Or(int,float),
+            Optional('tau'): Or(int,float,str),
+            Optional('e'): Or(int,float,str),
 
             # Options for Exp2Syn
-            Optional('tau1'): Or(int,float),
-            Optional('tau2'): Or(int,float),
+            Optional('tau1'): Or(int,float,str),
+            Optional('tau2'): Or(int,float,str),
             # Optional('e'): Or(int,float),       # already set in ExpSyn
 
-            Optional(str): Or(int,float,bool)     # parameters for other custom-made mods
+            Optional('pointerParams'): {
+                'target_var': str,
+                Optional('source_var'): str,
+                Optional('bidirectional'): bool
+            },
+
+            Optional(str): Or(int,float,bool,str)     # parameters for other custom-made mods
         }
     }
     return specs
@@ -428,7 +438,7 @@ def conn_specs():
             },
             Optional('weightIndex'): int,
 
-            Optional('gapJunction'): bool,
+            Optional('gapJunction'): bool,                                          # deprecated, use 'pointerParams' in 'synMechParams'
             Optional('preSec'): Or( [str] , str ),                                  # existing section/s (or secLists) in pre-synaptic cell. Optional (assuming 'gapJunction' == True), otherwise default ('soma')
             Optional('preLoc'): Or( int, float, [ Or(int, float) ]),                # string-based function is not allowed here
 

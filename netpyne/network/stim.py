@@ -98,7 +98,7 @@ def addStims(self):
                         params['delay'] = strParams['delayList'][postCellGid] if 'delayList' in strParams else target.get('delay', 1.0)
                         params['synsPerConn'] = strParams['synsPerConnList'][postCellGid] if 'synsPerConnList' in strParams else target.get('synsPerConn', 1)
                         params['synMech'] = target.get('synMech', None)
-                        for p in ['Weight', 'Delay', 'loc']:
+                        for p in ['Weight', 'Delay', 'Loc']:
                             if 'synMech'+p+'Factor' in target:
                                 params['synMech'+p+'Factor'] = target.get('synMech'+p+'Factor')
 

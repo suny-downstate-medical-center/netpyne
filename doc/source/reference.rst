@@ -646,9 +646,9 @@ Once connections are defined via the ``connParams`` ordered dictionary, it may b
 
 	* dictionary with different options:
 
-		* ``type`` - Type of synaptic density map. Available options: 1Dmap or 2Dmap.
+		* ``type`` - Type of synaptic redistribution. Available options: 1Dmap, 2Dmap, or distance.
 
-		In addition, it should be included:
+		If ``type`` in [1Dmap, 2Dmap], in addition, it should be included:
 
 			* ``gridY`` – List of positions in y-coordinate (depth)
 			* ``gridX`` (only for 2Dmap) - List of positions in x-coordinate (or z).
@@ -664,9 +664,7 @@ Once connections are defined via the ``connParams`` ordered dictionary, it may b
 		On the other hand, for this selection, post-synaptic cells need to have a 3d morphology. For simple sections, this can be automatically generated (cylinders along the y-axis oriented upwards) by setting ``netParams.defineCellShapes = True``.
 
 
-		* ``distance`` - Synapses relocated at a given distance (in allowed sections) from a reference.
-
-		In addition, it may be included:
+		If ``type`` is set to ``distance``, then synapses are relocated at a given distance (in allowed sections) from a reference. In this case, in addition, it may be included:
 
 			* ``ref_sec`` (optional) – String
 				
@@ -680,7 +678,7 @@ Once connections are defined via the ``connParams`` ordered dictionary, it may b
 
 				If omitted, this value is set to 0. The chosen location will be the closest to this target, between the allowed sections.
 
-			* ``coord`` (optional) - Coordinates' system used to compute distance. If omitted (or set to 'topol'), the distance is computed along the dendritic tree. Alternatively, it may be used 'cartesian' to calculate the distance in the euclidean space (distance from the reference to the target segment in the cartesian coordinate system). In this case, post-synaptic cells need to have a 3d morphology (or set ``netParams.defineCellShapes = True``).
+			* ``coord`` (optional) - Coordinates' system used to compute distance. If omitted, the distance is computed along the dendritic tree. Alternatively, it may be used 'cartesian' to calculate the distance in the euclidean space (distance from the reference to the target segment in the cartesian coordinate system). In this case, post-synaptic cells need to have a 3d morphology (or set ``netParams.defineCellShapes = True``).
 
 		For example, 
 

@@ -55,3 +55,11 @@ venv/
 /examples/HHTut/HHTut_plot_2Dnet.png
 /examples/HHTut/HHTut_regen.py
 /examples/HHTut/HHTut_traces.png
+
+.idea/
+
+examples/asdOptim/simple/
+
+*.pid
+
+examples/optunaOptim/simple/

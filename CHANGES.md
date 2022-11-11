@@ -1,3 +1,57 @@
+# Version 1.0.3
+
+**New features**
+
+- Added ability to load PointCell from saved network
+
+- Added MultiPlotter class to allow plotting line data on multiple axes
+
+- Added option to use separate axis for each PSD trace (set axis='multi')
+
+- Added new Batch method named SBI (Simulation Based Inference) with example folder (sbiOptim)
+
+- Added support for string functions in properties of cell mechanism, in cell geometry (in netParams.cellParams)
+
+- Added support for string functions in synMech parameters
+
+- Massive update of schemas (validator.py and setup.py) 
+
+- More control over POINTER variables through synMechParams (e.g. for gap junctions)
+
+- Introduced cell variables in cellParams
+
+- Added plotRateSpectrogram to utils.py
+
+- Functions prepareCSD() and plotCSD() are now available
+
+- Updated documentation on install and about
+
+**Bug fixes**
+
+- Fixed bug with loading CompartCell with custom mechanisms from saved network
+
+- Fixed bug with accessing proper sim data file during batch parameters optimization
+
+- Fixed bug where most batch optimization methods used to misname simulation output file
+
+- Fixed bug in pop.py: "gridSpacing" is in the list of excludeTags
+
+- Fixed bug in network.py: in the list "stimStringFuncParams" --> 'del' instead of 'delay', and removed 'i'
+
+- Fixed bug in conn.py: included "params['preSec'] = connParam.get('preSec')" in gapJunctions
+
+- Fixed bug in stim.py: 'Loc' with capital letter, for making 'synMechLocFactor'
+
+- Fixed some misinformation in reference.rst about the subconn
+
+- Fixed bug in dipole calculation units - changed from mA to uA 
+
+- Fixed bug in conditional logic when gathering LFP / dipoles 
+
+- Allow tuples to specify population's cells in 'include' for plotSpike
+
+- Cleaned up optuna optim tutorial
+
 # Version 1.0.2.1
 
 **New features**
@@ -56,13 +110,13 @@
 
 - Added Current Source Density (CSD) analysis and plots
 
-- Enabled selecting a subset of cells to save individual LFP signal from via cfg.saveLFPCells = [...] 
+- Enabled selecting a subset of cells to save individual LFP signal from via cfg.saveLFPCells = [...]
 
 - Added cfg.saveLFPPops to store LFP generated individually by each population
 
 - Function to return batch parameter combinations (used for GUI)
 
-- Added jupyter nb tutorials 
+- Added jupyter nb tutorials
 
 - Added hippocampus CA3 model example
 
@@ -94,7 +148,7 @@
 
 **New features**
 
-- Added function to get list of batch grid search parameter combinations 
+- Added function to get list of batch grid search parameter combinations
 
 - Save output of mpi_bulletin batches to .run and .err files
 
@@ -125,7 +179,7 @@
 
 - Added distributed saving/loading ability (save/load data by MPI node)
 
-- Allowed to specify 'cellModel' and point neuron params in netParams.cellParams (not only in netParams.popParams) 
+- Allowed to specify 'cellModel' and point neuron params in netParams.cellParams (not only in netParams.popParams)
 
 - Added cellsVisualizationSpacingMultiplier property to netParams
 
@@ -158,7 +212,7 @@
 
 **New features**
 
-- Plot current source density (CSD) from local field potential (LFP) simulated data 
+- Plot current source density (CSD) from local field potential (LFP) simulated data
 
 - Additional customization of 3D shape plot: show voltage as color, change proportions, include axis labels
 
@@ -182,7 +236,7 @@
 
 - Added link to Jupyter notebook tutorial and video to website front page
 
-**Bug fixes** 
+**Bug fixes**
 
 - Made rate_b be positional instead of keyword argument in rxd multiCompartmentReaction
 
@@ -192,7 +246,7 @@
 
 - Fixed an issue with running rxd code twice
 
-- Wait until all subprocesses have ended before completing mpi_bulletin batches 
+- Wait until all subprocesses have ended before completing mpi_bulletin batches
 
 - Fixed repeated rxd simulation issue for rates and reactions
 
@@ -208,17 +262,17 @@
 
 - Enabled recording of stimulus variables (e.g. SEClamp i)
 
-- Added options in load func to avoid instantiating cells, conns, stims and/or rxd 
+- Added options in load func to avoid instantiating cells, conns, stims and/or rxd
 
 - Analysis and plotting of rate vs current (f-I) curve for single cell tuning
 
 - Recording and plotting of current dipoles in arbitrary subset of populations
 
-- Added option to plot LFP spectrogram with log y-axis 
+- Added option to plot LFP spectrogram with log y-axis
 
 - Added option to plot the log of connectivity in plotConn
 
-- Enabled random distribution of multiple synapses with synsPerConn>1 and connRandomSecFromList=True 
+- Enabled random distribution of multiple synapses with synsPerConn>1 and connRandomSecFromList=True
 
 - Added lineWidth option to plot2Dnet (thanks Eric!)
 
@@ -264,7 +318,7 @@
 
 - Simplified cellParams to use dict key as 'cellType' and make 'conds' optional
 
-- Added netParams method addCellParamsTemplate() to create predefined cell templates 
+- Added netParams method addCellParamsTemplate() to create predefined cell templates
 
 - Calculation of population avg rates now accepts multiple time intervals
 
@@ -282,7 +336,7 @@
 
 - Added module imports to netpyne import
 
-- Added adaptive stochastic descent (ASD) 
+- Added adaptive stochastic descent (ASD)
 
 - Added ability to set theme and palette for iplots
 
@@ -324,7 +378,7 @@
 - Removed old unused Makefile for docs
 
 
-**Bug fixes** 
+**Bug fixes**
 
 - Fixed bug importing cells (avoid reading __docstring__)
 
@@ -372,7 +426,7 @@
 
 - Improved documentation
 
-- Fixed bugs and improved exception handling in plotConn 
+- Fixed bugs and improved exception handling in plotConn
 
 - Fixed loadSave V1 example model
 
@@ -384,11 +438,11 @@
 
 - Fixed bug in batch.py: initCfg params were not being updated for evol optim
 
-- Fixed bug in subconn.py: missing initialization of newWeightNorm 
+- Fixed bug in subconn.py: missing initialization of newWeightNorm
 
 - Fixed bug in run.py: print run time with 2 significant figures
 
-- Fixed output stat filenames of evolutionary optim: .cvs to .csv 
+- Fixed output stat filenames of evolutionary optim: .cvs to .csv
 
 - Fixed bug in interval saving
 
@@ -405,9 +459,9 @@
 
 - Initialize hoc events recursivley to reduce event queue overhead
 
-- Added plotRateSpectrogram analysis function 
+- Added plotRateSpectrogram analysis function
 
-- Added option to save at intervals 
+- Added option to save at intervals
 
 - Fixed bug: wrong indentation for initializing fixedInterval in batch.py
 
@@ -426,7 +480,7 @@
 
 - Made recording of dipoles optional with attribute cfg.recordDipoles
 
-- Rotated conn matrix x-axis labels so can fit large matrices 
+- Rotated conn matrix x-axis labels so can fit large matrices
 
 - Added 'removeWeightNorm' argument to plotConn() function
 
@@ -474,7 +528,7 @@
 
 - Fixed bug plotting traces with one fig per trace
 
-- Fixed bug in granger functions - required conversion to int 
+- Fixed bug in granger functions - required conversion to int
 
 - Fixed bug in plotShape when cells sections not available
 
@@ -493,7 +547,7 @@
 
 - Improved speed performance of 'connList' connectivity rules
 
-- Added option cfg.distributeSynsUniformly to locate synapses at uniformly across section list; if false, place one syn per section in section list 
+- Added option cfg.distributeSynsUniformly to locate synapses at uniformly across section list; if false, place one syn per section in section list
 
 - Updated RxD calcium buffering example
 
@@ -527,7 +581,7 @@
 
 # Version 0.9.1.2
 
-- Set 'pandas==0.23.4' to avoid error 
+- Set 'pandas==0.23.4' to avoid error
 
 
 # Version 0.9.1.1
@@ -537,7 +591,7 @@
 
 # Version 0.9.1
 
-- Updates to NeuroML converter 
+- Updates to NeuroML converter
 
 - Add scalebar to rxd concentration plot
 
@@ -550,7 +604,7 @@
 
 - Added support for reaction-diffusion (RxD) and usage examples
 
-- Improved performanced (speed) of connectivity algorithms 
+- Improved performanced (speed) of connectivity algorithms
 
 - Major code refactor to split functions across modules and subpackages
 
@@ -560,7 +614,7 @@
 
 - Added support for recording spikes from only a subset of cells using e.g. cfg.recordCellsSpikes = ['E2']
 
-- Support for exporting to SONATA standardized network format (Beta) 
+- Support for exporting to SONATA standardized network format (Beta)
 
 - Support for Human Neocortical Neurosolver (HNN) dipole mechanisms
 
@@ -584,7 +638,7 @@
 
 - Fixed bug: made self.scaleConnWeightModels False when not used (avoids saving weird dict in json)
 
-- Fixed bug in Pickle file encoding so works in Python3 
+- Fixed bug in Pickle file encoding so works in Python3
 
 - Fixed bug in convergence and divergence conn when repicking a value if postGid=preGid is randomly selected
 
@@ -592,7 +646,7 @@
 
 - Fixed issue in probabilistic connectivity random number generation to ensure replicability in Python 2 and 3.
 
-NOTE on backward replicability: Due to several performance improvements and bug fixes to ensure future replicability in both Python 2 and 3, it won't be possible to replicate results of previous versions. 
+NOTE on backward replicability: Due to several performance improvements and bug fixes to ensure future replicability in both Python 2 and 3, it won't be possible to replicate results of previous versions.
 
 
 # Version 0.7.9
@@ -605,7 +659,7 @@ NOTE on backward replicability: Due to several performance improvements and bug 
 
 - Added netParams.correctBorder to compensate distance-dependent connectivity border effect
 
-- Added option to run jobs directly on multiple mpi cores via Batch class 
+- Added option to run jobs directly on multiple mpi cores via Batch class
 
 - Added option for custom text in PBS or SLURM scripts to submit batch jobs
 
@@ -613,7 +667,7 @@ NOTE on backward replicability: Due to several performance improvements and bug 
 
 - Convert 'gid' to actual cell gid when used in point process params (useful for random seeds)
 
-- Relaxed pyneuroml requirement so just shows a warning message 
+- Relaxed pyneuroml requirement so just shows a warning message
 
 - Preliminary function to save conns distributedly using HDF5
 
@@ -636,7 +690,7 @@ NOTE on backward replicability: Due to several performance improvements and bug 
 
 - Added netParams.rotateCellsRandomly option to rotate cells randomly around y-axis
 
-- Added netParams.defineCellShapes option to convert stylized cell geometries to 3d points 
+- Added netParams.defineCellShapes option to convert stylized cell geometries to 3d points
 
 - Added 'histogram' option to plotSpikeStats
 
@@ -646,9 +700,9 @@ NOTE on backward replicability: Due to several performance improvements and bug 
 
 - Adapted so can set cfg.createPyStruct=0 before creating conns to save memory on large nets
 
-- Added option cfg.connRandomSecFromList=True to set if sec and loc are randomly chosen from list when synsPerConn=1 
+- Added option cfg.connRandomSecFromList=True to set if sec and loc are randomly chosen from list when synsPerConn=1
 
-- Added cfg.printSynsAfterRule to print total connections after each conn rule is applied 
+- Added cfg.printSynsAfterRule to print total connections after each conn rule is applied
 
 - Fixed bug to ensure VecStim random streams are independent of simulation duration
 
@@ -656,7 +710,7 @@ NOTE on backward replicability: Due to several performance improvements and bug 
 
 - Fixed bug LFP recording only applied to compartmental cells
 
-- Fixed bug when using conn 'threshold' in verbose -- removed all since has no effect 
+- Fixed bug when using conn 'threshold' in verbose -- removed all since has no effect
 
 - Fixed bug when deleting sections -- needed sec.push() before
 
@@ -687,7 +741,7 @@ NOTE on backward replicability: Due to several performance improvements and bug 
 
 - Added function to add 3D points (in NEURON+Python) from stylized geometry
 
-- Connection sec and loc randomly chosen from list when synsPerConn=1 
+- Connection sec and loc randomly chosen from list when synsPerConn=1
 
 - Set default NetStim noise to 0.0
 
@@ -722,7 +776,7 @@ NOTE on backward replicability: Due to several performance improvements and bug 
 
 - Added exception handling to analysis functions
 
-- Updated saveLoadV1 examples to use compactConnFormat=True and saveCellSecs=False 
+- Updated saveLoadV1 examples to use compactConnFormat=True and saveCellSecs=False
 
 - Added cfg.rand123GlobalIndex to set global index used by all instances of the Random123 instances of Random
 
@@ -751,7 +805,7 @@ NOTE on backward replicability: Due to several performance improvements and bug 
 
 - Added methods to rename netParams dict keys in a nested format (needed for GUI)
 
-- Added analysis.plotSpikeStats() func to plot stats of cell rates, ISI CVs and synchronies 
+- Added analysis.plotSpikeStats() func to plot stats of cell rates, ISI CVs and synchronies
 
 - Added analysis.calculateRate() func to calculate avg and peak rate of pop subset at time range
 
@@ -759,9 +813,9 @@ NOTE on backward replicability: Due to several performance improvements and bug 
 
 - Added option to include list of pops or cells in 'include' arguments e.g. include=[['E4','E2'], [1,3]]
 
-- Added cfg.compactConnFormat option to replace conns dict format with compact list format 
+- Added cfg.compactConnFormat option to replace conns dict format with compact list format
 
-- Added option to plotConn() and plot2Dnet() to load data from compact format json files 
+- Added option to plotConn() and plot2Dnet() to load data from compact format json files
 
 - Adapted python2 code so conversion to python3 via 2to3 command works straight away
 
@@ -791,7 +845,7 @@ NOTE on backward replicability: Due to several performance improvements and bug 
 
 # Version 0.7.4
 
-- Added polarity param to analysis.plotEPSPAmp() 
+- Added polarity param to analysis.plotEPSPAmp()
 
 - Added sim.gitChangeset() function and store netpyne_changeset in every output file
 
@@ -812,7 +866,7 @@ NOTE on backward replicability: Due to several performance improvements and bug 
 
 - Converted popParams, cellParams etc to object of their own class and added method to set param
 
-- Added 'disynapticBias' option to increase probability of B->C conns if A->B and A->C exist 
+- Added 'disynapticBias' option to increase probability of B->C conns if A->B and A->C exist
 
 - Added function analysis.calculateDisynaptic() to count number of disynaptic conns (A->B, B->C and A->C)
 
@@ -843,7 +897,7 @@ NOTE on backward replicability: Due to several performance improvements and bug 
 
 - Fixed bug: synMechFraction had no effect; replaced with synMechWeightFactor
 
-- Fixed bug in modifyStims for NetStim 'interval' and 'rate' 
+- Fixed bug in modifyStims for NetStim 'interval' and 'rate'
 
 - Fixed bug importing cell -- use h.pop_section() to avoid stack overflow
 
@@ -856,7 +910,7 @@ NOTE on backward replicability: Due to several performance improvements and bug 
 
 - Updates and bug fixes of NeuroML importer/exporter
 
-- Added missing error checks and made error messages clearer 
+- Added missing error checks and made error messages clearer
 
 - Added warning when point process mechanism (eg. VecStim) required for pop is not found
 
@@ -884,13 +938,13 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - Replaced python random package methods with more robust h.Random() methods (no backward reproducibility)
 
-- Added netParams error checking (BETA version: set cfg.checkErrors = True to test) 
+- Added netParams error checking (BETA version: set cfg.checkErrors = True to test)
 
 - Enabled use of VecStim spkTimes pops with individual list of cells
 
 - Replaced 'pop' with 'popLabel' (added fix for backward compatibility) (issue #213)
 
-- Can now add arbitrary set of spike times to VecStim pop 
+- Can now add arbitrary set of spike times to VecStim pop
 
 - Dict with popColors can be passed to plotRaster() and plot2Dnet()
 
@@ -914,7 +968,7 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - Fixed bug when setting wrong num of weights or locs for synsPerConn>1
 
-- Fixed bug: subConn rules now update weight if different weightNorm 
+- Fixed bug: subConn rules now update weight if different weightNorm
 
 - Fixed bug: missing call to noiseFromRandom() for NetStims
 
@@ -930,13 +984,13 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - Improved support for NeuroML export
 
-- Added option to skip batch job based on custom existing job filename (eg. 'skipCustom': '.run') 
+- Added option to skip batch job based on custom existing job filename (eg. 'skipCustom': '.run')
 
-- Added option to specify netParams .py file for batch 
+- Added option to specify netParams .py file for batch
 
 - Modified hpc_torque batch to accept nodes and ppn
 
-- New option to import cell with sections not inside an object 
+- New option to import cell with sections not inside an object
 
 - plotShape now shows real diameters in interviews by default
 
@@ -974,7 +1028,7 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - Added cvode_atol option to cfg
 
-- Improved plotShape() to use matplotlib and use colormap to show num syns 
+- Improved plotShape() to use matplotlib and use colormap to show num syns
 
 - Batch params can now have an arbitrary number of levels in structure (eg. dict of list of dicts etc)
 
@@ -986,13 +1040,13 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - Added cfg.saveCellSecs option to reduce save time and file size (secs available via netParams)
 
-- Added cfg.saveCellConns option to reduce save time and file size 
+- Added cfg.saveCellConns option to reduce save time and file size
 
 - Modified code so 'cellModel' tag is optional
 
 - Added renameCellParamsSec() method to netParams class  
 
-- When importing cell global 'v_init' is stored as param for each section 
+- When importing cell global 'v_init' is stored as param for each section
 
 - Fixed small bugs when loading saved model
 
@@ -1055,7 +1109,7 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - netParams.shape paramter to select either 'cuboid', 'cylinder' or 'ellipsoid' network shape (issue #26)
 
-- analysis.plot2Dnet() 'view' param to select frontal ('xy') or top-down ('xz') view 
+- analysis.plot2Dnet() 'view' param to select frontal ('xy') or top-down ('xz') view
 
 - analysis.plotConn() option to plot stacked bar graph, select different pre and post pops, synMech and syns vs conns
 
@@ -1065,11 +1119,11 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - Removed 'plast' and 'shape' from conns when not used (issue #177)
 
-- Added option to center soma at origin when importing cell 
+- Added option to center soma at origin when importing cell
 
 - Now using noiseFromRandom123() for NetStims() (issue #89)
 
-- Fixed bug in readCmdLineArgs() 
+- Fixed bug in readCmdLineArgs()
 
 - Fixed bug in saveData option of figure plots
 
@@ -1081,7 +1135,7 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - Added analysis.granger() function to calculate and plot Spectral Granger Causality (issue #42)
 
-- Added analysis.plotRatePSD() to plot firing rate power spectral density 
+- Added analysis.plotRatePSD() to plot firing rate power spectral density
 
 - Added analysis.plotShape() to plot 3D morphology of cell and synapse locations
 
@@ -1097,7 +1151,7 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - Added option to overlay pop labels and show avg rates to plotRaster() (issue #111)
 
-- All section now include argument cell=self to differentiate them 
+- All section now include argument cell=self to differentiate them
 
 - Fixed travis script so checks all tuts and examples after each commit (issue #37)
 
@@ -1143,7 +1197,7 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - Added printRunTime to simConfig to print run time (in sec) during execution
 
-- Added printPopAvgRates to simConfig to print population avg firing rates after run 
+- Added printPopAvgRates to simConfig to print population avg firing rates after run
 
 - Automatic saving of netpyne and netParams version to file
 
@@ -1151,7 +1205,7 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - Can now load netParams and simConfig from file without setting in sim
 
-- Added sim.readCmdLineArgs to read simConfig and netParams filepaths from command line 
+- Added sim.readCmdLineArgs to read simConfig and netParams filepaths from command line
 
 - Can now access NEURON's h module via sim.h
 
@@ -1177,7 +1231,7 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - Fixed bug when loading data from file with multiple cores  
 
-- Fixed bug so modify functions work with multiple cores 
+- Fixed bug so modify functions work with multiple cores
 
 # Version 0.6.0
 
@@ -1229,7 +1283,7 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - Only load neuroml libraries and functions if installed to avoid error when importing sim
 
-- Disable subcellular connectivity since wasn't modifying the synMechs correctly. 
+- Disable subcellular connectivity since wasn't modifying the synMechs correctly.
 
 ## Version 0.5.5
 
@@ -1241,7 +1295,7 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - Added option to use separate simConfig when loading data from file
 
-- saveData() calls gatherData() if required 
+- saveData() calls gatherData() if required
 
 - saveData() returns string with full path of saved file (issue #127)
 
@@ -1251,15 +1305,15 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - Fixed bug regarding mutable default args in Python funcs
 
-- Fixed bug so NetStim stim params are set to default if missing 
+- Fixed bug so NetStim stim params are set to default if missing
 
 ## Version 0.5.4
 
 - Access to nested dictionaries via dot notation (secs.soma.geom) using new inherited classes Dict() and ODict() (issue #123)
 
-- 'hSection' replaced with 'hSec' 
+- 'hSection' replaced with 'hSec'
 
-- Added sim.popAvgRates() to calculate and optionally print population avg rates 
+- Added sim.popAvgRates() to calculate and optionally print population avg rates
 
 - Functions to modify cells, conns or stims also update sim.allCells (issue #59)
 
@@ -1279,7 +1333,7 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - Added support for VClamp list params (issue #32)
 
-- Fixed bug when creating pops consisiting of lists of cells 
+- Fixed bug when creating pops consisiting of lists of cells
 
 ## Version 0.5.2
 
@@ -1301,7 +1355,7 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 	- Split netParams.stimParams into netParams.stimSourceParams and netParams.stimTargetParams (both OrderedDicts)
 
-	- Simplified/clarified keys: 'conditions' -> 'conds', 'sections' -> 'secs', 'preTags' -> 'preConds', 'postTags' -> 'postConds' 
+	- Simplified/clarified keys: 'conditions' -> 'conds', 'sections' -> 'secs', 'preTags' -> 'preConds', 'postTags' -> 'postConds'
 
 	- Added netParams.importCellParams() to simplify  
 
@@ -1311,7 +1365,7 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - Added functions to load netParams, net, simConfig and/or simData from file (issue #30)
 
-- Added 'rerun' option to plotTraces() 
+- Added 'rerun' option to plotTraces()
 
 - Added function to get cell object by gid, sim.cellByGid(gid)  
 
@@ -1333,9 +1387,9 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - Added support for all stims (VClamp, SEClamp, AlphaSynapse, etc) and can specify any of the stim params (amp, dur, delay,etc) as a function (eg. 'uniform(a,b)' or '2*post_ynorm') (issue #32)
 
-- Fixed bugs so plotRaster() is identical when running on >1 nodes, and is ordered by gid correctly 
+- Fixed bugs so plotRaster() is identical when running on >1 nodes, and is ordered by gid correctly
 
-- Fixed bug so can have multiple plot function calls even when one of them is False 
+- Fixed bug so can have multiple plot function calls even when one of them is False
 
 ## Version 0.4.9
 
@@ -1353,7 +1407,7 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - Added option to save figure, save figure data, specify figure size, and show figure to all analysis/plotting functions (issue #39)
 
-- Fixed bug when generating function-based random probability values -- made random stream independent 
+- Fixed bug when generating function-based random probability values -- made random stream independent
 
 - Fixed bug when generating density-based random cell locations -- made random stream independent (issue #93)
 
@@ -1380,7 +1434,7 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - Added separate wrapper sim functions to create and simulate the network  
 
-- Sim functions use simConfig and netParams from __main__ as default (if not specified) 
+- Sim functions use simConfig and netParams from __main__ as default (if not specified)
 
 - Connections between NetStims and cells are included in conn list (issue #69)
 
@@ -1437,7 +1491,7 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 ## Version 0.4.3
 
-- Fixed bug in runSimWithIntervalFunc 
+- Fixed bug in runSimWithIntervalFunc
 
 - Variable Netstims (NSLOCs) can now have noise > 0
 
@@ -1445,7 +1499,7 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - Placed show(block=False) in try except block since not supported by some graphic backends
 
-- Create parallel context before re-creating net to avoid seg fault 
+- Create parallel context before re-creating net to avoid seg fault
 
 - Removed unnecessary modules in analysis.py
 
@@ -1457,7 +1511,7 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - Added axis labels to 2D visualization, and now works when running on multiple nodes too
 
-- Reset Netstim random generators within runSim() so have reproducible results if working interactively 
+- Reset Netstim random generators within runSim() so have reproducible results if working interactively
 
 ## Version 0.4.0
 
@@ -1509,7 +1563,7 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 - Added support for SectionLists (modified format of importCell so also works)
 
-- Fixed bugs: function-based connectivity 
+- Fixed bugs: function-based connectivity
 
 ## Version 0.3.5
 
@@ -1537,7 +1591,7 @@ IMPORTANT NOTE: NO BACKWARD REPRODUCIBILITY -- due to improvements in the random
 
 ## Version 0.3.1
 
-- Added option to show and/or save to file the timing of initialization, cell creation, connection creation, setup recording, simulation run, data gathering, plotting, and saving. 
+- Added option to show and/or save to file the timing of initialization, cell creation, connection creation, setup recording, simulation run, data gathering, plotting, and saving.
 
 - Fixed bug: h.dt now set to value of simConfig.dt
 

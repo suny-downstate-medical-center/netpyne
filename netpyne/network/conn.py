@@ -22,7 +22,6 @@ standard_library.install_aliases()
 import numpy as np
 from array import array as arrayFast
 from numbers import Number
-from numpy import array, sin, cos, tan, exp, sqrt, mean, inf, dstack, unravel_index, argsort, zeros, ceil, copy
 
 
 # -----------------------------------------------------------------------------
@@ -61,7 +60,7 @@ def connectCells(self):
         sim.cfg.createNEURONObj = False
         sim.cfg.addSynMechs = False
 
-    gapJunctions = False  # assume no gap junctions by default
+    hasPointerConns = self.params.synMechParams.hasPointerConns()
 
     for connParamLabel,connParamTemp in self.params.connParams.items():  # for each conn rule or parameter set
         connParam = connParamTemp.copy()
@@ -88,28 +87,27 @@ def connectCells(self):
             self._connStrToFunc(preCellsTags, postCellsTags, connParam)  # convert strings to functions (for the delay, and probability params)
             connFunc(preCellsTags, postCellsTags, connParam)  # call specific conn function
 
-        # check if gap junctions in any of the conn rules
-        if not gapJunctions and 'gapJunction' in connParam: gapJunctions = True
+        # check if gap junctions in any of the conn rules (deprecated)
+        if 'gapJunction' in connParam: hasPointerConns = True
 
         if sim.cfg.printSynsAfterRule:
             nodeSynapses = sum([len(cell.conns) for cell in sim.net.cells])
             print(('  Number of synaptic contacts on node %i after conn rule %s: %i ' % (sim.rank, connParamLabel, nodeSynapses)))
 
-
-    # add presynaptoc gap junctions
-    if gapJunctions:
-        # distribute info on presyn gap junctions across nodes
-        if not getattr(sim.net, 'preGapJunctions', False):
-            sim.net.preGapJunctions = []  # if doesn't exist, create list to store presynaptic cell gap junctions
-        data = [sim.net.preGapJunctions]*sim.nhosts  # send cells data to other nodes
+    # add pointer conns targeting presynaptic cells
+    if hasPointerConns:
+        # distribute info across nodes
+        if not getattr(sim.net, 'preCellPointerConns', False):
+            sim.net.preCellPointerConns = []
+        data = [sim.net.preCellPointerConns]*sim.nhosts  # send cells data to other nodes
         data[sim.rank] = None
         gather = sim.pc.py_alltoall(data)  # collect cells data from other nodes (required to generate connections)
         sim.pc.barrier()
         for dataNode in gather:
-            if dataNode: sim.net.preGapJunctions.extend(dataNode)
+            if dataNode: sim.net.preCellPointerConns.extend(dataNode)
 
-        # add gap junctions of presynaptic cells (need to do separately because could be in different ranks)
-        for preGapParams in getattr(sim.net, 'preGapJunctions', []):
+        # add connections (need to do separately because could be in different ranks)
+        for preGapParams in getattr(sim.net, 'preCellPointerConns', []):
             if preGapParams['gid'] in self.gid2lid:  # only cells in this rank
                 cell = self.cells[self.gid2lid[preGapParams['gid']]]
                 cell.addConn(preGapParams)
@@ -225,35 +223,10 @@ def _connStrToFunc(self, preCellsTags, postCellsTags, connParam):
             dictVars[k] = v
 
     # for each parameter containing a function, calculate lambda function and arguments
+    from netpyne.specs.utils import generateStringFunction
     for paramStrFunc in paramsStrFunc:
         strFunc = connParam[paramStrFunc]  # string containing function
-        for randmeth in self.stringFuncRandMethods:
-            if randmeth != 'normal':
-                strFunc = strFunc.replace(randmeth, 'rand.'+randmeth) # prepend rand. to h.Random() methods
-            else:
-                # 'normal' requires special handling so as not to replace part of 'lognormal'
-                if 'lognormal' not in strFunc:
-                    strFunc = strFunc.replace(randmeth, 'rand.'+randmeth)
-                else:
-                    # this code finds all 'normal's in the strFunc, but only replaces them if
-                    # they are not 'lognormal's
-                    index = 0
-                    while index < len(strFunc):
-                        index = strFunc.find('normal', index)
-                        if index == -1:
-                            break
-                        if index < 3:
-                            strFunc = strFunc[:index] + 'rand.' + strFunc[index:]
-                            index += 10
-                        else:
-                            if strFunc[index-3:index] != 'log':
-                                strFunc = strFunc[:index] + 'rand.' + strFunc[index:]
-                                index += 10
-                        index += 1 
-
-        strVars = [var for var in list(dictVars.keys()) if var in strFunc and var+'norm' not in strFunc]  # get list of variables used (eg. post_ynorm or dist_xyz)
-        lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function
-        lambdaFunc = eval(lambdaStr)
+        lambdaFunc, strVars = generateStringFunction(strFunc, list(dictVars.keys()))
 
         if paramStrFunc in ['probability']:
             # replace function with dict of values derived from function (one per pre+post cell)
@@ -378,7 +351,7 @@ def fullConn(self, preCellsTags, postCellsTags, connParam):
     for postCellGid in postCellsTags:  # for each postsyn cell
         if postCellGid in self.gid2lid:  # check if postsyn is in this node's list of gids
             for preCellGid, preCellTags in preCellsTags.items():  # for each presyn cell
-                self._addCellConn(connParam, preCellGid, postCellGid) # add connection
+                self._addCellConn(connParam, preCellGid, postCellGid, preCellsTags) # add connection
 
 
 # -----------------------------------------------------------------------------
@@ -482,7 +455,7 @@ def probConn(self, preCellsTags, postCellsTags, connParam):
         for preCellGid, postCellGid in connGids:
             for paramStrFunc in paramsStrFunc: # call lambda functions to get weight func args
                 connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellsTags[preCellGid],postCellsTags[postCellGid]) for k,v in connParam[paramStrFunc+'Vars'].items()}
-            self._addCellConn(connParam, preCellGid, postCellGid) # add connection
+            self._addCellConn(connParam, preCellGid, postCellGid, preCellsTags) # add connection
 
     # standard probabilistic conenctions
     else:
@@ -500,7 +473,7 @@ def probConn(self, preCellsTags, postCellsTags, connParam):
                             for funcKey in funcKeys[paramStrFunc]:
                                 connParam[paramStrFunc + 'Args'][funcKey] = connParam[paramStrFunc + 'Vars'][funcKey](preCellTags, postCellTags)
                             # connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()}
-                        self._addCellConn(connParam, preCellGid, postCellGid) # add connection
+                        self._addCellConn(connParam, preCellGid, postCellGid, preCellsTags) # add connection
 
 
 # -----------------------------------------------------------------------------
@@ -610,7 +583,7 @@ def convConn(self, preCellsTags, postCellsTags, connParam):
                         connParam[paramStrFunc + 'Args'][funcKey] = connParam[paramStrFunc+'Vars'][funcKey](preCellTags,postCellTags)
 
                 if preCellGid != postCellGid: # if not self-connection
-                    self._addCellConn(connParam, preCellGid, postCellGid) # add connection
+                    self._addCellConn(connParam, preCellGid, postCellGid, preCellsTags) # add connection
 
 
 # -----------------------------------------------------------------------------
@@ -677,7 +650,7 @@ def divConn(self, preCellsTags, postCellsTags, connParam):
                     connParam[paramStrFunc + 'Args'][funcKey] = connParam[paramStrFunc+'Vars'][funcKey](preCellTags,postCellTags)
 
             if preCellGid != postCellGid: # if not self-connection
-                self._addCellConn(connParam, preCellGid, postCellGid) # add connection
+                self._addCellConn(connParam, preCellGid, postCellGid, preCellsTags) # add connection
 
 
 # -----------------------------------------------------------------------------
@@ -740,14 +713,15 @@ def fromListConn(self, preCellsTags, postCellsTags, connParam):
             if 'locFromList' in connParam: connParam['loc'] = connParam['locFromList'][iconn]
 
             if preCellGid != postCellGid: # if not self-connection
-                self._addCellConn(connParam, preCellGid, postCellGid) # add connection
+                self._addCellConn(connParam, preCellGid, postCellGid, preCellsTags) # add connection
 
 
 # -----------------------------------------------------------------------------
 # Set parameters and create connection
 # -----------------------------------------------------------------------------
-def _addCellConn(self, connParam, preCellGid, postCellGid):
+def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags={}):
     from .. import sim
+    from ..specs.netParams import SynMechParams
 
     # set final param values
     paramStrFunc = self.connStringFuncParams
@@ -798,13 +772,25 @@ def _addCellConn(self, connParam, preCellGid, postCellGid):
         'synsPerConn': finalParam['synsPerConn']}
 
         # if 'threshold' in connParam: params['threshold'] = connParam.get('threshold')  # deprecated, use threshold in preSyn cell sec
-        if 'shape' in connParam: params['shape'] = connParam.get('shape')    
+        if 'shape' in connParam: params['shape'] = connParam.get('shape')
         if 'plast' in connParam: params['plast'] = connParam.get('plast')
-        if 'weightIndex' in connParam: params['weightIndex'] = connParam.get('weightIndex')        
+        if 'weightIndex' in connParam: params['weightIndex'] = connParam.get('weightIndex')
 
-        if 'gapJunction' in connParam:
-            params['gapJunction'] = connParam.get('gapJunction')
+        isGapJunction = 'gapJunction' in connParam # deprecated way of defining gap junction
+        if self.params.synMechParams.isPointerConn(params['synMech']) or isGapJunction:
             params['preLoc'] = connParam.get('preLoc')
+            params['preSec'] = connParam.get('preSec')
+            if isGapJunction: params['gapJunction'] = connParam['gapJunction']
+        # TODO: synMech can be None here (meaning 'use default'). Then need to use default label while checking below
+        elif SynMechParams.stringFuncsReferPreLoc(synMech):
+            # save synapse pre-cell location to be used in stringFunc for synMech.
+            # for optimization purpose, do it only if preLoc is referenced for a given synMech
+            cellType = preCellsTags[preCellGid].get('cellType')
+            if cellType:
+                from ..cell import CompartCell
+                secs = self.params.cellParams[cellType].secs
+                loc, _ = CompartCell.spikeGenLocAndSec(secs)
+                params['preLoc'] = loc
 
         if sim.cfg.includeParamsLabel: params['label'] = connParam.get('label')
 

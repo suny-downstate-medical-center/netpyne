@@ -33,12 +33,8 @@ class Network(object):
         self.connStringFuncParams = ['weight', 'delay', 'synsPerConn', 'loc']
 
         # params that can be expressed using string-based functions in stims
-        self.stimStringFuncParams = ['delay', 'dur', 'amp', 'gain', 'rstim', 'tau1', 'tau2',
-        'onset', 'tau', 'gmax', 'e', 'i', 'interval', 'rate', 'number', 'start', 'noise']
-
-        # list of h.Random() methods allowed in string-based functions (both for conns and stims)
-        self.stringFuncRandMethods = ['binomial', 'discunif', 'erlang', 'geometric', 'hypergeo',
-        'lognormal', 'negexp', 'normal', 'poisson', 'uniform', 'weibull']
+        self.stimStringFuncParams = ['del', 'dur', 'amp', 'gain', 'rstim', 'tau1', 'tau2',
+        'onset', 'tau', 'gmax', 'e', 'interval', 'rate', 'number', 'start', 'noise']
 
         self.rand = h.Random()  # random number generator
 
@@ -49,7 +45,7 @@ class Network(object):
 
         self.gid2lid = {} # Empty dict for storing GID -> local index (key = gid; value = local id) -- ~x6 faster than .index()
         self.lastGid = 0  # keep track of last cell gid
-        self.lastGapId = 0  # keep track of last gap junction gid
+        self.lastPointerId = 0  # keep track of last gap junction gid
 
 
     # -----------------------------------------------------------------------------
@@ -111,15 +107,17 @@ class Network(object):
                 cellModel = cellRule['conds'].get('CellModel', None)
                 pop = cellRule['conds'].get('pop', None)
 
+                correction = 1e-12
+
                 if (cellType, cellModel, pop) in condFracs:
                     startFrac = float(condFracs[(cellType, cellModel, pop)])
                     endFrac = startFrac + divFrac
-                    cellRule['conds']['fraction'] = [startFrac, endFrac]
+                    cellRule['conds']['fraction'] = [startFrac - correction, endFrac - correction]
                     condFracs[(cellType, cellModel, pop)] = endFrac
                 else:
                     startFrac = 0
                     endFrac = startFrac + divFrac
-                    cellRule['conds']['fraction'] = [startFrac, endFrac]
+                    cellRule['conds']['fraction'] = [startFrac, endFrac - correction]
                     condFracs[(cellType, cellModel, pop)] = endFrac
 
     # -----------------------------------------------------------------------------
@@ -137,7 +135,7 @@ class Network(object):
     # -----------------------------------------------------------------------------
     # Import subconn methods
     # -----------------------------------------------------------------------------
-    from .subconn import fromtodistance, _posFromLoc, _interpolateSegmentSigma, subcellularConn
+    from .subconn import pathDistance, posFromLoc, _interpolateSegmentSigma, subcellularConn
 
     # -----------------------------------------------------------------------------
     # Import rxd methods

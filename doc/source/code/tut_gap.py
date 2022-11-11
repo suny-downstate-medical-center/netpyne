@@ -22,7 +22,14 @@ netParams.popParams['background'] = {'cellModel': 'NetStim', 'numCells': 2, 'rat
 
 # Synaptic mechanism parameters
 netParams.synMechParams['AMPA'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 1.0, 'e': 0}
-netParams.synMechParams['esyn'] = {'mod': 'ElectSyn', 'g': 0.000049999999999999996}
+netParams.synMechParams['esyn'] = {'mod': 'ElectSyn',
+    'g': 0.000049999999999999996,
+    'pointerParams': {
+        'target_var':  'vpeer',
+        'source_var': 'v', # already there by default:
+        'bidirectional': True # already there by default:
+    }
+}
 
 # Cell parameters
 ## PYR cell properties
@@ -44,7 +51,7 @@ netParams.connParams['PYR1->PYR2'] = {
     'weight': 200.0,
     'delay': 0.1,
     'synMech': 'esyn',
-    'gapJunction': True,
+    # 'gapJunction': True, # deprecated way of defining default gap junction. Instead use 'pointerParams' when defining netParams.synMechParams
     'sec': 'soma',
     'loc': 0.5,
     'preSec': 'soma',

@@ -37,9 +37,8 @@ import importlib, types
 from neuron import h
 from netpyne import specs
 
-from .utils import bashTemplate
 from .utils import createFolder
-from .grid import gridSearch, getParamCombinations, generateParamCombinations
+from .grid import gridSearch, getParamCombinations
 from .evol import evolOptim
 from .asd_parallel import asdOptim
 
@@ -48,6 +47,15 @@ try:
 except:
     pass
     # print('Warning: Could not import "optuna" package...')
+
+
+try:
+    from .sbi_parallel import sbiOptim
+except:
+    pass
+    #print('Error @ the batch.py file import section')
+
+
 
 
 pc = h.ParallelContext() # use bulletin board master/slave
@@ -144,9 +152,14 @@ class Batch(object):
 
         if 'evolCfg' in odict:
             odict['evolCfg']['fitnessFunc'] = 'removed'
+
         if 'optimCfg' in odict:
             odict['optimCfg']['fitnessFunc'] = 'removed'
 
+        if 'optimCfg' in odict:
+            if 'summaryStats' in odict['optimCfg']:
+                odict['optimCfg']['summaryStats'] = 'removed'
+        
         odict['initCfg'] = tupleToStr(odict['initCfg'])
         dataSave = {'batch': tupleToStr(odict)}
 
@@ -202,7 +215,7 @@ class Batch(object):
 
         # save initial seed
         with open(self.saveFolder + '/_seed.seed', 'w') as seed_file:
-            if not self.seed: self.seed = int(time())
+            if self.seed is None: self.seed = int(time())
             seed_file.write(str(self.seed))
 
         # set cfg
@@ -265,5 +278,30 @@ class Batch(object):
         elif self.method == 'optuna':
             try:
                 optunaOptim(self, pc)
-            except:
-                print(' Warning: an exception occurred when running Optuna optimization...')
+            except Exception as e:
+                import traceback
+                print(f' Warning: an exception occurred when running Optuna optimization:')
+                traceback.print_exc()
+
+        # -------------------------------------------------------------------------------
+        # SBI optimization 
+        # -------------------------------------------------------------------------------
+        elif self.method == 'sbi':
+            try:
+                sbiOptim(self, pc)
+            except Exception as e:
+                import traceback
+                print(f' Warning: an exception occurred when running SBI optimization:')
+                traceback.print_exc()
+
+    @property
+    def mpiCommandDefault(self):
+        return {'asd': 'ibrun',
+                'evol': 'mpirun',
+                'optuna': 'mpiexec',
+                'sbi': 'mpiexec',
+            }.get(self.method)
+
+
+
+

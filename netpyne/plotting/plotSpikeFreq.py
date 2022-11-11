@@ -372,7 +372,7 @@ def plotSpikeFreq(
     for subset in include:
 
         # if it's a single population
-        if type(subset) != list:
+        if type(subset) not in [list, tuple]:
 
             for popIndex, popLabel in enumerate(popLabels):
 

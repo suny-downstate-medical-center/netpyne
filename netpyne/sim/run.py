@@ -160,6 +160,12 @@ def runSim(skipPreRun=False):
 
     h.finitialize(float(sim.cfg.hParams['v_init']))
 
+    if sim.cfg.dump_coreneuron_model:
+        sim.pc.nrnbbcore_write("coredat")
+        if sim.rank == 0: print('\nDumping model and exiting simulation...')
+        sim.pc.barrier()
+        return
+
     if sim.cfg.coreneuron == True:
         if sim.rank == 0: print('\nRunning simulation using CoreNEURON for %s ms...'%sim.cfg.duration)
         from neuron import coreneuron
@@ -207,7 +213,8 @@ def runSimWithIntervalFunc(interval, func, timeRange=None, funcArgs=None):
         **Default:** *required*
 
     func : function
-        The function to be executed at intervals
+        The function to be executed at intervals. The first positional argument (float) is the current progress of simulation in ms.
+        The rest of the arguments have to correspond to those optionally provided in `funcArgs`.
         **Default:** *required*
 
     timeRange : list
@@ -249,7 +256,6 @@ def prepareSimWithIntervalFunc(timeRange=None, funcArgs=None):
         startTime = timeRange[0]
         stopTime = timeRange[1]
 
-    #kwargs = {'simTime': h.t}
     kwargs = {}
     if type(funcArgs) == dict:
         kwargs.update(funcArgs)
@@ -273,7 +279,7 @@ def prepareSimWithIntervalFunc(timeRange=None, funcArgs=None):
 def runForInterval(interval, func, **kwargs):
     from .. import sim
     sim.pc.psolve(min(sim.cfg.duration, h.t+interval))
-    func(simTime=h.t, **kwargs) # function to be called at intervals
+    func(h.t, **kwargs) # function to be called at intervals
 
 
 #------------------------------------------------------------------------------

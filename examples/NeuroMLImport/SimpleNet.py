@@ -45,6 +45,16 @@ def generate(reference = "SimpleNet",
                                 pfs.id,
                                 all_cells=True)
 
+
+    oc.add_probabilistic_projection(network,
+                                    "proj0",
+                                    pop,
+                                    pop,
+                                    syn.id,
+                                    0.3,
+                                    weight=0.05,
+                                    delay=5)
+
     nml_file_name = '%s.net.nml'%network.id
     oc.save_network(nml_doc,
                     nml_file_name,

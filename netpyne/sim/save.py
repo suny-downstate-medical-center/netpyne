@@ -139,12 +139,17 @@ def saveData(include=None, filename=None, saveLFP=True):
         if not include: include = sim.cfg.saveDataInclude
         dataSave = {}
         net = {}
+        synMechStringFuncs = None
+        cellParamStringFuncs = None
 
         dataSave['netpyne_version'] = sim.version(show=False)
         dataSave['netpyne_changeset'] = sim.gitChangeset(show=False)
 
         if getattr(sim.net.params, 'version', None): dataSave['netParams_version'] = sim.net.params.version
         if 'netParams' in include:
+            # exclude from dataSave but keep in synMechParams later, for integrity
+            cellParamStringFuncs = sim.net.params.__dict__.pop('_cellParamStringFuncs', None)
+            synMechStringFuncs = sim.net.params.__dict__.pop('_synMechStringFuncs', None)
             sim.net.params.__dict__.pop('_labelid', None)
             net['params'] = utils.replaceFuncObj(sim.net.params.__dict__)
         if 'net' in include: include.extend(['netPops', 'netCells'])
@@ -277,7 +282,12 @@ def saveData(include=None, filename=None, saveLFP=True):
 
         else:
             print('Nothing to save')
-        
+
+        if synMechStringFuncs:
+            sim.net.params._synMechStringFuncs = synMechStringFuncs
+        if cellParamStringFuncs:
+            sim.net.params._cellParamStringFuncs = cellParamStringFuncs
+
         return savedFiles
 
 
@@ -555,7 +565,7 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
     # flag to avoid saving sections data for each cell (saves gather time and space; cannot inspect cell secs or re-simulate)
     if not sim.cfg.saveCellSecs:
         for cell in sim.net.cells:
-            cell.secs = None
+            cell.secs = {}
             cell.secLists = None
 
     # flag to avoid saving conns data for each cell (saves gather time and space; cannot inspect cell conns or re-simulate)

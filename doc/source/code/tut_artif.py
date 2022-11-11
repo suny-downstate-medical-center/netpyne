@@ -23,13 +23,19 @@ netParams.cellParams['PYR'] = cellParams
 
 ## IntFire2 artificial cell
 netParams.cellParams['artif_IntFire2'] = {
-    'cellModel': 'IntFire2', 
-    'ib': 0.0}  
+    'cellModel': 'IntFire2',
+    'params': {
+        'ib': 0,
+    },
+}
 
 ## IntFire4 artificial cell
 netParams.cellParams['artif_IntFire4'] = {
-    'cellModel': 'IntFire4', 
-    'taue': 1.0}
+    'cellModel': 'IntFire4',
+    'params': {
+        'taue': 1.0,
+    },
+}
 
 ## NetStim artificial spike generator
 netParams.cellParams['artif_NetStim'] = {
@@ -58,7 +64,7 @@ netParams.popParams['pop_NetStim'] = {
     'numCells': 100,
     'rate': 10, 
     'noise': 0.8, 
-    'start': 1, 
+    'start': 'uniform(1,3)',
     'seed': 2}  # pop of NEtSims
 
 netParams.popParams['pop_VecStim'] = {

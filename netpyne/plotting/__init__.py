@@ -22,7 +22,7 @@ from .plotLFPPSD import plotLFPPSD
 from .plotLFPSpectrogram import plotLFPSpectrogram
 from .plotLFPLocations import plotLFPLocations
 from .plotShape import plotShape
-
+from .plotCSD import plotCSD
 
 
 """

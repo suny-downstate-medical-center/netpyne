@@ -1,4 +1,4 @@
-# Unreleased
+# Version 1.0.3
 
 **New features**
 
@@ -10,11 +10,21 @@
 
 - Added new Batch method named SBI (Simulation Based Inference) with example folder (sbiOptim)
 
+- Added support for string functions in properties of cell mechanism, in cell geometry (in netParams.cellParams)
+
 - Added support for string functions in synMech parameters
 
 - Massive update of schemas (validator.py and setup.py) 
 
 - More control over POINTER variables through synMechParams (e.g. for gap junctions)
+
+- Introduced cell variables in cellParams
+
+- Added plotRateSpectrogram to utils.py
+
+- Functions prepareCSD() and plotCSD() are now available
+
+- Updated documentation on install and about
 
 **Bug fixes**
 
@@ -37,6 +47,10 @@
 - Fixed bug in dipole calculation units - changed from mA to uA 
 
 - Fixed bug in conditional logic when gathering LFP / dipoles 
+
+- Allow tuples to specify population's cells in 'include' for plotSpike
+
+- Cleaned up optuna optim tutorial
 
 # Version 1.0.2.1
 

@@ -779,7 +779,7 @@ def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags={}):
         isGapJunction = 'gapJunction' in connParam # deprecated way of defining gap junction
         if self.params.synMechParams.isPointerConn(params['synMech']) or isGapJunction:
             params['preLoc'] = connParam.get('preLoc')
-            params['preSec'] = connParam.get('preSec')
+            params['preSec'] = connParam.get('preSec', 'soma')
             if isGapJunction: params['gapJunction'] = connParam['gapJunction']
         # TODO: synMech can be None here (meaning 'use default'). Then need to use default label while checking below
         elif SynMechParams.stringFuncsReferPreLoc(synMech):

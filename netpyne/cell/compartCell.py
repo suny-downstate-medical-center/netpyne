@@ -926,6 +926,7 @@ class CompartCell (Cell):
                     connParams['preGid'] = 'NetStim'
                     connParams['preLabel'] = netStimParams['source']
                 if pointerParams:
+                    connParams['hObj'] = synMechs[i]['hObj']
                     connParams['pointer'] = {
                         'id': preToPostPointerId,
                         'source': 'pre' if isPreToPostPointerConn else 'post',

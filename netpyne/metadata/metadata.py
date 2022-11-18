@@ -1862,7 +1862,7 @@ metadata = {
                 "type": "list(list(float))"
             },
             "recordDipolesHNN": {
-                "label": "Record dipoles HNN",
+                "label": "Record dipoles using HNN method",
                 "help": "Store dipoles HNN generated individually by each cell in sim.allSimData['recordDipolesHNN'].",
                 "suggestions": "",
                 "type": "bool"

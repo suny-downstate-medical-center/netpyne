@@ -1704,7 +1704,7 @@ metadata = {
             },
             "dt": {
                 "label": "Time step, dt",
-                "help": "Simulation time step in ms (default: 0.1)",
+                "help": "Simulation time step in ms (default: 0.025)",
                 "suggestions": "",
                 "default": 0.025,
                 "type": "float"

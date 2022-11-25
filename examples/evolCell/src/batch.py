@@ -88,7 +88,7 @@ def evolCellITS4():
 
     # Set output folder, grid method (all param combinations), and run configuration
     b.batchLabel = 'ITS4_evol'
-    b.saveFolder = 'data/'+b.batchLabel
+    b.saveFolder = './'+b.batchLabel
     b.method = 'evol'
     b.runCfg = {
         'type': 'mpi_bulletin', #'hpc_slurm',
@@ -217,7 +217,7 @@ def evolCellNGF():
 
     # Set output folder, grid method (all param combinations), and run configuration
     b.batchLabel = 'NGF_evol'
-    b.saveFolder = 'data/'+b.batchLabel
+    b.saveFolder = './'+b.batchLabel
     b.method = 'evol'
     b.runCfg = {
         'type': 'mpi_bulletin',#'hpc_slurm',

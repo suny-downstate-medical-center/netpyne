@@ -11,12 +11,54 @@ from future import standard_library
 standard_library.install_aliases()
 from numbers import Number
 from neuron import h
+from numpy import array, sin, cos, tan, exp, sqrt, mean, inf, dstack, unravel_index, argsort, zeros, ceil, copy
+
+try:
+    basestring
+except NameError:
+    basestring = str
+
+def generateStringFunction(sourceStr, vars):
+    original = sourceStr
+    # to avoid misreplacement of 'normal' in 'lognormal', first screen it out:
+    sourceStr = sourceStr.replace('lognormal', 'lognrm')
+
+    # replace all methods but 'lognormal' # list of h.Random() methods allowed in string-based functions (both for conns and stims)
+    stringFuncRandMethods = ['binomial', 'discunif', 'erlang', 'geometric', 'hypergeo',
+                             'negexp', 'normal', 'poisson', 'uniform', 'weibull']
+    for method in stringFuncRandMethods:
+        sourceStr = sourceStr.replace(method, f'rand.{method}')
+
+    # now finally replace 'lognormal'
+    sourceStr = sourceStr.replace('lognrm', f'rand.lognormal')
+
+    strVars = [var for var in vars if var in sourceStr and var+'norm' not in sourceStr]  # get list of variables used (eg. post_ynorm or dist_xyz)
+    lambdaStr = 'lambda ' + ','.join(strVars) +': ' + sourceStr # convert to lambda function
+
+    if original == sourceStr and len(strVars) == 0:
+        # no functions or variables recognized
+        return None, []
+    else:
+        lambdaFunc = eval(lambdaStr)
+        return lambdaFunc, strVars
+
+def generateStringFuncsFromParams(params, varNames, storeIn, key, excludeParams=[]):
+    from .utils import generateStringFunction
+    funcs = {}
+    for k, v in params.items():
+        if isinstance(v, basestring) and k not in excludeParams:
+            func, vars = generateStringFunction(v, varNames)
+            if func is not None:
+                funcs[k] = func, vars
+    if len(funcs) > 0:
+        storeIn[key] = funcs
+
 
 def validateFunction(strFunc, netParamsVars):
     """
     Returns True if "strFunc" can be evaluated
     """
-
+    # TODO: beware to avoid potential conflicts with similar functions imported from numpy globally
     from math import exp, log, sqrt, sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, pi, e
     rand = h.Random()
     stringFuncRandMethods = ['binomial', 'discunif', 'erlang', 'geometric', 'hypergeo',

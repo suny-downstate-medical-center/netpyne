@@ -89,15 +89,18 @@ def initialize(netParams = None, simConfig = None, net = None):
         sim.setNet(sim.Network())  # or create new network
 
     sim.setNetParams(netParams)  # set network parameters
+    sim.net.params.synMechParams.preprocessStringFunctions()
+    sim.net.params.cellParams.preprocessStringFunctions()
 
     if sim.nhosts > 1: sim.cfg.validateNetParams = False  # turn of error chceking if using multiple cores
 
     if hasattr(sim.cfg, 'validateNetParams') and sim.cfg.validateNetParams: # whether to validate the input parameters
         try:
-            if validator.validate_netparams(netParams):
+            if validator.validate_netparams(netParams)['is_valid']:
                 print("\nNetParams validation successful ...")
             else:
                 print("\nNetParams validation identified some potential issues; see above for details...")
+                print(validator.validate_netparams(netParams))
         except:
             print("\nAn exception occurred during the netParams validation process...")
 

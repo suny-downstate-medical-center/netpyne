@@ -16,6 +16,11 @@ from builtins import super
 from builtins import zip
 from builtins import range
 
+try:
+  basestring
+except NameError:
+  basestring = str
+
 from future import standard_library
 standard_library.install_aliases()
 from copy import deepcopy
@@ -23,6 +28,7 @@ from neuron import h # Import NEURON
 import numpy as np
 from .cell import Cell
 from ..specs import Dict
+from ..specs import utils
 
 
 ###############################################################################
@@ -71,8 +77,9 @@ class PointCell (Cell):
     def __repr__ (self):
         return self.__str__()
 
-    def createNEURONObj (self):
+    def createNEURONObj (self, prop=None):
         from .. import sim
+        from ..specs import CellParams
 
         # add point processes
         try:
@@ -99,13 +106,21 @@ class PointCell (Cell):
         params = {k: v for k,v in self.params.items()}
         for paramName, paramValue in params.items():
             try:
+                key = self.tags.get('cellType')
+                if not key:
+                    # to avoid potential overlap with cellParams ids
+                    key = '__pop__' + self.tags['pop']
+                func, vars = CellParams.stringFuncAndVarsForPointCell(key, paramName)
+                if func:
+                    paramValue = self.__evaluateStringFunc(func, vars)
+
                 if paramName == 'rate':
                     self.params['interval'] = 1000.0 / paramValue
                     setattr(self.hPointp, 'interval', self.params['interval'])
                 else:
                     setattr(self.hPointp, paramName, paramValue)
             except:
-                pass
+                if sim.cfg.verbose: print(f"    Error while setting '{paramName}' param to {self.hPointp}")
 
         # add random num generator, and set number and seed for NetStims
         if self.tags['cellModel'] == 'NetStim':
@@ -453,6 +468,9 @@ class PointCell (Cell):
         pass
 
     def __getattr__(self, name):
+        if name == '_Cell__cellParamsRand':
+            # default handling (no wrapper) for __cellParamsRand, otherwise logic in `Cell._randomizer()` fails
+            return object.__getattribute__(self, name)
         def wrapper(*args, **kwargs):
             from .. import sim
             try:
@@ -483,7 +501,32 @@ class PointCell (Cell):
             except:
                 print('Error: exception when adding plasticity using %s mechanism' % (plasticity['mech']))
 
-      
+
+    @staticmethod
+    def stringFuncVarNames():
+        return list(PointCell.__stringFuncVarsEvaluators().keys())
+
+
+    @staticmethod
+    def __stringFuncVarsEvaluators():
+        return {
+            'rand': lambda cell, rand: rand,
+            'x': lambda cell, rand: cell.tags['x'],
+            'y': lambda cell, rand: cell.tags['y'],
+            'z': lambda cell, rand: cell.tags['z'],
+            'xnorm': lambda cell, rand: cell.tags['xnorm'],
+            'ynorm': lambda cell, rand: cell.tags['ynorm'],
+            'znorm': lambda cell, rand: cell.tags['znorm'],
+        }
+
+
+    def __evaluateStringFunc(self, func, varNames):
+        args = {}
+        for varName in varNames:
+            varEvaluator = PointCell.__stringFuncVarsEvaluators()[varName]
+            args[varName] = varEvaluator(self, self._randomizer())
+
+        return func(**args)
 
     # def modify (self):
     #     print 'Error: Function not yet implemented for Point Neurons'

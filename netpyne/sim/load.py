@@ -310,19 +310,17 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
                         pop.cellGids = popLoad['cellGids']
                         sim.net.pops[popLoadLabel] = pop
                     for cellLoad in cellsNode:
-                        # create new CompartCell object and add attributes, but don't create sections or associate gid yet
-                        # TO DO: assumes CompartCell -- add condition to load PointCell
-                        cell = sim.CompartCell(gid=cellLoad['gid'], tags=cellLoad['tags'], create=False, associateGid=False)
-                        try:
-                            if sim.cfg.saveCellSecs:
-                                cell.secs = Dict(cellLoad['secs'])
-                            else:
-                                createNEURONObjorig = sim.cfg.createNEURONObj
-                                sim.cfg.createNEURONObj = False  # avoid creating NEURON Objs now; just needpy struct
-                                cell.create()
-                                sim.cfg.createNEURONObj = createNEURONObjorig
-                        except:
-                            if sim.cfg.verbose: print(' Unable to load cell secs')
+                        # create new cell object and add attributes, but don't create sections or associate gid yet
+                        secs = cellLoad.get('secs', None)
+                        gid = cellLoad['gid']
+                        tags = cellLoad['tags']
+                        if secs:
+                            cell = sim.CompartCell(gid, tags, create=False, associateGid=False)
+                            cell.secs = Dict(secs)
+                            cell.create(createNEURONObj=False) # avoid creating NEURON Objs now; just need pystruct
+                        else:
+                            tags['params'] = cellLoad['params']
+                            cell = sim.PointCell(gid, tags, create=False, associateGid=False)
 
                         try:
                             cell.conns = [Dict(conn) for conn in cellLoad['conns']]
@@ -338,8 +336,8 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
                     print(('  Created %d cells' % (len(sim.net.cells))))
                     print(('  Created %d connections' % (sum([len(c.conns) for c in sim.net.cells]))))
                     print(('  Created %d stims' % (sum([len(c.stims) for c in sim.net.cells]))))
-            except:
-                print('Unable to create Python structure...')
+            except Exception as e:
+                print(f'Unable to create Python structure: {e}')
 
             try:
                 # only create NEURON objs, if there is Python struc (fix so minimal Python struct is created)
@@ -347,7 +345,10 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
                     if sim.cfg.verbose: print("  Adding NEURON objects...")
                     # create NEURON sections, mechs, syns, etc; and associate gid
                     for cell in sim.net.cells:
-                        prop = {'secs': cell.secs}
+                        if cell.secs:
+                            prop = {'secs': cell.secs}
+                            # TODO: `cell.secs` should probably be deepcopied to avoid potential "ghost" errors later in `CompartCell.createNEURONObj()`
+                            # but currently deepcopying of ODict fails
                         cell.createNEURONObj(prop)  # use same syntax as when creating based on high-level specs
                         cell.associateGid()  # can only associate once the hSection obj has been created
                     # create all NEURON Netcons, NetStims, etc
@@ -360,8 +361,8 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
                             if sim.cfg.verbose: ' Unable to load instantiate cell conns or stims'
 
                     print(('  Added NEURON objects to %d cells' % (len(sim.net.cells))))
-            except:
-                print('Unable to create NEURON objects...')    
+            except Exception as e:
+                print(f'Unable to create NEURON objects: {e}')
 
             if loadNow and sim.cfg.timing:  #if sim.rank == 0 and sim.cfg.timing:
                 sim.timing('stop', 'loadNetTime')

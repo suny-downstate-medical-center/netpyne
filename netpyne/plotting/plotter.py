@@ -62,7 +62,7 @@ class MetaFigure:
 
     """
 
-    def __init__(self, kind, sim=None, subplots=None, sharex=False, sharey=False, rcParams=None, autosize=0.35, **kwargs):
+    def __init__(self, kind, sim=None, subplots=None, sharex=False, sharey=False, autosize=0.35, **kwargs):
 
         if not sim:
             from .. import sim
@@ -72,13 +72,15 @@ class MetaFigure:
 
         # Make a copy of the current matplotlib rcParams and update them
         self.orig_rcParams = deepcopy(mpl.rcParamsDefault)
-        if rcParams:
-            for rcParam in rcParams:
-                if rcParam in mpl.rcParams:
-                    mpl.rcParams[rcParam] = rcParams[rcParam]
-                else:
-                    print(rcParam, 'not found in matplotlib.rcParams')
-            self.rcParams = rcParams
+        if 'rcParams' in kwargs:
+            new_rcParams = kwargs['rcParams']
+            if type(new_rcParams) == dict:
+                for rcParam in new_rcParams:
+                    if rcParam in mpl.rcParams:
+                        mpl.rcParams[rcParam] = new_rcParams[rcParam]
+                    else:
+                        print('  Not found in matplotlib.rcParams:', rcParam, )
+                self.rcParams = mpl.rcParams
         else:
             self.rcParams = self.orig_rcParams
 
@@ -337,6 +339,95 @@ class MetaFigure:
 
 
 
+class MultiPlotter:
+    """NetPyNE object to generate line plots on multiple axes
+    """
+
+    def __init__(self, data, kind, metafig=None, **kwargs):
+
+        self.kind       = kind
+        self.data       = data
+        
+        numLines = len(self.data['y'])
+
+        if metafig is None:
+            metafig = MetaFigure(kind=kind, subplots=numLines, **kwargs)
+
+        self.metafig = metafig
+
+
+    def plot(self, **kwargs):
+
+        x          = np.array(self.data.get('x'))
+        y          = np.array(self.data.get('y'))
+        color      = self.data.get('color')
+        marker     = self.data.get('marker')
+        markersize = self.data.get('markersize')
+        linewidth  = self.data.get('linewidth')
+        alpha      = self.data.get('alpha')
+        label      = self.data.get('label')
+
+        if len(np.shape(y)) == 1:
+            numLines = 1
+            y = [y]
+        else:
+            numLines = len(y)
+
+        if type(color) != list:
+            colors = [color for line in range(numLines)]
+        else:
+            colors = color
+
+        if type(marker) != list:
+            markers = [marker for line in range(numLines)]
+        else:
+            markers = marker
+
+        if type(markersize) != list:
+            markersizes = [markersize for line in range(numLines)]
+        else:
+            markersizes = markersize
+
+        if type(linewidth) != list:
+            linewidths = [linewidth for line in range(numLines)]
+        else:
+            linewidths = linewidth
+
+        if type(alpha) != list:
+            alphas = [alpha for line in range(numLines)]
+        else:
+            alphas = alpha
+
+        if label is None:
+            labels = [None for line in range(numLines)]
+        else:
+            labels = label
+
+        for index, line in enumerate(y):
+            
+            curAx = self.metafig.ax[index]
+
+            curData = {}
+            curData['x'] = x
+            curData['y'] = [y[index]]
+            curData['color'] = colors[index]
+            curData['marker'] = markers[index]
+            curData['markersize'] = markersizes[index]
+            curData['linewidth'] = linewidths[index]
+            curData['alpha'] = alphas[index]
+            curData['label'] = labels[index]
+
+            curPlotter = LinesPlotter(data=curData, kind='LFPPSD', axis=curAx, **kwargs)
+            curPlotter.plot(**kwargs)
+
+        self.metafig.finishFig(**kwargs)
+
+        if 'returnPlotter' in kwargs and kwargs['returnPlotter']:
+            return self.metafig
+        else:
+            return self.metafig.fig
+
+
 class GeneralPlotter:
     """NetPyNE object to hold a Matplotlib axis along with its settings and standardized methods
 
@@ -365,7 +456,7 @@ class GeneralPlotter:
 
     """
 
-    def __init__(self, data, kind, axis=None, twinx=False, twiny=False, sim=None, rcParams=None, metafig=None, **kwargs):
+    def __init__(self, data, kind, axis=None, twinx=False, twiny=False, sim=None, metafig=None, **kwargs):
         
         self.kind = kind
 
@@ -785,13 +876,18 @@ class LinesPlotter(GeneralPlotter):
 
     def plot(self, **kwargs):
 
-        numLines = len(self.y)
+        if len(np.shape(self.y)) == 1:
+            numLines = 1
+        else:
+            numLines = len(self.y)
 
         if type(self.color) != list:
             colors = [self.color for line in range(numLines)]
         else:
             colors = self.color
-
+            if len(self.color) == 3 and type(self.color[0] == float):
+                colors = [self.color]
+            
         if type(self.marker) != list:
             markers = [self.marker for line in range(numLines)]
         else:
@@ -816,8 +912,11 @@ class LinesPlotter(GeneralPlotter):
             labels = [None for line in range(numLines)]
         else:
             labels = self.label
+            if type(self.label) != list:
+                labels = [self.label]
 
-        for index, line in enumerate(self.y):
+        for index in range(numLines):
+            
             self.axis.plot(
                 self.x, 
                 self.y[index], 

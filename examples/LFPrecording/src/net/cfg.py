@@ -1,5 +1,5 @@
 from netpyne import specs
-from src.net.netParams import netParams # TODO: this workaround ignores what's stated in index.npjson
+from netParams import netParams # TODO: this workaround ignores the path to netParams specified in index.npjson (wouldn't work if changed)
 
 # Simulation configuration
 cfg = specs.SimConfig()        # object of class SimConfig to store simulation configuration

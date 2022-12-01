@@ -1,14 +1,10 @@
 from netpyne import sim
 
-cfg, netParams = sim.readCmdLineArgs()
-if not cfg:
-    from cfg import cfg
-if not netParams:
-    from netParams import netParams
+cfg, netParams = sim.loadFromIndexFile('index_net.npjson')
 
 # Create network and run simulation
 
-#sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)    
+#sim.createSimulateAnalyze(netParams = netParams, simConfig = cfg)    
 #sim.analysis.plotCSD(timeRange=[100,3000])
 sim.initialize(
     simConfig = cfg, 	

@@ -4,21 +4,14 @@ from netpyne import sim
 if '-nogui' not in sys.argv:
     sys.argv.append('-nogui')
 
-pkg = 'examples/HHTut/'
+from .utils import pkg_setup
 
-@pytest.fixture()
-def pkg_setup():
-    orig = os.getcwd()
-    os.chdir(orig + "/" + pkg)
-    yield True
-    os.chdir(orig)
-
-
+@pytest.mark.package_data(['examples/HHTut/', '.'])
 class TestHHTut():
     def test_run(self, pkg_setup):
-        exec(open("src/init.py").read())
+        import src.init
         sim.checkOutput('HHTut')
 
 
     def test_export(self, pkg_setup):
-        exec(open("src/export.py").read())
+        import src.export

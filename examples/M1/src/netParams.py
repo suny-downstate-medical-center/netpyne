@@ -9,53 +9,12 @@ simConfig is a dict containing a set of simulation configurations using a standa
 from netpyne import specs
 
 netParams = specs.NetParams()   # object of class NetParams to store the network parameters
-simConfig = specs.SimConfig()   # object of class SimConfig to store the simulation configuration
 
 ###############################################################################
 #
 # M1 6-LAYER ynorm-BASED MODEL
 #
 ###############################################################################
-
-###############################################################################
-# SIMULATION CONFIGURATION
-###############################################################################
-
-# Simulation parameters
-simConfig.duration = 2*1e3 # Duration of the simulation, in ms
-simConfig.dt = 0.1 # Internal integration timestep to use
-simConfig.seeds = {'conn': 1, 'stim': 1, 'loc': 1} # Seeds for randomizers (connectivity, input stimulation and cell locations)
-simConfig.createNEURONObj = 1  # create HOC objects when instantiating network
-simConfig.createPyStruct = 1  # create Python structure (simulator-independent) when instantiating network
-simConfig.verbose = 0 # Whether to write diagnostic information on events
-simConfig.oneSynPerNetcon = False
-
-# Recording
-simConfig.recordCells = []  # list of cells to record from
-simConfig.recordTraces = {'V':{'sec':'soma','loc':0.5,'var':'v'}} # 'V':{'sec':'soma','loc':0.5,'var':'v'}}
-    #'V':{'sec':'soma','loc':0.5,'var':'v'},
-    #'u':{'sec':'soma', 'pointp':'Izhi2007b_0', 'var':'u'},
-    #'I':{'sec':'soma', 'pointp':'Izhi2007b_0', 'var':'i'},
-    #'AMPA_i': {'sec':'soma', 'loc':'0.5', 'synMech':'AMPA', 'var':'i'},
-    #'NMDA_i': {'sec':'soma', 'loc':'0.5', 'synMech':'NMDA', 'var':'iNMDA'}}  # Dict of traces to record
-simConfig.recordStim = False  # record spikes of cell stims
-simConfig.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
-
-# Saving
-simConfig.filename = '../data/M1_ynorm_izhi'  # Set file output name
-simConfig.saveFileStep = 1000 # step size in ms to save data to disk
-simConfig.savePickle = False # save to pickle file
-simConfig.saveJson = False # save to json file
-simConfig.saveMat = False # save to mat file
-simConfig.saveTxt = False # save to txt file
-simConfig.saveDpk = False # save to .dpk pickled file
-simConfig.saveHDF5 = False # save to HDF5 file
-
-
-# Analysis and plotting
-simConfig.addAnalysis('plotRaster', True) # Whether or not to plot a raster
-simConfig.addAnalysis('plotTraces', {'include': [('IT_L23',0), ('PT_L5B',1), ('PV_L23',2), ('SOM_L5',3)]}) # plot recorded traces for this list of cells
-simConfig.addAnalysis('plot2Dnet', {'showConns': False})
 
 ###############################################################################
 # NETWORK PARAMETERS

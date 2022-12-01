@@ -5,7 +5,7 @@ if '-nogui' not in sys.argv:
 
 from .utils import pkg_setup
 
-@pytest.mark.package_data(['examples/rxd_buffering/', '.'])
+@pytest.mark.package_data(['examples/rxd_buffering/', None])
 class Test_rxd_buffering():
     def test_buffering(self, pkg_setup):
         import src.init

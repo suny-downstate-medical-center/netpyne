@@ -6,7 +6,7 @@ if '-nogui' not in sys.argv:
 
 from .utils import pkg_setup
 
-@pytest.mark.package_data(['examples/HHTut/', '.'])
+@pytest.mark.package_data(['examples/HHTut/', None])
 class TestHHTut():
     def test_run(self, pkg_setup):
         import src.init

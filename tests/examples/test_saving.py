@@ -8,7 +8,7 @@ if '-nogui' not in sys.argv:
 from .utils import pkg_setup
 
 
-@pytest.mark.package_data(['examples/saving', '.'])
+@pytest.mark.package_data(['examples/saving', None])
 class Test_saving():
     def test_init(self, pkg_setup):
         import src.init

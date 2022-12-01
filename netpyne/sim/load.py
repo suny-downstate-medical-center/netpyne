@@ -456,44 +456,89 @@ def loadAll(filename, data=None, instantiate=True, createNEURONObj=True):
     loadNet(filename, data=data, instantiate=instantiate, compactConnFormat=connFormat)
     loadSimData(filename, data=data)
 
-def loadFromIndexFile(index, method='python'):
+
+def loadFromIndexFile(index):
+    return loadModel(index, loadMechs=False)
+
+
+def loadModel(path, loadMechs=True, forceCompileMechs=False):
 
     import __main__
     import json
     from .. import sim
 
-    print(f'Loading index file {index} ... ')
+    import os
+    originalDir = os.getcwd()
+
+    absPath = os.path.abspath(path)
+
+    if os.path.isdir(absPath):
+        # if no index file specified explicitly, use default
+        index = os.path.join(absPath, 'index.npjson')
+        dir = absPath
+    else:
+        index = absPath
+        dir = os.path.dirname(absPath)
+
+    print(f'Loading model from {index} ... ')
     with open(index, 'r') as fileObj:
         indexData = json.load(fileObj)
 
-        if method == 'python':
-            simConfigFile = indexData['simConfig_python']
-            print(f'\n    Loading simConfig: {simConfigFile} ... ')
-            cfgModule = sim.loadPythonModule(simConfigFile)
+        if loadMechs:
+            modFolder = indexData.get('mod_folder')
+            if modFolder:
+                modFolderPath = os.path.join(dir, modFolder)
+                __processMod(modFolderPath, forceCompileMechs)
+
+        os.chdir(dir)
+
+        configFile = indexData.get('simConfig')
+        if not configFile:
+            raise Exception("Model index is missing 'simConfig' attribute")
+        print(f'\n    Loading simConfig: {configFile} ... ')
+
+        if configFile[-3:] == '.py':
+            cfgModule = sim.loadPythonModule(configFile)
             cfg = cfgModule.cfg
-            __main__.cfg = cfg
-
-            netParamsFile = indexData['netParams_python']
-            print(f'\n    Loading netParams: {netParamsFile} ... ')
-            netParamsModule = sim.loadPythonModule(netParamsFile)
-            netParams = netParamsModule.netParams
-
-        elif method == 'json':
-            configFile = indexData['simConfig_json']
-            print(f'\n    Loading simConfig: {configFile} ... ')
-            configVar = indexData['simConfig_variable']
+        else:
+            configVar = indexData.get('simConfig_variable', 'simConfig')
             cfg = sim.loadSimCfg(configFile, variable=configVar, setLoaded=False)
 
-            paramsFile = indexData['netParams_json']
-            print(f'\n    Loading netParams: {paramsFile} ... ')
-            paramsVar = indexData.get('netParams_variable', None)
-            netParams = sim.loadNetParams(paramsFile, variable=paramsVar, setLoaded=False)
+        netParamsFile = indexData.get('netParams')
+        if not netParamsFile:
+            raise Exception("Model index is missing 'netParams' attribute")
+        print(f'\n    Loading netParams: {netParamsFile} ... ')
 
+        if netParamsFile[-3:] == '.py':
+            __main__.cfg = cfg # this is often required by netParams
+
+            netParamsModule = sim.loadPythonModule(netParamsFile)
+            netParams = netParamsModule.netParams
         else:
-            print("Unsupported method. Use `python` or `json`")
-            return
+            paramsVar = indexData.get('netParams_variable', None)
+            netParams = sim.loadNetParams(netParamsFile, variable=paramsVar, setLoaded=False)
 
-        return cfg, netParams
+        os.chdir(originalDir)
+
+    return cfg, netParams
+
+
+def __processMod(modFolderPath, forceCompile):
+    import os, subprocess
+    if os.path.exists(modFolderPath):
+        compiledModPath = os.path.join(modFolderPath, 'x86_64')
+
+        if forceCompile or not os.path.exists(compiledModPath):
+            import shutil
+            shutil.rmtree(compiledModPath, ignore_errors=True)
+
+            originalDir = os.getcwd()
+            os.chdir(modFolderPath)
+            subprocess.call(["nrnivmodl"])
+            os.chdir(originalDir)
+
+        import neuron
+        neuron.load_mechanisms(modFolderPath)
 
 
 #------------------------------------------------------------------------------

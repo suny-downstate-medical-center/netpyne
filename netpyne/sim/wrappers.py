@@ -330,8 +330,8 @@ def runFromIndexFile(index):
             import os, sys, importlib
 
             # TODO: handle json case
-            sys.argv.append('netParams=' + indexData['netParams_python'])
-            sys.argv.append('simConfig=' + indexData['simConfig_python'])
+            sys.argv.append('netParams=' + indexData['netParams'])
+            sys.argv.append('simConfig=' + indexData['simConfig'])
 
             dir, _ = os.path.split(pathToScript) # e.g. 'src'
 

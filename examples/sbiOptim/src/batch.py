@@ -5,7 +5,7 @@ from scipy.stats import kurtosis
 ''' Example of SBI optimization of a network using NetPyNE
 'simple' network, 3 parameters are optimized to match target firing rates in 2 populations
 
-To run use: mpiexec -np [num_cores] nrniv -mpi batchRun.py
+To run use: mpiexec -np [num_cores] nrniv -mpi src/batch.py
 '''
 
 def batchSBI():
@@ -76,7 +76,7 @@ def batchSBI():
 
 
     # create Batch object with paramaters to modify, and specifying files to use
-    b = Batch(params=params)
+    b = Batch(cfgFile='src/cfg.py', netParamsFile='src/netParams', params=params)
 
     # Set output folder, grid method (all param combinations), and run configuration
     b.batchLabel = 'simple'
@@ -84,7 +84,7 @@ def batchSBI():
     b.method = 'sbi'
     b.runCfg = {
         'type': 'mpi_direct',#'hpc_slurm',
-        'script': 'init.py',
+        'script': 'src/init.py',
         # options required only for mpi_direct or hpc
         'mpiCommand': 'mpiexec',
         'nodes': 2,

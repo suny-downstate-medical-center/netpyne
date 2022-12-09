@@ -9,6 +9,7 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
+
 standard_library.install_aliases()
 
 #------------------------------------------------------------------------------
@@ -314,6 +315,33 @@ def createSimulateAnalyzeDistributed(netParams, simConfig, output=False, filenam
         return (pops, cells, conns, stims, simData)
 
 
+def runFromIndexFile(index):
+
+    import json
+    with open(index, 'r') as fileObj:
+        indexData = json.load(fileObj)
+
+        pathToScript = indexData.get('python_run', None) # e.g. 'src/init.py'
+        if pathToScript is None:
+            from netpyne import sim
+            cfg, netParams = sim.loadFromIndexFile(index)
+            sim.createSimulateAnalyze(simConfig=cfg, netParams=netParams)
+        else:
+            import os, sys, importlib
+
+            # TODO: handle json case
+            sys.argv.append('netParams=' + indexData['netParams'])
+            sys.argv.append('simConfig=' + indexData['simConfig'])
+
+            dir, _ = os.path.split(pathToScript) # e.g. 'src'
+
+            module, _ = os.path.splitext(pathToScript)
+            module = module.replace('/', '.') # e.g. 'src.init'
+
+            sys.path.append(dir)
+            importlib.import_module(module)
+
+
 #------------------------------------------------------------------------------
 # Wrapper to load all, ready for simulation
 #------------------------------------------------------------------------------
@@ -368,10 +396,22 @@ def load(filename, simConfig=None, output=False, instantiate=True, instantiateCe
     """
 
     from .. import sim
-    sim.initialize()  # create network object and set cfg and net params
-    sim.cfg.createNEURONObj = createNEURONObj
-    sim.loadAll(filename, instantiate=instantiate, createNEURONObj=createNEURONObj)
-    if simConfig: sim.setSimCfg(simConfig)  # set after to replace potentially loaded cfg
+
+    netParams = None
+    ext = filename.split('.')[-1]
+    if ext == 'npjson' or ext == 'np':
+        config, netParams = sim.loadFromIndexFile(filename)
+        if simConfig is None:
+            simConfig = config
+        sim.initialize(netParams=netParams, simConfig=simConfig)
+        sim.cfg.createNEURONObj = createNEURONObj
+
+    else:
+        sim.initialize()  # create network object and set cfg and net params
+        sim.cfg.createNEURONObj = createNEURONObj
+        sim.loadAll(filename, instantiate=instantiate, createNEURONObj=createNEURONObj)
+        if simConfig: sim.setSimCfg(simConfig)  # set after to replace potentially loaded cfg
+
     if len(sim.net.cells) == 0 and instantiate:
         pops = sim.net.createPops()  # instantiate network populations
         if instantiateCells:

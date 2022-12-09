@@ -137,7 +137,7 @@ def _loadFile(filename):
 #------------------------------------------------------------------------------
 # Load simulation config from file
 #------------------------------------------------------------------------------
-def loadSimCfg(filename, data=None, setLoaded=True):
+def loadSimCfg(filename, data=None, variable='simConfig', setLoaded=True):
     """
     Function for/to <short description of `netpyne.sim.load.loadSimCfg`>
 
@@ -164,20 +164,21 @@ def loadSimCfg(filename, data=None, setLoaded=True):
     if not data:
         data = _loadFile(filename)
     print('Loading simConfig...')
-    if 'simConfig' in data:
+    if variable in data:
+        rawSimConfig = data[variable]
         if setLoaded:
-            setup.setSimCfg(data['simConfig'])
+            setup.setSimCfg(rawSimConfig)
         else:
-            return specs.SimConfig(data['simConfig'])
+            return specs.SimConfig(rawSimConfig)
     else:
-        print(('  simConfig not found in file %s'%(filename)))
+        print(f'  {variable} not found in file {filename}')
     pass
 
 
 #------------------------------------------------------------------------------
 # Load netParams from cell
 #------------------------------------------------------------------------------
-def loadNetParams(filename, data=None, setLoaded=True):
+def loadNetParams(filename, data=None, variable=None, setLoaded=True):
     """
     Function for/to <short description of `netpyne.sim.load.loadNetParams`>
 
@@ -203,15 +204,18 @@ def loadNetParams(filename, data=None, setLoaded=True):
 
     if not data: data = _loadFile(filename)
     print('Loading netParams...')
-    if 'net' in data and 'params' in data['net']:
-        if setLoaded:
-            setup.setNetParams(data['net']['params'])
-        else:
-            return specs.NetParams(data['net']['params'])
+    if variable is not None and variable in data:
+        rawNetParams = data[variable]
+    elif 'net' in data and 'params' in data['net']:
+        rawNetParams = data['net']['params']
     else:
         print(('netParams not found in file %s'%(filename)))
+        return
 
-    pass
+    if setLoaded:
+        setup.setNetParams(rawNetParams)
+    else:
+        return specs.NetParams(rawNetParams)
 
 
 #------------------------------------------------------------------------------
@@ -451,6 +455,90 @@ def loadAll(filename, data=None, instantiate=True, createNEURONObj=True):
         sys.exit()
     loadNet(filename, data=data, instantiate=instantiate, compactConnFormat=connFormat)
     loadSimData(filename, data=data)
+
+
+def loadFromIndexFile(index):
+    return loadModel(index, loadMechs=False)
+
+
+def loadModel(path, loadMechs=True, forceCompileMechs=False):
+
+    import __main__
+    import json
+    from .. import sim
+
+    import os
+    originalDir = os.getcwd()
+
+    absPath = os.path.abspath(path)
+
+    if os.path.isdir(absPath):
+        # if no index file specified explicitly, use default
+        index = os.path.join(absPath, 'index.npjson')
+        dir = absPath
+    else:
+        index = absPath
+        dir = os.path.dirname(absPath)
+
+    print(f'Loading model from {index} ... ')
+    with open(index, 'r') as fileObj:
+        indexData = json.load(fileObj)
+
+        if loadMechs:
+            modFolder = indexData.get('mod_folder')
+            if modFolder:
+                modFolderPath = os.path.join(dir, modFolder)
+                __processMod(modFolderPath, forceCompileMechs)
+
+        os.chdir(dir)
+
+        configFile = indexData.get('simConfig')
+        if not configFile:
+            raise Exception("Model index is missing 'simConfig' attribute")
+        print(f'\n    Loading simConfig: {configFile} ... ')
+
+        if configFile[-3:] == '.py':
+            cfgModule = sim.loadPythonModule(configFile)
+            cfg = cfgModule.cfg
+        else:
+            configVar = indexData.get('simConfig_variable', 'simConfig')
+            cfg = sim.loadSimCfg(configFile, variable=configVar, setLoaded=False)
+
+        netParamsFile = indexData.get('netParams')
+        if not netParamsFile:
+            raise Exception("Model index is missing 'netParams' attribute")
+        print(f'\n    Loading netParams: {netParamsFile} ... ')
+
+        if netParamsFile[-3:] == '.py':
+            __main__.cfg = cfg # this is often required by netParams
+
+            netParamsModule = sim.loadPythonModule(netParamsFile)
+            netParams = netParamsModule.netParams
+        else:
+            paramsVar = indexData.get('netParams_variable', None)
+            netParams = sim.loadNetParams(netParamsFile, variable=paramsVar, setLoaded=False)
+
+        os.chdir(originalDir)
+
+    return cfg, netParams
+
+
+def __processMod(modFolderPath, forceCompile):
+    import os, subprocess
+    if os.path.exists(modFolderPath):
+        compiledModPath = os.path.join(modFolderPath, 'x86_64')
+
+        if forceCompile or not os.path.exists(compiledModPath):
+            import shutil
+            shutil.rmtree(compiledModPath, ignore_errors=True)
+
+            originalDir = os.getcwd()
+            os.chdir(modFolderPath)
+            subprocess.call(["nrnivmodl"])
+            os.chdir(originalDir)
+
+        import neuron
+        neuron.load_mechanisms(modFolderPath)
 
 
 #------------------------------------------------------------------------------

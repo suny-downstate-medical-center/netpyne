@@ -219,7 +219,7 @@ def createParallelContext():
 #------------------------------------------------------------------------------
 # Read simConfig and netParams from command line arguments
 #------------------------------------------------------------------------------
-def readCmdLineArgs(simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
+def readCmdLineArgs(simConfigDefault=None, netParamsDefault=None):
     """
     Function for/to <short description of `netpyne.sim.setup.readCmdLineArgs`>
 
@@ -238,9 +238,7 @@ def readCmdLineArgs(simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
 
 
     from .. import sim
-    import imp, importlib, types
     import __main__
-
 
     if len(sys.argv) > 1:
         print('\nReading command line arguments using syntax: python file.py [simConfig=filepath] [netParams=filepath]')
@@ -251,54 +249,47 @@ def readCmdLineArgs(simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
     for arg in sys.argv:
         if arg.startswith('simConfig='):
             cfgPath = arg.split('simConfig=')[1]
-            cfg = sim.loadSimCfg(cfgPath, setLoaded=False)
-            __main__.cfg = cfg
+
         elif arg.startswith('netParams='):
             netParamsPath = arg.split('netParams=')[1]
-            if netParamsPath.endswith('.json'):
-                netParams = sim.loadNetParams(netParamsPath,  setLoaded=False)
-            elif netParamsPath.endswith('py'):
-                try: # py3
-                    loader = importlib.machinery.SourceFileLoader(os.path.basename(netParamsPath).split('.')[0], netParamsPath)
-                    netParamsModule = types.ModuleType(loader.name)
-                    loader.exec_module(netParamsModule)
-                except: # py2
-                    netParamsModule = imp.load_source(os.path.basename(netParamsPath).split('.')[0], netParamsPath)
-                netParams = netParamsModule.netParams
-                print('Importing netParams from %s' %(netParamsPath))
 
-    if not cfgPath:
-        try:
-            try:  # py3
-                loader = importlib.machinery.SourceFileLoader('cfg', simConfigDefault)
-                cfgModule = types.ModuleType(loader.name)
-                loader.exec_module(cfgModule)
-            except: # py2
-                cfgModule = imp.load_source('cfg', simConfigDefault)
+    if cfgPath is None and simConfigDefault is not None:
+        cfgPath = simConfigDefault
+    if netParamsPath is None and netParamsDefault is not None:
+        netParamsPath = netParamsDefault
 
+    if cfgPath:
+        print(f'Importing simConfig from {cfgPath}')
+        if cfgPath.endswith('.py'):
+            cfgModule = sim.loadPythonModule(cfgPath)
             cfg = cfgModule.cfg
-            __main__.cfg = cfg
-        except:
+        else:
+            cfg = sim.loadSimCfg(cfgPath, setLoaded=False)
+        __main__.cfg = cfg
+
+        if not cfg:
             print('\nWarning: Could not load cfg from command line path or from default cfg.py')
             print('This usually occurs when cfg.py crashes.  Please ensure that your cfg.py file')
             print('completes successfully on its own (i.e. execute "python cfg.py" and fix any bugs).')
-            cfg = None
+    else:
+        print('\nNo command line argument or default value for cfg provided.')
+        cfg = None
 
-    if not netParamsPath:
-        try:
-            try: # py3
-                loader = importlib.machinery.SourceFileLoader('netParams', netParamsDefault)
-                netParamsModule = types.ModuleType(loader.name)
-                loader.exec_module(netParamsModule)
-            except:  # py2
-                cfgModule = imp.load_source('netParams', netParamsDefault)
-
+    if netParamsPath:
+        print(f'Importing netParams from {netParamsPath}')
+        if netParamsPath.endswith('py'):
+            netParamsModule = sim.loadPythonModule(netParamsPath)
             netParams = netParamsModule.netParams
-        except:
+        else:
+            netParams = sim.loadNetParams(netParamsPath, setLoaded=False)
+
+        if not netParams:
             print('\nWarning: Could not load netParams from command line path or from default netParams.py')
             print('This usually occurs when netParams.py crashes.  Please ensure that your netParams.py file')
             print('completes successfully on its own (i.e. execute "python netParams.py" and fix any bugs).')
-            netParams = None
+    else:
+        print('\nNo command line argument or default value for netParams provided.')
+        netParams = None
 
     return cfg, netParams
 

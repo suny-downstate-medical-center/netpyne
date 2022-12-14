@@ -377,7 +377,7 @@ def prepareCSDPSD(
         # vaknin=vaknin,
         # norm=norm,
 
-    print('Preparing PSD CSD data...')
+    print('Preparing CSD PSD data...')
 
 
     names = data['electrodes']['names']

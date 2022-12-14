@@ -323,6 +323,127 @@ def prepareCSD(
     return data 
 
 
+@exception
+def preparePSDCSD(
+    csdData=None, 
+    sim=None,
+    timeRange=None,
+    electrodes=['avg', 'all'], 
+    pop=None,
+    minFreq=1, 
+    maxFreq=100, 
+    stepFreq=1, 
+    normSignal=False, 
+    normPSD=False, 
+    transformMethod='morlet', 
+    **kwargs
+    ):
+
+    """
+    Function to prepare data for plotting of power spectral density (PSD) of current source density (CSD)
+    """
+
+
+    ## OLD ARGS --> 
+    #   NFFT=256, 
+    #   noverlap=128, 
+    #   nperseg=256, 
+    #   smooth=0,
+    #   logy=False, 
+    ##  --> These were args in preparePSD for LFP but I bet these won't be relevant --> 
+    #   filtFreq=False, 
+    #   filtOrder=3, 
+    #   detrend=False, 
+
+
+
+    if not sim:
+        from .. import sim
+
+
+    data = prepareCSD(
+        sim=sim,
+        electrodes=electrodes,
+        timeRange=timeRange,
+        pop=pop,
+        **kwargs)
+
+    # prepareCSD args covered under kwargs --> 
+        # dt=dt, 
+        # sampr=sampr,
+        # spacing_um=spacing_um,
+        # minf=minf,
+        # maxf=maxf,
+        # vaknin=vaknin,
+        # norm=norm,
+
+    print('Preparing PSD CSD data...')
+
+
+    names = data['electrodes']['names']
+    csds = data['electrodes']['csds']       # KEEP IN MIND THAT THE FIRST [0] IS AVERAGE ELECTRODE!!! 
+
+    allFreqs = []
+    allSignal = []
+    allNames = []
+
+
+    # Used in both transforms
+    fs = int(1000.0/sim.cfg.recordStep)
+
+
+    for index, csd in enumerate(csds):
+
+        # Morlet wavelet transform method
+        if transformMethod == 'morlet':
+            
+            from ..support.morlet import MorletSpec, index2ms
+            morletSpec = MorletSpec(csd, fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq)
+            freqs = morletSpec.f
+            spec = morletSpec.TFR
+            signal = np.mean(spec, 1)
+            ylabel = 'Power'
+
+
+        allFreqs.append(freqs)
+        allSignal.append(signal)
+        allNames.append(names[index])
+
+    if normPSD:
+        vmax = np.max(allSignal)
+        for index, signal in enumerate(allSignal):
+            allSignal[index] = allSignal[index]/vmax
+
+
+    psdFreqs = []
+    psdSignal = []
+
+    for index, name in enumerate(names):
+        freqs = allFreqs[index]
+        signal = allSignal[index]
+        
+        psdFreqs.append(freqs[freqs<maxFreq])
+        psdSignal.append(signal[freqs<maxFreq])
+
+    data = {}
+    data['psdFreqs'] = psdFreqs
+    data['psdSignal'] = psdSignal
+    data['psdNames'] = names
+
+    return data
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

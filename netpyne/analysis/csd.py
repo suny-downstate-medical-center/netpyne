@@ -136,8 +136,8 @@ def removemean(x, ax=1):
 @exception
 def prepareCSD(
     sim=None,
-    electrodes=['avg', 'all'],
     timeRange=None,
+    electrodes=['avg', 'all'],
     pop=None,
     dt=None, 
     sampr=None,
@@ -157,12 +157,12 @@ def prepareCSD(
     sim : NetPyNE object
         **Default:** ``None``
 
-    electrodes : list of electrodes to look at CSD data 
-        **Default:** ['avg', 'all']
-
     timeRange: list 
         List of length two, with timeRange[0] as beginning of desired timeRange, and timeRange[1] as the end
         **Default:** ``None`` retrieves timeRange = [0, sim.cfg.duration]
+
+    electrodes : list of electrodes to look at CSD data 
+        **Default:** ['avg', 'all']
 
     pop : str
         Retrieves CSD data from a specific cell population

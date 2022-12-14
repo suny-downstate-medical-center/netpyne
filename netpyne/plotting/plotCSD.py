@@ -16,6 +16,7 @@ def plotCSD(
     dt=None,
     sampr=None,
     spacing_um=None,
+    norm=True,
     fontSize=12,
     ymax=None,
     figSize=(8,8),
@@ -123,6 +124,7 @@ def plotCSD(
             dt=dt, 
             sampr=sampr,
             spacing_um=spacing_um,
+            norm=True,
             getAllData=True,
             **kwargs)
 

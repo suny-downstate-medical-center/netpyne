@@ -42,7 +42,7 @@ except:
 # Import CSD-related functions
 #from .csd import getCSD, plotCSD
 from .csd import prepareCSD
-from .csd import preparePSDCSD
+from .csd import prepareCSDPSD
 
 # Import dipole-related functions
 from .dipole import plotDipole, plotEEG

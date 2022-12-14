@@ -324,7 +324,7 @@ def prepareCSD(
 
 
 @exception
-def preparePSDCSD(
+def prepareCSDPSD(
     csdData=None, 
     sim=None,
     timeRange=None,
@@ -433,6 +433,26 @@ def preparePSDCSD(
     return data
 
 
+### FUTURE WORK --> DEFINE FUNCTION prepareSpectrogram() ### 
+# @exception
+# def prepareSpectrogram(
+#     sim=None,
+#     timeRange=None,
+#     electrodes=['avg', 'all'], 
+#     pop=None,
+#     csdData=None, 
+#     minFreq=1, 
+#     maxFreq=100, 
+#     stepFreq=1, 
+#     normSignal=False, 
+#     normPSD=False, 
+#     normSpec=False, 
+#     transformMethod='morlet', 
+#     **kwargs):
+
+#     """
+#     Function to prepare data for plotting of the spectrogram
+#     """
 
 
 

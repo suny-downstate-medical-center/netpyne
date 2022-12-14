@@ -272,15 +272,15 @@ def prepareCSD(
 
 
     # now each column (or row) is an electrode -- take CSD along electrodes
-    csdData = -np.diff(datband, n=2, axis=ax)/spacing_mm**2  
+    CSDData = -np.diff(datband, n=2, axis=ax)/spacing_mm**2  
 
 
     # Splice CSD data by timeRange, if relevant 
     if timeRange is None:
-        timeRange = [0, sim.cfg.recordStep]
+        timeRange = [0, sim.cfg.duration]
     else:
         # lfpData = lfpData[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
-        csdData = csdData[:,int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep)]
+        CSDData = CSDData[:,int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep)]
 
 
     # create the output data dictionary
@@ -302,10 +302,10 @@ def prepareCSD(
 
     for i, elec in enumerate(electrodes):
         if elec == 'avg':
-            csdSignal = np.mean(csdData, axis=0)
+            csdSignal = np.mean(CSDData, axis=0)
             loc = None
         elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
-            csdSignal = csdData[elec,:] 
+            csdSignal = CSDData[elec,:] 
             loc = sim.cfg.recordLFP[elec]
 
 
@@ -314,18 +314,18 @@ def prepareCSD(
         data['electrodes']['csds'].append(csdSignal) ## <-- this can be turned into an array with np.array(data['electrodes']['csds'] -- NOTE: first row will be average -- data['electrodes']['csds'][0])
 
     ## testing line 
-    data['csdData'] = csdData
+    data['CSDData'] = CSDData
     ### NOTE: 
     ### csd = np.array(data['electrodes']['csds'])
     ### csd = np.array(csd)
-    ### csd[1:, :] == csdData['csdData']   ---> True, True, True... True 
+    ### csd[1:, :] == CSDData['CSDData']   ---> True, True, True... True 
 
     return data 
 
 
 @exception
 def prepareCSDPSD(
-    csdData=None, 
+    CSDData=None, 
     sim=None,
     timeRange=None,
     electrodes=['avg', 'all'], 
@@ -440,7 +440,7 @@ def prepareCSDPSD(
 #     timeRange=None,
 #     electrodes=['avg', 'all'], 
 #     pop=None,
-#     csdData=None, 
+#     CSDData=None, 
 #     minFreq=1, 
 #     maxFreq=100, 
 #     stepFreq=1, 

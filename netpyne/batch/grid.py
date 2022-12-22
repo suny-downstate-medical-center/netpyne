@@ -185,40 +185,6 @@ def gridSearch(batch, pc):
     if batch.runCfg.get('type',None) == 'mpi_bulletin':
         pc.runworker() # only 1 runworker needed in rank0
 
-    createFolder(batch.saveFolder)
-
-    # save Batch dict as json
-    targetFile = batch.saveFolder+'/'+batch.batchLabel+'_batch.json'
-    batch.save(targetFile)
-
-    # copy this batch script to folder
-    targetFile = batch.saveFolder+'/'+batch.batchLabel+'_batchScript.py'
-    os.system('cp ' + os.path.realpath(__file__) + ' ' + targetFile)
-
-    # copy netParams source to folder
-    netParamsSavePath = batch.saveFolder+'/'+batch.batchLabel+'_netParams.py'
-    os.system('cp ' + batch.netParamsFile + ' ' + netParamsSavePath)
-
-    # import cfg
-    if batch.cfg is None:
-        cfgModuleName = os.path.basename(batch.cfgFile).split('.')[0]
-
-        try:
-            loader = importlib.machinery.SourceFileLoader(cfgModuleName, batch.cfgFile)
-            cfgModule = types.ModuleType(loader.name)
-            loader.exec_module(cfgModule)
-        except:
-            cfgModule = imp.load_source(cfgModuleName, batch.cfgFile)
-
-        batch.cfg = cfgModule.cfg
-
-    batch.cfg.checkErrors = False  # avoid error checking during batch
-
-    # set initial cfg initCfg
-    if len(batch.initCfg) > 0:
-        for paramLabel, paramVal in batch.initCfg.items():
-            batch.setCfgNestedParam(paramLabel, paramVal)
-
     processes, processFiles = [],[]
 
     if batch.method == 'list':

@@ -1,3 +1,9 @@
+# Version in development
+
+**New features**
+
+- Added 'linewidth' as argument of plotting.plotSpikeHist()
+
 # Version 1.0.3
 
 **New features**

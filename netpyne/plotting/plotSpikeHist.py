@@ -166,7 +166,9 @@ def plotSpikeHist(
     ylabel : str
         label for y-axis
 
-    
+    linewidth : int
+        line width
+
     Returns
     -------
     freqPlot : *matplotlib figure*
@@ -298,6 +300,7 @@ def plotSpikeHist(
     plotData['rwidth']      = histData.get('rwidth', None)
     plotData['log']         = log
     plotData['color']       = histData.get('color', None)
+    plotData['linewidth']   = 1.0
     plotData['alpha']       = histData.get('alpha', None)
     plotData['label']       = histData.get('label', None)
     plotData['stacked']     = stacked

@@ -959,10 +959,11 @@ class HistPlotter(GeneralPlotter):
         self.label       = data.get('label', None)
         self.stacked     = data.get('stacked', False)
         self.data        = data.get('data', None)
+        self.linewidth   = data.get('linewidth', None)
 
     def plot(self, **kwargs):
 
-        histPlot = self.axis.hist(self.x, bins=self.bins, range=self.range, density=self.density, weights=self.weights, cumulative=self.cumulative, bottom=self.bottom, histtype=self.histtype, align=self.align, orientation=self.orientation, rwidth=self.rwidth, log=self.log, color=self.color, alpha=self.alpha, label=self.label, stacked=self.stacked, data=self.data)
+        histPlot = self.axis.hist(self.x, bins=self.bins, range=self.range, density=self.density, weights=self.weights, cumulative=self.cumulative, bottom=self.bottom, histtype=self.histtype, align=self.align, orientation=self.orientation, rwidth=self.rwidth, log=self.log, color=self.color, alpha=self.alpha, label=self.label, stacked=self.stacked, linewidth=self.linewidth, data=self.data)
 
         self.finishAxis(**kwargs)
 

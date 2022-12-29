@@ -250,10 +250,13 @@ def gridSearch(batch, pc):
             simLabel = jobName.split('/')[-1]
 
             gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles)
+    
+    else:
+        print("Error: invalid batch.method selected; valid types are 'list', 'grid'")
 
-        print("-"*80)
-        print("   Finished creating jobs for parameter exploration   ")
-        print("-" * 80)
+    print("-"*80)
+    print("   Finished creating jobs for parameter exploration   ")
+    print("-" * 80)
 
     if batch.runCfg.get('type',None) == 'mpi_bulletin':
         while pc.working(): pass
@@ -287,16 +290,19 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
     # skip if output file already exists
     if batch.runCfg.get('skip', False) and glob.glob(jobName+'_data.json'):
         print('Skipping job %s since output file already exists...' % (jobName))
+        return
     elif batch.runCfg.get('skipCfg', False) and glob.glob(jobName+'_cfg.json'):
         print('Skipping job %s since cfg file already exists...' % (jobName))
+        return
     elif batch.runCfg.get('skipCustom', None) and glob.glob(jobName+batch.runCfg['skipCustom']):
         print('Skipping job %s since %s file already exists...' % (jobName, batch.runCfg['skipCustom']))
-    else:
-        # save simConfig json to saveFolder
-        batch.cfg.simLabel = simLabel
-        batch.cfg.saveFolder = batch.saveFolder
-        cfgSavePath = batch.saveFolder+'/'+simLabel+'_cfg.json'
-        batch.cfg.save(cfgSavePath)
+        return
+
+    # save simConfig json to saveFolder
+    batch.cfg.simLabel = simLabel
+    batch.cfg.saveFolder = batch.saveFolder
+    cfgSavePath = batch.saveFolder+'/'+simLabel+'_cfg.json'
+    batch.cfg.save(cfgSavePath)
 
     # read params or set defaults
     sleepInterval = batch.runCfg.get('sleepInterval', 1)

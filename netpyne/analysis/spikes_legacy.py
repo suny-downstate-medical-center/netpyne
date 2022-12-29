@@ -733,7 +733,7 @@ def plotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot spike histogram
 # -------------------------------------------------------------------------------------------------------------------
-#@exception
+@exception
 def plotSpikeHist(include=['eachPop', 'allCells'], timeRange=None, binSize=5, overlay=True, graphType='line', measure='rate', norm=False, smooth=None, filtFreq=None, filtOrder=3, axis=True, popColors=None, figSize=(10,8), dpi=100, saveData=None, saveFig=None, showFig=True, **kwargs):
     """
     Function for/to <short description of `netpyne.analysis.spikes.plotSpikeHist`>
@@ -941,7 +941,7 @@ def plotSpikeHist(include=['eachPop', 'allCells'], timeRange=None, binSize=5, ov
 
         histoData.append(histoCount)
 
-        if not isinstance(subset, list):
+        if isinstance(subset, list):
             color = colorList[iplot%len(colorList)]
         else:
             if popColors:
@@ -949,16 +949,22 @@ def plotSpikeHist(include=['eachPop', 'allCells'], timeRange=None, binSize=5, ov
             else:
                 color = colorList[iplot%len(colorList)]
 
+
         if not overlay:
             plt.subplot(len(include), 1, iplot+1)  # if subplot, create new subplot
             plt.title(str(subset), fontsize=fontsiz)
             color = 'blue'
 
+
+        if 'linewidth' in kwargs:
+            lw = kwargs['linewidth']
+        else:
+            lw = 1.0
         if graphType == 'line':
-            plt.plot (histoT, histoCount, linewidth=1.0, color = color)
+            plt.plot (histoT, histoCount, linewidth=lw, color = color)
         elif graphType == 'bar':
             #plt.bar(histoT, histoCount, width = binSize, color = color, fill=False)
-            plt.plot (histoT, histoCount, linewidth=1.0, color = color, ls='steps')
+            plt.step (histoT, histoCount, linewidth=lw, color = color)#, ls='steps')
 
         if iplot == 0:
             plt.xlabel('Time (ms)', fontsize=fontsiz)

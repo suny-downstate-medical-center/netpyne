@@ -11,12 +11,14 @@ from __future__ import absolute_import
 from builtins import range
 from builtins import round
 from builtins import str
+
 try:
     basestring
 except NameError:
     basestring = str
 
 from future import standard_library
+
 standard_library.install_aliases()
 from netpyne import __gui__
 
@@ -27,34 +29,33 @@ import numpy as np
 from numbers import Number
 
 
-
-def plotDipole(showCell=None, showPop=None,  timeRange=None, dpi=300, figSize=(6,6), showFig=True, saveFig=True):
+def plotDipole(showCell=None, showPop=None, timeRange=None, dpi=300, figSize=(6, 6), showFig=True, saveFig=True):
     from .. import sim
-    
+
     if showCell:
-        p = sim.allSimData['dipoleCells'][showCell]    
+        p = sim.allSimData['dipoleCells'][showCell]
     elif showPop:
-        p = sim.allSimData['dipolePops'][showPop]    
+        p = sim.allSimData['dipolePops'][showPop]
     else:
         p = sim.allSimData['dipoleSum']
 
-    p = p/1000.0 # convert from nA to uA
+    p = p / 1000.0  # convert from nA to uA
 
     if timeRange is None:
         timeRange = [0, sim.cfg.duration]
 
-    timeSteps = [int(timeRange[0]/sim.cfg.recordStep), int(timeRange[1]/sim.cfg.recordStep)]
+    timeSteps = [int(timeRange[0] / sim.cfg.recordStep), int(timeRange[1] / sim.cfg.recordStep)]
 
     # current dipole moment
-    plt.figure(figsize=figSize) 
-    plt.plot(np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep), np.array(p)[timeSteps[0]:timeSteps[1]])
-    #plt.legend([r'$P_x$ (mA um)', r'$P_y$ (mA um)', r'$P_z$ (mA um)'])
+    plt.figure(figsize=figSize)
+    plt.plot(np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep), np.array(p)[timeSteps[0] : timeSteps[1]])
+    # plt.legend([r'$P_x$ (mA um)', r'$P_y$ (mA um)', r'$P_z$ (mA um)'])
     plt.legend([r'$P_x$', r'$P_y$', r'$P_z$'])
     plt.ylabel(r'$\mathbf{P}(t)$ ($\mu$A $\mu$m)')
     plt.xlabel('$t$ (ms)')
-    ax=plt.gca()
+    ax = plt.gca()
     ax.grid(False)
-    
+
     # save figure
     if saveFig:
         if isinstance(saveFig, basestring):
@@ -66,42 +67,50 @@ def plotDipole(showCell=None, showPop=None,  timeRange=None, dpi=300, figSize=(6
         except:
             plt.savefig('dipole_fig.png', dpi=dpi)
 
-
     # display figure
     if showFig is True:
         plt.show()
 
 
-def plotEEG(showCell=None, showPop=None,  timeRange=None, dipole_location='parietal_lobe', dpi=300, figSize=(19,10), showFig=True, saveFig=True):
+def plotEEG(
+    showCell=None,
+    showPop=None,
+    timeRange=None,
+    dipole_location='parietal_lobe',
+    dpi=300,
+    figSize=(19, 10),
+    showFig=True,
+    saveFig=True,
+):
     from .. import sim
 
     from lfpykit.eegmegcalc import NYHeadModel
 
     nyhead = NYHeadModel()
 
-    #dipole_location = 'parietal_lobe'  # predefined location from NYHead class
+    # dipole_location = 'parietal_lobe'  # predefined location from NYHead class
     nyhead.set_dipole_pos(dipole_location)
     M = nyhead.get_transformation_matrix()
 
     if showCell:
-        p = sim.allSimData['dipoleCells'][showCell]    
+        p = sim.allSimData['dipoleCells'][showCell]
     elif showPop:
-        p = sim.allSimData['dipolePops'][showPop]    
+        p = sim.allSimData['dipolePops'][showPop]
     else:
         p = sim.allSimData['dipoleSum']
 
     if timeRange is None:
         timeRange = [0, sim.cfg.duration]
 
-    timeSteps = [int(timeRange[0]/sim.cfg.recordStep), int(timeRange[1]/sim.cfg.recordStep)]
+    timeSteps = [int(timeRange[0] / sim.cfg.recordStep), int(timeRange[1] / sim.cfg.recordStep)]
 
     p = np.array(p).T
-    
-    p=p[:, timeSteps[0]:timeSteps[1]]
+
+    p = p[:, timeSteps[0] : timeSteps[1]]
 
     # We rotate current dipole moment to be oriented along the normal vector of cortex
     p = nyhead.rotate_dipole_to_surface_normal(p)
-    eeg = M @ p * 1E9 # [mV] -> [pV] unit conversion
+    eeg = M @ p * 1e9  # [mV] -> [pV] unit conversion
 
     # plot EEG daa
     x_lim = [-100, 100]
@@ -118,8 +127,7 @@ def plotEEG(showCell=None, showPop=None,  timeRange=None, dipole_location='parie
     ax3 = fig.add_subplot(247, aspect=1, xlabel="y (mm)", ylabel='z (mm)', xlim=y_lim, ylim=z_lim)
     ax_eeg = fig.add_subplot(244, xlabel="Time (ms)", ylabel='pV', title='EEG at all electrodes')
 
-    ax_cdm = fig.add_subplot(248, xlabel="Time (ms)", ylabel='nA$\cdot \mu$m', 
-                            title='Current dipole moment')
+    ax_cdm = fig.add_subplot(248, xlabel="Time (ms)", ylabel='nA$\cdot \mu$m', title='Current dipole moment')
     dist, closest_elec_idx = nyhead.find_closest_electrode()
     print("Closest electrode to dipole: {:1.2f} mm".format(dist))
 
@@ -130,23 +138,37 @@ def plotEEG(showCell=None, showPop=None,  timeRange=None, dipole_location='parie
 
     max_eeg_pos = nyhead.elecs[:3, max_eeg_idx]
     fig.text(0.01, 0.25, "Cortex", va='center', rotation=90, fontsize=22)
-    fig.text(0.03, 0.25, 
-            "Dipole pos: {:1.1f}, {:1.1f}, {:1.1f}\nDipole moment: {:1.2f} {:1.2f} {:1.2f}".format(
-        nyhead.dipole_pos[0], nyhead.dipole_pos[1], nyhead.dipole_pos[2],
-        p[0, time_idx], p[1, time_idx], p[2, time_idx]
-    ), va='center', rotation=90, fontsize=14)
+    fig.text(
+        0.03,
+        0.25,
+        "Dipole pos: {:1.1f}, {:1.1f}, {:1.1f}\nDipole moment: {:1.2f} {:1.2f} {:1.2f}".format(
+            nyhead.dipole_pos[0],
+            nyhead.dipole_pos[1],
+            nyhead.dipole_pos[2],
+            p[0, time_idx],
+            p[1, time_idx],
+            p[2, time_idx],
+        ),
+        va='center',
+        rotation=90,
+        fontsize=14,
+    )
 
     fig.text(0.01, 0.75, "EEG", va='center', rotation=90, fontsize=22)
-    fig.text(0.03, 0.75, "Max: {:1.2f} pV at idx {}\n({:1.1f}, {:1.1f} {:1.1f})".format(
-            max_eeg, max_eeg_idx, max_eeg_pos[0], max_eeg_pos[1], max_eeg_pos[2]), va='center',
-            rotation=90, fontsize=14)
+    fig.text(
+        0.03,
+        0.75,
+        "Max: {:1.2f} pV at idx {}\n({:1.1f}, {:1.1f} {:1.1f})".format(
+            max_eeg, max_eeg_idx, max_eeg_pos[0], max_eeg_pos[1], max_eeg_pos[2]
+        ),
+        va='center',
+        rotation=90,
+        fontsize=14,
+    )
 
-    ax7 = fig.add_subplot(241, aspect=1, xlabel="x (mm)", ylabel='y (mm)',
-                        xlim=x_lim, ylim=y_lim)
-    ax8 = fig.add_subplot(242, aspect=1, xlabel="x (mm)", ylabel='z (mm)',
-                        xlim=x_lim, ylim=z_lim)
-    ax9 = fig.add_subplot(243, aspect=1, xlabel="y (mm)", ylabel='z (mm)',
-                        xlim=y_lim, ylim=z_lim)
+    ax7 = fig.add_subplot(241, aspect=1, xlabel="x (mm)", ylabel='y (mm)', xlim=x_lim, ylim=y_lim)
+    ax8 = fig.add_subplot(242, aspect=1, xlabel="x (mm)", ylabel='z (mm)', xlim=x_lim, ylim=z_lim)
+    ax9 = fig.add_subplot(243, aspect=1, xlabel="y (mm)", ylabel='z (mm)', xlim=y_lim, ylim=z_lim)
 
     ax_cdm.plot(t, p[2, :], 'k')
     [ax_eeg.plot(t, eeg[idx, :], c='gray') for idx in range(eeg.shape[0])]
@@ -154,7 +176,7 @@ def plotEEG(showCell=None, showPop=None,  timeRange=None, dipole_location='parie
 
     vmax = np.max(np.abs(eeg[:, time_idx]))
     v_range = vmax
-    cmap = lambda v: plt.cm.bwr((v + vmax) / (2*vmax))
+    cmap = lambda v: plt.cm.bwr((v + vmax) / (2 * vmax))
 
     threshold = 2
 
@@ -168,15 +190,11 @@ def plotEEG(showCell=None, showPop=None,  timeRange=None, dipole_location='parie
 
     for idx in range(eeg.shape[0]):
         c = cmap(eeg[idx, time_idx])
-        ax7.plot(nyhead.elecs[0, idx], nyhead.elecs[1, idx], 'o', ms=10, c=c, 
-                zorder=nyhead.elecs[2, idx])
-        ax8.plot(nyhead.elecs[0, idx], nyhead.elecs[2, idx], 'o', ms=10, c=c, 
-                zorder=nyhead.elecs[1, idx])
-        ax9.plot(nyhead.elecs[1, idx], nyhead.elecs[2, idx], 'o', ms=10, c=c, 
-                zorder=-nyhead.elecs[0, idx])
+        ax7.plot(nyhead.elecs[0, idx], nyhead.elecs[1, idx], 'o', ms=10, c=c, zorder=nyhead.elecs[2, idx])
+        ax8.plot(nyhead.elecs[0, idx], nyhead.elecs[2, idx], 'o', ms=10, c=c, zorder=nyhead.elecs[1, idx])
+        ax9.plot(nyhead.elecs[1, idx], nyhead.elecs[2, idx], 'o', ms=10, c=c, zorder=-nyhead.elecs[0, idx])
 
-    img = ax3.imshow([[], []], origin="lower", vmin=-vmax,
-                    vmax=vmax, cmap=plt.cm.bwr)
+    img = ax3.imshow([[], []], origin="lower", vmin=-vmax, vmax=vmax, cmap=plt.cm.bwr)
     plt.colorbar(img, ax=ax9, shrink=0.5)
 
     ax1.plot(nyhead.dipole_pos[0], nyhead.dipole_pos[1], '*', ms=12, color='orange', zorder=1000)
@@ -186,7 +204,6 @@ def plotEEG(showCell=None, showPop=None,  timeRange=None, dipole_location='parie
     ax7.plot(nyhead.dipole_pos[0], nyhead.dipole_pos[1], '*', ms=15, color='orange', zorder=1000)
     ax8.plot(nyhead.dipole_pos[0], nyhead.dipole_pos[2], '*', ms=15, color='orange', zorder=1000)
     ax9.plot(nyhead.dipole_pos[1], nyhead.dipole_pos[2], '*', ms=15, color='orange', zorder=1000)
-
 
     # save figure
     if saveFig:
@@ -199,9 +216,8 @@ def plotEEG(showCell=None, showPop=None,  timeRange=None, dipole_location='parie
         except:
             plt.savefig('EEG_fig.png', dpi=dpi)
 
-
     # display figure
     if showFig is True:
         plt.show()
 
-    #import IPython as ipy; ipy.embed() 
+    # import IPython as ipy; ipy.embed()

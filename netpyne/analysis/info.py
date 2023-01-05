@@ -15,6 +15,7 @@ except NameError:
 
 from builtins import zip
 from future import standard_library
+
 standard_library.install_aliases()
 from netpyne import __gui__
 
@@ -31,15 +32,15 @@ from .utils import exception, _saveFigData, _showFigure, getCellsInclude
 def nTE(cells1=[], cells2=[], spks1=None, spks2=None, timeRange=None, binSize=20, numShuffle=30):
     """
     Function that calculates the Normalized Transfer Entropy (nTE) between two spike train signals.
-    
-    Transfer entropy is a model-free statistic that is able to measure 
+
+    Transfer entropy is a model-free statistic that is able to measure
     the time-directed transfer of information between stochastic variables
     and therefore provides an asymmetric method to measure information transfer.
     In simple words, the nTE represents the fraction of information in X explained
-    by its own past which is not explained by the past of Y. 
-    
-    Kale, P. et al (2018, July). Normalized Transfer Entropy as a Tool to Identify Multisource 
-    Functional Epileptic Networks IEEE Engineering in Medicine and Biology Society (EMBC) 
+    by its own past which is not explained by the past of Y.
+
+    Kale, P. et al (2018, July). Normalized Transfer Entropy as a Tool to Identify Multisource
+    Functional Epileptic Networks IEEE Engineering in Medicine and Biology Society (EMBC)
     https://doi.org/10.1109/embc.2018.8512532
 
     Parameters
@@ -90,8 +91,7 @@ def nTE(cells1=[], cells2=[], spks1=None, spks2=None, timeRange=None, binSize=20
     Returns
     -------
 
-
-"""
+    """
 
     from neuron import h
     import netpyne
@@ -102,16 +102,20 @@ def nTE(cells1=[], cells2=[], spks1=None, spks2=None, timeRange=None, binSize=20
 
     if 'nte' not in dir(h):
         try:
-            print(' Warning: support/nte.mod not compiled; attempting to compile from %s via "nrnivmodl support"'%(root))
+            print(
+                ' Warning: support/nte.mod not compiled; attempting to compile from %s via "nrnivmodl support"'
+                % (root)
+            )
             os.system('cd ' + root + '; nrnivmodl support')
             from neuron import load_mechanisms
+
             load_mechanisms(root)
             print(' Compilation of support folder mod files successful')
         except:
             print(' Error compiling support folder mod files')
             return
 
-    h.load_file(root+'/support/nte.hoc') # nTE code (also requires support/net.mod)
+    h.load_file(root + '/support/nte.hoc')  # nTE code (also requires support/net.mod)
 
     if not spks1:  # if doesnt contain a list of spk times, obtain from cells specified
         cells, cellGids, netStimPops = getCellsInclude(cells1)
@@ -120,7 +124,9 @@ def nTE(cells1=[], cells2=[], spks1=None, spks2=None, timeRange=None, binSize=20
         # Select cells to include
         if len(cellGids) > 0:
             try:
-                spkts = [spkt for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]
+                spkts = [
+                    spkt for spkgid, spkt in zip(sim.allSimData['spkid'], sim.allSimData['spkt']) if spkgid in cellGids
+                ]
             except:
                 spkts = []
         else:
@@ -131,9 +137,9 @@ def nTE(cells1=[], cells2=[], spks1=None, spks2=None, timeRange=None, binSize=20
         numNetStims = 0
         for netStimPop in netStimPops:
             if 'stims' in sim.allSimData:
-                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].items() if netStimPop in cellStim]
+                cellStims = [cellStim for cell, cellStim in sim.allSimData['stims'].items() if netStimPop in cellStim]
                 if len(cellStims) > 0:
-                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
+                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop]]
                     spkts.extend(spktsNew)
                     numNetStims += len(cellStims)
 
@@ -146,7 +152,9 @@ def nTE(cells1=[], cells2=[], spks1=None, spks2=None, timeRange=None, binSize=20
         # Select cells to include
         if len(cellGids) > 0:
             try:
-                spkts = [spkt for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]
+                spkts = [
+                    spkt for spkgid, spkt in zip(sim.allSimData['spkid'], sim.allSimData['spkt']) if spkgid in cellGids
+                ]
             except:
                 spkts = []
         else:
@@ -157,9 +165,9 @@ def nTE(cells1=[], cells2=[], spks1=None, spks2=None, timeRange=None, binSize=20
         numNetStims = 0
         for netStimPop in netStimPops:
             if 'stims' in sim.allSimData:
-                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].items() if netStimPop in cellStim]
+                cellStims = [cellStim for cell, cellStim in sim.allSimData['stims'].items() if netStimPop in cellStim]
                 if len(cellStims) > 0:
-                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
+                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop]]
                     spkts.extend(spktsNew)
                     numNetStims += len(cellStims)
 
@@ -167,15 +175,15 @@ def nTE(cells1=[], cells2=[], spks1=None, spks2=None, timeRange=None, binSize=20
 
     # time range
     if getattr(sim, 'cfg', None):
-        timeRange = [0,sim.cfg.duration]
+        timeRange = [0, sim.cfg.duration]
     else:
-        timeRange = [0, max(spks1+spks2)]
+        timeRange = [0, max(spks1 + spks2)]
 
     inputVec = h.Vector()
     outputVec = h.Vector()
-    histo1 = np.histogram(spks1, bins = np.arange(timeRange[0], timeRange[1], binSize))
+    histo1 = np.histogram(spks1, bins=np.arange(timeRange[0], timeRange[1], binSize))
     histoCount1 = histo1[0]
-    histo2 = np.histogram(spks2, bins = np.arange(timeRange[0], timeRange[1], binSize))
+    histo2 = np.histogram(spks2, bins=np.arange(timeRange[0], timeRange[1], binSize))
     histoCount2 = histo2[0]
 
     inputVec.from_python(histoCount1)
@@ -189,16 +197,30 @@ def nTE(cells1=[], cells2=[], spks1=None, spks2=None, timeRange=None, binSize=20
 ## Calculate granger causality
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def plotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, label2=None, timeRange=None, binSize=5, testGranger=False, plotFig=True, saveData=None, saveFig=None, showFig=True):
+def plotGranger(
+    cells1=None,
+    cells2=None,
+    spks1=None,
+    spks2=None,
+    label1=None,
+    label2=None,
+    timeRange=None,
+    binSize=5,
+    testGranger=False,
+    plotFig=True,
+    saveData=None,
+    saveFig=None,
+    showFig=True,
+):
     """
     Function that calculates Granger Causality between two spike train signals.
-    
-    The Granger causality test is a statistical hypothesis test for determining 
-    whether one time series is useful in forecasting another. G-causality is based 
+
+    The Granger causality test is a statistical hypothesis test for determining
+    whether one time series is useful in forecasting another. G-causality is based
     on the simple idea that causes both precede and help predict their effects.
-    
-    Seth, A. K., Barrett, A. B., & Barnett, L. (2015). Granger Causality Analysis in 
-    Neuroscience and Neuroimaging. Journal of Neuroscience, 35(8), 3293–3297. 
+
+    Seth, A. K., Barrett, A. B., & Barnett, L. (2015). Granger Causality Analysis in
+    Neuroscience and Neuroimaging. Journal of Neuroscience, 35(8), 3293–3297.
     https://doi.org/10.1523/jneurosci.4399-14.2015
 
     Parameters
@@ -268,7 +290,7 @@ def plotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, l
     showFig : bool
         Shows the figure if ``True``.
         **Default:** ``True``
-        
+
     Returns
     -------
 
@@ -280,7 +302,7 @@ def plotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, l
     from netpyne.support.bsmart import pwcausalr
 
     if not spks1:  # if doesnt contain a list of spk times, obtain from cells specified
-        
+
         if not cells1:
             pops = list(sim.net.allPops.keys())
             if len(pops) == 1:
@@ -306,7 +328,9 @@ def plotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, l
         # Select cells to include
         if len(cellGids) > 0:
             try:
-                spkts = [spkt for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]
+                spkts = [
+                    spkt for spkgid, spkt in zip(sim.allSimData['spkid'], sim.allSimData['spkt']) if spkgid in cellGids
+                ]
             except:
                 spkts = []
         else:
@@ -317,23 +341,25 @@ def plotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, l
         numNetStims = 0
         for netStimPop in netStimPops:
             if 'stims' in sim.allSimData:
-                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].items() if netStimPop in cellStim]
+                cellStims = [cellStim for cell, cellStim in sim.allSimData['stims'].items() if netStimPop in cellStim]
                 if len(cellStims) > 0:
-                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
+                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop]]
                     spkts.extend(spktsNew)
                     numNetStims += len(cellStims)
 
         spks1 = list(spkts)
 
     if not spks2:  # if doesnt contain a list of spk times, obtain from cells specified
-        
+
         cells, cellGids, netStimPops = getCellsInclude(cells2)
         numNetStims = 0
 
         # Select cells to include
         if len(cellGids) > 0:
             try:
-                spkts = [spkt for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]
+                spkts = [
+                    spkt for spkgid, spkt in zip(sim.allSimData['spkid'], sim.allSimData['spkt']) if spkgid in cellGids
+                ]
             except:
                 spkts = []
         else:
@@ -344,34 +370,36 @@ def plotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, l
         numNetStims = 0
         for netStimPop in netStimPops:
             if 'stims' in sim.allSimData:
-                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].items() if netStimPop in cellStim]
+                cellStims = [cellStim for cell, cellStim in sim.allSimData['stims'].items() if netStimPop in cellStim]
                 if len(cellStims) > 0:
-                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
+                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop]]
                     spkts.extend(spktsNew)
                     numNetStims += len(cellStims)
 
         spks2 = list(spkts)
 
-
     # time range
     if timeRange is None:
         if getattr(sim, 'cfg', None):
-            timeRange = [0,sim.cfg.duration]
+            timeRange = [0, sim.cfg.duration]
         else:
-            timeRange = [0, max(spks1+spks2)]
+            timeRange = [0, max(spks1 + spks2)]
 
-    histo1 = np.histogram(spks1, bins = np.arange(timeRange[0], timeRange[1], binSize))
+    histo1 = np.histogram(spks1, bins=np.arange(timeRange[0], timeRange[1], binSize))
     histoCount1 = histo1[0]
 
-    histo2 = np.histogram(spks2, bins = np.arange(timeRange[0], timeRange[1], binSize))
+    histo2 = np.histogram(spks2, bins=np.arange(timeRange[0], timeRange[1], binSize))
     histoCount2 = histo2[0]
 
-    fs = int(1000/binSize)
-    F, pp, cohe, Fx2y, Fy2x, Fxy = pwcausalr(np.array([histoCount1, histoCount2]), 1, len(histoCount1), 10, fs, int(fs/2))
+    fs = int(1000 / binSize)
+    F, pp, cohe, Fx2y, Fy2x, Fxy = pwcausalr(
+        np.array([histoCount1, histoCount2]), 1, len(histoCount1), 10, fs, int(fs / 2)
+    )
 
     # check reliability
     if testGranger:
         import scipy
+
         ''' Option 1: granger causality tests -- not sure how to interpret results
         try:
             from statsmodels.tsa.stattools import grangercausalitytests as gt
@@ -384,14 +412,16 @@ def plotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, l
 
         # do N=25 shuffles of histoCount2
         Nshuffle = 50
-        #x2yShuffleMaxValues = []
+        # x2yShuffleMaxValues = []
         y2xShuffleMaxValues = []
         histoCount2Shuffled = np.array(histoCount2)
         for ishuffle in range(Nshuffle):
             # for each calculate max Granger value (starting at freq index 1)
             np.random.shuffle(histoCount2Shuffled)
-            _, _, _, Fx2yShuff, Fy2xShuff, _ = pwcausalr(np.array([histoCount1, histoCount2Shuffled]), 1, len(histoCount1), 10, fs, int(fs / 2))
-            #x2yShuffleMaxValues.append(max(Fx2yShuff[0][1:]))
+            _, _, _, Fx2yShuff, Fy2xShuff, _ = pwcausalr(
+                np.array([histoCount1, histoCount2Shuffled]), 1, len(histoCount1), 10, fs, int(fs / 2)
+            )
+            # x2yShuffleMaxValues.append(max(Fx2yShuff[0][1:]))
             y2xShuffleMaxValues.append(max(Fy2xShuff[0][1:]))
 
         # calculate z-score
@@ -401,10 +431,10 @@ def plotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, l
         # https://pro.arcgis.com/en/pro-app/tool-reference/spatial-statistics/what-is-a-z-score-what-is-a-p-value.htm
 
         # calculate mean and std
-        #x2yMean = np.mean(x2yShuffleMaxValues)
-        #x2yStd = np.std(x2yShuffleMaxValues)
-        #x2yZscore = abs(np.max(Fx2y[0][1:]) - x2yMean) / x2yStd
-        #x2yPvalue = scipy.stats.norm.sf(x2yZscore)
+        # x2yMean = np.mean(x2yShuffleMaxValues)
+        # x2yStd = np.std(x2yShuffleMaxValues)
+        # x2yZscore = abs(np.max(Fx2y[0][1:]) - x2yMean) / x2yStd
+        # x2yPvalue = scipy.stats.norm.sf(x2yZscore)
 
         y2xMean = np.mean(y2xShuffleMaxValues)
         y2xStd = np.std(y2xShuffleMaxValues)
@@ -412,24 +442,34 @@ def plotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, l
         y2xPvalue = scipy.stats.norm.sf(y2xZscore)
 
     if not label1:
-        label1='spkTrain1'
-    if not label2: 
-        label2='spkTrain2'
+        label1 = 'spkTrain1'
+    if not label2:
+        label2 = 'spkTrain2'
 
     # plot granger
     fig = -1
     if plotFig:
         fig = plt.figure()
-        plt.plot(F, Fy2x[0], label = label2 + ' --> ' + label1)
-        plt.plot(F, Fx2y[0], 'r', label = label1 + ' --> ' + label2)
+        plt.plot(F, Fy2x[0], label=label2 + ' --> ' + label1)
+        plt.plot(F, Fx2y[0], 'r', label=label1 + ' --> ' + label2)
         plt.xlabel('Frequency (Hz)')
         plt.ylabel('Granger Causality')
         plt.legend()
 
         # save figure data
         if saveData:
-            figData = {'cells1': cells1, 'cells2': cells2, 'spks1': cells1, 'spks2': cells2, 'binSize': binSize, 'Fy2x': Fy2x[0], 'Fx2y': Fx2y[0],
-            'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+            figData = {
+                'cells1': cells1,
+                'cells2': cells2,
+                'spks1': cells1,
+                'spks2': cells2,
+                'binSize': binSize,
+                'Fy2x': Fy2x[0],
+                'Fx2y': Fx2y[0],
+                'saveData': saveData,
+                'saveFig': saveFig,
+                'showFig': showFig,
+            }
 
             _saveFigData(figData, saveData, '2Dnet')
 
@@ -438,14 +478,22 @@ def plotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, l
             if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
-                filename = sim.cfg.filename+'_granger.png'
+                filename = sim.cfg.filename + '_granger.png'
             plt.savefig(filename)
 
         # show fig
-        if showFig: _showFigure()
+        if showFig:
+            _showFigure()
 
     if testGranger:
-        return fig, {'F': F, 'Fx2y': Fx2y[0], 'Fy2x': Fy2x[0], 'Fxy': Fxy[0], 'MaxFy2xZscore': y2xZscore, 'MaxFy2xPvalue': y2xPvalue}
+        return fig, {
+            'F': F,
+            'Fx2y': Fx2y[0],
+            'Fy2x': Fy2x[0],
+            'Fxy': Fxy[0],
+            'MaxFy2xZscore': y2xZscore,
+            'MaxFy2xPvalue': y2xPvalue,
+        }
     else:
         return fig, {'F': F, 'Fx2y': Fx2y[0], 'Fy2x': Fy2x[0], 'Fxy': Fxy[0]}
 

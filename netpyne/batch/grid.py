@@ -246,7 +246,9 @@ def gridSearch(batch, pc):
         except:
             pass
     pc.done()
-    h.quit()
+    # TODO: line below was commented out due to issue on Netpyne-UI (https://dura-bernallab.slack.com/archives/C02UT6WECEL/p1671724489096569?thread_ts=1671646899.368969&cid=C02UT6WECEL)
+    # Needs to be re-visited.
+    # h.quit()
 
 def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles):
 

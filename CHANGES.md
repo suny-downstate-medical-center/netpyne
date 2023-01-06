@@ -1,3 +1,7 @@
+# Version 1.0.3.1
+
+- Hotfix to support new GUI functionality
+
 # Version 1.0.3
 
 **New features**

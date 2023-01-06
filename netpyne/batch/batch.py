@@ -22,16 +22,8 @@ try:
 except NameError:
     to_unicode = str
 
-import imp
-import json
-import pickle
-import logging
 import datetime
-from copy import copy
-from random import Random
-from time import sleep, time
-from itertools import product
-from subprocess import Popen, PIPE
+from time import time
 import importlib, types
 
 from neuron import h
@@ -41,21 +33,6 @@ from .utils import createFolder
 from .grid import gridSearch, getParamCombinations
 from .evol import evolOptim
 from .asd_parallel import asdOptim
-
-try:
-    from .optuna_parallel import optunaOptim
-except:
-    pass
-    # print('Warning: Could not import "optuna" package...')
-
-
-try:
-    from .sbi_parallel import sbiOptim
-except:
-    pass
-    #print('Error @ the batch.py file import section')
-
-
 
 
 pc = h.ParallelContext() # use bulletin board master/slave
@@ -277,6 +254,7 @@ class Batch(object):
         # -------------------------------------------------------------------------------
         elif self.method == 'optuna':
             try:
+                from .optuna_parallel import optunaOptim
                 optunaOptim(self, pc)
             except Exception as e:
                 import traceback
@@ -288,6 +266,7 @@ class Batch(object):
         # -------------------------------------------------------------------------------
         elif self.method == 'sbi':
             try:
+                from .sbi_parallel import sbiOptim
                 sbiOptim(self, pc)
             except Exception as e:
                 import traceback

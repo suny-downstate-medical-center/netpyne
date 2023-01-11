@@ -4,6 +4,12 @@
 
 - Added 'linewidth' as argument of plotting.plotSpikeHist()
 
+# Version 1.0.3.1
+
+- Hotfix to support new GUI functionality (fixes in grid parameter optimization)
+
+- Removed redundant warnings
+
 # Version 1.0.3
 
 **New features**

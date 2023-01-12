@@ -3,7 +3,7 @@
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import math
-from ..analysis.utils import exception #, loadData
+from ..analysis.utils import exception  # , loadData
 from ..analysis.tools import loadData
 from .plotter import LinesPlotter
 from .plotter import ImagePlotter
@@ -13,72 +13,73 @@ import numpy as np
 
 @exception
 def plotLFPTimeSeries(
-    LFPData=None, 
-    axis=None, 
+    LFPData=None,
+    axis=None,
     timeRange=None,
-    electrodes=['avg', 'all'], 
+    electrodes=['avg', 'all'],
     pop=None,
-    separation=1.0, 
-    logy=False, 
-    normSignal=False, 
-    filtFreq=False, 
-    filtOrder=3, 
-    detrend=False, 
+    separation=1.0,
+    logy=False,
+    normSignal=False,
+    filtFreq=False,
+    filtOrder=3,
+    detrend=False,
     orderInverse=True,
     overlay=False,
     scalebar=True,
     legend=True,
     colorList=None,
     returnPlotter=False,
-    **kwargs):
+    **kwargs
+):
     """Function to produce a line plot of LFP electrode signals
 
     NetPyNE Options
     ---------------
     sim : NetPyNE sim object
         The *sim object* from which to get data.
-        
+
         *Default:* ``None`` uses the current NetPyNE sim object
 
     Parameters
     ----------
     LFPData : dict, str
-        The data necessary to plot the LFP signals. 
+        The data necessary to plot the LFP signals.
 
         *Default:* ``None`` uses ``analysis.prepareLFP`` to produce ``LFPData`` using the current NetPyNE sim object.
-        
+
         If a *str* it must represent a file path to previously saved data.
-        
+
     axis : matplotlib axis
         The axis to plot into, allowing overlaying of plots.
-        
+
         *Default:* ``None`` produces a new figure and axis.
 
     timeRange : list
         Time range to include in the raster: ``[min, max]``.
-        
+
         *Default:* ``None`` uses the entire simulation
 
     electrodes : list
         A *list* of the electrodes to plot from.
-        
+
         *Default:* ``['avg', 'all']`` plots each electrode as well as their average
 
     pop : str
         A population name to calculate signals from.
-        
+
         *Default:* ``None`` uses all populations.
 
     separation : float
         Use to increase or decrease distance between signals on the plot.
-    
+
         *Default:* ``1.0``
 
     logy : bool
         Whether to use a log axis.
 
-        *Default:* ``False`` 
-    
+        *Default:* ``False``
+
     normSignal : bool
         Whether to normalize the data.
 
@@ -86,13 +87,13 @@ def plotLFPTimeSeries(
 
     filtFreq : int or list
         Frequency for low-pass filter (int) or frequencies for bandpass filter in a list: [low, high]
-        
+
         *Default:* ``None`` does not filter the data
 
     filtOrder : int
         Order of the filter defined by `filtFreq`.
 
-        *Default:* ``3``    
+        *Default:* ``3``
 
     detrend : bool
         Whether to detrend the data.
@@ -116,17 +117,17 @@ def plotLFPTimeSeries(
 
     legend : bool
         Whether or not to add a legend to the plot.
-        
+
         *Default:* ``True`` adds a legend.
 
     colorList : list
         A *list* of colors to draw from when plotting.
-        
+
         *Default:* ``None`` uses the default NetPyNE colorList.
 
     returnPlotter : bool
         Whether to return the figure or the NetPyNE MetaFig object.
-        
+
         *Default:* ``False`` returns the figure.
 
 
@@ -157,10 +158,10 @@ def plotLFPTimeSeries(
 
     title : str
         the axis title
-    
+
     xlabel : str
         label for x-axis
-    
+
     ylabel : str
         label for y-axis
 
@@ -170,14 +171,13 @@ def plotLFPTimeSeries(
     alpha : float
         line opacity (0-1)
 
-    
+
     Returns
     -------
     LFPTimeSeriesPlot : *matplotlib figure*
         By default, returns the *figure*.  If ``returnPlotter`` is ``True``, instead returns the NetPyNE MetaFig.
-        
+
     """
-    
 
     # If there is no input data, get the data from the NetPyNE sim object
     if LFPData is None:
@@ -189,22 +189,22 @@ def plotLFPTimeSeries(
         LFPData = sim.analysis.prepareLFP(
             sim=sim,
             timeRange=timeRange,
-            electrodes=electrodes, 
+            electrodes=electrodes,
             pop=pop,
-            LFPData=LFPData, 
-            logy=logy, 
-            normSignal=normSignal, 
-            filtFreq=filtFreq, 
-            filtOrder=filtOrder, 
-            detrend=detrend, 
+            LFPData=LFPData,
+            logy=logy,
+            normSignal=normSignal,
+            filtFreq=filtFreq,
+            filtOrder=filtOrder,
+            detrend=detrend,
             **kwargs
-            )
+        )
 
     print('Plotting LFP time series...')
 
     # If input is a dictionary, pull the data out of it
     if type(LFPData) == dict:
-    
+
         t = LFPData['t']
         lfps = LFPData['electrodes']['lfps']
         names = LFPData['electrodes']['names']
@@ -218,7 +218,7 @@ def plotLFPTimeSeries(
     if not colors:
         if not colorList:
             from .plotter import colorList
-        colors = colorList[0:len(lfps)]
+        colors = colorList[0 : len(lfps)]
 
     if not linewidths:
         linewidths = [1.0 for lfp in lfps]
@@ -280,37 +280,37 @@ def plotLFPTimeSeries(
     # Set up the default legend settings
     legendKwargs = {}
     legendKwargs['title'] = 'Electrodes'
-    #legendKwargs['bbox_to_anchor'] = (1.025, 1)
+    # legendKwargs['bbox_to_anchor'] = (1.025, 1)
     legendKwargs['loc'] = 'upper right'
-    #legendKwargs['borderaxespad'] = 0.0
-    #legendKwargs['handlelength'] = 0.5
+    # legendKwargs['borderaxespad'] = 0.0
+    # legendKwargs['handlelength'] = 0.5
     legendKwargs['fontsize'] = 'small'
     legendKwargs['title_fontsize'] = 'small'
-    
+
     # add the legend
     if legend:
         axisArgs['legend'] = legendKwargs
 
     # add the scalebar
     if scalebar:
-        #axisArgs['scalebar'] = True
+        # axisArgs['scalebar'] = True
         args = {}
         args['hidey'] = True
-        args['matchy'] = True 
-        args['hidex'] = False 
-        args['matchx'] = False 
-        args['sizex'] = 0 
-        args['sizey'] = 1.0 
-        args['ymax'] = 0.25 * offset 
-        #args['labely'] = 'test'
-        args['unitsy'] = '$\mu$V' 
+        args['matchy'] = True
+        args['hidex'] = False
+        args['matchx'] = False
+        args['sizex'] = 0
+        args['sizey'] = 1.0
+        args['ymax'] = 0.25 * offset
+        # args['labely'] = 'test'
+        args['unitsy'] = '$\mu$V'
         args['scaley'] = 1000.0
         args['loc'] = 3
-        args['pad'] = 0.5 
-        args['borderpad'] = 0.5 
-        args['sep'] = 3 
-        args['prop'] = None 
-        args['barcolor'] = "black" 
+        args['pad'] = 0.5
+        args['borderpad'] = 0.5
+        args['sep'] = 3
+        args['prop'] = None
+        args['barcolor'] = "black"
         args['barwidth'] = 2
         args['space'] = 0.25 * offset
 
@@ -319,12 +319,23 @@ def plotLFPTimeSeries(
     if overlay:
         kwargs['tightLayout'] = False
         for index, name in enumerate(names):
-            linesPlotter.axis.text(t[0]-0.07*(t[-1]-t[0]), (index*offset), name, color=plotColors[index], ha='center', va='center', fontsize='large', fontweight='bold')
+            linesPlotter.axis.text(
+                t[0] - 0.07 * (t[-1] - t[0]),
+                (index * offset),
+                name,
+                color=plotColors[index],
+                ha='center',
+                va='center',
+                fontsize='large',
+                fontweight='bold',
+            )
         linesPlotter.axis.spines['top'].set_visible(False)
         linesPlotter.axis.spines['right'].set_visible(False)
         linesPlotter.axis.spines['left'].set_visible(False)
         if len(names) > 1:
-            linesPlotter.fig.text(0.05, 0.4, 'LFP electrode', color='k', ha='left', va='bottom', fontsize='large', rotation=90)
+            linesPlotter.fig.text(
+                0.05, 0.4, 'LFP electrode', color='k', ha='left', va='bottom', fontsize='large', rotation=90
+            )
 
     # Generate the figure
     LFPTimeSeriesPlot = linesPlotter.plot(**axisArgs, **kwargs)
@@ -334,5 +345,3 @@ def plotLFPTimeSeries(
         return metaFig
     else:
         return LFPTimeSeriesPlot
-
-

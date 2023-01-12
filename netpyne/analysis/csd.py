@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 
 from future import standard_library
+
 standard_library.install_aliases()
 
 try:
@@ -19,37 +20,35 @@ except NameError:
 import numpy as np
 import scipy
 
-import matplotlib 
-from matplotlib import pyplot as plt 
+import matplotlib
+from matplotlib import pyplot as plt
 from matplotlib import ticker as ticker
 import json
 import sys
 import os
-from collections import OrderedDict  
-import warnings 
+from collections import OrderedDict
+import warnings
 from scipy.fftpack import hilbert
 from scipy.signal import cheb2ord, cheby2, convolve, get_window, iirfilter, remez, decimate
-from .filter import lowpass,bandpass
-from .utils import exception, _saveFigData 
-
-
+from .filter import lowpass, bandpass
+from .utils import exception, _saveFigData
 
 
 @exception
 def prepareCSD(
     sim=None,
     pop=None,
-    dt=None, 
+    dt=None,
     sampr=None,
     spacing_um=None,
-    minf=0.05, 
-    maxf=300, 
+    minf=0.05,
+    maxf=300,
     vaknin=True,
     norm=False,
     saveData=True,
     getAllData=True,
-    **kwargs):
-
+    **kwargs
+):
 
     """
     Function to prepare data for plotting of current source density (CSD) data
@@ -61,41 +60,41 @@ def prepareCSD(
 
     pop : str
         Retrieves CSD data from a specific cell population
-        **Default:** ``None`` retrieves overall CSD data 
+        **Default:** ``None`` retrieves overall CSD data
 
     dt : float or int
-        Time between recording points (ms). 
+        Time between recording points (ms).
         **Default:** ``None`` uses ``sim.cfg.recordStep`` from the current NetPyNE sim object.
 
     sampr : float or int
-        Sampling rate for data recording (Hz). 
-        **Default:** ``None`` uses ``1.0/sim.cfg.recordStep`` from the current NetPyNE sim object. 
+        Sampling rate for data recording (Hz).
+        **Default:** ``None`` uses ``1.0/sim.cfg.recordStep`` from the current NetPyNE sim object.
 
     spacing_um : float or int
         Electrode contact spacing in units of microns.
         **Default:** ``None`` pulls the information from the current NetPyNE sim object.  If the data is empirical, defaults to ``100`` (microns).
 
     minf : float or int
-        Minimum frequency for bandpassing the LFP data. 
+        Minimum frequency for bandpassing the LFP data.
         **Default:** ``0.05``
 
     maxf : float or int
-        Maximum frequency for bandpassing the LFP data. 
+        Maximum frequency for bandpassing the LFP data.
         **Default:** ``300``
 
-    vaknin : bool 
+    vaknin : bool
         Allows CSD to be performed on all N contacts instead of N-2 contacts
         **Default:** ``True``
 
-    norm : bool 
+    norm : bool
         Subtracts the mean from the CSD data
         **Default:** ``False``
 
-    saveData : bool 
-        Saves CSD data to sim object 
+    saveData : bool
+        Saves CSD data to sim object
         **Default:** ``True``
 
-    getAllData : bool 
+    getAllData : bool
         Returns CSDData as well as LFPData, sampr, spacing_um, and dt
         **Default:** ``True``
     """
@@ -108,10 +107,9 @@ def prepareCSD(
         except:
             raise Exception('Cannot access sim')
 
-
-    ## Get LFP data from sim and instantiate as a numpy array 
+    ## Get LFP data from sim and instantiate as a numpy array
     simDataCategories = sim.allSimData.keys()
-    
+
     if pop is None:
         if 'LFP' in simDataCategories:
             LFPData = np.array(sim.allSimData['LFP'])
@@ -127,38 +125,34 @@ def prepareCSD(
         else:
             raise Exception('No pop-specific LFP data recorded! CANNOT GENERATE POP-SPECIFIC CSD DATA OR PLOT')
 
-
     # time step used in simulation recording (in ms)
     if dt is None:
         dt = sim.cfg.recordStep
 
-    # Sampling rate of data recording during the simulation 
+    # Sampling rate of data recording during the simulation
     if sampr is None:
         # divide by 1000.0 to turn denominator from units of ms to s
-        sampr = 1.0/(dt/1000.0) # dt == sim.cfg.recordStep, unless specified otherwise by user 
-
+        sampr = 1.0 / (dt / 1000.0)  # dt == sim.cfg.recordStep, unless specified otherwise by user
 
     # Spacing between electrodes (in microns)
     if spacing_um is None:
         spacing_um = sim.cfg.recordLFP[1][1] - sim.cfg.recordLFP[0][1]
-    
-    # Convert spacing from microns to mm 
-    spacing_mm = spacing_um/1000
+
+    # Convert spacing from microns to mm
+    spacing_mm = spacing_um / 1000
 
     print('dt, sampr, spacing_um, spacing_mm values determined')
 
-
-    ## This retrieves: 
+    ## This retrieves:
     #   LFPData (as an array)
     #   dt --> recording time step (in ms)
     #   sampr --> sampling rate of data recording (in Hz)
     #   spacing_um --> spacing btwn electrodes (in um)
 
-
     ####################################
 
     # Bandpass filter the LFP data with getbandpass() fx defined above
-    datband = getbandpass(LFPData,sampr,minf,maxf) 
+    datband = getbandpass(LFPData, sampr, minf, maxf)
 
     # Take CSD along smaller dimension
     if datband.shape[0] > datband.shape[1]:
@@ -167,25 +161,24 @@ def prepareCSD(
         ax = 0
 
     # Vaknin correction
-    if vaknin: 
+    if vaknin:
         datband = Vaknin(datband)
 
     # norm data
-    if norm: 
-        removemean(datband,ax=ax)
+    if norm:
+        removemean(datband, ax=ax)
 
     # now each column (or row) is an electrode -- take CSD along electrodes
-    CSDData = -np.diff(datband, n=2, axis=ax)/spacing_mm**2  
-
+    CSDData = -np.diff(datband, n=2, axis=ax) / spacing_mm**2
 
     ##### SAVE DATA #######
     # Add CSDData to sim.allSimData for later access
     if saveData:
         if pop is None:
-            sim.allSimData['CSD'] = CSDData 
+            sim.allSimData['CSD'] = CSDData
         else:
             sim.allSimData['CSDPops'] = {}
-            sim.allSimData['CSDPops'][pop] = CSDData 
+            sim.allSimData['CSDPops'][pop] = CSDData
 
     # return CSD_data or all data
     if getAllData is True:
@@ -194,17 +187,13 @@ def prepareCSD(
         return CSDData
 
 
-def getbandpass(
-    lfps, 
-    sampr, 
-    minf=0.05, 
-    maxf=300):
+def getbandpass(lfps, sampr, minf=0.05, maxf=300):
     """
     Function to bandpass filter data
 
     Parameters
     ----------
-    lfps : list or array 
+    lfps : list or array
         LFP signal data arranged spatially in a column.
         **Default:** *required*
 
@@ -229,21 +218,23 @@ def getbandpass(
     """
 
     datband = []
-    for i in range(len(lfps[0])):datband.append(bandpass(lfps[:,i], minf, maxf, df=sampr, zerophase=True))
+    for i in range(len(lfps[0])):
+        datband.append(bandpass(lfps[:, i], minf, maxf, df=sampr, zerophase=True))
 
     datband = np.array(datband)
 
     return datband
 
+
 def Vaknin(x):
-    """ 
+    """
     Function to perform the Vaknin correction for CSD analysis
 
     Allows CSD to be performed on all N contacts instead of N-2 contacts (see Vaknin et al (1988) for more details).
 
     Parameters
     ----------
-    x : array 
+    x : array
         Data to be corrected.
         **Default:** *required*
 
@@ -256,7 +247,7 @@ def Vaknin(x):
     """
 
     # Preallocate array with 2 more rows than input array
-    x_new = np.zeros((x.shape[0]+2, x.shape[1]))
+    x_new = np.zeros((x.shape[0] + 2, x.shape[1]))
 
     # Duplicate first and last row of x into first and last row of x_new
     x_new[0, :] = x[0, :]
@@ -267,13 +258,14 @@ def Vaknin(x):
 
     return x_new
 
+
 def removemean(x, ax=1):
     """
     Function to subtract the mean from an array or list
 
     Parameters
     ----------
-    x : array 
+    x : array
         Data to be processed.
         **Default:** *required*
 
@@ -288,8 +280,6 @@ def removemean(x, ax=1):
         The processed data.
 
     """
-  
+
     mean = np.mean(x, axis=ax, keepdims=True)
     x -= mean
-
-

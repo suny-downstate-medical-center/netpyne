@@ -17,7 +17,23 @@ except NameError:
     basestring = str
 
 
-colorList = [[0.42, 0.67, 0.84], [0.90, 0.76, 0.00], [0.42, 0.83, 0.59], [0.90, 0.32, 0.00], [0.34, 0.67, 0.67], [0.90, 0.59, 0.00], [0.42, 0.82, 0.83], [1.00, 0.85, 0.00], [0.33, 0.67, 0.47], [1.00, 0.38, 0.60], [0.57, 0.67, 0.33], [0.50, 0.20, 0.00], [0.71, 0.82, 0.41], [0.00, 0.20, 0.50], [0.70, 0.32, 0.10]] * 3
+colorList = [
+    [0.42, 0.67, 0.84],
+    [0.90, 0.76, 0.00],
+    [0.42, 0.83, 0.59],
+    [0.90, 0.32, 0.00],
+    [0.34, 0.67, 0.67],
+    [0.90, 0.59, 0.00],
+    [0.42, 0.82, 0.83],
+    [1.00, 0.85, 0.00],
+    [0.33, 0.67, 0.47],
+    [1.00, 0.38, 0.60],
+    [0.57, 0.67, 0.33],
+    [0.50, 0.20, 0.00],
+    [0.71, 0.82, 0.41],
+    [0.00, 0.20, 0.50],
+    [0.70, 0.32, 0.10],
+] * 3
 
 
 class MetaFigure:
@@ -43,7 +59,7 @@ class MetaFigure:
         *Default:* ``False``
 
     rcParams : dict
-        A dictionary containing any or all Matplotlib settings to use for this figure.  To see all settings and their defaults, execute ``import matplotlib; matplotlib.rcParams``. 
+        A dictionary containing any or all Matplotlib settings to use for this figure.  To see all settings and their defaults, execute ``import matplotlib; matplotlib.rcParams``.
 
     autosize : float
         Automatically increases figure size by this fraction when there are multiple subplots to reduce white space between axes.  Set to ``False`` or ``0.0`` to turn off.
@@ -79,7 +95,10 @@ class MetaFigure:
                     if rcParam in mpl.rcParams:
                         mpl.rcParams[rcParam] = new_rcParams[rcParam]
                     else:
-                        print('  Not found in matplotlib.rcParams:', rcParam, )
+                        print(
+                            '  Not found in matplotlib.rcParams:',
+                            rcParam,
+                        )
                 self.rcParams = mpl.rcParams
         else:
             self.rcParams = self.orig_rcParams
@@ -93,23 +112,23 @@ class MetaFigure:
             ncols = 1
         elif type(subplots) == list:
             nrows = subplots[0]
-            ncols = subplots[1] 
+            ncols = subplots[1]
 
         # Accept figure inputs
         if 'figSize' in kwargs:
             figSize = kwargs['figSize']
         else:
             figSize = self.rcParams['figure.figsize']
-        
+
         if 'dpi' in kwargs:
             dpi = kwargs['dpi']
         else:
             dpi = self.rcParams['figure.dpi']
-        
+
         if autosize:
             maxplots = np.max([nrows, ncols])
-            figSize0 = figSize[0] + (maxplots-1)*(figSize[0]*autosize)
-            figSize1 = figSize[1] + (maxplots-1)*(figSize[1]*autosize)
+            figSize0 = figSize[0] + (maxplots - 1) * (figSize[0] * autosize)
+            figSize1 = figSize[1] + (maxplots - 1) * (figSize[1] * autosize)
             figSize = [figSize0, figSize1]
 
         self.fig, self.ax = plt.subplots(nrows, ncols, sharex=sharex, sharey=sharey, figsize=figSize, dpi=dpi)
@@ -125,7 +144,6 @@ class MetaFigure:
                 eachAx.metafig = self
 
         self.plotters = []
-
 
     def saveFig(self, sim=None, fileName=None, fileDesc=True, fileType='png', fileDir=None, overwrite=True, **kwargs):
         """Method to save the figure
@@ -170,7 +188,7 @@ class MetaFigure:
             Whether to overwrite an existing figure with the same name.
 
             *Default:* ``True`` overwrites.
-        
+
         """
 
         if not sim:
@@ -187,20 +205,20 @@ class MetaFigure:
                     fileName = saveFig.split('.')[0]
                 else:
                     fileName = saveFig
-                    
-        if fileType: # 'png' by default
+
+        if fileType:  # 'png' by default
             if fileType not in self.fig.canvas.get_supported_filetypes():
                 raise Exception('fileType not recognized in saveFig')
             else:
                 fileExt = '.' + fileType
-        
+
         if fileDesc is True:
             fileDesc = '_' + self.kind
         elif fileDesc:
             fileDesc = '_' + str(fileDesc)
         else:
             fileDesc = ''
-            
+
         if not fileName or not isinstance(fileName, basestring):
             fileName = self.sim.cfg.filename + fileDesc + fileExt
         else:
@@ -221,27 +239,23 @@ class MetaFigure:
                 except:
                     fileNumStr = fileNumStrNew = '01'
                     fileName = fileName.split(fileExt)[0]
-                
-                fileName = fileName.split(fileNumStr)[0] + '_' + fileNumStrNew + fileExt   
-        
+
+                fileName = fileName.split(fileNumStr)[0] + '_' + fileNumStrNew + fileExt
+
         self.fig.savefig(fileName)
         self.fileName = fileName
 
         return fileName
 
-
     def showFig(self, **kwargs):
-        """Method to display the figure
-        """
+        """Method to display the figure"""
         try:
             self.fig.show(block=False)
         except:
             self.fig.show()
 
-
     def reshowFig(self, **kwargs):
-        """Method to display the figure after it has been closed
-        """
+        """Method to display the figure after it has been closed"""
         plt.close(self.fig)
         figsize = self.fig.get_size_inches()
         dummy = plt.figure(figsize=figsize)
@@ -252,7 +266,6 @@ class MetaFigure:
             self.fig.show(block=False)
         except:
             self.fig.show()
-
 
     def addSuptitle(self, **kwargs):
         """Method to add a super title to the figure
@@ -290,9 +303,8 @@ class MetaFigure:
 
         self.fig.suptitle(**kwargs)
 
-
     def finishFig(self, **kwargs):
-        """Method to finalize a figure 
+        """Method to finalize a figure
 
         Adds supertitle, tight_layout, saves fig, shows fig as per kwarg inputs.
 
@@ -327,9 +339,9 @@ class MetaFigure:
         if 'saveFig' in kwargs:
             if kwargs['saveFig']:
                 self.saveFig(**kwargs)
-        
+
         if 'showFig' in kwargs:
-            if kwargs['showFig']:   
+            if kwargs['showFig']:
                 self.showFig(**kwargs)
         else:
             plt.close(self.fig)
@@ -338,16 +350,14 @@ class MetaFigure:
         mpl.style.use(self.orig_rcParams)
 
 
-
 class MultiPlotter:
-    """NetPyNE object to generate line plots on multiple axes
-    """
+    """NetPyNE object to generate line plots on multiple axes"""
 
     def __init__(self, data, kind, metafig=None, **kwargs):
 
-        self.kind       = kind
-        self.data       = data
-        
+        self.kind = kind
+        self.data = data
+
         numLines = len(self.data['y'])
 
         if metafig is None:
@@ -355,17 +365,16 @@ class MultiPlotter:
 
         self.metafig = metafig
 
-
     def plot(self, **kwargs):
 
-        x          = np.array(self.data.get('x'))
-        y          = np.array(self.data.get('y'))
-        color      = self.data.get('color')
-        marker     = self.data.get('marker')
+        x = np.array(self.data.get('x'))
+        y = np.array(self.data.get('y'))
+        color = self.data.get('color')
+        marker = self.data.get('marker')
         markersize = self.data.get('markersize')
-        linewidth  = self.data.get('linewidth')
-        alpha      = self.data.get('alpha')
-        label      = self.data.get('label')
+        linewidth = self.data.get('linewidth')
+        alpha = self.data.get('alpha')
+        label = self.data.get('label')
 
         if len(np.shape(y)) == 1:
             numLines = 1
@@ -404,7 +413,7 @@ class MultiPlotter:
             labels = label
 
         for index, line in enumerate(y):
-            
+
             curAx = self.metafig.ax[index]
 
             curData = {}
@@ -440,12 +449,12 @@ class GeneralPlotter:
         The kind of figure, used in saving.
 
     axis : matplotlib axis
-        The axis to plot into.  If axis is set to ``None``, a new figure and axis are created and plotted into.  
+        The axis to plot into.  If axis is set to ``None``, a new figure and axis are created and plotted into.
 
     twinx : bool
         If plotting into an existing axis, whether to twin that x axis (i.e. allow plotting at a different y scale).
         *Default:* ``False``
-    
+
     twiny : bool
         If plotting into an existing axis, whether to twin that y axis (i.e. allow plotting at a different x scale).
         *Default:* ``False``
@@ -457,7 +466,7 @@ class GeneralPlotter:
     """
 
     def __init__(self, data, kind, axis=None, twinx=False, twiny=False, sim=None, metafig=None, **kwargs):
-        
+
         self.kind = kind
 
         # Load data
@@ -471,7 +480,7 @@ class GeneralPlotter:
 
         if not sim:
             from .. import sim
-        
+
         self.sim = sim
         self.axis = axis
         self.metafig = metafig
@@ -498,7 +507,6 @@ class GeneralPlotter:
         if self.metafig:
             self.metafig.plotters.append(self)
 
-
     def loadData(self, fileName, fileDir=None, sim=None):
         """Method to load data from file
 
@@ -515,9 +523,8 @@ class GeneralPlotter:
         """
 
         from ..analysis import loadData
-        self.data = loadData(fileName=fileName, fileDir=fileDir, sim=None)
-        
 
+        self.data = loadData(fileName=fileName, fileDir=fileDir, sim=None)
 
     def saveData(self, fileName=None, fileDesc=None, fileType=None, fileDir=None, sim=None, **kwargs):
         """Method to save data to file
@@ -547,8 +554,10 @@ class GeneralPlotter:
         """
 
         from ..analysis import saveData as saveFigData
-        saveFigData(self.data, fileName=fileName, fileDesc=fileDesc, fileType=fileType, fileDir=fileDir, sim=sim, **kwargs)
-    
+
+        saveFigData(
+            self.data, fileName=fileName, fileDesc=fileDesc, fileType=fileType, fileDir=fileDir, sim=sim, **kwargs
+        )
 
     def formatAxis(self, **kwargs):
         """Method to format the axis
@@ -565,7 +574,7 @@ class GeneralPlotter:
             Label to add to the y axis.
 
         ylabelRight : bool
-            Whether to move y label to the right side. 
+            Whether to move y label to the right side.
             *Default:* ``False`` keeps the y label on the left.
 
         xlim : list
@@ -578,7 +587,7 @@ class GeneralPlotter:
             Whether to invert the y axis.
 
         """
-        
+
         if 'title' in kwargs:
             self.axis.set_title(kwargs['title'])
 
@@ -599,7 +608,6 @@ class GeneralPlotter:
         if 'invert_yaxis' in kwargs:
             if kwargs['invert_yaxis'] is True:
                 self.axis.invert_yaxis()
-
 
     def addLegend(self, handles=None, labels=None, **kwargs):
         """Method to add a legend to the axis
@@ -624,7 +632,33 @@ class GeneralPlotter:
 
         """
 
-        legendParams = ['loc', 'bbox_to_anchor', 'fontsize', 'numpoints', 'scatterpoints', 'scatteryoffsets', 'markerscale', 'markerfirst', 'frameon', 'fancybox', 'shadow', 'framealpha', 'facecolor', 'edgecolor', 'mode', 'bbox_transform', 'title', 'title_fontsize', 'borderpad', 'labelspacing', 'handlelength', 'handletextpad', 'borderaxespad', 'columnspacing', 'handler_map']
+        legendParams = [
+            'loc',
+            'bbox_to_anchor',
+            'fontsize',
+            'numpoints',
+            'scatterpoints',
+            'scatteryoffsets',
+            'markerscale',
+            'markerfirst',
+            'frameon',
+            'fancybox',
+            'shadow',
+            'framealpha',
+            'facecolor',
+            'edgecolor',
+            'mode',
+            'bbox_transform',
+            'title',
+            'title_fontsize',
+            'borderpad',
+            'labelspacing',
+            'handlelength',
+            'handletextpad',
+            'borderaxespad',
+            'columnspacing',
+            'handler_map',
+        ]
 
         # Check for and apply any legend parameters in the kwargs
         legendKwargs = {}
@@ -648,8 +682,21 @@ class GeneralPlotter:
 
         self.axis.legend(handles, labels, **legendKwargs)
 
-
-    def addScalebar(self, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=None, unitsy=None, scalex=1.0, scaley=1.0, xmax=None, ymax=None, space=None, **kwargs):
+    def addScalebar(
+        self,
+        matchx=True,
+        matchy=True,
+        hidex=True,
+        hidey=True,
+        unitsx=None,
+        unitsy=None,
+        scalex=1.0,
+        scaley=1.0,
+        xmax=None,
+        ymax=None,
+        space=None,
+        **kwargs
+    ):
         """Method to add a scale bar to the axis
 
         Parameters
@@ -717,8 +764,21 @@ class GeneralPlotter:
 
         """
 
-        _add_scalebar(self.axis, matchx=matchx, matchy=matchy, hidex=hidex, hidey=hidey, unitsx=unitsx, unitsy=unitsy, scalex=scalex, scaley=scaley, xmax=xmax, ymax=ymax, space=space, **kwargs)
-
+        _add_scalebar(
+            self.axis,
+            matchx=matchx,
+            matchy=matchy,
+            hidex=hidex,
+            hidey=hidey,
+            unitsx=unitsx,
+            unitsy=unitsy,
+            scalex=scalex,
+            scaley=scaley,
+            xmax=xmax,
+            ymax=ymax,
+            space=space,
+            **kwargs
+        )
 
     def addColorbar(self, **kwargs):
         """Method to add a color bar to the axis
@@ -729,7 +789,6 @@ class GeneralPlotter:
             You can enter any Matplotlib colorbar parameter as a kwarg.  See https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.pyplot.colorbar.html
         """
         plt.colorbar(mappable=self.axis.get_images()[0], ax=self.axis, **kwargs)
-
 
     def finishAxis(self, **kwargs):
         """Method to finalize an axis
@@ -759,7 +818,7 @@ class GeneralPlotter:
         """
 
         self.formatAxis(**kwargs)
-        
+
         if 'saveData' in kwargs:
             if kwargs['saveData']:
                 self.saveData(**kwargs)
@@ -795,33 +854,41 @@ class GeneralPlotter:
 
         # Reset the matplotlib rcParams to their original settings
         mpl.style.use(self.metafig.orig_rcParams)
-                
+
 
 class ScatterPlotter(GeneralPlotter):
-    """NetPyNE plotter for scatter plots
-
-    """
+    """NetPyNE plotter for scatter plots"""
 
     def __init__(self, data, axis=None, **kwargs):
-        
+
         super().__init__(data=data, axis=axis, **kwargs)
 
-        self.kind       = 'scatter'
-        self.x          = data.get('x')
-        self.y          = data.get('y')
-        self.s          = data.get('s')
-        self.c          = data.get('c')
-        self.marker     = data.get('marker')
-        self.linewidth  = data.get('linewidth')
-        self.cmap       = data.get('cmap')
-        self.norm       = data.get('norm')
-        self.alpha      = data.get('alpha')
+        self.kind = 'scatter'
+        self.x = data.get('x')
+        self.y = data.get('y')
+        self.s = data.get('s')
+        self.c = data.get('c')
+        self.marker = data.get('marker')
+        self.linewidth = data.get('linewidth')
+        self.cmap = data.get('cmap')
+        self.norm = data.get('norm')
+        self.alpha = data.get('alpha')
         self.linewidths = data.get('linewidths')
-
 
     def plot(self, **kwargs):
 
-        scatterPlot = self.axis.scatter(x=self.x, y=self.y, s=self.s, c=self.c, marker=self.marker, linewidth=self.linewidth, cmap=self.cmap, norm=self.norm, alpha=self.alpha, linewidths=self.linewidths)
+        scatterPlot = self.axis.scatter(
+            x=self.x,
+            y=self.y,
+            s=self.s,
+            c=self.c,
+            marker=self.marker,
+            linewidth=self.linewidth,
+            cmap=self.cmap,
+            norm=self.norm,
+            alpha=self.alpha,
+            linewidths=self.linewidths,
+        )
 
         self.finishAxis(**kwargs)
 
@@ -832,47 +899,51 @@ class LinePlotter(GeneralPlotter):
     """NetPyNE plotter for plotting one line per axis"""
 
     def __init__(self, data, axis=None, options={}, **kwargs):
-        
+
         super().__init__(data=data, axis=axis, **kwargs)
 
-        self.kind       = 'line'
-        self.x          = np.array(data.get('x'))
-        self.y          = np.array(data.get('y'))
-        self.color      = data.get('color')
-        self.marker     = data.get('marker')
+        self.kind = 'line'
+        self.x = np.array(data.get('x'))
+        self.y = np.array(data.get('y'))
+        self.color = data.get('color')
+        self.marker = data.get('marker')
         self.markersize = data.get('markersize')
-        self.linewidth  = data.get('linewidth')
-        self.alpha      = data.get('alpha')
-
+        self.linewidth = data.get('linewidth')
+        self.alpha = data.get('alpha')
 
     def plot(self, **kwargs):
 
-        linePlot = self.axis.plot(self.x, self.y, color=self.color, marker=self.marker, markersize=self.markersize, linewidth=self.linewidth, alpha=self.alpha)
+        linePlot = self.axis.plot(
+            self.x,
+            self.y,
+            color=self.color,
+            marker=self.marker,
+            markersize=self.markersize,
+            linewidth=self.linewidth,
+            alpha=self.alpha,
+        )
 
         self.finishAxis(**kwargs)
 
         return self.fig
 
 
-
-
 class LinesPlotter(GeneralPlotter):
     """NetPyNE plotter for plotting multiple lines on the same axis"""
 
     def __init__(self, data, axis=None, options={}, **kwargs):
-        
+
         super().__init__(data=data, axis=axis, **kwargs)
 
-        self.kind       = 'lines'
-        self.x          = np.array(data.get('x'))
-        self.y          = np.array(data.get('y'))
-        self.color      = data.get('color')
-        self.marker     = data.get('marker')
+        self.kind = 'lines'
+        self.x = np.array(data.get('x'))
+        self.y = np.array(data.get('y'))
+        self.color = data.get('color')
+        self.marker = data.get('marker')
         self.markersize = data.get('markersize')
-        self.linewidth  = data.get('linewidth')
-        self.alpha      = data.get('alpha')
-        self.label      = data.get('label')
-
+        self.linewidth = data.get('linewidth')
+        self.alpha = data.get('alpha')
+        self.label = data.get('label')
 
     def plot(self, **kwargs):
 
@@ -887,7 +958,7 @@ class LinesPlotter(GeneralPlotter):
             colors = self.color
             if len(self.color) == 3 and type(self.color[0] == float):
                 colors = [self.color]
-            
+
         if type(self.marker) != list:
             markers = [self.marker for line in range(numLines)]
         else:
@@ -916,96 +987,127 @@ class LinesPlotter(GeneralPlotter):
                 labels = [self.label]
 
         for index in range(numLines):
-            
+
             self.axis.plot(
-                self.x, 
-                self.y[index], 
-                color=colors[index], 
-                marker=markers[index], 
-                markersize=markersizes[index], 
-                linewidth=linewidths[index], 
-                alpha=alphas[index], 
+                self.x,
+                self.y[index],
+                color=colors[index],
+                marker=markers[index],
+                markersize=markersizes[index],
+                linewidth=linewidths[index],
+                alpha=alphas[index],
                 label=labels[index],
-                )
+            )
 
         self.finishAxis(**kwargs)
 
         return self.fig
-
 
 
 class HistPlotter(GeneralPlotter):
     """NetPyNE plotter for histogram plotting"""
 
     def __init__(self, data, axis=None, options={}, **kwargs):
-        
+
         super().__init__(data=data, axis=axis, **kwargs)
 
-        self.kind        = 'histogram'
-        self.x           = data.get('x')
-        self.bins        = data.get('bins', None) 
-        self.range       = data.get('range', None) 
-        self.density     = data.get('density', False) 
-        self.weights     = data.get('weights', None) 
-        self.cumulative  = data.get('cumulative', False) 
-        self.bottom      = data.get('bottom', None) 
-        self.histtype    = data.get('histtype', 'bar') 
-        self.align       = data.get('align', 'mid')
-        self.orientation = data.get('orientation', 'vertical') 
-        self.rwidth      = data.get('rwidth', None)
-        self.log         = data.get('log', False) 
-        self.color       = data.get('color', None)
-        self.alpha       = data.get('alpha', None)
-        self.label       = data.get('label', None)
-        self.stacked     = data.get('stacked', False)
-        self.data        = data.get('data', None)
-        self.linewidth   = data.get('linewidth', None)
+        self.kind = 'histogram'
+        self.x = data.get('x')
+        self.bins = data.get('bins', None)
+        self.range = data.get('range', None)
+        self.density = data.get('density', False)
+        self.weights = data.get('weights', None)
+        self.cumulative = data.get('cumulative', False)
+        self.bottom = data.get('bottom', None)
+        self.histtype = data.get('histtype', 'bar')
+        self.align = data.get('align', 'mid')
+        self.orientation = data.get('orientation', 'vertical')
+        self.rwidth = data.get('rwidth', None)
+        self.log = data.get('log', False)
+        self.color = data.get('color', None)
+        self.alpha = data.get('alpha', None)
+        self.label = data.get('label', None)
+        self.stacked = data.get('stacked', False)
+        self.data = data.get('data', None)
+        self.linewidth = data.get('linewidth', None)
 
     def plot(self, **kwargs):
 
-        histPlot = self.axis.hist(self.x, bins=self.bins, range=self.range, density=self.density, weights=self.weights, cumulative=self.cumulative, bottom=self.bottom, histtype=self.histtype, align=self.align, orientation=self.orientation, rwidth=self.rwidth, log=self.log, color=self.color, alpha=self.alpha, label=self.label, stacked=self.stacked, linewidth=self.linewidth, data=self.data)
+        histPlot = self.axis.hist(
+            self.x,
+            bins=self.bins,
+            range=self.range,
+            density=self.density,
+            weights=self.weights,
+            cumulative=self.cumulative,
+            bottom=self.bottom,
+            histtype=self.histtype,
+            align=self.align,
+            orientation=self.orientation,
+            rwidth=self.rwidth,
+            log=self.log,
+            color=self.color,
+            alpha=self.alpha,
+            label=self.label,
+            stacked=self.stacked,
+            linewidth=self.linewidth,
+            data=self.data,
+        )
 
         self.finishAxis(**kwargs)
 
         return self.fig
-
 
 
 class ImagePlotter(GeneralPlotter):
     """NetPyNE plotter for image plotting using plt.imshow"""
 
     def __init__(self, data, axis=None, options={}, **kwargs):
-        
+
         super().__init__(data=data, axis=axis, **kwargs)
 
-        self.kind          = 'image'
-        self.X             = data.get('X') 
-        self.cmap          = data.get('cmap', None)
-        self.norm          = data.get('norm', None)
-        self.aspect        = data.get('aspect', None) 
-        self.interpolation = data.get('interpolation', None) 
-        self.alpha         = data.get('alpha', None) 
-        self.vmin          = data.get('vmin', None) 
-        self.vmax          = data.get('vmax', None) 
-        self.origin        = data.get('origin', None) 
-        self.extent        = data.get('extent', None) 
-        self.aspect        = data.get('aspect', None) 
+        self.kind = 'image'
+        self.X = data.get('X')
+        self.cmap = data.get('cmap', None)
+        self.norm = data.get('norm', None)
+        self.aspect = data.get('aspect', None)
         self.interpolation = data.get('interpolation', None)
-        self.filternorm    = data.get('filternorm', True)
-        self.filterrad     = data.get('filterrad', 4.0)
-        self.resample      = data.get('resample', None)  
-        self.url           = data.get('url', None)  
-        self.data          = data.get('data', None) 
+        self.alpha = data.get('alpha', None)
+        self.vmin = data.get('vmin', None)
+        self.vmax = data.get('vmax', None)
+        self.origin = data.get('origin', None)
+        self.extent = data.get('extent', None)
+        self.aspect = data.get('aspect', None)
+        self.interpolation = data.get('interpolation', None)
+        self.filternorm = data.get('filternorm', True)
+        self.filterrad = data.get('filterrad', 4.0)
+        self.resample = data.get('resample', None)
+        self.url = data.get('url', None)
+        self.data = data.get('data', None)
 
     def plot(self, **kwargs):
 
-        imagePlot = self.axis.imshow(self.X, cmap=self.cmap, norm=self.norm, aspect=self.aspect, interpolation=self.interpolation, alpha=self.alpha, vmin=self.vmin, vmax=self.vmax, origin=self.origin, extent=self.extent, filternorm=self.filternorm, filterrad=self.filterrad, resample=self.resample, url=self.url, data=self.data)
+        imagePlot = self.axis.imshow(
+            self.X,
+            cmap=self.cmap,
+            norm=self.norm,
+            aspect=self.aspect,
+            interpolation=self.interpolation,
+            alpha=self.alpha,
+            vmin=self.vmin,
+            vmax=self.vmax,
+            origin=self.origin,
+            extent=self.extent,
+            filternorm=self.filternorm,
+            filterrad=self.filterrad,
+            resample=self.resample,
+            url=self.url,
+            data=self.data,
+        )
 
         self.finishAxis(**kwargs)
 
         return self.fig
-
-
 
 
 class _AnchoredScaleBar(AnchoredOffsetbox):
@@ -1014,8 +1116,23 @@ class _AnchoredScaleBar(AnchoredOffsetbox):
 
     Modified from here: https://gist.github.com/dmeliza/3251476
     """
-    
-    def __init__(self, axis, sizex=0, sizey=0, labelx=None, labely=None, loc=4, pad=0.1, borderpad=0.1, sep=2, prop=None, barcolor="black", barwidth=None, **kwargs):
+
+    def __init__(
+        self,
+        axis,
+        sizex=0,
+        sizey=0,
+        labelx=None,
+        labely=None,
+        loc=4,
+        pad=0.1,
+        borderpad=0.1,
+        sep=2,
+        prop=None,
+        barcolor="black",
+        barwidth=None,
+        **kwargs
+    ):
         """
         Draw a horizontal and/or vertical  bar with the size in data coordinate
         of the give axes. A label will be drawn underneath (center-aligned).
@@ -1030,15 +1147,16 @@ class _AnchoredScaleBar(AnchoredOffsetbox):
         """
         from matplotlib.patches import Rectangle
         from matplotlib.offsetbox import AuxTransformBox, VPacker, HPacker, TextArea, DrawingArea
+
         bars = AuxTransformBox(axis.transData)
         if sizex:
             if axis.xaxis_inverted():
                 sizex = -sizex
-            bars.add_artist(Rectangle((0,0), sizex, 0, ec=barcolor, lw=barwidth, fc="none"))
+            bars.add_artist(Rectangle((0, 0), sizex, 0, ec=barcolor, lw=barwidth, fc="none"))
         if sizey:
             if axis.yaxis_inverted():
                 sizey = -sizey
-            bars.add_artist(Rectangle((0,0), 0, sizey, ec=barcolor, lw=barwidth, fc="none"))
+            bars.add_artist(Rectangle((0, 0), 0, sizey, ec=barcolor, lw=barwidth, fc="none"))
 
         if sizex and labelx:
             self.xlabel = TextArea(labelx)
@@ -1047,10 +1165,26 @@ class _AnchoredScaleBar(AnchoredOffsetbox):
             self.ylabel = TextArea(labely)
             bars = HPacker(children=[self.ylabel, bars], align="center", pad=0, sep=sep)
 
-        AnchoredOffsetbox.__init__(self, loc, pad=pad, borderpad=borderpad, child=bars, prop=prop, frameon=False, **kwargs)
+        AnchoredOffsetbox.__init__(
+            self, loc, pad=pad, borderpad=borderpad, child=bars, prop=prop, frameon=False, **kwargs
+        )
 
 
-def _add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx=None, unitsy=None, scalex=1.0, scaley=1.0, xmax=None, ymax=None, space=None, **kwargs):
+def _add_scalebar(
+    axis,
+    matchx=True,
+    matchy=True,
+    hidex=True,
+    hidey=True,
+    unitsx=None,
+    unitsy=None,
+    scalex=1.0,
+    scaley=1.0,
+    xmax=None,
+    ymax=None,
+    space=None,
+    **kwargs
+):
     """
     Add scalebars to axes
 
@@ -1065,13 +1199,14 @@ def _add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx
 
     Modified from here: https://gist.github.com/dmeliza/3251476
     """
+
     def get_tick_size(subaxis):
         tick_size = None
         tick_locs = subaxis.get_majorticklocs()
-        if len(tick_locs)>1:
+        if len(tick_locs) > 1:
             tick_size = np.abs(tick_locs[1] - tick_locs[0])
         return tick_size
-        
+
     if matchx:
         sizex = get_tick_size(axis.xaxis)
     if matchy:
@@ -1081,9 +1216,11 @@ def _add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx
         sizex = kwargs['sizex']
     if 'sizey' in kwargs:
         sizey = kwargs['sizey']
-    
+
     def autosize(value, maxvalue, scale, n=1, m=10):
-        round_to_n = lambda value, n, m: int(np.ceil(round(value, -int(np.floor(np.log10(abs(value)))) + (n - 1)) / m)) * m
+        round_to_n = (
+            lambda value, n, m: int(np.ceil(round(value, -int(np.floor(np.log10(abs(value)))) + (n - 1)) / m)) * m
+        )
         while value > maxvalue:
             try:
                 value = round_to_n(0.8 * maxvalue * scale, n, m) / scale
@@ -1092,9 +1229,9 @@ def _add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx
             m /= 10.0
         return value
 
-    if ymax is not None and sizey>ymax:
+    if ymax is not None and sizey > ymax:
         sizey = autosize(sizey, ymax, scaley)
-    if xmax is not None and sizex>xmax:
+    if xmax is not None and sizex > xmax:
         sizex = autosize(sizex, xmax, scalex)
 
     kwargs['sizex'] = sizex
@@ -1106,26 +1243,26 @@ def _add_scalebar(axis, matchx=True, matchy=True, hidex=True, hidey=True, unitsx
         unitsy = ''
 
     if 'labelx' not in kwargs or kwargs['labelx'] is None:
-        kwargs['labelx'] = '%.3g %s'%(kwargs['sizex'] * scalex, unitsx)
+        kwargs['labelx'] = '%.3g %s' % (kwargs['sizex'] * scalex, unitsx)
     if 'labely' not in kwargs or kwargs['labely'] is None:
-        kwargs['labely'] = '%.3g %s'%(kwargs['sizey'] * scaley, unitsy)
-        
+        kwargs['labely'] = '%.3g %s' % (kwargs['sizey'] * scaley, unitsy)
+
     # add space for scalebar
     if space is not None:
         ylim0, ylim1 = axis.get_ylim()
         ylim = (ylim0 - space, ylim1)
-        if ylim0 > ylim1: # if y axis is inverted
+        if ylim0 > ylim1:  # if y axis is inverted
             ylim = (ylim0 + space, ylim1)
         axis.set_ylim(ylim)
 
     scalebar = _AnchoredScaleBar(axis, **kwargs)
     axis.add_artist(scalebar)
 
-    if hidex: 
+    if hidex:
         axis.xaxis.set_visible(False)
-    if hidey: 
+    if hidey:
         axis.yaxis.set_visible(False)
-    if hidex and hidey: 
+    if hidex and hidey:
         axis.set_frame_on(False)
 
     return scalebar

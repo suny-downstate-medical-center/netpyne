@@ -5,18 +5,20 @@ Module in support of NeuroML reader
 
 # Class borrowed from BMTK package
 
+
 class NMLTree(object):
     nml_ns = '{http://www.neuroml.org/schema/neuroml2}'
     element_registry = {}
 
     def __init__(self, nml_path):
         from xml.etree import ElementTree
+
         self._nml_path = nml_path
         self._nml_root = ElementTree.parse(nml_path).getroot()
-        #self._relevant_elements = {
+        # self._relevant_elements = {
         #    NMLTree.ns_name('channelDensity'): ChannelDensity,
         #    NMLTree.ns_name('resistivity'): Resistivity
-        #}
+        # }
 
         # For each section store a list of all the NML elements include
         self._soma_props = {}
@@ -25,10 +27,15 @@ class NMLTree(object):
         self._apic_props = {}
         # For lookup by segmentGroup attribute, include common synonyms for diff sections
         self._section_maps = {
-            'soma': self._soma_props, 'somatic': self._soma_props,
-            'axon': self._axon_props, 'axonal': self._axon_props,
-            'dend': self._dend_props, 'basal': self._dend_props, 'dendritic': self._dend_props,
-            'apic': self._apic_props, 'apical': self._apic_props
+            'soma': self._soma_props,
+            'somatic': self._soma_props,
+            'axon': self._axon_props,
+            'axonal': self._axon_props,
+            'dend': self._dend_props,
+            'basal': self._dend_props,
+            'dendritic': self._dend_props,
+            'apic': self._apic_props,
+            'apical': self._apic_props,
         }
 
         self._parse_root(self._nml_root)
@@ -77,8 +84,9 @@ class NMLTree(object):
         for sec_name in sections:
             param_table = self._section_maps[sec_name]
             if sec_name in param_table:
-                raise Exception('Error: {} already has a {} element in {}.'.format(nml_element.id, sec_name,
-                                                                                   self._nml_path))
+                raise Exception(
+                    'Error: {} already has a {} element in {}.'.format(nml_element.id, sec_name, self._nml_path)
+                )
 
             self._section_maps[sec_name][nml_element.id] = nml_element
 
@@ -125,7 +133,6 @@ class ChannelDensity(NMLElement):
 
 @NMLTree.register_module
 class ChannelDensityNernst(ChannelDensity):
-
     @staticmethod
     def element_tag():
         return 'channelDensityNernst'

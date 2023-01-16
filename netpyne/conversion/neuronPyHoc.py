@@ -113,8 +113,7 @@ def importCellParams(fileName, labels, values, key=None):
         print("Trying to import izhi params from a file without the .py extension")
     return params
 
-
-def mechVarList():
+def mechVarList(distinguishArtifCells=False):
     """
     Function for/to <short description of `netpyne.conversion.neuronPyHoc.mechVarList`>
 
@@ -122,19 +121,30 @@ def mechVarList():
     """
 
     msname = h.ref('')
-    varList = {}
-    for i, mechtype in enumerate(['mechs', 'pointps']):
+    varList = {'mechs': {}, 'pointps': {}}
+    if distinguishArtifCells:
+        varList['artifcells'] = {}
+
+    mechTypes = ['mechs', 'pointps']
+    for i, mechtype in enumerate(mechTypes):
         mt = h.MechanismType(i)  # either distributed mechs (0) or point process (1)
-        varList[mechtype] = {}
+
         for j in range(int(mt.count())):
             mt.select(j)
             mt.selected(msname)
             ms = h.MechanismStandard(msname[0], 1)  # PARAMETER (modifiable)
-            varList[mechtype][msname[0]] = []
+
+            properties = []
             propName = h.ref('')
             for var in range(int(ms.count())):
                 k = ms.name(propName, var)
-                varList[mechtype][msname[0]].append(propName[0])
+                properties.append(propName[0])
+
+            if distinguishArtifCells and (mechtype == 'pointps') and mt.is_artificial(j):
+                # if it's an ARTIFICIAL_CELL (subset of POINT_PROCESS), use dedicated dict
+                varList['artifcells'][msname[0]] = properties
+            else:
+                varList[mechtype][msname[0]] = properties
     return varList
 
 

@@ -1,7 +1,21 @@
 import numpy as np
-from schema import Schema, Optional, And, Or, Use
+from schema import Schema, Optional, And, Or, Use, SchemaError
 from collections import ChainMap
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
+class ValidationContext(object):
+
+    def __init__(self, netParams):
+        self.cellParams = netParams.cellParams
+        self.popParams = netParams.popParams
+        self.synMechParams = netParams.synMechParams
+        self.stimSourceParams = netParams.stimSourceParams
+
+        self.validateModels = True # cfg.validateNetParamsMechs
 
 def general_specs():
     specs = {
@@ -46,13 +60,20 @@ def general_specs():
     return specs
 
 
-def pop_specs():
+def pop_specs(context):
+
     specs = {
         str: {
-            Optional('cellType'): str,
-            Optional('cellModel'): str,
-            Optional('originalFormat'): lambda s: s
-            in ['NeuroML2', 'NeuroML2_SpikeSource'],  # Not from specs (I think they are from imported models)
+            Optional('cellType'): And(
+                str,
+                lambda s: __isKeyIn(s, context.cellParams) or __isAmongConds(s, 'cellType', context.cellParams)
+            ),
+            Optional('cellModel'): And(
+                str,
+                # Either NEURON model or conds cellModel
+                lambda s: __isArtificialCellModel(s, context) or __isAmongConds(s, 'cellModel', context.cellParams)
+            ),
+            Optional('originalFormat'): lambda s: s in ['NeuroML2','NeuroML2_SpikeSource'],  # Not from specs (I think they are from imported models)
             Optional('cellsList'): [
                 {
                     Optional('x'): Or(int, float),
@@ -167,10 +188,15 @@ def pop_specs():
     return specs
 
 
-def cell_specs():
+def cell_specs(context):
     specs = {
         Optional(str): {
-            Optional('conds'): {str: Or(str, [str], And([Or(int, float)], lambda s: len(s) == 2))},
+            Optional('conds'): {
+                str: Or(
+                    str,
+                    [str],
+                    And([Or(int, float)], lambda s: len(s) == 2))
+            },
             Optional('secLists'): {
                 Optional(str): Or(
                     [str]
@@ -179,9 +205,7 @@ def cell_specs():
             Optional('globals'): {str: Or(int, float)},
             Optional('diversityFraction'): Or(int, float),
             ## Entries associated to compartCell class
-            Optional(
-                'secs'
-            ): {  ## It is optional because it may NOT be a compartCell, but for compartCells this entry is mandatory
+            Optional('secs'): {     ## It is optional because it may NOT be a compartCell, but for compartCells this entry is mandatory
                 str: {
                     Optional('geom'): {
                         Optional('diam'): Or(int, float, str),
@@ -223,13 +247,16 @@ def cell_specs():
                                 str
                             ): object  # maybe empty dictionary (default values in .mod), but also different kind of parameters to be given to the mod (numbers, lists, etc)
                         },
+                        Optional(str): {
+                            Optional(str): object   # maybe empty dictionary (default values in .mod), but also different kind of parameters to be given to the mod (numbers, lists, etc)
+                        },
                     },
                     Optional('ions'): {str: {'e': Or(int, float), 'o': Or(int, float), 'i': Or(int, float)}},
                     # not used from programmatic definitions - only for loading (and creating structure)
                     # Optional('synMechs'): [{'label': str, 'loc': Or(int,float)}]
                     Optional('pointps'): {
                         str: {
-                            'mod': str,
+                            'mod': And( str, lambda s: __isPointpModel(s, context)),
                             Optional('loc'): Or(int, float),
                             Optional('vref'): str,  # voltage calculated in the .mod
                             Optional('synList'): [
@@ -245,17 +272,19 @@ def cell_specs():
                 }
             },
             # ## Entries associated to pointCell class
-            Optional('cellType'): str,  # valid entry in pointCell class (), but not used for anything
-            # the important thing is that 'cellModel' in the correspoding pop should
-            # be a valid option, and parameters here filled correspondingly
-            Optional('cellModel'): str,
-            Optional('params'): {  # Mandatory when 'cellModel' is a pointCell and the parameters are
-                # filled at the level of cellParams (in contrast to be filled at popParams)
-                # --> conditional validation later
-                Optional('seed'): Or(int, float),
-                Optional('rate'): Or(
-                    Or(int, float), And([Or(int, float)], lambda s: len(s) == 2)  # a value
-                ),  # inferior and superior bounds - random value in this range
+            Optional('cellType'): str,       # valid entry in pointCell class (), but not used for anything
+                                             # the important thing is that 'cellModel' in the correspoding pop should
+                                             # be a valid option, and parameters here filled correspondingly
+
+            Optional('cellModel'): And( str, lambda s: __isArtificialCellModel(s, context) ),
+            Optional('params'):{             # Mandatory when 'cellModel' is a pointCell and the parameters are
+                                             # filled at the level of cellParams (in contrast to be filled at popParams)
+                                             # --> conditional validation later
+                
+                Optional('seed'): Or(int,float),
+                Optional('rate'): Or( Or(int,float),                                    # a value
+                                      And( [Or(int,float)] , lambda s: len(s)==2) ),    # inferior and superior bounds - random value in this range
+
                 # Option for implementing time-dependent rates (for NetStims only)
                 Optional('rates'): Or(
                     Or(
@@ -331,11 +360,11 @@ def cell_specs():
     return specs
 
 
-def synmech_specs():
+def synmech_specs(context):
     specs = {
         Optional(str): {
-            'mod': str,  # built-in models from NEURON are ExpSyn and Exp2Syn
-            Optional('loc'): Or(int, float),
+            'mod': And(str, lambda s: __isPointpModel(s, context) ), # built-in models from NEURON are ExpSyn and Exp2Syn
+            Optional('loc'): Or(int,float),
             Optional('selfNetCon'): {
                 Optional('sec'): str,  # should be existing section, default 'soma'
                 Optional('loc'): Or(int, float),
@@ -343,6 +372,8 @@ def synmech_specs():
                 Optional('delay'): Or(int, float),
                 Optional('threshold'): Or(int, float),
             },
+            # lambda s: return True,
+
             # Options for ExpSyn
             Optional('tau'): Or(int, float, str),
             Optional('e'): Or(int, float, str),
@@ -361,20 +392,27 @@ def synmech_specs():
     return specs
 
 
-def conn_specs():
+def conn_specs(context):
+    popConds = And( Or( str, [str]), lambda s: __isKeyIn(s, context.popParams) )
+    cellTypeConds = And(
+        Or( str, [str]),
+        lambda s: __isKeyIn(s, context.cellParams) or __isAmongConds(s, 'cellType', context.cellParams)
+    )
+    cellModelConds = And(
+        Or( str, [str]),
+        lambda s: __isArtificialCellModel(s, context) or __isAmongConds(s, 'cellModel', context.cellParams)
+    )
     specs = {
-        Optional(str): {
+        Optional(Or(int, str)): {
             'preConds': {
-                Optional('pop'): Or(str, [str]),  # it should be an existing population
-                Optional('cellType'): Or(
-                    str, [str]
-                ),  # it should be an existing cellType and "cellType" should be in the list sim.net.params.popTagsCopiedToCells
-                Optional('cellModel'): Or(
-                    str, [str]
-                ),  # it should be a valid cellModel and "cellModel" should be in the list sim.net.params.popTagsCopiedToCells
+                Optional('pop'): popConds,              # it should be an existing population
+                Optional('cellType'): cellTypeConds,    # it should be an existing cellType and "cellType" should be in the list sim.net.params.popTagsCopiedToCells
+                Optional('cellModel'): cellModelConds,  # it should be a valid cellModel and "cellModel" should be in the list sim.net.params.popTagsCopiedToCells
+
                 Optional('x'): And([Or(int, float)], lambda s: len(s) == 2),
                 Optional('y'): And([Or(int, float)], lambda s: len(s) == 2),
                 Optional('z'): And([Or(int, float)], lambda s: len(s) == 2),
+
                 Optional('xnorm'): And([Or(int, float)], lambda s: len(s) == 2),
                 Optional('ynorm'): And([Or(int, float)], lambda s: len(s) == 2),
                 Optional('znorm'): And([Or(int, float)], lambda s: len(s) == 2),
@@ -383,16 +421,14 @@ def conn_specs():
                 Optional(str): Or(Or(str, int, float), [Or(str, int, float)]),
             },
             'postConds': {
-                Optional('pop'): Or(str, [str]),  # it should be an existing population
-                Optional('cellType'): Or(
-                    str, [str]
-                ),  # it should be an existing cellType and "cellType" should be in the list sim.net.params.popTagsCopiedToCells
-                Optional('cellModel'): Or(
-                    str, [str]
-                ),  # it should be a valid cellModel and "cellModel" should be in the list sim.net.params.popTagsCopiedToCells
+                Optional('pop'): popConds,              # it should be an existing population
+                Optional('cellType'): cellTypeConds,    # it should be an existing cellType and "cellType" should be in the list sim.net.params.popTagsCopiedToCells
+                Optional('cellModel'): cellModelConds,  # it should be a valid cellModel and "cellModel" should be in the list sim.net.params.popTagsCopiedToCells
+
                 Optional('x'): And([Or(int, float)], lambda s: len(s) == 2),
                 Optional('y'): And([Or(int, float)], lambda s: len(s) == 2),
                 Optional('z'): And([Or(int, float)], lambda s: len(s) == 2),
+
                 Optional('xnorm'): And([Or(int, float)], lambda s: len(s) == 2),
                 Optional('ynorm'): And([Or(int, float)], lambda s: len(s) == 2),
                 Optional('znorm'): And([Or(int, float)], lambda s: len(s) == 2),
@@ -403,36 +439,30 @@ def conn_specs():
             Optional('connFunc'): lambda s: s in ['fullConn', 'probConn', 'convConn', 'divConn', 'fromListConn'],
             Optional('probability'): Or(int, float, str),  # it can also be a string-based function
             Optional('convergence'): Or(int, float, str),  # it can also be a string-based function
-            Optional('divergence'): Or(int, float, str),  # it can also be a string-based function
-            Optional('connList'): [
-                And(Or(tuple, list), lambda s: len(s) == 2 and isinstance(s[0], int) and isinstance(s[1], int))
-            ],  # list of tuples or lists, each item with 2 numbers (pre,post)
-            Optional('synMech'): Or(
-                [str], str
-            ),  # existing mechanism in synMechParams - if not defined, it takes the first one in synMechParams
-            Optional('weight'): Or(
-                str, int, float, [Or(int, float)]
-            ),  # number or string-based function. Listing weights is allowed in 3 situations, only with numbers: 1) when 'synMech' is a list (should have the same lenght), 2) With 'synsPerConn' other than 1, 3) When the connections are specified on a one-by-one basis, with 'connList'. Optional, otherwise default
-            Optional('synMechWeightFactor'): [
-                Or(int, float)
-            ],  # scaling factor ('weight' should not be a list), same lenght as 'synMech'
-            Optional('delay'): Or(
-                str, int, float, [Or(int, float)]
-            ),  # number or string-based function. Listing delays is allowed in 3 situations, only with numbers: 1) when 'synMech' is a list (should have the same lenght), 2) With 'synsPerConn' other than 1, 3) When the connections are specified on a one-by-one basis, with 'connList'. Optional, otherwise default
-            Optional('synMechDelayFactor'): [
-                Or(int, float)
-            ],  # scaling factor ('delay' should not be a list), same lenght as 'synMech'
-            Optional('loc'): Or(
-                str, int, float, [Or(int, float)]
-            ),  # number or string-based function. Listing locs is allowed in 2 situations, only with numbers: 1) when 'synMech' is a list (should have the same lenght), 2) When the connections are specified on a one-by-one basis, with 'connList'. Optional, otherwise default (0.5)
-            Optional('synMechLocFactor'): [
-                Or(int, float)
-            ],  # scaling factor ('loc' should not be a list), same lenght as 'synMech'
-            Optional('synsPerConn'): Or(
-                str, int, float
-            ),  # number or string-based function. Optional, otherwise default (1)
-            Optional('sec'): Or([str], str),  # existing section/s (or secLists) in postCell
-            Optional('disynapticBias'): Or(int, float),  # apparently, deprecated
+            Optional('divergence'): Or(int, float, str),   # it can also be a string-based function
+            Optional('connList'): [ And( Or(tuple,list), lambda s: len(s)==2 and isinstance(s[0],int) and isinstance(s[1],int) ) ],    # list of tuples or lists, each item with 2 numbers (pre,post)
+
+
+            Optional('synMech'): And(                                               # existing mechanism in synMechParams - if not defined, it takes the first one in synMechParams
+                Or( [str] , str),
+                lambda s: __isKeyIn(s, context.synMechParams)
+            ),
+
+            Optional('weight'): Or( str, int, float, [ Or(int, float) ]),           # number or string-based function. Listing weights is allowed in 3 situations, only with numbers: 1) when 'synMech' is a list (should have the same lenght), 2) With 'synsPerConn' other than 1, 3) When the connections are specified on a one-by-one basis, with 'connList'. Optional, otherwise default
+            Optional('synMechWeightFactor'): [ Or(int,float) ],                     # scaling factor ('weight' should not be a list), same lenght as 'synMech'
+
+            Optional('delay'): Or( str, int, float, [ Or(int, float) ]),            # number or string-based function. Listing delays is allowed in 3 situations, only with numbers: 1) when 'synMech' is a list (should have the same lenght), 2) With 'synsPerConn' other than 1, 3) When the connections are specified on a one-by-one basis, with 'connList'. Optional, otherwise default
+            Optional('synMechDelayFactor'): [ Or(int,float) ],                      # scaling factor ('delay' should not be a list), same lenght as 'synMech'
+
+            Optional('loc'): Or( str, int, float, [ Or(int, float) ]),              # number or string-based function. Listing locs is allowed in 2 situations, only with numbers: 1) when 'synMech' is a list (should have the same lenght), 2) When the connections are specified on a one-by-one basis, with 'connList'. Optional, otherwise default (0.5)
+            Optional('synMechLocFactor'): [ Or(int,float) ],                        # scaling factor ('loc' should not be a list), same lenght as 'synMech'
+
+            Optional('synsPerConn'): Or(str, int, float),                           # number or string-based function. Optional, otherwise default (1)
+
+            Optional('sec'): Or( [str] , str ),                                     # existing section/s (or secLists) in postCell
+
+            Optional('disynapticBias'): Or(int,float),                              # apparently, deprecated
+
             Optional('shape'): {
                 Optional('pulseType'): lambda s: s in ['square', 'gaussian'],
                 Optional('pulseWidth'): Or(int, float),
@@ -440,7 +470,7 @@ def conn_specs():
                 Optional('switchOnOff'): [Or(int, float)],
             },
             Optional('plast'): {
-                'mech': str,
+                'mech': And(str, lambda s: __isPointpModel(s, context)),
                 'params': {Optional(str): Or(int, float, str, bool)},  # unspecified parameters
             },
             Optional('weightIndex'): int,
@@ -455,47 +485,56 @@ def conn_specs():
     return specs
 
 
-def subconn_specs():
+def subconn_specs(context):
+    popConds = And( Or( str, [str]), lambda s: __isKeyIn(s, context.popParams) )
+    cellTypeConds = And(
+        Or( str, [str]),
+        lambda s: __isKeyIn(s, context.cellParams) or __isAmongConds(s, 'cellType', context.cellParams)
+    )
+    cellModelConds = And(
+        Or( str, [str]),
+        lambda s: __isArtificialCellModel(s, context) or __isAmongConds(s, 'cellModel', context.cellParams)
+    )
     specs = {
         Optional(str): {
             'preConds': {
-                Optional('pop'): Or(str, [str]),  # it should be an existing population
-                Optional('cellType'): Or(
-                    str, [str]
-                ),  # it should be an existing cellType and "cellType" should be in the list sim.net.params.popTagsCopiedToCells
-                Optional('cellModel'): Or(
-                    str, [str]
-                ),  # it should be a valid cellModel and "cellModel" should be in the list sim.net.params.popTagsCopiedToCells
-                Optional('x'): And([Or(int, float)], lambda s: len(s) == 2),
-                Optional('y'): And([Or(int, float)], lambda s: len(s) == 2),
-                Optional('z'): And([Or(int, float)], lambda s: len(s) == 2),
-                Optional('xnorm'): And([Or(int, float)], lambda s: len(s) == 2),
-                Optional('ynorm'): And([Or(int, float)], lambda s: len(s) == 2),
-                Optional('znorm'): And([Or(int, float)], lambda s: len(s) == 2),
+                Optional('pop'): popConds,                  # it should be an existing population
+                Optional('cellType'): cellTypeConds,        # it should be an existing cellType and "cellType" should be in the list sim.net.params.popTagsCopiedToCells
+                Optional('cellModel'): cellModelConds,      # it should be a valid cellModel and "cellModel" should be in the list sim.net.params.popTagsCopiedToCells
+
+                Optional('x'): And([Or(int, float)], lambda s: len(s)==2),
+                Optional('y'): And([Or(int, float)], lambda s: len(s)==2),
+                Optional('z'): And([Or(int, float)], lambda s: len(s)==2),
+
+                Optional('xnorm'): And([Or(int, float)], lambda s: len(s)==2),
+                Optional('ynorm'): And([Or(int, float)], lambda s: len(s)==2),
+                Optional('znorm'): And([Or(int, float)], lambda s: len(s)==2),
                 # Match an unspecified key (str) to a value or list of values (for example, something similar to 'pop': ['S','M'] -considered above-)
                 # This pop-key should be included in sim.net.params.popTagsCopiedToCells
                 Optional(str): Or(Or(str, int, float), [Or(str, int, float)]),
             },
             'postConds': {
-                Optional('pop'): Or(str, [str]),  # it should be an existing population
-                Optional('cellType'): Or(
-                    str, [str]
-                ),  # it should be an existing cellType and "cellType" should be in the list sim.net.params.popTagsCopiedToCells
-                Optional('cellModel'): Or(
-                    str, [str]
-                ),  # it should be a valid cellModel and "cellModel" should be in the list sim.net.params.popTagsCopiedToCells
-                Optional('x'): And([Or(int, float)], lambda s: len(s) == 2),
-                Optional('y'): And([Or(int, float)], lambda s: len(s) == 2),
-                Optional('z'): And([Or(int, float)], lambda s: len(s) == 2),
-                Optional('xnorm'): And([Or(int, float)], lambda s: len(s) == 2),
-                Optional('ynorm'): And([Or(int, float)], lambda s: len(s) == 2),
-                Optional('znorm'): And([Or(int, float)], lambda s: len(s) == 2),
+                Optional('pop'): popConds,                  # it should be an existing population
+                Optional('cellType'): cellTypeConds,        # it should be an existing cellType and "cellType" should be in the list sim.net.params.popTagsCopiedToCells
+                Optional('cellModel'): cellModelConds,      # it should be a valid cellModel and "cellModel" should be in the list sim.net.params.popTagsCopiedToCells
+
+                Optional('x'): And([Or(int, float)], lambda s: len(s)==2),
+                Optional('y'): And([Or(int, float)], lambda s: len(s)==2),
+                Optional('z'): And([Or(int, float)], lambda s: len(s)==2),
+
+                Optional('xnorm'): And([Or(int, float)], lambda s: len(s)==2),
+                Optional('ynorm'): And([Or(int, float)], lambda s: len(s)==2),
+                Optional('znorm'): And([Or(int, float)], lambda s: len(s)==2),
                 # Match an unspecified key (str) to a value or list of values (for example, something similar to 'pop': ['S','M'] -considered above-)
                 # This pop-key should be included in sim.net.params.popTagsCopiedToCells
                 Optional(str): Or(Or(str, int, float), [Or(str, int, float)]),
             },
-            Optional('groupSynMechs'): [str],  # The mechanisms should exist in synMechParams
-            Optional('sec'): Or([str], str),  # existing section/s (or secLists) in postCell
+
+            Optional('groupSynMechs'): And(                 # The mechanisms should exist in synMechParams
+                [str],
+                lambda s: __isKeyIn(s, context.synMechParams)
+            ),
+            Optional('sec'): Or([str] , str),               # existing section/s (or secLists) in postCell
             'density': Or(
                 # either it redistributes uniformely
                 lambda s: s == 'uniform',
@@ -506,10 +545,10 @@ def subconn_specs():
                     ),  # we can put all options in the same list, but we write in this way to stress different possibilities (require different entries in this dictionary)
                     # Options conditional to ['1Dmap','2Dmap']
                     Optional('gridX'): Or(
-                        [Or(int, float)], (Or(int, float))
+                        [Or(int, float)], (Or(int, float)), None
                     ),  # mandatory when 'type' == '2Dmap', but it doesn't appear then 'type' in ['1Dmap','distance'] -> here, we put as Optional
                     Optional('gridY'): Or(
-                        [Or(int, float)], (Or(int, float))
+                        [Or(int, float)], (Or(int, float)), None
                     ),  # mandatory when 'type' in ['1Dmap','2Dmap'], but it doesn't appear then 'type' == 'distance' -> here, we put as Optional
                     Optional('fixedSomaY'): Or(
                         int, float
@@ -543,10 +582,10 @@ def subconn_specs():
     return specs
 
 
-def stimsource_specs():
+def stimsource_specs(context):
     specs = {
         Optional(str): {
-            'type': lambda s: s in ['NetStim', 'IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse'],
+            'type': lambda s: __isPointpModel(s, context) or __isArtificialCellModel(s, context),
             Optional('originalFormat'): lambda s: s
             in [
                 'NeuroML2',
@@ -571,7 +610,7 @@ def stimsource_specs():
                 Optional('switchOnOff'): [Or(int, float)],
             },
             Optional('plast'): {
-                'mech': str,
+                'mech': And(str, lambda s: __isPointpModel(s, context)),
                 'params': {Optional(str): Or(int, float, str, bool)},  # unspecified parameters
             },
             # if 'type' in ['IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse'], there are a number of other parameters available
@@ -603,18 +642,26 @@ def stimsource_specs():
     return specs
 
 
-def stimtarget_specs():
+def stimtarget_specs(context):
     specs = {
         Optional(str): {
             'source': str,  # Conditional: one label from stimSourceParams
             'conds': {  # Similar to conds in connections (except that here, a list of ids is also possible)
-                Optional('pop'): Or(str, [str]),  # it should be an existing population
-                Optional('cellType'): Or(
-                    str, [str]
-                ),  # it should be an existing cellType and "cellType" should be in the list sim.net.params.popTagsCopiedToCells
-                Optional('cellModel'): Or(
-                    str, [str]
-                ),  # it should be a valid cellModel and "cellModel" should be in the list sim.net.params.popTagsCopiedToCells
+                Optional('pop'): And(
+                    Or( str, [str]),
+                    # it should be an existing population
+                    lambda s: __isKeyIn(s, context.popParams)
+                ),
+                Optional('cellType'): And(
+                    Or( str, [str]),
+                    # it should be an existing cellType and "cellType" should be in the list sim.net.params.popTagsCopiedToCells
+                    lambda s: __isKeyIn(s, context.cellParams) or __isAmongConds(s, 'cellType', context.cellParams)
+                ),
+                Optional('cellModel'): And(
+                    Or( str, [str]),
+                    # it should be a valid cellModel and "cellModel" should be in the list sim.net.params.popTagsCopiedToCells
+                    lambda s: __isArtificialCellModel(s, context)
+                ),
                 Optional('x'): And([Or(int, float)], lambda s: len(s) == 2),
                 Optional('y'): And([Or(int, float)], lambda s: len(s) == 2),
                 Optional('z'): And([Or(int, float)], lambda s: len(s) == 2),
@@ -633,27 +680,17 @@ def stimtarget_specs():
                 str, int, float, [Or(int, float)]
             ),  # number or string-based function. Listing weights is allowed in 2 situations, only with numbers: 1) when the incoming source is a NetStim and 'synMech' is a list (should have the same lenght), 2) With 'synsPerConn' other than 1. Optional, otherwise default
             # Conditional, next entries only for NetStims
-            Optional('weight'): Or(
-                str, int, float, [Or(int, float)]
-            ),  # number or string-based function. Listing weights is allowed in 2 situations, only with numbers: 1) when 'synMech' is a list (should have the same lenght), 2) With 'synsPerConn' other than 1. Optional, otherwise default
-            Optional('delay'): Or(
-                str, int, float, [Or(int, float)]
-            ),  # number or string-based function. Listing weights is allowed in 2 situations, only with numbers: 1) when 'synMech' is a list (should have the same lenght), 2) With 'synsPerConn' other than 1. Optional, otherwise default
-            Optional('synsPerConn'): Or(
-                str, int, float
-            ),  # number or string-based function. Optional, otherwise default
-            Optional('synMech'): Or(
-                [str], str
-            ),  # existing mechanism in synMechParams - if not defined, it takes the first one in synMechParams
-            Optional('synMechWeightFactor'): [
-                Or(int, float)
-            ],  # scaling factor ('weight' should not be a list), same lenght as 'synMech'
-            Optional('synMechDelayFactor'): [
-                Or(int, float)
-            ],  # scaling factor ('delay' should not be a list), same lenght as 'synMech'
-            Optional('synMechLocFactor'): [
-                Or(int, float)
-            ],  # scaling factor ('loc' should not be a list), same lenght as 'synMech'
+            Optional('weight'): Or( str, int, float, [ Or(int, float) ]),    # number or string-based function. Listing weights is allowed in 2 situations, only with numbers: 1) when 'synMech' is a list (should have the same lenght), 2) With 'synsPerConn' other than 1. Optional, otherwise default
+            Optional('delay'): Or( str, int, float, [ Or(int, float) ]),     # number or string-based function. Listing weights is allowed in 2 situations, only with numbers: 1) when 'synMech' is a list (should have the same lenght), 2) With 'synsPerConn' other than 1. Optional, otherwise default
+            Optional('synsPerConn'): Or(str, int, float),                    # number or string-based function. Optional, otherwise default
+            Optional('synMech'): And(                                        # existing mechanism in synMechParams - if not defined, it takes the first one in synMechParams
+                Or( [str] , str),
+                lambda s: __isKeyIn(s, context.synMechParams)
+            ),
+            Optional('synMechWeightFactor'): [ Or(int,float) ],              # scaling factor ('weight' should not be a list), same lenght as 'synMech'
+            Optional('synMechDelayFactor'): [ Or(int,float) ],               # scaling factor ('delay' should not be a list), same lenght as 'synMech'
+            Optional('synMechLocFactor'): [ Or(int,float) ]                  # scaling factor ('loc' should not be a list), same lenght as 'synMech'
+
         }
     }
     return specs
@@ -788,7 +825,24 @@ def rxd_specs():
     return specs
 
 
-def validate_netparams(net_params):
+def validateNetParams(net_params):
+
+    validatedSchemas = {}
+    failedSchemas = []
+
+    def validate(data, specs, label):
+
+        schema = Schema(specs)
+        try:
+            valid = schema.validate(data)
+            # print(f"  {label} validation successful")
+            validatedSchemas[label] = valid
+        except SchemaError as error:
+            print(f"  Error validating {label}:")
+            for msg in error.autos: print(f"    {msg}")
+            failedSchemas.append(label)
+
+    context = ValidationContext(net_params)
 
     ## GENERAL SPECIFICATIONS
     # Get only general specifications and set up as a dictionary
@@ -805,162 +859,118 @@ def validate_netparams(net_params):
     net_params_general = {
         elem: net_params.__dict__[elem] for elem in net_params.__dict__.keys() if elem not in specs_classes
     }
-    # Set up the format of this dictionary to be validated
-    general_specs_format = general_specs()
-    # Schema and validation (without conditional validation)
-    Schema_general_specs = Schema(general_specs_format)
-    valid_general_specs = Schema_general_specs.is_valid(net_params_general)
-    #    validated_general_specs = Schema_general_specs.validate(net_params_general)
+    validate(
+        net_params_general,
+        general_specs(),
+        'generalParams'
+    )
 
-    ## CEL PARAMS
-    # Set up the format to validate
-    cell_specs_format = cell_specs()
-    # Schema and validation (without conditional validation)
-    Schema_cell_specs = Schema(cell_specs_format)
-    valid_cell_specs = Schema_cell_specs.is_valid(net_params.cellParams)
-    validated_cell_specs = Schema_cell_specs.validate(net_params.cellParams)
+    validate(
+        net_params.cellParams,
+        cell_specs(context),
+        'cellParams'
+    )
 
-    ## POP PARAMS
-    # Set up the format to validate
-    pop_specs_format = pop_specs()
-    # Schema and validation (without conditional validation)
-    Schema_pop_specs = Schema(pop_specs_format)
-    valid_pop_specs = Schema_pop_specs.is_valid(net_params.popParams)
-    #    validated_pop_specs = Schema_pop_specs.validate(net_params.popParams)
+    validate(
+        net_params.popParams,
+        pop_specs(context),
+        'popParams'
+    )
 
-    ## SYN MECH PARAMS
-    # Set up the format to validate
-    synmech_specs_format = synmech_specs()
-    # Schema and validation (without conditional validation)
-    Schema_synmech_specs = Schema(synmech_specs_format)
-    valid_synmech_specs = Schema_synmech_specs.is_valid(net_params.synMechParams)
-    #    validated_synmech_specs = Schema_synmech_specs.validate(net_params.synMechParams)
+    validate(
+        net_params.synMechParams,
+        synmech_specs(context),
+        'synMechParams'
+    )
 
-    ## CONN PARAMS
-    # Set up the format to validate
-    conn_specs_format = conn_specs()
-    # Schema and validation (without conditional validation)
-    Schema_conn_specs = Schema(conn_specs_format)
-    valid_conn_specs = Schema_conn_specs.is_valid(net_params.connParams)
-    #    validated_conn_specs = Schema_conn_specs.validate(net_params.connParams)
+    validate(
+        net_params.connParams,
+        conn_specs(context),
+        'connParams'
+    )
 
-    ## SUBCONN PARAMS
-    # Set up the format to validate
-    subconn_specs_format = subconn_specs()
-    # Schema and validation (without conditional validation)
-    Schema_subconn_specs = Schema(subconn_specs_format)
-    valid_subconn_specs = Schema_subconn_specs.is_valid(net_params.subConnParams)
-    #    validated_subconn_specs = Schema_subconn_specs.validate(net_params.subConnParams)
+    validate(
+        net_params.subConnParams,
+        subconn_specs(context),
+        'subConnParams'
+    )
 
-    ## STIM SOURCE PARAMS
-    # Set up the format to validate
-    stimsource_specs_format = stimsource_specs()
-    # Schema and validation (without conditional validation)
-    Schema_stimsource_specs = Schema(stimsource_specs_format)
-    valid_stimsource_specs = Schema_stimsource_specs.is_valid(net_params.stimSourceParams)
-    #    validated_stimsource_specs = Schema_stimsource_specs.validate(net_params.stimSourceParams)
+    validate(
+        net_params.stimSourceParams,
+        stimsource_specs(context),
+        'stimSourceParams'
+    )
 
-    ## STIM TARGET PARAMS
-    # Set up the format to validate
-    stimtarget_specs_format = stimtarget_specs()
-    # Schema and validation (without conditional validation)
-    Schema_stimtarget_specs = Schema(stimtarget_specs_format)
-    valid_stimtarget_specs = Schema_stimtarget_specs.is_valid(net_params.stimTargetParams)
-    #    validated_stimtarget_specs = Schema_stimtarget_specs.validate(net_params.stimTargetParams)
+    validate(
+        net_params.stimTargetParams,
+        stimtarget_specs(context),
+        'stimTargetParams'
+    )
 
-    ## RxD COMPONENT
-    # Set up the format to validate
-    rxd_specs_format = rxd_specs()
-    # Schema and validation (without conditional validation)
-    Schema_rxd_specs = Schema(rxd_specs_format)
-    valid_rxd_specs = Schema_rxd_specs.is_valid(net_params.rxdParams)
-    #    validated_rxd_specs = Schema_rxd_specs.validate(net_params.rxdParams)
+    if net_params.rxdParams:
 
-    ## Structure to return
-    schema_result = {}  # All main schemas are based on dictionaries.
-    failed_schemas = {}
+        validate(
+            net_params.rxdParams,
+            rxd_specs(),
+            'rxdParams'
+        )
 
-    # General specifications
-    if valid_general_specs:
-        schema_result['generalParams'] = Schema_general_specs.validate(net_params_general)
-    else:
-        if not failed_schemas:
-            failed_schemas['failedComponents'] = []
-        failed_schemas['failedComponents'].append('generalSpecs')
+    if len(validatedSchemas) == 0:
+        validatedSchemas = None
+    if len(failedSchemas) == 0:
+        failedSchemas = None
+    return validatedSchemas, failedSchemas
 
-    # Cellular Parameters
-    if valid_cell_specs:
-        schema_result['cellParams'] = Schema_cell_specs.validate(net_params.cellParams)
-    else:
-        if not failed_schemas:
-            failed_schemas['failedComponents'] = []
-        failed_schemas['failedComponents'].append('cellParams')
+#  utils
 
-    # Population Parameters
-    if valid_pop_specs:
-        schema_result['popParams'] = Schema_pop_specs.validate(net_params.popParams)
-    else:
-        if not failed_schemas:
-            failed_schemas['failedComponents'] = []
-        failed_schemas['failedComponents'].append('popParams')
+def __isKeyIn(key, otherStruct):
+    if type(key) in (list, tuple):
+        return all(k in otherStruct for k in key)
+    return key in otherStruct
 
-    # Synaptic Mechanisms Parameters
-    if valid_synmech_specs:
-        schema_result['synMechParams'] = Schema_synmech_specs.validate(net_params.synMechParams)
-    else:
-        if not failed_schemas:
-            failed_schemas['failedComponents'] = []
-        failed_schemas['failedComponents'].append('synMechParams')
+def __isAmongConds(val, cond, cellParams): # cond is either `cellType` or `cellModel`
 
-    # Connectivity Parameters
-    if valid_conn_specs:
-        schema_result['connParams'] = Schema_conn_specs.validate(net_params.connParams)
-    else:
-        if not failed_schemas:
-            failed_schemas['failedComponents'] = []
-        failed_schemas['failedComponents'].append('connParams')
+    def isAmongConds(val, cond, cellParams):
+        for _, cellRule in cellParams.items():
+            condVals = cellRule.get('conds', {}).get(cond, None)
 
-    # SubCellular Connectivity Parameters
-    if valid_subconn_specs:
-        schema_result['subConnParams'] = Schema_subconn_specs.validate(net_params.subConnParams)
-    else:
-        if not failed_schemas:
-            failed_schemas['failedComponents'] = []
-        failed_schemas['failedComponents'].append('subConnParams')
+            if type(condVals) not in (list, tuple):
+                condVals = [condVals]
+            for condVal in condVals:
+                if val == condVal:
+                    return True
+        return False
 
-    # Stimulation Source Parameters
-    if valid_stimsource_specs:
-        schema_result['stimSourceParams'] = Schema_stimsource_specs.validate(net_params.stimSourceParams)
-    else:
-        if not failed_schemas:
-            failed_schemas['failedComponents'] = []
-        failed_schemas['failedComponents'].append('stimSourceParams')
+    if type(val) in (list, tuple):
+        return all(isAmongConds(v, cond, cellParams) for v in val)
+    return isAmongConds(val, cond, cellParams)
 
-    # Stimulation Target Parameters
-    if valid_stimtarget_specs:
-        schema_result['stimTargetParams'] = Schema_stimtarget_specs.validate(net_params.stimTargetParams)
-    else:
-        if not failed_schemas:
-            failed_schemas['failedComponents'] = []
-        failed_schemas['failedComponents'].append('stimTargetParams')
+global __mechVarList
+__mechVarList = None
 
-    # RxD Parameters
-    if (
-        len(net_params.rxdParams) == 0
-    ):  # to keep mandatory entries in the rxd schema. Otherwise everything should be optional
-        schema_result['rxdParams'] = {}
-    else:  # check schema
-        if valid_rxd_specs:
-            schema_result['rxdParams'] = Schema_rxd_specs.validate(net_params.rxdParams)
-        else:
-            if not failed_schemas:
-                failed_schemas['failedComponents'] = []
-            failed_schemas['failedComponents'].append('rxdParams')
+def __isPointpModel(name, context):
+    return __isModel(name, 'pointps', context)
 
-    ## Returning options
-    if failed_schemas:
-        failed_schemas['is_valid'] = False
-        return failed_schemas
-    else:
-        schema_result['is_valid'] = True
-        return schema_result
+def __isArtificialCellModel(name, context):
+    return __isModel(name, 'artifcells', context)
+
+def __isMechModel(name, context):
+    return __isModel(name, 'mechs', context)
+
+def __isModel(name, modelType, context):
+
+    if not context.validateModels:
+        return True
+    global __mechVarList
+    if __mechVarList is None:
+        from netpyne.conversion import mechVarList
+        __mechVarList = mechVarList(distinguishArtifCells=True)
+
+    def isModel(name, modelType):
+        if name not in __mechVarList[modelType]:
+            return False
+        return True
+
+    if type(name) in (list, tuple):
+        return all(isModel(n, modelType) for n in name)
+    return isModel(name, modelType)

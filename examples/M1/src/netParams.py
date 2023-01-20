@@ -35,19 +35,19 @@ netParams.propVelocity = 100.0 # propagation velocity (um/ms)
 netParams.probLambda = 100.0  # length constant (lambda) for connection probability decay (um)
 
 ## create list of populations, where each item contains a dict with the pop params
-netParams.popParams['IT_L23'] = {'cellModel': 'Izhi', 'cellType': 'IT',  'ynormRange': [0.12, 0.31], 'density': 80e3} #  L2/3 IT
-netParams.popParams['IT_L4'] =  {'cellModel': 'Izhi', 'cellType': 'IT',  'ynormRange': [0.31, 0.41], 'density': 80e3} #  L4 IT
-netParams.popParams['IT_L5A'] = {'cellModel': 'Izhi', 'cellType': 'IT',  'ynormRange': [0.41, 0.52], 'density': 80e3} #  L5A IT
-netParams.popParams['IT_L5B'] = {'cellModel': 'Izhi', 'cellType': 'IT',  'ynormRange': [0.52, 0.77], 'density': 40e3} #  L5B IT
-netParams.popParams['PT_L5B'] = {'cellModel': 'Izhi', 'cellType': 'PT',  'ynormRange': [0.52, 0.77], 'density': 40e3} #  L5B PT
-netParams.popParams['IT_L6'] =  {'cellModel': 'Izhi', 'cellType': 'IT',  'ynormRange': [0.77, 1.0], 'density': 40e3} #  L6 IT
-netParams.popParams['CT_L6'] =  {'cellModel': 'Izhi', 'cellType': 'CT',  'ynormRange': [0.77, 1.0], 'density': 40e3} #  L6 CT
-netParams.popParams['PV_L23'] = {'cellModel': 'Izhi', 'cellType': 'PV',  'ynormRange': [0.1, 0.31], 'density': 10e3} #  L2/3 PV (FS)
-netParams.popParams['SOM_L23'] ={'cellModel': 'Izhi', 'cellType': 'SOM', 'ynormRange': [0.1, 0.31], 'density': 10e3} #  L2/3 SOM (LTS)
-netParams.popParams['PV_L5'] =  {'cellModel': 'Izhi', 'cellType': 'PV',  'ynormRange': [0.31, 0.77], 'density': 10e3} #  L5 PV (FS)
-netParams.popParams['SOM_L5'] = {'cellModel': 'Izhi', 'cellType': 'SOM', 'ynormRange': [0.31, 0.77], 'density': 10e3} #  L5 SOM (LTS)
-netParams.popParams['PV_L6'] =  {'cellModel': 'Izhi', 'cellType': 'PV',  'ynormRange': [0.77, 1.0], 'density': 10e3} #  L6 PV (FS)
-netParams.popParams['SOM_L6'] = {'cellModel': 'Izhi', 'cellType': 'SOM', 'ynormRange': [0.77, 1.0], 'density': 10e3} #  L6 SOM (LTS)
+netParams.popParams['IT_L23'] = {'cellType': 'IT', 'ynormRange': [0.12, 0.31], 'density': 80e3} #  L2/3 IT # - same below
+netParams.popParams['IT_L4'] =  {'cellType': 'IT', 'ynormRange': [0.31, 0.41], 'density': 80e3} #  L4 IT
+netParams.popParams['IT_L5A'] = {'cellType': 'IT', 'ynormRange': [0.41, 0.52], 'density': 80e3} #  L5A IT
+netParams.popParams['IT_L5B'] = {'cellType': 'IT', 'ynormRange': [0.52, 0.77], 'density': 40e3} #  L5B IT
+netParams.popParams['PT_L5B'] = {'cellType': 'PT', 'ynormRange': [0.52, 0.77], 'density': 40e3} #  L5B PT
+netParams.popParams['IT_L6'] =  {'cellType': 'IT', 'ynormRange': [0.77, 1.0], 'density': 40e3} #  L6 IT
+netParams.popParams['CT_L6'] =  {'cellType': 'CT', 'ynormRange': [0.77, 1.0], 'density': 40e3} #  L6 CT
+netParams.popParams['PV_L23'] = {'cellType': 'PV', 'ynormRange': [0.1, 0.31], 'density': 10e3} #  L2/3 PV (FS)
+netParams.popParams['SOM_L23'] ={'cellType': 'SOM', 'ynormRange': [0.1, 0.31], 'density': 10e3} #  L2/3 SOM (LTS)
+netParams.popParams['PV_L5'] =  {'cellType': 'PV', 'ynormRange': [0.31, 0.77], 'density': 10e3} #  L5 PV (FS)
+netParams.popParams['SOM_L5'] = {'cellType': 'SOM','ynormRange': [0.31, 0.77], 'density': 10e3} #  L5 SOM (LTS)
+netParams.popParams['PV_L6'] =  {'cellType': 'PV', 'ynormRange': [0.77, 1.0], 'density': 10e3} #  L6 PV (FS)
+netParams.popParams['SOM_L6'] = {'cellType': 'SOM','ynormRange': [0.77, 1.0], 'density': 10e3} #  L6 SOM (LTS)
 
 
 ## Izhi cell params (used in cell properties)

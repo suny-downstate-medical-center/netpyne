@@ -102,13 +102,17 @@ def initialize(netParams=None, simConfig=None, net=None):
 
     if hasattr(sim.cfg, 'validateNetParams') and sim.cfg.validateNetParams:  # whether to validate the input parameters
         try:
-            if validator.validate_netparams(netParams)['is_valid']:
-                print("\nNetParams validation successful ...")
+            print('Validating NetParams ...')
+            sim.timing('start', 'validationTime')
+            validated, failed = validator.validateNetParams(netParams)
+            sim.timing('stop', 'validationTime')
+            if failed:
+                print(f"\nNetParams validation identified some potential issues in: {', '.join(failed)}. See above for details.")
             else:
-                print("\nNetParams validation identified some potential issues; see above for details...")
-                print(validator.validate_netparams(netParams))
-        except:
-            print("\nAn exception occurred during the netParams validation process...")
+                print("\nNetParams validation successful.")
+        except Exception as e:
+            sim.timing('stop', 'validationTime')
+            print("\nAn exception occurred during the netParams validation process.")
 
     sim.timing('stop', 'initialTime')
 

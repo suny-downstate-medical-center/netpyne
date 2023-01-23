@@ -227,7 +227,7 @@ def createParallelContext():
 # ------------------------------------------------------------------------------
 # Read simConfig and netParams from command line arguments
 # ------------------------------------------------------------------------------
-def readCmdLineArgs(simConfigDefault=None, netParamsDefault=None):
+def readCmdLineArgs(simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
     """
     Function for/to <short description of `netpyne.sim.setup.readCmdLineArgs`>
 

@@ -745,3 +745,143 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
 
                 with open('timing.pkl', 'wb') as file:
                     pickle.dump(sim.timing, file)
+
+
+def saveModel(netParams, simConfig, srcPath, dstPath=None, exportNetParamsAsPython=False, exportSimConfigAsPython=False):
+
+    assert (srcPath is not None) or (dstPath is not None), \
+        "Either srcPath or dstPath should be non-None"
+
+    import os, shutil, json
+    from netpyne.conversion import createPythonNetParams, createPythonSimConfig
+    
+    originalDir = os.getcwd()
+    if srcPath: srcPath = os.path.abspath(srcPath)
+    if dstPath: dstPath = os.path.abspath(dstPath)
+
+    fromScratch = False
+    if srcPath is None:
+        # creating model from scratch.
+        srcPath = dstPath
+        fromScratch = True
+    srcDir, srcPath = __getModelDirAndIndex(srcPath)
+    os.makedirs(srcDir, exist_ok=True)
+
+    if dstPath is None:
+        # assume that dstPath is same as srcPath, i.e. original netParams and simConfig will be rewritten in-place
+        dstPath = srcPath
+    dstDir, dstPath = __getModelDirAndIndex(dstPath)
+    os.makedirs(dstDir, exist_ok=True)
+
+    if fromScratch:
+        rewriteInPlace = False
+    else:
+        rewriteInPlace = dstPath == srcPath
+
+    suffix = ''
+    # if saving to same directory but with other index-file (i.e. another version of model),
+    # need to use some suffix with file names, to avoid rewriting original files
+    if (srcDir == dstDir) and (srcPath != dstPath):
+        suffix = __inferSuffix(dstPath)
+    
+    obsoleteNetParams, obsoleteCfg = None, None
+    if os.path.exists(srcPath):
+
+        # Load srcIndex as dict
+        fileObj = open(srcPath, 'r')
+        indexData = json.load(fileObj)
+
+        # Modify entry in indexfile if needed
+        altered = __alteredFilename(
+            indexData['netParams'],
+            suffix, exportNetParamsAsPython
+        )
+        if altered: # TODO: remove original?
+            obsoleteNetParams = indexData['netParams']
+            indexData['netParams'] = altered
+
+        # Modify entry in indexfile if needed
+        altered = __alteredFilename(
+            indexData['simConfig'],
+            suffix, exportSimConfigAsPython
+        )
+        if altered:
+            obsoleteCfg = indexData['simConfig']
+            indexData['simConfig'] = altered
+    else:
+        # create default index
+        indexData = {
+            'netParams': f"src/netParams{suffix}{'.py' if exportNetParamsAsPython else '.json'}",
+            'simConfig': f"src/cfg{suffix}{'.py' if exportSimConfigAsPython else '.json'}"
+        }
+        os.makedirs(os.path.join(dstDir, 'src'))
+
+    netParamsPath = indexData['netParams']
+    cfgPath = indexData['simConfig']
+
+    if dstDir != srcDir:
+        # copy the whole file struct to dstPath
+
+        shutil.copytree(srcDir, dstDir, dirs_exist_ok=True)
+        os.chdir(dstDir)
+        # .. except netParams and/or cfg in case they are to be rewritten
+        if obsoleteNetParams:
+            os.remove(obsoleteNetParams)
+        if obsoleteCfg:
+            os.remove(obsoleteCfg)
+        # and except original index file
+        os.remove(os.path.split(srcPath)[1])
+    os.chdir(dstDir)
+    
+    # save netParams
+    if rewriteInPlace and obsoleteNetParams:
+        os.remove(obsoleteNetParams)
+    if exportNetParamsAsPython:
+        createPythonNetParams(netParamsPath, netParams)
+    else: # json
+        netParams.save(netParamsPath)
+
+    # save cfg
+    if rewriteInPlace and obsoleteCfg:
+        os.remove(obsoleteCfg)
+    if exportSimConfigAsPython:
+        createPythonSimConfig(cfgPath, simConfig, varName='cfg')
+    else: # json
+        simConfig.save(cfgPath)
+
+    # save new index file if needed
+    if (rewriteInPlace == False) or (obsoleteNetParams or obsoleteCfg):
+        from .. import sim
+        sim.saveJSON(dstPath, indexData)
+
+    os.chdir(originalDir)
+
+def __getModelDirAndIndex(path):
+    name, ext = os.path.splitext(path)
+    if ext == '': # check if directory (isdir() won't work because path may not exist)
+        # if path is directory, append default name of index-file
+        path = os.path.join(path, 'index.npjson')
+    dir = os.path.dirname(path)
+    return dir, path
+
+def __inferSuffix(dstPath):
+    # Suffix to be perpended to new netParams and cg filenames
+    fName, ext = os.path.splitext(os.path.split(dstPath)[1])
+    if fName.startswith('index'):
+        # if it's 'indexSOMETHING.npjson', use SOMETHING as suffix
+        return fName[5:]
+    else:
+        # use _ + whole filename as suffix
+        return '_' + fName
+
+def __alteredFilename(original, suffix, exportAsPython):
+    filename, ext = os.path.splitext(original)
+    if exportAsPython and (ext != '.py'):
+        ext = '.py'
+    elif not exportAsPython and (ext != '.json'):
+        ext = '.json'
+    altered = filename + suffix + ext
+    if altered != original:
+        return altered
+    else:
+        return None

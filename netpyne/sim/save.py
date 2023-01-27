@@ -765,27 +765,36 @@ def saveModel(netParams, simConfig, srcPath, dstPath=None, exportNetParamsAsPyth
         srcPath = dstPath
         fromScratch = True
     srcDir, srcPath = __getModelDirAndIndex(srcPath)
-    os.makedirs(srcDir, exist_ok=True)
 
     if dstPath is None:
         # assume that dstPath is same as srcPath, i.e. original netParams and simConfig will be rewritten in-place
         dstPath = srcPath
     dstDir, dstPath = __getModelDirAndIndex(dstPath)
-    os.makedirs(dstDir, exist_ok=True)
+
+    obsoleteNetParams, obsoleteCfg = None, None
+
+    modifyExistingModel = (fromScratch == False) and (dstPath == srcPath)
 
     if fromScratch:
-        rewriteInPlace = False
-    else:
-        rewriteInPlace = dstPath == srcPath
+        # by convention, saving the model will erase anything that already exists at dstPath
+        if os.path.exists(dstDir):
+            shutil.rmtree(dstDir)
 
-    suffix = ''
-    # if saving to same directory but with other index-file (i.e. another version of model),
-    # need to use some suffix with file names, to avoid rewriting original files
-    if (srcDir == dstDir) and (srcPath != dstPath):
-        suffix = __inferSuffix(dstPath)
-    
-    obsoleteNetParams, obsoleteCfg = None, None
-    if os.path.exists(srcPath):
+        # (re)create dstDir and create /src dir in it where files will be stored by default
+        os.makedirs(os.path.join(dstDir, 'src'))
+        # create default index
+        indexData = {
+            'netParams': f"src/netParams{'.py' if exportNetParamsAsPython else '.json'}",
+            'simConfig': f"src/cfg{'.py' if exportSimConfigAsPython else '.json'}"
+        }
+    else:
+        writeToSameDir = srcDir == dstDir
+
+        # if saving to same directory but with other index-file (i.e. another version of model),
+        # need to use some suffix with file names, to avoid rewriting original files
+        suffix = ''
+        if writeToSameDir and not modifyExistingModel:
+            suffix = __inferSuffix(dstPath)
 
         # Load srcIndex as dict
         fileObj = open(srcPath, 'r')
@@ -796,7 +805,7 @@ def saveModel(netParams, simConfig, srcPath, dstPath=None, exportNetParamsAsPyth
             indexData['netParams'],
             suffix, exportNetParamsAsPython
         )
-        if altered: # TODO: remove original?
+        if altered:
             obsoleteNetParams = indexData['netParams']
             indexData['netParams'] = altered
 
@@ -808,33 +817,30 @@ def saveModel(netParams, simConfig, srcPath, dstPath=None, exportNetParamsAsPyth
         if altered:
             obsoleteCfg = indexData['simConfig']
             indexData['simConfig'] = altered
-    else:
-        # create default index
-        indexData = {
-            'netParams': f"src/netParams{suffix}{'.py' if exportNetParamsAsPython else '.json'}",
-            'simConfig': f"src/cfg{suffix}{'.py' if exportSimConfigAsPython else '.json'}"
-        }
-        os.makedirs(os.path.join(dstDir, 'src'))
+
+        if not writeToSameDir:
+            # by convention, saving the model will erase anything that already exists at dstPath
+            if os.path.exists(dstDir):
+                shutil.rmtree(dstDir)
+
+            # copy the whole file struct to dstPath
+            shutil.copytree(srcDir, dstDir)
+            os.chdir(dstDir)
+            # .. except netParams and/or cfg in case they are to be rewritten
+            if obsoleteNetParams:
+                os.remove(obsoleteNetParams)
+            if obsoleteCfg:
+                os.remove(obsoleteCfg)
+            # and except original index file
+            os.remove(os.path.split(srcPath)[1])
 
     netParamsPath = indexData['netParams']
     cfgPath = indexData['simConfig']
 
-    if dstDir != srcDir:
-        # copy the whole file struct to dstPath
-
-        shutil.copytree(srcDir, dstDir, dirs_exist_ok=True)
-        os.chdir(dstDir)
-        # .. except netParams and/or cfg in case they are to be rewritten
-        if obsoleteNetParams:
-            os.remove(obsoleteNetParams)
-        if obsoleteCfg:
-            os.remove(obsoleteCfg)
-        # and except original index file
-        os.remove(os.path.split(srcPath)[1])
     os.chdir(dstDir)
-    
+
     # save netParams
-    if rewriteInPlace and obsoleteNetParams:
+    if modifyExistingModel and obsoleteNetParams:
         os.remove(obsoleteNetParams)
     if exportNetParamsAsPython:
         createPythonNetParams(netParamsPath, netParams)
@@ -842,7 +848,7 @@ def saveModel(netParams, simConfig, srcPath, dstPath=None, exportNetParamsAsPyth
         netParams.save(netParamsPath)
 
     # save cfg
-    if rewriteInPlace and obsoleteCfg:
+    if modifyExistingModel and obsoleteCfg:
         os.remove(obsoleteCfg)
     if exportSimConfigAsPython:
         createPythonSimConfig(cfgPath, simConfig, varName='cfg')
@@ -850,7 +856,7 @@ def saveModel(netParams, simConfig, srcPath, dstPath=None, exportNetParamsAsPyth
         simConfig.save(cfgPath)
 
     # save new index file if needed
-    if (rewriteInPlace == False) or (obsoleteNetParams or obsoleteCfg):
+    if (modifyExistingModel == False) or (obsoleteNetParams or obsoleteCfg):
         from .. import sim
         sim.saveJSON(dstPath, indexData)
 

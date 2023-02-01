@@ -16,7 +16,7 @@ standard_library.install_aliases()
 import numpy as np
 import json
 import pickle
-from subprocess import Popen
+import subprocess
 
 # -------------------------------------------------------------------------------
 # function to create a folder if it does not exist
@@ -284,7 +284,7 @@ def runJob(nrnCommand, script, cfgSavePath, netParamsSavePath, simDataPath, rank
     print(command)
 
     with open(simDataPath + '.run', 'w') as outf, open(simDataPath + '.err', 'w') as errf:
-        pid = Popen(command.split(' '), stdout=outf, stderr=errf, preexec_fn=os.setsid).pid
+        pid = subprocess.Popen(command.split(' '), stdout=outf, stderr=errf, start_new_session=True).pid
 
     with open('./pids.pid', 'a') as file:
         file.write(str(pid) + ' ')
@@ -399,7 +399,8 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
             # run on local machine with <nodes*coresPerNode> cores
             # ----------------------------------------------------------------------
             if type == 'mpi_direct':
-                executer = '/bin/bash'
+                #executer = '/bin/bash'
+                executer = 'sh' # OS agnostic (Windows)
                 jobString = jobStringMPIDirect(custom, folder, command)
             # ----------------------------------------------------------------------
             # run on HPC through slurm
@@ -441,11 +442,13 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
 
             if type == 'mpi_direct':
                 with open(jobPath + '.run', 'a+') as outf, open(jobPath + '.err', 'w') as errf:
-                    pids.append(Popen([executer, batchfile], stdout=outf, stderr=errf, preexec_fn=os.setsid).pid)
+                    pids.append(subprocess.Popen([executer, batchfile], stdout=outf, stderr=errf,
+                                                 start_new_session=True).pid)
             else:
                 with open(jobPath + '.jobid', 'w') as outf, open(jobPath + '.err', 'w') as errf:
-                    pids.append(Popen([executer, batchfile], stdout=outf, stderr=errf, preexec_fn=os.setsid).pid)
-            # proc = Popen(command.split([executer, batchfile]), stdout=PIPE, stderr=PIPE)
+                    pids.append(subprocess.Popen([executer, batchfile], stdout=outf, stderr=errf,
+                                                 start_new_session=True).pid)
+            # proc = subprocess.Popen(command.split([executer, batchfile]), stdout=PIPE, stderr=PIPE)
 
             sleep(0.1)
             # read = proc.stdout.read()

@@ -7,44 +7,35 @@ if '-nogui' not in sys.argv:
     sys.argv.append('-nogui')
 from tests.examples.utils import pkg_setup
 
-@pytest.mark.package_data(['examples/HHTut/', None]) # TODO: use some more light-weight example?
+@pytest.mark.package_data(['doc/source/code', 'mod'])
 class TestCreatePython():
 
     def test_netParams_and_cfg(self, pkg_setup):
-        from src.cfg import cfg
-        __main__.cfg = cfg
-        from src.netParams import netParams
-
-        createPythonScript(fname='test_script.py', netParams=netParams, simConfig=cfg)
-        del netParams, cfg
+        from tut6 import netParams, simConfig
+        createPythonScript('test_script.py', netParams, simConfig)
+        del netParams, simConfig # to make sure nothing got cached..
 
         import test_script
-        sim.checkOutput('HHTut')
+        sim.checkOutput('tut6')
 
 
     def test_netParams(self, pkg_setup):
-        from src.cfg import cfg
-        __main__.cfg = cfg
-        from src.netParams import netParams
-
+        from tut6 import netParams
         createPythonNetParams(fname='test_net_params.py', netParams=netParams)
         del netParams
 
         from test_net_params import netParams
-        sim.createSimulateAnalyze(netParams, cfg)
-
-        sim.checkOutput('HHTut')
+        from tut6 import simConfig
+        sim.createSimulateAnalyze(netParams, simConfig)
+        sim.checkOutput('tut6')
 
 
     def test_simConfig(self, pkg_setup):
-        from src.cfg import cfg
-
-        createPythonSimConfig(fname='test_sim_config.py', simConfig=cfg)
-        del cfg
+        from tut6 import simConfig
+        createPythonSimConfig(fname='test_sim_config.py', simConfig=simConfig)
+        del simConfig
 
         from test_sim_config import simConfig
-        __main__.cfg = simConfig
-        from src.netParams import netParams
+        from tut6 import netParams
         sim.createSimulateAnalyze(netParams, simConfig)
-
-        sim.checkOutput('HHTut')
+        sim.checkOutput('tut6')

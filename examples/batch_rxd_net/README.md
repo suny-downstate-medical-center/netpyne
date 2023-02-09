@@ -15,15 +15,15 @@ Requires NEURON with RxD and Python.
 
 1. Type or ./compile or the equivalent `nrnivmodl mod`. This should create a directory called either i686 or x86_64, depending on your computer's architecture. 
 
-2. To run type: `python -i init.py`
+2. To run type: `python -i src/batch.py`
 
 ## Overview of file structure:
 
-* /init.py: Main executable; calls functions from other modules. Sets what parameter file to use.
+* src/init.py: Main executable; calls functions from other modules. Sets what parameter file to use.
 
-* /netParams.py: Network parameters
+* src/netParams.py: Network parameters
 
-* /cfg.py: Simulation configuration
+* src/cfg.py: Simulation configuration
 
 
 For further information please contact: salvadordura@gmail.com 

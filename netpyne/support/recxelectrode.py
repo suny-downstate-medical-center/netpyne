@@ -40,22 +40,21 @@ from __future__ import absolute_import
 
 from builtins import range
 from future import standard_library
+
 standard_library.install_aliases()
 import numpy as np
 import math
 
 
 class RecXElectrode(object):
-    """Extracellular electrode
-
-    """
+    """Extracellular electrode"""
 
     def __init__(self, locations):
         try:
             self.pos = locations
             assert len(self.pos.shape) == 2
             assert self.pos.shape[0] == 3
-            self.pos[1,:] *= -1  # invert y-axis since by convention assume it refers to depth (eg cortical depth)
+            self.pos[1, :] *= -1  # invert y-axis since by convention assume it refers to depth (eg cortical depth)
             self.nsites = self.pos.shape[0]
             self.transferResistances = {}
         except:
@@ -63,7 +62,7 @@ class RecXElectrode(object):
             return None
 
         self.nsites = self.pos.shape[1]
-        self.transferResistances = {}   # V_e = transfer_resistance*Im
+        self.transferResistances = {}  # V_e = transfer_resistance*Im
 
     def getTransferResistance(self, gid):
         return self.transferResistances[gid]
@@ -74,38 +73,42 @@ class RecXElectrode(object):
 
         # Value used in NEURON extracellular recording example ("extracellular_stim_and_rec")
         # rho = 35.4  # ohm cm, squid axon cytoplasm = 2.8249e-2 S/cm = 0.028 S/cm = 0.0028 S/mm = 2.8 mS/mm
-                    # rho_um = 35.4 * 0.01 = 35.4 / 1e6 * 1e4 = 0.354 Mohm um ~= 3 uS / um = 3000 uS / mm = 3 mS /mm
-                    # equivalent sigma value (~3) is 10x larger than Allen (0.3)
-                    # if use same sigma value, results are consistent
+        # rho_um = 35.4 * 0.01 = 35.4 / 1e6 * 1e4 = 0.354 Mohm um ~= 3 uS / um = 3000 uS / mm = 3 mS /mm
+        # equivalent sigma value (~3) is 10x larger than Allen (0.3)
+        # if use same sigma value, results are consistent
 
-        r05 = (seg_coords['p0'] + seg_coords['p1'])/2
+        r05 = (seg_coords['p0'] + seg_coords['p1']) / 2
         dl = seg_coords['p1'] - seg_coords['p0']
 
         nseg = r05.shape[1]
 
-        tr = np.zeros((self.nsites,nseg))
+        tr = np.zeros((self.nsites, nseg))
         # tr_NEURON = np.zeros((self.nsites,nseg))  # used to compare with NEURON extracellular example
 
-        for j in range(self.nsites):   # calculate mapping for each site on the electrode
-            rel = np.expand_dims(self.pos[:, j], axis=1)   # coordinates of a j-th site on the electrode
+        for j in range(self.nsites):  # calculate mapping for each site on the electrode
+            rel = np.expand_dims(self.pos[:, j], axis=1)  # coordinates of a j-th site on the electrode
             rel_05 = rel - r05  # distance between electrode and segment centers
-            r2 = np.einsum('ij,ij->j', rel_05, rel_05)    # compute dot product column-wise, the resulting array has as many columns as original
+            r2 = np.einsum(
+                'ij,ij->j', rel_05, rel_05
+            )  # compute dot product column-wise, the resulting array has as many columns as original
 
-            rlldl = np.einsum('ij,ij->j', rel_05, dl)    # compute dot product column-wise, the resulting array has as many columns as original
+            rlldl = np.einsum(
+                'ij,ij->j', rel_05, dl
+            )  # compute dot product column-wise, the resulting array has as many columns as original
             dlmag = np.linalg.norm(dl, axis=0)  # length of each segment
-            rll = abs(rlldl/dlmag)   # component of r parallel to the segment axis it must be always positive
+            rll = abs(rlldl / dlmag)  # component of r parallel to the segment axis it must be always positive
             rT2 = r2 - rll**2  # square of perpendicular component
-            up = rll + dlmag/2
-            low = rll - dlmag/2
+            up = rll + dlmag / 2
+            low = rll - dlmag / 2
             num = up + np.sqrt(up**2 + rT2)
             den = low + np.sqrt(low**2 + rT2)
-            tr[j, :] = np.log(num/den)/dlmag  # units of (1/um) use with imemb_ (total seg current)
+            tr[j, :] = np.log(num / den) / dlmag  # units of (1/um) use with imemb_ (total seg current)
 
             # Consistent with NEURON extracellular recording example
             # r = np.sqrt(rel_05[0,:]**2 + rel_05[1,:]**2 + rel_05[2,:]**2)
             # tr_NEURON[j, :] = (rho / 4 / math.pi)*(1/r)*0.01
 
-        tr *= 1/(4*math.pi*sigma)  # units: 1/um / (mS/mm) = mm/um / mS = 1e3 * kOhm = MOhm
+        tr *= 1 / (4 * math.pi * sigma)  # units: 1/um / (mS/mm) = mm/um / mS = 1e3 * kOhm = MOhm
         self.transferResistances[gid] = tr
 
     def fromConfig(cfg):

@@ -3,7 +3,7 @@
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import math
-from ..analysis.utils import exception #, loadData
+from ..analysis.utils import exception  # , loadData
 from ..analysis.tools import loadData
 from .plotter import LinesPlotter
 from .plotter import ImagePlotter
@@ -14,62 +14,63 @@ import numpy as np
 @exception
 def plotLFPSpectrogram(
     SpectData=None,
-    axis=None, 
+    axis=None,
     timeRange=None,
     electrodes=['avg', 'all'],
     pop=None,
     NFFT=256,
-    noverlap=128, 
+    noverlap=128,
     nperseg=256,
-    minFreq=1, 
-    maxFreq=100, 
-    stepFreq=1, 
+    minFreq=1,
+    maxFreq=100,
+    stepFreq=1,
     smooth=0,
-    logy=False, 
+    logy=False,
     normSignal=False,
-    normPSD=False, 
-    filtFreq=False, 
-    filtOrder=3, 
-    detrend=False, 
+    normPSD=False,
+    filtFreq=False,
+    filtOrder=3,
+    detrend=False,
     transformMethod='morlet',
     returnPlotter=False,
-    **kwargs):
+    **kwargs
+):
     """Function to produce a plot of LFP electrode spectrograms
 
     NetPyNE Options
     ---------------
     sim : NetPyNE sim object
         The *sim object* from which to get data.
-        
+
         *Default:* ``None`` uses the current NetPyNE sim object
 
     Parameters
     ----------
     SpectData : dict, str
-        The data necessary to plot the LFP spectrogram. 
+        The data necessary to plot the LFP spectrogram.
 
         *Default:* ``None`` uses ``analysis.prepareSpectrogram`` to produce ``SpectData`` using the current NetPyNE sim object.
-        
+
         If a *str* it must represent a file path to previously saved data.
-        
+
     axis : matplotlib axis
         The axis to plot into, allowing overlaying of plots.
-        
+
         *Default:* ``None`` produces a new figure and axis.
 
     timeRange : list
         Time range to include in the raster: ``[min, max]``.
-        
+
         *Default:* ``None`` uses the entire simulation
 
     electrodes : list
         A *list* of the electrodes to plot from.
-        
+
         *Default:* ``['avg', 'all']`` plots each electrode as well as their average
 
     pop : str
         A population name to calculate PSD from.
-        
+
         *Default:* ``None`` uses all populations.
 
     NFFT : int (power of 2)
@@ -103,8 +104,8 @@ def plotLFPSpectrogram(
     logy : bool
         Whether to use a log axis.
 
-        *Default:* ``False`` 
-    
+        *Default:* ``False``
+
     normSignal : bool
         Whether to normalize the LFP data.
 
@@ -117,13 +118,13 @@ def plotLFPSpectrogram(
 
     filtFreq : int or list
         Frequency for low-pass filter (int) or frequencies for bandpass filter in a list: [low, high]
-        
+
         *Default:* ``None`` does not filter the data
 
     filtOrder : int
         Order of the filter defined by `filtFreq`.
 
-        *Default:* ``3``    
+        *Default:* ``3``
 
     detrend : bool
         Whether to detrend the data.
@@ -133,11 +134,11 @@ def plotLFPSpectrogram(
     transformMethod : str
         The transformation method to use, either 'morlet' or 'fft'.
 
-        *Default:* ``'morlet'`` 
+        *Default:* ``'morlet'``
 
     returnPlotter : bool
         Whether to return the figure or the NetPyNE MetaFig object.
-        
+
         *Default:* ``False`` returns the figure.
 
 
@@ -168,22 +169,21 @@ def plotLFPSpectrogram(
 
     title : str
         the axis title
-    
+
     xlabel : str
         label for x-axis
-    
+
     ylabel : str
         label for y-axis
 
-    
+
     Returns
     -------
     LFPSpectrogramPlot : *matplotlib figure*
         By default, returns the *figure*.  If ``returnPlotter`` is ``True``, instead returns the NetPyNE MetaFig.
-        
+
     """
 
-    
     # If there is no input data, get the data from the NetPyNE sim object
     if SpectData is None:
         if 'sim' not in kwargs:
@@ -194,29 +194,30 @@ def plotLFPSpectrogram(
         SpectData = sim.analysis.prepareSpectrogram(
             sim=sim,
             timeRange=timeRange,
-            electrodes=electrodes, 
+            electrodes=electrodes,
             pop=pop,
-            NFFT=NFFT, 
-            noverlap=noverlap, 
-            nperseg=nperseg, 
-            minFreq=minFreq, 
-            maxFreq=maxFreq, 
-            stepFreq=stepFreq, 
-            smooth=smooth, 
-            logy=logy, 
-            normSignal=normSignal, 
-            normPSD=normPSD, 
-            filtFreq=filtFreq, 
-            filtOrder=filtOrder, 
-            detrend=detrend, 
-            transformMethod=transformMethod, 
-            **kwargs)
+            NFFT=NFFT,
+            noverlap=noverlap,
+            nperseg=nperseg,
+            minFreq=minFreq,
+            maxFreq=maxFreq,
+            stepFreq=stepFreq,
+            smooth=smooth,
+            logy=logy,
+            normSignal=normSignal,
+            normPSD=normPSD,
+            filtFreq=filtFreq,
+            filtOrder=filtOrder,
+            detrend=detrend,
+            transformMethod=transformMethod,
+            **kwargs
+        )
 
     print('Plotting LFP spectrogram...')
 
     # If input is a dictionary, pull the data out of it
     if type(SpectData) == dict:
-    
+
         names = SpectData['electrodes']['names']
         vmin = SpectData['electrodes']['spectrogram']['vmin']
         vmax = SpectData['electrodes']['spectrogram']['vmax']
@@ -233,12 +234,12 @@ def plotLFPSpectrogram(
         spect = SpectData['electrodes']['spectrogram']['fft']
         xmesh = SpectData['electrodes']['spectrogram']['xmesh']
         ymesh = SpectData['electrodes']['spectrogram']['ymesh']
-    
+
     for index, name in enumerate(names):
 
         # Create a dictionary with the inputs for an image plot
         imageData = {}
-        imageData['X'] = np.array(spect)[index,:,:]
+        imageData['X'] = np.array(spect)[index, :, :]
         imageData['vmin'] = vmin
         imageData['vmax'] = vmax
         imageData['extent'] = extent[index]
@@ -258,22 +259,21 @@ def plotLFPSpectrogram(
 
         # Create a dictionary to hold colorbar settings
         colorbarArgs = {}
-        #colorbarArgs['mappable']     = None
-        #colorbarArgs['cax']          = None
-        #colorbarArgs['ax']           = None
-        #colorbarArgs['use_gridspec'] = None
-        #colorbarArgs['location']     = None
-        #colorbarArgs['orientation']  = None
-        #colorbarArgs['fraction']     = None
-        #colorbarArgs['shrink']       = None
-        #colorbarArgs['aspect']       = None
-        #colorbarArgs['pad']          = None
-        #colorbarArgs['anchor']       = None
-        #colorbarArgs['panchor']      = None
-        colorbarArgs['label']        = 'Power'
+        # colorbarArgs['mappable']     = None
+        # colorbarArgs['cax']          = None
+        # colorbarArgs['ax']           = None
+        # colorbarArgs['use_gridspec'] = None
+        # colorbarArgs['location']     = None
+        # colorbarArgs['orientation']  = None
+        # colorbarArgs['fraction']     = None
+        # colorbarArgs['shrink']       = None
+        # colorbarArgs['aspect']       = None
+        # colorbarArgs['pad']          = None
+        # colorbarArgs['anchor']       = None
+        # colorbarArgs['panchor']      = None
+        colorbarArgs['label'] = 'Power'
 
         axisArgs['colorbar'] = colorbarArgs
-
 
         plotaxis = axis
         if axis is None:
@@ -281,16 +281,14 @@ def plotLFPSpectrogram(
                 plotaxis = metaFig.ax[index]
             else:
                 plotaxis = metaFig.ax
-        
+
         imagePlotter = ImagePlotter(data=imageData, kind='spect', axis=plotaxis, **axisArgs, **kwargs)
         spectPlot = imagePlotter.plot(**axisArgs, **kwargs)
 
-    suptitle = {'t':'LFP Spectrogram'}
+    suptitle = {'t': 'LFP Spectrogram'}
 
     if axis is None:
         metaFig.finishFig(suptitle=suptitle, **kwargs)
         return metaFig.fig
     else:
         return plt.gcf()
-
-

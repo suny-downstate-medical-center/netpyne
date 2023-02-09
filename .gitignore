@@ -67,3 +67,5 @@ examples/optunaOptim/simple/
 /examples/NeuroMLImport/test/HybridTut.net.nml
 /examples/NeuroMLImport/test/LEMS_HHTut.xml
 /examples/NeuroMLImport/test/LEMS_HybridTut.xml
+/examples/NeuroMLImport/test/M1.net.nml
+/examples/NeuroMLImport/test/LEMS_M1.xml

@@ -63,3 +63,7 @@ examples/asdOptim/simple/
 *.pid
 
 examples/optunaOptim/simple/
+/examples/NeuroMLImport/test/HHTut.net.nml
+/examples/NeuroMLImport/test/HybridTut.net.nml
+/examples/NeuroMLImport/test/LEMS_HHTut.xml
+/examples/NeuroMLImport/test/LEMS_HybridTut.xml

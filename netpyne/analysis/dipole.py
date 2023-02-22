@@ -32,14 +32,17 @@ from numbers import Number
 def plotDipole(showCell=None, showPop=None, timeRange=None, dpi=300, figSize=(6, 6), showFig=True, saveFig=True):
     from .. import sim
 
-    if showCell:
-        p = sim.allSimData['dipoleCells'][showCell]
-    elif showPop:
-        p = sim.allSimData['dipolePops'][showPop]
-    else:
-        p = sim.allSimData['dipoleSum']
+    try:
+        if showCell:
+            p = sim.allSimData['dipoleCells'][showCell]
+        elif showPop:
+            p = sim.allSimData['dipolePops'][showPop]
+        else:
+            p = sim.allSimData['dipoleSum']
 
-    p = p / 1000.0  # convert from nA to uA
+        p = p / 1000.0  # convert from nA to uA
+    except:
+        print('Unable to collect dipole information...')
 
     if timeRange is None:
         timeRange = [0, sim.cfg.duration]

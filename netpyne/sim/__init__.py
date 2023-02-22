@@ -47,7 +47,7 @@ from .run import preRun, runSim, runSimWithIntervalFunc, loadBalance, calculateL
 from .gather import gatherData, _gatherAllCellTags, _gatherAllCellConnPreGids, _gatherCells, gatherDataFromFiles
 
 # import saving functions
-from .save import saveJSON, saveData, distributedSaveHDF5, compactConnFormat, intervalSave, saveDataInNodes
+from .save import saveJSON, saveData, distributedSaveHDF5, compactConnFormat, intervalSave, saveDataInNodes, saveModel
 
 # import loading functions
 from .load import (

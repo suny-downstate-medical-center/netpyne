@@ -12,7 +12,7 @@ from future import standard_library
 standard_library.install_aliases()
 
 from .neuronPyHoc import importCell, importCellsFromNet, mechVarList, getSecName
-from .pythonScript import createPythonScript, createPythonNetParams, createPythonSimConfig
+from .pythonScript import createPythonScript
 from .excel import importConnFromExcel
 
 # comment below to avoid import errors

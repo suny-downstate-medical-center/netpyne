@@ -787,6 +787,218 @@ metadata = {
                 },
             },
             # ---------------------------------------------------------------------------------------------------------------------
+            # netParams.subConnParams
+            # ---------------------------------------------------------------------------------------------------------------------
+            "subConnParams": {
+                "label": "Sub-Cellular Connectivity parameters",
+                "suggestions": "",
+                "help": "",
+                "hintText": "",
+                "children": {
+                    "preConds": {
+                        "label": "Conditions for the presynaptic cells",
+                        "help": "Presynaptic cell conditions defined using attributes/tags and the required value e.g. {'cellType': 'PYR'}. Values can be lists, e.g. {'pop': ['Exc1', 'Exc2']}. For location properties, the list values correspond to the min and max values, e.g. {'ynorm': [0.1, 0.6]}.",
+                        "suggestions": "",
+                        "hintText": "",
+                        "children": {
+                            "pop": {
+                                "label": "Population (multiple selection available)",
+                                "suggestions": "",
+                                "help": "Cells belonging to this population (or list of populations) will be connected pre-synaptically.",
+                                "hintText": "",
+                            },
+                            "cellType": {
+                                "label": "Cell type (multiple selection available)",
+                                "suggestions": "",
+                                "help": "Ccells with this cell type attribute/tag will be connected pre-synaptically.",
+                                "hintText": "",
+                            },
+                            "cellModel": {
+                                "label": "Cell model (multiple selection available)",
+                                "suggestions": "",
+                                "help": "Cells with this cell model attribute/tag will be connected pre-synaptically.",
+                                "hintText": "",
+                            },
+                            "x": {
+                                "label": "Range of x-axis locations",
+                                "suggestions": "",
+                                "help": "Cells within these x-axis locations will be connected pre-synaptically.",
+                                "hintText": "",
+                            },
+                            "y": {
+                                "label": "Range of y-axis locations",
+                                "suggestions": "",
+                                "help": "Cells within these y-axis locations will be connected pre-synaptically.",
+                                "hintText": "",
+                            },
+                            "z": {
+                                "label": "Range of z-axis locations",
+                                "suggestions": "",
+                                "help": "Cells within these z-axis locations will be connected pre-synaptically..",
+                                "hintText": "",
+                            },
+                            "xnorm": {
+                                "label": "Range of normalized x-axis locations",
+                                "suggestions": "",
+                                "help": "Cells within these normalized x-axis locations will be connected pre-synaptically.",
+                                "hintText": "",
+                            },
+                            "ynorm": {
+                                "label": "Range of normalized y-axis locations",
+                                "suggestions": "",
+                                "help": "Cells within these normalized y-axis locations will be connected pre-synaptically.",
+                                "hintText": "",
+                            },
+                            "znorm": {
+                                "label": "Range of normalized z-axis locations",
+                                "suggestions": "",
+                                "help": "Cells within these normalized z-axis locations will be connected pre-synaptically.",
+                                "hintText": "",
+                            },
+                        },
+                    },
+                    "postConds": {
+                        "label": "Conditions for the postsynaptic cells",
+                        "help": "Defined as a dictionary with the attributes/tags of the postsynaptic cell and the required values e.g. {'cellType': 'PYR'}. Values can be lists, e.g. {'pop': ['Exc1', 'Exc2']}. For location properties, the list values correspond to the min and max values, e.g. {'ynorm': [0.1, 0.6]}.",
+                        "suggestions": "",
+                        "hintText": "",
+                        "children": {
+                            "pop": {
+                                "label": "Population (multiple selection available)",
+                                "suggestions": "",
+                                "help": "Cells belonging to this population (or list of populations) will be connected post-synaptically.",
+                                "hintText": "",
+                            },
+                            "cellType": {
+                                "label": "Cell type (multiple selection available)",
+                                "suggestions": "",
+                                "help": "Ccells with this cell type attribute/tag will be connected post-synaptically.",
+                                "hintText": "",
+                            },
+                            "cellModel": {
+                                "label": "Cell model (multiple selection available)",
+                                "suggestions": "",
+                                "help": "Cells with this cell model attribute/tag will be connected post-synaptically.",
+                                "hintText": "",
+                            },
+                            "x": {
+                                "label": "Range of x-axis locations",
+                                "suggestions": "",
+                                "help": "Cells within these x-axis locations will be connected post-synaptically.",
+                                "hintText": "",
+                            },
+                            "y": {
+                                "label": "Range of y-axis locations",
+                                "suggestions": "",
+                                "help": "Cells within these y-axis locations will be connected post-synaptically.",
+                                "hintText": "",
+                            },
+                            "z": {
+                                "label": "Range of z-axis locations",
+                                "suggestions": "",
+                                "help": "Cells within these z-axis locations will be connected post-synaptically..",
+                                "hintText": "",
+                            },
+                            "xnorm": {
+                                "label": "Range of normalized x-axis locations",
+                                "suggestions": "",
+                                "help": "Cells within these normalized x-axis locations will be connected post-synaptically.",
+                                "hintText": "",
+                            },
+                            "ynorm": {
+                                "label": "Range of normalized y-axis locations",
+                                "suggestions": "",
+                                "help": "Cells within these normalized y-axis locations will be connected post-synaptically.",
+                                "hintText": "",
+                            },
+                            "znorm": {
+                                "label": "Range of normalized z-axis locations",
+                                "suggestions": "",
+                                "help": "Cells within these normalized z-axis locations will be connected post-synaptically.",
+                                "hintText": "",
+                            },
+                        },
+                    },
+                    "groupSynMechs": {
+                        "label": "Synaptic mechanism",
+                        "help": " List of synaptic mechanisms grouped together when redistributing synapses. If omitted, post-synaptic locations of all connections (meeting preConds and postConds) are redistributed independently with a given profile (defined below). If a list is provided, synapses of common connections (same pre- and post-synaptic neurons for each mechanism) are relocated to the same location. For example, [‘AMPA’,’NMDA’].",
+                        "suggestions": "",
+                        "hintText": "",
+                    },
+                    "sec": {
+                        "label": "Redistributed Synapse Sections",
+                        "help": "List of sections admitting redistributed synapses. If omitted, the section used to redistribute synapses is the soma or, if it does not exist, the first available section in the post-synaptic cell. For example, [‘Adend1’,’Adend2’, ‘Adend3’,’Bdend’].",
+                        "suggestions": "",
+                        "hintText": "soma",
+                        "type": "list(str)",
+                    },
+                    "density": {
+                        "label": "Type of redistribution",
+                        "help": "",
+                        "suggestions": "",
+                        "hintText": "",
+                        "children": {
+                            "gridY": {
+                                "label": "Depth y-coordinate Positions",
+                                "help": "List of positions in y-coordinate (depth).",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "list(int, float)",
+                            },
+                            "gridX": {
+                                "label": "Depth x-coordinate Positions",
+                                "help": "List of positions in x-coordinate (or z).",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "list(int, float)",
+                            },
+                            "fixedSomaY": {
+                                "label": "Soma's y-coordinate",
+                                "help": "Absolute position y-coordinate of the soma, used to shift gridY (also provided in absolute coordinates).",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "int,float",
+                            },
+                            "gridValues": {
+                                "label": "Synaptic Density",
+                                "help": "One or two-dimensional list expressing the (relative) synaptic density in the coordinates defined by (gridX and) gridY.",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "list(int, float)",
+                            },
+                            "ref_sec": {
+                                "label": "Reference Section",
+                                "help": "Section used as a reference from which distance is computed. If omitted, the section used to reference distances is the soma or, if it does not exist, anything starting with ‘som’ or, otherwise, the first available section in the post-synaptic cell.",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "str",
+                            },
+                            "ref_seg": {
+                                "label": "Reference Segment",
+                                "help": "Segment within the section used to reference the distances. If omitted, it is used a default value (0.5).",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "int, float",
+                            },
+                            "target_distance": {
+                                "label": "Target Distance",
+                                "help": "Target distance from the reference where synapses will be reallocated. If omitted, this value is set to 0. The chosen location will be the closest to this target, between the allowed sections.",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "int, float",
+                            },
+                            "coord": {
+                                "label": "Coordinate's System",
+                                "help": "Coordinates’ system used to compute distance. If omitted, the distance is computed along the dendritic tree. Alternatively, it may be used ‘cartesian’ to calculate the distance in the euclidean space (distance from the reference to the target segment in the cartesian coordinate system).",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "int, float",
+                            },
+                        }
+                    }
+                },
+            },
+            # ---------------------------------------------------------------------------------------------------------------------
             # netParams.stimSourceParams
             # ---------------------------------------------------------------------------------------------------------------------
             "stimSourceParams": {

@@ -484,7 +484,7 @@ def loadFromIndexFile(index):
     return loadModel(index, loadMechs=False)
 
 
-def loadModel(path, loadMechs=True, forceCompileMechs=False):
+def loadModel(path, loadMechs=True, ignoreMechAlreadyExistsError=False):
 
     import __main__
     import json
@@ -512,7 +512,7 @@ def loadModel(path, loadMechs=True, forceCompileMechs=False):
             modFolder = indexData.get('mod_folder')
             if modFolder:
                 modFolderPath = os.path.join(dir, modFolder)
-                __processMod(modFolderPath, forceCompileMechs)
+                __processMod(modFolderPath, ignoreMechAlreadyExistsError)
 
         os.chdir(dir)
 
@@ -547,25 +547,66 @@ def loadModel(path, loadMechs=True, forceCompileMechs=False):
     return cfg, netParams
 
 
-def __processMod(modFolderPath, forceCompile):
-    import os, subprocess
+def __processMod(modFolderPath, ignoreMechAlreadyExistsError):
+    import os, subprocess, shutil, time, glob
+    import neuron
+    from neuron import h
 
-    if os.path.exists(modFolderPath):
-        compiledModPath = os.path.join(modFolderPath, 'x86_64')
+    if not os.path.exists(modFolderPath):
+        print(f"Warning: specified 'mod_folder' path {modFolderPath} doesn't exist")
+        return
 
-        if forceCompile or not os.path.exists(compiledModPath):
-            import shutil
+    originalDir = os.getcwd()
+    os.chdir(modFolderPath)
+    shutil.rmtree('x86_64', ignore_errors=True)
 
-            shutil.rmtree(compiledModPath, ignore_errors=True)
+    if not ignoreMechAlreadyExistsError:
+        # compile and load all the mods from folder. If some of them already exist,
+        # it will raise the error
+        subprocess.call(["nrnivmodl"])
+        neuron.load_mechanisms(os.path.abspath('.'))
+    else:
+        # parse mod files and load only those not yet loaded
+        mods = glob.glob("*.mod")
 
-            originalDir = os.getcwd()
-            os.chdir(modFolderPath)
-            subprocess.call(["nrnivmodl"])
-            os.chdir(originalDir)
+        alreadyLoadedMods = []
+        for file in mods:
+            name = __extractModelName(file)
+            try:
+                getattr(h, name)
+                alreadyLoadedMods.append(file)
+            except:
+                pass
 
-        import neuron
+        modsToLoad = set(mods) - set(alreadyLoadedMods)
+        if len(modsToLoad) > 0:
+            # compile into dir other than x86_64 to bypass possibly cached data
+            tmpDir = f'tmp_{os.getpid()}_{time.time()}'
+            os.mkdir(tmpDir)
+            os.chdir(tmpDir)
+            modsToLoad = list(map(lambda path: f'../{path}', modsToLoad))
+            subprocess.call(['nrnivmodl'] + list(modsToLoad))
+            neuron.load_mechanisms(os.path.abspath('.'))
+            os.chdir('..')
+            os.system(f'rm -rf {tmpDir}')
 
-        neuron.load_mechanisms(modFolderPath)
+    os.chdir(originalDir)
+
+def __extractModelName(modFile):
+    import re
+    lines = []
+    with open(modFile, "r") as f:
+        lines = f.readlines()
+
+    for line in lines:
+        line = line.split(':')[0] # drop code comments
+        for modType in ['suffix', 'point_process', 'artificial_cell']:
+            if (modType + ' ') in line.lower():
+                partWithName = re.split(modType, line, flags=re.IGNORECASE)[1]
+                partWithName = partWithName.replace("}", " ") # for the case like "NEURON {SUFFIX NAME}"
+                name = partWithName.strip().split(" ")[0]
+                return name
+    return None
 
 
 # ------------------------------------------------------------------------------

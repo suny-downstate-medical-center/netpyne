@@ -1,3 +1,4 @@
-import HHTut
 from netpyne import sim
-sim.createSimulateAnalyze(netParams = HHTut.netParams, simConfig = HHTut.simConfig)
+from netParams import netParams
+from cfg import cfg
+sim.createSimulateAnalyze(netParams = netParams, simConfig = cfg)

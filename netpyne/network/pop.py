@@ -1,4 +1,3 @@
-
 """
 Module defining Population class and methods
 
@@ -11,15 +10,17 @@ from __future__ import absolute_import
 
 from builtins import map
 from builtins import range
+
 try:
     basestring
 except NameError:
     basestring = str
 from future import standard_library
+
 standard_library.install_aliases()
-from numpy import  pi, sqrt, sin, cos, arccos
+from numpy import pi, sqrt, sin, cos, arccos
 import numpy as np
-from neuron import h # Import NEURON
+from neuron import h  # Import NEURON
 
 
 ###############################################################################
@@ -28,19 +29,18 @@ from neuron import h # Import NEURON
 #
 ###############################################################################
 
-class Pop (object):
+
+class Pop(object):
     """
     Class for/to <short description of `netpyne.network.pop.Pop`>
-
-"""
+    """
 
     def __init__(self, label, tags):
-        self.tags = tags # list of tags/attributes of population (eg. numCells, cellModel,...)
+        self.tags = tags  # list of tags/attributes of population (eg. numCells, cellModel,...)
         self.tags['pop'] = label
         self.cellGids = []  # list of cell gids beloging to this pop
         self._setCellClass()  # set type of cell
         self.rand = h.Random()  # random number generator
-
 
     def _distributeCells(self, numCellsPop):
         """
@@ -56,14 +56,18 @@ class Pop (object):
         for i in range(numCellsPop):
             hostCells[sim.nextHost].append(i)
 
-            sim.nextHost+=1
-            if sim.nextHost>=sim.nhosts:
-                sim.nextHost=0
+            sim.nextHost += 1
+            if sim.nextHost >= sim.nhosts:
+                sim.nextHost = 0
 
         if sim.cfg.verbose:
-            print(("Distributed population of %i cells on %s hosts: %s, next: %s"%(numCellsPop,sim.nhosts,hostCells,sim.nextHost)))
+            print(
+                (
+                    "Distributed population of %i cells on %s hosts: %s, next: %s"
+                    % (numCellsPop, sim.nhosts, hostCells, sim.nextHost)
+                )
+            )
         return hostCells
-
 
     def createCells(self):
         """
@@ -89,13 +93,15 @@ class Pop (object):
         # not enough tags to create cells
         else:
             self.tags['numCells'] = 1
-            print('Warninig: number or density of cells not specified for population %s; defaulting to numCells = 1' % (self.tags['pop']))
+            print(
+                'Warninig: number or density of cells not specified for population %s; defaulting to numCells = 1'
+                % (self.tags['pop'])
+            )
             cells = self.createCellsFixedNum()
 
         return cells
 
-
-    def createCellsFixedNum (self):
+    def createCellsFixedNum(self):
         """
         Create population cells based on fixed number of cells
         """
@@ -105,81 +111,98 @@ class Pop (object):
         cells = []
         self.rand.Random123(self.tags['numCells'], sim.net.lastGid, sim.cfg.seeds['loc'])
         self.rand.uniform(0, 1)
-        vec = h.Vector(self.tags['numCells']*3)
+        vec = h.Vector(self.tags['numCells'] * 3)
         vec.setrand(self.rand)
         randLocs = np.array(vec).reshape(self.tags['numCells'], 3)  # create random x,y,z locations
 
         if sim.net.params.shape == 'cylinder':
             # Use the x,z random vales
-            rho = randLocs[:,0] # use x rand value as the radius rho in the interval [0, 1)
-            phi = 2 * pi * randLocs[:,2] # use z rand value as the angle phi in the interval [0, 2*pi)
-            x = (1 + sqrt(rho) * cos(phi))/2.0
-            z = (1 + sqrt(rho) * sin(phi))/2.0
-            randLocs[:,0] = x
-            randLocs[:,2] = z
+            rho = randLocs[:, 0]  # use x rand value as the radius rho in the interval [0, 1)
+            phi = 2 * pi * randLocs[:, 2]  # use z rand value as the angle phi in the interval [0, 2*pi)
+            x = (1 + sqrt(rho) * cos(phi)) / 2.0
+            z = (1 + sqrt(rho) * sin(phi)) / 2.0
+            randLocs[:, 0] = x
+            randLocs[:, 2] = z
 
         elif sim.net.params.shape == 'ellipsoid':
             # Use the x,y,z random vales
-            rho = np.power(randLocs[:,0], 1.0/3.0) # use x rand value as the radius rho in the interval [0, 1); cuberoot
-            phi = 2 * pi * randLocs[:,1] # use y rand value as the angle phi in the interval [0, 2*pi)
-            costheta = (2 * randLocs[:,2]) - 1 # use z rand value as cos(theta) in the interval [-1, 1); ensures uniform dist
+            rho = np.power(
+                randLocs[:, 0], 1.0 / 3.0
+            )  # use x rand value as the radius rho in the interval [0, 1); cuberoot
+            phi = 2 * pi * randLocs[:, 1]  # use y rand value as the angle phi in the interval [0, 2*pi)
+            costheta = (
+                2 * randLocs[:, 2]
+            ) - 1  # use z rand value as cos(theta) in the interval [-1, 1); ensures uniform dist
             theta = arccos(costheta)  # obtain theta from cos(theta)
-            x = (1 + rho * cos(phi) * sin(theta))/2.0
-            y = (1 + rho * sin(phi) * sin(theta))/2.0
-            z = (1 + rho * cos(theta))/2.0
-            randLocs[:,0] = x
-            randLocs[:,1] = y
-            randLocs[:,2] = z
+            x = (1 + rho * cos(phi) * sin(theta)) / 2.0
+            y = (1 + rho * sin(phi) * sin(theta)) / 2.0
+            z = (1 + rho * cos(theta)) / 2.0
+            randLocs[:, 0] = x
+            randLocs[:, 1] = y
+            randLocs[:, 2] = z
 
         for icoord, coord in enumerate(['x', 'y', 'z']):
-            if coord+'Range' in self.tags:  # if user provided absolute range, convert to normalized
-                self.tags[coord+'normRange'] = [float(point) / getattr(sim.net.params, 'size'+coord.upper()) for point in self.tags[coord+'Range']]
+            if coord + 'Range' in self.tags:  # if user provided absolute range, convert to normalized
+                self.tags[coord + 'normRange'] = [
+                    float(point) / getattr(sim.net.params, 'size' + coord.upper())
+                    for point in self.tags[coord + 'Range']
+                ]
             # constrain to range set by user
-            if coord+'normRange' in self.tags:  # if normalized range, rescale random locations
-                minv = self.tags[coord+'normRange'][0]
-                maxv = self.tags[coord+'normRange'][1]
-                randLocs[:,icoord] = randLocs[:,icoord] * (maxv-minv) + minv
+            if coord + 'normRange' in self.tags:  # if normalized range, rescale random locations
+                minv = self.tags[coord + 'normRange'][0]
+                maxv = self.tags[coord + 'normRange'][1]
+                randLocs[:, icoord] = randLocs[:, icoord] * (maxv - minv) + minv
 
         numCells = int(sim.net.params.scale * self.tags['numCells'])
         for i in self._distributeCells(numCells)[sim.rank]:
-            gid = sim.net.lastGid+i
+            gid = sim.net.lastGid + i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
-            cellTags = {k: v for (k, v) in self.tags.items() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
-            cellTags['pop'] = self.tags['pop']
-            cellTags['xnorm'] = randLocs[i,0] # set x location (um)
-            cellTags['ynorm'] = randLocs[i,1] # set y location (um)
-            cellTags['znorm'] = randLocs[i,2] # set z location (um)
-            cellTags['x'] = sim.net.params.sizeX * randLocs[i,0] # set x location (um)
-            cellTags['y'] = sim.net.params.sizeY * randLocs[i,1] # set y location (um)
-            cellTags['z'] = sim.net.params.sizeZ * randLocs[i,2] # set z location (um)
+            cellTags = self._createCellTags()
+            cellTags['xnorm'] = randLocs[i, 0]  # set x location (um)
+            cellTags['ynorm'] = randLocs[i, 1]  # set y location (um)
+            cellTags['znorm'] = randLocs[i, 2]  # set z location (um)
+            cellTags['x'] = sim.net.params.sizeX * randLocs[i, 0]  # set x location (um)
+            cellTags['y'] = sim.net.params.sizeY * randLocs[i, 1]  # set y location (um)
+            cellTags['z'] = sim.net.params.sizeZ * randLocs[i, 2]  # set z location (um)
             if 'spkTimes' in self.tags:  # if VecStim, copy spike times to params
                 if isinstance(self.tags['spkTimes'][0], list):
                     try:
-                        cellTags['params']['spkTimes'] = self.tags['spkTimes'][i] # 2D list
+                        cellTags['params']['spkTimes'] = self.tags['spkTimes'][i]  # 2D list
                     except:
                         pass
                 else:
                     cellTags['params']['spkTimes'] = self.tags['spkTimes']  # 1D list (same for all)
-            if self.tags.get('diversity', False): # if pop has cell diversity
-                cellTags['fraction'] = float(i)/float(numCells)
+            if self.tags.get('diversity', False):  # if pop has cell diversity
+                cellTags['fraction'] = float(i) / float(numCells)
 
             if 'dynamicRates' in self.tags:  # if NetStim, copy rates array to params
                 if 'rates' in self.tags['dynamicRates'] and 'times' in self.tags['dynamicRates']:
                     if isinstance(self.tags['dynamicRates']['rates'][0], list):
                         try:
-                            cellTags['params']['rates'] = [self.tags['dynamicRates']['rates'][i], self.tags['dynamicRates']['times']]  # 2D list
+                            cellTags['params']['rates'] = [
+                                self.tags['dynamicRates']['rates'][i],
+                                self.tags['dynamicRates']['times'],
+                            ]  # 2D list
                         except:
                             pass
                     else:
-                        cellTags['params']['rates'] = [self.tags['dynamicRates']['rates'], self.tags['dynamicRates']['times']] # 1D list (same for all)
-            cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
+                        cellTags['params']['rates'] = [
+                            self.tags['dynamicRates']['rates'],
+                            self.tags['dynamicRates']['times'],
+                        ]  # 1D list (same for all)
+            cells.append(self.cellModelClass(gid, cellTags))  # instantiate Cell object
 
-            if sim.cfg.verbose: print(('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, sim.net.params.scale * self.tags['numCells']-1, gid, self.tags['pop'], sim.rank)))
+            if sim.cfg.verbose:
+                print(
+                    (
+                        'Cell %d/%d (gid=%d) of pop %s, on node %d, '
+                        % (i, sim.net.params.scale * self.tags['numCells'] - 1, gid, self.tags['pop'], sim.rank)
+                    )
+                )
         sim.net.lastGid = sim.net.lastGid + self.tags['numCells']
         return cells
 
-
-    def createCellsDensity (self):
+    def createCellsDensity(self):
         """
         Create population cells based on density
         """
@@ -194,47 +217,68 @@ class Pop (object):
 
         # calculate volume
         if shape == 'cuboid':
-            volume = sizeY/1e3 * sizeX/1e3 * sizeZ/1e3
+            volume = sizeY / 1e3 * sizeX / 1e3 * sizeZ / 1e3
         elif shape == 'cylinder':
-            volume = sizeY/1e3 * sizeX/1e3/2 * sizeZ/1e3/2 * pi
+            volume = sizeY / 1e3 * sizeX / 1e3 / 2 * sizeZ / 1e3 / 2 * pi
         elif shape == 'ellipsoid':
-            volume = sizeY/1e3/2.0 * sizeX/1e3/2.0 * sizeZ/1e3/2.0 * pi * 4.0 / 3.0
+            volume = sizeY / 1e3 / 2.0 * sizeX / 1e3 / 2.0 * sizeZ / 1e3 / 2.0 * pi * 4.0 / 3.0
 
         for coord in ['x', 'y', 'z']:
-            if coord+'Range' in self.tags:  # if user provided absolute range, convert to normalized
-                self.tags[coord+'normRange'] = [point / getattr(sim.net.params, 'size'+coord.upper()) for point in self.tags[coord+'Range']]
-            if coord+'normRange' in self.tags:  # if normalized range, rescale volume
-                minv = self.tags[coord+'normRange'][0]
-                maxv = self.tags[coord+'normRange'][1]
-                volume = volume * (maxv-minv)
+            if coord + 'Range' in self.tags:  # if user provided absolute range, convert to normalized
+                self.tags[coord + 'normRange'] = [
+                    point / getattr(sim.net.params, 'size' + coord.upper()) for point in self.tags[coord + 'Range']
+                ]
+            if coord + 'normRange' in self.tags:  # if normalized range, rescale volume
+                minv = self.tags[coord + 'normRange'][0]
+                maxv = self.tags[coord + 'normRange'][1]
+                volume = volume * (maxv - minv)
 
         funcLocs = None  # start with no locations as a function of density function
-        if isinstance(self.tags['density'], basestring): # check if density is given as a function
+        if isinstance(self.tags['density'], basestring):  # check if density is given as a function
             if shape == 'cuboid':  # only available for cuboids
                 strFunc = self.tags['density']  # string containing function
                 strVars = [var for var in ['xnorm', 'ynorm', 'znorm'] if var in strFunc]  # get list of variables used
                 if not len(strVars) == 1:
-                    print('Error: density function (%s) for population %s does not include "xnorm", "ynorm" or "znorm"'%(strFunc,self.tags['pop']))
+                    print(
+                        'Error: density function (%s) for population %s does not include "xnorm", "ynorm" or "znorm"'
+                        % (strFunc, self.tags['pop'])
+                    )
                     return
                 coordFunc = strVars[0]
-                lambdaStr = 'lambda ' + coordFunc +': ' + strFunc # convert to lambda function
+                lambdaStr = 'lambda ' + coordFunc + ': ' + strFunc  # convert to lambda function
                 densityFunc = eval(lambdaStr)
-                minRange = self.tags[coordFunc+'Range'][0]
-                maxRange = self.tags[coordFunc+'Range'][1]
+                minRange = self.tags[coordFunc + 'Range'][0]
+                maxRange = self.tags[coordFunc + 'Range'][1]
 
                 interval = 0.001  # interval of location values to evaluate func in order to find the max cell density
                 maxDensity = max(list(map(densityFunc, (np.arange(minRange, maxRange, interval)))))  # max cell density
                 maxCells = volume * maxDensity  # max number of cells based on max value of density func
 
                 self.rand.Random123(int(maxDensity), sim.net.lastGid, sim.cfg.seeds['loc'])
-                locsAll = minRange + ((maxRange-minRange)) * np.array([self.rand.uniform(0, 1) for i in range(int(maxCells))])  # random location values
-                locsProb = np.array(list(map(densityFunc, locsAll))) / maxDensity  # calculate normalized density for each location value (used to prune)
-                allrands = np.array([self.rand.uniform(0, 1) for i in range(len(locsProb))])  # create an array of random numbers for checking each location pos
+                locsAll = minRange + ((maxRange - minRange)) * np.array(
+                    [self.rand.uniform(0, 1) for i in range(int(maxCells))]
+                )  # random location values
+                locsProb = (
+                    np.array(list(map(densityFunc, locsAll))) / maxDensity
+                )  # calculate normalized density for each location value (used to prune)
+                allrands = np.array(
+                    [self.rand.uniform(0, 1) for i in range(len(locsProb))]
+                )  # create an array of random numbers for checking each location pos
 
-                makethiscell = locsProb>allrands  # perform test to see whether or not this cell should be included (pruning based on density func)
-                funcLocs = [locsAll[i] for i in range(len(locsAll)) if i in np.array(makethiscell.nonzero()[0],dtype='int')] # keep only subset of yfuncLocs based on density func
-                self.tags['numCells'] = len(funcLocs)  # final number of cells after pruning of location values based on density func
-                if sim.cfg.verbose: print('Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'%(volume, maxDensity, maxCells, self.tags['numCells']))
+                makethiscell = (
+                    locsProb > allrands
+                )  # perform test to see whether or not this cell should be included (pruning based on density func)
+                funcLocs = [
+                    locsAll[i] for i in range(len(locsAll)) if i in np.array(makethiscell.nonzero()[0], dtype='int')
+                ]  # keep only subset of yfuncLocs based on density func
+                self.tags['numCells'] = len(
+                    funcLocs
+                )  # final number of cells after pruning of location values based on density func
+                if sim.cfg.verbose:
+                    print(
+                        'Volume=%.2f, maxDensity=%.2f, maxCells=%.0f, numCells=%.0f'
+                        % (volume, maxDensity, maxCells, self.tags['numCells'])
+                    )
             else:
                 print('Error: Density functions are only implemented for cuboid shaped networks')
                 exit(0)
@@ -244,61 +288,80 @@ class Pop (object):
         # calculate locations of cells
         self.rand.Random123(self.tags['numCells'], sim.net.lastGid, sim.cfg.seeds['loc'])
         self.rand.uniform(0, 1)
-        vec = h.Vector(self.tags['numCells']*3)
+        vec = h.Vector(self.tags['numCells'] * 3)
         vec.setrand(self.rand)
         randLocs = np.array(vec).reshape(self.tags['numCells'], 3)  # create random x,y,z locations
 
         if sim.net.params.shape == 'cylinder':
             # Use the x,z random vales
-            rho = randLocs[:,0] # use x rand value as the radius rho in the interval [0, 1)
-            phi = 2 * pi * randLocs[:,2] # use z rand value as the angle phi in the interval [0, 2*pi)
-            x = (1 + sqrt(rho) * cos(phi))/2.0
-            z = (1 + sqrt(rho) * sin(phi))/2.0
-            randLocs[:,0] = x
-            randLocs[:,2] = z
+            rho = randLocs[:, 0]  # use x rand value as the radius rho in the interval [0, 1)
+            phi = 2 * pi * randLocs[:, 2]  # use z rand value as the angle phi in the interval [0, 2*pi)
+            x = (1 + sqrt(rho) * cos(phi)) / 2.0
+            z = (1 + sqrt(rho) * sin(phi)) / 2.0
+            randLocs[:, 0] = x
+            randLocs[:, 2] = z
 
         elif sim.net.params.shape == 'ellipsoid':
             # Use the x,y,z random vales
-            rho = np.power(randLocs[:,0], 1.0/3.0) # use x rand value as the radius rho in the interval [0, 1); cuberoot
-            phi = 2 * pi * randLocs[:,1] # use y rand value as the angle phi in the interval [0, 2*pi)
-            costheta = (2 * randLocs[:,2]) - 1 # use z rand value as cos(theta) in the interval [-1, 1); ensures uniform dist
+            rho = np.power(
+                randLocs[:, 0], 1.0 / 3.0
+            )  # use x rand value as the radius rho in the interval [0, 1); cuberoot
+            phi = 2 * pi * randLocs[:, 1]  # use y rand value as the angle phi in the interval [0, 2*pi)
+            costheta = (
+                2 * randLocs[:, 2]
+            ) - 1  # use z rand value as cos(theta) in the interval [-1, 1); ensures uniform dist
             theta = arccos(costheta)  # obtain theta from cos(theta)
-            x = (1 + rho * cos(phi) * sin(theta))/2.0
-            y = (1 + rho * sin(phi) * sin(theta))/2.0
-            z = (1 + rho * cos(theta))/2.0
-            randLocs[:,0] = x
-            randLocs[:,1] = y
-            randLocs[:,2] = z
+            x = (1 + rho * cos(phi) * sin(theta)) / 2.0
+            y = (1 + rho * sin(phi) * sin(theta)) / 2.0
+            z = (1 + rho * cos(theta)) / 2.0
+            randLocs[:, 0] = x
+            randLocs[:, 1] = y
+            randLocs[:, 2] = z
 
         for icoord, coord in enumerate(['x', 'y', 'z']):
-            if coord+'normRange' in self.tags:  # if normalized range, rescale random locations
-                minv = self.tags[coord+'normRange'][0]
-                maxv = self.tags[coord+'normRange'][1]
-                randLocs[:,icoord] = randLocs[:,icoord] * (maxv-minv) + minv
-            if funcLocs and coordFunc == coord+'norm':  # if locations for this coordinate calculated using density function
-                randLocs[:,icoord] = funcLocs
+            if coord + 'normRange' in self.tags:  # if normalized range, rescale random locations
+                minv = self.tags[coord + 'normRange'][0]
+                maxv = self.tags[coord + 'normRange'][1]
+                randLocs[:, icoord] = randLocs[:, icoord] * (maxv - minv) + minv
+            if (
+                funcLocs and coordFunc == coord + 'norm'
+            ):  # if locations for this coordinate calculated using density function
+                randLocs[:, icoord] = funcLocs
 
-        if sim.cfg.verbose and not funcLocs: print('Volume=%.4f, density=%.2f, numCells=%.0f'%(volume, self.tags['density'], self.tags['numCells']))
+        if sim.cfg.verbose and not funcLocs:
+            print('Volume=%.4f, density=%.2f, numCells=%.0f' % (volume, self.tags['density'], self.tags['numCells']))
 
         for i in self._distributeCells(self.tags['numCells'])[sim.rank]:
-            gid = sim.net.lastGid+i
+            gid = sim.net.lastGid + i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
-            cellTags = {k: v for (k, v) in self.tags.items() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
-            cellTags['pop'] = self.tags['pop']
-            cellTags['xnorm'] = randLocs[i,0]  # calculate x location (um)
-            cellTags['ynorm'] = randLocs[i,1]  # calculate y location (um)
-            cellTags['znorm'] = randLocs[i,2]  # calculate z location (um)
-            cellTags['x'] = sizeX * randLocs[i,0]  # calculate x location (um)
-            cellTags['y'] = sizeY * randLocs[i,1]  # calculate y location (um)
-            cellTags['z'] = sizeZ * randLocs[i,2]  # calculate z location (um)
-            cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
+            cellTags = self._createCellTags()
+            cellTags['xnorm'] = randLocs[i, 0]  # calculate x location (um)
+            cellTags['ynorm'] = randLocs[i, 1]  # calculate y location (um)
+            cellTags['znorm'] = randLocs[i, 2]  # calculate z location (um)
+            cellTags['x'] = sizeX * randLocs[i, 0]  # calculate x location (um)
+            cellTags['y'] = sizeY * randLocs[i, 1]  # calculate y location (um)
+            cellTags['z'] = sizeZ * randLocs[i, 2]  # calculate z location (um)
+            cells.append(self.cellModelClass(gid, cellTags))  # instantiate Cell object
             if sim.cfg.verbose:
-                print(('Cell %d/%d (gid=%d) of pop %s, pos=(%2.f, %2.f, %2.f), on node %d, '%(i, self.tags['numCells']-1, gid, self.tags['pop'],cellTags['x'], cellTags['y'], cellTags['z'], sim.rank)))
+                print(
+                    (
+                        'Cell %d/%d (gid=%d) of pop %s, pos=(%2.f, %2.f, %2.f), on node %d, '
+                        % (
+                            i,
+                            self.tags['numCells'] - 1,
+                            gid,
+                            self.tags['pop'],
+                            cellTags['x'],
+                            cellTags['y'],
+                            cellTags['z'],
+                            sim.rank,
+                        )
+                    )
+                )
         sim.net.lastGid = sim.net.lastGid + self.tags['numCells']
         return cells
 
-
-    def createCellsList (self):
+    def createCellsList(self):
         """
         Create population cells based on list of individual cells
         """
@@ -308,29 +371,36 @@ class Pop (object):
         cells = []
         self.tags['numCells'] = len(self.tags['cellsList'])
         for i in self._distributeCells(len(self.tags['cellsList']))[sim.rank]:
-            #if 'cellModel' in self.tags['cellsList'][i]:
+            # if 'cellModel' in self.tags['cellsList'][i]:
             #    self.cellModelClass = getattr(f, self.tags['cellsList'][i]['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
-            gid = sim.net.lastGid+i
+            gid = sim.net.lastGid + i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
-            cellTags = {k: v for (k, v) in self.tags.items() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
-            cellTags['pop'] = self.tags['pop']
+            cellTags = self._createCellTags()
             cellTags.update(self.tags['cellsList'][i])  # add tags specific to this cells
-            for coord in ['x','y','z']:
+            for coord in ['x', 'y', 'z']:
                 if coord in cellTags:  # if absolute coord exists
-                    cellTags[coord+'norm'] = cellTags[coord]/getattr(sim.net.params, 'size'+coord.upper())  # calculate norm coord
-                elif coord+'norm' in cellTags:  # elif norm coord exists
-                    cellTags[coord] = cellTags[coord+'norm']*getattr(sim.net.params, 'size'+coord.upper())  # calculate norm coord
+                    cellTags[coord + 'norm'] = cellTags[coord] / getattr(
+                        sim.net.params, 'size' + coord.upper()
+                    )  # calculate norm coord
+                elif coord + 'norm' in cellTags:  # elif norm coord exists
+                    cellTags[coord] = cellTags[coord + 'norm'] * getattr(
+                        sim.net.params, 'size' + coord.upper()
+                    )  # calculate norm coord
                 else:
-                    cellTags[coord+'norm'] = cellTags[coord] = 0
-            if 'cellModel' in self.tags.keys() and self.tags['cellModel'] == 'Vecstim':  # if VecStim, copy spike times to params
+                    cellTags[coord + 'norm'] = cellTags[coord] = 0
+            if (
+                'cellModel' in self.tags.keys() and self.tags['cellModel'] == 'Vecstim'
+            ):  # if VecStim, copy spike times to params
                 cellTags['params']['spkTimes'] = self.tags['cellsList'][i]['spkTimes']
-            cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
-            if sim.cfg.verbose: print(('Cell %d/%d (gid=%d) of pop %d, on node %d, '%(i, self.tags['numCells']-1, gid, i, sim.rank)))
+            cells.append(self.cellModelClass(gid, cellTags))  # instantiate Cell object
+            if sim.cfg.verbose:
+                print(
+                    ('Cell %d/%d (gid=%d) of pop %d, on node %d, ' % (i, self.tags['numCells'] - 1, gid, i, sim.rank))
+                )
         sim.net.lastGid = sim.net.lastGid + len(self.tags['cellsList'])
         return cells
 
-
-    def createCellsGrid (self):
+    def createCellsGrid(self):
         """
         Create population cells based on fixed number of cells
         """
@@ -339,48 +409,61 @@ class Pop (object):
 
         cells = []
 
-        rangeLocs = [[0, getattr(sim.net.params, 'size'+coord)] for coord in ['X','Y','Z']]
+        rangeLocs = [[0, getattr(sim.net.params, 'size' + coord)] for coord in ['X', 'Y', 'Z']]
         for icoord, coord in enumerate(['x', 'y', 'z']):
             # constrain to range set by user
-            if coord+'normRange' in self.tags:  # if normalized range, convert to normalized
-                self.tags[coord+'Range'] = [float(point) * getattr(sim.net.params, 'size'+coord.upper()) for point in self.tags[coord+'normRange']]
-            if coord+'Range' in self.tags:  # if user provided absolute range, calculate range
-                self.tags[coord+'normRange'] = [float(point) / getattr(sim.net.params, 'size'+coord.upper()) for point in self.tags[coord+'Range']]
-                rangeLocs[icoord] = [self.tags[coord+'Range'][0], self.tags[coord+'Range'][1]]
+            if coord + 'normRange' in self.tags:  # if normalized range, convert to normalized
+                self.tags[coord + 'Range'] = [
+                    float(point) * getattr(sim.net.params, 'size' + coord.upper())
+                    for point in self.tags[coord + 'normRange']
+                ]
+            if coord + 'Range' in self.tags:  # if user provided absolute range, calculate range
+                self.tags[coord + 'normRange'] = [
+                    float(point) / getattr(sim.net.params, 'size' + coord.upper())
+                    for point in self.tags[coord + 'Range']
+                ]
+                rangeLocs[icoord] = [self.tags[coord + 'Range'][0], self.tags[coord + 'Range'][1]]
 
         gridSpacing = self.tags['gridSpacing']
         gridLocs = []
         if isinstance(gridSpacing, list):
-            for x in np.arange(rangeLocs[0][0], rangeLocs[0][1]+1, gridSpacing[0]):
-                for y in np.arange(rangeLocs[1][0], rangeLocs[1][1]+1, gridSpacing[1]):
-                    for z in np.arange(rangeLocs[2][0], rangeLocs[2][1]+1, gridSpacing[2]):
+            for x in np.arange(rangeLocs[0][0], rangeLocs[0][1] + 1, gridSpacing[0]):
+                for y in np.arange(rangeLocs[1][0], rangeLocs[1][1] + 1, gridSpacing[1]):
+                    for z in np.arange(rangeLocs[2][0], rangeLocs[2][1] + 1, gridSpacing[2]):
                         gridLocs.append((x, y, z))
         else:
-            for x in np.arange(rangeLocs[0][0], rangeLocs[0][1]+1, gridSpacing):
-                for y in np.arange(rangeLocs[1][0], rangeLocs[1][1]+1, gridSpacing):
-                    for z in np.arange(rangeLocs[2][0], rangeLocs[2][1]+1, gridSpacing):
+            for x in np.arange(rangeLocs[0][0], rangeLocs[0][1] + 1, gridSpacing):
+                for y in np.arange(rangeLocs[1][0], rangeLocs[1][1] + 1, gridSpacing):
+                    for z in np.arange(rangeLocs[2][0], rangeLocs[2][1] + 1, gridSpacing):
                         gridLocs.append((x, y, z))
 
         numCells = len(gridLocs)
 
         for i in self._distributeCells(numCells)[sim.rank]:
-            gid = sim.net.lastGid+i
+            gid = sim.net.lastGid + i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
-            cellTags = {k: v for (k, v) in self.tags.items() if k in sim.net.params.popTagsCopiedToCells}  # copy all pop tags to cell tags, except those that are pop-specific
-            cellTags['pop'] = self.tags['pop']
-            cellTags['xnorm'] = gridLocs[i][0] / sim.net.params.sizeX # set x location (um)
-            cellTags['ynorm'] = gridLocs[i][1] / sim.net.params.sizeY # set y location (um)
-            cellTags['znorm'] = gridLocs[i][2] / sim.net.params.sizeZ # set z location (um)
-            cellTags['x'] = gridLocs[i][0]   # set x location (um)
-            cellTags['y'] = gridLocs[i][1] # set y location (um)
-            cellTags['z'] = gridLocs[i][2] # set z location (um)
-            cells.append(self.cellModelClass(gid, cellTags)) # instantiate Cell object
-            if sim.cfg.verbose: print(('Cell %d/%d (gid=%d) of pop %s, on node %d, '%(i, numCells, gid, self.tags['pop'], sim.rank)))
+            cellTags = self._createCellTags()
+            cellTags['xnorm'] = gridLocs[i][0] / sim.net.params.sizeX  # set x location (um)
+            cellTags['ynorm'] = gridLocs[i][1] / sim.net.params.sizeY  # set y location (um)
+            cellTags['znorm'] = gridLocs[i][2] / sim.net.params.sizeZ  # set z location (um)
+            cellTags['x'] = gridLocs[i][0]  # set x location (um)
+            cellTags['y'] = gridLocs[i][1]  # set y location (um)
+            cellTags['z'] = gridLocs[i][2]  # set z location (um)
+            cells.append(self.cellModelClass(gid, cellTags))  # instantiate Cell object
+            if sim.cfg.verbose:
+                print(('Cell %d/%d (gid=%d) of pop %s, on node %d, ' % (i, numCells, gid, self.tags['pop'], sim.rank)))
         sim.net.lastGid = sim.net.lastGid + numCells
         return cells
 
+    def _createCellTags(self):
+        from .. import sim
 
-    def _setCellClass (self):
+        # copy all pop tags to cell tags, except those that are pop-specific
+        cellTags = {k: v for (k, v) in self.tags.items() if k in sim.net.params.popTagsCopiedToCells}
+        cellTags['pop'] = self.tags['pop']
+        return cellTags
+
+    def _setCellClass(self):
         """
         Set cell class (CompartCell, PointCell, etc)
         """
@@ -388,15 +471,19 @@ class Pop (object):
         from .. import sim
 
         # obtain cellModel either from cellParams or popParams
-        if 'cellType' in self.tags and self.tags['cellType'] in sim.net.params.cellParams and 'cellModel' in sim.net.params.cellParams[self.tags['cellType']]:
+        if (
+            'cellType' in self.tags
+            and self.tags['cellType'] in sim.net.params.cellParams
+            and 'cellModel' in sim.net.params.cellParams[self.tags['cellType']]
+        ):
             cellModel = sim.net.params.cellParams[self.tags['cellType']]['cellModel']
         elif 'cellModel' in self.tags:
             cellModel = self.tags['cellModel']
         else:
             cellModel = None
 
-        # Check whether it's a NeuroML2 based cell 
-        # ! needs updating to read cellModel info from cellParams 
+        # Check whether it's a NeuroML2 based cell
+        # ! needs updating to read cellModel info from cellParams
         if 'originalFormat' in self.tags:
             if self.tags['originalFormat'] == 'NeuroML2':
                 self.cellModelClass = sim.NML2Cell
@@ -405,20 +492,54 @@ class Pop (object):
 
         else:
             # set cell class: CompartCell for compartmental cells of PointCell for point neurons (NetStims, IntFire1,...)
-            try: # check if cellModel corresponds to an existing point process mechanism; if so, use PointCell
-                    tmp = getattr(h, cellModel)
-                    self.cellModelClass = sim.PointCell
-                    excludeTags = ['pop', 'cellModel', 'cellType', 'numCells', 'density', 'cellsList',
-                                'xRange', 'yRange', 'zRange', 'xnormRange', 'ynormRange', 'znormRange', 'vref', 'spkTimes', 'dynamicRates']
-                    params = {k: v for k,v in self.tags.items() if k not in excludeTags}
-                    self.tags['params'] = params
-                    for k in self.tags['params']: self.tags.pop(k)
-                    sim.net.params.popTagsCopiedToCells.append('params')
-            except:
-                if getattr(self.tags, 'cellModel', None) in ['NetStim', 'DynamicNetStim', 'VecStim', 'IntFire1', 'IntFire2', 'IntFire4']:
-                    print('Warning: could not find %s point process mechanism required for population %s' % (cellModel, self.tags['pop']))
-                self.cellModelClass = sim.CompartCell  # otherwise assume has sections and some cellParam rules apply to it; use CompartCell
+            try:  # check if cellModel corresponds to an existing point process mechanism; if so, use PointCell
+                tmp = getattr(h, cellModel)
+                self.cellModelClass = sim.PointCell
+                excludeTags = [
+                    'pop',
+                    'cellModel',
+                    'cellType',
+                    'numCells',
+                    'density',
+                    'cellsList',
+                    'gridSpacing',
+                    'xRange',
+                    'yRange',
+                    'zRange',
+                    'xnormRange',
+                    'ynormRange',
+                    'znormRange',
+                    'vref',
+                    'spkTimes',
+                    'dynamicRates',
+                ]
+                params = {k: v for k, v in self.tags.items() if k not in excludeTags}
+                self.tags['params'] = params
+                for k in self.tags['params']:
+                    self.tags.pop(k)
+                sim.net.params.popTagsCopiedToCells.append('params')
 
+                # if point cell params defined directly in pop params, need to scan them for string functions
+                if len(params):
+                    from ..specs.netParams import CellParams
+
+                    CellParams.updateStringFuncsWithPopParams(self.tags['pop'], params)
+            except:
+                if getattr(self.tags, 'cellModel', None) in [
+                    'NetStim',
+                    'DynamicNetStim',
+                    'VecStim',
+                    'IntFire1',
+                    'IntFire2',
+                    'IntFire4',
+                ]:
+                    print(
+                        'Warning: could not find %s point process mechanism required for population %s'
+                        % (cellModel, self.tags['pop'])
+                    )
+                self.cellModelClass = (
+                    sim.CompartCell
+                )  # otherwise assume has sections and some cellParam rules apply to it; use CompartCell
 
     def calcRelativeSegCoords(self):
         """Calculate segment coordinates from 3d point coordinates
@@ -457,25 +578,27 @@ class Pop (object):
                 diam3d[i] = h.diam3d(i)
                 l3d[i] = h.arc3d(i)
 
-            l3d /= hSec.L                  # normalize
+            l3d /= hSec.L  # normalize
             nseg = hSec.nseg
 
-            l0 = np.zeros(nseg)     # keep range of segment starting point
-            l1 = np.zeros(nseg)     # keep range of segment ending point
+            l0 = np.zeros(nseg)  # keep range of segment starting point
+            l1 = np.zeros(nseg)  # keep range of segment ending point
 
             for iseg, seg in enumerate(hSec):
-                l0[iseg] = seg.x - 0.5*1/nseg   # x (normalized distance along the section) for the beginning of the segment
-                l1[iseg] = seg.x + 0.5*1/nseg   # x for the end of the segment
+                l0[iseg] = (
+                    seg.x - 0.5 * 1 / nseg
+                )  # x (normalized distance along the section) for the beginning of the segment
+                l1[iseg] = seg.x + 0.5 * 1 / nseg  # x for the end of the segment
 
-            p0[0, ix:ix+nseg] = np.interp(l0, l3d, p3d[0, :])
-            p0[1, ix:ix+nseg] = np.interp(l0, l3d, p3d[1, :])
-            p0[2, ix:ix+nseg] = np.interp(l0, l3d, p3d[2, :])
-            d0[ix:ix+nseg] = np.interp(l0, l3d, diam3d[:])
+            p0[0, ix : ix + nseg] = np.interp(l0, l3d, p3d[0, :])
+            p0[1, ix : ix + nseg] = np.interp(l0, l3d, p3d[1, :])
+            p0[2, ix : ix + nseg] = np.interp(l0, l3d, p3d[2, :])
+            d0[ix : ix + nseg] = np.interp(l0, l3d, diam3d[:])
 
-            p1[0, ix:ix+nseg] = np.interp(l1, l3d, p3d[0, :])
-            p1[1, ix:ix+nseg] = np.interp(l1, l3d, p3d[1, :])
-            p1[2, ix:ix+nseg] = np.interp(l1, l3d, p3d[2, :])
-            d1[ix:ix+nseg] = np.interp(l1, l3d, diam3d[:])
+            p1[0, ix : ix + nseg] = np.interp(l1, l3d, p3d[0, :])
+            p1[1, ix : ix + nseg] = np.interp(l1, l3d, p3d[1, :])
+            p1[2, ix : ix + nseg] = np.interp(l1, l3d, p3d[2, :])
+            d1[ix : ix + nseg] = np.interp(l1, l3d, diam3d[:])
             ix += nseg
             h.pop_section()
 
@@ -489,16 +612,14 @@ class Pop (object):
 
         return self._morphSegCoords
 
-
-    def __getstate__ (self):
-        """Removes non-picklable h objects so can be pickled and sent via py_alltoall
-        """
+    def __getstate__(self):
+        """Removes non-picklable h objects so can be pickled and sent via py_alltoall"""
 
         from .. import sim
 
-        odict = self.__dict__.copy() # copy the dict since we change it
+        odict = self.__dict__.copy()  # copy the dict since we change it
         odict = sim.replaceFuncObj(odict)  # replace h objects with None so can be pickled
-        #odict['cellModelClass'] = str(odict['cellModelClass'])
+        # odict['cellModelClass'] = str(odict['cellModelClass'])
         if 'cellModelClass' in odict:
             del odict['cellModelClass']
         if 'rand' in odict:

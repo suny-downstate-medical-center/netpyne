@@ -19,6 +19,11 @@ calls to NEURON to handle running the simulation and interval saving.
 Requires NEURON with RxD and Python. We recommend using [MPI](https://www.open-mpi.org/) to parallelize simulations.  Simulations, especially without 
 multiple cores, may take upwards of thiry minutes.
 
+Install dependencies:
+```
+python3 -m pip install imageio
+```
+
 To run the simulation on a sinle core:
 ```
 python3 init.py

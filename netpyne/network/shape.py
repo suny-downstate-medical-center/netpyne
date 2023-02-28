@@ -1,4 +1,3 @@
-
 """
 Module to handle cell morphology in networks
 
@@ -10,6 +9,7 @@ from __future__ import division
 from __future__ import absolute_import
 
 from future import standard_library
+
 standard_library.install_aliases()
 from neuron import h
 
@@ -29,8 +29,8 @@ def calcSegCoords(self):
 
     """
 
-
     from .. import sim
+
     if sim.cfg.createNEURONObj:
         # Calculate relative seg coords for 1 cell per pop,
         for pop in list(self.pops.values()):
@@ -40,6 +40,7 @@ def calcSegCoords(self):
         # Calculate abs seg coords for all cells
         for cell in sim.net.compartCells:
             cell.calcAbsSegCoords()
+
 
 # -----------------------------------------------------------------------------
 # Add 3D points to sections with simplified geometry
@@ -57,8 +58,8 @@ def defineCellShapes(self):
 
     """
 
-
     from .. import sim
+
     if sim.cfg.createNEURONObj:
         sim.net.compartCells = [c for c in sim.net.cells if type(c) is sim.CompartCell]
         h.define_shape()

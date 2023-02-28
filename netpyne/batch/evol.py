@@ -15,6 +15,7 @@ from builtins import open
 from builtins import str
 from ctypes import util
 from future import standard_library
+
 standard_library.install_aliases()
 
 # required to make json saving work in Python 2/3
@@ -30,11 +31,12 @@ from subprocess import Popen
 
 from neuron import h
 
-pc = h.ParallelContext() # use bulletin board master/slave
+pc = h.ParallelContext()  # use bulletin board master/slave
 
 # -------------------------------------------------------------------------------
 # Evolutionary optimization
 # -------------------------------------------------------------------------------
+
 
 def evolOptim(batch, pc):
     """
@@ -53,7 +55,6 @@ def evolOptim(batch, pc):
 
     """
 
-
     import sys
     import inspyred.ec as EC
 
@@ -63,7 +64,6 @@ def evolOptim(batch, pc):
     def generator(random, args):
         # generate initial values for candidates
         return [random.uniform(l, u) for l, u in zip(args.get('lower_bound'), args.get('upper_bound'))]
-
 
     # -------------------------------------------------------------------------------
     # Mutator
@@ -92,6 +92,7 @@ def evolOptim(batch, pc):
             mutant[i] = new_value
 
         return mutant
+
     # -------------------------------------------------------------------------------
     # Evolutionary optimization: Main code
     # -------------------------------------------------------------------------------
@@ -102,7 +103,7 @@ def evolOptim(batch, pc):
     # log for simulation
     logger = logging.getLogger('inspyred.ec')
     logger.setLevel(logging.DEBUG)
-    file_handler = logging.FileHandler(batch.saveFolder+'/inspyred.log', mode='a')
+    file_handler = logging.FileHandler(batch.saveFolder + '/inspyred.log', mode='a')
     file_handler.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     file_handler.setFormatter(formatter)
@@ -123,11 +124,12 @@ def evolOptim(batch, pc):
     kwargs['upper_bound'] = [x['values'][1] for x in batch.params]
     kwargs['statistics_file'] = stats_file
     kwargs['individuals_file'] = ind_stats_file
-    kwargs['netParamsSavePath'] = batch.saveFolder+'/'+batch.batchLabel+'_netParams.py'
+    kwargs['netParamsSavePath'] = batch.saveFolder + '/' + batch.batchLabel + '_netParams.py'
 
     for key, value in batch.evolCfg.items():
         kwargs[key] = value
-    if not 'maximize' in kwargs: kwargs['maximize'] = False
+    if not 'maximize' in kwargs:
+        kwargs['maximize'] = False
 
     for key, value in batch.runCfg.items():
         kwargs[key] = value
@@ -137,17 +139,19 @@ def evolOptim(batch, pc):
         for iworker in range(int(pc.nhost())):
             pc.runworker()
 
-    #------------------------------------------------------------------
+    # ------------------------------------------------------------------
     # Evolutionary algorithm method
-    #-------------------------------------------------------------------
+    # -------------------------------------------------------------------
     # Custom algorithm based on Krichmar's params
     if batch.evolCfg['evolAlgorithm'] == 'custom':
         ea = EC.EvolutionaryComputation(rand)
         ea.selector = EC.selectors.tournament_selection
         ea.variator = [EC.variators.uniform_crossover, nonuniform_bounds_mutation]
         ea.replacer = EC.replacers.generational_replacement
-        if not 'tournament_size' in kwargs: kwargs['tournament_size'] = 2
-        if not 'num_selected' in kwargs: kwargs['num_selected'] = kwargs['pop_size']
+        if not 'tournament_size' in kwargs:
+            kwargs['tournament_size'] = 2
+        if not 'num_selected' in kwargs:
+            kwargs['num_selected'] = kwargs['pop_size']
 
     # Genetic
     elif batch.evolCfg['evolAlgorithm'] == 'genetic':
@@ -172,13 +176,16 @@ def evolOptim(batch, pc):
     # Particle Swarm optimization
     elif batch.evolCfg['evolAlgorithm'] == 'particleSwarm':
         from inspyred import swarm
+
         ea = swarm.PSO(rand)
         ea.topology = swarm.topologies.ring_topology
 
     # Ant colony optimization (requires components)
     elif batch.evolCfg['evolAlgorithm'] == 'antColony':
         from inspyred import swarm
-        if not 'components' in kwargs: raise ValueError("%s requires components" %(batch.evolCfg['evolAlgorithm']))
+
+        if not 'components' in kwargs:
+            raise ValueError("%s requires components" % (batch.evolCfg['evolAlgorithm']))
         ea = swarm.ACS(rand, batch.evolCfg['components'])
         ea.topology = swarm.topologies.ring_topology
 
@@ -188,20 +195,26 @@ def evolOptim(batch, pc):
     ea.terminator = EC.terminators.generation_termination
     ea.observer = [EC.observers.stats_observer, EC.observers.file_observer]
 
-
     # -------------------------------------------------------------------------------
     # Run algorithm
     # -------------------------------------------------------------------------------
     from .utils import evaluator
-    global ngen; ngen = -1
+
+    global ngen
+    ngen = -1
+
     def func(candidates, args):
-        global ngen; ngen += 1
+        global ngen
+        ngen += 1
         return evaluator(batch, candidates, args, ngen, pc, **kwargs)
-    final_pop = ea.evolve(generator=generator,
-                        evaluator=func,
-                        bounder=EC.Bounder(kwargs['lower_bound'],kwargs['upper_bound']),
-                        logger=logger,
-                        **kwargs)
+
+    final_pop = ea.evolve(
+        generator=generator,
+        evaluator=func,
+        bounder=EC.Bounder(kwargs['lower_bound'], kwargs['upper_bound']),
+        logger=logger,
+        **kwargs
+    )
 
     # close file
     stats_file.close()
@@ -209,7 +222,7 @@ def evolOptim(batch, pc):
 
     # print best and finish
     print(('Best Solution: \n{0}'.format(str(max(final_pop)))))
-    print("-"*80)
+    print("-" * 80)
     print("   Completed evolutionary algorithm parameter optimization   ")
-    print("-"*80)
+    print("-" * 80)
     sys.exit()

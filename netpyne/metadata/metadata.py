@@ -410,7 +410,66 @@ metadata = {
                                 "help": "Dictionary of density/distributed mechanisms, including the name of the mechanism (e.g. hh or pas) and a list of properties of the mechanism (e.g. {'g': 0.003, 'e': -70}).",
                                 "suggestions": "",
                                 "hintText": "",
-                                "type": "float",
+                                # "children": {
+                                #     "hh": {
+                                #         "label": "Built-in mechanism",
+                                #         "help": "",
+                                #         "suggestions": "",
+                                #         "hintText": "",
+                                #         "children": {
+                                #             "gnabar": {
+                                #                 "label": "",
+                                #                 "help": "",
+                                #                 "suggestions": "",
+                                #                 "hintText": "",
+                                #                 "type": "func",
+                                #             },
+                                #             "gkbar": {
+                                #                 "label": "",
+                                #                 "help": "",
+                                #                 "suggestions": "",
+                                #                 "hintText": "",
+                                #                 "type": "func",
+                                #             },
+                                #             "gl": {
+                                #                 "label": "",
+                                #                 "help": "",
+                                #                 "suggestions": "",
+                                #                 "hintText": "",
+                                #                 "type": "func",
+                                #             },
+                                #             "el": {
+                                #                 "label": "",
+                                #                 "help": "",
+                                #                 "suggestions": "",
+                                #                 "hintText": "",
+                                #                 "type": "func",
+                                #             },
+                                #         }
+                                #     },
+                                #     "pas": {
+                                #         "label": "Built-in mechanism",
+                                #         "help": "",
+                                #         "suggestions": "",
+                                #         "hintText": "",
+                                #         "children": {
+                                #             "g": {
+                                #                 "label": "",
+                                #                 "help": "",
+                                #                 "suggestions": "",
+                                #                 "hintText": "",
+                                #                 "type": "func",
+                                #             },
+                                #             "e": {
+                                #                 "label": "",
+                                #                 "help": "",
+                                #                 "suggestions": "",
+                                #                 "hintText": "",
+                                #                 "type": "func",
+                                #             },
+                                #         }
+                                #     }
+                                # }
                             },
                             "ions": {
                                 "label": "Ions",

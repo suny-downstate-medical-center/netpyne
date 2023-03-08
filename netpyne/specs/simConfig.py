@@ -136,6 +136,12 @@ class SimConfig(object):
                 else:
                     setattr(self, k, v)
 
+    def __getitem__(self, k):
+        try:
+            return object.__getattribute__(self, k)
+        except:
+            raise KeyError(k)
+        
     def save(self, filename):
         import os
 

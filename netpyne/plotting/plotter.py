@@ -201,8 +201,8 @@ class MetaFigure:
             elif type(saveFig) == str:
                 fileDesc = False
                 if '.' in saveFig:
-                    fileType = saveFig.split('.')[-1]
-                    fileName = saveFig.split('.')[0]
+                    fileName, fileType = os.path.splitext(saveFig)
+                    fileType = fileType[1:] # drop the dot
                 else:
                     fileName = saveFig
 

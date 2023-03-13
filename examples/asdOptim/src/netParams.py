@@ -3,7 +3,7 @@ from netpyne import specs, sim
 try:
 	from __main__ import cfg
 except:
-	from simConfig import cfg
+	from cfg import cfg
 
 # Network parameters
 netParams = specs.NetParams()
@@ -13,8 +13,8 @@ netParams = specs.NetParams()
 # --------------------------------------------------------
 
 # Population parameters
-netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}
-netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}
+netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20}
+netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20}
 
 # Cell property rules
 cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}}

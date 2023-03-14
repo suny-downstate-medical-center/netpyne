@@ -42,8 +42,14 @@ from ..specs import utils
 class PointCell(Cell):
     """
     Class for/to <short description of `netpyne.cell.pointCell.PointCell`>
-
-
+    Class used when cellModel is of a NEURON point process (i.e. 'NetStim', 'DynamicNetStim', 'VecStim', 'IntFire1')
+    creates the point cell
+                    'NetStim',
+                    'DynamicNetStim',
+                    'VecStim',
+                    'IntFire1',
+                    'IntFire2',
+                    'IntFire4',
     Point Neuron that doesn't use v from Section eg. NetStim, IntFire1,
     """
 

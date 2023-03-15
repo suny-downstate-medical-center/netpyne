@@ -36,10 +36,9 @@ def addStims(self):
         specifying the cell criteria for the post-synaptic connections: (i.e. 'x', 'y', 'z' or 'xnorm', 'ynorm', 'znorm'
         specifying cell criteria by location, 'cellList' specifying cell criteria by specific gid, or arbitrary
         'key': 'value' tags.
-        For the 'VecStim' point process, patterned spike inputs can be specified (see: netpyne/cell/inputs.py)
-        by key-value entries in a 'spikePattern' dictionary. These key-value pairs include a 'type' entry which can be
-        'rhythmic', 'evoked', 'poisson', or 'gauss' (see netpyne/cell/pointCell.py) with corresponding arguments as
-        key-value pairs.
+        For 'VecStim' point processes, it may be more convenient to create an artificial cell (i.e.netParams.popParams
+        see: netpyne/cell/pointCell.py) which allows pattern generation ('rhythmic', 'evoked', 'poisson', 'gauss')
+        by key-value entries in a 'spikePattern' dictionary.
 
     Parameters
     ----------

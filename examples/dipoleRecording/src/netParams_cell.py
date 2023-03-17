@@ -8,7 +8,7 @@ netParams.sizeY = 1000 # y-dimension (vertical height or cortical depth) size in
 netParams.sizeZ = 20 # z-dimension (horizontal length) size in um
 
 ## Population parameters
-netParams.popParams['E'] = {'cellType': 'E', 'numCells': 1, 'yRange': [700,800], 'cellModel': 'HH'}
+netParams.popParams['E'] = {'cellType': 'E', 'numCells': 1, 'yRange': [700,800]}
 
 ## Cell property rules
 netParams.loadCellParamsRule(label='Erule', fileName='cells/PT5B_full_cellParams.json')

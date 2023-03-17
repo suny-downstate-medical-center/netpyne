@@ -13,8 +13,8 @@ netParams = specs.NetParams()
 # --------------------------------------------------------
 
 # Population parameters
-netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}
-netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}
+netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20}
+netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20}
 
 # Cell property rules
 cellRule = {'conds': {'cellType': 'PYR'},  'secs': {}}

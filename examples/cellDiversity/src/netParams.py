@@ -4,8 +4,8 @@ from netpyne import specs, sim
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
 ## Population parameters
-netParams.popParams['Epop'] = {'cellType': 'E', 'numCells': 50, 'cellModel': 'HH', 'diversity': True}
-netParams.popParams['Ipop'] = {'cellType': 'I', 'numCells': 40, 'cellModel': 'HH', 'diversity': True}
+netParams.popParams['Epop'] = {'cellType': 'E', 'numCells': 50, 'diversity': True}
+netParams.popParams['Ipop'] = {'cellType': 'I', 'numCells': 40, 'diversity': True}
 
 
 ## Cell property rules

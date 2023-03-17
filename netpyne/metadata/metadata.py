@@ -404,79 +404,138 @@ metadata = {
                                         "type": "float",
                                     },
                                 },
-                                "mechs": {
-                                    "label": "Mechanisms",
-                                    "help": "Dictionary of density/distributed mechanisms, including the name of the mechanism (e.g. hh or pas) and a list of properties of the mechanism (e.g. {'g': 0.003, 'e': -70}).",
-                                    "suggestions": "",
-                                    "hintText": "",
-                                    "type": "float",
-                                },
-                                "ions": {
-                                    "label": "Ions",
-                                    "help": "Dictionary of ions, including the name of the ion (e.g. hh or pas) and a list of properties of the ion (e.g. {'e': -70}).",
-                                    "suggestions": "",
-                                    "hintText": "",
-                                },
-                                "pointps": {
-                                    "label": "Point processes",
-                                    "help": "Dictionary of point processes (excluding synaptic mechanisms). The key contains an arbitrary label (e.g. 'Izhi') The value contains a dictionary with the point process properties (e.g. {'mod':'Izhi2007a', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}).",
-                                    "suggestions": "",
-                                    "hintText": "",
-                                    "children": {
-                                        "mod": {
-                                            "label": "Point process name",
-                                            "help": "The name of the NEURON mechanism, e.g. 'Izhi2007a'",
-                                            "suggestions": "",
-                                            "hintText": "",
-                                            "type": "float",
-                                        },
-                                        "loc": {
-                                            "label": "Location (0-1)",
-                                            "help": "Section location where to place synaptic mechanism, e.g. 1.0, default=0.5.",
-                                            "suggestions": "",
-                                            "hintText": "",
-                                            "type": "float",
-                                        },
-                                        "vref": {
-                                            "label": "Point process variable for voltage (optional)",
-                                            "help": "Internal mechanism variable containing the cell membrane voltage, e.g. 'V'.",
-                                            "suggestions": "",
-                                            "hintText": "",
-                                            "type": "float",
-                                        },
-                                        "synList": {
-                                            "label": "Point process list of synapses (optional)",
-                                            "help": "list of internal mechanism synaptic mechanism labels, e.g. ['AMPA', 'NMDA', 'GABAB'].",
-                                            "suggestions": "",
-                                            "hintText": "",
-                                            "type": "float",
-                                        },
-                                    },
-                                    "vinit": {
-                                        "label": "Initial membrance voltage, vinit (mV)",
-                                        "help": "(optional) Initial membrane voltage (in mV) of the section (default: -65).e.g. cellRule['secs']['soma']['vinit'] = -72",
+                            },
+                            "mechs": {
+                                "label": "Mechanisms",
+                                "help": "Dictionary of density/distributed mechanisms, including the name of the mechanism (e.g. hh or pas) and a list of properties of the mechanism (e.g. {'g': 0.003, 'e': -70}).",
+                                "suggestions": "",
+                                "hintText": "",
+                                # "children": {
+                                #     "hh": {
+                                #         "label": "Built-in mechanism",
+                                #         "help": "",
+                                #         "suggestions": "",
+                                #         "hintText": "",
+                                #         "children": {
+                                #             "gnabar": {
+                                #                 "label": "",
+                                #                 "help": "",
+                                #                 "suggestions": "",
+                                #                 "hintText": "",
+                                #                 "type": "func",
+                                #             },
+                                #             "gkbar": {
+                                #                 "label": "",
+                                #                 "help": "",
+                                #                 "suggestions": "",
+                                #                 "hintText": "",
+                                #                 "type": "func",
+                                #             },
+                                #             "gl": {
+                                #                 "label": "",
+                                #                 "help": "",
+                                #                 "suggestions": "",
+                                #                 "hintText": "",
+                                #                 "type": "func",
+                                #             },
+                                #             "el": {
+                                #                 "label": "",
+                                #                 "help": "",
+                                #                 "suggestions": "",
+                                #                 "hintText": "",
+                                #                 "type": "func",
+                                #             },
+                                #         }
+                                #     },
+                                #     "pas": {
+                                #         "label": "Built-in mechanism",
+                                #         "help": "",
+                                #         "suggestions": "",
+                                #         "hintText": "",
+                                #         "children": {
+                                #             "g": {
+                                #                 "label": "",
+                                #                 "help": "",
+                                #                 "suggestions": "",
+                                #                 "hintText": "",
+                                #                 "type": "func",
+                                #             },
+                                #             "e": {
+                                #                 "label": "",
+                                #                 "help": "",
+                                #                 "suggestions": "",
+                                #                 "hintText": "",
+                                #                 "type": "func",
+                                #             },
+                                #         }
+                                #     }
+                                # }
+                            },
+                            "ions": {
+                                "label": "Ions",
+                                "help": "Dictionary of ions, including the name of the ion (e.g. hh or pas) and a list of properties of the ion (e.g. {'e': -70}).",
+                                "suggestions": "",
+                                "hintText": "",
+                            },
+                            "pointps": {
+                                "label": "Point processes",
+                                "help": "Dictionary of point processes (excluding synaptic mechanisms). The key contains an arbitrary label (e.g. 'Izhi') The value contains a dictionary with the point process properties (e.g. {'mod':'Izhi2007a', 'a':0.03, 'b':-2, 'c':-50, 'd':100, 'celltype':1}).",
+                                "suggestions": "",
+                                "hintText": "",
+                                "children": {
+                                    "mod": {
+                                        "label": "Point process name",
+                                        "help": "The name of the NEURON mechanism, e.g. 'Izhi2007a'",
                                         "suggestions": "",
                                         "hintText": "",
+                                        "type": "float",
                                     },
-                                    "spikeGenLoc": {
-                                        "label": "Spike generation location (0-1)",
-                                        "help": "(optional) Indicates that this section is responsible for spike generation (instead of the default 'soma'), and provides the location (segment) where spikes are generated.e.g. cellRule['secs']['axon']['spikeGenLoc'] = 1.0.",
+                                    "loc": {
+                                        "label": "Location (0-1)",
+                                        "help": "Section location where to place synaptic mechanism, e.g. 1.0, default=0.5.",
                                         "suggestions": "",
                                         "hintText": "",
+                                        "type": "float",
                                     },
-                                    "threshold": {
-                                        "label": "Spike threshold voltage (mV)",
-                                        "help": "(optional) Threshold voltage (in mV) used to detect a spike originating in this section of the cell. If omitted, defaults to netParams.defaultThreshold = 10.0.e.g. cellRule['secs']['soma']['threshold'] = 5.0.",
+                                    "vref": {
+                                        "label": "Point process variable for voltage (optional)",
+                                        "help": "Internal mechanism variable containing the cell membrane voltage, e.g. 'V'.",
                                         "suggestions": "",
                                         "hintText": "",
+                                        "type": "float",
+                                    },
+                                    "synList": {
+                                        "label": "Point process list of synapses (optional)",
+                                        "help": "list of internal mechanism synaptic mechanism labels, e.g. ['AMPA', 'NMDA', 'GABAB'].",
+                                        "suggestions": "",
+                                        "hintText": "",
+                                        "type": "float",
                                     },
                                 },
-                                "secLists": {
-                                    "label": "Section lists (optional) ",
-                                    "help": "Dictionary of sections lists (e.g. {'all': ['soma', 'dend']})",
-                                    "suggestions": "",
-                                    "hintText": "",
-                                },
+                            },
+                            "vinit": {
+                                "label": "Initial membrance voltage, vinit (mV)",
+                                "help": "(optional) Initial membrane voltage (in mV) of the section (default: -65).e.g. cellRule['secs']['soma']['vinit'] = -72",
+                                "suggestions": "",
+                                "hintText": "",
+                            },
+                            "spikeGenLoc": {
+                                "label": "Spike generation location (0-1)",
+                                "help": "(optional) Indicates that this section is responsible for spike generation (instead of the default 'soma'), and provides the location (segment) where spikes are generated.e.g. cellRule['secs']['axon']['spikeGenLoc'] = 1.0.",
+                                "suggestions": "",
+                                "hintText": "",
+                            },
+                            "threshold": {
+                                "label": "Spike threshold voltage (mV)",
+                                "help": "(optional) Threshold voltage (in mV) used to detect a spike originating in this section of the cell. If omitted, defaults to netParams.defaultThreshold = 10.0.e.g. cellRule['secs']['soma']['threshold'] = 5.0.",
+                                "suggestions": "",
+                                "hintText": "",
+                            },
+                            "secLists": {
+                                "label": "Section lists (optional) ",
+                                "help": "Dictionary of sections lists (e.g. {'all': ['soma', 'dend']})",
+                                "suggestions": "",
+                                "hintText": "",
                             },
                             "topol": {
                                 "label": "Topology",
@@ -1215,7 +1274,6 @@ metadata = {
                                         "help": "This is string",
                                         "suggestions": "",
                                         "hintText": "",
-                                        "children": {""},
                                     },
                                 },
                             },
@@ -1634,7 +1692,12 @@ metadata = {
                             },
                         },
                     },
-                    "constants": {"label": "", "help": "", "suggestions": "", "hintText": "", "children": {""}},
+                    "constants": {
+                        "label": "",
+                        "help": "",
+                        "suggestions": "",
+                        "hintText": ""
+                    },
                 },
             },
         },

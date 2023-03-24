@@ -224,8 +224,8 @@ class Pop(object):
             volume = sizeY / 1e3 / 2.0 * sizeX / 1e3 / 2.0 * sizeZ / 1e3 / 2.0 * pi * 4.0 / 3.0
 
         for coord in ['x', 'y', 'z']:
-            if coord + 'Range' in self.tags:  # if user provided absolute range, convert to normalized
-                self.tags[coord + 'normRange'] = [
+            if coord + 'Range' in self.tags:  # if the user provided absolute range: 'xRange', 'yRange', 'zRange'
+                self.tags[coord + 'normRange'] = [  # as a tag, convert to normalized range.
                     point / getattr(sim.net.params, 'size' + coord.upper()) for point in self.tags[coord + 'Range']
                 ]
             if coord + 'normRange' in self.tags:  # if normalized range, rescale volume

@@ -49,7 +49,7 @@ def general_specs():
         'defaultDelay': Or(int, float),
         'defaultThreshold': Or(int, float),
         'propVelocity': Or(int, float),
-        'mapping': {},
+        'mapping': {Optional(str): Or(str, [str])},
         'popTagsCopiedToCells': [str],
         Optional(str): object  # maybe other definitions, mostly to be used in string-based functions
         # Restrictions for 'popTagsCopiedToCells':
@@ -202,7 +202,7 @@ def cell_specs(context):
                     [str]
                 )  # the strings/labels in the list should be "secs" already defined, empty dictionary when loading json struc
             },
-            Optional('globals'): {str: Or(int, float)},
+            Optional('globals'): {Optional(str): Or(int, float)},
             Optional('diversityFraction'): Or(int, float),
             ## Entries associated to compartCell class
             Optional('secs'): {     ## It is optional because it may NOT be a compartCell, but for compartCells this entry is mandatory
@@ -402,6 +402,11 @@ def conn_specs(context):
         Or( str, [str]),
         lambda s: __isArtificialCellModel(s, context) or __isAmongConds(s, 'cellModel', context.cellParams)
     )
+    twoElementsList = And(
+        Or([int, float], (int, float), np.ndarray),
+        lambda s: len(s) == 2
+    )
+
     specs = {
         Optional(Or(int, str)): {
             'preConds': {
@@ -409,13 +414,13 @@ def conn_specs(context):
                 Optional('cellType'): cellTypeConds,    # it should be an existing cellType and "cellType" should be in the list sim.net.params.popTagsCopiedToCells
                 Optional('cellModel'): cellModelConds,  # it should be a valid cellModel and "cellModel" should be in the list sim.net.params.popTagsCopiedToCells
 
-                Optional('x'): And([Or(int, float)], lambda s: len(s) == 2),
-                Optional('y'): And([Or(int, float)], lambda s: len(s) == 2),
-                Optional('z'): And([Or(int, float)], lambda s: len(s) == 2),
+                Optional('x'): twoElementsList,
+                Optional('y'): twoElementsList,
+                Optional('z'): twoElementsList,
 
-                Optional('xnorm'): And([Or(int, float)], lambda s: len(s) == 2),
-                Optional('ynorm'): And([Or(int, float)], lambda s: len(s) == 2),
-                Optional('znorm'): And([Or(int, float)], lambda s: len(s) == 2),
+                Optional('xnorm'): twoElementsList,
+                Optional('ynorm'): twoElementsList,
+                Optional('znorm'): twoElementsList,
                 # Match an unspecified key (str) to a value or list of values (for example, something similar to 'pop': ['S','M'] -considered above-)
                 # This pop-key should be included in sim.net.params.popTagsCopiedToCells
                 Optional(str): Or(Or(str, int, float), [Or(str, int, float)]),
@@ -425,13 +430,13 @@ def conn_specs(context):
                 Optional('cellType'): cellTypeConds,    # it should be an existing cellType and "cellType" should be in the list sim.net.params.popTagsCopiedToCells
                 Optional('cellModel'): cellModelConds,  # it should be a valid cellModel and "cellModel" should be in the list sim.net.params.popTagsCopiedToCells
 
-                Optional('x'): And([Or(int, float)], lambda s: len(s) == 2),
-                Optional('y'): And([Or(int, float)], lambda s: len(s) == 2),
-                Optional('z'): And([Or(int, float)], lambda s: len(s) == 2),
+                Optional('x'): twoElementsList,
+                Optional('y'): twoElementsList,
+                Optional('z'): twoElementsList,
 
-                Optional('xnorm'): And([Or(int, float)], lambda s: len(s) == 2),
-                Optional('ynorm'): And([Or(int, float)], lambda s: len(s) == 2),
-                Optional('znorm'): And([Or(int, float)], lambda s: len(s) == 2),
+                Optional('xnorm'): twoElementsList,
+                Optional('ynorm'): twoElementsList,
+                Optional('znorm'): twoElementsList,
                 # Match an unspecified key (str) to a value or list of values (for example, something similar to 'pop': ['S','M'] -considered above-)
                 # This pop-key should be included in sim.net.params.popTagsCopiedToCells
                 Optional(str): Or(Or(str, int, float), [Or(str, int, float)]),
@@ -440,9 +445,10 @@ def conn_specs(context):
             Optional('probability'): Or(int, float, str),  # it can also be a string-based function
             Optional('convergence'): Or(int, float, str),  # it can also be a string-based function
             Optional('divergence'): Or(int, float, str),   # it can also be a string-based function
-            Optional('connList'): [ And( Or(tuple,list), lambda s: len(s)==2 and isinstance(s[0],int) and isinstance(s[1],int) ) ],    # list of tuples or lists, each item with 2 numbers (pre,post)
-
-
+            Optional('connList'): Or(
+                [And (Or(tuple, list), lambda s: len(s) == 2 and all(isinstance(n, int) for n in s))], # list of 2-element lists/tuples of two ints (pre, post)
+                lambda s: isinstance(s, np.ndarray) and s.shape[1] == 2 and s.dtype == 'int' # np.array of shape (x, 2) of ints
+            ),
             Optional('synMech'): And(                                               # existing mechanism in synMechParams - if not defined, it takes the first one in synMechParams
                 Or( [str] , str),
                 lambda s: __isKeyIn(s, context.synMechParams)
@@ -461,7 +467,7 @@ def conn_specs(context):
 
             Optional('sec'): Or( [str] , str ),                                     # existing section/s (or secLists) in postCell
 
-            Optional('disynapticBias'): Or(int,float),                              # apparently, deprecated
+            Optional('disynapticBias'): Or(int, float, None),                              # apparently, deprecated
 
             Optional('shape'): {
                 Optional('pulseType'): lambda s: s in ['square', 'gaussian'],
@@ -495,6 +501,11 @@ def subconn_specs(context):
         Or( str, [str]),
         lambda s: __isArtificialCellModel(s, context) or __isAmongConds(s, 'cellModel', context.cellParams)
     )
+    twoElementsList = And(
+        Or([int, float], (int, float), np.ndarray),
+        lambda s: len(s) == 2
+    )
+
     specs = {
         Optional(str): {
             'preConds': {
@@ -502,13 +513,13 @@ def subconn_specs(context):
                 Optional('cellType'): cellTypeConds,        # it should be an existing cellType and "cellType" should be in the list sim.net.params.popTagsCopiedToCells
                 Optional('cellModel'): cellModelConds,      # it should be a valid cellModel and "cellModel" should be in the list sim.net.params.popTagsCopiedToCells
 
-                Optional('x'): And([Or(int, float)], lambda s: len(s)==2),
-                Optional('y'): And([Or(int, float)], lambda s: len(s)==2),
-                Optional('z'): And([Or(int, float)], lambda s: len(s)==2),
+                Optional('x'): twoElementsList,
+                Optional('y'): twoElementsList,
+                Optional('z'): twoElementsList,
 
-                Optional('xnorm'): And([Or(int, float)], lambda s: len(s)==2),
-                Optional('ynorm'): And([Or(int, float)], lambda s: len(s)==2),
-                Optional('znorm'): And([Or(int, float)], lambda s: len(s)==2),
+                Optional('xnorm'): twoElementsList,
+                Optional('ynorm'): twoElementsList,
+                Optional('znorm'): twoElementsList,
                 # Match an unspecified key (str) to a value or list of values (for example, something similar to 'pop': ['S','M'] -considered above-)
                 # This pop-key should be included in sim.net.params.popTagsCopiedToCells
                 Optional(str): Or(Or(str, int, float), [Or(str, int, float)]),
@@ -518,13 +529,13 @@ def subconn_specs(context):
                 Optional('cellType'): cellTypeConds,        # it should be an existing cellType and "cellType" should be in the list sim.net.params.popTagsCopiedToCells
                 Optional('cellModel'): cellModelConds,      # it should be a valid cellModel and "cellModel" should be in the list sim.net.params.popTagsCopiedToCells
 
-                Optional('x'): And([Or(int, float)], lambda s: len(s)==2),
-                Optional('y'): And([Or(int, float)], lambda s: len(s)==2),
-                Optional('z'): And([Or(int, float)], lambda s: len(s)==2),
+                Optional('x'): twoElementsList,
+                Optional('y'): twoElementsList,
+                Optional('z'): twoElementsList,
 
-                Optional('xnorm'): And([Or(int, float)], lambda s: len(s)==2),
-                Optional('ynorm'): And([Or(int, float)], lambda s: len(s)==2),
-                Optional('znorm'): And([Or(int, float)], lambda s: len(s)==2),
+                Optional('xnorm'): twoElementsList,
+                Optional('ynorm'): twoElementsList,
+                Optional('znorm'): twoElementsList,
                 # Match an unspecified key (str) to a value or list of values (for example, something similar to 'pop': ['S','M'] -considered above-)
                 # This pop-key should be included in sim.net.params.popTagsCopiedToCells
                 Optional(str): Or(Or(str, int, float), [Or(str, int, float)]),
@@ -716,7 +727,7 @@ def rxd_specs():
                 # dictionary for a regular region
                 {
                     Optional('extracellular'): And(bool, lambda s: s == False),
-                    Optional('cells'): [
+                    Optional('cells'): Or('all',[
                         Or(
                             'all',
                             int,
@@ -727,7 +738,7 @@ def rxd_specs():
                                 lambda s: Or(isinstance(s[1], list), isinstance(s[1], int)),
                             ),
                         )
-                    ],
+                    ]),
                     Optional('secs'): Or(str, list),
                     Optional('nrn_region'): Or(lambda s: s in ['i', 'o'], None),
                     Optional('geometry'): Or(
@@ -810,6 +821,7 @@ def rxd_specs():
                 Optional('custom_dynamics'): Or(bool, None),
                 Optional('membrane'): Or(str, None),
                 Optional('membrane_flux'): bool,
+                Optional('scale_by_area'): bool,
             }
         },
         Optional('rates'): {
@@ -820,15 +832,17 @@ def rxd_specs():
                 Optional('membrane_flux'): bool,
             }
         },
-        Optional('constants'): {str: Or(int, float)},
+        Optional('constants'): {str: Or(int, float, [int, float], np.ndarray)},
     }
     return specs
 
 
-def validateNetParams(net_params):
+def validateNetParams(net_params, printWarnings=True):
 
     validatedSchemas = {}
     failedSchemas = []
+    global __mechVarList
+    __mechVarList = None
 
     def validate(data, specs, label):
 
@@ -838,9 +852,11 @@ def validateNetParams(net_params):
             # print(f"  {label} validation successful")
             validatedSchemas[label] = valid
         except SchemaError as error:
-            print(f"  Error validating {label}:")
-            for msg in error.autos: print(f"    {msg}")
-            failedSchemas.append(label)
+            if printWarnings:
+                print(f"  Error validating {label}:")
+                for msg in error.autos:
+                    print(f"    {msg}")
+            failedSchemas.append((label, error, error.autos))
 
     context = ValidationContext(net_params)
 
@@ -945,8 +961,6 @@ def __isAmongConds(val, cond, cellParams): # cond is either `cellType` or `cellM
         return all(isAmongConds(v, cond, cellParams) for v in val)
     return isAmongConds(val, cond, cellParams)
 
-global __mechVarList
-__mechVarList = None
 
 def __isPointpModel(name, context):
     return __isModel(name, 'pointps', context)
@@ -974,3 +988,37 @@ def __isModel(name, modelType, context):
     if type(name) in (list, tuple):
         return all(isModel(n, modelType) for n in name)
     return isModel(name, modelType)
+
+# This is a utility method that loops over models in ./examples folder and prints any validation errors
+# Consider running it as github "checks"
+
+def checkValidation():
+
+    import os, glob
+    from netpyne import sim
+    from netpyne.sim import validator
+
+    def checkModelValid(index):
+        print(f'PROCESSSING {index}')
+        _, netParams = sim.loadModel(index, loadMechs=True, ignoreMechAlreadyExistsError=True)
+        _, failed = validator.validateNetParams(net_params=netParams)
+        if failed:
+            print(f'FOUND {len(failed)} ERRORS IN {index}')
+            for (compName, error, errorAutos) in failed:
+                print(compName)
+        else:
+            print(f'VALIDATION SUCCEEDED FOR {index}')
+
+    os.chdir('examples')
+
+    try:
+        # TODO: for some reason, the models below fail to load when run in order of for-loop below.
+        # Works okay when run individually though...
+        exceptionFromLoop = ['batchCellMapping/index.npjson', 'batchCell/index.npjson']
+
+        for index in [index for index in glob.glob('*/*.npjson') if index not in exceptionFromLoop ]:
+            checkModelValid(index)
+    except Exception as e:
+        print(f"FAILED VALIDATING EXAMPLES: {e}")
+
+    os.chdir('..')

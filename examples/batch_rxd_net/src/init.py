@@ -4,13 +4,13 @@ init.py
 Starting script to run NetPyNE-based RxD model.
 
 Usage:
-    python init.py # Run simulation, optionally plot a raster
+    python src/init.py # Run simulation, optionally plot a raster
 
 MPI usage:
-    mpiexec -n 4 nrniv -python -mpi init.py
+    mpiexec -n 4 nrniv -python -mpi src/init.py
 """
 from netpyne import sim
-cfg, netParams = sim.readCmdLineArgs()	
+cfg, netParams = sim.readCmdLineArgs(simConfigDefault='src/cfg.py', netParamsDefault='src/netParams.py')	
 
 # --------------------------------
 # Instantiate network

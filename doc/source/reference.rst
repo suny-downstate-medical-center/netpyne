@@ -269,6 +269,64 @@ Example of point process artificial cell populations::
 
 	netParams.popParams['artif3'] = {'cellModel': 'VecStim', 'numCells': 100, 'spkTimes': spkTimes, 'pulses': pulses}  # VecStim with spike times
 
+When ``cellModel`` is 'VecStim', a pattern generator may be used by creating a 'spikePattern' dictionary::
+
+    netParams.popParams['artif1'] = {'cellModel': 'VecStim'
+                                     ...
+                                     'spikePattern': {'type': 'rhythmic', # can be 'rhythmic', 'evoked', 'poisson', 'gauss'
+                                                      ...                 # see netpyne/cell/inputs.py for argument entries
+                                                      }
+                                     }
+
+
+Currently, 'rhythmic', 'evoked', 'poisson' and 'gauss' spike pattern generators are available, their argument entries are:
+
+* **rhythmic** - Creates the ongoing external inputs (rhythmic)
+
+    * **start** - time of first spike. if -1, uniform distribution between startMin and startMax (ms)
+
+    * **startMin** - minimum values of uniform distribution for start time (ms)
+
+    * **startMax** - maximum values of uniform distribution for start time (ms)
+
+    * **startStd** - standard deviation of normal distrinution for start time (ms); mean is set by start param. Only used if > 0.0
+
+    * **freq** - oscillatory frequency of rhythmic pattern (Hz)
+
+    * **freqStd** - standard deviation of oscillatory frequency (Hz)
+
+    * **distribution** - distribution type fo oscillatory frequencies; either 'normal' or 'uniform'
+
+    * **eventsPerCycle** - spikes/burst per cycle; should be either 1 or 2
+
+    * **repeats** - number of times to repeat input pattern (equivalent to number of inputs)
+
+    * **stop** - maximum time for last spike of pattern (ms)
+
+* **evoked** - creates the ongoing external inputs (rhythmic)
+
+    * **start** - time of first spike. if -1, uniform distribution between startMin and startMax (ms)
+
+    * **inc** - increase in time of first spike; from cfg.inc_evinput (ms)
+
+    * **startStd** - standard deviation of start (ms)
+
+    * **numspikes** - total number of spikes to generate
+
+* **poisson** - creates external Poisson inputs
+
+    * **start** - time of first spike (ms)
+
+    * **stop** - stop time; if -1 the full duration (ms)
+
+    * **frequency** - standard deviation of start (ms)
+
+* **gauss** - Creates Gaussian inputs
+
+    * **mu** - Gaussian mean
+
+    * **sigma** - Gaussian variance
+
 Finally, it is possible to define a population composed of individually-defined cells by including the list of cells in the ``cellsList`` dictionary field. Each element of the list of cells will in turn be a dictionary containing any set of cell properties such as ``cellLabel`` or location (e.g. ``x`` or ``ynorm``). An example is shown below::
 
 	cellsList.append({'cellLabel':'gs15', 'x': 1, 'ynorm': 0.4 , 'z': 2})

@@ -24,7 +24,21 @@ except NameError:
 # -----------------------------------------------------------------------------
 def addStims(self):
     """
-    Function for/to <short description of `netpyne.network.stim.addStims`>
+    Internal function to add stims specified in specs.NetParams 
+    Usage:
+        Creates and attaches stims to targets via CompartCell.addstim() based on entries in the specs.NetParams sub-
+        dictionaries -- specs.NetParams.stimSourceParams and specs.NetParams.stimTargetParams (see below)
+        NetParams.stimSourceParams entries contain key-value pairs to describe NEURON point processes specified by the
+        'type' entry (i.e. 'IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse', 'VecStim')
+        NetParams.stimTargetParams entries contain key-value pairs to describe the post-synaptic connections for a
+        stimSourceParam entry specified by the 'source' entry, including a 'sec' and 'loc' entry (describing section
+        and location) for where the post-synaptic connection will exist and a 'conds' entry with a dictionary
+        specifying the cell criteria for the post-synaptic connections: (i.e. 'x', 'y', 'z' or 'xnorm', 'ynorm', 'znorm'
+        specifying cell criteria by location, 'cellList' specifying cell criteria by specific gid, or arbitrary
+        'key': 'value' tags.
+        For 'VecStim' point processes, it may be more convenient to create an artificial cell (i.e.netParams.popParams
+        see: netpyne/cell/pointCell.py) which allows pattern generation ('rhythmic', 'evoked', 'poisson', 'gauss')
+        by key-value entries in a 'spikePattern' dictionary.
 
     Parameters
     ----------

@@ -16,6 +16,10 @@
 
 - Cleaned up example models to drop some legacy/irrelevant params
 
+- RxD module: Parameters defined before reactions + names given by default when missing (by the key)
+
+- Analysis: try ... except call in plotDipole
+
 # Version 1.0.3.1
 
 - Hotfix to support new GUI functionality (fixes in grid parameter optimization)

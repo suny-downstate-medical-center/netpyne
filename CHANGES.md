@@ -4,9 +4,17 @@
 
 - Added 'linewidth' as argument of plotting.plotSpikeHist()
 
+- More detailed validation of netParams
+
+- Save and load model in native NetPyNE format
+
 **Bug fixes**
 
 - fixed handling filenames with multiple dots in `MetaFigure.saveFig()`
+
+- Fixed readCmdLimeArgs() default arguments for backward-compatibility
+
+- Cleaned up example models to drop some legacy/irrelevant params
 
 # Version 1.0.3.1
 

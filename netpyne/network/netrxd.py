@@ -51,6 +51,7 @@ def addRxD(self, nthreads=None):
     if len(self.params.rxdParams):
         try:
             global rxd
+            global numpy
             from neuron import crxd as rxd
 
             sim.net.rxd = {'species': {}, 'regions': {}}  # dictionary for rxd
@@ -264,7 +265,7 @@ def _addSpecies(self, params):
             funcStr = self._replaceRxDStr(param['initial'], constants=True, regions=True, species=False)
 
             # create final function dynamically from string
-            importStr = ' from neuron import crxd as rxd \n from netpyne import sim'
+            importStr = ' from neuron import crxd as rxd \n from netpyne import sim \n import numpy'
             afterDefStr = 'sim.net.rxd["species"]["%s"]["initialFunc"] = initial' % (label)
             funcStr = 'def initial (node): \n%s \n return %s \n%s' % (
                 importStr,
@@ -342,7 +343,7 @@ def _addStates(self, params):
             funcStr = self._replaceRxDStr(param['initial'], constants=True, regions=True, species=False)
 
             # create final function dynamically from string
-            importStr = ' from neuron import crxd as rxd \n from netpyne import sim'
+            importStr = ' from neuron import crxd as rxd \n from netpyne import sim \n import numpy'
             afterDefStr = 'sim.net.rxd["states"]["%s"]["initialFunc"] = initial' % (label)
             funcStr = 'def initial (node): \n%s \n return %s \n%s' % (
                 importStr,
@@ -405,7 +406,7 @@ def _addParameters(self, params):
             funcStr = self._replaceRxDStr(param['value'], constants=True, regions=True, species=True)
 
             # create final function dynamically from string
-            importStr = ' from neuron import crxd as rxd \n from netpyne import sim'
+            importStr = ' from neuron import crxd as rxd \n from netpyne import sim \n import numpy'
             afterDefStr = 'sim.net.rxd["parameters"]["%s"]["initialFunc"] = value' % (label)
             funcStr = 'def value (node): \n%s \n return %s \n%s' % (
                 importStr,

@@ -4,9 +4,23 @@
 
 - Added 'linewidth' as argument of plotting.plotSpikeHist()
 
+- More detailed validation of netParams
+
+- Save and load model in native NetPyNE format
+
+- Complex stimulation ('rhythmic', 'evoked', 'poisson' and 'gauss') for VecStim created as pointCell (as a population rule)
+
 **Bug fixes**
 
 - fixed handling filenames with multiple dots in `MetaFigure.saveFig()`
+
+- Fixed readCmdLimeArgs() default arguments for backward-compatibility
+
+- Cleaned up example models to drop some legacy/irrelevant params
+
+- RxD module: Parameters defined before reactions + names given by default when missing (by the key)
+
+- Analysis: try ... except call in plotDipole
 
 # Version 1.0.3.1
 

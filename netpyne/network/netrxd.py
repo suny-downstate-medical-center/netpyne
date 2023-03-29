@@ -515,20 +515,6 @@ def _addReactions(self, params, multicompartment=False):
         else:
             nrnMembraneRegion = None
 
-        # custom_dynamics
-        if 'custom_dynamics' not in param:
-            param['custom_dynamics'] = False
-        if 'membrane_flux' not in param:
-            param['membrane_flux'] = False
-
-        # membrane_flux
-        if 'membrane_flux' not in param:
-            param['membrane_flux'] = False
-
-        # scale by area
-        if 'scale_by_area' not in param:
-            param['scale_by_area'] = True
-
         if rate_b is None and dynamicVars.get('rate_b', None) is None:
             # omit positional argument 'rate_b'
             self.rxd[reactionDictKey][label]['hObj'] = getattr(rxd, reactionStr)(
@@ -536,9 +522,9 @@ def _addReactions(self, params, multicompartment=False):
                 dynamicVars['product'],
                 dynamicVars['rate_f'] if 'rate_f' in dynamicVars else rate_f,
                 regions=nrnRegions,
-                custom_dynamics=param['custom_dynamics'],
-                membrane_flux=param['membrane_flux'],
-                scale_by_area=param['scale_by_area'],
+                custom_dynamics=param.get('custom_dynamics', False),
+                membrane_flux=param.get('membrane_flux', False),
+                scale_by_area=param.get('scale_by_area', True),
                 membrane=nrnMembraneRegion,
             )
 
@@ -550,9 +536,9 @@ def _addReactions(self, params, multicompartment=False):
                 dynamicVars['rate_f'] if 'rate_f' in dynamicVars else rate_f,
                 dynamicVars['rate_b'] if 'rate_b' in dynamicVars else rate_b,
                 regions=nrnRegions,
-                custom_dynamics=param['custom_dynamics'],
-                membrane_flux=param['membrane_flux'],
-                scale_by_area=param['scale_by_area'],
+                custom_dynamics=param.get('custom_dynamics', False),
+                membrane_flux=param.get('membrane_flux', False),
+                scale_by_area=param.get('scale_by_area', True),
                 membrane=nrnMembraneRegion,
             )
 

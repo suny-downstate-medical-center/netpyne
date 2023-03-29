@@ -8,6 +8,8 @@
 
 - Save and load model in native NetPyNE format
 
+- Complex stimulation ('rhythmic', 'evoked', 'poisson' and 'gauss') for VecStim created as pointCell (as a population rule)
+
 **Bug fixes**
 
 - fixed handling filenames with multiple dots in `MetaFigure.saveFig()`

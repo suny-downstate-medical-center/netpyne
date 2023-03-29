@@ -21,7 +21,7 @@ PYR_Izhi['secs']['soma']['geom'] = {'diam': 10.0, 'L': 10.0, 'cm': 31.831}    # 
 PYR_Izhi['secs']['soma']['pointps']['Izhi'] = {                               # soma Izhikevich properties
     'mod':'Izhi2007b',
     'C':1,
-    'k':0.7,
+    'k': 'normal(0.7, 0.05)',
     'vr':-60,
     'vt':-40,
     'vpeak':35,
@@ -76,6 +76,3 @@ simConfig.analysis['plot2Dnet'] = {'saveFig': True}                   # plot 2D 
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)
 
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty
-
-# Check the model output: sim.checkOutput is used for testing purposes.  Please comment out the following line if you are exploring the tutorial.
-sim.checkOutput('tut4')

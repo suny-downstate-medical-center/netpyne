@@ -11,4 +11,6 @@ from .utils import pkg_setup
 @pytest.mark.package_data(['examples/PTcell/', 'mod'])
 class TestPTcell:
     def test_init(self, pkg_setup):
-        import init
+        import src.init
+        from netpyne import sim
+        sim.checkOutput('PTcell')

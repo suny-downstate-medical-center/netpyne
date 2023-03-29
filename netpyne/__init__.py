@@ -9,12 +9,13 @@ NetPyNE consists of a number of sub-packages and modules.
 # Updates for NeuroML support will be added on https://github.com/Neurosim-lab/netpyne/tree/neuroml_updates
 # and those changes pushed to development. This branch is for stable releases for
 # use on osbv2
-__version__ = '1.0.0.2_osbv2'
+__version__ = '1.0.3.1_osbv2'
 ###############################################################################
 
 import os, sys
+
 display = os.getenv('DISPLAY')
-nogui = (sys.argv.count('-nogui')>0)
+nogui = sys.argv.count('-nogui') > 0
 
 __gui__ = True
 
@@ -23,6 +24,7 @@ if nogui:  # completely disables graphics (avoids importing matplotlib)
 
 elif not display or len(display) == 0:  # if no display env available (e.g. clusters) uses 'Agg' backend to plot
     import matplotlib
+
     matplotlib.use('Agg')
 
 from netpyne import analysis

@@ -23,8 +23,10 @@ except NameError:
     basestring = str
 
 from future import standard_library
+
 standard_library.install_aliases()
 from netpyne import __gui__
+
 if __gui__:
     import matplotlib.pyplot as plt
 import numpy as np
@@ -42,14 +44,28 @@ except:
 colorListType = 'alternate'  # 'graded'
 
 if colorListType == 'alternate':
-    colorList = [[0.42,0.67,0.84], [0.90,0.76,0.00], [0.42,0.83,0.59], [0.90,0.32,0.00],
-            [0.34,0.67,0.67], [0.90,0.59,0.00], [0.42,0.82,0.83], [1.00,0.85,0.00],
-            [0.33,0.67,0.47], [1.00,0.38,0.60], [0.57,0.67,0.33], [0.5,0.2,0.0],
-            [0.71,0.82,0.41], [0.0,0.2,0.5], [0.70,0.32,0.10]]*3
+    colorList = [
+        [0.42, 0.67, 0.84],
+        [0.90, 0.76, 0.00],
+        [0.42, 0.83, 0.59],
+        [0.90, 0.32, 0.00],
+        [0.34, 0.67, 0.67],
+        [0.90, 0.59, 0.00],
+        [0.42, 0.82, 0.83],
+        [1.00, 0.85, 0.00],
+        [0.33, 0.67, 0.47],
+        [1.00, 0.38, 0.60],
+        [0.57, 0.67, 0.33],
+        [0.5, 0.2, 0.0],
+        [0.71, 0.82, 0.41],
+        [0.0, 0.2, 0.5],
+        [0.70, 0.32, 0.10],
+    ] * 3
 elif colorListType == 'graded' and __gui__:
     import matplotlib
+
     cmap = matplotlib.cm.get_cmap('jet')
-    colorList = [cmap(x) for x in np.linspace(0,1,12)]
+    colorList = [cmap(x) for x in np.linspace(0, 1, 12)]
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Exception decorator
@@ -63,16 +79,16 @@ def exception(function):
     function : <type>
         <Short description of function>
         **Default:** *required*
+    """
 
-"""
     @functools.wraps(function)
     def wrapper(*args, **kwargs):
         try:
             return function(*args, **kwargs)
         except Exception as e:
             # print
-            err = "There was an exception in %s():"%(function.__name__)
-            print(("  %s \n    %s \n    %s"%(err,e,sys.exc_info())))
+            err = "There was an exception in %s():" % (function.__name__)
+            print(("  %s \n    %s \n    %s" % (err, e, sys.exc_info())))
             return -1
 
     return wrapper
@@ -83,6 +99,7 @@ def exception(function):
 # -------------------------------------------------------------------------------------------------------------------
 def _roundFigures(x, n):
     return round(x, -int(np.floor(np.log10(abs(x)))) + (n - 1))
+
 
 # -------------------------------------------------------------------------------------------------------------------
 ## show figure
@@ -101,10 +118,11 @@ def _saveFigData(figData, fileName=None, type=''):
     from .. import sim
 
     if not fileName or not isinstance(fileName, basestring):
-        fileName = sim.cfg.filename+'_'+type+'.pkl'
+        fileName = sim.cfg.filename + '_' + type + '.pkl'
 
-    if fileName.endswith('.pkl'): # save to pickle
+    if fileName.endswith('.pkl'):  # save to pickle
         import pickle
+
         print(('Saving figure data as %s ... ' % (fileName)))
         with open(fileName, 'wb') as fileObj:
             pickle.dump(figData, fileObj)
@@ -119,7 +137,7 @@ def _saveFigData(figData, fileName=None, type=''):
 # -------------------------------------------------------------------------------------------------------------------
 ## Smooth 1d signal
 # -------------------------------------------------------------------------------------------------------------------
-def _smooth1d(x,window_len=11,window='hanning'):
+def _smooth1d(x, window_len=11, window='hanning'):
     """smooth the data using a window with requested size.
 
     This method is based on the convolution of a scaled window with the signal.
@@ -157,30 +175,27 @@ def _smooth1d(x,window_len=11,window='hanning'):
     if x.size < window_len:
         raise ValueError("Input vector needs to be bigger than window size.")
 
-
-    if window_len<3:
+    if window_len < 3:
         return x
-
 
     if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
         raise ValueError("Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'")
 
-
-    s=np.r_[x[window_len-1:0:-1],x,x[-1:-window_len:-1]]
-    #print(len(s))
-    if window == 'flat': #moving average
-        w=np.ones(window_len,'d')
+    s = np.r_[x[window_len - 1 : 0 : -1], x, x[-1:-window_len:-1]]
+    # print(len(s))
+    if window == 'flat':  # moving average
+        w = np.ones(window_len, 'd')
     else:
-        w=eval('np.'+window+'(window_len)')
+        w = eval('np.' + window + '(window_len)')
 
-    y=np.convolve(w/w.sum(),s,mode='valid')
-    return y[int((window_len/2-1)):int(-(window_len/2))]
+    y = np.convolve(w / w.sum(), s, mode='valid')
+    return y[int((window_len / 2 - 1)) : int(-(window_len / 2))]
 
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Get subset of cells and netstims indicated by include list
 # -------------------------------------------------------------------------------------------------------------------
-def getCellsInclude(include, sim = None):
+def getCellsInclude(include, sim=None):
     """
     Function for/to <short description of `netpyne.analysis.utils.getCellsInclude`>
 
@@ -197,8 +212,6 @@ def getCellsInclude(include, sim = None):
 
 
     """
-
-
 
     if not sim:
         from .. import sim
@@ -229,21 +242,23 @@ def getCellsInclude(include, sim = None):
             if condition in allNetStimLabels:
                 netStimLabels.append(condition)
             else:
-                cellGids.extend([c['gid'] for c in allCells if c['tags']['pop']==condition])
+                cellGids.extend([c['gid'] for c in allCells if c['tags']['pop'] == condition])
 
         # subset of a pop with relative indices
         # when load from json gets converted to list (added as exception)
-        elif (isinstance(condition, (list,tuple))
-        and len(condition)==2
-        and isinstance(condition[0], basestring)
-        and isinstance(condition[1], (list,int))):
-            cellsPop = [c['gid'] for c in allCells if c['tags']['pop']==condition[0]]
+        elif (
+            isinstance(condition, (list, tuple))
+            and len(condition) == 2
+            and isinstance(condition[0], basestring)
+            and isinstance(condition[1], (list, int))
+        ):
+            cellsPop = [c['gid'] for c in allCells if c['tags']['pop'] == condition[0]]
             if isinstance(condition[1], list):
-                cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
+                cellGids.extend([gid for i, gid in enumerate(cellsPop) if i in condition[1]])
             elif isinstance(condition[1], int):
-                cellGids.extend([gid for i,gid in enumerate(cellsPop) if i==condition[1]])
+                cellGids.extend([gid for i, gid in enumerate(cellsPop) if i == condition[1]])
 
-        elif isinstance(condition, (list,tuple)):  # subset
+        elif isinstance(condition, (list, tuple)):  # subset
             for subcond in condition:
                 if isinstance(subcond, int):  # cell gid
                     cellGids.append(subcond)
@@ -252,7 +267,7 @@ def getCellsInclude(include, sim = None):
                     if subcond in allNetStimLabels:
                         netStimLabels.append(subcond)
                     else:
-                        cellGids.extend([c['gid'] for c in allCells if c['tags']['pop']==subcond])
+                        cellGids.extend([c['gid'] for c in allCells if c['tags']['pop'] == subcond])
 
     cellGids = sim.unique(cellGids)  # unique values
     cells = [cell for cell in allCells if cell['gid'] in cellGids]
@@ -286,17 +301,17 @@ def getCellsIncludeTags(include, tags, tagsFormat=None):
 
     """
 
-
     allCells = tags.copy()
     cellGids = []
 
     # using list with indices
     if tagsFormat or 'format' in allCells:
-        if not tagsFormat: tagsFormat = allCells.pop('format')
+        if not tagsFormat:
+            tagsFormat = allCells.pop('format')
         popIndex = tagsFormat.index('pop')
 
         for condition in include:
-            if condition in  ['all', 'allCells']:  # all cells
+            if condition in ['all', 'allCells']:  # all cells
                 cellGids = list(allCells.keys())
                 return cellGids
 
@@ -304,20 +319,20 @@ def getCellsIncludeTags(include, tags, tagsFormat=None):
                 cellGids.append(condition)
 
             elif isinstance(condition, basestring):  # entire pop
-                cellGids.extend([gid for gid,c in allCells.items() if c[popIndex]==condition])
+                cellGids.extend([gid for gid, c in allCells.items() if c[popIndex] == condition])
 
             elif isinstance(condition, tuple):  # subset of a pop with relative indices
-                cellsPop = [gid for gid,c in allCells.items() if c[popIndex]==condition[0]]
+                cellsPop = [gid for gid, c in allCells.items() if c[popIndex] == condition[0]]
                 if isinstance(condition[1], list):
-                    cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
+                    cellGids.extend([gid for i, gid in enumerate(cellsPop) if i in condition[1]])
                 elif isinstance(condition[1], int):
-                    cellGids.extend([gid for i,gid in enumerate(cellsPop) if i==condition[1]])
+                    cellGids.extend([gid for i, gid in enumerate(cellsPop) if i == condition[1]])
 
     # using dict with keys
     else:
 
         for condition in include:
-            if condition in  ['all', 'allCells']:  # all cells
+            if condition in ['all', 'allCells']:  # all cells
                 cellGids = list(allCells.keys())
                 return cellGids
 
@@ -325,14 +340,14 @@ def getCellsIncludeTags(include, tags, tagsFormat=None):
                 cellGids.append(condition)
 
             elif isinstance(condition, basestring):  # entire pop
-                cellGids.extend([gid for gid,c in allCells.items() if c['pop']==condition])
+                cellGids.extend([gid for gid, c in allCells.items() if c['pop'] == condition])
 
             elif isinstance(condition, tuple):  # subset of a pop with relative indices
-                cellsPop = [gid for gid,c in allCells.items() if c['pop']==condition[0]]
+                cellsPop = [gid for gid, c in allCells.items() if c['pop'] == condition[0]]
                 if isinstance(condition[1], list):
-                    cellGids.extend([gid for i,gid in enumerate(cellsPop) if i in condition[1]])
+                    cellGids.extend([gid for i, gid in enumerate(cellsPop) if i in condition[1]])
                 elif isinstance(condition[1], int):
-                    cellGids.extend([gid for i,gid in enumerate(cellsPop) if i==condition[1]])
+                    cellGids.extend([gid for i, gid in enumerate(cellsPop) if i == condition[1]])
 
     cellGids = [int(x) for x in set(cellGids)]  # unique values
 
@@ -349,17 +364,16 @@ def syncMeasure():
 
     """
 
-
     from .. import sim
 
-    t0=-1
-    width=1
-    cnt=0
+    t0 = -1
+    width = 1
+    cnt = 0
     for spkt in sim.allSimData['spkt']:
-        if (spkt>=t0+width):
-            t0=spkt
-            cnt+=1
-    return 1-cnt/(sim.cfg.duration/width)
+        if spkt >= t0 + width:
+            t0 = spkt
+            cnt += 1
+    return 1 - cnt / (sim.cfg.duration / width)
 
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -374,8 +388,7 @@ def invertDictMapping(d):
     d : <type>
         <Short description of d>
         **Default:** *required*
-
-"""
+    """
     inv_map = {}
     for k, v in d.items():
         inv_map[v] = inv_map.get(v, [])
@@ -386,7 +399,7 @@ def invertDictMapping(d):
 # -------------------------------------------------------------------------------------------------------------------
 ## Get subset of spkt, spkid based on a timeRange and cellGids list; ~10x speedup over list iterate
 # -------------------------------------------------------------------------------------------------------------------
-def getSpktSpkid(cellGids=[], timeRange=None, sim = None):
+def getSpktSpkid(cellGids=[], timeRange=None, sim=None):
     """
     Function for/to <short description of `netpyne.analysis.utils.getSpktSpkid`>
 
@@ -406,36 +419,41 @@ def getSpktSpkid(cellGids=[], timeRange=None, sim = None):
         <Short description of sim>
         **Default:** ``None``
         **Options:** ``<option>`` <description of option>
-
-"""
+    """
 
     if not sim:
         from .. import sim
 
     import pandas as pd
 
-    try: # Pandas 0.24 and later
-        from pandas import _lib as pandaslib
-    except: # Pandas 0.23 and earlier
-        from pandas import lib as pandaslib
-    df = pd.DataFrame(pandaslib.to_object_array([sim.allSimData['spkt'], sim.allSimData['spkid']]).transpose(), columns=['spkt', 'spkid'])
-    #df = pd.DataFrame(pd.lib.to_object_array([sim.allSimData['spkt'], sim.allSimData['spkid']]).transpose(), columns=['spkt', 'spkid'])
+    try:  # Pandas 1.4.0
+        from pandas._libs import lib as pandaslib
+    except:
+        try:  # Pandas 0.24 and later
+            from pandas import _lib as pandaslib
+        except:  # Pandas 0.23 and earlier
+            from pandas import lib as pandaslib
+
+    df = pd.DataFrame(
+        pandaslib.to_object_array([sim.allSimData['spkt'], sim.allSimData['spkid']]).transpose(),
+        columns=['spkt', 'spkid'],
+    )
+    # df = pd.DataFrame(pd.lib.to_object_array([sim.allSimData['spkt'], sim.allSimData['spkid']]).transpose(), columns=['spkt', 'spkid'])
 
     if timeRange:
-        min, max = [int(df['spkt'].searchsorted(timeRange[i])) for i in range(2)] # binary search faster than query
-    else: # timeRange None or empty list means all times
+        min, max = [int(df['spkt'].searchsorted(timeRange[i])) for i in range(2)]  # binary search faster than query
+    else:  # timeRange None or empty list means all times
         min, max = 0, len(df)
-    if len(cellGids)==0:
+    if len(cellGids) == 0:
         sel = df[min:max]
     else:
         sel = df[min:max].query('spkid in @cellGids')
-    return sel, sel['spkt'].tolist(), sel['spkid'].tolist() # will want to return sel as well for further sorting
-
+    return sel, sel['spkt'].tolist(), sel['spkid'].tolist()  # will want to return sel as well for further sorting
 
 
 def checkAvailablePlots(requireCfg=False):
     """
-    Function to check which plots are available for the GUI 
+    Function to check which plots are available for the GUI
 
     Returns
     ----------
@@ -447,19 +465,23 @@ def checkAvailablePlots(requireCfg=False):
     ----------
     dict
         <Keys indicate the name of the analysis function and values whether they are available or not (Boolean)>
-
-"""
+    """
     from .. import sim
 
-    avail = {'plotConn': False,
-             'plot2Dnet':  False,
-             'plotTraces': False,
-             'plotRaster': False,
-             'plotSpikeHist': False,
-             'plotSpikeStats': False,
-             'plotLFP': False,
-             'granger': False,
-             'plotRxDConcentration': False}
+    avail = {
+        'plotConn': False,
+        'plot2Dnet': False,
+        'plotTraces': False,
+        'plotRaster': False,
+        'plotSpikeHist': False,
+        'plotSpikeStats': False,
+        'plotLFP': False,
+        'granger': False,
+        'plotRxDConcentration': False,
+        'plotDipole': False,
+        'plotEEG': False,
+        'plotRateSpectrogram': False,
+    }
 
     # plot conn
     if hasattr(sim, 'net') and hasattr(sim.net, 'allCells') and len(sim.net.allCells) > 0:
@@ -468,31 +490,48 @@ def checkAvailablePlots(requireCfg=False):
 
     # plot traces
     traces = list(sim.cfg.recordTraces.keys())
-    if len(traces)>0 and hasattr(sim, 'allSimData'):
+    if len(traces) > 0 and hasattr(sim, 'allSimData'):
         for trace in traces:
             if trace in sim.allSimData and len(sim.allSimData.get(trace)):
                 avail['plotTraces'] = True
                 break
-    
-    # raster, spike hist, spike stats, rate psd and granger 
-    if hasattr(sim, 'allSimData') and 'spkid' in sim.allSimData and 'spkt' in sim.allSimData \
-        and len(sim.allSimData['spkid']) > 0 and len(sim.allSimData['spkt']) > 0:
+
+    # raster, spike hist, spike stats, rate psd and granger
+    if (
+        hasattr(sim, 'allSimData')
+        and 'spkid' in sim.allSimData
+        and 'spkt' in sim.allSimData
+        and len(sim.allSimData['spkid']) > 0
+        and len(sim.allSimData['spkt']) > 0
+    ):
 
         avail['plotRaster'] = True
         avail['plotSpikeHist'] = True
         avail['plotSpikeStats'] = True
         avail['plotRatePSD'] = True
         avail['granger'] = True
+        avail['plotRateSpectrogram'] = True
 
-
-    # plot lfp 
+    # plot lfp
     if hasattr(sim, 'allSimData') and 'LFP' in sim.allSimData and len(sim.allSimData['LFP']) > 0:
 
         avail['plotLFP'] = True
 
-    # rxd concentation 
-    if hasattr(sim, 'net') and hasattr(sim.net, 'rxd') and 'species' in sim.net.rxd and 'regions' in sim.net.rxd \
-        and len(sim.net.rxd['species']) > 0 and len(sim.net.rxd['regions']) > 0: 
+    # plot dipole/EEG
+    if hasattr(sim, 'allSimData') and 'dipoleSum' in sim.allSimData and len(sim.allSimData['dipoleSum']) > 0:
+
+        avail['plotDipole'] = True
+        avail['plotEEG'] = True
+
+    # rxd concentation
+    if (
+        hasattr(sim, 'net')
+        and hasattr(sim.net, 'rxd')
+        and 'species' in sim.net.rxd
+        and 'regions' in sim.net.rxd
+        and len(sim.net.rxd['species']) > 0
+        and len(sim.net.rxd['regions']) > 0
+    ):
 
         avail['plotRxDConcentration'] = True
 
@@ -505,7 +544,6 @@ def checkAvailablePlots(requireCfg=False):
     return avail
 
 
-
 # -------------------------------------------------------------------------------------------------------------------
 ## Default NetPyNE Bokeh theme -- based on dark_minimal
 # -------------------------------------------------------------------------------------------------------------------
@@ -516,219 +554,158 @@ def checkAvailablePlots(requireCfg=False):
 
 _guiTheme = {
     "attrs": {
-        "Figure" : {
-            "background_fill_color": "#434343", #"#20262B",
-            "border_fill_color": "#434343", #"#15191C",
+        "Figure": {
+            "background_fill_color": "#434343",  # "#20262B",
+            "border_fill_color": "#434343",  # "#15191C",
             "outline_line_color": "#E0E0E0",
-            "outline_line_alpha": 0.25
+            "outline_line_alpha": 0.25,
         },
-
-        "Grid": {
-            "grid_line_color": "#E0E0E0",
-            "grid_line_alpha": 0.25
-        },
-
+        "Grid": {"grid_line_color": "#E0E0E0", "grid_line_alpha": 0.25},
         "Axis": {
             "major_tick_line_alpha": 0,
             "major_tick_line_color": "#E0E0E0",
-
             "minor_tick_line_alpha": 0,
             "minor_tick_line_color": "#E0E0E0",
-
             "axis_line_alpha": 0,
             "axis_line_color": "#E0E0E0",
-
             "major_label_text_color": "#E0E0E0",
             "major_label_text_font": "Helvetica",
             "major_label_text_font_size": "1.025em",
-
             "axis_label_standoff": 10,
             "axis_label_text_color": "#E0E0E0",
             "axis_label_text_font": "Helvetica",
             "axis_label_text_font_size": "1.25em",
-            "axis_label_text_font_style": "normal"
+            "axis_label_text_font_style": "normal",
         },
-
         "Legend": {
             "spacing": 8,
             "glyph_width": 15,
-
             "label_standoff": 8,
             "label_text_color": "#E0E0E0",
             "label_text_font": "Helvetica",
             "label_text_font_size": "1.025em",
-
             "border_line_alpha": 0,
-            "background_fill_alpha": 0.5, #0.25,
-            "background_fill_color": "#434343", #"#20262B"
+            "background_fill_alpha": 0.5,  # 0.25,
+            "background_fill_color": "#434343",  # "#20262B"
         },
-
         "ColorBar": {
             "title_text_color": "#E0E0E0",
             "title_text_font": "Helvetica",
             "title_text_font_size": "1.025em",
             "title_text_font_style": "normal",
-
             "major_label_text_color": "#E0E0E0",
             "major_label_text_font": "Helvetica",
             "major_label_text_font_size": "1.025em",
-
-            "background_fill_color": "#434343", #"#15191C",
+            "background_fill_color": "#434343",  # "#15191C",
             "major_tick_line_alpha": 0,
-            "bar_line_alpha": 0
+            "bar_line_alpha": 0,
         },
-
-        "Title": {
-            "text_color": "#E0E0E0",
-            "text_font": "Helvetica",
-            "text_font_size": "1.15em"
-        }
+        "Title": {"text_color": "#E0E0E0", "text_font": "Helvetica", "text_font_size": "1.15em"},
     }
 }
 
 
 _guiBlack = {
     "attrs": {
-        "Figure" : {
-            "background_fill_color": "#000000", 
-            "border_fill_color": "#434343", 
+        "Figure": {
+            "background_fill_color": "#000000",
+            "border_fill_color": "#434343",
             "outline_line_color": "#E0E0E0",
-            "outline_line_alpha": 0.25
+            "outline_line_alpha": 0.25,
         },
-
-        "Grid": {
-            "grid_line_color": "#E0E0E0",
-            "grid_line_alpha": 0.25
-        },
-
+        "Grid": {"grid_line_color": "#E0E0E0", "grid_line_alpha": 0.25},
         "Axis": {
             "major_tick_line_alpha": 0,
             "major_tick_line_color": "#E0E0E0",
-
             "minor_tick_line_alpha": 0,
             "minor_tick_line_color": "#E0E0E0",
-
             "axis_line_alpha": 0,
             "axis_line_color": "#E0E0E0",
-
             "major_label_text_color": "#E0E0E0",
             "major_label_text_font": "Helvetica",
             "major_label_text_font_size": "1.025em",
-
             "axis_label_standoff": 10,
             "axis_label_text_color": "#E0E0E0",
             "axis_label_text_font": "Helvetica",
             "axis_label_text_font_size": "1.25em",
-            "axis_label_text_font_style": "normal"
+            "axis_label_text_font_style": "normal",
         },
-
         "Legend": {
             "spacing": 8,
             "glyph_width": 15,
-
             "label_standoff": 8,
             "label_text_color": "#E0E0E0",
             "label_text_font": "Helvetica",
             "label_text_font_size": "1.025em",
-
             "border_line_alpha": 0,
-            "background_fill_alpha": 0.5, #0.25,
-            "background_fill_color": "#434343", #"#20262B"
+            "background_fill_alpha": 0.5,  # 0.25,
+            "background_fill_color": "#434343",  # "#20262B"
         },
-
         "ColorBar": {
             "title_text_color": "#E0E0E0",
             "title_text_font": "Helvetica",
             "title_text_font_size": "1.025em",
             "title_text_font_style": "normal",
-
             "major_label_text_color": "#E0E0E0",
             "major_label_text_font": "Helvetica",
             "major_label_text_font_size": "1.025em",
-
-            "background_fill_color": "#434343", #"#15191C",
+            "background_fill_color": "#434343",  # "#15191C",
             "major_tick_line_alpha": 0,
-            "bar_line_alpha": 0
+            "bar_line_alpha": 0,
         },
-
-        "Title": {
-            "text_color": "#E0E0E0",
-            "text_font": "Helvetica",
-            "text_font_size": "1.15em"
-        }
+        "Title": {"text_color": "#E0E0E0", "text_font": "Helvetica", "text_font_size": "1.15em"},
     }
 }
 
 
 _guiWhite = {
     "attrs": {
-        "Figure" : {
-            "background_fill_color": "#ffffff", #"#20262B",
-            "border_fill_color": "#434343", #"#15191C",
+        "Figure": {
+            "background_fill_color": "#ffffff",  # "#20262B",
+            "border_fill_color": "#434343",  # "#15191C",
             "outline_line_color": "#E0E0E0",
-            "outline_line_alpha": 0.25
+            "outline_line_alpha": 0.25,
         },
-
-        "Grid": {
-            "grid_line_color": "#E0E0E0",
-            "grid_line_alpha": 0.25
-        },
-
+        "Grid": {"grid_line_color": "#E0E0E0", "grid_line_alpha": 0.25},
         "Axis": {
             "major_tick_line_alpha": 0,
             "major_tick_line_color": "#E0E0E0",
-
             "minor_tick_line_alpha": 0,
             "minor_tick_line_color": "#E0E0E0",
-
             "axis_line_alpha": 0,
             "axis_line_color": "#E0E0E0",
-
             "major_label_text_color": "#E0E0E0",
             "major_label_text_font": "Helvetica",
             "major_label_text_font_size": "1.025em",
-
             "axis_label_standoff": 10,
             "axis_label_text_color": "#E0E0E0",
             "axis_label_text_font": "Helvetica",
             "axis_label_text_font_size": "1.25em",
-            "axis_label_text_font_style": "normal"
+            "axis_label_text_font_style": "normal",
         },
-
         "Legend": {
             "spacing": 8,
             "glyph_width": 15,
-
             "label_standoff": 8,
             "label_text_color": "#E0E0E0",
             "label_text_font": "Helvetica",
             "label_text_font_size": "1.025em",
-
             "border_line_alpha": 0,
-            "background_fill_alpha": 0.5, #0.25,
-            "background_fill_color": "#434343", #"#20262B"
+            "background_fill_alpha": 0.5,  # 0.25,
+            "background_fill_color": "#434343",  # "#20262B"
         },
-
         "ColorBar": {
             "title_text_color": "#E0E0E0",
             "title_text_font": "Helvetica",
             "title_text_font_size": "1.025em",
             "title_text_font_style": "normal",
-
             "major_label_text_color": "#E0E0E0",
             "major_label_text_font": "Helvetica",
             "major_label_text_font_size": "1.025em",
-
-            "background_fill_color": "#434343", #"#15191C",
+            "background_fill_color": "#434343",  # "#15191C",
             "major_tick_line_alpha": 0,
-            "bar_line_alpha": 0
+            "bar_line_alpha": 0,
         },
-
-        "Title": {
-            "text_color": "#E0E0E0",
-            "text_font": "Helvetica",
-            "text_font_size": "1.15em"
-        }
+        "Title": {"text_color": "#E0E0E0", "text_font": "Helvetica", "text_font_size": "1.15em"},
     }
 }
-

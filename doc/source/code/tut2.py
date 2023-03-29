@@ -6,8 +6,8 @@ netParams = specs.NetParams()  # object of class NetParams to store the network 
 ## Cell parameters/rules
 PYRcell = {'secs': {}}
 PYRcell['secs']['soma'] = {'geom': {}, 'mechs': {}}  # soma params dict
-PYRcell['secs']['soma']['geom'] = {'diam': 18.8, 'L': 18.8, 'Ra': 123.0}  # soma geometry
-PYRcell['secs']['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
+PYRcell['secs']['soma']['geom'] = {'diam': '19 + uniform(-0.5, 0.5)', 'L': 18.8, 'Ra': 123.0}  # soma geometry
+PYRcell['secs']['soma']['mechs']['hh'] = {'gnabar': '0.12 + 0.001*ynorm', 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
 netParams.cellParams['PYR'] = PYRcell
 
 ## Population parameters
@@ -51,6 +51,3 @@ simConfig.analysis['plot2Dnet'] = {'saveFig': True}                   # plot 2D 
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)
 
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty
-
-# Check the model output: sim.checkOutput is used for testing purposes.  Please comment out the following line if you are exploring the tutorial.
-sim.checkOutput('tut2')

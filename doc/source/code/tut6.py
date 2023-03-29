@@ -11,11 +11,16 @@ secs['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.003, 'el'
 netParams.cellParams['PYR'] = {'secs': secs}                                                # add dict to list of cell params
 
 ## Population parameters
-netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}
-netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20, 'cellModel': 'HH'}
+netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 20}
+netParams.popParams['M'] = {'cellType': 'PYR', 'numCells': 20}
 
 ## Synaptic mechanism parameters
-netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.1, 'tau2': 5.0, 'e': 0}  # excitatory synaptic mechanism
+netParams.synMechParams['exc'] = {
+    'mod': 'Exp2Syn',
+    'tau1': '0.1 + 0.01*post_ynorm',
+    'tau2': 'abs(normal(5.0, 0.5))',
+    'e': 0
+}  # excitatory synaptic mechanism
 
 ## Stimulation parameters
 netParams.stimSourceParams['Input_1'] = {'type': 'IClamp', 'del': 300, 'dur': 100, 'amp': 'uniform(0.4,0.5)'}
@@ -49,6 +54,3 @@ simConfig.analysis['plotTraces'] = {'include': [('S',0), ('M',0)], 'saveFig': Tr
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)
 
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty
-
-# Check the model output: sim.checkOutput is used for testing purposes.  Please comment out the following line if you are exploring the tutorial.
-sim.checkOutput('tut6')

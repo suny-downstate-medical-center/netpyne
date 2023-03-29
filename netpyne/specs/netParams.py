@@ -18,7 +18,13 @@ try:
 except NameError:
     to_unicode = str
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 from future import standard_library
+
 standard_library.install_aliases()
 from collections import OrderedDict
 from .dicts import Dict, ODict
@@ -28,12 +34,12 @@ from .. import conversion
 # PopParams class
 # ----------------------------------------------------------------------------
 
+
 class PopParams(ODict):
     """
     Class to hold population parameters
 
     """
-
 
     def setParam(self, label, param, value):
         if label in self:
@@ -43,7 +49,8 @@ class PopParams(ODict):
 
         dimParams = ['numCells', 'density', 'gridSpacing']
         if param in dimParams:
-            for removeParam in dimParams: d.pop(removeParam, None)  # remove other properties
+            for removeParam in dimParams:
+                d.pop(removeParam, None)  # remove other properties
 
         d[param] = value
 
@@ -57,12 +64,12 @@ class PopParams(ODict):
 # CellParams class
 # ----------------------------------------------------------------------------
 
+
 class CellParams(ODict):
     """
     Class to hold cell parameters
 
     """
-
 
     def setParam(self, label, param, value):
         if label in self:
@@ -88,17 +95,123 @@ class CellParams(ODict):
         except:
             return False
 
+    @staticmethod
+    def pointpParamsReservedKeys():
+        return ['mod', 'loc', 'vref', 'synList']
+
+    def preprocessStringFunctions(self):
+        from .utils import generateStringFuncsFromParams
+        from ..cell.compartCell import CompartCell
+        from ..cell.pointCell import PointCell
+
+        stringFuncs = {}
+        for (cellType, cellParams) in self.items():
+            funcsForCell = {}
+
+            # compartCell
+            cellVars = cellParams.get('vars', {})
+            varNames = CompartCell.stringFuncVarNames() + list(cellVars.keys())
+
+            # cellVars themselves may contain random distributions or vars
+            generateStringFuncsFromParams(
+                cellVars, CompartCell.stringFuncVarNamesForCellVars(), storeIn=funcsForCell, key='cellVars'
+            )
+
+            for secKey, secVal in [(secKey, secVal) for (secKey, secVal) in cellParams.get('secs', {}).items()]:
+                funcsForSec = {}
+
+                # find string functions among geom params
+                generateStringFuncsFromParams(secVal.get('geom', {}), varNames, storeIn=funcsForSec, key='geom')
+
+                # find string functions among mechs
+                funcsForMechs = {}
+                for mechK, mech in secVal.get('mechs', {}).items():
+                    generateStringFuncsFromParams(mech, varNames, funcsForMechs, mechK)
+                if len(funcsForMechs) > 0:
+                    funcsForSec['mechs'] = funcsForMechs
+
+                # find string functions among pointps
+                funcsForPointps = {}
+                for pointpK, pointp in secVal.get('pointps', {}).items():
+                    generateStringFuncsFromParams(
+                        pointp,
+                        varNames,
+                        storeIn=funcsForPointps,
+                        key=pointpK,
+                        excludeParams=CellParams.pointpParamsReservedKeys(),
+                    )
+                if len(funcsForPointps) > 0:
+                    funcsForSec['pointps'] = funcsForPointps
+
+                if len(funcsForSec) > 0:
+                    funcsForCell[secKey] = funcsForSec
+
+            if len(funcsForCell) > 0:
+                stringFuncs[cellType] = funcsForCell
+
+            # pointCell
+            generateStringFuncsFromParams(
+                cellParams.get('params', {}), PointCell.stringFuncVarNames(), stringFuncs, cellType
+            )
+
+        from .. import sim
+
+        sim.net.params._cellParamStringFuncs = stringFuncs
+
+    @staticmethod
+    def updateStringFuncsWithPopParams(popLabel, params):
+        from .. import sim
+        from ..specs.utils import generateStringFuncsFromParams
+        from ..cell.pointCell import PointCell
+
+        try:
+            cellStringFuncs = sim.net.params._cellParamStringFuncs
+        except:
+            cellStringFuncs = sim.net.params._cellParamStringFuncs = {}
+        popKey = (
+            '__pop__' + popLabel
+        )  # use pop label as key, but add special prefix to not mix with cellParams labels normally used as keys in string funcs dictionary
+        generateStringFuncsFromParams(params, PointCell.stringFuncVarNames(), cellStringFuncs, popKey)
+
+    @staticmethod
+    def stringFuncAndVarsForCellVar(cellType, cellVarName):
+        from .. import sim
+
+        funcs = sim.net.params._cellParamStringFuncs
+        return funcs.get(cellType, {}).get('cellVars', {}).get(cellVarName, (None, []))
+
+    @staticmethod
+    def stringFuncAndVarsForGeom(cellType, section, param):
+        from .. import sim
+
+        funcs = sim.net.params._cellParamStringFuncs
+        return funcs.get(cellType, {}).get(section, {}).get('geom', {}).get(param, (None, []))
+
+    @staticmethod
+    def stringFuncAndVarsForMod(cellType, section, modType, mod, param):  # modType: 'mechs' | 'pointps'
+        from .. import sim
+
+        funcs = sim.net.params._cellParamStringFuncs
+        return funcs.get(cellType, {}).get(section, {}).get(modType, {}).get(mod, {}).get(param, (None, []))
+
+    @staticmethod
+    def stringFuncAndVarsForPointCell(cellTypeOrPop, param):
+        from .. import sim
+
+        funcs = sim.net.params._cellParamStringFuncs
+        return funcs.get(cellTypeOrPop, {}).get(param, (None, []))
+
 
 # ----------------------------------------------------------------------------
 # ConnParams class
 # ----------------------------------------------------------------------------
+
 
 class ConnParams(ODict):
     """
     Class to hold connectivity parameters
 
     """
-
 
     def setParam(self, label, param, value):
         if label in self:
@@ -118,12 +231,12 @@ class ConnParams(ODict):
 # SynMechParams class
 # ----------------------------------------------------------------------------
 
+
 class SynMechParams(ODict):
     """
     Class to hold synaptic mechanism parameters
 
     """
-
 
     def setParam(self, label, param, value):
         if label in self:
@@ -138,17 +251,109 @@ class SynMechParams(ODict):
     def rename(self, old, new, label=None):
         return self.__rename__(old, new, label)
 
+    def preprocessStringFunctions(self):
+        from .utils import generateStringFuncsFromParams
+
+        stringFuncs = {}
+        for (mechKey, mech) in self.items():
+            generateStringFuncsFromParams(
+                mech,
+                SynMechParams.stringFuncVarNames(),
+                stringFuncs,
+                mechKey,
+                excludeParams=SynMechParams.reservedKeys(),
+            )
+        from .. import sim
+
+        sim.net.params._synMechStringFuncs = stringFuncs
+
+    @staticmethod
+    def stringFunctionAndVars(synMechName, paramName):
+        from .. import sim
+
+        funcs = sim.net.params._synMechStringFuncs
+        if not synMechName in funcs:
+            return None, []
+        if not paramName in funcs[synMechName]:
+            return None, []
+        return funcs[synMechName][paramName]
+
+    def isPointerConn(self, synMechLabel):
+        if synMechLabel not in self:
+            return False
+        return 'pointerParams' in self[synMechLabel]
+
+    def hasPointerConns(self):
+        for label in self:
+            if self.isPointerConn(label):
+                return True
+        return False
+
+    @staticmethod
+    def reservedKeys():
+        return ['label', 'mod', 'selfNetCon', 'loc', 'pointerParams']
+
+    @staticmethod
+    def stringFuncVarNames():
+        return list(SynMechParams.stringFuncVarsEvaluators().keys())
+
+    @staticmethod
+    def stringFuncVarsEvaluators():
+        return {
+            'rand': lambda cell, dist, rand: rand,
+            'post_dist_path': lambda cell, dist, rand: dist,
+            'post_dist_euclidean': lambda cell, dist, rand: dist,
+            'post_x': lambda cell, dist, rand: cell.tags['x'],
+            'post_y': lambda cell, dist, rand: cell.tags['y'],
+            'post_z': lambda cell, dist, rand: cell.tags['z'],
+            'post_xnorm': lambda cell, dist, rand: cell.tags['xnorm'],
+            'post_ynorm': lambda cell, dist, rand: cell.tags['ynorm'],
+            'post_znorm': lambda cell, dist, rand: cell.tags['znorm'],
+        }
+
+    @staticmethod
+    def stringFuncVarsReferringPreLoc():
+        # no such vars as for now. To be extended in future
+        return []
+
+    @staticmethod
+    def stringFuncsReferPreLoc(synMech):
+        from .. import sim
+
+        mechFuncs = sim.net.params._synMechStringFuncs.get(synMech, {})
+        for preLocVar in SynMechParams.stringFuncVarsReferringPreLoc():
+            for _, (_, vars) in mechFuncs.items():
+                if preLocVar in vars:
+                    return True
+        return False
+
+    @staticmethod
+    def stringFuncVarsReferringPreLoc():
+        # no such vars as for now. To be extended in future
+        return []
+
+    @staticmethod
+    def stringFuncsReferPreLoc(synMech):
+        from .. import sim
+
+        mechFuncs = sim.net.params._synMechStringFuncs.get(synMech, {})
+        for preLocVar in SynMechParams.stringFuncVarsReferringPreLoc():
+            for _, (_, vars) in mechFuncs.items():
+                if preLocVar in vars:
+                    return True
+        return False
+
 
 # ----------------------------------------------------------------------------
 # SubConnParams class
 # ----------------------------------------------------------------------------
+
 
 class SubConnParams(ODict):
     """
     Class to hold subcellular connectivity parameters
 
     """
-
 
     def setParam(self, label, param, value):
         if label in self:
@@ -168,12 +373,12 @@ class SubConnParams(ODict):
 # StimSourceParams class
 # ----------------------------------------------------------------------------
 
+
 class StimSourceParams(ODict):
     """
     Class to hold stimulation source parameters
 
     """
-
 
     def setParam(self, label, param, value):
         if label in self:
@@ -193,12 +398,12 @@ class StimSourceParams(ODict):
 # StimTargetParams class
 # ----------------------------------------------------------------------------
 
+
 class StimTargetParams(ODict):
     """
     Class to hold stimulation target parameters
 
     """
-
 
     def setParam(self, label, param, value):
         if label in self:
@@ -218,12 +423,12 @@ class StimTargetParams(ODict):
 # RxD class
 # ----------------------------------------------------------------------------
 
+
 class RxDParams(ODict):
     """
     Class to hold reaction-diffusion (RxD) parameters
 
     """
-
 
     def setParam(self, label, param, value):
         if label in self:
@@ -238,9 +443,11 @@ class RxDParams(ODict):
     def rename(self, old, new, label=None):
         return self.__rename__(old, new, label)
 
+
 # ----------------------------------------------------------------------------
 # NETWORK PARAMETERS CLASS
 # ----------------------------------------------------------------------------
+
 
 class NetParams(object):
     """
@@ -248,29 +455,38 @@ class NetParams(object):
 
     """
 
-
-
     def __init__(self, netParamsDict=None):
         self._labelid = 0
         # General network parameters
-        self.scale = 1   # scale factor for number of cells
-        self.sizeX = 100 # x-dimension (horizontal length) size in um
-        self.sizeY = 100 # y-dimension (vertical height or cortical depth) size in um
-        self.sizeZ = 100 # z-dimension (horizontal depth) size in um
-        self.shape = 'cuboid' # network shape ('cuboid', 'cylinder' or 'ellipsoid')
-        self.rotateCellsRandomly = False # random rotation of cells around y-axis [min,max] radians, e.g. [0, 3.0]
-        self.defineCellShapes = False # convert stylized cell geometries to 3d points (calls h.define_shape)
-        self.correctBorder = False  # distance (um) from which to correct connectivity border effect, [x,y,z] eg. [100,150,150]
-        self.cellsVisualizationSpacingMultiplier = [1, 1, 1]  # x,y,z scaling factor for spacing between cells during visualization
+        self.scale = 1  # scale factor for number of cells
+        self.sizeX = 100  # x-dimension (horizontal length) size in um
+        self.sizeY = 100  # y-dimension (vertical height or cortical depth) size in um
+        self.sizeZ = 100  # z-dimension (horizontal depth) size in um
+        self.shape = 'cuboid'  # network shape ('cuboid', 'cylinder' or 'ellipsoid')
+        self.rotateCellsRandomly = False  # random rotation of cells around y-axis [min,max] radians, e.g. [0, 3.0]
+        self.defineCellShapes = False  # convert stylized cell geometries to 3d points (calls h.define_shape)
+        self.correctBorder = (
+            False  # distance (um) from which to correct connectivity border effect, [x,y,z] eg. [100,150,150]
+        )
+        self.cellsVisualizationSpacingMultiplier = [
+            1,
+            1,
+            1,
+        ]  # x,y,z scaling factor for spacing between cells during visualization
 
         ## General connectivity parameters
-        self.scaleConnWeight = 1 # Connection weight scale factor (NetStims not included)
-        self.scaleConnWeightNetStims = 1 # Connection weight scale factor for NetStims
-        self.scaleConnWeightModels = False # Connection weight scale factor for each cell model eg. {'Izhi2007': 0.1, 'Friesen': 0.02}
+        self.scaleConnWeight = 1  # Connection weight scale factor (NetStims not included)
+        self.scaleConnWeightNetStims = 1  # Connection weight scale factor for NetStims
+        self.scaleConnWeightModels = (
+            False  # Connection weight scale factor for each cell model eg. {'Izhi2007': 0.1, 'Friesen': 0.02}
+        )
         self.defaultWeight = 1  # default connection weight
         self.defaultDelay = 1  # default connection delay (ms)
         self.defaultThreshold = 10  # default Netcon threshold (mV)
         self.propVelocity = 500.0  # propagation velocity (um/ms)
+
+        # mapping between cfg and netParams
+        self.mapping = {}
 
         # Cell params dict
         self.cellParams = CellParams()
@@ -292,13 +508,22 @@ class NetParams(object):
         self.stimSourceParams = StimSourceParams()
         self.stimTargetParams = StimTargetParams()
 
-        # RxD params dicts
+        # RxD params dicts and start up
         self.rxdParams = RxDParams()
 
         # fill in params from dict passed as argument
         if netParamsDict:
-            netParamsComponents = ['cellParams', 'popParams', 'synMechParams', 'connParams', 'subConnParams', 'stimSourceParams', 'stimTargetParams', 'rxdParams']
-            for k,v in netParamsDict.items():
+            netParamsComponents = [
+                'cellParams',
+                'popParams',
+                'synMechParams',
+                'connParams',
+                'subConnParams',
+                'stimSourceParams',
+                'stimTargetParams',
+                'rxdParams',
+            ]
+            for k, v in netParamsDict.items():
                 if k in netParamsComponents:
                     for k2, v2 in netParamsDict[k].items():
                         if isinstance(v2, OrderedDict):
@@ -313,10 +538,23 @@ class NetParams(object):
                     setattr(self, k, Dict(v))
                 else:
                     setattr(self, k, v)
+    
+    def __getitem__(self, k):
+        try:
+            return object.__getattribute__(self, k)
+        except:
+            raise KeyError(k)
+
+    def __setitem__(self, k, v):
+        try:
+            setattr(self, k, v)
+        except:
+            raise KeyError(v)
 
     def save(self, filename):
         import os
         from .. import sim
+
         basename = os.path.basename(filename)
         folder = filename.split(basename)[0]
         ext = basename.split('.')[1]
@@ -328,7 +566,7 @@ class NetParams(object):
             if not os.path.exists(folder):
                 print(' Could not create', folder)
 
-        dataSave = {'net': {'params': self.__dict__}}
+        dataSave = {'net': {'params': self.todict()}}
 
         # Save to json file
         if ext == 'json':
@@ -392,9 +630,19 @@ class NetParams(object):
 
     #     return True
 
-
-    def importCellParams(self, label, fileName, cellName, conds={}, cellArgs=None, importSynMechs=False, somaAtOrigin=True, cellInstance=False):
-        if cellArgs is None: cellArgs = {}
+    def importCellParams(
+        self,
+        label,
+        fileName,
+        cellName,
+        conds={},
+        cellArgs=None,
+        importSynMechs=False,
+        somaAtOrigin=True,
+        cellInstance=False,
+    ):
+        if cellArgs is None:
+            cellArgs = {}
         if not label:
             label = int(self._labelid)
             self._labelid += 1
@@ -406,27 +654,27 @@ class NetParams(object):
             somaSec = next((sec for sec in cellRule['secs'] if 'soma' in sec), None)
             if not somaSec or not 'pt3d' in cellRule['secs'][somaSec]['geom']:
                 pass
-                #print('Warning: cannot place soma at origin because soma does not exist or does not contain pt3d')
+                # print('Warning: cannot place soma at origin because soma does not exist or does not contain pt3d')
             else:
                 soma3d = cellRule['secs'][somaSec]['geom']['pt3d']
-                midpoint = int(len(soma3d)/2)
+                midpoint = int(len(soma3d) / 2)
                 somaX, somaY, somaZ = soma3d[midpoint][0:3]
                 for sec in list(cellRule['secs'].values()):
                     if 'pt3d' in sec['geom']:
-                        for i,pt3d in enumerate(sec['geom']['pt3d']):
+                        for i, pt3d in enumerate(sec['geom']['pt3d']):
                             sec['geom']['pt3d'][i] = (pt3d[0] - somaX, pt3d[1] - somaY, pt3d[2] - somaZ, pt3d[3])
 
         self.addCellParams(label, cellRule)
 
         if importSynMechs:
-            for synMech in synMechs: self.addSynMechParams(cellName+'_'+synMech.pop('label'), synMech)
+            for synMech in synMechs:
+                self.addSynMechParams(cellName + '_' + synMech.pop('label'), synMech)
 
         return self.cellParams[label]
 
     def importCellParamsFromNet(self, labelList, condsList, fileName, cellNameList, importSynMechs=False):
         conversion.importCellsFromNet(self, fileName, labelList, condsList, cellNameList, importSynMechs)
         return self.cellParams
-
 
     def addCellParamsSecList(self, label, secListName, somaDist=None, somaDistY=None):
         import numpy as np
@@ -445,15 +693,14 @@ class NetParams(object):
             print('Error adding secList: somaDistY should be a list with 2 elements')
             return
 
-
         secList = []
         for secName, sec in cellRule.secs.items():
             if 'pt3d' in sec['geom']:
                 pt3d = sec['geom']['pt3d']
-                midpoint = int(len(pt3d)/2)
-                x,y,z = pt3d[midpoint][0:3]
+                midpoint = int(len(pt3d) / 2)
+                x, y, z = pt3d[midpoint][0:3]
                 if somaDist:
-                    distSec = np.linalg.norm(np.array([x,y,z]))
+                    distSec = np.linalg.norm(np.array([x, y, z]))
                     if distSec >= somaDist[0] and distSec <= somaDist[1]:
                         secList.append(secName)
                 elif somaDistY:
@@ -473,26 +720,26 @@ class NetParams(object):
             print('Error swapping 3d pts: netParams.cellParams does not contain %s' % (label))
             return
 
-        if origIndex not in list(range(4)) and targetIndex not in list(range(4)): # check valid indices (x,y,z,d)
+        if origIndex not in list(range(4)) and targetIndex not in list(range(4)):  # check valid indices (x,y,z,d)
             print('Error swapping 3d pts: indices should be 0, 1, 2 or 3 (x,y,z,d)')
             return
 
         for sec in list(cellRule.secs.values()):
             if 'pt3d' in sec['geom']:
                 pt3d = sec['geom']['pt3d']
-                for i,pt in enumerate(pt3d): pt3d[i] = list(pt)
+                for i, pt in enumerate(pt3d):
+                    pt3d[i] = list(pt)
                 for pt in pt3d:
                     tmp = float(pt[origIndex])
                     pt[origIndex] = float(pt[targetIndex])
                     pt[targetIndex] = tmp
 
-
     def renameCellParamsSec(self, label, oldSec, newSec):
         self.cellParams.rename(oldSec, newSec, (label, 'secs'))
 
-
     def addCellParamsWeightNorm(self, label, fileName, threshold=1000):
         import pickle, sys
+
         if label in self.cellParams:
             cellRule = self.cellParams[label]
         else:
@@ -506,16 +753,15 @@ class NetParams(object):
                 weightNorm = pickle.load(fileObj, encoding='latin1')
 
         try:
-            somaSec = next((k for k in list(weightNorm.keys()) if k.startswith('soma')),None)
+            somaSec = next((k for k in list(weightNorm.keys()) if k.startswith('soma')), None)
             somaWeightNorm = weightNorm[somaSec][0]
         except:
             print('Error setting weightNorm: no soma section available to set threshold')
             return
         for sec, wnorm in weightNorm.items():
             if sec in cellRule['secs']:
-                wnorm = [min(wn,threshold*somaWeightNorm) for wn in wnorm]
+                wnorm = [min(wn, threshold * somaWeightNorm) for wn in wnorm]
                 cellRule['secs'][sec]['weightNorm'] = wnorm  # add weight normalization factors for each section
-
 
     def addCellParamsTemplate(self, label, conds={}, template=None):
         if label in self.cellParams:
@@ -537,7 +783,7 @@ class NetParams(object):
             secs['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}
             secs['dend']['mechs']['pas'] = {'g': 0.001, 'e': -70}
 
-        self.cellParams[label] = ({'conds': conds, 'secs': secs})
+        self.cellParams[label] = {'conds': conds, 'secs': secs}
 
     def saveCellParamsRule(self, label, fileName):
         import pickle, json, os
@@ -555,8 +801,8 @@ class NetParams(object):
                 pickle.dump(cellRule, fileObj)
         elif ext == 'json':
             from .. import sim
-            sim.saveJSON(fileName, cellRule)
 
+            sim.saveJSON(fileName, cellRule)
 
     def loadCellParamsRule(self, label, fileName):
         import pickle, json, os, sys
@@ -579,6 +825,26 @@ class NetParams(object):
 
     def saveCellParams(self, label, fileName):
         return self.saveCellParamsRule(label, fileName)
+
     def todict(self):
         from ..sim import replaceDictODict
+
         return replaceDictODict(self.__dict__)
+
+    def setNestedParam(self, paramLabel, paramVal):
+        if isinstance(paramLabel, list):
+            container = self
+            for ip in range(len(paramLabel) - 1):
+                if hasattr(container, paramLabel[ip]):
+                    container = getattr(container, paramLabel[ip])
+                else:
+                    container = container[paramLabel[ip]]
+            container[paramLabel[-1]] = paramVal
+        elif isinstance(paramLabel, basestring):
+            setattr(self, paramLabel, paramVal)  # set simConfig params
+
+    def setCfgMapping(self, cfg):
+        if hasattr(self, 'mapping'):
+            for k, v in self.mapping.items():
+                if getattr(cfg, k, None):
+                    self.setNestedParam(v, getattr(cfg, k))

@@ -20,7 +20,7 @@ class TestCellParams():
         cellRule['secs']['soma'] = {'geom': {}, 'mechs': {}}
         cellRule['secs']['soma']['geom'] = {'diam': 'x', 'nseg': 'int(discunif(3,3))'}
         cellRule['secs']['soma']['mechs']['hh'] = {'gnabar': 'xnorm', 'gkbar': 'ynorm', 'gl': 'znorm'}
-        # cellRule['secs']['soma']['mechs']['pas'] = {'g': 'dist_path', 'e': 'dist_cartesian'}
+        # cellRule['secs']['soma']['mechs']['pas'] = {'g': 'dist_path', 'e': 'dist_euclidean'}
 
         cellRule['secs']['dend'] = {'geom': {}, 'topol': {'parentSec': 'soma', 'parentX': 1.0, 'childX': 0}, 'pointps': {}}
         cellRule['secs']['dend']['pointps']['intFire'] = {'mod': 'IntFire1', 'tau': 'y'}

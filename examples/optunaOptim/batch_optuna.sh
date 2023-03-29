@@ -6,6 +6,6 @@ echo $numproc
 for (( i=1; i<=$numproc; i++ ))
     do
         echo "Running batch process $i ..."
-        screen -Ldm python3 batch.py @# Run the models
+        screen -Ldm python3 src/batch.py @# Run the models
         sleep 1
     done

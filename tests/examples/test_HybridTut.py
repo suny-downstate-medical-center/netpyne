@@ -7,11 +7,11 @@ if '-nogui' not in sys.argv:
 
 from .utils import pkg_setup
 
-@pytest.mark.package_data(['examples/HybridTut/', '.'])
+@pytest.mark.package_data(['examples/HybridTut/', 'mod'])
 class TestHybridTut:
     def test_run(self, pkg_setup):
-        import HybridTut_run
+        import src.init
         sim.checkOutput('HybridTut')
 
     def test_export(self, pkg_setup):
-        import HybridTut_export
+        import src.export

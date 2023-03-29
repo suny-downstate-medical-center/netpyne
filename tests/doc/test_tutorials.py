@@ -5,7 +5,7 @@ import pytest
 if "-nogui" not in sys.argv:
     sys.argv.append("-nogui")
 sys.path.append("doc/source/code/")
-sys.path.append("examples/HHTut/")
+sys.path.append("examples/HHTut/src")
 from multiprocessing import Process
 from netpyne import sim
 

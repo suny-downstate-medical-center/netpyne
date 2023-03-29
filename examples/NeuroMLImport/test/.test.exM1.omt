@@ -1,4 +1,4 @@
 # Script for running automated tests on OSB using Travis-CI, see https://github.com/OpenSourceBrain/osb-model-validation 
 
-target: ../../M1/M1_run.py
+target: test_M1.py
 engine: NetPyNE

@@ -64,7 +64,7 @@ class TestEvolCell:
             return fitness
 
         # create Batch object with paramaters to modify, and specifying files to use
-        b = Batch(params=params, initCfg=initCfg)
+        b = Batch(cfgFile='src/cfg.py', netParamsFile='src/netParams.py', params=params, initCfg=initCfg)
 
         # Set output folder, grid method (all param combinations), and run configuration
         b.batchLabel = "ITS4_evol"

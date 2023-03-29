@@ -9,7 +9,7 @@ For a more detailed overview of NetPyNE see:
 
 - Our `NetPyNE article <https://elifesciences.org/articles/44494>`_ in the journal `eLife <https://elifesciences.org/>`_
 
-- Our `NetPyNE tutorial <https://yale.zoom.us/rec/play/tMAkcrr8-jo3HNCU4wSDUaR8W427LaKs1HAW_aUPzkmzUSJRO1WnY7cXZep77NjtCLWqwFVD6Ya8aNTL?continueMode=true&_x_zm_rtaid=J63YcHJGT9CUEjhkklHizQ.1598553844678.e87215956b2d8a50ef33ec4d6479b3b2&_x_zm_rhtaid=388>`_ from `CNS*2020 <https://www.cnsorg.org/cns-2020>`_ (presentation slides `here <http://bit.ly/cns20-netpyne>`_)
+- Our `NetPyNE tutorial <http://dura-bernal.org/netpyne-online-tutorial-2022>`_ from `CNS*2022 <https://www.cnsorg.org/cns-2022>`_
 
 |
 
@@ -133,9 +133,12 @@ About NetPyNE
 
 - Dura-Bernal S, Suter BA, Neymotin SA, Quintana AJ, Gleeson P, Shepherd GMG, Lytton WW. **Normalized cortical depth (NCD) as a primary coordinate system for cell connectivity in cortex: experiment and model.** *Society for Neuroscience (SFN), 2015.*
 
-
 Make use of NetPyNE
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Terra, H.d.C.B., Borges, F.d.S., Moraes, M.F.D., Cota, V.R. **Implementation of Intra and Extracellular Nonperiodic Scale-Free Stimulation in silico for the NEURON Simulator.** Communications in Computer and Information Science, vol 1519. Springer, Cham. *2021*. doi:`<https://doi.org/10.1007/978-3-031-08443-0_8>`_
+
+- Ying Y, Yubo F, Songan H, Qingyun W. **Optogenetic stimulation of primary motor cortex regulates beta oscillations in the basal ganglia: A Computational study** Communications in Nonlinear Science and Numerical Simulation, vol 117. *2023*. doi:`<https://doi.org/10.1016/j.cnsns.2022.106918>`_
 
 - Hasegan D, Deible M, Earl C, D’Onofrio D, Hazan H, Anwar H, Neymotin SA. **Multi-timescale biological learning algorithms train spiking neuronal network motor control** bioRxiv 2021.11.20.469405, *2021*. doi: `<https://doi.org/10.1101/2021.11.20.469405>`_.
 
@@ -169,6 +172,9 @@ Make use of NetPyNE
 
 - Dura-Bernal S, Neymotin SA, Suter BA, Shepherd GMG, Lytton WW **Long-range inputs and H-current regulate different modes of operation in a multiscale model of mouse M1 microcircuits**, bioRxiv 201707, *2018*. doi: `<https://www.biorxiv.org/content/10.1101/201707v3>`_.
 
+Dissertations:
+
+- Volk, V. **Integrated Neuromusculoskeletal Modeling Within a Finite Element Framework to Investigate Mechanisms and Treatment of Neurodegenerative Conditions**, *Boise State University, 2022*.
 
 Conference abstracts:
 
@@ -183,7 +189,6 @@ Conference abstracts:
 - Romaro C, Araujo Najman F, Dura-Bernal S, Roque AC. **Implementation of the Potjans-Diesmann cortical microcircuit model in NetPyNE/NEURON with rescaling option.** *Computational Neuroscience (CNS), 2018*.
 
 - Rodriguez F. **Dentate gyrus network model.** *Computational Neuroscience (CNS), 2018*.
-
 
 
 Cite NetPyNE

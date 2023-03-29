@@ -9,6 +9,7 @@ from __future__ import division
 from __future__ import absolute_import
 
 from future import standard_library
+
 standard_library.install_aliases()
 from netpyne import __gui__
 
@@ -22,7 +23,19 @@ if __gui__:
     from matplotlib import mlab
     from matplotlib_scalebar import scalebar
 from numbers import Number
-from .utils import colorList, exception, getSpktSpkid, _showFigure, _saveFigData, getCellsInclude, syncMeasure, _smooth1d, _guiTheme, _guiBlack, _guiWhite
+from .utils import (
+    colorList,
+    exception,
+    getSpktSpkid,
+    _showFigure,
+    _saveFigData,
+    getCellsInclude,
+    syncMeasure,
+    _smooth1d,
+    _guiTheme,
+    _guiBlack,
+    _guiWhite,
+)
 
 import numpy as np
 import pandas as pd
@@ -37,6 +50,7 @@ def applyTheme(kwargs):
     theme = None
     if 'theme' in kwargs:
         from bokeh.themes import Theme
+
         if kwargs['theme'] != 'default':
             if kwargs['theme'] == 'gui':
                 theme = Theme(json=_guiTheme)
@@ -51,13 +65,28 @@ def applyTheme(kwargs):
     return theme
 
 
-
-
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive raster
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gid', orderInverse=False, popRates=False, spikeHist=False, spikeHistBin=5, syncLines=False, marker='circle', markerSize=3, popColors=None, saveData=None, saveFig=None, showFig=False, **kwargs):
+def iplotRaster(
+    include=['allCells'],
+    timeRange=None,
+    maxSpikes=1e8,
+    orderBy='gid',
+    orderInverse=False,
+    popRates=False,
+    spikeHist=False,
+    spikeHistBin=5,
+    syncLines=False,
+    marker='circle',
+    markerSize=3,
+    popColors=None,
+    saveData=None,
+    saveFig=None,
+    showFig=False,
+    **kwargs
+):
     """
     Function for/to <short description of `netpyne.analysis.interactive.iplotRaster`>
 
@@ -159,8 +188,7 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
     Returns
     -------
 
-
-"""
+    """
 
     from .. import sim
     from bokeh.plotting import figure, show
@@ -175,10 +203,12 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
 
     theme = applyTheme(kwargs)
 
-    TOOLS = 'hover,save,pan,box_zoom,reset,wheel_zoom',
+    TOOLS = ('hover,save,pan,box_zoom,reset,wheel_zoom',)
 
     if not 'palette' in kwargs:
-        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+        colors = [
+            RGB(*[round(f * 255) for f in color]) for color in colorList
+        ]  # bokeh only handles integer rgb values from 0-255
     else:
         colors = kwargs['palette']
 
@@ -195,7 +225,9 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
 
     keep = ['pop', 'gid', 'conns']
 
-    if isinstance(orderBy, str) and orderBy not in cells[0]['tags']:  # if orderBy property doesn't exist or is not numeric, use gid
+    if (
+        isinstance(orderBy, str) and orderBy not in cells[0]['tags']
+    ):  # if orderBy property doesn't exist or is not numeric, use gid
         orderBy = 'gid'
     elif isinstance(orderBy, str) and not isinstance(cells[0]['tags'][orderBy], Number):
         orderBy = 'gid'
@@ -207,17 +239,24 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
 
     df = df[keep]
 
-    popLabels = [pop for pop in sim.net.allPops if pop in df['pop'].unique()] #preserves original ordering
-    if netStimLabels: popLabels.append('NetStims')
-    popColorsTmp = {popLabel: colors[ipop%len(colors)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
-    if popColorDict: popColorsTmp.update(popColorDict)
+    popLabels = [pop for pop in sim.net.allPops if pop in df['pop'].unique()]  # preserves original ordering
+    if netStimLabels:
+        popLabels.append('NetStims')
+    popColorsTmp = {
+        popLabel: colors[ipop % len(colors)] for ipop, popLabel in enumerate(popLabels)
+    }  # dict with color for each pop
+    if popColorDict:
+        popColorsTmp.update(popColorDict)
     popColorDict = popColorsTmp
     if len(cellGids) > 0:
         gidColors = {cell['gid']: popColorDict[cell['tags']['pop']] for cell in cells}  # dict with color for each gid
         try:
-            sel, spkts, spkgids = getSpktSpkid(cellGids=[] if include == ['allCells'] else cellGids, timeRange=timeRange)
+            sel, spkts, spkgids = getSpktSpkid(
+                cellGids=[] if include == ['allCells'] else cellGids, timeRange=timeRange
+            )
         except:
             import sys
+
             print((sys.exc_info()))
             spkgids, spkts = [], []
             sel = pd.DataFrame(columns=['spkt', 'spkid'])
@@ -228,7 +267,7 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
 
     # Order by
     if len(df) > 0:
-        ylabelText = 'Cells (ordered by %s)'%(orderBy)
+        ylabelText = 'Cells (ordered by %s)' % (orderBy)
         df = df.sort_values(by=orderBy)
         sel['spkind'] = sel['spkid'].apply(df.index.get_loc)
     else:
@@ -239,26 +278,31 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
     numCellSpks = len(sel)
     numNetStims = 0
     for netStimLabel in netStimLabels:
-        netStimSpks = [spk for cell,stims in sim.allSimData['stims'].items() \
-                       for stimLabel,stimSpks in stims.items() for spk in stimSpks if stimLabel == netStimLabel]
+        netStimSpks = [
+            spk
+            for cell, stims in sim.allSimData['stims'].items()
+            for stimLabel, stimSpks in stims.items()
+            for spk in stimSpks
+            if stimLabel == netStimLabel
+        ]
         if len(netStimSpks) > 0:
             # lastInd = max(spkinds) if len(spkinds)>0 else 0
             lastInd = sel['spkind'].max() if len(sel['spkind']) > 0 else 0
             spktsNew = netStimSpks
-            spkindsNew = [lastInd+1+i for i in range(len(netStimSpks))]
+            spkindsNew = [lastInd + 1 + i for i in range(len(netStimSpks))]
             ns = pd.DataFrame(list(zip(spktsNew, spkindsNew)), columns=['spkt', 'spkind'])
             ns['spkgidColor'] = popColorDict['netStims']
             sel = pd.concat([sel, ns])
             numNetStims += 1
         else:
             pass
-            #print netStimLabel+' produced no spikes'
-    if len(cellGids)>0 and numNetStims:
+            # print netStimLabel+' produced no spikes'
+    if len(cellGids) > 0 and numNetStims:
         ylabelText = ylabelText + ' and NetStims (at the end)'
     elif numNetStims:
         ylabelText = ylabelText + 'NetStims'
 
-    if numCellSpks+numNetStims == 0:
+    if numCellSpks + numNetStims == 0:
         print('No spikes available to plot raster')
         return None
 
@@ -271,12 +315,12 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
         sel = sel.query('spkt >= @timeRange[0] and spkt <= @timeRange[1]')
 
     # Limit to max spikes
-    if (len(sel)>maxSpikes):
-        print(('  Showing only the first %i out of %i spikes' % (maxSpikes, len(sel)))) # Limit num of spikes
-        if numNetStims: # sort first if have netStims
+    if len(sel) > maxSpikes:
+        print(('  Showing only the first %i out of %i spikes' % (maxSpikes, len(sel))))  # Limit num of spikes
+        if numNetStims:  # sort first if have netStims
             sel = sel.sort_values(by='spkt')
         sel = sel.iloc[:maxSpikes]
-        timeRange[1] =  sel['spkt'].max()
+        timeRange[1] = sel['spkt'].max()
 
     # Plot stats
     gidPops = df['pop'].tolist()
@@ -284,73 +328,101 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
     totalSpikes = len(sel)
     totalConnections = sum([len(conns) for conns in df['conns']])
     numCells = len(cells)
-    firingRate = float(totalSpikes)/(numCells+numNetStims)/(timeRange[1]-timeRange[0])*1e3 if totalSpikes>0 else 0 # Calculate firing rate
-    connsPerCell = totalConnections/float(numCells) if numCells>0 else 0 # Calculate the number of connections per cell
+    firingRate = (
+        float(totalSpikes) / (numCells + numNetStims) / (timeRange[1] - timeRange[0]) * 1e3 if totalSpikes > 0 else 0
+    )  # Calculate firing rate
+    connsPerCell = (
+        totalConnections / float(numCells) if numCells > 0 else 0
+    )  # Calculate the number of connections per cell
 
     if popRates:
         avgRates = {}
-        tsecs = (timeRange[1]-timeRange[0])/1e3
+        tsecs = (timeRange[1] - timeRange[0]) / 1e3
         for i, (pop, popNum) in enumerate(zip(popLabels, popNumCells)):
             if numCells > 0 and pop != 'NetStims':
                 if numCellSpks == 0:
                     avgRates[pop] = 0
                 else:
-                    avgRates[pop] = len([spkid for spkid in sel['spkind'].iloc[:numCellSpks-1] if df['pop'].iloc[int(spkid)]==pop])/popNum/tsecs
+                    avgRates[pop] = (
+                        len(
+                            [
+                                spkid
+                                for spkid in sel['spkind'].iloc[: numCellSpks - 1]
+                                if df['pop'].iloc[int(spkid)] == pop
+                            ]
+                        )
+                        / popNum
+                        / tsecs
+                    )
         if numNetStims:
             popNumCells[-1] = numNetStims
-            avgRates['NetStims'] = len([spkid for spkid in sel['spkind'].iloc[numCellSpks:]])/numNetStims/tsecs
+            avgRates['NetStims'] = len([spkid for spkid in sel['spkind'].iloc[numCellSpks:]]) / numNetStims / tsecs
 
     if orderInverse:
-        y_range=(sel['spkind'].max(), sel['spkind'].min())
+        y_range = (sel['spkind'].max(), sel['spkind'].min())
     else:
-        y_range=(sel['spkind'].min(), sel['spkind'].max())
+        y_range = (sel['spkind'].min(), sel['spkind'].max())
 
     fig = figure(
         title="Raster Plot",
         tools=TOOLS,
-        active_drag = "auto",
-        active_scroll = "auto",
+        active_drag="auto",
+        active_scroll="auto",
         tooltips=[('Cell GID', '@y'), ('Spike time', '@x')],
         x_axis_label="Time (ms)",
         y_axis_label=ylabelText,
         x_range=(timeRange[0], timeRange[1]),
         y_range=y_range,
-        toolbar_location='above')
+        toolbar_location='above',
+    )
 
     t = Title()
     if syncLines:
         for spkt in sel['spkt'].tolist():
-            fig.line((spkt, spkt), (0, len(cells)+numNetStims), color='red', line_width=2)
+            fig.line((spkt, spkt), (0, len(cells) + numNetStims), color='red', line_width=2)
         print(syncMeasure())
-        t.text = 'cells=%i  syns/cell=%0.1f  rate=%0.1f Hz  sync=%0.2f' % (numCells,connsPerCell,firingRate,syncMeasure())
+        t.text = 'cells=%i  syns/cell=%0.1f  rate=%0.1f Hz  sync=%0.2f' % (
+            numCells,
+            connsPerCell,
+            firingRate,
+            syncMeasure(),
+        )
     else:
-        t.text = 'cells=%i  syns/cell=%0.1f  rate=%0.1f Hz' % (numCells,connsPerCell,firingRate)
+        t.text = 'cells=%i  syns/cell=%0.1f  rate=%0.1f Hz' % (numCells, connsPerCell, firingRate)
     fig.title = t
 
     if spikeHist:
-        histo = np.histogram(sel['spkt'].tolist(), bins = np.arange(timeRange[0], timeRange[1], spikeHistBin))
-        histoT = histo[1][:-1]+spikeHistBin/2
+        histo = np.histogram(sel['spkt'].tolist(), bins=np.arange(timeRange[0], timeRange[1], spikeHistBin))
+        histoT = histo[1][:-1] + spikeHistBin / 2
         histoCount = histo[0]
 
     legendItems = []
     grouped = sel.groupby('pop')
     for name, group in grouped:
         if popRates:
-            label = name + ' (%.3g Hz)'%(avgRates[name])
+            label = name + ' (%.3g Hz)' % (avgRates[name])
         else:
             label = name
 
-        fig.scatter(group['spkt'], group['spkind'], color=group['spkgidColor'], marker=marker, size=markerSize, legend_label=label)
-        #legendItems.append((label, [s]))
+        fig.scatter(
+            group['spkt'],
+            group['spkind'],
+            color=group['spkgidColor'],
+            marker=marker,
+            size=markerSize,
+            legend_label=label,
+        )
+        # legendItems.append((label, [s]))
 
     if spikeHist:
         from bokeh.models import LinearAxis, Range1d
-        fig.extra_y_ranges={'spikeHist': Range1d(start=min(histoCount), end=max(histoCount))}
-        fig.add_layout(LinearAxis(y_range_name='spikeHist', axis_label='Spike count'), 'right')
-        fig.line (histoT, histoCount, line_width=2, y_range_name='spikeHist')
 
-    legend = Legend(items=legendItems, location=(10,0))
-    legend.click_policy='hide'
+        fig.extra_y_ranges = {'spikeHist': Range1d(start=min(histoCount), end=max(histoCount))}
+        fig.add_layout(LinearAxis(y_range_name='spikeHist', axis_label='Spike count'), 'right')
+        fig.line(histoT, histoCount, line_width=2, y_range_name='spikeHist')
+
+    legend = Legend(items=legendItems, location=(10, 0))
+    legend.click_policy = 'hide'
     fig.add_layout(legend, 'right')
 
     plot_layout = layout([fig], sizing_mode='stretch_both')
@@ -358,9 +430,21 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
 
     # save figure data
     if saveData:
-        figData = {'spkTimes': sel['spkt'].tolist(), 'spkInds': sel['spkind'].tolist(), 'spkColors': sel['spkgidColor'].tolist(), 'cellGids': cellGids, 'sortedGids': df.index.tolist(), 'numNetStims': numNetStims,
-                   'include': include, 'timeRange': timeRange, 'maxSpikes': maxSpikes, 'orderBy': orderBy, 'orderInverse': orderInverse, 'spikeHist': spikeHist,
-                   'syncLines': syncLines}
+        figData = {
+            'spkTimes': sel['spkt'].tolist(),
+            'spkInds': sel['spkind'].tolist(),
+            'spkColors': sel['spkgidColor'].tolist(),
+            'cellGids': cellGids,
+            'sortedGids': df.index.tolist(),
+            'numNetStims': numNetStims,
+            'include': include,
+            'timeRange': timeRange,
+            'maxSpikes': maxSpikes,
+            'orderBy': orderBy,
+            'orderInverse': orderInverse,
+            'spikeHist': spikeHist,
+            'syncLines': syncLines,
+        }
         _saveFigData(figData, saveData, 'raster')
 
     # save figure
@@ -373,7 +457,8 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
         file.write(html)
         file.close()
 
-    if showFig: show(plot_layout)
+    if showFig:
+        show(plot_layout)
 
     return html, {'include': include, 'spkts': spkts, 'spkinds': sel['spkind'].tolist(), 'timeRange': timeRange}
 
@@ -382,7 +467,7 @@ def iplotRaster(include=['allCells'], timeRange=None, maxSpikes=1e8, orderBy='gi
 ## Plot interactive dipole
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=None, t=None,  showFig=False, **kwargs):
+def iplotDipole(expData={'label': 'Experiment', 'x': [], 'y': []}, dpl=None, t=None, showFig=False, **kwargs):
     """
     Function for/to <short description of `netpyne.analysis.interactive.iplotDipole`>
 
@@ -401,8 +486,7 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=None, t=Non
     kwargs : <type>
         <Short description of kwargs>
         **Default:** *required*
-
-"""
+    """
 
     from .. import sim
     from bokeh.plotting import figure, show
@@ -415,10 +499,18 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=None, t=Non
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
-    fig = figure(title="Dipole Plot", tools=TOOLS, toolbar_location='above', x_axis_label="Time (ms)", y_axis_label='Dipole (nAM x 3000)')
+    fig = figure(
+        title="Dipole Plot",
+        tools=TOOLS,
+        toolbar_location='above',
+        x_axis_label="Time (ms)",
+        y_axis_label='Dipole (nAM x 3000)',
+    )
 
     if not 'palette' in kwargs:
-        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+        colors = [
+            RGB(*[round(f * 255) for f in color]) for color in colorList
+        ]  # bokeh only handles integer rgb values from 0-255
     else:
         colors = kwargs['palette']
 
@@ -456,13 +548,13 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=None, t=Non
             m = 3.4770508e-3
             b = -51.231085
             # these values were fit over the range [750., 5000]
-            t1 = 750.
+            t1 = 750.0
             m1 = 1.01e-4
             b1 = -48.412078
 
             # piecewise normalization
-            dpl['L5'][t <= 37.] -= dpl_offset['L5']
-            dpl['L5'][(t > 37.) & (t < t1)] -= N_pyr * (m * t[(t > 37.) & (t < t1)] + b)
+            dpl['L5'][t <= 37.0] -= dpl_offset['L5']
+            dpl['L5'][(t > 37.0) & (t < t1)] -= N_pyr * (m * t[(t > 37.0) & (t < t1)] + b)
             dpl['L5'][t >= t1] -= N_pyr * (m1 * t[t >= t1] + b1)
 
         # recalculate the aggregate dipole based on the baseline normalized ones
@@ -474,9 +566,10 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=None, t=Non
     def hammfilt(x, winsz):
         from pylab import convolve
         from numpy import hamming
+
         win = hamming(winsz)
         win /= sum(win)
-        return convolve(x,win,'same')
+        return convolve(x, win, 'same')
 
     # baseline renormalize
     if dpl:
@@ -484,27 +577,26 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=None, t=Non
     else:
         dpl = baseline_renormalize()
 
-    if t is not None and len(t)>0:
-        t=np.array(t)
+    if t is not None and len(t) > 0:
+        t = np.array(t)
     else:
-        t=sim.simData['t']
+        t = sim.simData['t']
 
-        
     # convert units from fAm to nAm, rescale and smooth
     for key in dpl.keys():
         dpl[key] *= 1e-6 * sim.cfg.hnn_params['dipole_scalefctr']
 
         if sim.cfg.hnn_params['dipole_smooth_win'] > 0:
-            dpl[key] = hammfilt(dpl[key], sim.cfg.hnn_params['dipole_smooth_win']/sim.cfg.dt)
+            dpl[key] = hammfilt(dpl[key], sim.cfg.hnn_params['dipole_smooth_win'] / sim.cfg.dt)
 
         # Set index 0 to 0
         dpl[key][0] = 0.0
 
     # plot exp data
-    #fig.line(expData['x'], expData['y'], color='black', legend=expData['label'])
+    # fig.line(expData['x'], expData['y'], color='black', legend=expData['label'])
 
     # plot recorded dipole data
-    for i,(k,v) in enumerate(dpl.items()):
+    for i, (k, v) in enumerate(dpl.items()):
         fig.line(t, v, legend_label=k, color=colors[i], line_width=2.0)
 
     fig.legend.location = "top_right"
@@ -523,7 +615,16 @@ def iplotDipole(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=None, t=Non
 ## Plot interactive dipole Spectrogram
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=None, minFreq = 1, maxFreq = 80, stepFreq = 1, norm = True, showFig=False, **kwargs):
+def iplotDipoleSpectrogram(
+    expData={'label': 'Experiment', 'x': [], 'y': []},
+    dpl=None,
+    minFreq=1,
+    maxFreq=80,
+    stepFreq=1,
+    norm=True,
+    showFig=False,
+    **kwargs
+):
     """
     Function for/to <short description of `netpyne.analysis.interactive.iplotDipoleSpectrogram`>
 
@@ -562,8 +663,7 @@ def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=
     kwargs : <type>
         <Short description of kwargs>
         **Default:** *required*
-
-"""
+    """
     from .. import sim
     from bokeh.plotting import figure, show
     from bokeh.models import BasicTicker, ColorBar, ColumnDataSource, LinearColorMapper, PrintfTickFormatter
@@ -592,8 +692,7 @@ def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=
         }
 
         # L2 dipole offset can be roughly baseline shifted over the entire range of t
-        dpl = {'L2': np.array(sim.simData['dipole']['L2']),
-               'L5': np.array(sim.simData['dipole']['L5'])}
+        dpl = {'L2': np.array(sim.simData['dipole']['L2']), 'L5': np.array(sim.simData['dipole']['L5'])}
         dpl['L2'] -= dpl_offset['L2']
 
         # L5 dipole offset should be different for interval [50., 500.] and then it can be offset
@@ -603,15 +702,15 @@ def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=
         m = 3.4770508e-3
         b = -51.231085
         # these values were fit over the range [750., 5000]
-        t1 = 750.
+        t1 = 750.0
         m1 = 1.01e-4
         b1 = -48.412078
 
         t = sim.simData['t']
 
         # piecewise normalization
-        dpl['L5'][t <= 37.] -= dpl_offset['L5']
-        dpl['L5'][(t > 37.) & (t < t1)] -= N_pyr * (m * t[(t > 37.) & (t < t1)] + b)
+        dpl['L5'][t <= 37.0] -= dpl_offset['L5']
+        dpl['L5'][(t > 37.0) & (t < t1)] -= N_pyr * (m * t[(t > 37.0) & (t < t1)] + b)
         dpl['L5'][t >= t1] -= N_pyr * (m1 * t[t >= t1] + b1)
         # recalculate the aggregate dipole based on the baseline normalized ones
         dpl['agg'] = dpl['L2'] + dpl['L5']
@@ -622,9 +721,10 @@ def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=
     def hammfilt(x, winsz):
         from pylab import convolve
         from numpy import hamming
+
         win = hamming(winsz)
         win /= sum(win)
-        return convolve(x,win,'same')
+        return convolve(x, win, 'same')
 
     if not dpl:
         # baseline renormalize
@@ -635,14 +735,13 @@ def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=
             dpl[key] *= 1e-6 * sim.cfg.hnn_params['dipole_scalefctr']
 
             if sim.cfg.hnn_params['dipole_smooth_win'] > 0:
-                dpl[key] = hammfilt(dpl[key], sim.cfg.hnn_params['dipole_smooth_win']/sim.cfg.dt)
+                dpl[key] = hammfilt(dpl[key], sim.cfg.hnn_params['dipole_smooth_win'] / sim.cfg.dt)
 
             # Set index 0 to 0
             dpl[key][0] = 0.0
 
-
     # plot recorded dipole data
-    #fig.line(sim.simData['t'], dpl['L2']+dpl['L5'], color='blue', legend="Aggregate", line_width=2.0)
+    # fig.line(sim.simData['t'], dpl['L2']+dpl['L5'], color='blue', legend="Aggregate", line_width=2.0)
 
     # plot Morlet spectrogram
     from ..support.morlet import MorletSpec, index2ms
@@ -654,11 +753,10 @@ def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=
     t_spec = np.linspace(0, index2ms(len(dplsum), fs), len(dplsum))
     spec = MorletSpec(dplsum, fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq)
 
-    f = np.array(range(minFreq, maxFreq+1, stepFreq))  # only used as output for user
+    f = np.array(range(minFreq, maxFreq + 1, stepFreq))  # only used as output for user
 
     vmin = np.array(spec.TFR).min()
     vmax = np.array(spec.TFR).max()
-
 
     T = [0, sim.cfg.duration]
     F = spec.f
@@ -670,17 +768,23 @@ def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=
         S = spec.TFR
         vc = [vmin, vmax]
 
-
     # old code
-    fig = plt.imshow(S, extent=(np.amin(T), np.amax(T), np.amin(F), np.amax(F)), origin='lower', interpolation='None', aspect='auto', vmin=vc[0], vmax=vc[1],
-    cmap=plt.get_cmap('jet'))  # viridis
+    fig = plt.imshow(
+        S,
+        extent=(np.amin(T), np.amax(T), np.amin(F), np.amax(F)),
+        origin='lower',
+        interpolation='None',
+        aspect='auto',
+        vmin=vc[0],
+        vmax=vc[1],
+        cmap=plt.get_cmap('jet'),
+    )  # viridis
     plt.colorbar(label='Power')
     plt.gca().invert_yaxis()
     plt.ylabel('Hz')
     plt.tight_layout()
     if showFig:
         plt.show()
-
 
     # TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
@@ -699,18 +803,25 @@ def iplotDipoleSpectrogram(expData={'label': 'Experiment', 'x':[], 'y':[]}, dpl=
     # plot_layout = layout(fig, sizing_mode='stretch_both')
     # html = file_html(plot_layout, CDN, title="Dipole Spectrogram Plot")
 
-
     # if showFig:
     #     show(fig)
 
-    return fig #html
+    return fig  # html
 
 
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive dipole Spectrogram
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1, maxFreq = 80, stepFreq = 1, norm = True, showFig=False, **kwargs):
+def iplotDipolePSD(
+    expData={'label': 'Experiment', 'x': [], 'y': []},
+    minFreq=1,
+    maxFreq=80,
+    stepFreq=1,
+    norm=True,
+    showFig=False,
+    **kwargs
+):
     """
     Function for/to <short description of `netpyne.analysis.interactive.iplotDipolePSD`>
 
@@ -749,8 +860,7 @@ def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1,
     kwargs : <type>
         <Short description of kwargs>
         **Default:** *required*
-
-"""
+    """
 
     from .. import sim
     from bokeh.plotting import figure, show
@@ -779,8 +889,7 @@ def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1,
         }
 
         # L2 dipole offset can be roughly baseline shifted over the entire range of t
-        dpl = {'L2': np.array(sim.simData['dipole']['L2']),
-               'L5': np.array(sim.simData['dipole']['L5'])}
+        dpl = {'L2': np.array(sim.simData['dipole']['L2']), 'L5': np.array(sim.simData['dipole']['L5'])}
         dpl['L2'] -= dpl_offset['L2']
 
         # L5 dipole offset should be different for interval [50., 500.] and then it can be offset
@@ -790,15 +899,15 @@ def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1,
         m = 3.4770508e-3
         b = -51.231085
         # these values were fit over the range [750., 5000]
-        t1 = 750.
+        t1 = 750.0
         m1 = 1.01e-4
         b1 = -48.412078
 
         t = sim.simData['t']
 
         # piecewise normalization
-        dpl['L5'][t <= 37.] -= dpl_offset['L5']
-        dpl['L5'][(t > 37.) & (t < t1)] -= N_pyr * (m * t[(t > 37.) & (t < t1)] + b)
+        dpl['L5'][t <= 37.0] -= dpl_offset['L5']
+        dpl['L5'][(t > 37.0) & (t < t1)] -= N_pyr * (m * t[(t > 37.0) & (t < t1)] + b)
         dpl['L5'][t >= t1] -= N_pyr * (m1 * t[t >= t1] + b1)
         # recalculate the aggregate dipole based on the baseline normalized ones
         dpl['agg'] = dpl['L2'] + dpl['L5']
@@ -809,9 +918,10 @@ def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1,
     def hammfilt(x, winsz):
         from pylab import convolve
         from numpy import hamming
+
         win = hamming(winsz)
         win /= sum(win)
-        return convolve(x,win,'same')
+        return convolve(x, win, 'same')
 
     # baseline renormalize
     dpl = baseline_renormalize()
@@ -821,14 +931,13 @@ def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1,
         dpl[key] *= 1e-6 * sim.cfg.hnn_params['dipole_scalefctr']
 
         if sim.cfg.hnn_params['dipole_smooth_win'] > 0:
-            dpl[key] = hammfilt(dpl[key], sim.cfg.hnn_params['dipole_smooth_win']/sim.cfg.dt)
+            dpl[key] = hammfilt(dpl[key], sim.cfg.hnn_params['dipole_smooth_win'] / sim.cfg.dt)
 
         # Set index 0 to 0
         dpl[key][0] = 0.0
 
-
     # plot recorded dipole data
-    #fig.line(sim.simData['t'], dpl['L2']+dpl['L5'], color='blue', legend="Aggregate", line_width=2.0)
+    # fig.line(sim.simData['t'], dpl['L2']+dpl['L5'], color='blue', legend="Aggregate", line_width=2.0)
 
     # plot Morlet spectrogram
     from ..support.morlet import MorletSpec, index2ms
@@ -840,7 +949,7 @@ def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1,
     t_spec = np.linspace(0, index2ms(len(dplsum), fs), len(dplsum))
     spec = MorletSpec(dplsum, fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq)
 
-    f = np.array(range(minFreq, maxFreq+1, stepFreq))  # only used as output for user
+    f = np.array(range(minFreq, maxFreq + 1, stepFreq))  # only used as output for user
 
     vmin = np.array(spec.TFR).min()
     vmax = np.array(spec.TFR).max()
@@ -850,14 +959,20 @@ def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1,
     S = spec.TFR
     vc = [vmin, vmax]
 
-    Fs = int(1000.0/sim.cfg.recordStep)
+    Fs = int(1000.0 / sim.cfg.recordStep)
 
     signal = np.mean(S, 1)
 
     # plot
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
-    fig = figure(title="Dipole PSD Plot", tools=TOOLS, toolbar_location='above', x_axis_label="Frequency (Hz)", y_axis_label='Power')
+    fig = figure(
+        title="Dipole PSD Plot",
+        tools=TOOLS,
+        toolbar_location='above',
+        x_axis_label="Frequency (Hz)",
+        y_axis_label='Power',
+    )
 
     fig.line(F, signal, color='black', line_width=2.0)
 
@@ -877,7 +992,23 @@ def iplotDipolePSD(expData={'label': 'Experiment', 'x':[], 'y':[]}, minFreq = 1,
 ## Plot interactive Spike Histogram
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRange = None, binSize = 5, overlay=True, yaxis = 'rate', popColors=[], norm=False, smooth=None, filtFreq=False, filtOrder=3, saveData = None, saveFig = None, showFig = False, **kwargs):
+def iplotSpikeHist(
+    include=['allCells', 'eachPop'],
+    legendLabels=[],
+    timeRange=None,
+    binSize=5,
+    overlay=True,
+    yaxis='rate',
+    popColors=[],
+    norm=False,
+    smooth=None,
+    filtFreq=False,
+    filtOrder=3,
+    saveData=None,
+    saveFig=None,
+    showFig=False,
+    **kwargs
+):
     """
     Function for/to <short description of `netpyne.analysis.interactive.iplotSpikeHist`>
 
@@ -956,8 +1087,7 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
     kwargs : <type>
         <Short description of kwargs>
         **Default:** *required*
-
-"""
+    """
 
     from .. import sim
     from bokeh.plotting import figure, show
@@ -974,11 +1104,13 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
     if not 'palette' in kwargs:
-        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+        colors = [
+            RGB(*[round(f * 255) for f in color]) for color in colorList
+        ]  # bokeh only handles integer rgb values from 0-255
     else:
         colors = kwargs['palette']
 
-    popColorDict=popColors.copy()
+    popColorDict = popColors.copy()
     if popColorDict:
         for pop, color in popColorDict.items():
             if not isinstance(color, RGB):
@@ -989,7 +1121,8 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
 
     if 'eachPop' in include:
         include.remove('eachPop')
-        for pop in sim.net.allPops: include.append(pop)
+        for pop in sim.net.allPops:
+            include.append(pop)
 
     if yaxis == 'rate':
         if norm:
@@ -1002,9 +1135,17 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
         else:
             yaxisLabel = 'Spike count'
 
-    figs=[]
+    figs = []
     if overlay:
-        figs.append(figure(title="Spike Histogram", tools=TOOLS, x_axis_label="Time (ms)", y_axis_label=yaxisLabel, toolbar_location='above'))
+        figs.append(
+            figure(
+                title="Spike Histogram",
+                tools=TOOLS,
+                x_axis_label="Time (ms)",
+                y_axis_label=yaxisLabel,
+                toolbar_location='above',
+            )
+        )
         fig = figs[0]
         legendItems = []
 
@@ -1022,42 +1163,56 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
         # Select cells to include
         if len(cellGids) > 0:
             try:
-                spkinds,spkts = list(zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]))
+                spkinds, spkts = list(
+                    zip(
+                        *[
+                            (spkgid, spkt)
+                            for spkgid, spkt in zip(sim.allSimData['spkid'], sim.allSimData['spkt'])
+                            if spkgid in cellGids
+                        ]
+                    )
+                )
             except:
-                spkinds,spkts = [],[]
+                spkinds, spkts = [], []
         else:
-            spkinds,spkts = [],[]
+            spkinds, spkts = [], []
 
         spkts, spkinds = list(spkts), list(spkinds)
         numNetStims = 0
         if 'stims' in sim.allSimData:
             for netStimLabel in netStimLabels:
-                netStimSpks = [spk for cell,stims in sim.allSimData['stims'].items() \
-                               for stimLabel,stimSpks in stims.items() for spk in stimSpks if stimLabel == netStimLabel]
+                netStimSpks = [
+                    spk
+                    for cell, stims in sim.allSimData['stims'].items()
+                    for stimLabel, stimSpks in stims.items()
+                    for spk in stimSpks
+                    if stimLabel == netStimLabel
+                ]
                 if len(netStimSpks) > 0:
-                    lastInd = max(spkinds) if len(spkinds)>0 else 0
+                    lastInd = max(spkinds) if len(spkinds) > 0 else 0
                     spktsNew = netStimSpks
-                    spkindsNew = [lastInd+1+i for i in range(len(netStimSpks))]
+                    spkindsNew = [lastInd + 1 + i for i in range(len(netStimSpks))]
                     spkts.extend(spktsNew)
                     spkinds.extend(spkindsNew)
                     numNetStims += 1
 
-        histo = np.histogram(spkts, bins = np.arange(timeRange[0], timeRange[1], binSize))
-        histoT = histo[1][:-1]+binSize/2
+        histo = np.histogram(spkts, bins=np.arange(timeRange[0], timeRange[1], binSize))
+        histoT = histo[1][:-1] + binSize / 2
         histoCount = histo[0]
 
-        if yaxis=='rate':
-            histoCount = histoCount * (1000.0 / binSize) / (len(cellGids)+numNetStims) # convert to firing rate
+        if yaxis == 'rate':
+            histoCount = histoCount * (1000.0 / binSize) / (len(cellGids) + numNetStims)  # convert to firing rate
 
         if filtFreq:
             from scipy import signal
-            fs = 1000.0/binSize
-            nyquist = fs/2.0
-            if isinstance(filtFreq, list): # bandpass
-                Wn = [filtFreq[0]/nyquist, filtFreq[1]/nyquist]
+
+            fs = 1000.0 / binSize
+            nyquist = fs / 2.0
+            if isinstance(filtFreq, list):  # bandpass
+                Wn = [filtFreq[0] / nyquist, filtFreq[1] / nyquist]
                 b, a = signal.butter(filtOrder, Wn, btype='bandpass')
-            elif isinstance(filtFreq, Number): # lowpass
-                Wn = filtFreq/nyquist
+            elif isinstance(filtFreq, Number):  # lowpass
+                Wn = filtFreq / nyquist
                 b, a = signal.butter(filtOrder, Wn)
             histoCount = signal.filtfilt(b, a, histoCount)
 
@@ -1065,48 +1220,65 @@ def iplotSpikeHist(include = ['allCells', 'eachPop'], legendLabels = [], timeRan
             histoCount /= max(histoCount)
 
         if smooth:
-            histoCount = _smooth1d(histoCount, smooth)[:len(histoT)]
+            histoCount = _smooth1d(histoCount, smooth)[: len(histoT)]
 
         if isinstance(subset, list):
-            color = colors[iplot%len(colors)]
+            color = colors[iplot % len(colors)]
         else:
-            color = popColorDict[subset] if subset in popColorDict else colors[iplot%len(colors)]
+            color = popColorDict[subset] if subset in popColorDict else colors[iplot % len(colors)]
 
         label = legendLabels[iplot] if legendLabels else str(subset)
 
         s = fig.line(histoT, histoCount, line_width=2.0, name=str(subset), color=color)
 
         if overlay:
-           legendItems.append((str(label), [s]))
+            legendItems.append((str(label), [s]))
 
     if overlay:
-        legend = Legend(items=legendItems, location=(10,0))
+        legend = Legend(items=legendItems, location=(10, 0))
         fig.add_layout(legend)
-        fig.legend.click_policy='hide'
-        fig.legend.location='top_right'
+        fig.legend.click_policy = 'hide'
+        fig.legend.location = 'top_right'
 
     print(figs)
     plot_layout = gridplot(figs, ncols=1, merge_tools=False, sizing_mode='stretch_both')
     html = file_html(plot_layout, CDN, title="Spike Histogram", theme=theme)
 
-    if showFig: show(plot_layout)
+    if showFig:
+        show(plot_layout)
 
     if saveFig:
         if isinstance(saveFig, str):
             filename = saveFig
         else:
-            filename = sim.cfg.filename+'_'+'ispikeHist.html'
+            filename = sim.cfg.filename + '_' + 'ispikeHist.html'
         file = open(filename, 'w')
         file.write(html)
         file.close()
 
     return html
 
+
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive Rate PSD
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, maxFreq=100, NFFT=256, noverlap=128, smooth=0, overlay=True, ylim=None, popColors={}, saveData=None, saveFig=None, showFig=False, **kwargs):
+def iplotRatePSD(
+    include=['allCells', 'eachPop'],
+    timeRange=None,
+    binSize=5,
+    maxFreq=100,
+    NFFT=256,
+    noverlap=128,
+    smooth=0,
+    overlay=True,
+    ylim=None,
+    popColors={},
+    saveData=None,
+    saveFig=None,
+    showFig=False,
+    **kwargs
+):
     """
     Function for/to <short description of `netpyne.analysis.interactive.iplotRatePSD`>
 
@@ -1180,8 +1352,7 @@ def iplotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, max
     kwargs : <type>
         <Short description of kwargs>
         **Default:** *required*
-
-"""
+    """
 
     from .. import sim
     from bokeh.plotting import figure, show
@@ -1198,7 +1369,9 @@ def iplotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, max
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
     if not 'palette' in kwargs:
-        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+        colors = [
+            RGB(*[round(f * 255) for f in color]) for color in colorList
+        ]  # bokeh only handles integer rgb values from 0-255
     else:
         colors = kwargs['palette']
 
@@ -1210,7 +1383,8 @@ def iplotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, max
     # Replace 'eachPop' with list of pops
     if 'eachPop' in include:
         include.remove('eachPop')
-        for pop in sim.net.allPops: include.append(pop)
+        for pop in sim.net.allPops:
+            include.append(pop)
 
     # time range
     if timeRange is None:
@@ -1223,14 +1397,29 @@ def iplotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, max
 
     figs = []
     if overlay:
-        figs.append(figure(title="PSD Rate Plot", tools=TOOLS, x_axis_label="Frequency (Hz)", y_axis_label="Power Spectral Density (db/Hz)", toolbar_location='above'))
+        figs.append(
+            figure(
+                title="PSD Rate Plot",
+                tools=TOOLS,
+                x_axis_label="Frequency (Hz)",
+                y_axis_label="Power Spectral Density (db/Hz)",
+                toolbar_location='above',
+            )
+        )
         fig = figs[0]
         legendItems = []
 
     # Plot separate line for each entry in include
     for iplot, subset in enumerate(include):
         if not overlay:
-            figs.append(figure(title=str(subset), tools=TOOLS, x_axis_label="Frequency (HZ)", y_axis_label="Power Spectral Density (db/Hz)"))
+            figs.append(
+                figure(
+                    title=str(subset),
+                    tools=TOOLS,
+                    x_axis_label="Frequency (HZ)",
+                    y_axis_label="Power Spectral Density (db/Hz)",
+                )
+            )
             fig = figs[iplot]
 
         cells, cellGids, netStimLabels = getCellsInclude([subset])
@@ -1238,52 +1427,75 @@ def iplotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, max
         # Select cells to include
         if len(cellGids) > 0:
             try:
-                spkinds,spkts = list(zip(*[(spkgid,spkt) for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]))
+                spkinds, spkts = list(
+                    zip(
+                        *[
+                            (spkgid, spkt)
+                            for spkgid, spkt in zip(sim.allSimData['spkid'], sim.allSimData['spkt'])
+                            if spkgid in cellGids
+                        ]
+                    )
+                )
             except:
-                spkinds,spkts = [],[]
+                spkinds, spkts = [], []
         else:
-            spkinds,spkts = [],[]
+            spkinds, spkts = [], []
 
         # Add NetStim spikes
         spkts, spkinds = list(spkts), list(spkinds)
         numNetStims = 0
         if 'stims' in sim.allSimData:
             for netStimLabel in netStimLabels:
-                netStimSpks = [spk for cell,stims in sim.allSimData['stims'].items() \
-                               for stimLabel,stimSpks in stims.items() for spk in stimSpks if stimLabel == netStimLabel]
+                netStimSpks = [
+                    spk
+                    for cell, stims in sim.allSimData['stims'].items()
+                    for stimLabel, stimSpks in stims.items()
+                    for spk in stimSpks
+                    if stimLabel == netStimLabel
+                ]
                 if len(netStimSpks) > 0:
-                    lastInd = max(spkinds) if len(spkinds)>0 else 0
+                    lastInd = max(spkinds) if len(spkinds) > 0 else 0
                     spktsNew = netStimSpks
-                    spkindsNew = [lastInd+1+i for i in range(len(netStimSpks))]
+                    spkindsNew = [lastInd + 1 + i for i in range(len(netStimSpks))]
                     spkts.extend(spktsNew)
                     spkinds.extend(spkindsNew)
                     numNetStims += 1
 
-        histo = np.histogram(spkts, bins = np.arange(timeRange[0], timeRange[1], binSize))
-        histoT = histo[1][:-1]+binSize/2
+        histo = np.histogram(spkts, bins=np.arange(timeRange[0], timeRange[1], binSize))
+        histoT = histo[1][:-1] + binSize / 2
         histoCount = histo[0]
-        histoCount = histoCount * (1000.0 / binSize) / (len(cellGids)+numNetStims) # convert to rates
+        histoCount = histoCount * (1000.0 / binSize) / (len(cellGids) + numNetStims)  # convert to rates
 
         histData.append(histoCount)
 
         Fs = 1000.0 / binSize
-        power = mlab.psd(histoCount, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning,
-                         noverlap=noverlap, pad_to=None, sides='default', scale_by_freq=None)
+        power = mlab.psd(
+            histoCount,
+            Fs=Fs,
+            NFFT=NFFT,
+            detrend=mlab.detrend_none,
+            window=mlab.window_hanning,
+            noverlap=noverlap,
+            pad_to=None,
+            sides='default',
+            scale_by_freq=None,
+        )
 
         if smooth:
-            signal = _smooth1d(10*np.log10(power[0]), smooth)
+            signal = _smooth1d(10 * np.log10(power[0]), smooth)
         else:
-            signal = 10*np.log10(power[0])
+            signal = 10 * np.log10(power[0])
 
         freqs = power[1]
 
-        color = popColorDict[subset] if subset in popColorDict else colors[iplot%len(colors)]
+        color = popColorDict[subset] if subset in popColorDict else colors[iplot % len(colors)]
 
         allFreqs.append(freqs)
         allPower.append(power)
         allSignal.append(signal)
-        s = fig.line(freqs[freqs<maxFreq], signal[freqs<maxFreq], line_width = 2.0, color=color)
-        if overlay: legendItems.append((subset, [s]))
+        s = fig.line(freqs[freqs < maxFreq], signal[freqs < maxFreq], line_width=2.0, color=color)
+        if overlay:
+            legendItems.append((subset, [s]))
 
     if overlay:
         legend = Legend(items=legendItems)
@@ -1294,7 +1506,8 @@ def iplotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, max
 
     html = file_html(plot_layout, CDN, title="PSD Rate Plot", theme=theme)
 
-    if showFig: show(plot_layout)
+    if showFig:
+        show(plot_layout)
 
     if saveFig:
         if isinstance(saveFig, str):
@@ -1307,11 +1520,29 @@ def iplotRatePSD(include=['allCells', 'eachPop'], timeRange=None, binSize=5, max
 
     return html
 
+
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive Traces
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', rerun=False, colors=None, ylim=None, axis='on', fontSize=12, figSize=(10,8), saveData=None, saveFig=None, showFig=True, ylabel=None, linkAxes=False, **kwargs):
+def iplotTraces(
+    include=None,
+    timeRange=None,
+    overlay=False,
+    oneFigPer='cell',
+    rerun=False,
+    colors=None,
+    ylim=None,
+    axis='on',
+    fontSize=12,
+    figSize=(10, 8),
+    saveData=None,
+    saveFig=None,
+    showFig=True,
+    ylabel=None,
+    linkAxes=False,
+    **kwargs
+):
     """
     Function for/to <short description of `netpyne.analysis.interactive.iplotTraces`>
 
@@ -1395,8 +1626,7 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
     kwargs : <type>
         <Short description of kwargs>
         **Default:** *required*
-
-"""
+    """
 
     from .. import sim
     from bokeh.plotting import figure, show
@@ -1414,7 +1644,9 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
     TOOLS = 'save,pan,box_zoom,reset,wheel_zoom'
 
     if not 'palette' in kwargs:
-        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+        colors = [
+            RGB(*[round(f * 255) for f in color]) for color in colorList
+        ]  # bokeh only handles integer rgb values from 0-255
     else:
         colors = kwargs['palette']
 
@@ -1425,7 +1657,7 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
             include = sim.cfg.recordCells
 
     if timeRange is None:
-        timeRange = [0,sim.cfg.duration]
+        timeRange = [0, sim.cfg.duration]
 
     tracesList = list(sim.cfg.recordTraces.keys())
     tracesList.sort()
@@ -1447,13 +1679,14 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
         for gid in cellGids:
 
             if overlay:
-                figs['_gid_' + str(gid)] = figure(title = "Cell {}, Pop {}".format(gid, gidPops[gid]),
-                                                  tools = TOOLS,
-                                                  active_drag = "auto",
-                                                  active_scroll = "auto",
-                                                  x_axis_label="Time (ms)",
-                                                  y_axis_label=y_axis_label
-                                                  )
+                figs['_gid_' + str(gid)] = figure(
+                    title="Cell {}, Pop {}".format(gid, gidPops[gid]),
+                    tools=TOOLS,
+                    active_drag="auto",
+                    active_scroll="auto",
+                    x_axis_label="Time (ms)",
+                    y_axis_label=y_axis_label,
+                )
                 fig = figs['_gid_' + str(gid)]
 
             else:
@@ -1463,28 +1696,32 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
                 if 'cell_{}'.format(gid) in sim.allSimData[trace]:
                     fullTrace = sim.allSimData[trace]['cell_{}'.format(gid)]
                     if isinstance(fullTrace, dict):
-                        data = [fullTrace[key][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)] for key in list(fullTrace.keys())]
+                        data = [
+                            fullTrace[key][int(timeRange[0] / recordStep) : int(timeRange[1] / recordStep)]
+                            for key in list(fullTrace.keys())
+                        ]
                         lenData = len(data[0])
                         data = np.transpose(np.array(data))
                     else:
-                        data = fullTrace[int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)]
+                        data = fullTrace[int(timeRange[0] / recordStep) : int(timeRange[1] / recordStep)]
                         lenData = len(data)
-                    t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
-                    tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
+                    t = np.arange(timeRange[0], timeRange[1] + recordStep, recordStep)
+                    tracesData.append({'t': t, 'cell_' + str(gid) + '_' + trace: data})
 
                     if overlay:
                         fig.line(t[:lenData], data, line_width=2, line_color=colors[itrace], legend_label=trace)
                         hover = HoverTool(tooltips=[('Time', '@x'), ('Value', '@y')], mode='vline')
                         fig.add_tools(hover)
-                        fig.legend.click_policy="hide"
+                        fig.legend.click_policy = "hide"
                     else:
-                        subfig = figure(title = "Cell {}, Pop {}".format(gid, gidPops[gid]),
-                                        tools = TOOLS,
-                                        active_drag = "auto",
-                                        active_scroll = "auto",
-                                        x_axis_label="Time (ms)",
-                                        y_axis_label=y_axis_label
-                                        )
+                        subfig = figure(
+                            title="Cell {}, Pop {}".format(gid, gidPops[gid]),
+                            tools=TOOLS,
+                            active_drag="auto",
+                            active_scroll="auto",
+                            x_axis_label="Time (ms)",
+                            y_axis_label=y_axis_label,
+                        )
                         subfig.line(t[:lenData], data, line_width=2, line_color=colors[itrace], legend_label=trace)
                         if linkAxes:
                             if itrace > 0:
@@ -1492,7 +1729,7 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
                                 subfig.y_range = figs['_gid_' + str(gid)][0].y_range
                         hover = HoverTool(tooltips=[('Time', '@x'), ('Value', '@y')], mode='vline')
                         subfig.add_tools(hover)
-                        subfig.legend.click_policy="hide"
+                        subfig.legend.click_policy = "hide"
                         figs['_gid_' + str(gid)].append(subfig)
 
     elif oneFigPer == 'trace':
@@ -1500,50 +1737,73 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
         for itrace, trace in enumerate(tracesList):
 
             if overlay:
-                figs['_trace_' + str(trace)] = figure(title = str(trace),
-                                                  tools = TOOLS,
-                                                  active_drag = "auto",
-                                                  active_scroll = "auto",
-                                                  x_axis_label="Time (ms)",
-                                                  y_axis_label=y_axis_label
-                                                  )
+                figs['_trace_' + str(trace)] = figure(
+                    title=str(trace),
+                    tools=TOOLS,
+                    active_drag="auto",
+                    active_scroll="auto",
+                    x_axis_label="Time (ms)",
+                    y_axis_label=y_axis_label,
+                )
                 fig = figs['_trace_' + str(trace)]
 
             else:
                 figs['_trace_' + str(trace)] = []
 
             for igid, gid in enumerate(cellGids):
-                if 'cell_'+str(gid) in sim.allSimData[trace]:
-                    fullTrace = sim.allSimData[trace]['cell_'+str(gid)]
+                if 'cell_' + str(gid) in sim.allSimData[trace]:
+                    fullTrace = sim.allSimData[trace]['cell_' + str(gid)]
                     if isinstance(fullTrace, dict):
-                        data = [fullTrace[key][int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)] for key in list(fullTrace.keys())]
+                        data = [
+                            fullTrace[key][int(timeRange[0] / recordStep) : int(timeRange[1] / recordStep)]
+                            for key in list(fullTrace.keys())
+                        ]
                         lenData = len(data[0])
                         data = np.transpose(np.array(data))
                     else:
-                        data = np.array(fullTrace[int(timeRange[0]/recordStep):int(timeRange[1]/recordStep)])
+                        data = np.array(fullTrace[int(timeRange[0] / recordStep) : int(timeRange[1] / recordStep)])
                         lenData = len(data)
-                    t = np.arange(timeRange[0], timeRange[1]+recordStep, recordStep)
-                    tracesData.append({'t': t, 'cell_'+str(gid)+'_'+trace: data})
+                    t = np.arange(timeRange[0], timeRange[1] + recordStep, recordStep)
+                    tracesData.append({'t': t, 'cell_' + str(gid) + '_' + trace: data})
 
                     if overlay:
-                        fig.line(t[:lenData], data, line_width=2, line_color=colors[igid], legend_label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                        fig.line(
+                            t[:lenData],
+                            data,
+                            line_width=2,
+                            line_color=colors[igid],
+                            legend_label='Cell %d, Pop %s ' % (int(gid), gidPops[gid]),
+                        )
                         hover = HoverTool(tooltips=[('Time', '@x'), ('Value', '@y')], mode='vline')
                         fig.add_tools(hover)
-                        fig.legend.click_policy="hide"
+                        fig.legend.click_policy = "hide"
                     else:
-                        subfig = figure(title = str(trace),
-                                        tools = TOOLS,
-                                        active_drag = "auto",
-                                        active_scroll = "auto",
-                                        x_axis_label="Time (ms)",
-                                        y_axis_label=y_axis_label
-                                        )
+                        subfig = figure(
+                            title=str(trace),
+                            tools=TOOLS,
+                            active_drag="auto",
+                            active_scroll="auto",
+                            x_axis_label="Time (ms)",
+                            y_axis_label=y_axis_label,
+                        )
 
                         if isinstance(data, list):
-                            for tl,dl in zip(t,data):
-                                subfig.line(tl[:len(dl)], dl, line_width=1.5, line_color=colors[igid], legend_label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                            for tl, dl in zip(t, data):
+                                subfig.line(
+                                    tl[: len(dl)],
+                                    dl,
+                                    line_width=1.5,
+                                    line_color=colors[igid],
+                                    legend_label='Cell %d, Pop %s ' % (int(gid), gidPops[gid]),
+                                )
                         else:
-                            subfig.line(t[:len(data)], data, line_width=1.5, line_color=colors[igid], legend_label='Cell %d, Pop %s '%(int(gid), gidPops[gid]))
+                            subfig.line(
+                                t[: len(data)],
+                                data,
+                                line_width=1.5,
+                                line_color=colors[igid],
+                                legend_label='Cell %d, Pop %s ' % (int(gid), gidPops[gid]),
+                            )
 
                         if linkAxes:
                             if igid > 0:
@@ -1551,7 +1811,7 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
                                 subfig.y_range = figs['_trace_' + str(trace)][0].y_range
                         hover = HoverTool(tooltips=[('Time', '@x'), ('Value', '@y')], mode='vline')
                         subfig.add_tools(hover)
-                        subfig.legend.click_policy="hide"
+                        subfig.legend.click_policy = "hide"
                         figs['_trace_' + str(trace)].append(subfig)
 
     html = None
@@ -1566,7 +1826,8 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
             html = file_html(plot_layout, CDN, title=figLabel, theme=theme)
             overlay_text = ''
 
-        if showFig: show(plot_layout)
+        if showFig:
+            show(plot_layout)
 
         if saveFig:
             if isinstance(saveFig, str):
@@ -1584,7 +1845,35 @@ def iplotTraces(include=None, timeRange=None, overlay=False, oneFigPer='cell', r
 ## Plot interactive LFP
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram'], timeRange=None, NFFT=256, noverlap=128, nperseg=256, minFreq=1, maxFreq=100, stepFreq=1, smooth=0, separation=1.0, includeAxon=True, logx=False, logy=False, normSignal=False, normPSD=False, normSpec=False, overlay=False, filtFreq=False, filtOrder=3, detrend=False, transformMethod='morlet', colors=None, saveData=None, saveFig=None, showFig=False, **kwargs):
+def iplotLFP(
+    electrodes=['avg', 'all'],
+    plots=['timeSeries', 'PSD', 'spectrogram'],
+    timeRange=None,
+    NFFT=256,
+    noverlap=128,
+    nperseg=256,
+    minFreq=1,
+    maxFreq=100,
+    stepFreq=1,
+    smooth=0,
+    separation=1.0,
+    includeAxon=True,
+    logx=False,
+    logy=False,
+    normSignal=False,
+    normPSD=False,
+    normSpec=False,
+    overlay=False,
+    filtFreq=False,
+    filtOrder=3,
+    detrend=False,
+    transformMethod='morlet',
+    colors=None,
+    saveData=None,
+    saveFig=None,
+    showFig=False,
+    **kwargs
+):
     """
     Function for/to <short description of `netpyne.analysis.interactive.iplotLFP`>
 
@@ -1727,8 +2016,6 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
 
     """
 
-
-
     from .. import sim
     from bokeh.plotting import figure, show
     from bokeh.resources import CDN
@@ -1749,9 +2036,11 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
     if timeRange is None:
-        timeRange = [0,sim.cfg.duration]
+        timeRange = [0, sim.cfg.duration]
 
-    lfp = np.array(sim.allSimData['LFP'])[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
+    lfp = np.array(sim.allSimData['LFP'])[
+        int(timeRange[0] / sim.cfg.recordStep) : int(timeRange[1] / sim.cfg.recordStep), :
+    ]
 
     # electrode selection
     if 'all' in electrodes:
@@ -1767,11 +2056,12 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
         figs['timeSeries'] = figure(
             title="LFP Time Series Plot",
             tools=TOOLS,
-            active_drag = "auto",
-            active_scroll = "auto",
+            active_drag="auto",
+            active_scroll="auto",
             x_axis_label="Time (ms)",
             y_axis_label="LFP electrode",
-            toolbar_location="above")
+            toolbar_location="above",
+        )
         figs['timeSeries'].yaxis.major_tick_line_color = None
         figs['timeSeries'].yaxis.minor_tick_line_color = None
         figs['timeSeries'].yaxis.major_label_text_font_size = '0pt'
@@ -1780,10 +2070,10 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
 
         hover = HoverTool(tooltips=[('Time', '@x'), ('Value', '@y')], mode='vline')
         figs['timeSeries'].add_tools(hover)
-        figs['timeSeries'].legend.click_policy="hide"
+        figs['timeSeries'].legend.click_policy = "hide"
 
         ydisp = np.absolute(lfp).max() * separation
-        offset = 1.0*ydisp
+        offset = 1.0 * ydisp
         t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
 
         avg_color = 'black'
@@ -1791,20 +2081,20 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
             if kwargs['theme'] == 'gui' or 'dark' in kwargs['theme'] or 'lack' in kwargs['theme']:
                 avg_color = 'white'
 
-        for i,elec in enumerate(electrodes[::-1]):
+        for i, elec in enumerate(electrodes[::-1]):
             if elec == 'avg':
                 dplSum = np.mean(lfp, axis=1)
                 color = avg_color
             elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
                 pass
                 lfpPlot = lfp[:, elec]
-                color = colors[i%len(colors)]
+                color = colors[i % len(colors)]
 
-            legend=str(elec)
-            figs['timeSeries'].line(t, lfpPlot+(i*ydisp), color=color, name=str(elec), legend_label=legend)
+            legend = str(elec)
+            figs['timeSeries'].line(t, lfpPlot + (i * ydisp), color=color, name=str(elec), legend_label=legend)
 
         data['lfpPlot'] = lfpPlot
-        data['ydisp'] =  ydisp
+        data['ydisp'] = ydisp
         data['t'] = t
 
         figs['timeSeries'].legend.location = "top_right"
@@ -1813,7 +2103,8 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
         plot_layout = layout(figs['timeSeries'], sizing_mode='stretch_both')
         html = file_html(plot_layout, CDN, title="Time Series LFP Plot", theme=theme)
 
-        if showFig: show(plot_layout)
+        if showFig:
+            show(plot_layout)
 
         if saveFig:
             if isinstance(saveFig, basestring):
@@ -1838,31 +2129,33 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
             if kwargs['theme'] == 'gui' or 'dark' in kwargs['theme'] or 'lack' in kwargs['theme']:
                 avg_color = 'white'
 
-        for i,elec in enumerate(electrodes):
-            p = figure(title="Electrode {}".format(str(elec)),
+        for i, elec in enumerate(electrodes):
+            p = figure(
+                title="Electrode {}".format(str(elec)),
                 tools=TOOLS,
-                active_drag = "auto",
-                active_scroll = "auto",
+                active_drag="auto",
+                active_scroll="auto",
                 x_axis_label="Frequency (Hz)",
                 y_axis_label="db/Hz",
-                toolbar_location="above")
+                toolbar_location="above",
+            )
 
             hover = HoverTool(tooltips=[('Frequency', '@x'), ('Power', '@y')], mode='vline')
             p.add_tools(hover)
-            p.legend.click_policy="hide"
+            p.legend.click_policy = "hide"
 
             if elec == 'avg':
                 lfpPlot = np.mean(lfp, axis=1)
                 color = avg_color
             elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
                 lfpPlot = lfp[:, elec]
-                color = colors[i%len(colors)]
+                color = colors[i % len(colors)]
 
             # Morlet wavelet transform method
             if transformMethod == 'morlet':
                 from ..support.morlet import MorletSpec, index2ms
 
-                Fs = int(1000.0/sim.cfg.recordStep)
+                Fs = int(1000.0 / sim.cfg.recordStep)
                 morletSpec = MorletSpec(lfpPlot, Fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq)
                 freqs = F = morletSpec.f
                 spec = morletSpec.TFR
@@ -1872,32 +2165,43 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
             # FFT transform method
             elif transformMethod == 'fft':
 
-                Fs = int(1000.0/sim.cfg.recordStep)
-                power = mlab.psd(lfpPlot, Fs=Fs, NFFT=NFFT, detrend=mlab.detrend_none, window=mlab.window_hanning, noverlap=noverlap, pad_to=None, sides='default', scale_by_freq=None)
+                Fs = int(1000.0 / sim.cfg.recordStep)
+                power = mlab.psd(
+                    lfpPlot,
+                    Fs=Fs,
+                    NFFT=NFFT,
+                    detrend=mlab.detrend_none,
+                    window=mlab.window_hanning,
+                    noverlap=noverlap,
+                    pad_to=None,
+                    sides='default',
+                    scale_by_freq=None,
+                )
 
                 if smooth:
-                    signal = _smooth1d(10*np.log10(power[0]), smooth)
+                    signal = _smooth1d(10 * np.log10(power[0]), smooth)
                 else:
-                    signal = 10*np.log10(power[0])
+                    signal = 10 * np.log10(power[0])
                 freqs = power[1]
                 ylabel = 'Power (dB/Hz)'
 
             allFreqs.append(freqs)
             allSignal.append(signal)
 
-            p.line(freqs[freqs<maxFreq], signal[freqs<maxFreq], color=color, line_width=3)
+            p.line(freqs[freqs < maxFreq], signal[freqs < maxFreq], color=color, line_width=3)
             figs['psd'].append(p)
 
         plot_layout = column(figs['psd'], sizing_mode='stretch_both')
         html = file_html(plot_layout, CDN, title="LFP Power Spectral Density", theme=theme)
 
-        if showFig: show(plot_layout)
+        if showFig:
+            show(plot_layout)
 
         if saveFig:
             if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
-                filename = sim.cfg.filename+'_iLFP_psd.html'
+                filename = sim.cfg.filename + '_iLFP_psd.html'
             file = open(filename, 'w')
             file.write(html)
             file.close()
@@ -1918,21 +2222,21 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
 
             spec = []
 
-            for i,elec in enumerate(electrodes):
+            for i, elec in enumerate(electrodes):
                 if elec == 'avg':
                     lfpPlot = np.mean(lfp, axis=1)
                 elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
                     lfpPlot = lfp[:, elec]
-                fs = int(1000.0/sim.cfg.recordStep)
+                fs = int(1000.0 / sim.cfg.recordStep)
                 t_spec = np.linspace(0, index2ms(len(lfpPlot), fs), len(lfpPlot))
                 spec.append(MorletSpec(lfpPlot, fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq))
 
-            f = np.array(range(minFreq, maxFreq+1, stepFreq))
-            x_mesh, y_mesh = np.meshgrid(t_spec*1000.0, f[f<maxFreq])
+            f = np.array(range(minFreq, maxFreq + 1, stepFreq))
+            x_mesh, y_mesh = np.meshgrid(t_spec * 1000.0, f[f < maxFreq])
             vmin = np.array([s.TFR for s in spec]).min()
             vmax = np.array([s.TFR for s in spec]).max()
 
-            for i,elec in enumerate(electrodes):
+            for i, elec in enumerate(electrodes):
 
                 T = timeRange
                 F = spec[i].f
@@ -1947,18 +2251,20 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
                 p = figure(
                     title="Electrode {}".format(str(elec)),
                     tools=TOOLS,
-                    active_drag = "auto",
-                    active_scroll = "auto",
+                    active_drag="auto",
+                    active_scroll="auto",
                     x_range=(0, timeRange[1]),
                     y_range=(0, maxFreq),
-                    x_axis_label = "Time (ms)",
-                    y_axis_label = "Frequency(Hz)",
+                    x_axis_label="Time (ms)",
+                    y_axis_label="Frequency(Hz)",
                     toolbar_location="above",
-                    #tooltips = [("Time", "$x"), ("Frequency", "$y"), ("Power", "@image")],
-                    )
+                    # tooltips = [("Time", "$x"), ("Frequency", "$y"), ("Power", "@image")],
+                )
 
                 mapper = linear_cmap(field_name='dB/Hz', palette=Viridis256, low=vmin, high=vmax)
-                color_bar = ColorBar(color_mapper=mapper['transform'], location=(0,0), label_standoff=15, title='Power')
+                color_bar = ColorBar(
+                    color_mapper=mapper['transform'], location=(0, 0), label_standoff=15, title='Power'
+                )
 
                 p.image(image=[x_mesh, y_mesh, S], x=0, y=0, color_mapper=mapper['transform'], dw=timeRange[1], dh=100)
                 p.add_layout(color_bar, 'right')
@@ -1967,41 +2273,65 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
         # FFT transform method
         elif transformMethod == 'fft':
 
-            for i,elec in enumerate(electrodes):
+            for i, elec in enumerate(electrodes):
                 if elec == 'avg':
                     lfpPlot = np.mean(lfp, axis=1)
                 elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
                     lfpPlot = lfp[:, elec]
                 # creates spectrogram over a range of data
                 # from: http://joelyancey.com/lfp-python-practice/
-                fs = int(1000.0/sim.cfg.recordStep)
-                f, t_spec, x_spec = spsig.spectrogram(lfpPlot, fs=fs, window='hanning', detrend=mlab.detrend_none, nperseg=nperseg, noverlap=noverlap, nfft=NFFT,  mode='psd')
-                x_mesh, y_mesh = np.meshgrid(t_spec*1000.0, f[f<maxFreq])
-                logx_spec.append(10*np.log10(x_spec[f<maxFreq]))
+                fs = int(1000.0 / sim.cfg.recordStep)
+                f, t_spec, x_spec = spsig.spectrogram(
+                    lfpPlot,
+                    fs=fs,
+                    window='hanning',
+                    detrend=mlab.detrend_none,
+                    nperseg=nperseg,
+                    noverlap=noverlap,
+                    nfft=NFFT,
+                    mode='psd',
+                )
+                x_mesh, y_mesh = np.meshgrid(t_spec * 1000.0, f[f < maxFreq])
+                logx_spec.append(10 * np.log10(x_spec[f < maxFreq]))
 
             vmin = np.array(logx_spec).min()
             vmax = np.array(logx_spec).max()
 
-            for i,elec in enumerate(electrodes):
+            for i, elec in enumerate(electrodes):
                 p = figure(
                     title="Electrode {}".format(str(elec)),
                     tools=TOOLS,
-                    active_drag = "auto",
-                    active_scroll = "auto",
+                    active_drag="auto",
+                    active_scroll="auto",
                     x_range=(0, timeRange[1]),
                     y_range=(0, maxFreq),
-                    x_axis_label = "Time (ms)",
-                    y_axis_label = "Frequency(Hz)")
+                    x_axis_label="Time (ms)",
+                    y_axis_label="Frequency(Hz)",
+                )
                 mapper = linear_cmap(field_name='dB/Hz', palette=Viridis256, low=vmin, high=vmax)
-                color_bar = ColorBar(color_mapper=mapper['transform'], width=8, location=(0,0), label_standoff=7, major_tick_line_color=None)
-                p.image(image=[x_mesh, y_mesh, logx_spec[i]], x=0, y=0, color_mapper=mapper['transform'], dw=timeRange[1], dh=100)
+                color_bar = ColorBar(
+                    color_mapper=mapper['transform'],
+                    width=8,
+                    location=(0, 0),
+                    label_standoff=7,
+                    major_tick_line_color=None,
+                )
+                p.image(
+                    image=[x_mesh, y_mesh, logx_spec[i]],
+                    x=0,
+                    y=0,
+                    color_mapper=mapper['transform'],
+                    dw=timeRange[1],
+                    dh=100,
+                )
                 p.add_layout(color_bar, 'right')
                 figs['spectro'].append(p)
 
         plot_layout = column(figs['spectro'], sizing_mode='stretch_both')
         html = file_html(plot_layout, CDN, title="LFP Power Spectral Density", theme=theme)
 
-        if showFig: show(plot_layout)
+        if showFig:
+            show(plot_layout)
 
         if saveFig:
             if isinstance(saveFig, str):
@@ -2014,11 +2344,33 @@ def iplotLFP(electrodes=['avg', 'all'], plots=['timeSeries', 'PSD', 'spectrogram
 
     return html
 
+
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive connectivity
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotConn(includePre=['all'], includePost=['all'], feature='strength', orderBy='gid', figSize=(10,10), groupBy='pop', groupByIntervalPre=None, groupByIntervalPost=None, removeWeightNorm=False, graphType='matrix', synOrConn='syn', synMech=None, connsFile=None, tagsFile=None, clim=None, fontSize=12, saveData=None, saveFig=None, showFig=False, **kwargs):
+def iplotConn(
+    includePre=['all'],
+    includePost=['all'],
+    feature='strength',
+    orderBy='gid',
+    figSize=(10, 10),
+    groupBy='pop',
+    groupByIntervalPre=None,
+    groupByIntervalPost=None,
+    removeWeightNorm=False,
+    graphType='matrix',
+    synOrConn='syn',
+    synMech=None,
+    connsFile=None,
+    tagsFile=None,
+    clim=None,
+    fontSize=12,
+    saveData=None,
+    saveFig=None,
+    showFig=False,
+    **kwargs
+):
     """
     Function for/to <short description of `netpyne.analysis.interactive.iplotConn`>
 
@@ -2122,8 +2474,7 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
     kwargs : <type>
         <Short description of kwargs>
         **Default:** *required*
-
-"""
+    """
 
     from netpyne import sim
     from netpyne.analysis import network
@@ -2142,10 +2493,33 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
     theme = applyTheme(kwargs)
 
     if connsFile and tagsFile:
-        connMatrix, pre, post = network._plotConnCalculateFromFile(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, connsFile, tagsFile, removeWeightNorm)
+        connMatrix, pre, post = network._plotConnCalculateFromFile(
+            includePre,
+            includePost,
+            feature,
+            orderBy,
+            groupBy,
+            groupByIntervalPre,
+            groupByIntervalPost,
+            synOrConn,
+            synMech,
+            connsFile,
+            tagsFile,
+            removeWeightNorm,
+        )
     else:
-        connMatrix, pre, post = network._plotConnCalculateFromSim(includePre, includePost, feature, orderBy, groupBy, groupByIntervalPre, groupByIntervalPost, synOrConn, synMech, removeWeightNorm)
-
+        connMatrix, pre, post = network._plotConnCalculateFromSim(
+            includePre,
+            includePost,
+            feature,
+            orderBy,
+            groupBy,
+            groupByIntervalPre,
+            groupByIntervalPost,
+            synOrConn,
+            synMech,
+            removeWeightNorm,
+        )
 
     if connMatrix is None:
         print("  Error calculating connMatrix in iplotConn()")
@@ -2173,13 +2547,7 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
             low = low - 0.1 * low
             high = high + 0.1 * high
 
-        conn_colormapper = linear_cmap(
-        field_name=feature,
-        palette=Viridis256,
-        low=low,
-        high=high,
-        nan_color='white'
-        )
+        conn_colormapper = linear_cmap(field_name=feature, palette=Viridis256, low=low, high=high, nan_color='white')
 
         conn_colorbar = ColorBar(color_mapper=conn_colormapper['transform'])
         conn_colorbar.location = (0, 0)
@@ -2188,28 +2556,21 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
         fig = figure(
             x_range=pandas_data.columns.values,
             y_range=np.flip(pandas_data.index.values),
-            tools = 'hover,save,pan,box_zoom,reset,wheel_zoom',
-            active_drag = "auto",
-            active_scroll = "auto",
+            tools='hover,save,pan,box_zoom,reset,wheel_zoom',
+            active_drag="auto",
+            active_scroll="auto",
             tooltips=[('Pre', '@pre'), ('Post', '@post'), (feature, '@' + feature)],
             title='Connection ' + feature + ' matrix',
             toolbar_location='below',
-            x_axis_location='above'
-            )
+            x_axis_location='above',
+        )
 
         fig.xaxis.axis_label = pandas_data.columns.name
         fig.yaxis.axis_label = pandas_data.index.name
         fig.yaxis.major_label_orientation = 'horizontal'
         fig.xaxis.major_label_orientation = 'vertical'
 
-        fig.rect(
-            source=bokeh_data,
-            x='post',
-            y='pre',
-            width=1,
-            height=1,
-            color=conn_colormapper
-            )
+        fig.rect(source=bokeh_data, x='post', y='pre', width=1, height=1, color=conn_colormapper)
 
         fig.add_layout(conn_colorbar, 'right')
 
@@ -2220,11 +2581,11 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
         if groupBy == 'pop':
 
             popsPre, popsPost = pre, post
-            #colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+            # colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
             colors = colorList
-            bar_colors = colors[0:len(popsPre)]
+            bar_colors = colors[0 : len(popsPre)]
 
-            data = {'post' : popsPost}
+            data = {'post': popsPost}
             for popIndex, pop in enumerate(popsPre):
                 data[pop] = connMatrix[popIndex, :]
 
@@ -2233,10 +2594,10 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
                 title='Connection ' + feature + ' stacked bar graph',
                 toolbar_location=None,
                 tools='hover,save,pan,box_zoom,reset,wheel_zoom',
-                active_drag = "auto",
-                active_scroll = "auto",
+                active_drag="auto",
+                active_scroll="auto",
                 tooltips=[('Pre', '$name'), ('Post', '@post'), (feature, '@$name')],
-                )
+            )
 
             fig.vbar_stack(
                 popsPre,
@@ -2245,7 +2606,7 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
                 color=bar_colors,
                 source=data,
                 legend_label=popsPre,
-                )
+            )
 
             fig.xgrid.grid_line_color = None
             fig.legend.title = 'Pre'
@@ -2263,10 +2624,18 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
     plot_layout = layout([fig], sizing_mode='stretch_both')
     html = file_html(plot_layout, CDN, title='Connection ' + feature + ' matrix', theme=theme)
 
-    #save figure data
+    # save figure data
     if saveData:
-        figData = {'connMatrix': connMatrix, 'feature': feature, 'groupBy': groupBy,
-         'includePre': includePre, 'includePost': includePost, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+        figData = {
+            'connMatrix': connMatrix,
+            'feature': feature,
+            'groupBy': groupBy,
+            'includePre': includePre,
+            'includePost': includePost,
+            'saveData': saveData,
+            'saveFig': saveFig,
+            'showFig': showFig,
+        }
 
         _saveFigData(figData, saveData, 'conn')
 
@@ -2275,13 +2644,16 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
         if isinstance(saveFig, str):
             filename = saveFig
         else:
-            filename = sim.cfg.filename+'_iconn_' + groupBy + '_' + feature + '_' + graphType + '_' + orderBy + '.html'
+            filename = (
+                sim.cfg.filename + '_iconn_' + groupBy + '_' + feature + '_' + graphType + '_' + orderBy + '.html'
+            )
         file = open(filename, 'w')
         file.write(html)
         file.close()
 
     # show fig
-    if showFig: show(fig)
+    if showFig:
+        show(fig)
 
     return html
 
@@ -2290,7 +2662,19 @@ def iplotConn(includePre=['all'], includePost=['all'], feature='strength', order
 ## Plot 2D representation of network cell positions and connections
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, tagsFile=None, figSize=(12,12), fontSize=12, saveData=None, saveFig=None, showFig=True, **kwargs):
+def iplot2Dnet(
+    include=['allCells'],
+    view='xy',
+    showConns=True,
+    popColors=None,
+    tagsFile=None,
+    figSize=(12, 12),
+    fontSize=12,
+    saveData=None,
+    saveFig=None,
+    showFig=True,
+    **kwargs
+):
     """
     Function for/to <short description of `netpyne.analysis.interactive.iplot2Dnet`>
 
@@ -2363,8 +2747,7 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
     Returns
     -------
 
-
-"""
+    """
 
     from .. import sim
     from bokeh.plotting import figure, show
@@ -2379,10 +2762,12 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
 
     theme = applyTheme(kwargs)
 
-    TOOLS = 'hover,save,pan,box_zoom,reset,wheel_zoom',
+    TOOLS = ('hover,save,pan,box_zoom,reset,wheel_zoom',)
 
     if not 'palette' in kwargs:
-        colors = [RGB(*[round(f * 255) for f in color]) for color in colorList] # bokeh only handles integer rgb values from 0-255
+        colors = [
+            RGB(*[round(f * 255) for f in color]) for color in colorList
+        ]  # bokeh only handles integer rgb values from 0-255
     else:
         colors = kwargs['palette']
 
@@ -2395,9 +2780,11 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
     if tagsFile:
         print('Loading tags file...')
         import json
-        with open(tagsFile, 'r') as fileObj: tagsTmp = json.load(fileObj)['tags']
+
+        with open(tagsFile, 'r') as fileObj:
+            tagsTmp = json.load(fileObj)['tags']
         tagsFormat = tagsTmp.pop('format', [])
-        tags = {int(k): v for k,v in tagsTmp.items()} # find method to load json with int keys?
+        tags = {int(k): v for k, v in tagsTmp.items()}  # find method to load json with int keys?
         del tagsTmp
 
         # set indices of fields to read compact format (no keys)
@@ -2417,8 +2804,11 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
             popLabels = list(set([tags[gid][popIndex] for gid in cellGids]))
 
             # pop and cell colors
-            popColorsTmp = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
-            if popColors: popColorsTmp.update(popColors)
+            popColorsTmp = {
+                popLabel: colorList[ipop % len(colorList)] for ipop, popLabel in enumerate(popLabels)
+            }  # dict with color for each pop
+            if popColors:
+                popColorsTmp.update(popColors)
             popColors = popColorsTmp
             cellColors = [popColors[tags[gid][popIndex]] for gid in cellGids]
 
@@ -2435,34 +2825,37 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
     else:
         cells, cellGids, _ = getCellsInclude(include)
         selectedPops = [cell['tags']['pop'] for cell in cells]
-        popLabels = [pop for pop in sim.net.allPops if pop in selectedPops] # preserves original ordering
+        popLabels = [pop for pop in sim.net.allPops if pop in selectedPops]  # preserves original ordering
 
         # pop and cell colors
-        popColorsTmp = {popLabel: colorList[ipop%len(colorList)] for ipop,popLabel in enumerate(popLabels)} # dict with color for each pop
-        if popColors: popColorsTmp.update(popColors)
+        popColorsTmp = {
+            popLabel: colorList[ipop % len(colorList)] for ipop, popLabel in enumerate(popLabels)
+        }  # dict with color for each pop
+        if popColors:
+            popColorsTmp.update(popColors)
         popColors = popColorsTmp
-        cellColors = ['#%02x%02x%02x' % tuple([int(col * 255) for col in popColors[cell['tags']['pop']]]) for cell in cells]
-
+        cellColors = [
+            '#%02x%02x%02x' % tuple([int(col * 255) for col in popColors[cell['tags']['pop']]]) for cell in cells
+        ]
 
         # cell locations
         posX = [cell['tags']['x'] for cell in cells]  # get all x positions
         posY = [cell['tags'][ycoord] for cell in cells]  # get all y positions
 
-
     fig = figure(
         title="2D Network representation",
         tools=TOOLS,
-        active_drag = "auto",
-        active_scroll = "auto",
+        active_drag="auto",
+        active_scroll="auto",
         tooltips=[('y location', '@y'), ('x location', '@x')],
         x_axis_label="x (um)",
         y_axis_label='y (um)',
-        #x_range=[min(posX)-0.05*max(posX),1.05*max(posX)],
-        #y_range=[1.05*max(posY), min(posY)-0.05*max(posY)],
+        # x_range=[min(posX)-0.05*max(posX),1.05*max(posX)],
+        # y_range=[1.05*max(posY), min(posY)-0.05*max(posY)],
         toolbar_location='above',
-        match_aspect = True,
-        #aspect_scale = 0.001,
-        )
+        match_aspect=True,
+        # aspect_scale = 0.001,
+    )
 
     if 'radius' in kwargs:
         radius = kwargs['radius']
@@ -2471,35 +2864,46 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
 
     fig.scatter(posX, posY, radius=radius, fill_color=cellColors, line_color=None)  # plot cell soma positions
 
-
     posXpre, posYpre = [], []
     posXpost, posYpost = [], []
     if showConns and not tagsFile:
         for postCell in cells:
             for con in postCell['conns']:  # plot connections between cells
                 if not isinstance(con['preGid'], basestring) and con['preGid'] in cellGids:
-                    posXpre,posYpre = next(((cell['tags']['x'],cell['tags'][ycoord]) for cell in cells if cell['gid']==con['preGid']), None)
+                    posXpre, posYpre = next(
+                        ((cell['tags']['x'], cell['tags'][ycoord]) for cell in cells if cell['gid'] == con['preGid']),
+                        None,
+                    )
                     posXpost, posYpost = postCell['tags']['x'], postCell['tags'][ycoord]
                     if kwargs.get('theme', '') == 'gui':
                         color = 'yellow'
                     else:
-                        color='red'
+                        color = 'red'
                     if con['synMech'] in ['inh', 'GABA', 'GABAA', 'GABAB']:
                         if kwargs.get('theme', '') == 'gui':
                             color = 'lightcyan'
                         else:
                             color = 'blue'
-                    width = 0.1 #50*con['weight']
-                    fig.line([posXpre, posXpost], [posYpre, posYpost], color=color, line_width=width) # plot line from pre to post
+                    width = 0.1  # 50*con['weight']
+                    fig.line(
+                        [posXpre, posXpost], [posYpre, posYpost], color=color, line_width=width
+                    )  # plot line from pre to post
 
     fontsiz = fontSize
 
     for popLabel in popLabels:
-        #fig.line(0,0,color=tuple([int(x*255) for x in popColors[popLabel]]), legend_label=popLabel)
-        fig.circle(0,0,color=tuple([int(x*255) for x in popColors[popLabel]]), legend_label=popLabel, line_width=0, radius=0)
+        # fig.line(0,0,color=tuple([int(x*255) for x in popColors[popLabel]]), legend_label=popLabel)
+        fig.circle(
+            0,
+            0,
+            color=tuple([int(x * 255) for x in popColors[popLabel]]),
+            legend_label=popLabel,
+            line_width=0,
+            radius=0,
+        )
 
-    legend = Legend(location=(10,0))
-    legend.click_policy='hide'
+    legend = Legend(location=(10, 0))
+    legend.click_policy = 'hide'
     fig.add_layout(legend, 'right')
 
     plot_layout = layout([fig], sizing_mode='stretch_both')
@@ -2507,8 +2911,19 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
 
     # save figure data
     if saveData:
-        figData = {'posX': posX, 'posY': posY, 'posX': cellColors, 'posXpre': posXpre, 'posXpost': posXpost, 'posYpre': posYpre, 'posYpost': posYpost,
-         'include': include, 'saveData': saveData, 'saveFig': saveFig, 'showFig': showFig}
+        figData = {
+            'posX': posX,
+            'posY': posY,
+            'posX': cellColors,
+            'posXpre': posXpre,
+            'posXpost': posXpost,
+            'posYpre': posYpre,
+            'posYpost': posYpost,
+            'include': include,
+            'saveData': saveData,
+            'saveFig': saveFig,
+            'showFig': showFig,
+        }
 
         _saveFigData(figData, saveData, '2Dnet')
 
@@ -2517,16 +2932,24 @@ def iplot2Dnet(include=['allCells'], view='xy', showConns=True, popColors=None, 
         if isinstance(saveFig, str):
             filename = saveFig
         else:
-            filename = sim.cfg.filename+'_i2Dnet_.html'
+            filename = sim.cfg.filename + '_i2Dnet_.html'
         file = open(filename, 'w')
         file.write(html)
         file.close()
 
     # show fig
-    if showFig: show(fig)
+    if showFig:
+        show(fig)
 
-    return html, {'include': include, 'posX': posX, 'posY': posY, 'posXpre': posXpre, 'posXpost': posXpost, 'posYpre': posYpre, 'posYpost': posYpost}
-
+    return html, {
+        'include': include,
+        'posX': posX,
+        'posY': posY,
+        'posXpre': posXpre,
+        'posXpost': posXpost,
+        'posYpre': posYpre,
+        'posYpost': posYpost,
+    }
 
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -2569,8 +2992,6 @@ def iplotRxDConcentration(speciesLabel, regionLabel, plane='xy', saveFig=None, s
 
     """
 
-
-
     from .. import sim
     from bokeh.plotting import figure, show
     from bokeh.resources import CDN
@@ -2581,13 +3002,14 @@ def iplotRxDConcentration(speciesLabel, regionLabel, plane='xy', saveFig=None, s
     from bokeh.models import ColorBar
 
     print('Plotting interactive RxD concentration ...')
-    
+
     theme = applyTheme(kwargs)
 
     if not 'palette' in kwargs:
         from bokeh.palettes import Viridis256
+
         colors = Viridis256
-        #colors = [RGB(*[round(f * 255) for f in color]) for color in colorList]
+        # colors = [RGB(*[round(f * 255) for f in color]) for color in colorList]
     else:
         colors = kwargs['palette']
 
@@ -2598,7 +3020,7 @@ def iplotRxDConcentration(speciesLabel, regionLabel, plane='xy', saveFig=None, s
     plane2mean = {'xz': 1, 'xy': 2}
 
     data = species[region].states3d[:].mean(plane2mean[plane]).T
-    data = np.flipud(data) # This does not flip the axis values, should improve
+    data = np.flipud(data)  # This does not flip the axis values, should improve
 
     extent = []
     extent.append(sim.net.rxd['regions'][regionLabel][plane[0] + 'lo'])
@@ -2616,33 +3038,35 @@ def iplotRxDConcentration(speciesLabel, regionLabel, plane='xy', saveFig=None, s
         high = high + 0.1 * high
 
     conc_colormapper = linear_cmap(
-        field_name = '[' + species.name + '] (mM)',
-        palette = colors,
-        low = low,
-        high = high,
-        nan_color = 'white',
-        )
+        field_name='[' + species.name + '] (mM)',
+        palette=colors,
+        low=low,
+        high=high,
+        nan_color='white',
+    )
 
     conc_colorbar = ColorBar(
-        color_mapper = conc_colormapper['transform'],
-        label_standoff = 12,
-        title_standoff = 12,
-        )
+        color_mapper=conc_colormapper['transform'],
+        label_standoff=12,
+        title_standoff=12,
+    )
     conc_colorbar.title = '[' + species.name + '] (mM)'
 
     fig = figure(
-        title = 'RxD: ' + species.name + ' concentration',
-        toolbar_location = 'above',
-        tools = 'hover,save,pan,box_zoom,reset,wheel_zoom',
-        active_drag = "auto",
-        active_scroll = "auto",
-        tooltips = [("x", "$x"), ("y", "$y"), ("value", "@image")],
-        match_aspect = True,
-        x_axis_label = plane[0] + " location (um)",
-        y_axis_label = plane[1] + " location (um)",
-        )
+        title='RxD: ' + species.name + ' concentration',
+        toolbar_location='above',
+        tools='hover,save,pan,box_zoom,reset,wheel_zoom',
+        active_drag="auto",
+        active_scroll="auto",
+        tooltips=[("x", "$x"), ("y", "$y"), ("value", "@image")],
+        match_aspect=True,
+        x_axis_label=plane[0] + " location (um)",
+        y_axis_label=plane[1] + " location (um)",
+    )
 
-    fig.image(image=[data], x=extent[0], y=extent[2], dw=dw, dh=dh, color_mapper=conc_colormapper['transform'], level="image")
+    fig.image(
+        image=[data], x=extent[0], y=extent[2], dw=dw, dh=dh, color_mapper=conc_colormapper['transform'], level="image"
+    )
     fig.add_layout(conc_colorbar, 'right')
 
     plot_layout = layout([fig], sizing_mode='scale_height')
@@ -2663,12 +3087,32 @@ def iplotRxDConcentration(speciesLabel, regionLabel, plane='xy', saveFig=None, s
     return html, data
 
 
-
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive spike statistics
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=None, graphType='boxplot', stats=['rate', 'isicv'], bins=50, histlogy=False, histlogx=False, histmin=0.0, density=False, includeRate0=False, legendLabels=None, normfit=False, histShading=True, xlim=None, popColors={}, saveData=None, saveFig=None, showFig=True, **kwargs):
+def iplotSpikeStats(
+    include=['eachPop', 'allCells'],
+    statDataIn={},
+    timeRange=None,
+    graphType='boxplot',
+    stats=['rate', 'isicv'],
+    bins=50,
+    histlogy=False,
+    histlogx=False,
+    histmin=0.0,
+    density=False,
+    includeRate0=False,
+    legendLabels=None,
+    normfit=False,
+    histShading=True,
+    xlim=None,
+    popColors={},
+    saveData=None,
+    saveFig=None,
+    showFig=True,
+    **kwargs
+):
     """
     Function for/to <short description of `netpyne.analysis.interactive.iplotSpikeStats`>
 
@@ -2776,8 +3220,6 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
 
     """
 
-
-
     from .. import sim
     from bokeh.plotting import figure, show
     from bokeh.resources import CDN
@@ -2794,12 +3236,18 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
-    xlabels = {'rate': 'Rate (Hz)', 'isicv': 'Irregularity (ISI CV)', 'sync':  'Synchrony', 'pairsync': 'Pairwise synchrony'}
+    xlabels = {
+        'rate': 'Rate (Hz)',
+        'isicv': 'Irregularity (ISI CV)',
+        'sync': 'Synchrony',
+        'pairsync': 'Pairwise synchrony',
+    }
 
     # Replace 'eachPop' with list of pops
     if 'eachPop' in include:
         include.remove('eachPop')
-        for pop in sim.net.allPops: include.append(pop)
+        for pop in sim.net.allPops:
+            include.append(pop)
 
     # time range
     if timeRange is None:
@@ -2820,7 +3268,7 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
         ynormsData = []
 
         # Calculate data for each entry in include
-        for iplot,subset in enumerate(include):
+        for iplot, subset in enumerate(include):
 
             if stat in statDataIn:
                 statData = statDataIn[stat]['statData']
@@ -2834,52 +3282,74 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
                 # Select cells to include
                 if len(cellGids) > 0:
                     try:
-                        spkinds,spkts = list(zip(*[(spkgid,spkt) for spkgid,spkt in
-                            zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]))
+                        spkinds, spkts = list(
+                            zip(
+                                *[
+                                    (spkgid, spkt)
+                                    for spkgid, spkt in zip(sim.allSimData['spkid'], sim.allSimData['spkt'])
+                                    if spkgid in cellGids
+                                ]
+                            )
+                        )
                     except:
-                        spkinds,spkts = [],[]
+                        spkinds, spkts = [], []
                 else:
-                    spkinds,spkts = [],[]
+                    spkinds, spkts = [], []
 
                 # Add NetStim spikes
                 spkts, spkinds = list(spkts), list(spkinds)
                 numNetStims = 0
                 if 'stims' in sim.allSimData:
                     for netStimLabel in netStimLabels:
-                        netStimSpks = [spk for cell,stims in sim.allSimData['stims'].items() \
-                        for stimLabel,stimSpks in stims.items()
-                            for spk in stimSpks if stimLabel == netStimLabel]
+                        netStimSpks = [
+                            spk
+                            for cell, stims in sim.allSimData['stims'].items()
+                            for stimLabel, stimSpks in stims.items()
+                            for spk in stimSpks
+                            if stimLabel == netStimLabel
+                        ]
                         if len(netStimSpks) > 0:
-                            lastInd = max(spkinds) if len(spkinds)>0 else 0
+                            lastInd = max(spkinds) if len(spkinds) > 0 else 0
                             spktsNew = netStimSpks
-                            spkindsNew = [lastInd+1+i for i in range(len(netStimSpks))]
+                            spkindsNew = [lastInd + 1 + i for i in range(len(netStimSpks))]
                             spkts.extend(spktsNew)
                             spkinds.extend(spkindsNew)
                             numNetStims += 1
                 try:
-                    spkts,spkinds = list(zip(*[(spkt, spkind) for spkt, spkind in zip(spkts, spkinds)
-                        if timeRange[0] <= spkt <= timeRange[1]]))
+                    spkts, spkinds = list(
+                        zip(
+                            *[
+                                (spkt, spkind)
+                                for spkt, spkind in zip(spkts, spkinds)
+                                if timeRange[0] <= spkt <= timeRange[1]
+                            ]
+                        )
+                    )
                 except:
                     pass
 
                 # rate stats
                 if stat == 'rate':
-                    toRate = 1e3/(timeRange[1]-timeRange[0])
+                    toRate = 1e3 / (timeRange[1] - timeRange[0])
                     if includeRate0:
-                        rates = [spkinds.count(gid)*toRate for gid in cellGids] \
-                            if len(spkinds)>0 else [0]*len(cellGids) #cellGids] #set(spkinds)]
+                        rates = (
+                            [spkinds.count(gid) * toRate for gid in cellGids]
+                            if len(spkinds) > 0
+                            else [0] * len(cellGids)
+                        )  # cellGids] #set(spkinds)]
                     else:
-                        rates = [spkinds.count(gid)*toRate for gid in set(spkinds)] \
-                            if len(spkinds)>0 else [0] #cellGids] #set(spkinds)]
+                        rates = (
+                            [spkinds.count(gid) * toRate for gid in set(spkinds)] if len(spkinds) > 0 else [0]
+                        )  # cellGids] #set(spkinds)]
                     statData.append(rates)
 
                 # Inter-spike interval (ISI) coefficient of variation (CV) stats
                 elif stat == 'isicv':
                     import numpy as np
-                    spkmat = [[spkt for spkind,spkt in zip(spkinds,spkts) if spkind==gid]
-                        for gid in set(spkinds)]
-                    isimat = [[t - s for s, t in zip(spks, spks[1:])] for spks in spkmat if len(spks)>10]
-                    isicv = [np.std(x) / np.mean(x) if len(x)>0 else 0 for x in isimat] # if len(x)>0]
+
+                    spkmat = [[spkt for spkind, spkt in zip(spkinds, spkts) if spkind == gid] for gid in set(spkinds)]
+                    isimat = [[t - s for s, t in zip(spks, spks[1:])] for spks in spkmat if len(spks) > 10]
+                    isicv = [np.std(x) / np.mean(x) if len(x) > 0 else 0 for x in isimat]  # if len(x)>0]
                     statData.append(isicv)
 
                 # synchrony
@@ -2887,16 +3357,20 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
                     try:
                         import pyspike
                     except:
-                        print("Error: plotSpikeStats() requires the PySpike python package \
-                            to calculate synchrony (try: pip install pyspike)")
+                        print(
+                            "Error: plotSpikeStats() requires the PySpike python package \
+                            to calculate synchrony (try: pip install pyspike)"
+                        )
                         return 0
 
-                    spkmat = [pyspike.SpikeTrain([spkt for spkind,spkt in zip(spkinds,spkts)
-                        if spkind==gid], timeRange) for gid in set(spkinds)]
+                    spkmat = [
+                        pyspike.SpikeTrain([spkt for spkind, spkt in zip(spkinds, spkts) if spkind == gid], timeRange)
+                        for gid in set(spkinds)
+                    ]
                     if stat == 'sync':
                         # (SPIKE-Sync measure)' # see http://www.scholarpedia.org/article/Measures_of_spike_train_synchrony
                         syncMat = [pyspike.spike_sync(spkmat)]
-                        #graphType = 'bar'
+                        # graphType = 'bar'
                     elif stat == 'pairsync':
                         # (SPIKE-Sync measure)' # see http://www.scholarpedia.org/article/Measures_of_spike_train_synchrony
                         syncMat = np.mean(pyspike.spike_sync_matrix(spkmat), 0)
@@ -2910,13 +3384,18 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
             line_color = 'black'
             if 'theme' in kwargs:
                 if kwargs['theme'] is not None:
-                    if kwargs['theme'] == 'gui' or 'dark' in kwargs['theme'] or kwargs['theme'] == 'contrast' or 'lack' in kwargs['theme']:
+                    if (
+                        kwargs['theme'] == 'gui'
+                        or 'dark' in kwargs['theme']
+                        or kwargs['theme'] == 'contrast'
+                        or 'lack' in kwargs['theme']
+                    ):
                         line_color = 'lightgray'
 
             labels = legendLabels if legendLabels else include
             data_lists = statData[::-1]
             data_lists.reverse()
-            box_colors = colors[0:len(labels)]
+            box_colors = colors[0 : len(labels)]
 
             if include[0] == 'allCells':
                 del box_colors[-1]
@@ -2927,20 +3406,20 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
                 data[label] = data_list
 
             fig = figure(
-                title = 'Spike statistics: ' + xlabels[stat],
-                toolbar_location = 'above',
-                tools = 'hover,save,pan,box_zoom,reset,wheel_zoom',
-                active_drag = "auto",
-                active_scroll = "auto",
-                tooltips = [(stat, "$y")],
-                x_axis_label = 'Population',
-                y_axis_label = xlabel,
-                x_range = labels
+                title='Spike statistics: ' + xlabels[stat],
+                toolbar_location='above',
+                tools='hover,save,pan,box_zoom,reset,wheel_zoom',
+                active_drag="auto",
+                active_scroll="auto",
+                tooltips=[(stat, "$y")],
+                x_axis_label='Population',
+                y_axis_label=xlabel,
+                x_range=labels,
             )
 
             fig.xgrid.visible = False
 
-            df = pd.DataFrame(dict([ (k,pd.Series(v)) for k,v in data.items() ]))
+            df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in data.items()]))
 
             q1 = df.quantile(q=0.25)
             q2 = df.quantile(q=0.5)
@@ -2953,7 +3432,7 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
             qmean = df.mean()
 
             out_highs = df[df > upper]
-            out_lows  = df[df < lower]
+            out_lows = df[df < lower]
 
             # outliers
             for index, label in enumerate(labels):
@@ -2976,7 +3455,9 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
                 else:
                     lower[label] = qmin[label]
                 if out_x:
-                    fig.circle_x(out_x, out_y, size=10, fill_color=box_colors[index], fill_alpha=0.8, line_color=line_color)
+                    fig.circle_x(
+                        out_x, out_y, size=10, fill_color=box_colors[index], fill_alpha=0.8, line_color=line_color
+                    )
 
             # stems
             fig.segment(labels, upper, labels, q3, line_color=line_color, line_width=line_width)
@@ -2987,13 +3468,29 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
             fig.vbar(labels, 0.7, q1, q2, line_color=line_color, line_width=line_width, fill_color=box_colors)
 
             # whiskers (almost-0 height rects simpler than segments)
-            fig.rect(labels, lower, 20, 1, width_units='screen', height_units='screen', line_color=line_color, line_width=line_width)
-            fig.rect(labels, upper, 20, 1, width_units='screen', height_units='screen', line_color=line_color, line_width=line_width)
+            fig.rect(
+                labels,
+                lower,
+                20,
+                1,
+                width_units='screen',
+                height_units='screen',
+                line_color=line_color,
+                line_width=line_width,
+            )
+            fig.rect(
+                labels,
+                upper,
+                20,
+                1,
+                width_units='screen',
+                height_units='screen',
+                line_color=line_color,
+                line_width=line_width,
+            )
 
             # means
             fig.circle_cross(labels, qmean, size=10, fill_color='white', fill_alpha=0.5, line_color='black')
-
-
 
         else:
             raise Exception('Only boxplot is currently supported in iplotSpikeStats.')
@@ -3016,12 +3513,23 @@ def iplotSpikeStats(include=['eachPop', 'allCells'], statDataIn={}, timeRange=No
     return html
 
 
-
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot interactive Granger causality
 # -------------------------------------------------------------------------------------------------------------------
 @exception
-def iplotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, label2=None, timeRange=None, binSize=5, showFig=True, saveFig=False, **kwargs):
+def iplotGranger(
+    cells1=None,
+    cells2=None,
+    spks1=None,
+    spks2=None,
+    label1=None,
+    label2=None,
+    timeRange=None,
+    binSize=5,
+    showFig=True,
+    saveFig=False,
+    **kwargs
+):
     """
     Function to plot the Granger Causality between two groups of cells
 
@@ -3078,7 +3586,7 @@ def iplotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, 
         **Default:** ``False``
         **Options:** ``True`` autosaves the figure,
         ``'/path/filename.ext'`` saves to a custom path and filename, valid file extensions are ``'.png'``, ``'.jpg'``, ``'.eps'``, and ``'.tiff'``
-        
+
     """
 
     from .. import sim
@@ -3091,8 +3599,8 @@ def iplotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, 
     theme = None
     from bokeh.colors import RGB
 
-    if not spks1:  
-        
+    if not spks1:
+
         if not cells1:
             pops = list(sim.net.allPops.keys())
             if len(pops) == 1:
@@ -3118,7 +3626,9 @@ def iplotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, 
         # Select cells to include
         if len(cellGids) > 0:
             try:
-                spkts = [spkt for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]
+                spkts = [
+                    spkt for spkgid, spkt in zip(sim.allSimData['spkid'], sim.allSimData['spkt']) if spkgid in cellGids
+                ]
             except:
                 spkts = []
         else:
@@ -3129,23 +3639,25 @@ def iplotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, 
         numNetStims = 0
         for netStimPop in netStimPops:
             if 'stims' in sim.allSimData:
-                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].items() if netStimPop in cellStim]
+                cellStims = [cellStim for cell, cellStim in sim.allSimData['stims'].items() if netStimPop in cellStim]
                 if len(cellStims) > 0:
-                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
+                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop]]
                     spkts.extend(spktsNew)
                     numNetStims += len(cellStims)
 
         spks1 = list(spkts)
 
     if not spks2:  # if doesnt contain a list of spk times, obtain from cells specified
-        
+
         cells, cellGids, netStimPops = getCellsInclude(cells2)
         numNetStims = 0
 
         # Select cells to include
         if len(cellGids) > 0:
             try:
-                spkts = [spkt for spkgid,spkt in zip(sim.allSimData['spkid'],sim.allSimData['spkt']) if spkgid in cellGids]
+                spkts = [
+                    spkt for spkgid, spkt in zip(sim.allSimData['spkid'], sim.allSimData['spkt']) if spkgid in cellGids
+                ]
             except:
                 spkts = []
         else:
@@ -3156,9 +3668,9 @@ def iplotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, 
         numNetStims = 0
         for netStimPop in netStimPops:
             if 'stims' in sim.allSimData:
-                cellStims = [cellStim for cell,cellStim in sim.allSimData['stims'].items() if netStimPop in cellStim]
+                cellStims = [cellStim for cell, cellStim in sim.allSimData['stims'].items() if netStimPop in cellStim]
                 if len(cellStims) > 0:
-                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop] ]
+                    spktsNew = [spkt for cellStim in cellStims for spkt in cellStim[netStimPop]]
                     spkts.extend(spktsNew)
                     numNetStims += len(cellStims)
 
@@ -3169,22 +3681,24 @@ def iplotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, 
         if getattr(sim, 'cfg', None):
             timeRange = [0, sim.cfg.duration]
         else:
-            timeRange = [0, max(spks1+spks2)]
+            timeRange = [0, max(spks1 + spks2)]
 
-    histo1 = np.histogram(spks1, bins = np.arange(timeRange[0], timeRange[1], binSize))
+    histo1 = np.histogram(spks1, bins=np.arange(timeRange[0], timeRange[1], binSize))
     histoCount1 = histo1[0]
 
-    histo2 = np.histogram(spks2, bins = np.arange(timeRange[0], timeRange[1], binSize))
+    histo2 = np.histogram(spks2, bins=np.arange(timeRange[0], timeRange[1], binSize))
     histoCount2 = histo2[0]
 
-    fs = int(1000/binSize)
-    F, pp, cohe, Fx2y, Fy2x, Fxy = pwcausalr(np.array([histoCount1, histoCount2]), 1, len(histoCount1), 10, fs, int(fs/2))
+    fs = int(1000 / binSize)
+    F, pp, cohe, Fx2y, Fy2x, Fxy = pwcausalr(
+        np.array([histoCount1, histoCount2]), 1, len(histoCount1), 10, fs, int(fs / 2)
+    )
 
     if not label1:
-        label1='spkTrain1'
-    if not label2: 
-        label2='spkTrain2'
-    
+        label1 = 'spkTrain1'
+    if not label2:
+        label2 = 'spkTrain2'
+
     if not 'palette' in kwargs:
         colors = [RGB(*[round(f * 255) for f in color]) for color in colorList]
     else:
@@ -3194,18 +3708,20 @@ def iplotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, 
 
     TOOLS = "pan,wheel_zoom,box_zoom,reset,save,box_select"
 
-    fig = figure(title="Granger Causality", 
-                    tools=TOOLS, 
-                    toolbar_location='above', 
-                    x_axis_label="Frequency (Hz)", 
-                    y_axis_label="Granger Causality")
+    fig = figure(
+        title="Granger Causality",
+        tools=TOOLS,
+        toolbar_location='above',
+        x_axis_label="Frequency (Hz)",
+        y_axis_label="Granger Causality",
+    )
 
     hover = HoverTool(tooltips=[('Frequency', '@x'), ('Causality', '@y')], mode='vline')
     fig.add_tools(hover)
 
-    #fig.line(t, v, legend=k, color=colors[i], line_width=2.0)
-    fig.line(F, Fy2x[0], legend_label=label2+' --> '+label1, color=colors[0], line_width=2.0)
-    fig.line(F, Fx2y[0], legend_label=label1+' --> '+label2, color=colors[1], line_width=2.0)
+    # fig.line(t, v, legend=k, color=colors[i], line_width=2.0)
+    fig.line(F, Fy2x[0], legend_label=label2 + ' --> ' + label1, color=colors[0], line_width=2.0)
+    fig.line(F, Fx2y[0], legend_label=label1 + ' --> ' + label2, color=colors[1], line_width=2.0)
 
     fig.legend.location = "top_right"
     fig.legend.click_policy = "hide"
@@ -3226,4 +3742,3 @@ def iplotGranger(cells1=None, cells2=None, spks1=None, spks2=None, label1=None, 
         outfile.close()
 
     return html
-

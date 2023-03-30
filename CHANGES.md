@@ -1,6 +1,44 @@
+# Version 1.0.4
+
+**New features**
+
+- Added 'linewidth' as argument of plotting.plotSpikeHist()
+
+- More detailed validation of netParams
+
+- Save and load model in native NetPyNE format
+
+- Converted most of examples to new NetPyNE model structure
+
+- Complex stimulation ('rhythmic', 'evoked', 'poisson' and 'gauss') for VecStim created as pointCell (as a population rule)
+
+- Codebase brought into compliance with PEP8 conventions
+
+- Updates in NeuroML examples and tests
+
+**Bug fixes**
+
+- fixed handling filenames with multiple dots in `MetaFigure.saveFig()`
+
+- Fixed readCmdLimeArgs() default arguments for backward-compatibility
+
+- Cleaned up example models to drop some legacy/irrelevant params
+
+- RxD module: Parameters defined before reactions + names given by default when missing (by the key)
+
+- Analysis: try ... except call in plotDipole
+
+- Save hObj of gap junction to connParams
+
+- Removed duplicated or unused code from gridSearch()
+
+- Fixes in batch utilities to make OS-agnostic
+
 # Version 1.0.3.1
 
-- Hotfix to support new GUI functionality
+- Hotfix to support new GUI functionality (fixes in grid parameter optimization)
+
+- Removed redundant warnings
 
 # Version 1.0.3
 

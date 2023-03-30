@@ -18,11 +18,11 @@ class TestBatchCell:
 
         params = {"dendNa": [0.025], ("IClamp1", "amp"): [1]}
         initCfg = {"duration": 10}
-        b = Batch(params=params, initCfg=initCfg)
+        b = Batch(cfgFile='src/cfg.py', netParamsFile='src/netParams.py', params=params, initCfg=initCfg)
         b.batchLabel = "batchNa"
         b.saveFolder = "/tmp/" + b.batchLabel
         b.method = "grid"
-        b.runCfg = {"type": "mpi_bulletin", "script": "init.py", "skip": True}
+        b.runCfg = {"type": "mpi_bulletin", "script": "src/init.py", "skip": True}
         b.run()
 
     def test_batchCell(self, pkg_setup):

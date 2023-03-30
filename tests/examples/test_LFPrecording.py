@@ -11,4 +11,4 @@ from .utils import pkg_setup
 @pytest.mark.package_data(['examples/LFPrecording/', 'mod'])
 class TestLFPrecording:
     def test_cell_lfp(self, pkg_setup):
-        import cell_lfp
+        import src.cell.init

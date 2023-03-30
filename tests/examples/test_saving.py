@@ -4,16 +4,12 @@ from netpyne import sim
 if '-nogui' not in sys.argv:
     sys.argv.append('-nogui')
 
-pkg = 'examples/saving/'
 
-@pytest.fixture()
-def pkg_setup():
-    sys.path.append(pkg)
-    yield True
-    sys.path.remove(pkg)
+from .utils import pkg_setup
 
 
+@pytest.mark.package_data(['examples/saving', None])
 class Test_saving():
     def test_init(self, pkg_setup):
-        import init
+        import src.init
         sim.checkOutput('saving')

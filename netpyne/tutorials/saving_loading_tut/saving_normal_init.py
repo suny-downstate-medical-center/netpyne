@@ -1,8 +1,6 @@
 from netpyne import sim
 
-cfg, netParams = sim.readCmdLineArgs(
-    simConfigDefault='saving_normal_cfg.py', 
-    netParamsDefault='saving_netParams.py')
+cfg, netParams = sim.readCmdLineArgs(simConfigDefault='saving_normal_cfg.py', netParamsDefault='saving_netParams.py')
 sim.initialize(simConfig=cfg, netParams=netParams)
 sim.net.createPops()
 sim.net.createCells()

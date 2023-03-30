@@ -3,15 +3,9 @@ import sys
 if '-nogui' not in sys.argv:
     sys.argv.append('-nogui')
 
-pkg = 'examples/rxd_buffering/'
+from .utils import pkg_setup
 
-@pytest.fixture()
-def simple_pkg_setup():
-    sys.path.append(pkg)
-    yield True
-    sys.path.remove(pkg)
-
-
+@pytest.mark.package_data(['examples/rxd_buffering/', None])
 class Test_rxd_buffering():
-    def test_buffering(self, simple_pkg_setup):
-        import buffering
+    def test_buffering(self, pkg_setup):
+        import src.init

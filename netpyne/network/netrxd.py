@@ -395,7 +395,7 @@ def _addParameters(self, params):
             print('  Error creating State %s: could not find regions %s' % (label, param['regions']))
 
         if 'name' not in param:
-            param['name'] = None
+            param['name'] = label
 
         if 'charge' not in param:
             param['charge'] = 0

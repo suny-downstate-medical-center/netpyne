@@ -1,3 +1,13 @@
+# Version in development
+
+**New features**
+
+- Extended sim.gatherData() with more optional arguments for flexibility
+
+**Bug fixes**
+
+- Fixed errors in plotting with sim.cfg.gatherOnlySimData=True
+
 # Version 1.0.4
 
 **New features**

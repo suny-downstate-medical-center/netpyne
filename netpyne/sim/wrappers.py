@@ -339,7 +339,7 @@ def runFromIndexFile(index):
         if pathToScript is None:
             from netpyne import sim
 
-            cfg, netParams = sim.loadFromIndexFile(index)
+            cfg, netParams = sim.loadModel(index)
             sim.createSimulateAnalyze(simConfig=cfg, netParams=netParams)
         else:
             import os, sys, importlib

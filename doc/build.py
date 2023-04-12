@@ -43,7 +43,9 @@ Here are the steps to release a new version of NetPyNE
     10e) It will build the html files
 11) Post the documentation
     11a) ssh gkaue9v7ctjf@107.180.3.236 "rm -r ~/public_html"
+        NOTE: it may give the error "... no matching host key type found ...". In this case, try using the "-oHostKeyAlgorithms=+ssh-rsa" argument in ssh command and in scp command below (as well as in 11c)
     11b) scp -r build gkaue9v7ctjf@107.180.3.236:///home/gkaue9v7ctjf/public_html
+        NOTE: it may give the error "path canonocalization failed", then use the argument "-O" in scp call - it rolls back to legacy mode (see also NOTE in 11a)
     11c) ssh gkaue9v7ctjf@107.180.3.236 "cp -r ~/redirect_html/. ~/public_html/"
 12) Update PYPI (pip) with the latest release
     12a) cd netpyne

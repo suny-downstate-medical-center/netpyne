@@ -1,3 +1,9 @@
+# Version 1.0.4.1
+
+**New features**
+
+- Added env variable to define head model placement
+
 # Version 1.0.4
 
 **New features**

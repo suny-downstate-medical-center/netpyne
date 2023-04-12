@@ -8,6 +8,7 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
+import os
 from builtins import range
 from builtins import round
 from builtins import str
@@ -89,7 +90,7 @@ def plotEEG(
 
     from lfpykit.eegmegcalc import NYHeadModel
 
-    nyhead = NYHeadModel()
+    nyhead = NYHeadModel(nyhead_file=os.getenv('NP_LFPYKIT_HEAD_FILE', None))
 
     # dipole_location = 'parietal_lobe'  # predefined location from NYHead class
     nyhead.set_dipole_pos(dipole_location)

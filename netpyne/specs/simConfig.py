@@ -117,7 +117,7 @@ class SimConfig(object):
 
         # error checking
         self.validateNetParams = (
-            True  # whether to validate the input parameters (will be turned off if num processors > 1)
+            False  # whether to validate the input parameters (will be turned off if num processors > 1)
         )
         # self.checkErrors = False # whether to validate the input parameters (will be turned off if num processors > 1)
         # self.checkErrorsVerbose = False # whether to print detailed errors during input parameter validation

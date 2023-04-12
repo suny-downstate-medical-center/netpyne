@@ -9,7 +9,7 @@ NetPyNE consists of a number of sub-packages and modules.
 # Updates for NeuroML support will be added on https://github.com/Neurosim-lab/netpyne/tree/neuroml_updates
 # and those changes pushed to development. This branch is for stable releases for
 # use on osbv2
-__version__ = '1.0.3.1_osbv2'
+__version__ = '1.0.4.1_osbv2'
 ###############################################################################
 
 import os, sys

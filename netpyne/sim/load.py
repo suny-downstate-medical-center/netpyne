@@ -523,8 +523,7 @@ def loadModel(path, loadMechs=True, ignoreMechAlreadyExistsError=False):
 
         if configFile[-3:] == '.py':
             cfgModule = sim.loadPythonModule(configFile)
-            configVar = indexData.get('simConfig_variable', 'cfg')
-            cfg = getattr(cfgModule, configVar)
+            cfg = cfgModule.cfg
         else:
             configVar = indexData.get('simConfig_variable', 'simConfig')
             cfg = sim.loadSimCfg(configFile, variable=configVar, setLoaded=False)
@@ -538,8 +537,7 @@ def loadModel(path, loadMechs=True, ignoreMechAlreadyExistsError=False):
             __main__.cfg = cfg  # this is often required by netParams
 
             netParamsModule = sim.loadPythonModule(netParamsFile)
-            paramsVar = indexData.get('netParams_variable', 'netParams')
-            netParams = getattr(netParamsModule, paramsVar)
+            netParams = netParamsModule.netParams
         else:
             paramsVar = indexData.get('netParams_variable', None)
             netParams = sim.loadNetParams(netParamsFile, variable=paramsVar, setLoaded=False)

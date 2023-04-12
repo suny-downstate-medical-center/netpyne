@@ -31,6 +31,10 @@ jobs:
           pip install -r requirements.txt
           pip install -e .
 
+      - name: Info on installed package versons
+        run: |
+          pip list
+
       - name: Test with pytest
         run: |
           source tests/test.sh

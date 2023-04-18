@@ -910,7 +910,7 @@ Notice how the rate initially increases as a function of connection weight, but 
 Tutorial 9: Recording and plotting LFPs
 ---------------------------------------
 
-Examples of how to record and analyze local field potentials (LFP) in single cells and networks are included in the \examples folder: `LFP recording example <https://github.com/Neurosim-lab/netpyne/tree/development/examples/LFPrecording>`_ . LFP recording also works with parallel simulations.
+Examples of how to record and analyze local field potentials (LFP) in single cells and networks are included in the \examples folder: `LFP recording example <https://github.com/suny-downstate-medical-center/netpyne/tree/master/examples/LFPrecording>`_ . LFP recording also works with parallel simulations.
 
 To record LFP just set the list of 3D locations of the LFP electrodes in the `simConfig` attribute `recordLFP` e.g. ``simConfig.recordLFP = e.g. [[50, 100, 50], [50, 200, 50]]`` (note the y coordinate represents depth, so will be represented as a negative value when plotted). The LFP signal in each electrode is obtained by summing the extracellular potential contributed by each segment of each neuron. Extracellular potentials are calculated using the "line source approximation" and assuming an Ohmic medium with conductivity sigma = 0.3 mS/mm. For more information on modeling LFPs see `Scholarpedia <http://www.scholarpedia.org/article/Local_field_potential>`_ or `this article <https://doi.org/10.3389/fncom.2016.00065>`_ .
 
@@ -918,13 +918,13 @@ The recorded LFP signal will be stored in ``sim.allSimData['LFP']`` as a 2D list
 
 To plot the LFP use the ``sim.analysis.plotLFP()`` method. This allows to plot for each electrode: 1) the time-resolved LFP signal ('timeSeries'), 2) the power spectral density ('PSD'), 3) the spectrogram / time-frequency profile ('spectrogram'), 4) and the 3D locations of the electrodes overlaid over the model neurons ('locations'). See :ref:`analysis_functions` for the full list of ``plotLFP()`` arguments.
 
-The first example ( :download:`cell_lfp.py <../../examples/LFPrecording/cell_lfp.py>`) shows LFP recording for a single cell -- M1 corticospinal neuron --  with 700+ compartments (segments) and multiple somatic and dendritic ionic channels. The cell parameters are loaded from a .json file. The cell receives NetStim input to its soma via an excitatory synapse. Ten LFP electrodes are placed at both sides of the neuron at 5 different cortical depths. The soma voltage, LFP time-resolved signal and the 3D locations of the electrodes are plotted:
+The `first example <https://github.com/suny-downstate-medical-center/netpyne/tree/master/examples/LFPrecording/src/cell>`_ shows LFP recording for a single cell -- M1 corticospinal neuron --  with 700+ compartments (segments) and multiple somatic and dendritic ionic channels. The cell parameters are loaded from a .json file. The cell receives NetStim input to its soma via an excitatory synapse. Ten LFP electrodes are placed at both sides of the neuron at 5 different cortical depths. The soma voltage, LFP time-resolved signal and the 3D locations of the electrodes are plotted:
 
 .. image:: figs/lfp_cell.png
 	:width: 60%
 	:align: center
 
-The second example ( :download:`net_lfp.py <../../examples/LFPrecording/net_lfp.py>`) shows LFP recording for a network very similar to that shown in Tutorial 5. However, in this case, the cells have been replaced with a more realistic model: a 6-compartment M1 corticostriatal neuron with multiple ionic channels. The cell parameters are loaded from a .json file. Cell receive NetStim inputs and include excitatory and inhibitory connections. Four LFP electrodes are placed at different cortical depths. The raster plot and LFP time-resolved signal, PSD, spectrogram and 3D locations of the electrodes are plotted:
+The `second example <https://github.com/suny-downstate-medical-center/netpyne/tree/master/examples/LFPrecording/src/net>`_  shows LFP recording for a network very similar to that shown in Tutorial 5. However, in this case, the cells have been replaced with a more realistic model: a 6-compartment M1 corticostriatal neuron with multiple ionic channels. The cell parameters are loaded from a .json file. Cell receive NetStim inputs and include excitatory and inhibitory connections. Four LFP electrodes are placed at different cortical depths. The raster plot and LFP time-resolved signal, PSD, spectrogram and 3D locations of the electrodes are plotted:
 
 .. image:: figs/lfp_net.png
 	:width: 90%

@@ -41,7 +41,7 @@ Install the development version of NetPyNE via GitHub and pip
 
 The NetPyNE package source files, as well as example models, are available via GitHub at: https://github.com/Neurosim-lab/netpyne. The following instructions will install the version in the GitHub "development" branch -- it will include some of the latest enhancements and bug fixes, but could also include temporary bugs:
 
-1) ``git clone https://github.com/Neurosim-lab/netpyne.git``
+1) ``git clone https://github.com/suny-downstate-medical-center/netpyne.git``
 2) ``cd netpyne``
 3) ``git checkout development``
 4) ``pip install -e .``
@@ -55,7 +55,7 @@ This version can also be used by developers interested in extending the package.
 Use a browser-based online version of NetPyNE GUI (beta version)
 ------------------------------------------------------
 
-The NetPyNE GUI is available online at: `gui.netpyne.org <http://gui.netpyne.org>`_. There is a maximum number of simultaneous users for this online version, so if you can't log in, please try again later. 
+The NetPyNE GUI is available online at: `v2.opensourcebrain.org <http://v2.opensourcebrain.org>`_. There is a maximum number of simultaneous users for this online version, so if you can't log in, please try again later.
 
 Note: the GUI also includes an interactive Python Jupyter Notebook (click "Python" icon at bottom-left) that you can use to directly run NetPyNE code/models (i.e. without using the actual graphical interface). 
 

@@ -1,3 +1,9 @@
+# Version in development
+
+**New features**
+
+- Support saving and loading data in .mat and .hdf5 formats
+
 # Version 1.0.4.1
 
 **New features**
@@ -51,28 +57,6 @@
 **New features**
 
 - Added ability to load PointCell from saved network
-
-- Added MultiPlotter class to allow plotting line data on multiple axes
-
-- Added option to use separate axis for each PSD trace (set axis='multi')
-
-- Added new Batch method named SBI (Simulation Based Inference) with example folder (sbiOptim)
-
-- Added support for string functions in properties of cell mechanism, in cell geometry (in netParams.cellParams)
-
-- Added support for string functions in synMech parameters
-
-- Massive update of schemas (validator.py and setup.py) 
-
-- More control over POINTER variables through synMechParams (e.g. for gap junctions)
-
-- Introduced cell variables in cellParams
-
-- Added plotRateSpectrogram to utils.py
-
-- Functions prepareCSD() and plotCSD() are now available
-
-- Updated documentation on install and about
 
 **Bug fixes**
 

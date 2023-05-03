@@ -2,6 +2,12 @@
 
 **New features**
 
+- Extended sim.gatherData() with more optional arguments for flexibility
+
+**Bug fixes**
+
+- Fixed errors in plotting with sim.cfg.gatherOnlySimData=True
+
 - Support saving and loading data in .mat and .hdf5 formats
 
 # Version 1.0.4.1

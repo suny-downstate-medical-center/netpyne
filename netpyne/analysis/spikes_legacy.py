@@ -1795,7 +1795,8 @@ def plotRatePSD(
     smooth=0,
     norm=False,
     overlay=True,
-    popColors=None,
+    popColors={},
+    yLogScale = True,
     ylim=None,
     figSize=(10, 8),
     fontSize=12,
@@ -1882,6 +1883,11 @@ def plotRatePSD(
     popColors : dict
         Dictionary with custom color (value) used for each population (key).
         **Default:** ``None`` uses standard colors
+        **Options:** ``<option>`` <description of option>
+
+    yLogScale : bool
+        If True, power is expressed on a logarithmic scale (dB).
+        **Default:** ``True``
         **Options:** ``<option>`` <description of option>
 
     ylim : list [min, max]
@@ -2016,7 +2022,7 @@ def plotRatePSD(
         elif transformMethod == 'fft':
 
             Fs = 1000.0 / binSize  # ACTUALLY DEPENDS ON BIN WINDOW!!! RATE NOT SPIKE!
-            power = mlab.psd(
+            power, freqs = mlab.psd(
                 histoCount,
                 Fs=Fs,
                 NFFT=NFFT,
@@ -2025,18 +2031,21 @@ def plotRatePSD(
                 noverlap=noverlap,
                 pad_to=None,
                 sides='default',
-                scale_by_freq=None,
+                scale_by_freq=True,
             )
 
-            allSignal = poerwe[0]
-            freqs = power[1]
-
-            if smooth:
-                signal = _smooth1d(10 * np.log10(allSignal), smooth)
+            if yLogScale:
+                signal = 10 * np.log10(power)
             else:
-                signal = 10 * np.log10(allSignal)
+                signal = power
+            if smooth:
+                signal = _smooth1d(signal, smooth)
 
-            ylabel = 'Power (dB/Hz)'
+            # dB vs watt
+            if yLogScale:
+                ylabel = 'Power (dB/Hz)'
+            else:
+                ylabel = 'Power (a. u.)'
 
         allFreqs.append(freqs)
         allSignal.append(signal)
@@ -2058,7 +2067,7 @@ def plotRatePSD(
             plt.title(str(subset), fontsize=fontsiz)
             color = 'blue'
 
-        plt.plot(freqs[freqs < maxFreq], signal[freqs < maxFreq], linewidth=lineWidth, color=color)
+        plt.plot(freqs[(freqs < maxFreq) & (freqs > minFreq)], signal[(freqs < maxFreq) & (freqs > minFreq)], linewidth=lineWidth, color=color)
 
         plt.xlabel('Frequency (Hz)', fontsize=fontsiz)
         plt.ylabel(ylabel, fontsize=fontsiz)  # add yaxis in opposite side

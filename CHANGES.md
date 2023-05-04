@@ -2,7 +2,17 @@
 
 **New features**
 
+- Extended sim.gatherData() with more optional arguments for flexibility
+
+- Specify linear/log scale in `plotRatePSD()`
+
+**Bug fixes**
+
+- Fixed errors in plotting with sim.cfg.gatherOnlySimData=True
+
 - Support saving and loading data in .mat and .hdf5 formats
+
+- Multiple fixes in `plotRatePSD()` - popColors, fft, minFreq
 
 # Version 1.0.4.1
 

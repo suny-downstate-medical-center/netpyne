@@ -1782,7 +1782,7 @@ def plotSpikeStats(
 ## Plot spiking power spectral density
 # -------------------------------------------------------------------------------------------------------------------
 #
-# @exception
+@exception
 def plotRatePSD(
     include=['eachPop', 'allCells'],
     timeRange=None,

@@ -447,7 +447,7 @@ def plotRaster(
     lw=2,
     marker='|',
     markerSize=5,
-    popColors=None,
+    popColors={},
     figSize=(10, 8),
     fontSize=12,
     dpi=100,
@@ -1781,7 +1781,8 @@ def plotSpikeStats(
 # -------------------------------------------------------------------------------------------------------------------
 ## Plot spiking power spectral density
 # -------------------------------------------------------------------------------------------------------------------
-@exception
+#
+# @exception
 def plotRatePSD(
     include=['eachPop', 'allCells'],
     timeRange=None,
@@ -1795,7 +1796,7 @@ def plotRatePSD(
     smooth=0,
     norm=False,
     overlay=True,
-    popColors=None,
+    popColors={},
     ylim=None,
     figSize=(10, 8),
     fontSize=12,
@@ -2028,7 +2029,7 @@ def plotRatePSD(
                 scale_by_freq=None,
             )
 
-            allSignal = poerwe[0]
+            allSignal = power[0]
             freqs = power[1]
 
             if smooth:
@@ -2045,6 +2046,8 @@ def plotRatePSD(
         vmax = np.max(allSignal)
         for i, s in enumerate(allSignal):
             allSignal[i] = allSignal[i] / vmax
+
+
 
     for iplot, (subset, freqs, signal) in enumerate(zip(include, allFreqs, allSignal)):
         color = (

@@ -14,6 +14,8 @@
 
 - Multiple fixes in `plotRatePSD()` - popColors, fft, minFreq
 
+- Fixed sync lines in `plotRaster()`
+
 # Version 1.0.4.1
 
 **New features**

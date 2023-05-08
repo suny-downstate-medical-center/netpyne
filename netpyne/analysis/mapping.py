@@ -245,4 +245,5 @@ def plotRaster(
         saveData=saveData,
         saveFig=saveFig,
         showFig=showFig,
+        syncLines=True
     )

@@ -6,6 +6,8 @@
 
 - Specify linear/log scale in `plotRatePSD()`
 
+- Print more info about exceptions in plotting functions
+
 **Bug fixes**
 
 - Fixed errors in plotting with sim.cfg.gatherOnlySimData=True

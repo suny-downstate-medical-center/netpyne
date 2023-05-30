@@ -86,9 +86,9 @@ def exception(function):
         try:
             return function(*args, **kwargs)
         except Exception as e:
-            # print
-            err = "There was an exception in %s():" % (function.__name__)
-            print(("  %s \n    %s \n    %s" % (err, e, sys.exc_info())))
+            import traceback
+            print(f"\nThere was an exception in {function.__name__}()")
+            traceback.print_exc()
             return -1
 
     return wrapper

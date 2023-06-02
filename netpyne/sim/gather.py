@@ -23,7 +23,7 @@ from . import setup
 # ------------------------------------------------------------------------------
 # Gather data from nodes
 # ------------------------------------------------------------------------------
-def gatherData(gatherLFP=True, gatherDipole=True):
+def gatherData(gatherLFP=True, gatherDipole=True, gatherOnlySimData=None, includeSimDataEntries=None, analyze=True):
     """
     Function for/to <short description of `netpyne.sim.gather.gatherData`>
 
@@ -47,6 +47,10 @@ def gatherData(gatherLFP=True, gatherDipole=True):
     ## Pack data from all hosts
     if sim.rank == 0:
         print('\nGathering data...')
+
+    # flag to avoid saving cell data and cell gids per populations (saves gather time and space; cannot inspect cells and pops)
+    if gatherOnlySimData is None:
+        gatherOnlySimData = sim.cfg.gatherOnlySimData
 
     # flag to avoid saving sections data for each cell (saves gather time and space; cannot inspect cell secs or re-simulate)
     if not sim.cfg.saveCellSecs:
@@ -89,183 +93,131 @@ def gatherData(gatherLFP=True, gatherDipole=True):
         simDataVecs.append('dipole')
 
     singleNodeVecs = ['t']
+    if includeSimDataEntries:
+        singleNodeVecs = [v for v in singleNodeVecs if v in includeSimDataEntries]
+
     if sim.nhosts > 1:  # only gather if >1 nodes
         netPopsCellGids = {popLabel: list(pop.cellGids) for popLabel, pop in sim.net.pops.items()}
 
-        # gather only sim data
-        if getattr(sim.cfg, 'gatherOnlySimData', False):
-            nodeData = {'simData': sim.simData}
-            data = [None] * sim.nhosts
-            data[0] = {}
-            for k, v in nodeData.items():
-                data[0][k] = v
-            gather = sim.pc.py_alltoall(data)
-            sim.pc.barrier()
+        if includeSimDataEntries:
+            simData = {key: sim.simData[key] for key in includeSimDataEntries}
+        else:
+            simData = sim.simData
 
-            if sim.rank == 0:  # simData
-                print('  Gathering only sim data...')
-                sim.allSimData = Dict()
-                for k in list(gather[0]['simData'].keys()):  # initialize all keys of allSimData dict
-                    if gatherLFP and k == 'LFP':
-                        sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
-                    elif gatherLFP and k == 'LFPPops':
-                        sim.allSimData[k] = {
-                            p: np.zeros(gather[0]['simData']['LFP'].shape)
-                            for p in gather[0]['simData']['LFPPops'].keys()
-                        }
-                    elif gatherDipole and k == 'dipoleSum':
-                        sim.allSimData[k] = np.zeros((gather[0]['simData']['dipoleSum'].shape))
-                    elif sim.cfg.recordDipolesHNN and k == 'dipole':
-                        for dk in sim.cfg.recordDipolesHNN:
-                            sim.allSimData[k][dk] = np.zeros(len(gather[0]['simData']['dipole'][dk]))
-                    else:
-                        sim.allSimData[k] = {}
-
-                for key in singleNodeVecs:  # store single node vectors (eg. 't')
-                    sim.allSimData[key] = list(nodeData['simData'][key])
-
-                # fill in allSimData taking into account if data is dict of h.Vector (code needs improvement to be more generic)
-                for node in gather:  # concatenate data from each node
-                    for key, val in node['simData'].items():  # update simData dics of dics of h.Vector
-                        if key in simDataVecs:  # simData dicts that contain Vectors
-                            if isinstance(val, dict):
-                                for key2, val2 in val.items():
-                                    if isinstance(val2, dict):
-                                        sim.allSimData[key].update(Dict({key2: Dict()}))
-                                        for stim, val3 in val2.items():
-                                            sim.allSimData[key][key2].update(
-                                                {stim: list(val3)}
-                                            )  # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
-                                    elif key == 'dipole':
-                                        sim.allSimData[key][key2] = np.add(
-                                            sim.allSimData[key][key2], val2.as_numpy()
-                                        )  # add together dipole values from each node
-                                    else:
-                                        sim.allSimData[key].update(
-                                            {key2: list(val2)}
-                                        )  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
-                            else:
-                                sim.allSimData[key] = list(sim.allSimData[key]) + list(
-                                    val
-                                )  # udpate simData dicts which are Vectors
-                        elif gatherLFP and key == 'LFP':
-                            sim.allSimData[key] += np.array(val)
-                        elif gatherLFP and key == 'LFPPops':
-                            for p in val:
-                                sim.allSimData[key][p] += np.array(val[p])
-                        elif gatherDipole and key == 'dipoleSum':
-                            sim.allSimData[key] += np.array(val)
-                        elif key not in singleNodeVecs:
-                            sim.allSimData[key].update(val)  # update simData dicts which are not Vectors
-
-                if len(sim.allSimData['spkt']) > 0:
-                    sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(
-                        *sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))
-                    )  # sort spks
-                    sim.allSimData['spkt'], sim.allSimData['spkid'] = list(sim.allSimData['spkt']), list(
-                        sim.allSimData['spkid']
-                    )
-
-                sim.net.allPops = ODict()  # pops
-                for popLabel, pop in sim.net.pops.items():
-                    sim.net.allPops[popLabel] = pop.__getstate__()  # can't use dict comprehension for OrderedDict
-
-                sim.net.allCells = [c.__dict__ for c in sim.net.cells]
-
-        # gather cells, pops and sim data
+        if gatherOnlySimData:
+            nodeData = {
+                'simData': simData
+            }
         else:
             nodeData = {
+                'simData': simData,
                 'netCells': [c.__getstate__() for c in sim.net.cells],
                 'netPopsCellGids': netPopsCellGids,
-                'simData': sim.simData,
             }
             if gatherLFP and hasattr(sim.net, 'recXElectrode'):
                 nodeData['xElectrodeTransferResistances'] = sim.net.recXElectrode.transferResistances
 
-            data = [None] * sim.nhosts
-            data[0] = {}
-            for k, v in nodeData.items():
-                data[0][k] = v
+        data = [None] * sim.nhosts
+        data[0] = {}
+        for k, v in nodeData.items():
+            data[0][k] = v
+        gather = sim.pc.py_alltoall(data)
+        sim.pc.barrier()
 
-            # print data
-            gather = sim.pc.py_alltoall(data)
-            sim.pc.barrier()
-            if sim.rank == 0:
+        if sim.rank == 0:
+            sim.allSimData = Dict()
+
+            if gatherOnlySimData:
+                print('  Gathering only sim data...')
+
+                # However, still need to ensure these list aren't empty to avoid errors during analyzing/plotting
+                # TODO: this should be improved by handling abovementioned errors in analyzing/plotting instead of adding this workaround here
+                allCells = getattr(sim.net, 'allCells', [])
+                if len(allCells) == 0:
+                    sim.net.allCells = [c.__getstate__() for c in sim.net.cells]
+
+                allPops = getattr(sim.net, 'allPops', ODict())
+                if len(allPops) == 0:
+                    sim.net.allPops = allPops
+                    for popLabel, pop in sim.net.pops.items():
+                        sim.net.allPops[popLabel] = pop.__getstate__()  # can't use dict comprehension for OrderedDict
+            else:
                 allCells = []
                 allPops = ODict()
                 for popLabel, pop in sim.net.pops.items():
                     allPops[popLabel] = pop.__getstate__()  # can't use dict comprehension for OrderedDict
                 allPopsCellGids = {popLabel: [] for popLabel in netPopsCellGids}
-                sim.allSimData = Dict()
                 allResistances = {}
+            
+            for k in list(gather[0]['simData'].keys()):  # initialize all keys of allSimData dict
+                if gatherLFP and k == 'LFP':
+                    sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
+                elif gatherLFP and k == 'LFPPops':
+                    sim.allSimData[k] = {
+                        p: np.zeros(gather[0]['simData']['LFP'].shape)
+                        for p in gather[0]['simData']['LFPPops'].keys()
+                    }
+                elif gatherDipole and k == 'dipoleSum':
+                    sim.allSimData[k] = np.zeros((gather[0]['simData']['dipoleSum'].shape))
+                elif sim.cfg.recordDipolesHNN and k == 'dipole':
+                    for dk in sim.cfg.recordDipolesHNN:
+                        sim.allSimData[k][dk] = np.zeros(len(gather[0]['simData']['dipole'][dk]))
+                else:
+                    sim.allSimData[k] = {}
 
-                for k in list(gather[0]['simData'].keys()):  # initialize all keys of allSimData dict
-                    if gatherLFP and k == 'LFP':
-                        sim.allSimData[k] = np.zeros((gather[0]['simData']['LFP'].shape))
-                    elif gatherLFP and k == 'LFPPops':
-                        sim.allSimData[k] = {
-                            p: np.zeros(gather[0]['simData']['LFP'].shape)
-                            for p in gather[0]['simData']['LFPPops'].keys()
-                        }
-                    elif gatherDipole and k == 'dipoleSum':
-                        sim.allSimData[k] = np.zeros((gather[0]['simData']['dipoleSum'].shape))
-                    elif sim.cfg.recordDipolesHNN and k == 'dipole':
-                        for dk in sim.cfg.recordDipolesHNN:
-                            sim.allSimData[k][dk] = np.zeros(len(gather[0]['simData']['dipole'][dk]))
-                    else:
-                        sim.allSimData[k] = {}
+            for key in singleNodeVecs:  # store single node vectors (eg. 't')
+                sim.allSimData[key] = list(nodeData['simData'][key])
 
-                for key in singleNodeVecs:  # store single node vectors (eg. 't')
-                    sim.allSimData[key] = list(nodeData['simData'][key])
-
-                # fill in allSimData taking into account if data is dict of h.Vector (code needs improvement to be more generic)
-                for node in gather:  # concatenate data from each node
+            # fill in allSimData taking into account if data is dict of h.Vector (code needs improvement to be more generic)
+            for node in gather:  # concatenate data from each node
+                if not gatherOnlySimData:
                     allCells.extend(node['netCells'])  # extend allCells list
                     for popLabel, popCellGids in node['netPopsCellGids'].items():
                         allPopsCellGids[popLabel].extend(popCellGids)
-
-                    for key, val in node['simData'].items():  # update simData dics of dics of h.Vector
-                        if key in simDataVecs:  # simData dicts that contain Vectors
-                            if isinstance(val, dict):
-                                for key2, val2 in val.items():
-                                    if isinstance(val2, dict):
-                                        sim.allSimData[key].update(Dict({key2: Dict()}))
-                                        for stim, val3 in val2.items():
-                                            sim.allSimData[key][key2].update(
-                                                {stim: list(val3)}
-                                            )  # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
-                                    elif key == 'dipole':
-                                        sim.allSimData[key][key2] = np.add(
-                                            sim.allSimData[key][key2], val2.as_numpy()
-                                        )  # add together dipole values from each node
-                                    else:
-                                        sim.allSimData[key].update(
-                                            {key2: list(val2)}
-                                        )  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
-                            else:
-                                sim.allSimData[key] = list(sim.allSimData[key]) + list(
-                                    val
-                                )  # udpate simData dicts which are Vectors
-                        elif gatherLFP and key == 'LFP':
-                            sim.allSimData[key] += np.array(val)
-                        elif gatherLFP and key == 'LFPPops':
-                            for p in val:
-                                sim.allSimData[key][p] += np.array(val[p])
-                        elif gatherDipole and key == 'dipoleSum':
-                            sim.allSimData[key] += np.array(val)
-                        elif key not in singleNodeVecs:
-                            sim.allSimData[key].update(val)  # update simData dicts which are not Vectors
                     if 'xElectrodeTransferResistances' in node:
                         allResistances.update(node['xElectrodeTransferResistances'])
 
-                if len(sim.allSimData['spkt']) > 0:
-                    sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(
-                        *sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))
-                    )  # sort spks
-                    sim.allSimData['spkt'], sim.allSimData['spkid'] = list(sim.allSimData['spkt']), list(
-                        sim.allSimData['spkid']
-                    )
+                for key, val in node['simData'].items():  # update simData dics of dics of h.Vector
+                    if key in simDataVecs:  # simData dicts that contain Vectors
+                        if isinstance(val, dict):
+                            for key2, val2 in val.items():
+                                if isinstance(val2, dict):
+                                    sim.allSimData[key].update(Dict({key2: Dict()}))
+                                    for stim, val3 in val2.items():
+                                        sim.allSimData[key][key2].update(
+                                            {stim: list(val3)}
+                                        )  # udpate simData dicts which are dicts of dicts of Vectors (eg. ['stim']['cell_1']['backgrounsd']=h.Vector)
+                                elif key == 'dipole':
+                                    sim.allSimData[key][key2] = np.add(
+                                        sim.allSimData[key][key2], val2.as_numpy()
+                                    )  # add together dipole values from each node
+                                else:
+                                    sim.allSimData[key].update(
+                                        {key2: list(val2)}
+                                    )  # udpate simData dicts which are dicts of Vectors (eg. ['v']['cell_1']=h.Vector)
+                        else:
+                            sim.allSimData[key] = list(sim.allSimData[key]) + list(
+                                val
+                            )  # udpate simData dicts which are Vectors
+                    elif gatherLFP and key == 'LFP':
+                        sim.allSimData[key] += np.array(val)
+                    elif gatherLFP and key == 'LFPPops':
+                        for p in val:
+                            sim.allSimData[key][p] += np.array(val[p])
+                    elif gatherDipole and key == 'dipoleSum':
+                        sim.allSimData[key] += np.array(val)
+                    elif key not in singleNodeVecs:
+                        sim.allSimData[key].update(val)  # update simData dicts which are not Vectors
 
+            if len(sim.allSimData['spkt']) > 0:
+                sim.allSimData['spkt'], sim.allSimData['spkid'] = zip(
+                    *sorted(zip(sim.allSimData['spkt'], sim.allSimData['spkid']))
+                )  # sort spks
+                sim.allSimData['spkt'], sim.allSimData['spkid'] = list(sim.allSimData['spkt']), list(
+                    sim.allSimData['spkid']
+                )
+
+            if not gatherOnlySimData:
                 sim.net.allCells = sorted(allCells, key=lambda k: k['gid'])
 
                 for popLabel, pop in allPops.items():
@@ -324,55 +276,56 @@ def gatherData(gatherLFP=True, gatherDipole=True):
         if sim.cfg.timing:
             print(('  Done; gather time = %0.2f s.' % sim.timingData['gatherTime']))
 
-        print('\nAnalyzing...')
-        sim.totalSpikes = len(sim.allSimData['spkt'])
-        sim.totalSynapses = sum([len(cell['conns']) for cell in sim.net.allCells])
-        if sim.cfg.createPyStruct:
-            if sim.cfg.compactConnFormat:
-                preGidIndex = sim.cfg.compactConnFormat.index('preGid') if 'preGid' in sim.cfg.compactConnFormat else 0
-                sim.totalConnections = sum(
-                    [len(set([conn[preGidIndex] for conn in cell['conns']])) for cell in sim.net.allCells]
-                )
+        if analyze:
+            print('\nAnalyzing...')
+            sim.totalSpikes = len(sim.allSimData['spkt'])
+            sim.totalSynapses = sum([len(cell['conns']) for cell in sim.net.allCells])
+            if sim.cfg.createPyStruct:
+                if sim.cfg.compactConnFormat:
+                    preGidIndex = sim.cfg.compactConnFormat.index('preGid') if 'preGid' in sim.cfg.compactConnFormat else 0
+                    sim.totalConnections = sum(
+                        [len(set([conn[preGidIndex] for conn in cell['conns']])) for cell in sim.net.allCells]
+                    )
+                else:
+                    sim.totalConnections = sum(
+                        [len(set([conn['preGid'] for conn in cell['conns']])) for cell in sim.net.allCells]
+                    )
             else:
-                sim.totalConnections = sum(
-                    [len(set([conn['preGid'] for conn in cell['conns']])) for cell in sim.net.allCells]
-                )
-        else:
-            sim.totalConnections = sim.totalSynapses
-        sim.numCells = len(sim.net.allCells)
+                sim.totalConnections = sim.totalSynapses
+            sim.numCells = len(sim.net.allCells)
 
-        if sim.totalSpikes > 0:
-            sim.firingRate = float(sim.totalSpikes) / sim.numCells / sim.cfg.duration * 1e3  # Calculate firing rate
-        else:
-            sim.firingRate = 0
-        if sim.numCells > 0:
-            sim.connsPerCell = sim.totalConnections / float(
-                sim.numCells
-            )  # Calculate the number of connections per cell
-            sim.synsPerCell = sim.totalSynapses / float(sim.numCells)  # Calculate the number of connections per cell
-        else:
-            sim.connsPerCell = 0
-            sim.synsPerCell = 0
+            if sim.totalSpikes > 0:
+                sim.firingRate = float(sim.totalSpikes) / sim.numCells / sim.cfg.duration * 1e3  # Calculate firing rate
+            else:
+                sim.firingRate = 0
+            if sim.numCells > 0:
+                sim.connsPerCell = sim.totalConnections / float(
+                    sim.numCells
+                )  # Calculate the number of connections per cell
+                sim.synsPerCell = sim.totalSynapses / float(sim.numCells)  # Calculate the number of connections per cell
+            else:
+                sim.connsPerCell = 0
+                sim.synsPerCell = 0
 
-        print(('  Cells: %i' % (sim.numCells)))
-        print(('  Connections: %i (%0.2f per cell)' % (sim.totalConnections, sim.connsPerCell)))
-        if sim.totalSynapses != sim.totalConnections:
-            print(('  Synaptic contacts: %i (%0.2f per cell)' % (sim.totalSynapses, sim.synsPerCell)))
+            print(('  Cells: %i' % (sim.numCells)))
+            print(('  Connections: %i (%0.2f per cell)' % (sim.totalConnections, sim.connsPerCell)))
+            if sim.totalSynapses != sim.totalConnections:
+                print(('  Synaptic contacts: %i (%0.2f per cell)' % (sim.totalSynapses, sim.synsPerCell)))
 
-        if 'runTime' in sim.timingData:
-            print(('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate)))
-            print(('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration / 1e3, sim.nhosts)))
-            print(('  Run time: %0.2f s' % (sim.timingData['runTime'])))
+            if 'runTime' in sim.timingData:
+                print(('  Spikes: %i (%0.2f Hz)' % (sim.totalSpikes, sim.firingRate)))
+                print(('  Simulated time: %0.1f s; %i workers' % (sim.cfg.duration / 1e3, sim.nhosts)))
+                print(('  Run time: %0.2f s' % (sim.timingData['runTime'])))
 
-            if sim.cfg.printPopAvgRates and not sim.cfg.gatherOnlySimData:
+                if sim.cfg.printPopAvgRates and not gatherOnlySimData:
 
-                trange = sim.cfg.printPopAvgRates if isinstance(sim.cfg.printPopAvgRates, list) else None
-                sim.allSimData['popRates'] = sim.analysis.popAvgRates(tranges=trange)
+                    trange = sim.cfg.printPopAvgRates if isinstance(sim.cfg.printPopAvgRates, list) else None
+                    sim.allSimData['popRates'] = sim.analysis.popAvgRates(tranges=trange)
 
-            if 'plotfI' in sim.cfg.analysis:
-                sim.analysis.calculatefI()  # need to call here so data is saved to file
+                if 'plotfI' in sim.cfg.analysis:
+                    sim.analysis.calculatefI()  # need to call here so data is saved to file
 
-            sim.allSimData['avgRate'] = sim.firingRate  # save firing rate
+                sim.allSimData['avgRate'] = sim.firingRate  # save firing rate
 
         return sim.allSimData
 

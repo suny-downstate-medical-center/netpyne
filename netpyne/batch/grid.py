@@ -33,7 +33,7 @@ from subprocess import Popen, PIPE
 import importlib, types
 
 from neuron import h
-from .utils import jobStringHPCSlurm, jobStringHPCTorque
+from .utils import jobStringHPCSlurm, jobStringHPCTorque, jobStringHPCSGE
 from .utils import createFolder
 
 pc = h.ParallelContext()  # use bulletin board master/slave
@@ -402,9 +402,46 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
         print('Saving output to: ', jobName + '.run')
         print('Saving errors to: ', jobName + '.err')
         print('')
+
+    elif batch.runCfg.get('type', None) == 'hpc_sge':
+
+        # read params or set defaults
+        allocation = batch.runCfg.get('allocation', 'csd403')  # NSG account
+        coresPerNode = batch.runCfg.get('coresPerNode', 1)
+        email = batch.runCfg.get('email', 'a@b.c')
+        mpiCommand = batch.runCfg.get('mpiCommand', 'ibrun')
+        reservation = batch.runCfg.get('reservation', None)
+
+        numproc = nodes * coresPerNode
+        command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (
+            mpiCommand,
+            numproc,
+            script,
+            cfgSavePath,
+            netParamsSavePath,
+        )
+
+        jobString = jobStringHPCSGE(
+            simLabel, allocation, walltime, nodes, coresPerNode, jobName, email, reservation, custom, folder, command
+        )
+
+        # Send job_string to sbatch
+
+        print('Submitting job ', jobName)
+        print(jobString + '\n')
+
+        batchfile = '%s.sbatch' % (jobName)
+        with open(batchfile, 'w') as text_file:
+            text_file.write("%s" % jobString)
+
+        # subprocess.call
+        proc = Popen(['sbatch', batchfile], stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
+        (output, input) = (proc.stdin, proc.stdout)
+
     else:
         print(batch.runCfg)
         print(
             "Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'"
         )
         sys.exit(0)
+

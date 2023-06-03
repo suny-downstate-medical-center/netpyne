@@ -404,12 +404,15 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
         print('')
 
     elif batch.runCfg.get('type', None) == 'hpc_sge':
+        sge_args = {
 
+
+        }
         # read params or set defaults
         allocation = batch.runCfg.get('allocation', 'csd403')  # NSG account
         coresPerNode = batch.runCfg.get('coresPerNode', 1)
         email = batch.runCfg.get('email', 'a@b.c')
-        mpiCommand = batch.runCfg.get('mpiCommand', 'ibrun')
+        mpiCommand = batch.runCfg.get('mpiCommand', 'mpiexec')
         reservation = batch.runCfg.get('reservation', None)
 
         numproc = nodes * coresPerNode

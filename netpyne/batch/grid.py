@@ -425,7 +425,7 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
         )
 
         jobString = jobStringHPCSGE(
-            simLabel, allocation, walltime, nodes, coresPerNode, jobName, email, reservation, custom, folder, command
+            jobName, walltime, vmem, queueName, nodes, coresPerNode, jobPath, custom, command
         )
 
         # Send job_string to sbatch

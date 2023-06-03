@@ -332,7 +332,53 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
 
         proc = Popen(['qsub', batchfile], stderr=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
         (output, input) = (proc.stdin, proc.stdout)
+    elif batch.runCfg.get('type', None) == 'hpc_sge':
 
+        sge_args = {
+            'jobName': jobName,
+            'walltime': walltime,
+            'vmem': '32G'
+            'queueName': 'cpu.q'
+            'cores': 1,
+            'jobPath': jobPath
+            'mpiCommand': 'mpiexec'
+
+        }
+        # runCfg just a library what\
+        sge_args.update(batch.runCfg)
+        #jobStringHPCSGE(jobName, walltime, vmem, queueName, cores, jobPath, custom, command):
+        # read params or set defaults
+        coresPerNode = batch.runCfg.get('coresPerNode', 1)
+        email = batch.runCfg.get('email', 'a@b.c')
+        mpiCommand = sge_args['mpiCommand']
+        reservation = batch.runCfg.get('reservation', None)
+
+        numproc = sge_args['cores']
+        #(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles):
+        command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (
+            mpiCommand, 
+            numproc,
+            script,
+            cfgSavePath,
+            netParamsSavePath,
+        )
+
+        jobString = jobStringHPCSGE(
+            jobName, walltime, vmem, queueName, nodes, coresPerNode, custom, command, **sge_args
+        )
+
+        # Send job_string to sbatch
+
+        print('Submitting job ', jobName)
+        print(jobString + '\n')
+
+        batchfile = '%s.sbatch' % (jobName)
+        with open(batchfile, 'w') as text_file:
+            text_file.write("%s" % jobString)
+
+        # subprocess.call
+        proc = Popen(['sbatch', batchfile], stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
+        (output, input) = (proc.stdin, proc.stdout)
     # hpc slurm job submission
     elif batch.runCfg.get('type', None) == 'hpc_slurm':
 
@@ -402,44 +448,6 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
         print('Saving output to: ', jobName + '.run')
         print('Saving errors to: ', jobName + '.err')
         print('')
-
-    elif batch.runCfg.get('type', None) == 'hpc_sge':
-        sge_args = {
-
-
-        }
-        # read params or set defaults
-        allocation = batch.runCfg.get('allocation', 'csd403')  # NSG account
-        coresPerNode = batch.runCfg.get('coresPerNode', 1)
-        email = batch.runCfg.get('email', 'a@b.c')
-        mpiCommand = batch.runCfg.get('mpiCommand', 'mpiexec')
-        reservation = batch.runCfg.get('reservation', None)
-
-        numproc = nodes * coresPerNode
-        command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (
-            mpiCommand,
-            numproc,
-            script,
-            cfgSavePath,
-            netParamsSavePath,
-        )
-
-        jobString = jobStringHPCSGE(
-            jobName, walltime, vmem, queueName, nodes, coresPerNode, jobPath, custom, command
-        )
-
-        # Send job_string to sbatch
-
-        print('Submitting job ', jobName)
-        print(jobString + '\n')
-
-        batchfile = '%s.sbatch' % (jobName)
-        with open(batchfile, 'w') as text_file:
-            text_file.write("%s" % jobString)
-
-        # subprocess.call
-        proc = Popen(['sbatch', batchfile], stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
-        (output, input) = (proc.stdin, proc.stdout)
 
     else:
         print(batch.runCfg)

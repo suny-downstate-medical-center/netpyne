@@ -93,7 +93,7 @@ echo $PBS_O_WORKDIR
 {command}
         """
 
-def jobStringHPCSGE(jobName, walltime, vmem, queueName, nodes, coresPerNode, jobPath, custom, command):
+def jobStringHPCSGE(jobName, walltime, vmem, queueName, cores, jobPath, custom, command):
     """
     creates string for SUN GRID ENGINE
     https://gridscheduler.sourceforge.net/htmlman/htmlman1/qsub.html
@@ -101,7 +101,7 @@ def jobStringHPCSGE(jobName, walltime, vmem, queueName, nodes, coresPerNode, job
     return f"""#!/bin/bash
 #$ -N {jobName}
 #$ -q {queueName}
-#$ -pe smp {coresPerNode}
+#$ -pe smp {cores}
 #$ -l h_vmem={vmem}
 #$ -l h_rt={walltime}
 #$ -o {jobPath}.run

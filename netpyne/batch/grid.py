@@ -333,38 +333,31 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
         proc = Popen(['qsub', batchfile], stderr=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
         (output, input) = (proc.stdin, proc.stdout)
     elif batch.runCfg.get('type', None) == 'hpc_sge':
-
+        # arguments for SGE submission script, default
         sge_args = {
+        # def jobStringHPCSGE(jobName, walltime, vmem, queueName, cores, custom, command)
             'jobName': jobName,
             'walltime': walltime,
-            'vmem': '32G'
-            'queueName': 'cpu.q'
+            'vmem': '32G',
+            'queueName': 'cpu.q',
             'cores': 1,
-            'jobPath': jobPath
+            'custom': '',
             'mpiCommand': 'mpiexec'
-
         }
-        # runCfg just a library what\
+        # runCfg just 
         sge_args.update(batch.runCfg)
-        #jobStringHPCSGE(jobName, walltime, vmem, queueName, cores, jobPath, custom, command):
-        # read params or set defaults
-        coresPerNode = batch.runCfg.get('coresPerNode', 1)
-        email = batch.runCfg.get('email', 'a@b.c')
-        mpiCommand = sge_args['mpiCommand']
-        reservation = batch.runCfg.get('reservation', None)
 
-        numproc = sge_args['cores']
         #(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles):
         command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (
-            mpiCommand, 
-            numproc,
+            sge_args['mpiCommand'],
+            sge_args['cores'],
             script,
             cfgSavePath,
             netParamsSavePath,
         )
 
         jobString = jobStringHPCSGE(
-            jobName, walltime, vmem, queueName, nodes, coresPerNode, custom, command, **sge_args
+            **sge_args
         )
 
         # Send job_string to sbatch
@@ -377,7 +370,7 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
             text_file.write("%s" % jobString)
 
         # subprocess.call
-        proc = Popen(['sbatch', batchfile], stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
+        proc = Popen(['qsub', batchfile], stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
         (output, input) = (proc.stdin, proc.stdout)
     # hpc slurm job submission
     elif batch.runCfg.get('type', None) == 'hpc_slurm':

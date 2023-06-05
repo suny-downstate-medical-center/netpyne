@@ -33,7 +33,7 @@ from subprocess import Popen, PIPE
 import importlib, types
 
 from neuron import h
-from .utils import jobStringHPCSlurm, jobStringHPCTorque
+from .utils import jobStringHPCSlurm, jobStringHPCTorque, jobStringHPCSGE
 from .utils import createFolder
 
 pc = h.ParallelContext()  # use bulletin board master/slave
@@ -332,7 +332,47 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
 
         proc = Popen(['qsub', batchfile], stderr=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
         (output, input) = (proc.stdin, proc.stdout)
+    elif batch.runCfg.get('type', None) == 'hpc_sge':
+        # arguments for SGE submission script, default
+        sge_args = {
+        # def jobStringHPCSGE(jobName, walltime, vmem, queueName, cores, custom, command)
+            'jobName': jobName,
+            'walltime': walltime,
+            'vmem': '32G',
+            'queueName': 'cpu.q',
+            'cores': 1,
+            'custom': '',
+            'mpiCommand': 'mpiexec',
+            'log': "~/qsub/{}.run".format(jobName)
+        }
+        # runCfg just 
+        sge_args.update(batch.runCfg)
 
+        #(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles):
+        sge_args['command'] = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (
+            sge_args['mpiCommand'],
+            sge_args['cores'],
+            script,
+            cfgSavePath,
+            netParamsSavePath,
+        )
+
+        jobString = jobStringHPCSGE(
+            **sge_args
+        )
+
+        # Send job_string to sbatch
+
+        print('Submitting job ', jobName)
+        print(jobString + '\n')
+
+        batchfile = '%s.sh' % (jobName)
+        with open(batchfile, 'w') as text_file:
+            text_file.write("%s" % jobString)
+
+        # subprocess.call
+        proc = Popen(['qsub', batchfile], stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
+        (output, input) = (proc.stdin, proc.stdout)
     # hpc slurm job submission
     elif batch.runCfg.get('type', None) == 'hpc_slurm':
 
@@ -402,9 +442,11 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
         print('Saving output to: ', jobName + '.run')
         print('Saving errors to: ', jobName + '.err')
         print('')
+
     else:
         print(batch.runCfg)
         print(
             "Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'"
         )
         sys.exit(0)
+

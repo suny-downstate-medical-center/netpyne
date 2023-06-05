@@ -342,13 +342,14 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
             'queueName': 'cpu.q',
             'cores': 1,
             'custom': '',
-            'mpiCommand': 'mpiexec'
+            'mpiCommand': 'mpiexec',
+            'log': "~/qsub/{}.run".format(jobName)
         }
         # runCfg just 
         sge_args.update(batch.runCfg)
 
         #(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles):
-        command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (
+        sge_args['command'] = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (
             sge_args['mpiCommand'],
             sge_args['cores'],
             script,
@@ -365,7 +366,7 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
         print('Submitting job ', jobName)
         print(jobString + '\n')
 
-        batchfile = '%s.sbatch' % (jobName)
+        batchfile = '%s.sh' % (jobName)
         with open(batchfile, 'w') as text_file:
             text_file.write("%s" % jobString)
 

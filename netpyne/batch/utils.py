@@ -93,18 +93,20 @@ echo $PBS_O_WORKDIR
 {command}
         """
 
-def jobStringHPCSGE(jobName, walltime, vmem, queueName, cores, custom, command):
+def jobStringHPCSGE(jobName, walltime, vmem, queueName, cores, custom, command, log, **kwargs):
     """
     creates string for SUN GRID ENGINE
     https://gridscheduler.sourceforge.net/htmlman/htmlman1/qsub.html
     """
+    #mpiCommand now in **kwargs
+    ##$ -o {jobName}.run
     return f"""#!/bin/bash
 #$ -N {jobName}
 #$ -q {queueName}
 #$ -pe smp {cores}
 #$ -l h_vmem={vmem}
 #$ -l h_rt={walltime}
-#$ -o {jobName}.run
+#$ -o {log}
 {custom}
 rsync -a $SGE_O_WORKDIR/ $TMPDIR/
 cd $TMPDIR

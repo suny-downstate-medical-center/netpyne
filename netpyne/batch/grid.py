@@ -336,14 +336,15 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
         # arguments for SGE submission script, default
         sge_args = {
         # def jobStringHPCSGE(jobName, walltime, vmem, queueName, cores, custom, command)
-            'jobName': jobName,
+            'jobName': simLabel,
             'walltime': walltime,
             'vmem': '32G',
             'queueName': 'cpu.q',
             'cores': 1,
-            'custom': '',
+            'pre': '', 'post': '',
             'mpiCommand': 'mpiexec',
-            'log': "~/qsub/{}.run".format(jobName)
+            #'log': "~/qsub/{}".format(jobName)
+            'log': "{}/{}".format(os.getcwd(), jobName)
         }
         # runCfg just 
         sge_args.update(batch.runCfg)

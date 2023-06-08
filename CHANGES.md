@@ -8,6 +8,8 @@
 
 - Print more info about exceptions in plotting functions
 
+- Check RxD specification for potential syntax issues
+
 **Bug fixes**
 
 - Fixed errors in plotting with sim.cfg.gatherOnlySimData=True

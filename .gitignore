@@ -1,4 +1,4 @@
-/doc/source/*.rst
+/doc/source/netpyne.*.rst
 
 /examples/sandbox/LEMS_sandbox.xml
 /examples/M1/LEMS_M1.xml

@@ -20,6 +20,8 @@
 
 - Fixed sync lines in `plotRaster()`
 
+- Fixed performance issue in `plotConn()` with `groupBy='pop'` (default)
+
 # Version 1.0.4.1
 
 **New features**

@@ -606,7 +606,7 @@ if cfg.addSubConn:
     #------------------------------------------------------------------------------
     # All->I; apical dendrites (no sCRACM)
     netParams.subConnParams['All->I'] = {
-        'preConds': {'cellType': ['IT', 'CT', 'PT', 'SOM', 'PV']+longPops},
+        'preConds': {'cellType': ['IT', 'CT', 'PT', 'SOM', 'PV']},
         'postConds': {'cellType': ['SOM', 'PV']},
         'sec': 'spiny',
         'groupSynMechs': ESynMech,

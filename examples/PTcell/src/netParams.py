@@ -178,8 +178,8 @@ if cfg.addSubConn:
     synDens, _, fixedSomaY = connDendPTData['synDens'], connDendPTData['gridY'], connDendPTData['fixedSomaY']
 
     netParams.subConnParams['L2->PT'] = {
-    'preConds': {'cellType': 'NetStim'}, # all presyn inputs
-    'postConds': {'cellType': 'PT5B'},
+    'preConds': {'cellModel': 'NetStim'}, # all presyn inputs
+    'postConds': {'pop': 'PT5B'},
     'sec': 'spiny',
     'groupSynMechs': ESynMech,
     'density': {'type': '1Dmap', 'gridX': None, 'gridY': gridY, 'gridValues': synDens['L2_PT'], 'fixedSomaY': fixedSomaY}}

@@ -1,15 +1,20 @@
 from netpyne import specs
-from netParams import netParams # TODO: this workaround ignores the path to netParams specified in index.npjson (wouldn't work if changed)
 
 # Simulation configuration
 cfg = specs.SimConfig()        # object of class SimConfig to store simulation configuration
+
+# Network dimensions
+cfg.sizeX = 200
+cfg.sizeY = 1000
+cfg.sizeZ = 20
+
 cfg.duration = 1.0*1e3           # Duration of the simulation, in ms
 cfg.dt = 0.1                # Internal integration timestep to use
 cfg.verbose = False            # Show detailed messages
 cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 cfg.filename = 'net_lfp'   # Set file output name
 cfg.savePickle = True
-cfg.recordLFP = [[-15, y, 1.0*netParams.sizeZ] for y in range(int(netParams.sizeY/5.0), int(netParams.sizeY), int(netParams.sizeY/5.0))]
+cfg.recordLFP = [[-15, y, 1.0 * cfg.sizeZ] for y in range(int(cfg.sizeY / 5.0), int(cfg.sizeY), int(cfg.sizeY / 5.0))]
 cfg.saveLFPPops = ['I2', 'E4']
 cfg.savePickle = True
 

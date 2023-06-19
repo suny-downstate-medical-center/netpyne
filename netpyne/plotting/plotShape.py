@@ -1,7 +1,7 @@
 """
 Module for generating a shape plot (3D network layout)
 
-""" 
+"""
 
 from __future__ import print_function
 from __future__ import division
@@ -12,6 +12,7 @@ from builtins import open
 from builtins import next
 from builtins import range
 from builtins import str
+
 try:
     basestring
 except NameError:
@@ -20,6 +21,7 @@ from builtins import zip
 
 from builtins import round
 from future import standard_library
+
 standard_library.install_aliases()
 from netpyne import __gui__
 
@@ -36,27 +38,28 @@ from .plotter import MetaFigure
 @exception
 def plotShape(
     axis=None,
-    includePre=['all'], 
-    includePost=['all'], 
-    showSyns=False, 
-    showElectrodes=False, 
-    synStyle='.', 
-    synSize=3, 
-    dist=0.6, 
-    elev=90, 
-    azim=-90, 
-    cvar=None, 
-    cvals=None, 
-    clim=None, 
-    iv=False, 
-    ivprops=None, 
-    includeAxon=True, 
-    bkgColor=None, 
-    aspect='auto', 
+    includePre=['all'],
+    includePost=['all'],
+    showSyns=False,
+    showElectrodes=False,
+    synStyle='.',
+    synSize=3,
+    dist=0.6,
+    elev=90,
+    azim=-90,
+    cvar=None,
+    cvals=None,
+    clim=None,
+    iv=False,
+    ivprops=None,
+    includeAxon=True,
+    bkgColor=None,
+    aspect='auto',
     axisLabels=False,
     kind='shape',
-    returnPlotter=False, 
-    **kwargs):
+    returnPlotter=False,
+    **kwargs
+):
     """
     Function to plot morphology of network>
     """
@@ -69,7 +72,8 @@ def plotShape(
     cellsPreGids = [c.gid for c in sim.getCellsList(includePre)] if includePre else []
     cellsPost = sim.getCellsList(includePost)
 
-    if not hasattr(sim.net, 'compartCells'): sim.net.compartCells = [c for c in cellsPost if type(c) is sim.CompartCell]
+    if not hasattr(sim.net, 'compartCells'):
+        sim.net.compartCells = [c for c in cellsPost if type(c) is sim.CompartCell]
     try:
         sim.net.defineCellShapes()  # in case some cells had stylized morphologies without 3d pts
     except:
@@ -83,9 +87,11 @@ def plotShape(
     if 'fontSize' in kwargs:
         fontSize = kwargs['fontSize']
 
-    if not iv: # plot using Python instead of interviews
+    if not iv:  # plot using Python instead of interviews
         from mpl_toolkits.mplot3d import Axes3D
-        from netpyne.support import morphology as morph # code adapted from https://github.com/ahwillia/PyNeuron-Toolbox
+        from netpyne.support import (
+            morphology as morph,
+        )  # code adapted from https://github.com/ahwillia/PyNeuron-Toolbox
 
         # create secList from include
         secs = None
@@ -97,25 +103,38 @@ def plotShape(
             # weighNorm
             if cvar == 'weightNorm':
                 for cellPost in cellsPost:
-                    cellSecs = list(cellPost.secs.values()) if includeAxon else [s for s in list(cellPost.secs.values()) if 'axon' not in s['hObj'].hname()]
+                    cellSecs = (
+                        list(cellPost.secs.values())
+                        if includeAxon
+                        else [s for s in list(cellPost.secs.values()) if 'axon' not in s['hObj'].hname()]
+                    )
                     for sec in cellSecs:
                         if 'weightNorm' in sec:
                             secs.append(sec['hObj'])
                             cvals.extend(sec['weightNorm'])
 
                 cvals = np.array(cvals)
-                cvals = cvals/min(cvals)
+                cvals = cvals / min(cvals)
 
             # numSyns
             elif cvar == 'numSyns':
                 for cellPost in cellsPost:
-                    cellSecs = cellPost.secs if includeAxon else {k:s for k,s in cellPost.secs.items() if 'axon' not in s['hObj'].hname()}
-                    for secLabel,sec in cellSecs.items():
-                        nseg=sec['hObj'].nseg
+                    cellSecs = (
+                        cellPost.secs
+                        if includeAxon
+                        else {k: s for k, s in cellPost.secs.items() if 'axon' not in s['hObj'].hname()}
+                    )
+                    for secLabel, sec in cellSecs.items():
+                        nseg = sec['hObj'].nseg
                         nsyns = [0] * nseg
                         secs.append(sec['hObj'])
-                        conns = [conn for conn in cellPost.conns if conn['sec']==secLabel and conn['preGid'] in cellsPreGids]
-                        for conn in conns: nsyns[int(ceil(conn['loc']*nseg))-1] += 1
+                        conns = [
+                            conn
+                            for conn in cellPost.conns
+                            if conn['sec'] == secLabel and conn['preGid'] in cellsPreGids
+                        ]
+                        for conn in conns:
+                            nsyns[int(ceil(conn['loc'] * nseg)) - 1] += 1
                         cvals.extend(nsyns)
 
                 cvals = np.array(cvals)
@@ -123,26 +142,33 @@ def plotShape(
             # voltage
             elif cvar == 'voltage':
                 for cellPost in cellsPost:
-                    cellSecs = cellPost.secs if includeAxon else {k:s for k,s in cellPost.secs.items() if 'axon' not in s['hObj'].hname()}
-                    for secLabel,sec in cellSecs.items():
+                    cellSecs = (
+                        cellPost.secs
+                        if includeAxon
+                        else {k: s for k, s in cellPost.secs.items() if 'axon' not in s['hObj'].hname()}
+                    )
+                    for secLabel, sec in cellSecs.items():
                         for seg in sec['hObj']:
                             cvals.append(seg.v)
-    
+
                 cvals = np.array(cvals)
 
         if not isinstance(cellsPost[0].secs, dict):
             print('Error: Cell sections not available')
             return -1
 
-        if not secs: secs = [s['hObj'] for cellPost in cellsPost for s in list(cellPost.secs.values())]
+        if not secs:
+            secs = [s['hObj'] for cellPost in cellsPost for s in list(cellPost.secs.values())]
         if not includeAxon:
             secs = [sec for sec in secs if 'axon' not in sec.hname()]
 
         # Plot shapeplot
-        cbLabels = {'numSyns': 'Number of synapses per segment', 
-                    'weightNorm': 'Weight scaling',
-                    'voltage': 'Voltage (mV)'}
-        #plt.rcParams.update({'font.size': fontSize})
+        cbLabels = {
+            'numSyns': 'Number of synapses per segment',
+            'weightNorm': 'Weight scaling',
+            'voltage': 'Voltage (mV)',
+        }
+        # plt.rcParams.update({'font.size': fontSize})
 
         if axis is None:
             metaFig = MetaFigure(kind=kind, subplots=None, **kwargs)
@@ -161,15 +187,16 @@ def plotShape(
             figIndex = int(str(numRows) + str(numCols) + str(axisLoc))
             shapeax = fig.add_subplot(figIndex, projection='3d')
 
-        shapeax.elev = elev # 90
+        shapeax.elev = elev  # 90
         shapeax.azim = azim  # -90
-        shapeax.dist = dist*shapeax.dist
+        shapeax.dist = dist * shapeax.dist
         plt.axis(aspect)
-        cmap = plt.cm.viridis #plt.cm.jet  #plt.cm.rainbow #plt.cm.jet #YlOrBr_r
+        cmap = plt.cm.viridis  # plt.cm.jet  #plt.cm.rainbow #plt.cm.jet #YlOrBr_r
         morph.shapeplot(h, shapeax, sections=secs, cvals=cvals, cmap=cmap, clim=clim)
 
         # fix so that axes can be scaled
         ax = plt.gca()
+
         def set_axes_equal(ax):
             """Set 3D plot axes to equal scale.
 
@@ -177,11 +204,13 @@ def plotShape(
             spheres and cubes as cubes.  Required since `ax.axis('equal')`
             and `ax.set_aspect('equal')` don't work on 3D.
             """
-            limits = np.array([
-                ax.get_xlim3d(),
-                ax.get_ylim3d(),
-                ax.get_zlim3d(),
-            ])
+            limits = np.array(
+                [
+                    ax.get_xlim3d(),
+                    ax.get_ylim3d(),
+                    ax.get_zlim3d(),
+                ]
+            )
             origin = np.mean(limits, axis=1)
             radius = 0.5 * np.max(np.abs(limits[:, 1] - limits[:, 0]))
             _set_axes_radius(ax, origin, radius)
@@ -192,14 +221,14 @@ def plotShape(
             ax.set_ylim3d([y - radius, y + radius])
             ax.set_zlim3d([z - radius, z + radius])
 
-        ax.set_box_aspect([1,1,1]) # IMPORTANT - this is the new, key line
-        set_axes_equal(ax) 
+        ax.set_box_aspect([1, 1, 1])  # IMPORTANT - this is the new, key line
+        set_axes_equal(ax)
 
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
-        if cvals is not None and len(cvals)>0:
+        if cvals is not None and len(cvals) > 0:
             vmin = np.min(cvals)
             vmax = np.max(cvals)
-            
+
             if clim is not None:
                 vmin = np.min(clim)
                 vmax = np.max(clim)
@@ -207,8 +236,9 @@ def plotShape(
             sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=vmin, vmax=vmax))
             sm._A = []  # fake up the array of the scalar mappable
             cb = plt.colorbar(sm, fraction=0.15, shrink=0.5, pad=0.05, aspect=20)
-            if cvar: cb.set_label(cbLabels[cvar], rotation=90, fontsize=fontSize)
-            
+            if cvar:
+                cb.set_label(cbLabels[cvar], rotation=90, fontsize=fontSize)
+
             if saveFig == 'movie':
                 cb.ax.set_title('Time = ' + str(round(h.t, 1)), fontsize=fontSize)
 
@@ -216,15 +246,17 @@ def plotShape(
             shapeax.w_xaxis.set_pane_color(bkgColor)
             shapeax.w_yaxis.set_pane_color(bkgColor)
             shapeax.w_zaxis.set_pane_color(bkgColor)
-        #shapeax.grid(False)
+        # shapeax.grid(False)
 
         # Synapses
         if showSyns:
-            synColor='red'
+            synColor = 'red'
             for cellPost in cellsPost:
                 for sec in list(cellPost.secs.values()):
                     for synMech in sec['synMechs']:
-                        morph.mark_locations(h, sec['hObj'], synMech['loc'], markspec=synStyle, color=synColor, markersize=synSize)
+                        morph.mark_locations(
+                            h, sec['hObj'], synMech['loc'], markspec=synStyle, color=synColor, markersize=synSize
+                        )
 
         # Electrodes
         if showElectrodes:
@@ -233,11 +265,20 @@ def plotShape(
             if 'avg' in showElectrodes:
                 showElectrodes.remove('avg')
                 colorOffset = 1
-            coords = sim.net.recXElectrode.pos.T[np.array(showElectrodes).astype(int),:]
-            ax.scatter(coords[:,0],coords[:,1],coords[:,2], s=150, c=colorList[colorOffset:len(coords)+colorOffset],
-                marker='v', depthshade=False, edgecolors='k', linewidth=2)
+            coords = sim.net.recXElectrode.pos.T[np.array(showElectrodes).astype(int), :]
+            ax.scatter(
+                coords[:, 0],
+                coords[:, 1],
+                coords[:, 2],
+                s=150,
+                c=colorList[colorOffset : len(coords) + colorOffset],
+                marker='v',
+                depthshade=False,
+                edgecolors='k',
+                linewidth=2,
+            )
             for i in range(coords.shape[0]):
-                ax.text(coords[i,0],coords[i,1],coords[i,2], '  '+str(showElectrodes[i]), fontweight='bold' )
+                ax.text(coords[i, 0], coords[i, 1], coords[i, 2], '  ' + str(showElectrodes[i]), fontweight='bold')
             cb.set_label('Segment total transfer resistance to electrodes (kiloohm)', rotation=90, fontsize=fontSize)
 
         if axisLabels:
@@ -259,7 +300,7 @@ def plotShape(
                     else:
                         filename = saveFig
                 else:
-                    filename = sim.cfg.filename+'_shape.png'
+                    filename = sim.cfg.filename + '_shape.png'
                 plt.savefig(filename, dpi=dpi)
 
             # show fig
@@ -268,14 +309,16 @@ def plotShape(
     else:  # Plot using Interviews
         # colors: 0 white, 1 black, 2 red, 3 blue, 4 green, 5 orange, 6 brown, 7 violet, 8 yellow, 9 gray
         from neuron import gui
+
         fig = h.Shape()
         secList = h.SectionList()
         if not ivprops:
-            ivprops = {'colorSecs': 1, 'colorSyns':2 ,'style': 'O', 'siz':5}
+            ivprops = {'colorSecs': 1, 'colorSyns': 2, 'style': 'O', 'siz': 5}
 
         for cell in [c for c in cellsPost]:
             for sec in list(cell.secs.values()):
-                if 'axon' in sec['hObj'].hname() and not includeAxon: continue
+                if 'axon' in sec['hObj'].hname() and not includeAxon:
+                    continue
                 sec['hObj'].push()
                 secList.append()
                 h.pop_section()
@@ -292,13 +335,13 @@ def plotShape(
         fig.observe(secList)
         fig.color_list(secList, ivprops['colorSecs'])
         fig.flush()
-        fig.show(0) # show real diam
-            # save figure
+        fig.show(0)  # show real diam
+        # save figure
         if saveFig:
             if isinstance(saveFig, basestring):
                 filename = saveFig
             else:
-                filename = sim.cfg.filename+'_'+'shape.ps'
+                filename = sim.cfg.filename + '_' + 'shape.ps'
             fig.printfile(filename)
 
     if not iv:
@@ -310,8 +353,5 @@ def plotShape(
         else:
             return fig, {}
 
-
     else:
         return fig, {}
-
-

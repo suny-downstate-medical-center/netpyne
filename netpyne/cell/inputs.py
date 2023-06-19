@@ -9,8 +9,10 @@ from __future__ import division
 from __future__ import absolute_import
 
 from future import standard_library
+
 standard_library.install_aliases()
 from numbers import Number
+
 try:
     basestring
 except NameError:
@@ -18,6 +20,7 @@ except NameError:
 
 from neuron import h
 import numpy as np
+
 
 def createRhythmicPattern(params, rand):
     """
@@ -39,11 +42,11 @@ def createRhythmicPattern(params, rand):
     start = params['start']
     # If start is -1, randomize start time of inputs
     if start == -1:
-        startMin = params.get('startMin', 25.)
-        startMax = params.get('startMax', 125.)
+        startMin = params.get('startMin', 25.0)
+        startMax = params.get('startMax', 125.0)
         start = rand.uniform(startMin, startMax)
-    elif params.get('startStd', -1) > 0.0: # randomize start time based on startStd
-        start = rand.normal(start, params['startStd']) # start time uses different prng
+    elif params.get('startStd', -1) > 0.0:  # randomize start time based on startStd
+        start = rand.normal(start, params['startStd'])  # start time uses different prng
     freq = params.get('freq', 0)
     freqStd = params.get('freqStd', 0)
     eventsPerCycle = params.get('eventsPerCycle', 2)
@@ -57,19 +60,19 @@ def createRhythmicPattern(params, rand):
         t_input = []
     elif distribution == 'normal':
         # array of mean stimulus times, starts at start
-        isi_array = np.arange(start, params['stop'], 1000. / freq)
+        isi_array = np.arange(start, params['stop'], 1000.0 / freq)
         # array of single stimulus times -- no doublets
         if freqStd:
-            #t_array = self.prng.normal(np.repeat(isi_array, self.p_ext['repeats']), stdev)
-            #t_array = np.array([rand.normal(x, freqStd) for x in np.repeat(isi_array, params['repeats'])])  # not efficient!
+            # t_array = self.prng.normal(np.repeat(isi_array, self.p_ext['repeats']), stdev)
+            # t_array = np.array([rand.normal(x, freqStd) for x in np.repeat(isi_array, params['repeats'])])  # not efficient!
             isi_array_repeat = np.repeat(isi_array, params['repeats'])
             stdvec = h.Vector(int(len(isi_array_repeat)))
-            rand.normal(0, freqStd*freqStd)
+            rand.normal(0, freqStd * freqStd)
             stdvec.setrand(rand)
-            t_array = np.array([mean+std for (mean,std) in zip(list(stdvec), isi_array_repeat)])
+            t_array = np.array([mean + std for (mean, std) in zip(list(stdvec), isi_array_repeat)])
         else:
             t_array = isi_array
-        if eventsPerCycle == 2: # spikes/burst in GUI
+        if eventsPerCycle == 2:  # spikes/burst in GUI
             # Two arrays store doublet times
             t_array_low = t_array - 5
             t_array_high = t_array + 5
@@ -83,7 +86,7 @@ def createRhythmicPattern(params, rand):
         t_input.sort()
     # Uniform Distribution
     elif distribution == 'uniform':
-        n_inputs = params['repeats'] * freq * (params['tstop'] - start) / 1000.
+        n_inputs = params['repeats'] * freq * (params['tstop'] - start) / 1000.0
         t_array = rand.uniform(start, params['tstop'], n_inputs)
         if eventsPerCycle == 2:
             # Two arrays store doublet times
@@ -103,7 +106,8 @@ def createRhythmicPattern(params, rand):
 
     return np.array(t_input)
 
-def createEvokedPattern(params, rand, inc = 0):
+
+def createEvokedPattern(params, rand, inc=0):
     """
     creates the ongoing external inputs (rhythmic)
     input params:
@@ -143,20 +147,22 @@ def createPoissonPattern(params, rand):
     """
 
     # new external pois designation
-    t0 = params['start'] # self.p_ext['t_interval'][0]
-    T = params['stop'] #self.p_ext['t_interval'][1]
-    lamtha = params['frequency'] # self.p_ext[self.celltype][3] # index 3 is frequency (lamtha)
+    t0 = params['start']  # self.p_ext['t_interval'][0]
+    T = params['stop']  # self.p_ext['t_interval'][1]
+    lamtha = params['frequency']  # self.p_ext[self.celltype][3] # index 3 is frequency (lamtha)
     # values MUST be sorted for VecStim()!
     # start the initial value
     val_pois = np.array([])
-    if lamtha > 0.:
-        t_gen = t0 + (-1000. * np.log(1. - rand.uniform(0,1)) / lamtha)
-        if t_gen < T: np.append(val_pois, t_gen)
+    if lamtha > 0.0:
+        t_gen = t0 + (-1000.0 * np.log(1.0 - rand.uniform(0, 1)) / lamtha)
+        if t_gen < T:
+            np.append(val_pois, t_gen)
         # vals are guaranteed to be monotonically increasing, no need to sort
         while t_gen < T:
             # so as to not clobber confusingly base off of t_gen ...
-            t_gen += (-1000. * np.log(1. - rand.uniform(0,1)) / lamtha)
-            if t_gen < T: val_pois = np.append(val_pois, t_gen)
+            t_gen += -1000.0 * np.log(1.0 - rand.uniform(0, 1)) / lamtha
+            if t_gen < T:
+                val_pois = np.append(val_pois, t_gen)
 
     return val_pois
 

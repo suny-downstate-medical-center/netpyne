@@ -43,7 +43,9 @@ Here are the steps to release a new version of NetPyNE
     10e) It will build the html files
 11) Post the documentation
     11a) ssh gkaue9v7ctjf@107.180.3.236 "rm -r ~/public_html"
+        NOTE: it may give the error "... no matching host key type found ...". In this case, try using the "-oHostKeyAlgorithms=+ssh-rsa" argument in ssh command and in scp command below (as well as in 11c)
     11b) scp -r build gkaue9v7ctjf@107.180.3.236:///home/gkaue9v7ctjf/public_html
+        NOTE: it may give the error "path canonocalization failed", then use the argument "-O" in scp call - it rolls back to legacy mode (see also NOTE in 11a)
     11c) ssh gkaue9v7ctjf@107.180.3.236 "cp -r ~/redirect_html/. ~/public_html/"
 12) Update PYPI (pip) with the latest release
     12a) cd netpyne
@@ -72,7 +74,7 @@ print('Deleting build directory.')
 shutil.rmtree('build', ignore_errors=True)
 
 # All .rst files but those listed here will be deleted during this process
-keep = ['about.rst', 'advanced.rst', 'index.rst', 'install.rst', 'reference.rst', 'tutorial.rst', 'contrib.rst', 'modeling-specification-v1.0.rst']
+keep = ['about.rst', 'index.rst', 'install.rst', 'user_documentation.rst', 'tutorial.rst', 'contrib.rst', 'modeling-specification-v1.0.rst']
 
 print('Deleting old .rst files.')
 for file in os.listdir('source'):
@@ -92,12 +94,12 @@ os.system('sphinx-apidoc -f -e -M -T --templatedir=source/apidoc/ -o source/ ../
 
 # sphinx-apidoc produces a file called "netpyne" that we want to call "Package Index"
 print('Fixing Package Index file.')
-os.system('mv source/netpyne.rst source/package_index.rst')
-with open('source/package_index.rst') as f:
+os.system('mv source/netpyne.rst source/package_reference.rst')
+with open('source/package_reference.rst') as f:
     lines = f.readlines()
-    lines[0] = 'Package Index\n'
+    lines[0] = 'Package Reference\n'
     lines[1] = '=============\n'
-with open('source/package_index.rst', 'w') as f:
+with open('source/package_reference.rst', 'w') as f:
     f.writelines(lines)
 
 # Generate the html files

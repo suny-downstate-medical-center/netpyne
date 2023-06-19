@@ -207,7 +207,7 @@ void ishuffle(int* x,int nx) {
 // end of stats.mod
 
 static const double* ITsortdata = NULL; /* used in the quicksort algorithm */
-static double tetrospks2(), pdfpr(), tetrospks3();
+static double tetrospks2(double*, double*, double*, int, int, int), pdfpr(), tetrospks3(double*, double*, double*, double*, int ,int, int);
 static int dbxi[10];
 
 
@@ -263,8 +263,8 @@ static double tentropspks (void* vv) {
   szXO=ifarg(2)?vector_arg_px(2,&XO):0;
   shuf=ifarg(3)?((int)*getarg(3)):0;
   szX3=ifarg(4)?vector_arg_px(4,&X3):0;
-  if(szX3) tetrospks3(X1,X2,X3,XO,szX1,szXO,shuf);
-  else return tetrospks2(X1,X2,XO,szX1,szXO,shuf);
+  if(szX3) return tetrospks3(X1,X2,X3,XO,szX1,szXO,shuf);
+  return tetrospks2(X1,X2,XO,szX1,szXO,shuf);
 }
 
 //** entropxfgxpd - get conditional entropy of X future given its past: H(XF|XP)
@@ -288,7 +288,8 @@ double entropxfgxpd (double* pXP, double* pXFXP,int minv,int maxv,int szp) {
 // Vector has elements of X
 static double entropxfgxp (void* vv) {
   double *x,*pXP,*pXFXP,dret;
-  int sz,minv,maxv,cnt,i,j,szp,*X;
+  unsigned int sz, szp, cnt, *X;
+  int minv, maxv, i, j;
   sz = vector_instance_px(vv,&x);
   cnt=0;
   X=scrset(sz);
@@ -402,7 +403,7 @@ static double tetrospks3 (double* X1d,double* X2d,double* X3d,double* XO,int szX
   } else end=beg=0;
   sz=szX1-(int)beg; // max index
   X1=iscrset(sz*3); X2=X1+sz; X3=X1+2*sz;// move into integer arrays
-  if(verbose>3) printf("X1:%p , X2:%p, X3:%p:%p\n",X1,X2,X3);
+  if(verbose>3) printf("X1:%p , X2:%p, X3:%p\n",X1,X2,X3);
   minv1=minv2=minv3=INT_MAX; maxv1=maxv2=maxv3=INT_MIN; cnt1=cnt2=cnt3=0;
   for (i=0;i<sz;i++) { 
     X1[i]=(int)X1d[i+(int)beg]; X2[i]=(int)X2d[i+(int)beg]; X3[i]=(int)X3d[i+(int)beg];

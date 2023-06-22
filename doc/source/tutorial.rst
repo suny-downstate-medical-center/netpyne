@@ -17,7 +17,7 @@ Tutorial 1: Quick and easy example
 -----------------------------------------
 To start in an encouraging way, we will implement the simplest example possible consisting of just three lines! This will create a simple network (200 randomly connected cells), run a one-second simulation, and plot the network spiking raster plot and the voltage trace of a cell. 
 
-You will need to **download** the ``HHTut.py`` example parameter file (`download here <https://raw.githubusercontent.com/Neurosim-lab/netpyne/master/examples/HHTut/HHTut.py>`_ - right click and "Save as" to same folder you are working in).
+You will need to **download** the ``HHTut.py`` example parameter file (`download here <https://raw.githubusercontent.com/suny-downstate-medical-center/netpyne/development/examples/HHTut/src/HHTut.py>`_ - right click and "Save as" to same folder you are working in).
 
 The code looks like this (available here :download:`tut1.py <code/tut1.py>`)::
 

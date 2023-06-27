@@ -8,6 +8,8 @@
 
 - Print more info about exceptions in plotting functions
 
+- Check RxD specification for potential syntax issues
+
 **Bug fixes**
 
 - Fixed errors in plotting with sim.cfg.gatherOnlySimData=True
@@ -17,6 +19,8 @@
 - Multiple fixes in `plotRatePSD()` - popColors, fft, minFreq
 
 - Fixed sync lines in `plotRaster()`
+
+- Fixed performance issue in `plotConn()` with `groupBy='pop'` (default)
 
 # Version 1.0.4.1
 

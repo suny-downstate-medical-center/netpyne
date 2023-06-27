@@ -10,7 +10,7 @@ def batchTauWeight():
         params['connWeight'] = [0.005, 0.01, 0.15]
 
         # create Batch object with parameters to modify, and specifying files to use
-        b = Batch(params=params, cfgFile='cfg.py', netParamsFile='params.py',)
+        b = Batch(params=params, cfgFile='src/cfg.py', netParamsFile='src/params.py',)
 
         # Set output folder, grid method (all param combinations), and run configuration
         b.batchLabel = 'tauWeight'

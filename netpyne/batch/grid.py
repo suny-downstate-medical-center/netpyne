@@ -350,9 +350,8 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
         sge_args.update(batch.runCfg)
 
         #(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles):
-        sge_args['command'] = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (
+        sge_args['command'] = '%s -n $NSLOTS nrniv -python -mpi %s simConfig=%s netParams=%s' % (
             sge_args['mpiCommand'],
-            sge_args['cores'],
             script,
             cfgSavePath,
             netParamsSavePath,

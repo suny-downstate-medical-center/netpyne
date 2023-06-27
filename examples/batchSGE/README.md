@@ -17,8 +17,7 @@ It implements each 4-core simulation on a compute node.
 
 ## Quick steps to run batch sims
 
-1) cd src
-2) python batch.py
+1) python src/batch.py
 
 results are generated in tut8_data
 simulation logs are generated in ~/qsub/

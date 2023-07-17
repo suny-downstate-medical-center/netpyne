@@ -1,5 +1,5 @@
 numpy
-matplotlib<=3.5.1
+matplotlib
 scipy
 pandas
 future

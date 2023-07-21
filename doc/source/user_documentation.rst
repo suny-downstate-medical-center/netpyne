@@ -564,7 +564,7 @@ Some of parameters of cells, synapses and connectivity rules can be provided usi
 * Contextual variables like cell location, segment position in cell, distance between connected cells etc. Such variables' names are pre-defined and specific to where the function is used (see below).
 
 
-Functios as strings can be used as parameters in the entries of the following model components (in each case, there is a specific set of variables that can be contained in the function, in addition to elements listed above).
+Functions as strings can be used as parameters in the entries of the following model components (in each case, there is a specific set of variables that can be contained in the function, in addition to elements listed above).
 
 * ``weight``, ``delay``, ``probability``, ``convergence`` and ``divergence`` in connectivity rules. Available variables are:
 	

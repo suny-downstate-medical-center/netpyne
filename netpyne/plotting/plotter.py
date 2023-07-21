@@ -87,7 +87,7 @@ class MetaFigure:
         self.kind = kind
 
         # Make a copy of the current matplotlib rcParams and update them
-        self.orig_rcParams = deepcopy(mpl.rcParamsDefault)
+        self.orig_rcParams = deepcopy(mpl.rcParams)
         if 'rcParams' in kwargs:
             new_rcParams = kwargs['rcParams']
             if type(new_rcParams) == dict:
@@ -100,6 +100,8 @@ class MetaFigure:
                             rcParam,
                         )
                 self.rcParams = mpl.rcParams
+            else:
+                print('Ignoring rcParams argument, since it has to be of type dict')
         else:
             self.rcParams = self.orig_rcParams
 

@@ -1,3 +1,9 @@
+# Version 1.0.4.2
+
+**Bug fixes**
+
+- Unpin matplotlib version (params copying issue fixed)
+
 # Version 1.0.4.1
 
 **New features**

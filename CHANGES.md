@@ -22,6 +22,12 @@
 
 - Fixed performance issue in `plotConn()` with `groupBy='pop'` (default)
 
+# Version 1.0.4.2
+
+**Bug fixes**
+
+- Unpin matplotlib version (params copying issue fixed)
+
 # Version 1.0.4.1
 
 **New features**
@@ -94,9 +100,9 @@
 
 - Fixed some misinformation in reference.rst about the subconn
 
-- Fixed bug in dipole calculation units - changed from mA to uA 
+- Fixed bug in dipole calculation units - changed from mA to uA
 
-- Fixed bug in conditional logic when gathering LFP / dipoles 
+- Fixed bug in conditional logic when gathering LFP / dipoles
 
 - Allow tuples to specify population's cells in 'include' for plotSpike
 

@@ -159,7 +159,7 @@ def plotCSD(
     axs = []
     if colorbar:
         numplots = 2
-        gs_outer = matplotlib.gridspec.GridSpec(2, 1, height_ratios=[20,1])
+        gs_outer = matplotlib.gridspec.GridSpec(2, 1, height_ratios=[20,3])
     else:
         numplots = 1
         gs_outer = matplotlib.gridspec.GridSpec(1, 1)
@@ -179,7 +179,7 @@ def plotCSD(
 
     # plot interpolated CSD color map
     if smooth:
-        Z = scipy.ndimage.filters.gaussian_filter(Z, sigma=5, mode='nearest')
+        Z = scipy.ndimage.filters.gaussian_filter(Z, sigma=smooth, mode='nearest')
 
     spline = axs[0].imshow(
         Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r', alpha=0.9
@@ -220,9 +220,9 @@ def plotCSD(
                 subaxs[chan].margins(0.0, 0.01)
                 subaxs[chan].get_xaxis().set_visible(False)
                 subaxs[chan].get_yaxis().set_visible(False)
-                subaxs[chan].plot(X, CSDData[chan, :], color='green', linewidth=0.3, label='CSD timeSeries')
+                subaxs[chan].plot(X, CSDData[chan, :], color='green', linewidth=0.3, label='CSD time series')
                 if legendLabel:
-                    subaxs[chan].legend(loc='upper right', fontsize='small')
+                    subaxs[chan].legend(loc='upper right', fontsize=fontSize)
                     legendLabel = False
 
         elif overlay == 'LFP':
@@ -235,9 +235,9 @@ def plotCSD(
                 subaxs[chan].margins(0.0, 0.01)
                 subaxs[chan].get_xaxis().set_visible(False)
                 subaxs[chan].get_yaxis().set_visible(False)
-                subaxs[chan].plot(X, LFPData[:, chan], color='gray', linewidth=0.3, label='LFP timeSeries')
+                subaxs[chan].plot(X, LFPData[:, chan], color='gray', linewidth=0.3, label='LFP time series')
                 if legendLabel:
-                    subaxs[chan].legend(loc='upper right', fontsize='small')
+                    subaxs[chan].legend(loc='upper right', fontsize=fontSize)
                     legendLabel = False
 
     else:
@@ -254,14 +254,12 @@ def plotCSD(
     if colorbar:
         ax_bottom = plt.subplot(gs_outer[1,0:1])   # gs_outer[1,0:1]
         ax_bottom.axis('off')
-        cbar_min = round(np.min(CSDData))   #5 * round(np.min(CSDData)/5)
-        cbar_max = round(np.max(CSDData))   #5 * round(np.max(CSDData)/5)
+        cbar_min = round(np.min(Z)) 
+        cbar_max = round(np.max(Z)) 
         cbar_ticks = np.linspace(cbar_min, cbar_max, 3, endpoint=True)
-        cbar = plt.colorbar(spline,ax=ax_bottom, ticks=cbar_ticks, orientation='horizontal', shrink=0.5)
-        cbar.set_label(label=r'CSD (mV/mm$^2$)', fontsize=7) # ,use_gridspec=True,
-        cbar.ax.tick_params(labelsize=7)
-
-
+        cbar = plt.colorbar(spline, ax=ax_bottom, ticks=cbar_ticks, orientation='horizontal', shrink=1.0)
+        cbar.set_label(label=r'CSD (mV/mm$^2$)', fontsize=fontSize) # ,use_gridspec=True,
+        cbar.ax.tick_params(labelsize=fontSize)
 
     # if layerBounds:
     if layerBounds is None:

@@ -1,6 +1,6 @@
 # PLOTTING CSD
 
-from ..analysis.utils import exception
+from ..analysis.utils import exception, _showFigure
 import numpy as np
 import scipy
 import matplotlib
@@ -16,6 +16,7 @@ def plotCSD(
     dt=None,
     sampr=None,
     spacing_um=None,
+    norm=True,
     fontSize=12,
     ymax=None,
     figSize=(8, 8),
@@ -27,6 +28,7 @@ def plotCSD(
     dpi=200,
     showFig=False,
     smooth=True,
+    colorbar=True,
     **kwargs
 ):
     """
@@ -117,9 +119,7 @@ def plotCSD(
         else:
             sim = kwargs['sim']
 
-        CSDData, LFPData, sampr, spacing_um, dt = sim.analysis.prepareCSD(
-            sim=sim, pop=pop, dt=dt, sampr=sampr, spacing_um=spacing_um, getAllData=True, **kwargs
-        )
+        CSDData, LFPData, sampr, spacing_um, dt = sim.analysis.prepareCSD(sim=sim, pop=pop, dt=dt, sampr=sampr, spacing_um=spacing_um, getAllData=True, **kwargs)
 
     if timeRange is None:
         timeRange = [0, sim.cfg.duration]
@@ -157,24 +157,35 @@ def plotCSD(
 
     # create plots w/ common axis labels and tick marks
     axs = []
-    numplots = 1
-    gs_outer = matplotlib.gridspec.GridSpec(1, 1)
+    if colorbar:
+        numplots = 2
+        gs_outer = matplotlib.gridspec.GridSpec(2, 1, height_ratios=[20,3])
+    else:
+        numplots = 1
+        gs_outer = matplotlib.gridspec.GridSpec(1, 1)
+
 
     for i in range(numplots):
-        axs.append(plt.Subplot(fig, gs_outer[i * 2 : i * 2 + 2]))
-        fig.add_subplot(axs[i])
-        axs[i].set_xlabel('Time (ms)', fontsize=fontSize)
-        axs[i].tick_params(axis='y', which='major', labelsize=fontSize)
-        axs[i].tick_params(axis='x', which='major', labelsize=fontSize)
+        if colorbar:
+            axs.append(plt.Subplot(fig, gs_outer[i, 0:2]))#i * 2 : i * 2 + 2]))
+            fig.add_subplot(axs[i])
+        else:
+            axs.append(plt.Subplot(fig, gs_outer[i * 2 : i * 2 + 2]))
+            fig.add_subplot(axs[i])
+            axs[i].set_xlabel('Time (ms)', fontsize=fontSize)
+            axs[i].tick_params(axis='y', which='major', labelsize=fontSize)
+            axs[i].tick_params(axis='x', which='major', labelsize=fontSize)
+
 
     # plot interpolated CSD color map
     if smooth:
-        Z = scipy.ndimage.filters.gaussian_filter(Z, sigma=5, mode='nearest')
+        Z = scipy.ndimage.filters.gaussian_filter(Z, sigma=smooth, mode='nearest')
 
     spline = axs[0].imshow(
         Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r', alpha=0.9
     )
     axs[0].set_ylabel('Contact depth (um)', fontsize=fontSize)
+
 
     # OVERLAY DATA ('LFP', 'CSD', or None) & Set title of plot
     if pop is None:
@@ -188,10 +199,16 @@ def plotCSD(
 
     elif overlay is 'CSD' or overlay is 'LFP':
         nrow = LFPData.shape[1]
-        gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(
-            nrow, 1, subplot_spec=gs_outer[0:2], wspace=0.0, hspace=0.0
-        )
-        subaxs = []
+        if colorbar:
+            gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(
+                nrow, 1, subplot_spec=gs_outer[0, 0:2], wspace=0.0, hspace=0.0
+            )
+            subaxs = []
+        else:
+            gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(
+                nrow, 1, subplot_spec=gs_outer[0:2], wspace=0.0, hspace=0.0
+            )
+            subaxs = []
 
         if overlay == 'CSD':
             print('Overlaying with CSD time series data')
@@ -203,9 +220,9 @@ def plotCSD(
                 subaxs[chan].margins(0.0, 0.01)
                 subaxs[chan].get_xaxis().set_visible(False)
                 subaxs[chan].get_yaxis().set_visible(False)
-                subaxs[chan].plot(X, CSDData[chan, :], color='green', linewidth=0.3, label='CSD timeSeries')
+                subaxs[chan].plot(X, CSDData[chan, :], color='green', linewidth=0.3, label='CSD time series')
                 if legendLabel:
-                    subaxs[chan].legend(loc='upper right', fontsize='small')
+                    subaxs[chan].legend(loc='upper right', fontsize=fontSize)
                     legendLabel = False
 
         elif overlay == 'LFP':
@@ -218,9 +235,9 @@ def plotCSD(
                 subaxs[chan].margins(0.0, 0.01)
                 subaxs[chan].get_xaxis().set_visible(False)
                 subaxs[chan].get_yaxis().set_visible(False)
-                subaxs[chan].plot(X, LFPData[:, chan], color='gray', linewidth=0.3, label='LFP timeSeries')
+                subaxs[chan].plot(X, LFPData[:, chan], color='gray', linewidth=0.3, label='LFP time series')
                 if legendLabel:
-                    subaxs[chan].legend(loc='upper right', fontsize='small')
+                    subaxs[chan].legend(loc='upper right', fontsize=fontSize)
                     legendLabel = False
 
     else:
@@ -231,6 +248,18 @@ def plotCSD(
     if hlines:
         for i in range(len(sim.cfg.recordLFP)):
             axs[0].hlines(sim.cfg.recordLFP[i][1], xmin, xmax, colors='pink', linewidth=1, linestyles='dashed')
+
+
+    ## colorbar at the bottom using unsmoothed data for values
+    if colorbar:
+        ax_bottom = plt.subplot(gs_outer[1,0:1])   # gs_outer[1,0:1]
+        ax_bottom.axis('off')
+        cbar_min = round(np.min(Z)) 
+        cbar_max = round(np.max(Z)) 
+        cbar_ticks = np.linspace(cbar_min, cbar_max, 3, endpoint=True)
+        cbar = plt.colorbar(spline, ax=ax_bottom, ticks=cbar_ticks, orientation='horizontal', shrink=1.0)
+        cbar.set_label(label=r'CSD (mV/mm$^2$)', fontsize=fontSize) # ,use_gridspec=True,
+        cbar.ax.tick_params(labelsize=fontSize)
 
     # if layerBounds:
     if layerBounds is None:
@@ -254,6 +283,8 @@ def plotCSD(
                     verticalalignment='center',
                 )
 
+
+
     # set vertical line(s) at stimulus onset(s)
     if type(stimTimes) is int or type(stimTimes) is float:
         axs[0].vlines(stimTimes, ymin, ymax, colors='red', linewidth=1, linestyles='dashed')
@@ -274,4 +305,7 @@ def plotCSD(
 
     # display figure
     if showFig:
-        plt.show()
+        _showFigure()
+        #plt.show()
+
+    return fig, axs 

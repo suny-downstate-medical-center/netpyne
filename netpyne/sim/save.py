@@ -232,22 +232,25 @@ def saveData(include=None, filename=None, saveLFP=True):
 
                 path = filePath + '.mat'
                 print(f'Saving output as {path} ... ')
-                savemat(
-                    path, utils.tupleToList(utils.replaceNoneObj(dataSave))
-                )  # replace None and {} with [] so can save in .mat format
+                dataSave = utils.replaceDictODict(dataSave)
+                dataSave = utils._ensureMatCompatible(dataSave)
+                savemat(path, utils.tupleToList(dataSave), long_field_names=True)
                 savedFiles.append(path)
                 print('Finished saving!')
 
             # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)
             if sim.cfg.saveHDF5:
-                dataSaveUTF8 = utils._dict2utf8(
-                    utils.replaceNoneObj(dataSave)
-                )  # replace None and {} with [], and convert to utf
+                recXElectrode = dataSave['net'].get('recXElectrode')
+                if recXElectrode:
+                    dataSave['net']['recXElectrode'] = recXElectrode.toJSON()
+                dataSaveUTF8 = utils._ensureHDF5Compatible(dataSave)
+                keys = list(dataSaveUTF8.keys())
+                dataSaveUTF8['__np_keys__'] = keys
                 import hdf5storage
 
                 path = filePath + '.hdf5'
                 print(f'Saving output as {path} ... ')
-                hdf5storage.writes(dataSaveUTF8, filename=path)
+                hdf5storage.writes(dataSaveUTF8, filename=path, truncate_existing=True)
                 savedFiles.append(path)
                 print('Finished saving!')
 

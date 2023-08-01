@@ -234,16 +234,15 @@ def plotData(sim=None):
                 kwargs = {}
             elif kwargs == False:
                 continue
-            func = None
-            try:
-                func = getattr(sim.plotting, funcName)
-                out = func(**kwargs)  # call function with user arguments
-            except:
-                try:
-                    func = getattr(sim.analysis, funcName)
-                    out = func(**kwargs)  # call function with user arguments
-                except Exception as e:
-                    print('Unable to run', funcName, 'from sim.plotting and sim.analysis. Reason:', e)
+
+            func = getattr(sim.plotting, funcName, None)
+            if func is None:
+                func = getattr(sim.analysis, funcName, None)
+
+            if func:
+                func(**kwargs) # call function with user arguments
+            else:
+                print(f'Unable to run {funcName} from sim.plotting and sim.analysis (no such function)')
 
         # Print timings
         if sim.cfg.timing:

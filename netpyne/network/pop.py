@@ -290,7 +290,12 @@ class Pop(object):
         self.rand.uniform(0, 1)
         vec = h.Vector(self.tags['numCells'] * 3)
         vec.setrand(self.rand)
+        try:
         randLocs = np.array(vec).reshape(self.tags['numCells'], 3)  # create random x,y,z locations
+        except Exception as e:
+                if 'numCells' in self.tags and self.tags['numCells'] == 0:
+                    print("Unable to create network, please validate that cell population > 0 by gradually increasing cfg.scaleDensity in cfg_demo.py (e.g. try 0.1, then 0.15, etc.)")
+                raise e
 
         if sim.net.params.shape == 'cylinder':
             # Use the x,z random vales

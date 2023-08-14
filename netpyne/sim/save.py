@@ -27,6 +27,7 @@ import pickle as pk
 from . import gather
 from . import utils
 from ..specs import Dict, ODict
+from copy import copy, deepcopy
 
 
 # ------------------------------------------------------------------------------
@@ -198,7 +199,6 @@ def saveData(include=None, filename=None, saveLFP=True):
                 import pickle
 
                 path = filePath + '.pkl'
-                dataSave = utils.replaceDictODict(dataSave)
                 print(f'Saving output as {path} ... ')
                 with open(path, 'wb') as fileObj:
                     pickle.dump(dataSave, fileObj)
@@ -221,7 +221,6 @@ def saveData(include=None, filename=None, saveLFP=True):
                 path = filePath + '.json'
                 # Make it work for Python 2+3 and with Unicode
                 print(f'Saving output as {path} ... ')
-                # dataSave = utils.replaceDictODict(dataSave)  # not required since json saves as dict
                 sim.saveJSON(path, dataSave, checkFileTimeout=5)
                 savedFiles.append(path)
                 print('Finished saving!')
@@ -232,9 +231,16 @@ def saveData(include=None, filename=None, saveLFP=True):
 
                 path = filePath + '.mat'
                 print(f'Saving output as {path} ... ')
-                dataSave = utils.replaceDictODict(dataSave)
-                dataSave = utils._ensureMatCompatible(dataSave)
-                savemat(path, utils.tupleToList(dataSave), long_field_names=True)
+
+                toSave = copy(dataSave)
+                simData = toSave.pop('simData') # for speed, exclude simData from subsequent manipulations (nothing to replace there)
+                toSave = utils.replaceDictODict(toSave)
+                toSave = deepcopy(toSave)
+                toSave = utils._ensureMatCompatible(toSave)
+                utils.tupleToList(toSave)
+                toSave['simData'] = simData # put back before saving
+
+                savemat(path, toSave, long_field_names=True)
                 savedFiles.append(path)
                 print('Finished saving!')
 
@@ -555,8 +561,6 @@ def intervalSave(simTime, gatherLFP=True):
                     dataSave['net']['recXElectrode'] = sim.net.recXElectrode
             dataSave['simData'] = dict(sim.allSimData)
 
-        dataSave = utils.replaceDictODict(dataSave)
-
         with open(name, 'wb') as fileObj:
             pickle.dump(dataSave, fileObj, protocol=2)
 
@@ -723,7 +727,6 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
             try:
                 import pickle
 
-                dataSave = utils.replaceDictODict(dataSave)
                 fileName = filePath + '_node_' + str(sim.rank) + '.pkl'
                 print(('  Saving output as: %s ... ' % (fileName)))
                 with open(os.path.join(saveFolder, fileName), 'wb') as fileObj:

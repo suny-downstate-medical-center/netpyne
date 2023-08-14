@@ -294,7 +294,7 @@ class Pop(object):
             randLocs = np.array(vec).reshape(self.tags['numCells'], 3)  # create random x,y,z locations
         except Exception as e:
                 if 'numCells' in self.tags and self.tags['numCells'] == 0:
-                    print("Unable to create network, please validate that cell population > 0 by gradually increasing cfg.scaleDensity in cfg_demo.py (e.g. try 0.1, then 0.15, etc.)")
+                    print("Unable to create network, please validate that cell population > 0")
                 raise e
 
         if sim.net.params.shape == 'cylinder':

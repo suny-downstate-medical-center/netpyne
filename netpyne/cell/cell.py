@@ -212,18 +212,24 @@ class Cell(object):
             if conditionsMet:
                 try:
                     ptr = None
-                    if 'loc' in params and params['sec'] in self.secs:
+                    if 'sec' in params and params['sec'] in self.secs:
+
+                        if not 'loc' in params:
+                            params['loc'] = 0.5  # if no loc, set default
+
+                        sec = self.secs[params['sec']]
+                        seg = sec.hObj(params['loc'])
+
                         if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
                             ptr = getattr(
-                                getattr(self.secs[params['sec']]['hObj'](params['loc']), params['mech']),
+                                getattr(seg, params['mech']),
                                 '_ref_' + params['var'],
                             )
                         elif 'synMech' in params:  # eg. soma(0.5).AMPA._ref_g
-                            sec = self.secs[params['sec']]
                             synMechList = [
                                 synMech
                                 for synMech in sec['synMechs']
-                                if synMech['label'] == params['synMech'] and synMech['loc'] == params['loc']
+                                if synMech['label'] == params['synMech'] and synMech['hObj'].get_segment() == seg
                             ]  # make list with this label/loc
                             ptr = None
                             if len(synMechList) > 0:
@@ -236,12 +242,11 @@ class Cell(object):
                                     ptr = getattr(synMech['hObj'], '_ref_' + params['var'])
                         elif 'stim' in params:  # e.g. sim.net.cells[0].stims[0]['hObj'].i
                             if 'sec' in params and 'loc' in params and 'var' in params:
-                                sec = self.secs[params['sec']]
                                 stimList = [
                                     stim
                                     for stim in self.stims
-                                    if stim['label'] == params['stim'] and stim['loc'] == params['loc']
-                                ]  # make list with this label/loc
+                                    if stim['label'] == params['stim'] and stim['hObj'].get_segment() == seg
+                                ]  # make list with this label/loc (loc's precision up to segment)
                                 ptr = None
                                 if len(stimList) > 0:
                                     if 'index' in params:

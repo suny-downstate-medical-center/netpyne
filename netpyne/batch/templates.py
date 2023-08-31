@@ -2,14 +2,12 @@
 Templates for job submission (PBS, SLURM, SGE, etc)
 """
 
-
-
 def createJob(submit, filename = '', filescript = ''):
     """
     wrapper for job submission.
-    1. writes script to job
+    1. writes to <filename>, <filescript> to execute
     2. subprocess will execute:
-        submit job
+        <submit>
     """
     return {'submit': submit, 'filename': filename, 'filescript': filescript}
 
@@ -47,8 +45,7 @@ cd {folder}
 {command}
 """
     return createJob(submit = "qsub {jobName}.sh".format(**args), filename = "{jobName}.sh".format(**args), filescript = template.format(**args))
-    #return {'submit': 'qsub', 'script': template.format(**args)}
-
+    
 def jobHPCTorque(batchCfg):
     # default values
     args = {
@@ -116,21 +113,18 @@ source ~/.bashrc
     return createJob(submit = 'qsub {jobName}.sh'.format(**args), filename = "{jobName}.sh".format(**args), filescript = template.format(**args))
 
 def jobMPIDirect(batchCfg):
-    return createJob(submit = 'mpirun something', filename = )
+    args = {
+        'cores': 1,
+        'mpiCommand': 'mpirun',
+        'script': 'init.py'
+    }
+    args.update(batchCfg)
+    command = "{mpiCommand} -n {cores} nrniv -python -mpi {script} simConfig={cfgSavePath} netParams={netParamsSavePath}".format(**args),
+    return createJob(submit = command)
+
 templates = {
     'hpc_torque': jobHPCTorque,
     'hpc_slurm': jobHPCSlurm,
     'hpc_sge': jobHPCSGE,
+    'MPI': jobMPIDirect,
 }
-
-
-def jobStringMPIDirect(custom, folder, command):
-    return f"""#!/bin/bash
-{custom}
-cd {folder}
-{command}
-    """
-
-
-
-

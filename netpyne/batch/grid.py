@@ -33,7 +33,8 @@ from subprocess import Popen, PIPE
 import importlib, types
 
 from neuron import h
-from .utils import jobStringHPCSlurm, jobStringHPCTorque, jobStringHPCSGE
+
+from .templates import jobStringHPCSlurm, jobStringHPCTorque, jobStringHPCSGE, default_args, templates
 from .utils import createFolder
 
 pc = h.ParallelContext()  # use bulletin board master/slave
@@ -296,121 +297,41 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
     batch.cfg.save(cfgSavePath)
 
     # read params or set defaults
-    sleepInterval = batch.runCfg.get('sleepInterval', 1)
-    nodes = batch.runCfg.get('nodes', 1)
-    script = batch.runCfg.get('script', 'init.py')
-    walltime = batch.runCfg.get('walltime', '00:30:00')
-    folder = batch.runCfg.get('folder', '.')
-    custom = batch.runCfg.get('custom', '')
-    printOutput = batch.runCfg.get('printOutput', False)
+    runCfg_args = {
+        'jobName': jobName,
+        'simLabel': simLabel,
+        'cfgSavePath': cfgSavePath,
+        'netParamsSavePath': netParamsSavePath,
+        ### default (constants) ###
+        'sleepInterval': 1, # what is this for?
+        'nodes': 1,
+        'script': 'init.py',
+        'walltime': '00:30:00',
+        'folder': '.',
+        'custom': '',
+        'printOutput': False,
+        'run': True,
+    }
 
-    # hpc torque job submission
-    if batch.runCfg.get('type', None) == 'hpc_torque':
-
-        ppn = batch.runCfg.get('ppn', 1)
-        mpiCommand = batch.runCfg.get('mpiCommand', 'mpiexec')
-        queueName = batch.runCfg.get('queueName', 'default')
-        numproc = nodes * ppn
-
-        command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (
-            mpiCommand,
-            numproc,
-            script,
-            cfgSavePath,
-            netParamsSavePath,
-        )
-
-        jobString = jobStringHPCTorque(jobName, walltime, queueName, nodes, ppn, jobName, custom, command)
-
-        # Send job_string to qsub
+    runCfg_args.update(batch.runCfg)
+    run = batch.runCfg.get('run', True)
+    if batch.runCfg['type'] in templates:
+        templateFunc = templates[batch.runCfg['type']]
+    elif 'function' in batch.runCfg:
+        templateFunc = batch.runCfg['function']
+    if templateFunc:
+        job = templateFunc(runCfg_args)
         print('Submitting job ', jobName)
-        print(jobString + '\n')
-
-        batchfile = '%s.pbs' % (jobName)
+        print(job['filescript'] + '\n')
+        batchfile = job['filename']
         with open(batchfile, 'w') as text_file:
-            text_file.write("%s" % jobString)
-
-        proc = Popen(['qsub', batchfile], stderr=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
-        (output, input) = (proc.stdin, proc.stdout)
-    elif batch.runCfg.get('type', None) == 'hpc_sge':
-        # arguments for SGE submission script, default
-        sge_args = {
-        # def jobStringHPCSGE(jobName, walltime, vmem, queueName, cores, custom, command)
-            'jobName': simLabel,
-            'walltime': walltime,
-            'vmem': '32G',
-            'queueName': 'cpu.q',
-            'cores': 1,
-            'pre': '', 'post': '',
-            'mpiCommand': 'mpiexec',
-            #'log': "~/qsub/{}".format(jobName)
-            'log': "{}/{}".format(os.getcwd(), jobName)
-        }
-        # runCfg just 
-        sge_args.update(batch.runCfg)
-
-        #(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles):
-        sge_args['command'] = '%s -n $NSLOTS nrniv -python -mpi %s simConfig=%s netParams=%s' % (
-            sge_args['mpiCommand'],
-            script,
-            cfgSavePath,
-            netParamsSavePath,
-        )
-
-        jobString = jobStringHPCSGE(
-            **sge_args
-        )
-
-        # Send job_string to sbatch
-
-        print('Submitting job ', jobName)
-        print(jobString + '\n')
-
-        batchfile = '%s.sh' % (jobName)
-        with open(batchfile, 'w') as text_file:
-            text_file.write("%s" % jobString)
-
-        # subprocess.call
-        proc = Popen(['qsub', batchfile], stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
-        (output, input) = (proc.stdin, proc.stdout)
-    # hpc slurm job submission
-    elif batch.runCfg.get('type', None) == 'hpc_slurm':
-
-        # read params or set defaults
-        allocation = batch.runCfg.get('allocation', 'csd403')  # NSG account
-        coresPerNode = batch.runCfg.get('coresPerNode', 1)
-        email = batch.runCfg.get('email', 'a@b.c')
-        mpiCommand = batch.runCfg.get('mpiCommand', 'ibrun')
-        reservation = batch.runCfg.get('reservation', None)
-
-        numproc = nodes * coresPerNode
-        command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (
-            mpiCommand,
-            numproc,
-            script,
-            cfgSavePath,
-            netParamsSavePath,
-        )
-
-        jobString = jobStringHPCSlurm(
-            simLabel, allocation, walltime, nodes, coresPerNode, jobName, email, reservation, custom, folder, command
-        )
-
-        # Send job_string to sbatch
-
-        print('Submitting job ', jobName)
-        print(jobString + '\n')
-
-        batchfile = '%s.sbatch' % (jobName)
-        with open(batchfile, 'w') as text_file:
-            text_file.write("%s" % jobString)
-
-        # subprocess.call
-        proc = Popen(['sbatch', batchfile], stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
-        (output, input) = (proc.stdin, proc.stdout)
-
+            text_file.write("{}".format(job['filescript']))
+        if run:
+            proc = Popen(job['submit'].split(' '), stderr=PIPE, stdout=PIPE)  # Open a pipe to the pipe command.
+            (output, input) = (proc.stdin, proc.stdout)      
     # run mpi jobs directly e.g. if have 16 cores, can run 4 jobs * 4 cores in parallel
     # eg. usage: python batch.py
+
     elif batch.runCfg.get('type', None) == 'mpi_direct':
         jobName = batch.saveFolder + '/' + simLabel
         print('Running job ', jobName)

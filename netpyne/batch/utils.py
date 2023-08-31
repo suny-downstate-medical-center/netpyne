@@ -18,6 +18,8 @@ import json
 import pickle
 import subprocess
 
+from .templates import jobStringMPIDirect, jobStringHPCSlurm, jobStringHPCTorque, jobStringHPCSGE
+
 # -------------------------------------------------------------------------------
 # function to create a folder if it does not exist
 # -------------------------------------------------------------------------------
@@ -47,76 +49,6 @@ def createFolder(folder):
 # function to define template for bash submission
 # -------------------------------------------------------------------------------
 
-
-def jobStringMPIDirect(custom, folder, command):
-    return f"""#!/bin/bash
-{custom}
-cd {folder}
-{command}
-    """
-
-
-def jobStringHPCSlurm(
-    jobName, allocation, walltime, nodes, coresPerNode, jobPath, email, reservation, custom, folder, command
-):
-    res = '#SBATCH --res=%s' % (reservation) if reservation else ''
-    return f"""#!/bin/bash
-#SBATCH --job-name={jobName}
-#SBATCH -A {allocation}
-#SBATCH -t {walltime}
-#SBATCH --nodes={nodes}
-#SBATCH --ntasks-per-node={coresPerNode}
-#SBATCH -o {jobPath}.run
-#SBATCH -e {jobPath}.err
-#SBATCH --mail-user={email}
-#SBATCH --mail-type=end
-{res}
-{custom}
-source ~/.bashrc
-cd {folder}
-{command}
-wait
-    """
-
-
-def jobStringHPCTorque(jobName, walltime, queueName, nodes, coresPerNode, jobPath, custom, command):
-    return f"""#!/bin/bash
-#PBS -N {jobName}
-#PBS -l walltime={walltime}
-#PBS -q {queueName}
-#PBS -l nodes={nodes}:ppn={coresPerNode}
-#PBS -o {jobPath}.run
-#PBS -e {jobPath}.err
-{custom}
-cd $PBS_O_WORKDIR
-echo $PBS_O_WORKDIR
-{command}
-        """
-
-def jobStringHPCSGE(jobName, walltime, vmem, queueName, cores, pre, command, post, log, **kwargs):
-    """
-    creates string for SUN GRID ENGINE
-    https://gridscheduler.sourceforge.net/htmlman/htmlman1/qsub.html
-    recommended optional pre and post commands
-    rsync -a $SGE_O_WORKDIR/ $TMPDIR/
-    cd $TMPDIR
-    <execute command here>
-    rsync -a --exclude '*.run' --exclude '*.err' $TMPDIR/ $SGE_O_WORKDIR/
-    """
-    return f"""#!/bin/bash
-#$ -cwd
-#$ -N {jobName}
-#$ -q {queueName}
-#$ -pe smp {cores}
-#$ -l h_vmem={vmem}
-#$ -l h_rt={walltime}
-#$ -o {log}.run
-#$ -e {log}.err
-{pre}
-source ~/.bashrc
-{command}
-{post}
-        """
 
 def cp(obj, verbose=True, die=True):
     '''
@@ -150,7 +82,6 @@ def cp(obj, verbose=True, die=True):
         else:
             print(errormsg)
     return output
-
 
 def dcp(obj, verbose=True, die=False):
     '''

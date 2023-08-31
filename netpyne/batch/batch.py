@@ -136,7 +136,7 @@ class Batch(object):
         # make copy of batch object to save it; but skip cfg (since instance of SimConfig and can't be copied)
         odict = deepcopy({k: v for k, v in self.__dict__.items() if k != 'cfg' and k != 'netParams'})
 
-        if 'evolCfg' in odict:
+        """if 'evolCfg' in odict:
             odict['evolCfg']['fitnessFunc'] = 'removed'
 
         if 'optimCfg' in odict:
@@ -145,6 +145,9 @@ class Batch(object):
         if 'optimCfg' in odict:
             if 'summaryStats' in odict['optimCfg']:
                 odict['optimCfg']['summaryStats'] = 'removed'
+
+        if 'function' in odict['runCfg']:
+            odict['runCfg']['function'] = 'removed'"""
 
         odict['initCfg'] = tupleToStr(odict['initCfg'])
         dataSave = {'batch': tupleToStr(odict)}

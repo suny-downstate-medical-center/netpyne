@@ -40,7 +40,7 @@ from .spikes_legacy import (
     plotSpikeStats,
     plotRatePSD,
     plotRateSpectrogram,
-    popAvgRates,
+#    popAvgRates,
     plotfI,
     calculatefI,
 )

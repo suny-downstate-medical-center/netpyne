@@ -1033,7 +1033,7 @@ class NpSerializer(json.JSONEncoder):
 
     def default(self, obj):
         from neuron import hoc
-
+        #TODO: numpy integer and floating -> deprecated types
         if isinstance(obj, np.integer):
             return int(obj)
         elif isinstance(obj, np.floating):
@@ -1046,3 +1046,25 @@ class NpSerializer(json.JSONEncoder):
             return obj.toJSON()
         else:
             return super(NpSerializer, self).default(obj)
+
+class JSONSerializer(json.JSONEncoder):
+    from neuron import hoc
+#    _ph = lambda x: x # _ph, _ft as workaround to retrieve function typing
+#    _ft = type(_ph)
+    _sd = {np.ndarray: lambda obj: obj.tolist(),
+           # TODO: numpy integer and floating -> deprecated types
+           np.integer: int,
+           np.floating: float,
+           #_ft: str,
+           hoc.HocObject: lambda obj: obj.to_python(),
+           RecXElectrode: lambda obj: obj.toJSON(),
+           }
+    def default(self, obj):
+        if type(obj) in self._sd:
+            return self._sd[type(obj)](obj)
+        else:
+            try:
+                return super(JSONSerializer, self).default(obj)
+            except:
+                return str(obj)
+

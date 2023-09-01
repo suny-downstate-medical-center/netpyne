@@ -1,15 +1,31 @@
 """
 Templates for job submission (PBS, SLURM, SGE, etc)
 """
+from subprocess import PIPE
+from builtins import open
+import typing
 
-def createJob(submit, filename = '', filescript = ''):
+default_args = {
+    ### default (constants) ###
+    'sleepInterval': 1,  # what is this for?
+    'nodes': 1,
+    'script': 'init.py',
+    'walltime': '00:30:00',
+    'folder': '.',
+    'custom': '',
+    'printOutput': False,
+    'run': True,
+}
+
+
+def createJob(submit: str, filename: str = '', filescript: str = '', stdout: typing.TextIO = PIPE, stderr: typing.TextIO = PIPE):
     """
     wrapper for job submission.
     1. writes to <filename>, <filescript> to execute
     2. subprocess will execute:
         <submit>
     """
-    return {'submit': submit, 'filename': filename, 'filescript': filescript}
+    return {'submit': submit, 'filename': filename, 'filescript': filescript, 'stdout': stdout, 'stderr': stderr}
 
 def jobHPCSlurm(batchCfg):
     # default values
@@ -119,12 +135,18 @@ def jobMPIDirect(batchCfg):
         'script': 'init.py'
     }
     args.update(batchCfg)
-    command = "{mpiCommand} -n {cores} nrniv -python -mpi {script} simConfig={cfgSavePath} netParams={netParamsSavePath}".format(**args),
-    return createJob(submit = command)
+    command = \
+        "{mpiCommand} -n {cores} nrniv -python -mpi {script} simConfig={cfgSavePath} netParams={netParamsSavePath}"
+    stdout = open("{jobName}.run".format(**args), 'w')
+    stderr = open("{jobName}.err".format(**args), 'w')
+    return createJob(submit = command.format(**args),
+                     stdout = stdout,
+                     stderr = stderr)
 
 jobTypes = {
     'hpc_torque': jobHPCTorque,
     'hpc_slurm': jobHPCSlurm,
     'hpc_sge': jobHPCSGE,
-    'MPI': jobMPIDirect,
+    'mpi': jobMPIDirect,
+    'mpi_direct': jobMPIDirect
 }

@@ -17,8 +17,9 @@ import numpy as np
 import json
 import pickle
 import subprocess
+from subprocess import Popen
 
-from .templates import jobMPIDirect, jobHPCSlurm, jobHPCTorque, jobHPCSGE
+from .templates import jobTypes
 
 # -------------------------------------------------------------------------------
 # function to create a folder if it does not exist
@@ -536,3 +537,95 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
         return fitness, sum_statistics
     else:
         return fitness
+
+def jobSubmit(batch, pc, netParamsSavePath, jobPath, jobName, processes, processFiles):
+    """
+    Parameters
+    ----------
+    batch
+    pc
+    netParamsSavePath
+    jobPath
+    jobName
+    processes
+    processFiles
+
+    Returns
+    -------
+
+    """
+    # save simConfig json to saveFolder
+    batch.cfg.jobName = jobName
+    batch.cfg.saveFolder = batch.saveFolder
+    cfgSavePath = jobPath + '_cfg.json'
+    batch.cfg.save(cfgSavePath)
+
+    runCfg_args = {
+        'jobPath': jobPath,
+        'jobName': jobName,
+        'cfgSavePath': cfgSavePath,
+        'netParamsSavePath': netParamsSavePath,
+    }
+
+    runCfg_args.update(batch.runCfg)
+    run = batch.runCfg.get('run', True)
+    jobFunc = False
+    if batch.runCfg['type'] in jobTypes:
+        jobFunc = jobTypes[batch.runCfg['type']]
+    if 'function' in batch.runCfg:
+        jobFunc = batch.runCfg['function']
+    if jobFunc:
+        job = jobFunc(runCfg_args)
+        print('Submitting job ', jobPath)
+        print(job['filescript'] + '\n')
+        batchfile = job['filename']
+        with open(batchfile, 'w') as text_file:
+            text_file.write("{}".format(job['filescript']))
+        if run:
+            proc = Popen(job['submit'].split(' '), stderr=PIPE, stdout=PIPE)  # Open a pipe to the pipe command.
+            (output, input) = (proc.stdin, proc.stdout)
+    # run mpi jobs directly e.g. if have 16 cores, can run 4 jobs * 4 cores in parallel
+    # eg. usage: python batch.py
+
+    elif batch.runCfg.get('type', None) == 'mpi_direct':
+        #jobName = batch.saveFolder + '/' + jobName # unnecessary as jobPath already
+        print('Running job ', jobPath)
+        cores = batch.runCfg.get('cores', 1)
+        mpiCommand = batch.runCfg.get('mpiCommand', 'mpirun')
+
+        command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (
+            mpiCommand,
+            cores,
+            script,
+            cfgSavePath,
+            netParamsSavePath,
+        )
+
+        print(command + '\n')
+        proc = Popen(command.split(' '), stdout=open(jobPath + '.run', 'w'), stderr=open(jobPath + '.err', 'w'))
+        processes.append(proc)
+        processFiles.append(jobPath + '.run')
+
+    # pc bulletin board job submission (master/slave) via mpi
+    # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
+    elif batch.runCfg.get('type', None) == 'mpi_bulletin':
+        script = batch.runCfg.get('script', 'init.py')
+
+        # unnecessary jobPath = batch.saveFolder + '/' + jobName --
+        print('Submitting job ', jobPath)
+        # master/slave bulletin board scheduling of jobs
+        pc.submit(runJob, script, cfgSavePath, netParamsSavePath, processes, jobPath)
+        print('Saving output to: ', jobPath + '.run')
+        print('Saving errors to: ', jobPath + '.err')
+        print('')
+
+        #pc.submit without
+
+    else:
+        print(batch.runCfg)
+        print(
+            "Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'"
+        )
+        sys.exit(0)
+
+

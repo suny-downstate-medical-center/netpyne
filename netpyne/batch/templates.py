@@ -29,13 +29,13 @@ def jobHPCSlurm(batchCfg):
     # template
     template = \
 """#!/bin/bash
-#SBATCH --job-name={simLabel}
+#SBATCH --job-name={jobName}
 #SBATCH -A {allocation}
 #SBATCH -t {walltime}
 #SBATCH --nodes={nodes}
 #SBATCH --ntasks-per-node={coresPerNode}
-#SBATCH -o {jobName}.run
-#SBATCH -e {jobName}.err
+#SBATCH -o {jobPath}.run
+#SBATCH -e {jobPath}.err
 #SBATCH --mail-user={email}
 #SBATCH --mail-type=end
 {res}
@@ -44,7 +44,7 @@ source ~/.bashrc
 cd {folder}
 {command}
 """
-    return createJob(submit = "qsub {jobName}.sh".format(**args), filename = "{jobName}.sh".format(**args), filescript = template.format(**args))
+    return createJob(submit = "qsub {jobPath}.sh".format(**args), filename = "{jobPath}.sh".format(**args), filescript = template.format(**args))
     
 def jobHPCTorque(batchCfg):
     # default values
@@ -60,18 +60,18 @@ def jobHPCTorque(batchCfg):
     # template
     template = \
 """#!/bin/bash
-#PBS -N {simLabel}
+#PBS -N {jobName}
 #PBS -l walltime={walltime}
 #PBS -q {queueName}
 #PBS -l nodes={nodes}:ppn={coresPerNode}
-#PBS -o {jobName}.run
-#PBS -e {jobName}.err
+#PBS -o {jobPath}.run
+#PBS -e {jobPath}.err
 {custom}
 cd $PBS_O_WORKDIR
 echo $PBS_O_WORKDIR
 {command}
 """
-    return createJob(submit = 'qsub {jobName}.sh'.format(**args), filename = "{jobName}.sh".format(**args), filescript = template.format(**args))
+    return createJob(submit = 'qsub {jobPath}.sh'.format(**args), filename = "{jobPath}.sh".format(**args), filescript = template.format(**args))
 
 def jobHPCSGE(batchCfg):
     """
@@ -98,19 +98,19 @@ def jobHPCSGE(batchCfg):
     template = \
 """#!/bin/bash
 #$ -cwd
-#$ -N {simLabel}
+#$ -N {jobName}
 #$ -q {queueName}
 #$ -pe smp {cores}
 #$ -l h_vmem={vmem}
 #$ -l h_rt={walltime}
-#$ -o {jobName}.run
-#$ -e {jobName}.err
+#$ -o {jobPath}.run
+#$ -e {jobPath}.err
 {pre}
 source ~/.bashrc
 {command}
 {post}
 """
-    return createJob(submit = 'qsub {jobName}.sh'.format(**args), filename = "{jobName}.sh".format(**args), filescript = template.format(**args))
+    return createJob(submit = 'qsub {jobPath}.sh'.format(**args), filename = "{jobPath}.sh".format(**args), filescript = template.format(**args))
 
 def jobMPIDirect(batchCfg):
     args = {
@@ -122,7 +122,7 @@ def jobMPIDirect(batchCfg):
     command = "{mpiCommand} -n {cores} nrniv -python -mpi {script} simConfig={cfgSavePath} netParams={netParamsSavePath}".format(**args),
     return createJob(submit = command)
 
-templates = {
+jobTypes = {
     'hpc_torque': jobHPCTorque,
     'hpc_slurm': jobHPCSlurm,
     'hpc_sge': jobHPCSGE,

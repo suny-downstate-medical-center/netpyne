@@ -34,7 +34,7 @@ import importlib, types
 
 from neuron import h
 
-from .templates import jobStringHPCSlurm, jobStringHPCTorque, jobStringHPCSGE, default_args, templates
+from .templates import jobHPCSlurm, jobHPCTorque, jobHPCSGE, jobTypes
 from .utils import createFolder
 
 pc = h.ParallelContext()  # use bulletin board master/slave
@@ -277,29 +277,29 @@ def gridSearch(batch, pc):
     # h.quit()
 
 
-def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles):
+def gridSubmit(batch, pc, netParamsSavePath, jobPath, jobName, processes, processFiles):
 
     # skip if output file already exists
-    if batch.runCfg.get('skip', False) and glob.glob(jobName + '_data.json'):
-        print('Skipping job %s since output file already exists...' % (jobName))
+    if batch.runCfg.get('skip', False) and glob.glob(jobPath + '_data.json'):
+        print('Skipping job %s since output file already exists...' % (jobPath))
         return
-    elif batch.runCfg.get('skipCfg', False) and glob.glob(jobName + '_cfg.json'):
-        print('Skipping job %s since cfg file already exists...' % (jobName))
+    elif batch.runCfg.get('skipCfg', False) and glob.glob(jobPath + '_cfg.json'):
+        print('Skipping job %s since cfg file already exists...' % (jobPath))
         return
-    elif batch.runCfg.get('skipCustom', None) and glob.glob(jobName + batch.runCfg['skipCustom']):
-        print('Skipping job %s since %s file already exists...' % (jobName, batch.runCfg['skipCustom']))
+    elif batch.runCfg.get('skipCustom', None) and glob.glob(jobPath + batch.runCfg['skipCustom']):
+        print('Skipping job %s since %s file already exists...' % (jobPath, batch.runCfg['skipCustom']))
         return
 
     # save simConfig json to saveFolder
-    batch.cfg.simLabel = simLabel
+    batch.cfg.jobName = jobName
     batch.cfg.saveFolder = batch.saveFolder
-    cfgSavePath = batch.saveFolder + '/' + simLabel + '_cfg.json'
+    cfgSavePath = jobPath + '_cfg.json'
     batch.cfg.save(cfgSavePath)
 
     # read params or set defaults
     runCfg_args = {
+        'jobPath': jobPath,
         'jobName': jobName,
-        'simLabel': simLabel,
         'cfgSavePath': cfgSavePath,
         'netParamsSavePath': netParamsSavePath,
         ### default (constants) ###
@@ -315,13 +315,14 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
 
     runCfg_args.update(batch.runCfg)
     run = batch.runCfg.get('run', True)
-    if batch.runCfg['type'] in templates:
-        templateFunc = templates[batch.runCfg['type']]
-    elif 'function' in batch.runCfg:
-        templateFunc = batch.runCfg['function']
-    if templateFunc:
-        job = templateFunc(runCfg_args)
-        print('Submitting job ', jobName)
+    jobFunc = False
+    if batch.runCfg['type'] in jobTypes:
+        jobFunc = jobTypes[batch.runCfg['type']]
+    if 'function' in batch.runCfg:
+        jobFunc = batch.runCfg['function']
+    if jobFunc:
+        job = jobFunc(runCfg_args)
+        print('Submitting job ', jobPath)
         print(job['filescript'] + '\n')
         batchfile = job['filename']
         with open(batchfile, 'w') as text_file:
@@ -333,8 +334,8 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
     # eg. usage: python batch.py
 
     elif batch.runCfg.get('type', None) == 'mpi_direct':
-        jobName = batch.saveFolder + '/' + simLabel
-        print('Running job ', jobName)
+        #jobName = batch.saveFolder + '/' + jobName # unnecessary as jobPath already
+        print('Running job ', jobPath)
         cores = batch.runCfg.get('cores', 1)
         mpiCommand = batch.runCfg.get('mpiCommand', 'mpirun')
 
@@ -347,21 +348,21 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
         )
 
         print(command + '\n')
-        proc = Popen(command.split(' '), stdout=open(jobName + '.run', 'w'), stderr=open(jobName + '.err', 'w'))
+        proc = Popen(command.split(' '), stdout=open(jobPath + '.run', 'w'), stderr=open(jobPath + '.err', 'w'))
         processes.append(proc)
-        processFiles.append(jobName + '.run')
+        processFiles.append(jobPath + '.run')
 
     # pc bulletin board job submission (master/slave) via mpi
     # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
     elif batch.runCfg.get('type', None) == 'mpi_bulletin':
         script = batch.runCfg.get('script', 'init.py')
 
-        jobName = batch.saveFolder + '/' + simLabel
-        print('Submitting job ', jobName)
+        # unnecessary jobPath = batch.saveFolder + '/' + jobName --
+        print('Submitting job ', jobPath)
         # master/slave bulletin board scheduling of jobs
-        pc.submit(runJob, script, cfgSavePath, netParamsSavePath, processes, jobName)
-        print('Saving output to: ', jobName + '.run')
-        print('Saving errors to: ', jobName + '.err')
+        pc.submit(runJob, script, cfgSavePath, netParamsSavePath, processes, jobPath)
+        print('Saving output to: ', jobPath + '.run')
+        print('Saving errors to: ', jobPath + '.err')
         print('')
 
     else:

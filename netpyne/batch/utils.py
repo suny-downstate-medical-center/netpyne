@@ -18,7 +18,7 @@ import json
 import pickle
 import subprocess
 
-from .templates import jobStringMPIDirect, jobStringHPCSlurm, jobStringHPCTorque, jobStringHPCSGE
+from .templates import jobMPIDirect, jobHPCSlurm, jobHPCTorque, jobHPCSGE
 
 # -------------------------------------------------------------------------------
 # function to create a folder if it does not exist
@@ -356,13 +356,13 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
             if type == 'mpi_direct':
                 #executer = '/bin/bash'
                 executer = 'sh' # OS agnostic (Windows)
-                jobString = jobStringMPIDirect(custom, folder, command)
+                jobString = jobMPIDirect(custom, folder, command)
             # ----------------------------------------------------------------------
             # Create script to run on HPC through slurm
             # ----------------------------------------------------------------------
             elif type == 'hpc_slurm':
                 executer = 'sbatch'
-                jobString = jobStringHPCSlurm(
+                jobString = jobHPCSlurm(
                     jobName,
                     allocation,
                     walltime,
@@ -381,7 +381,7 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
             elif type == 'hpc_torque':
                 executer = 'qsub'
                 queueName = args.get('queueName', 'default')
-                jobString = jobStringHPCTorque(
+                jobString = jobHPCTorque(
                     jobName, walltime, queueName, nodes, coresPerNode, jobPath, custom, command
                 )
             # ----------------------------------------------------------------------
@@ -390,7 +390,7 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
             elif type == 'hpc_sge':
                 executer = 'qsub'
                 queueName = args.get('queueName', 'default')
-                jobString = jobStringHPCSGE(
+                jobString = jobHPCSGE(
                     jobName, walltime, queueName, nodes, coresPerNode, jobPath, custom, command
                 )
             # ----------------------------------------------------------------------

@@ -560,6 +560,7 @@ def jobSubmit(batch, pc, netParamsSavePath, jobPath, jobName, processes, process
     cfgSavePath = jobPath + '_cfg.json'
     batch.cfg.save(cfgSavePath)
 
+    # read params or set defaults
     runCfg_args = {
         'jobPath': jobPath,
         'jobName': jobName,
@@ -570,42 +571,29 @@ def jobSubmit(batch, pc, netParamsSavePath, jobPath, jobName, processes, process
     runCfg_args.update(batch.runCfg)
     run = batch.runCfg.get('run', True)
     jobFunc = False
-    if batch.runCfg['type'] in jobTypes:
+    if batch.runCfg['type'] in jobTypes: # goal to eventually deprecate this for custom functions
         jobFunc = jobTypes[batch.runCfg['type']]
     if 'function' in batch.runCfg:
         jobFunc = batch.runCfg['function']
     if jobFunc:
         job = jobFunc(runCfg_args)
         print('Submitting job ', jobPath)
-        print(job['filescript'] + '\n')
+        filescript = job['filescript']
+        if filescript:
+            print(job['filescript'] + '\n')
+        else:
+            print(job['submit'] + '\n')
         batchfile = job['filename']
-        with open(batchfile, 'w') as text_file:
-            text_file.write("{}".format(job['filescript']))
+        if batchfile:
+            with open(batchfile, 'w') as text_file:
+                text_file.write("{}".format(job['filescript']))
         if run:
-            proc = Popen(job['submit'].split(' '), stderr=PIPE, stdout=PIPE)  # Open a pipe to the pipe command.
+            proc = Popen(job['submit'].split(' '), stderr=job['stderr'], stdout=job['stdout'])  # Open a pipe to the pipe command.
             (output, input) = (proc.stdin, proc.stdout)
+            processes.append(proc)
+            processFiles.append(jobPath + ".run")
     # run mpi jobs directly e.g. if have 16 cores, can run 4 jobs * 4 cores in parallel
     # eg. usage: python batch.py
-
-    elif batch.runCfg.get('type', None) == 'mpi_direct':
-        #jobName = batch.saveFolder + '/' + jobName # unnecessary as jobPath already
-        print('Running job ', jobPath)
-        cores = batch.runCfg.get('cores', 1)
-        mpiCommand = batch.runCfg.get('mpiCommand', 'mpirun')
-
-        command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (
-            mpiCommand,
-            cores,
-            script,
-            cfgSavePath,
-            netParamsSavePath,
-        )
-
-        print(command + '\n')
-        proc = Popen(command.split(' '), stdout=open(jobPath + '.run', 'w'), stderr=open(jobPath + '.err', 'w'))
-        processes.append(proc)
-        processFiles.append(jobPath + '.run')
-
     # pc bulletin board job submission (master/slave) via mpi
     # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
     elif batch.runCfg.get('type', None) == 'mpi_bulletin':
@@ -619,13 +607,8 @@ def jobSubmit(batch, pc, netParamsSavePath, jobPath, jobName, processes, process
         print('Saving errors to: ', jobPath + '.err')
         print('')
 
-        #pc.submit without
-
     else:
         print(batch.runCfg)
-        print(
-            "Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'"
-        )
+        print("Error: invalid runCfg 'type' selected; valid types are: \n")
+        print(jobTypes)
         sys.exit(0)
-
-

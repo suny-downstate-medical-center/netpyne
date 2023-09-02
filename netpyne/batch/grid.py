@@ -35,7 +35,7 @@ import importlib, types
 from neuron import h
 
 from .templates import jobHPCSlurm, jobHPCTorque, jobHPCSGE, jobTypes
-from .utils import createFolder
+from .utils import createFolder, jobSubmit
 
 pc = h.ParallelContext()  # use bulletin board master/slave
 
@@ -250,6 +250,8 @@ def gridSearch(batch, pc):
         while pc.working():
             pass
     outfiles = []
+    # processFile polling for batch submission ... ?
+    """
     for procFile in processFiles:
         outfiles.append(open(procFile, 'r'))
 
@@ -271,10 +273,12 @@ def gridSearch(batch, pc):
             proc.terminate()
         except:
             pass
+    
     pc.done()
     # TODO: line below was commented out due to issue on Netpyne-UI (https://dura-bernallab.slack.com/archives/C02UT6WECEL/p1671724489096569?thread_ts=1671646899.368969&cid=C02UT6WECEL)
     # Needs to be re-visited.
     # h.quit()
+    """
 
 
 def gridSubmit(batch, pc, netParamsSavePath, jobPath, jobName, processes, processFiles):
@@ -290,6 +294,7 @@ def gridSubmit(batch, pc, netParamsSavePath, jobPath, jobName, processes, proces
         print('Skipping job %s since %s file already exists...' % (jobPath, batch.runCfg['skipCustom']))
         return
 
+    jobSubmit(batch, pc, netParamsSavePath, jobPath, jobName, processes, processFiles)
     # save simConfig json to saveFolder
     batch.cfg.jobName = jobName
     batch.cfg.saveFolder = batch.saveFolder

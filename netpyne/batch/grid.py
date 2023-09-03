@@ -295,6 +295,7 @@ def gridSubmit(batch, pc, netParamsSavePath, jobPath, jobName, processes, proces
         return
 
     jobSubmit(batch, pc, netParamsSavePath, jobPath, jobName, processes, processFiles)
+"""
     # save simConfig json to saveFolder
     batch.cfg.jobName = jobName
     batch.cfg.saveFolder = batch.saveFolder
@@ -353,4 +354,4 @@ def gridSubmit(batch, pc, netParamsSavePath, jobPath, jobName, processes, proces
         print("Error: invalid runCfg 'type' selected; valid types are: \n")
         print(jobTypes)
         sys.exit(0)
-
+"""

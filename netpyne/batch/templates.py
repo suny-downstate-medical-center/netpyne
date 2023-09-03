@@ -36,6 +36,7 @@ def jobHPCSlurm(batchCfg):
         'mpiCommand': 'ibrun',
         'reservation': None,
     }
+    args.update(default_args)
     args.update(batchCfg)
     args['numproc'] = args['nodes'] * args['coresPerNode']
     args.update({
@@ -69,6 +70,7 @@ def jobHPCTorque(batchCfg):
         'mpiCommand': 'mpiexec',
         'queueName': 'default',
     }
+    args.update(default_args)
     args.update(batchCfg)
     args['numproc'] = args['nodes'] * args['ppn']
     args['command'] = \
@@ -107,6 +109,7 @@ def jobHPCSGE(batchCfg):
             'pre': '', 'post': '',
             'mpiCommand': 'mpiexec',
         }
+    args.update(default_args)
     args.update(batchCfg)
     args['command'] = \
         "{mpiCommand} -n $NSLOTS -hosts $(hostname) nrniv -python -mpi {script} simConfig={cfgSavePath} netParams={netParamsSavePath}".format(**args)
@@ -134,6 +137,7 @@ def jobMPIDirect(batchCfg):
         'mpiCommand': 'mpirun',
         'script': 'init.py'
     }
+    args.update(default_args)
     args.update(batchCfg)
     command = \
         "{mpiCommand} -n {cores} nrniv -python -mpi {script} simConfig={cfgSavePath} netParams={netParamsSavePath}"

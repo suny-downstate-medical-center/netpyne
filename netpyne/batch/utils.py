@@ -17,6 +17,7 @@ import numpy as np
 import json
 import pickle
 import subprocess
+import sys
 from subprocess import Popen
 
 from .templates import jobTypes

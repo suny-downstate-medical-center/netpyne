@@ -339,10 +339,9 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
             # ----------------------------------------------------------------------
 
             if mpiCommand == '':
-                command = "{nrnCommand} {script} simConfig={cfgSavePath} netParams={netParamsSavePath}".format(**args)
+                args['command'] = "{nrnCommand} {script} simConfig={cfgSavePath} netParams={netParamsSavePath}".format(**args)
             else:
-                command = "{mpiCommand} -n {numproc} {nrnCommand} -python -mpi {script} simConfig={cfgSavePath} netParams={netParamsSavePath}".format(**args)
-
+                args['command'] = "{mpiCommand} -n {numproc} {nrnCommand} -python -mpi {script} simConfig={cfgSavePath} netParams={netParamsSavePath}".format(**args)
             job = jobTypes[type](args)
             executer = job['submit'].split(' ')[0]
             jobString = job['filescript']

@@ -18,7 +18,7 @@ import json
 import pickle
 import subprocess
 
-from .templates import jobStringMPIDirect, jobStringHPCSlurm, jobStringHPCTorque, jobStringHPCSGE
+from .templates import jobMPIDirect, jobHPCSlurm, jobHPCTorque, jobHPCSGE, templates
 
 # -------------------------------------------------------------------------------
 # function to create a folder if it does not exist
@@ -253,31 +253,27 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
 
     total_jobs = 0
     # options slurm, mpi
-    type = args.get('type', 'mpi_direct')
-
-    # paths to required scripts
-    script = args.get('script', 'init.py')
-    netParamsSavePath = args.get('netParamsSavePath')
-    genFolderPath = batch.saveFolder + '/gen_' + str(ngen)
-    # mpi command setup
-    nodes = args.get('nodes', 1)
-    paramLabels = args.get('paramLabels', [])
-    coresPerNode = args.get('coresPerNode', 1)
-
-    mpiCommand = args.get('mpiCommand', batch.mpiCommandDefault)
-    nrnCommand = args.get('nrnCommand', 'nrniv')
-
-    numproc = nodes * coresPerNode
-    # slurm setup
-    custom = args.get('custom', '')
-    folder = args.get('folder', '.')
-    email = args.get('email', 'a@b.c')
-    walltime = args.get('walltime', '00:01:00')
-    reservation = args.get('reservation', None)
-    allocation = args.get('allocation', 'csd403')  # NSG account
-    # fitness function
-    fitnessFunc = args.get('fitnessFunc')
-    fitnessFuncArgs = args.get('fitnessFuncArgs')
+    default_args = {
+        'type': 'mpi_direct',
+        'script': 'init.py',
+        'nodes':  1,
+        'paramLabels':  [],
+        'coresPerNode':  1,
+        'mpiCommand':  batch.mpiCommandDefault,
+        'nrnCommand':  'nrniv',
+        'custom':  '',
+        'folder':  '.',
+        'email':  'a@b.c',
+        'walltime':  '00:01:00',
+        'reservation':  '',
+        'allocation':  'csd403',
+        'sleepInterval':  0.2,
+      }
+    args.update(default_args)
+    args['numproc'] = args['nodes'] * args['coresPerNode']
+    paramLabels = args['paramLabels']
+    sleepInterval = args['sleepInterval']
+    mpiCommand = args['mpiCommand']
     if batch.method == 'evol':
         indexToRerun = args.get('defaultFitness')
     else:
@@ -290,8 +286,8 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
         summaryStatsLength = args.get('summaryStatisticLength')
 
     # read params or set defaults
-    sleepInterval = args.get('sleepInterval', 0.2)
     # create folder if it does not exist
+    genFolderPath = batch.saveFolder + '/gen_' + str(ngen)
     createFolder(genFolderPath)
 
     # remember pids and jobids in a list
@@ -326,12 +322,14 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
         # save cfg instance to file
         cfgSavePath = jobPath + '_cfg.json'
         batch.cfg.save(cfgSavePath)
+        args['cfgSavePath'] = cfgSavePath
+        args['jobPath'] = jobPath
 
         if type == 'mpi_bulletin':
             # ----------------------------------------------------------------------
             # MPI master-slaves
             # ----------------------------------------------------------------------
-            pc.submit(runJob, nrnCommand, script, cfgSavePath, netParamsSavePath, jobPath, pc.id())
+            pc.submit(runJob, args['nrnCommand'], args['script'] , args['cfgSavePath'], args['netParamsSavePath'], args['jobPath'], pc.id())
             print('-' * 80)
         else:
             # ----------------------------------------------------------------------
@@ -339,63 +337,14 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
             # ----------------------------------------------------------------------
 
             if mpiCommand == '':
-                command = '%s %s simConfig=%s netParams=%s ' % (nrnCommand, script, cfgSavePath, netParamsSavePath)
+                command = "{nrnCommand} {script} simConfig={cfgSavePath} netParams={netParamsSavePath}".format(**args)
             else:
-                command = '%s -n %d %s -python -mpi %s simConfig=%s netParams=%s ' % (
-                    mpiCommand,
-                    numproc,
-                    nrnCommand,
-                    script,
-                    cfgSavePath,
-                    netParamsSavePath,
-                )
+                command = "{mpiCommand} -n {numproc} {nrnCommand} -python -mpi {script} simConfig={cfgSavePath} netParams={netParamsSavePath}".format(**args)
 
-            # ----------------------------------------------------------------------
-            # run on local machine with <nodes*coresPerNode> cores
-            # ----------------------------------------------------------------------
-            if type == 'mpi_direct':
-                #executer = '/bin/bash'
-                executer = 'sh' # OS agnostic (Windows)
-                jobString = jobStringMPIDirect(custom, folder, command)
-            # ----------------------------------------------------------------------
-            # Create script to run on HPC through slurm
-            # ----------------------------------------------------------------------
-            elif type == 'hpc_slurm':
-                executer = 'sbatch'
-                jobString = jobStringHPCSlurm(
-                    jobName,
-                    allocation,
-                    walltime,
-                    nodes,
-                    coresPerNode,
-                    jobPath,
-                    email,
-                    reservation,
-                    custom,
-                    folder,
-                    command,
-                )
-            # ----------------------------------------------------------------------
-            # Create script to run on HPC through PBS
-            # ----------------------------------------------------------------------
-            elif type == 'hpc_torque':
-                executer = 'qsub'
-                queueName = args.get('queueName', 'default')
-                jobString = jobStringHPCTorque(
-                    jobName, walltime, queueName, nodes, coresPerNode, jobPath, custom, command
-                )
-            # ----------------------------------------------------------------------
-            # Create script to run on HPC through SGE
-            # ----------------------------------------------------------------------
-            elif type == 'hpc_sge':
-                executer = 'qsub'
-                queueName = args.get('queueName', 'default')
-                jobString = jobStringHPCSGE(
-                    jobName, walltime, queueName, nodes, coresPerNode, jobPath, custom, command
-                )
-            # ----------------------------------------------------------------------
-            # save job and run
-            # ----------------------------------------------------------------------
+            job = templates[type](args)
+            executer = job['submit'].split(' ')[0]
+            jobString = job['filescript']
+            
             print('Submitting job ', jobName)
             print(jobString)
             print('-' * 80)

@@ -34,7 +34,7 @@ import importlib, types
 
 from neuron import h
 
-from .templates import jobStringHPCSlurm, jobStringHPCTorque, jobStringHPCSGE, default_args, templates
+from .templates import templates
 from .utils import createFolder
 
 pc = h.ParallelContext()  # use bulletin board master/slave

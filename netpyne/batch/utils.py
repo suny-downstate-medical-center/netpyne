@@ -20,7 +20,7 @@ import subprocess
 import sys
 from subprocess import Popen
 
-from .templates import jobMPIDirect, jobHPCSlurm, jobHPCTorque, jobHPCSGE, templates
+from .templates import jobTypes
 
 # -------------------------------------------------------------------------------
 # function to create a folder if it does not exist
@@ -343,7 +343,7 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
             else:
                 command = "{mpiCommand} -n {numproc} {nrnCommand} -python -mpi {script} simConfig={cfgSavePath} netParams={netParamsSavePath}".format(**args)
 
-            job = templates[type](args)
+            job = jobTypes[type](args)
             executer = job['submit'].split(' ')[0]
             jobString = job['filescript']
             

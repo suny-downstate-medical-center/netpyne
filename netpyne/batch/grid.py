@@ -33,8 +33,9 @@ from subprocess import Popen, PIPE
 import importlib, types
 
 from neuron import h
-from .utils import jobStringHPCSlurm, jobStringHPCTorque, jobStringHPCSGE
-from .utils import createFolder
+
+from .templates import jobHPCSlurm, jobHPCTorque, jobHPCSGE, jobTypes
+from .utils import createFolder, jobSubmit
 
 pc = h.ParallelContext()  # use bulletin board master/slave
 
@@ -249,6 +250,8 @@ def gridSearch(batch, pc):
         while pc.working():
             pass
     outfiles = []
+    # processFile polling for batch submission ... ?
+    """
     for procFile in processFiles:
         outfiles.append(open(procFile, 'r'))
 
@@ -270,183 +273,85 @@ def gridSearch(batch, pc):
             proc.terminate()
         except:
             pass
+    
     pc.done()
     # TODO: line below was commented out due to issue on Netpyne-UI (https://dura-bernallab.slack.com/archives/C02UT6WECEL/p1671724489096569?thread_ts=1671646899.368969&cid=C02UT6WECEL)
     # Needs to be re-visited.
     # h.quit()
+    """
 
 
-def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles):
+def gridSubmit(batch, pc, netParamsSavePath, jobPath, jobName, processes, processFiles):
 
     # skip if output file already exists
-    if batch.runCfg.get('skip', False) and glob.glob(jobName + '_data.json'):
-        print('Skipping job %s since output file already exists...' % (jobName))
+    if batch.runCfg.get('skip', False) and glob.glob(jobPath + '_data.json'):
+        print('Skipping job %s since output file already exists...' % (jobPath))
         return
-    elif batch.runCfg.get('skipCfg', False) and glob.glob(jobName + '_cfg.json'):
-        print('Skipping job %s since cfg file already exists...' % (jobName))
+    elif batch.runCfg.get('skipCfg', False) and glob.glob(jobPath + '_cfg.json'):
+        print('Skipping job %s since cfg file already exists...' % (jobPath))
         return
-    elif batch.runCfg.get('skipCustom', None) and glob.glob(jobName + batch.runCfg['skipCustom']):
-        print('Skipping job %s since %s file already exists...' % (jobName, batch.runCfg['skipCustom']))
+    elif batch.runCfg.get('skipCustom', None) and glob.glob(jobPath + batch.runCfg['skipCustom']):
+        print('Skipping job %s since %s file already exists...' % (jobPath, batch.runCfg['skipCustom']))
         return
 
+    jobSubmit(batch, pc, netParamsSavePath, jobPath, jobName, processes, processFiles)
+"""
     # save simConfig json to saveFolder
-    batch.cfg.simLabel = simLabel
+    batch.cfg.jobName = jobName
     batch.cfg.saveFolder = batch.saveFolder
-    cfgSavePath = batch.saveFolder + '/' + simLabel + '_cfg.json'
+    cfgSavePath = jobPath + '_cfg.json'
     batch.cfg.save(cfgSavePath)
 
     # read params or set defaults
-    sleepInterval = batch.runCfg.get('sleepInterval', 1)
-    nodes = batch.runCfg.get('nodes', 1)
-    script = batch.runCfg.get('script', 'init.py')
-    walltime = batch.runCfg.get('walltime', '00:30:00')
-    folder = batch.runCfg.get('folder', '.')
-    custom = batch.runCfg.get('custom', '')
-    printOutput = batch.runCfg.get('printOutput', False)
+    runCfg_args = {
+        'jobPath': jobPath,
+        'jobName': jobName,
+        'cfgSavePath': cfgSavePath,
+        'netParamsSavePath': netParamsSavePath,
+    }
 
-    # hpc torque job submission
-    if batch.runCfg.get('type', None) == 'hpc_torque':
-
-        ppn = batch.runCfg.get('ppn', 1)
-        mpiCommand = batch.runCfg.get('mpiCommand', 'mpiexec')
-        queueName = batch.runCfg.get('queueName', 'default')
-        numproc = nodes * ppn
-
-        command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (
-            mpiCommand,
-            numproc,
-            script,
-            cfgSavePath,
-            netParamsSavePath,
-        )
-
-        jobString = jobStringHPCTorque(jobName, walltime, queueName, nodes, ppn, jobName, custom, command)
-
-        # Send job_string to qsub
-        print('Submitting job ', jobName)
-        print(jobString + '\n')
-
-        batchfile = '%s.pbs' % (jobName)
-        with open(batchfile, 'w') as text_file:
-            text_file.write("%s" % jobString)
-
-        proc = Popen(['qsub', batchfile], stderr=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
-        (output, input) = (proc.stdin, proc.stdout)
-    elif batch.runCfg.get('type', None) == 'hpc_sge':
-        # arguments for SGE submission script, default
-        sge_args = {
-        # def jobStringHPCSGE(jobName, walltime, vmem, queueName, cores, custom, command)
-            'jobName': simLabel,
-            'walltime': walltime,
-            'vmem': '32G',
-            'queueName': 'cpu.q',
-            'cores': 1,
-            'pre': '', 'post': '',
-            'mpiCommand': 'mpiexec',
-            #'log': "~/qsub/{}".format(jobName)
-            'log': "{}/{}".format(os.getcwd(), jobName)
-        }
-        # runCfg just 
-        sge_args.update(batch.runCfg)
-
-        #(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles):
-        sge_args['command'] = '%s -n $NSLOTS nrniv -python -mpi %s simConfig=%s netParams=%s' % (
-            sge_args['mpiCommand'],
-            script,
-            cfgSavePath,
-            netParamsSavePath,
-        )
-
-        jobString = jobStringHPCSGE(
-            **sge_args
-        )
-
-        # Send job_string to sbatch
-
-        print('Submitting job ', jobName)
-        print(jobString + '\n')
-
-        batchfile = '%s.sh' % (jobName)
-        with open(batchfile, 'w') as text_file:
-            text_file.write("%s" % jobString)
-
-        # subprocess.call
-        proc = Popen(['qsub', batchfile], stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
-        (output, input) = (proc.stdin, proc.stdout)
-    # hpc slurm job submission
-    elif batch.runCfg.get('type', None) == 'hpc_slurm':
-
-        # read params or set defaults
-        allocation = batch.runCfg.get('allocation', 'csd403')  # NSG account
-        coresPerNode = batch.runCfg.get('coresPerNode', 1)
-        email = batch.runCfg.get('email', 'a@b.c')
-        mpiCommand = batch.runCfg.get('mpiCommand', 'ibrun')
-        reservation = batch.runCfg.get('reservation', None)
-
-        numproc = nodes * coresPerNode
-        command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (
-            mpiCommand,
-            numproc,
-            script,
-            cfgSavePath,
-            netParamsSavePath,
-        )
-
-        jobString = jobStringHPCSlurm(
-            simLabel, allocation, walltime, nodes, coresPerNode, jobName, email, reservation, custom, folder, command
-        )
-
-        # Send job_string to sbatch
-
-        print('Submitting job ', jobName)
-        print(jobString + '\n')
-
-        batchfile = '%s.sbatch' % (jobName)
-        with open(batchfile, 'w') as text_file:
-            text_file.write("%s" % jobString)
-
-        # subprocess.call
-        proc = Popen(['sbatch', batchfile], stdin=PIPE, stdout=PIPE)  # Open a pipe to the qsub command.
-        (output, input) = (proc.stdin, proc.stdout)
-
+    runCfg_args.update(batch.runCfg)
+    run = batch.runCfg.get('run', True)
+    jobFunc = False
+    if batch.runCfg['type'] in jobTypes: # goal to eventually deprecate this for custom functions
+        jobFunc = jobTypes[batch.runCfg['type']]
+    if 'function' in batch.runCfg:
+        jobFunc = batch.runCfg['function']
+    if jobFunc:
+        job = jobFunc(runCfg_args)
+        print('Submitting job ', jobPath)
+        filescript = job['filescript']
+        if filescript:
+            print(job['filescript'] + '\n')
+        else:
+            print(job['submit'] + '\n')
+        batchfile = job['filename']
+        if batchfile:
+            with open(batchfile, 'w') as text_file:
+                text_file.write("{}".format(job['filescript']))
+        if run:
+            proc = Popen(job['submit'].split(' '), stderr=job['stderr'], stdout=job['stdout'])  # Open a pipe to the pipe command.
+            (output, input) = (proc.stdin, proc.stdout)
+            processes.append(proc)
+            processFiles.append(jobPath + ".run")
     # run mpi jobs directly e.g. if have 16 cores, can run 4 jobs * 4 cores in parallel
     # eg. usage: python batch.py
-    elif batch.runCfg.get('type', None) == 'mpi_direct':
-        jobName = batch.saveFolder + '/' + simLabel
-        print('Running job ', jobName)
-        cores = batch.runCfg.get('cores', 1)
-        mpiCommand = batch.runCfg.get('mpiCommand', 'mpirun')
-
-        command = '%s -n %d nrniv -python -mpi %s simConfig=%s netParams=%s' % (
-            mpiCommand,
-            cores,
-            script,
-            cfgSavePath,
-            netParamsSavePath,
-        )
-
-        print(command + '\n')
-        proc = Popen(command.split(' '), stdout=open(jobName + '.run', 'w'), stderr=open(jobName + '.err', 'w'))
-        processes.append(proc)
-        processFiles.append(jobName + '.run')
-
     # pc bulletin board job submission (master/slave) via mpi
     # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
     elif batch.runCfg.get('type', None) == 'mpi_bulletin':
         script = batch.runCfg.get('script', 'init.py')
 
-        jobName = batch.saveFolder + '/' + simLabel
-        print('Submitting job ', jobName)
+        # unnecessary jobPath = batch.saveFolder + '/' + jobName --
+        print('Submitting job ', jobPath)
         # master/slave bulletin board scheduling of jobs
-        pc.submit(runJob, script, cfgSavePath, netParamsSavePath, processes, jobName)
-        print('Saving output to: ', jobName + '.run')
-        print('Saving errors to: ', jobName + '.err')
+        pc.submit(runJob, script, cfgSavePath, netParamsSavePath, processes, jobPath)
+        print('Saving output to: ', jobPath + '.run')
+        print('Saving errors to: ', jobPath + '.err')
         print('')
 
     else:
         print(batch.runCfg)
-        print(
-            "Error: invalid runCfg 'type' selected; valid types are 'mpi_bulletin', 'mpi_direct', 'hpc_slurm', 'hpc_torque'"
-        )
+        print("Error: invalid runCfg 'type' selected; valid types are: \n")
+        print(jobTypes)
         sys.exit(0)
-
+"""

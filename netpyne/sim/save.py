@@ -55,10 +55,10 @@ def saveJSON(fileName, data, checkFileTimeout=0):
     """
 
     import json, io
-    from .utils import NpSerializer
+    from .utils import NpSerializer, JSONSerializer
 
     with io.open(fileName, 'w', encoding='utf-8') as fileObj:
-        str_ = json.dumps(data, indent=4, sort_keys=True, separators=(',', ': '), ensure_ascii=False, cls=NpSerializer)
+        str_ = json.dumps(data, indent=4, sort_keys=True, separators=(',', ': '), ensure_ascii=False, cls=JSONSerializer)
         fileObj.write(to_unicode(str_))
 
     if checkFileTimeout > 0:

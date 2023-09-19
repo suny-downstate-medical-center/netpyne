@@ -2,6 +2,10 @@
 
 **New features**
 
+- Time series and PSD plots for current source density (CSD)
+
+- Added colorbar to CSD plot
+
 - Extended sim.gatherData() with more optional arguments for flexibility
 
 - Specify linear/log scale in `plotRatePSD()`

@@ -608,27 +608,33 @@ def replaceDictODict(obj):
 
     """
 
-    if type(obj) == list:
+    if type(obj) in [list, tuple]:
+        new = []
         for ind, item in enumerate(obj):
             if type(item) == Dict:
                 item = item.todict()
             elif type(item) == ODict:
                 item = item.toOrderedDict()
-            obj[ind] = item
-            if type(item) in [list, dict, OrderedDict]:
-                replaceDictODict(item)
+            else:
+                item = replaceDictODict(item)
+
+            new.append(item)
 
     elif type(obj) in [dict, OrderedDict, Dict, ODict]:
+        new = dict() if type(obj) in [dict, Dict] else OrderedDict()
         for key, val in obj.items():
             if type(val) == Dict:
-                obj[key] = val.todict()
+                val = val.todict()
             elif type(val) == ODict:
-                obj[key] = val.toOrderedDict()
-            if type(val) in [list, dict, OrderedDict]:
-                replaceDictODict(val)
+                val = val.toOrderedDict()
+            else:
+                val = replaceDictODict(val)
 
-    return obj
+            new[key] = val
+    else:
+        new = obj
 
+    return new
 
 # ------------------------------------------------------------------------------
 # Rename objects

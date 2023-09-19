@@ -422,10 +422,8 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
                         data = json.load(openFile)
 
                     if 'cells' in data.keys():
-                        if fileType == 'pkl':
-                            allCells.extend([cell.__getstate__() for cell in data['cells']])
-                        else:
-                            allCells.extend(data['cells'])
+                        as_Dict = [cell if isinstance(cell, Dict) else Dict(cell) for cell in data['cells']]
+                        allCells.extend(as_Dict)
 
                     if 'pops' in data.keys():
                         loadedPops = data['pops']

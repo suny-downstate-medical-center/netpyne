@@ -292,7 +292,8 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
                 for pop in loadedPops:
                     sim.net.allPops[pop[0]] = pop[1]
 
-            sim.net.allCells = data['net']['cells']
+            rawCells = data['net']['cells']
+            sim.net.allCells = [c if isinstance(c, Dict) else Dict(c) for c in rawCells]
         if instantiate:
             try:
                 # calculate cells to instantiate in this node

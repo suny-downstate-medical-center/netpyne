@@ -93,6 +93,30 @@ echo $PBS_O_WORKDIR
 {command}
         """
 
+def jobStringHPCSGE(jobName, walltime, vmem, queueName, cores, pre, command, post, log, **kwargs):
+    """
+    creates string for SUN GRID ENGINE
+    https://gridscheduler.sourceforge.net/htmlman/htmlman1/qsub.html
+    recommended optional pre and post commands
+    rsync -a $SGE_O_WORKDIR/ $TMPDIR/
+    cd $TMPDIR
+    <execute command here>
+    rsync -a --exclude '*.run' --exclude '*.err' $TMPDIR/ $SGE_O_WORKDIR/
+    """
+    return f"""#!/bin/bash
+#$ -cwd
+#$ -N {jobName}
+#$ -q {queueName}
+#$ -pe smp {cores}
+#$ -l h_vmem={vmem}
+#$ -l h_rt={walltime}
+#$ -o {log}.run
+#$ -e {log}.err
+{pre}
+source ~/.bashrc
+{command}
+{post}
+        """
 
 def cp(obj, verbose=True, die=True):
     '''
@@ -380,7 +404,7 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
             print('-' * 80)
         else:
             # ----------------------------------------------------------------------
-            # MPI job commnand
+            # MPI job command
             # ----------------------------------------------------------------------
 
             if mpiCommand == '':
@@ -403,7 +427,7 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
                 executer = 'sh' # OS agnostic (Windows)
                 jobString = jobStringMPIDirect(custom, folder, command)
             # ----------------------------------------------------------------------
-            # run on HPC through slurm
+            # Create script to run on HPC through slurm
             # ----------------------------------------------------------------------
             elif type == 'hpc_slurm':
                 executer = 'sbatch'
@@ -421,12 +445,21 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
                     command,
                 )
             # ----------------------------------------------------------------------
-            # run on HPC through PBS
+            # Create script to run on HPC through PBS
             # ----------------------------------------------------------------------
             elif type == 'hpc_torque':
                 executer = 'qsub'
                 queueName = args.get('queueName', 'default')
                 jobString = jobStringHPCTorque(
+                    jobName, walltime, queueName, nodes, coresPerNode, jobPath, custom, command
+                )
+            # ----------------------------------------------------------------------
+            # Create script to run on HPC through SGE
+            # ----------------------------------------------------------------------
+            elif type == 'hpc_sge':
+                executer = 'qsub'
+                queueName = args.get('queueName', 'default')
+                jobString = jobStringHPCSGE(
                     jobName, walltime, queueName, nodes, coresPerNode, jobPath, custom, command
                 )
             # ----------------------------------------------------------------------

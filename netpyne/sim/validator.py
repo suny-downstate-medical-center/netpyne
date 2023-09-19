@@ -849,14 +849,14 @@ def validateNetParams(net_params, printWarnings=True):
         schema = Schema(specs)
         try:
             valid = schema.validate(data)
-            # print(f"  {label} validation successful")
+            print(f"  Successfully validated {label}")
             validatedSchemas[label] = valid
         except SchemaError as error:
+            msg = __parseErrorMessage(error.autos, origIndent='    ')
             if printWarnings:
-                print(f"  Error validating {label}:")
-                for msg in error.autos:
-                    print(f"    {msg}")
-            failedSchemas.append((label, error, error.autos))
+                print(f"\n  Error validating {label}:")
+                print(msg + "\n")
+            failedSchemas.append((label, error, msg))
 
     context = ValidationContext(net_params)
 
@@ -988,6 +988,31 @@ def __isModel(name, modelType, context):
     if type(name) in (list, tuple):
         return all(isModel(n, modelType) for n in name)
     return isModel(name, modelType)
+
+def __parseErrorMessage(msg, origIndent=''):
+    import re
+    pattern = re.compile("key ('.*') error:", re.IGNORECASE) # TODO: need to freeze `schema` version to make sure this pattern is preserved
+    keySeq = []
+    other = []
+    # convert dict keys sequence to single string
+    for line in msg:
+        if line is None: line = ''
+        matches = pattern.match(line)
+        if matches:
+            matches = matches.groups()
+            if len(matches) > 0:
+                keySeq.append(matches[0]) # presume only one match
+        elif line != '':
+            other.append(line)
+    if len(keySeq) > 0:
+        newln = '\n' + origIndent + '  '
+        other = newln + newln.join(other)
+        return f"{origIndent}Error in {' -> '.join(keySeq)}:{other}"
+    else:
+        return msg
+
+
+
 
 # This is a utility method that loops over models in ./examples folder and prints any validation errors
 # Consider running it as github "checks"

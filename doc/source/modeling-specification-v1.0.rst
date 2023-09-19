@@ -34,7 +34,7 @@ Authors and contributors
 -------------------------------
 
 The original author of the specification is Salvador Dura-Bernal (salvadordura@gmail.com). Contributors to the specification include:
-Padraig Gleeson, Joe W Graham, Eugenio Urdapilleta, Valery Bragin, William W Lytton, Michael L Hines, Ben Suter, Greg Patrick, 
+Padraig Gleeson, Joe W Graham, Eugenio Urdapilleta, Valery Bragin, James Chen, William W Lytton, Michael L Hines, Ben Suter, Greg Patrick, 
 Matteo Cantarelli, Dario del Piano, Filippo Ledda, Facundo Rodriguez, Nicolas Gomez, Afonso Pinto, Craig Kelley, Adrian Quintana, Siddartha Mitra, 
 Adam Newton, Joao Vitor, Cliff Kerr and David Kedziora.
 

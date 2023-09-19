@@ -26,6 +26,10 @@ from .plotLFPLocations import plotLFPLocations
 from .plotShape import plotShape
 from .plotCSD import plotCSD
 
+# # NEW CSD PLOTTING FUNCTIONS TESTS!!
+# from .plotCSDTimeSeries import plotCSDTimeSeries
+# from .plotCSDPSD import plotCSDPSD
+
 
 """
 # -------------------------------------------------------------------------------------------------------------------

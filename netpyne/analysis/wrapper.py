@@ -20,7 +20,7 @@ except:
 # -------------------------------------------------------------------------------------------------------------------
 ## Wrapper to run analysis functions in simConfig
 # -------------------------------------------------------------------------------------------------------------------
-def plotData():
+def plotData(): # TODO: remove?
     """
     Function for/to <short description of `netpyne.analysis.wrapper.plotData`>
 

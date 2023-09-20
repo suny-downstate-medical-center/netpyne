@@ -19,8 +19,8 @@ from .plotter import MetaFigure, GeneralPlotter, ScatterPlotter, LinePlotter, Hi
 from .plotRaster import plotRaster
 from .plotSpikeHist import plotSpikeHist
 from .plotSpikeFreq import plotSpikeFreq
-from .plotLFPTimeSeries import plotLFPTimeSeries
-from .plotLFPPSD import plotLFPPSD
+from .plotTimeSeries import plotLFPTimeSeries, plotCSDTimeSeries
+from .plotTimeSeriesPSD import plotLFPPSD, plotCSDPSD
 from .plotLFPSpectrogram import plotLFPSpectrogram
 from .plotLFPLocations import plotLFPLocations
 from .plotShape import plotShape

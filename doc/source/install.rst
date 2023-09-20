@@ -9,31 +9,47 @@ Requirements
 
 Before installing NetPyNE, please ensure you have the following installed:
 
-1) Python 2 or 3 (2.7, 3.6 and 3.7 are supported). Download from the `official Python website <https://www.python.org/>`_. Alternatively, you can download the `Anaconda Distribution <https://www.anaconda.com/distribution/>`_ which also includes several data science and visualization packages. If you are using Windows, it is highly recommended that you download the Anaconda distribution.
+1) Python 2 or 3 (2.7, and versions > 3.6 are supported). We recommend the package/environment manager `Anaconda <https://www.anaconda.com/distribution/>`_ which comes with Python and many necessary packages already installed. Alternatively, installing Python can be handled through the `official Python website <https://www.python.org/>`_. If you are using Windows, see the quickstart guides for using `Windows Subsystem Linux <https://jchen6727.github.io/portal/windows/wsl/neuron/netpyne/python/2022/10/31/A-Neurosim-Build-Using-Windows-Subsystem-Linux!.html>`_ (preferred) or using Python through the `Anaconda distribution on Windows <https://jchen6727.github.io/portal/windows/neuron/netpyne/python/2023/04/11/A-Neurosim-Build-On-Windows.html>`_. 
 
 2) The ``pip`` tool for installing Python packages. See `pip installation here <https://pip.pypa.io/en/stable/installing/>`_.
 
-3) The NEURON simulator. See NEURON's `installation instructions <http://www.neuron.yale.edu/neuron/download/>`_. If you would like to run parallelized simulations, please ensure you install NEURON with MPI support (see also `Quick start guide <https://neuron.yale.edu/ftp/neuron/2019umn/neuron-quickstart.pdf>`_). Note: the latest NEURON version can be installed simply via: ``pip install neuron``
+3) The NEURON simulator. See NEURON's `installation instructions <http://www.neuron.yale.edu/neuron/download/>`_. If you would like to run parallelized simulations, please ensure you install NEURON with MPI support (see also `Quick start guide <https://neuron.yale.edu/ftp/neuron/2019umn/neuron-quickstart.pdf>`_). Note for Linux or Mac: the latest NEURON version on Linux or Mac can be installed simply via: ``pip install neuron``. 
 
-N.B. Windows users can make use of `Windows Subsystem Linux <https://learn.microsoft.com/en-us/windows/wsl/install>`_. Getting started is `relatively simple <https://jchen6727.github.io/portal/wsl/neuron/netpyne/python/2022/10/31/A-Neurosim-Build-Using-Windows-Subsystem-Linux!.html>`_.
+N.B. Windows users can make use of `Windows Subsystem Linux <https://learn.microsoft.com/en-us/windows/wsl/install>`_ to recreate a Linux environment. 
 
-N.B. Please make sure that all path definitions are included with the installation
+F.A.Q. Historically, path definitions have caused issues with running Python, NEURON or NetPyNE. Using a path manager helps with resolving this (Anaconda, Miniconda, etc.). When installing be careful that all *recommended* path definitions are included with the installation.
 
 Install the latest released version of NetPyNE via pip (Recommended)
 ------------------------------------------------------
 
-Linux or Mac OS (from a terminal):  ``pip install netpyne``
+Linux (or Windows through WSL) or Mac OS: 
 
-Windows (from a terminal): ``python -m pip install netpyne``
+From the terminal: 
+
+``pip install netpyne``
+
+Windows 
+
+From Anaconda PowerShell or a user preconfigured terminal: 
+
+``pip install netpyne``
 
 Upgrade to the latest released version of NetPyNE via pip
 ------------------------------------------------------
 
 Use this option if you already have NetPyNE installed and just want to update to the latest version.
 
-Linux or Mac OS (from a terminal): ``pip install netpyne -U``
+Linux (or Windows through WSL) or Mac OS: 
 
-Windows (from a terminal): ``python -m pip install -U netpyne``
+From the terminal:
+
+``pip install netpyne -U``
+
+Windows: 
+
+From Anaconda PowerShell or a user preconfigured terminal:
+
+``pip install -U netpyne``
 
 
 Install the development version of NetPyNE via GitHub and pip

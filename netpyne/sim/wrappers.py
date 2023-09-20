@@ -137,8 +137,8 @@ def analyze():
 
     from .. import sim
 
-    sim.saveData()  # run parallel Neuron simulation
-    sim.analysis.plotData()  # gather spiking data and cell info from each node
+    sim.saveData()
+    sim.analysis.plotData()
 
 
 # ------------------------------------------------------------------------------

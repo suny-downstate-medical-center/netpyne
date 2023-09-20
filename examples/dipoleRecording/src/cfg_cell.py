@@ -16,7 +16,4 @@ cfg.saveDipolePops = ['E']
 
 cfg.analysis['plotTraces'] = {'include': [('E',0)], 'oneFigPer':'cell', 'overlay': True, 'figSize': (5,3),'saveFig': True}      # Plot recorded traces for this list of cells
 #cfg.analysis['plotLFP'] = {'includeAxon': False, 'plots': ['timeSeries',  'locations'], 'figSize': (5,9), 'saveFig': True}
-#cfg.analysis['getCSD'] = {'timeRange': [10,45],'spacing_um': 150, 'vaknin': True}
-#cfg.analysis['plotCSD'] = {'timeRange': [10,45]}
-#sim.analysis.getCSD(...args...)
-#cfg.analysis['plotCSD'] = {}
+#cfg.analysis['plotCSD'] = {'timeRange': [10,45], 'saveFig': True}

@@ -108,6 +108,13 @@ class CompartCell(Cell):
                 conditionsMet = False
 
             if conditionsMet:  # if all conditions are met, set values for this cell
+
+                # Intercept possible issue where the cell is designed to be PointCell but misclassfied as CompartCell in Pop._setCellClass()
+                # (may happen if .mod not compiled or mech name misspelled)
+                assert 'secs' in prop, \
+                    f"""Cell rule labeled '{propLabel}' is a compartment cell, but it doesn't have required entry 'secs'.
+If this cell is expected to be a point cell instead, make sure the correspondent mechanism is included and compiled."""
+
                 if sim.cfg.includeParamsLabel:
                     if 'label' not in self.tags:
                         self.tags['label'] = [propLabel]  # create list of property sets

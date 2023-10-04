@@ -1,3 +1,11 @@
+# Version in development
+
+**New features**
+
+**Bug fixes**
+
+- Fixed loading point cell params from legacy models (issue 607)
+
 # Version 1.0.5
 
 **New features**

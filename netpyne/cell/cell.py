@@ -186,29 +186,8 @@ class Cell(object):
             conditionsMet = 1
 
             if 'conds' in params:
-                for (condKey, condVal) in params['conds'].items():  # check if all conditions are met
-                    # choose what to comapare to
-                    if condKey in ['gid']:  # CHANGE TO GID
-                        compareTo = self.gid
-                    else:
-                        compareTo = self.tags[condKey]
+                conditionsMet = self.checkConditions(params['conds'])
 
-                    # check if conditions met
-                    if isinstance(condVal, list) and isinstance(condVal[0], Number):
-                        if compareTo == self.gid:
-                            if compareTo not in condVal:
-                                conditionsMet = 0
-                                break
-                        elif compareTo < condVal[0] or compareTo > condVal[1]:
-                            conditionsMet = 0
-                            break
-                    elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
-                        if compareTo not in condVal:
-                            conditionsMet = 0
-                            break
-                    elif compareTo != condVal:
-                        conditionsMet = 0
-                        break
             if conditionsMet:
                 try:
                     ptr = None
@@ -372,6 +351,12 @@ class Cell(object):
                     print('  Conditions preclude recording ', key, ' from cell ', self.gid)
         # else:
         #    if sim.cfg.verbose: print '  NOT recording ', key, 'from cell ', self.gid, ' with parameters: ',str(params)
+
+
+    def checkConditions(self, conditions):
+        from ..sim.utils import checkConditions
+        return checkConditions(conditions=conditions, against=self.tags, cellGid=self.gid)
+
 
     def _randomizer(self):
         try:

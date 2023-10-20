@@ -32,14 +32,23 @@ def createRhythmicPattern(params, rand):
     - startStd: standard deviation of normal distrinution for start time (ms); mean is set by start param. Only used if > 0.0
     - freq: oscillatory frequency of rhythmic pattern (Hz)
     - freqStd: standard deviation of oscillatory frequency (Hz)
-    - distribution: distribution type fo oscillatory frequencies; either 'normal' or 'uniform'
+    - distribution: distribution type for oscillatory frequencies; either 'normal' or 'uniform'
     - eventsPerCycle: spikes/burst per cycle; should be either 1 or 2
     - repeats: number of times to repeat input pattern (equivalent to number of inputs)
     - stop: maximum time for last spike of pattern (ms)
+    - tstop: maximum time for last spike of pattern (ms) (maintained for backward compatibility)
     """
-
+    #TODO raise error cases?
     # start is always defined
     start = params['start']
+    if 'stop' in params:
+        params['tstop'] = params['stop']
+    elif 'tstop' in params:
+        params['stop'] = params['stop']
+    else:
+        print('stop time not defined')
+        return np.array([])
+
     # If start is -1, randomize start time of inputs
     if start == -1:
         startMin = params.get('startMin', 25.0)
@@ -47,7 +56,7 @@ def createRhythmicPattern(params, rand):
         start = rand.uniform(startMin, startMax)
     elif params.get('startStd', -1) > 0.0:  # randomize start time based on startStd
         start = rand.normal(start, params['startStd'])  # start time uses different prng
-    freq = params.get('freq', 0)
+    freq = params.get('freq', False) # if freq not supplied, "exit" control flow w/ print statement
     freqStd = params.get('freqStd', 0)
     eventsPerCycle = params.get('eventsPerCycle', 2)
     distribution = params.get('distribution', 'normal')
@@ -55,8 +64,9 @@ def createRhythmicPattern(params, rand):
     if eventsPerCycle > 2 or eventsPerCycle <= 0:
         print("eventsPerCycle should be either 1 or 2, trying 2")
         eventsPerCycle = 2
-    # If frequency is 0, create empty vector if input times
-    if not freq:
+    # If frequency is False, create empty vector if input times
+    if not freq: #TODO clarification, why not raise?, should error?
+        print("No frequency specified. Not making any alpha feeds.")
         t_input = []
     elif distribution == 'normal':
         # array of mean stimulus times, starts at start
@@ -86,8 +96,8 @@ def createRhythmicPattern(params, rand):
         t_input.sort()
     # Uniform Distribution
     elif distribution == 'uniform':
-        n_inputs = params['repeats'] * freq * (params['tstop'] - start) / 1000.0
-        t_array = rand.uniform(start, params['tstop'], n_inputs)
+        n_inputs = params['repeats'] * freq * (params['stop'] - start) / 1000.0
+        t_array = rand.uniform(start, params['stop'], n_inputs)
         if eventsPerCycle == 2:
             # Two arrays store doublet times
             t_input_low = t_array - 5
@@ -111,7 +121,7 @@ def createEvokedPattern(params, rand, inc=0):
     """
     creates the ongoing external inputs (rhythmic)
     input params:
-    - start: time of first spike. if -1, uniform distribution between startMin and startMax (ms)
+    - start: time of first spike.
     - inc: increase in time of first spike; from cfg.inc_evinput (ms)
     - startStd: standard deviation of start (ms)
     - numspikes: total number of spikes to generate

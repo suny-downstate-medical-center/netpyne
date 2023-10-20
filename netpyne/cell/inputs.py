@@ -38,7 +38,7 @@ def createRhythmicPattern(params, rand):
     - stop: maximum time for last spike of pattern (ms)
     - tstop: maximum time for last spike of pattern (ms) (maintained for backward compatibility)
     """
-    #TODO raise error cases?
+    #TODO catch KeyError cases?
     # start is always defined
     start = params['start']
     if 'stop' in params:

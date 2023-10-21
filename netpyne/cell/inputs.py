@@ -42,11 +42,11 @@ def createRhythmicPattern(params, rand):
     # start is always defined
     start = params['start']
     if 'stop' in params:
-        params['tstop'] = params['stop']
+        stop = params['stop']
     elif 'tstop' in params:
-        params['stop'] = params['stop']
+        stop = params['tstop']
     else:
-        print('stop time not defined')
+        print('stop / tstop time not defined, please provide stop time')
         return np.array([])
 
     # If start is -1, randomize start time of inputs
@@ -70,7 +70,7 @@ def createRhythmicPattern(params, rand):
         t_input = []
     elif distribution == 'normal':
         # array of mean stimulus times, starts at start
-        isi_array = np.arange(start, params['stop'], 1000.0 / freq)
+        isi_array = np.arange(start, stop, 1000.0 / freq)
         # array of single stimulus times -- no doublets
         if freqStd:
             # t_array = self.prng.normal(np.repeat(isi_array, self.p_ext['repeats']), stdev)
@@ -96,8 +96,8 @@ def createRhythmicPattern(params, rand):
         t_input.sort()
     # Uniform Distribution
     elif distribution == 'uniform':
-        n_inputs = params['repeats'] * freq * (params['stop'] - start) / 1000.0
-        t_array = rand.uniform(start, params['stop'], n_inputs)
+        n_inputs = params['repeats'] * freq * (stop - start) / 1000.0
+        t_array = rand.uniform(start, stop, int(n_inputs))
         if eventsPerCycle == 2:
             # Two arrays store doublet times
             t_input_low = t_array - 5

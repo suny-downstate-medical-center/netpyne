@@ -127,13 +127,26 @@ class MetaFigure:
         else:
             dpi = self.rcParams['figure.dpi']
 
+        if 'constrained_layout' in kwargs:
+            constrained_layout = kwargs['constrained_layout']
+        else:
+            constrained_layout = False
+
         if autosize:
             maxplots = np.max([nrows, ncols])
             figSize0 = figSize[0] + (maxplots - 1) * (figSize[0] * autosize)
             figSize1 = figSize[1] + (maxplots - 1) * (figSize[1] * autosize)
             figSize = [figSize0, figSize1]
 
-        self.fig, self.ax = plt.subplots(nrows, ncols, sharex=sharex, sharey=sharey, figsize=figSize, dpi=dpi)
+        gridspec_kw = None
+#        if 'height_ratios' in kwargs:
+#            gridspec_kw = {'height_ratios': kwargs['height_ratios'], 'right': 0.3}
+        if 'gridspec_kw' in kwargs:
+            gridspec_kw = kwargs['gridspec_kw']
+            
+        self.fig, self.ax = plt.subplots(nrows, ncols, sharex=sharex, sharey=sharey, 
+                                         figsize=figSize, dpi=dpi, gridspec_kw=gridspec_kw,
+                                         constrained_layout=constrained_layout)
 
         # Add a metafig attribute to the figure
         self.fig.metafig = self
@@ -205,6 +218,9 @@ class MetaFigure:
                 if '.' in saveFig:
                     fileName, fileType = os.path.splitext(saveFig)
                     fileType = fileType[1:] # drop the dot
+                elif saveFig == 'movie':
+                    from neuron import h
+                    fileName = sim.cfg.filename + '_shape_movie_' + str(round(h.t, 1)) + '.png'
                 else:
                     fileName = saveFig
 
@@ -490,7 +506,16 @@ class GeneralPlotter:
         # If an axis is input, plot there; otherwise make a new figure and axis
         if self.axis is None:
             if self.metafig is None:
-                self.metafig = MetaFigure(kind=self.kind, **kwargs)
+                if self.kind == 'raster&signal':
+                    kwargs.update({'constrained_layout': True})
+                    kwargs.update({'gridspec_kw': {'height_ratios': [2,1],
+                                                   'right': 0.2}})
+                    #                               'left':0.2,
+                    #                               'top':0.3,
+                    #                               'bottom':0.2}})
+                    self.metafig = MetaFigure(kind=self.kind, subplots=2, sharex=True, **kwargs)
+                else:
+                    self.metafig = MetaFigure(kind=self.kind, **kwargs)
             self.fig = self.metafig.fig
             self.axis = self.metafig.ax
         else:
@@ -561,11 +586,14 @@ class GeneralPlotter:
             self.data, fileName=fileName, fileDesc=fileDesc, fileType=fileType, fileDir=fileDir, sim=sim, **kwargs
         )
 
-    def formatAxis(self, **kwargs):
+    def formatAxis(self, axis=None, **kwargs):
         """Method to format the axis
 
         Parameters
         ----------
+        axis : None or object
+            the axis to format
+
         title : str
             Title to add to the axis.
 
@@ -589,33 +617,39 @@ class GeneralPlotter:
             Whether to invert the y axis.
 
         """
+        curAx = axis
+        if curAx==None:
+            curAx = self.axis
 
         if 'title' in kwargs:
-            self.axis.set_title(kwargs['title'])
+            curAx.set_title(kwargs['title'])
 
         if 'xlabel' in kwargs:
-            self.axis.set_xlabel(kwargs['xlabel'])
+            curAx.set_xlabel(kwargs['xlabel'])
 
         if 'ylabel' in kwargs:
-            self.axis.set_ylabel(kwargs['ylabel'])
+            curAx.set_ylabel(kwargs['ylabel'])
 
         if 'xlim' in kwargs:
             if kwargs['xlim'] is not None:
-                self.axis.set_xlim(kwargs['xlim'])
+                curAx.set_xlim(kwargs['xlim'])
 
         if 'ylim' in kwargs:
             if kwargs['ylim'] is not None:
-                self.axis.set_ylim(kwargs['ylim'])
+                curAx.set_ylim(kwargs['ylim'])
 
         if 'invert_yaxis' in kwargs:
             if kwargs['invert_yaxis'] is True:
-                self.axis.invert_yaxis()
+                curAx.invert_yaxis()
 
     def addLegend(self, handles=None, labels=None, **kwargs):
         """Method to add a legend to the axis
 
         Parameters
         ----------
+        axis : None or object
+            the axis to add the legends
+
         handles : list
             List of Matplotlib legend handles.
 
@@ -686,6 +720,7 @@ class GeneralPlotter:
 
     def addScalebar(
         self,
+        axis=None,
         matchx=True,
         matchy=True,
         hidex=True,
@@ -703,6 +738,9 @@ class GeneralPlotter:
 
         Parameters
         ----------
+        axis : None or object
+            the axis to add the scalebar
+
         matchx : bool
             If True, set size of scale bar to spacing between ticks, if False, set size using sizex params.
 
@@ -766,8 +804,12 @@ class GeneralPlotter:
 
         """
 
+        curAx = axis
+        if curAx==None:
+            curAx = self.axis
+
         _add_scalebar(
-            self.axis,
+            curAx,
             matchx=matchx,
             matchy=matchy,
             hidex=hidex,
@@ -782,17 +824,67 @@ class GeneralPlotter:
             **kwargs
         )
 
-    def addColorbar(self, **kwargs):
+    def addColorbar(self, axis=None, **kwargs):
         """Method to add a color bar to the axis
 
         Parameters
         ----------
+        axis : None or object
+            the axis to add the colorbar
+
         kwargs : str
             You can enter any Matplotlib colorbar parameter as a kwarg.  See https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.pyplot.colorbar.html
         """
-        plt.colorbar(mappable=self.axis.get_images()[0], ax=self.axis, **kwargs)
 
-    def finishAxis(self, **kwargs):
+        curAx = axis
+        if curAx==None:
+            curAx = self.axis
+
+        if 'vmin' in kwargs.keys():
+            vmin = kwargs['vmin']
+            kwargs.pop('vmin')
+        if 'vmax' in kwargs.keys():
+            vmax = kwargs['vmax']
+            kwargs.pop('vmax')
+        if 'vmin' in locals() and 'vmax' in locals():
+            cbar = plt.colorbar(mappable=mpl.cm.ScalarMappable(norm=mpl.colors.Normalize(vmin=vmin, vmax=vmax), cmap=self.cmap), 
+                              ax=curAx, ticks=[vmin, vmin/2, 0, vmax/2, vmax], **kwargs)
+            cbar.set_label('Phase', rotation=270)  
+        else:
+            plt.colorbar(mappable=self.axis.get_images()[0], ax=curAx, **kwargs)
+
+    def addBackground(self, axis=None, **kwargs):
+        """Method to add striped gray background to populations - used in plotRaster with "colorbyPhase"
+
+        Parameters
+        ----------
+        axis : None or object
+            the axis to add the background
+
+        kwargs : str
+            You can enter any Matplotlib colorbar parameter as a kwarg.  See https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.pyplot.colorbar.html
+        """
+        from matplotlib.pyplot import yticks, barh
+
+        curAx = axis
+        if curAx==None:
+            curAx = self.axis
+
+        if 'popNumCells' in kwargs.keys():
+            popSizes = kwargs['popNumCells']
+            yTicksPos = []
+            accum = 0
+            for i, size in enumerate(popSizes):
+                yTicksPos.append(accum + popSizes[i] / 2) # yCenter of pop
+                accum += popSizes[i]
+            curAx.set_yticks(np.array(yTicksPos))
+            curAx.set_yticklabels(kwargs['popLabels'])
+            curAx.set_xlim(kwargs['timeRange'])
+            curAx.set_ylim([0,accum])
+            curAx.barh(yTicksPos, left=kwargs['timeRange'][0], width=kwargs['timeRange'][1]-kwargs['timeRange'][0]-1, 
+                       height=popSizes, align='center', color=['#E3E3E3', 'w'], alpha=0.5)
+
+    def finishAxis(self, axis=None, **kwargs):
         """Method to finalize an axis
 
         Parameters
@@ -819,7 +911,11 @@ class GeneralPlotter:
 
         """
 
-        self.formatAxis(**kwargs)
+        curAx = axis
+        if curAx==None:
+            curAx = self.axis
+
+        self.formatAxis(axis=curAx, **kwargs)
 
         if 'saveData' in kwargs:
             if kwargs['saveData']:
@@ -827,28 +923,33 @@ class GeneralPlotter:
 
         if 'legend' in kwargs:
             if kwargs['legend'] is True:
-                self.addLegend(**kwargs)
+                self.addLegend(axis=curAx,**kwargs)
             elif type(kwargs['legend']) == dict:
-                self.addLegend(**kwargs['legend'])
+                self.addLegend(axis=curAx,**kwargs['legend'])
 
         if 'scalebar' in kwargs:
             if kwargs['scalebar'] is True:
-                self.addScalebar()
+                self.addScalebar(axis=curAx)
             elif type(kwargs['scalebar']) == dict:
-                self.addScalebar(**kwargs['scalebar'])
+                self.addScalebar(axis=curAx,**kwargs['scalebar'])
 
         if 'colorbar' in kwargs:
             if kwargs['colorbar'] is True:
-                self.addColorbar()
+                self.addColorbar(axis=curAx)
             elif type(kwargs['colorbar']) == dict:
-                self.addColorbar(**kwargs['colorbar'])
+                self.addColorbar(axis=curAx, **kwargs['colorbar'])
 
         if 'grid' in kwargs:
-            self.axis.minorticks_on()
+            curAx.minorticks_on()
             if kwargs['grid'] is True:
-                self.axis.grid()
+                curAx.grid()
             elif type(kwargs['grid']) == dict:
-                self.axis.grid(**kwargs['grid'])
+                curAx.grid(**kwargs['grid'])
+
+        if 'background' in kwargs:
+            if type(kwargs['background']) == dict:
+                self.addBackground(axis=curAx, **kwargs['background'])
+
 
         # If this is the only axis on the figure, finish the figure
         if (type(self.metafig.ax) != np.ndarray) and (type(self.metafig.ax) != list):
@@ -866,6 +967,11 @@ class ScatterPlotter(GeneralPlotter):
         super().__init__(data=data, axis=axis, **kwargs)
 
         self.kind = 'scatter'
+        if 'signal' in data:
+            self.kind = 'scatter&signal'
+            self.time = data.get('time')
+            self.signal = data.get('signal')
+            self.timeRange = data.get('timeRange')
         self.x = data.get('x')
         self.y = data.get('y')
         self.s = data.get('s')
@@ -879,20 +985,46 @@ class ScatterPlotter(GeneralPlotter):
 
     def plot(self, **kwargs):
 
-        scatterPlot = self.axis.scatter(
-            x=self.x,
-            y=self.y,
-            s=self.s,
-            c=self.c,
-            marker=self.marker,
-            linewidth=self.linewidth,
-            cmap=self.cmap,
-            norm=self.norm,
-            alpha=self.alpha,
-            linewidths=self.linewidths,
-        )
+        if self.kind=='scatter':
+            scatterPlot = self.axis.scatter(
+                x=self.x,
+                y=self.y,
+                s=self.s,
+                c=self.c,
+                marker=self.marker,
+                linewidth=self.linewidth,
+                cmap=self.cmap,
+                norm=self.norm,
+                alpha=self.alpha,
+                linewidths=self.linewidths,
+            )
+            self.finishAxis(**kwargs)
 
-        self.finishAxis(**kwargs)
+        elif self.kind=='scatter&signal':
+            scatterPlot = self.axis[0].scatter(
+                x=self.x,
+                y=self.y,
+                s=self.s,
+                c=self.c,
+                marker=self.marker,
+                linewidth=self.linewidth,
+                cmap=self.cmap,
+                norm=self.norm,
+                alpha=self.alpha,
+                linewidths=self.linewidths,
+            )
+
+            linePlot = self.axis[1].plot(
+                self.time,
+                self.signal,
+            )
+            self.finishAxis(axis=self.axis[0],**kwargs)
+            self.axis[0].set_xlabel('')
+            self.axis[0].set_ylabel('Cells (grouped by populations)')
+            self.axis[1].set_xlabel('Time (ms)')
+            self.axis[1].set_ylabel('Filtered signal')
+            self.metafig.finishFig(**kwargs)
+
 
         return self.fig
 

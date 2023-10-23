@@ -453,7 +453,7 @@ def setupRecording():
     # stim spike recording
     if 'plotRaster' in sim.cfg.analysis:
         if isinstance(sim.cfg.analysis['plotRaster'], dict) and 'include' in sim.cfg.analysis['plotRaster']:
-            netStimLabels = list(sim.net.params.stimSourceParams.keys()) + ['allNetStims']
+            netStimLabels = list(sim.net.params.stimSourceParams.keys()) + ['allNetStims'] + ['all']
             for item in sim.cfg.analysis['plotRaster']['include']:
                 if item in netStimLabels:
                     sim.cfg.recordStim = True

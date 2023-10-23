@@ -2,9 +2,17 @@
 
 **New features**
 
+- Raster plot colored by phase
+
+- Examples based on the CA3 model using the 'colorbyPhase' option in the plotRaster
+
 **Bug fixes**
 
 - Fixed loading point cell params from legacy models (issue 607)
+
+- Fix voltage movie tutorial
+
+- Fix to automatically include netstims in the sim.allSimData object when plotRaster 'include' selects 'all'
 
 # Version 1.0.5
 

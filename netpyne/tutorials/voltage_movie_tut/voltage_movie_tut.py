@@ -112,8 +112,10 @@ plotArgs = {
 }
 
 ## Then we can replace `sim.runSim()` with:
+def intervalFunc(t, **kwargs):
+    sim.analysis.plotShape(**kwargs)
 
-sim.runSimWithIntervalFunc(1.0, sim.analysis.plotShape, timeRange=[10, 20], funcArgs=plotArgs)
+sim.runSimWithIntervalFunc(1.0, intervalFunc, timeRange=[10, 20], funcArgs=plotArgs)
 
 ## This will execute `sim.analysis.plotShape` every 1.0 ms from 10 to 20 ms in the simulation and feed it the plotArgs dictionary we created above.
 

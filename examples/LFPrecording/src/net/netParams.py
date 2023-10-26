@@ -1,21 +1,25 @@
 from netpyne import specs
+try:
+    from __main__ import cfg  # import SimConfig object with params from parent module
+except:
+    from cfg import cfg
 
 # Network parameters
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters
 
-netParams.sizeX = 200 # x-dimension (horizontal length) size in um
-netParams.sizeY = 1000 # y-dimension (vertical height or cortical depth) size in um
-netParams.sizeZ = 20 # z-dimension (horizontal length) size in um
+netParams.sizeX = cfg.sizeX # x-dimension (horizontal length) size in um
+netParams.sizeY = cfg.sizeY # y-dimension (vertical height or cortical depth) size in um
+netParams.sizeZ = cfg.sizeZ # z-dimension (horizontal length) size in um
 netParams.propVelocity = 100.0 # propagation velocity (um/ms)
 netParams.probLengthConst = 150.0 # length constant for conn probability (um)
 
 ## Population parameters
-netParams.popParams['E2'] = {'cellType': 'E', 'numCells': 20, 'yRange': [100,300], 'cellModel': 'HH'}
-netParams.popParams['I2'] = {'cellType': 'I', 'numCells': 20, 'yRange': [100,300], 'cellModel': 'HH'}
-netParams.popParams['E4'] = {'cellType': 'E', 'numCells': 20, 'yRange': [300,600], 'cellModel': 'HH'}
-netParams.popParams['I4'] = {'cellType': 'I', 'numCells': 20, 'yRange': [300,600], 'cellModel': 'HH'}
-netParams.popParams['E5'] = {'cellType': 'E', 'numCells': 20, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}
-netParams.popParams['I5'] = {'cellType': 'I', 'numCells': 20, 'ynormRange': [0.6,1.0], 'cellModel': 'HH'}
+netParams.popParams['E2'] = {'cellType': 'E', 'numCells': 20, 'yRange': [100,300]}
+netParams.popParams['I2'] = {'cellType': 'I', 'numCells': 20, 'yRange': [100,300]}
+netParams.popParams['E4'] = {'cellType': 'E', 'numCells': 20, 'yRange': [300,600]}
+netParams.popParams['I4'] = {'cellType': 'I', 'numCells': 20, 'yRange': [300,600]}
+netParams.popParams['E5'] = {'cellType': 'E', 'numCells': 20, 'ynormRange': [0.6,1.0]}
+netParams.popParams['I5'] = {'cellType': 'I', 'numCells': 20, 'ynormRange': [0.6,1.0]}
 
 ## Cell property rules
 netParams.loadCellParamsRule(label='CellRule', fileName='cells/IT2_reduced_cellParams.json')

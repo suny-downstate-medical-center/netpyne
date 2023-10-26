@@ -15,9 +15,9 @@ netParams = specs.NetParams()   # object of class NetParams to store the network
 # -----------------------------------------------------------------------------
 
 # Population parameters
-netParams.popParams['Epop'] = {'cellType': 'E', 'cellModel': 'HH', 'numCells': 80}  # add dict with params for this pop
-netParams.popParams['RSpop'] = {'cellType': 'RS', 'cellModel': 'HH', 'numCells': 30}  # add dict with params for this pop
-netParams.popParams['FSpop'] = {'cellType': 'FS', 'cellModel': 'HH', 'numCells': 30}  # add dict with params for this pop
+netParams.popParams['Epop'] = {'cellType': 'E', 'numCells': 80}  # add dict with params for this pop
+netParams.popParams['RSpop'] = {'cellType': 'RS', 'numCells': 30}  # add dict with params for this pop
+netParams.popParams['FSpop'] = {'cellType': 'FS', 'numCells': 30}  # add dict with params for this pop
 
 
 # Cell parameters

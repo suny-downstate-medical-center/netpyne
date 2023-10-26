@@ -5,7 +5,7 @@ netParams = specs.NetParams()  # object of class NetParams to store the network 
 
 ## Population parameters
 numCells = 2
-netParams.popParams['IT5B'] = {'numCells': numCells, 'cellType': 'IT', 'cellModel': 'HH', }
+netParams.popParams['IT5B'] = {'numCells': numCells, 'cellType': 'IT'}
 
 ## Cell property rules
 netParams.loadCellParamsRule(label='IT5B_reduced', fileName='cells/IT5B_reduced_cellParams.pkl')

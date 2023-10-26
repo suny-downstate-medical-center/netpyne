@@ -117,7 +117,7 @@ class SimConfig(object):
 
         # error checking
         self.validateNetParams = (
-            True  # whether to validate the input parameters (will be turned off if num processors > 1)
+            False  # whether to validate the input parameters (will be turned off if num processors > 1)
         )
         # self.checkErrors = False # whether to validate the input parameters (will be turned off if num processors > 1)
         # self.checkErrorsVerbose = False # whether to print detailed errors during input parameter validation
@@ -136,6 +136,18 @@ class SimConfig(object):
                 else:
                     setattr(self, k, v)
 
+    def __getitem__(self, k):
+        try:
+            return object.__getattribute__(self, k)
+        except:
+            raise KeyError(k)
+    
+    def __setitem__(self, k, v):
+        try:
+            setattr(self, k, v)
+        except:
+            raise KeyError(v)
+        
     def save(self, filename):
         import os
 

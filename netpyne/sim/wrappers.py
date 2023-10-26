@@ -137,8 +137,8 @@ def analyze():
 
     from .. import sim
 
-    sim.saveData()  # run parallel Neuron simulation
-    sim.analysis.plotData()  # gather spiking data and cell info from each node
+    sim.saveData()
+    sim.analysis.plotData()
 
 
 # ------------------------------------------------------------------------------
@@ -339,7 +339,7 @@ def runFromIndexFile(index):
         if pathToScript is None:
             from netpyne import sim
 
-            cfg, netParams = sim.loadFromIndexFile(index)
+            cfg, netParams = sim.loadModel(index)
             sim.createSimulateAnalyze(simConfig=cfg, netParams=netParams)
         else:
             import os, sys, importlib

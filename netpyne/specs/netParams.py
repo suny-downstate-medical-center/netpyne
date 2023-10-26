@@ -538,6 +538,18 @@ class NetParams(object):
                     setattr(self, k, Dict(v))
                 else:
                     setattr(self, k, v)
+    
+    def __getitem__(self, k):
+        try:
+            return object.__getattribute__(self, k)
+        except:
+            raise KeyError(k)
+
+    def __setitem__(self, k, v):
+        try:
+            setattr(self, k, v)
+        except:
+            raise KeyError(v)
 
     def save(self, filename):
         import os

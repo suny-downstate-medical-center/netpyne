@@ -104,10 +104,12 @@ def initialize(netParams=None, simConfig=None, net=None):
         try:
             print('Validating NetParams ...')
             sim.timing('start', 'validationTime')
-            validated, failed = validator.validateNetParams(netParams)
+            valid, failed = validator.validateNetParams(netParams)
             sim.timing('stop', 'validationTime')
             if failed:
-                print(f"\nNetParams validation identified some potential issues in: {', '.join(failed)}. See above for details.")
+                failedComps = [err.component for err in failed] # get failed component name
+                failedComps = list(set(failedComps)) # keep unique elements only
+                print(f"\nNetParams validation identified some potential issues in {', '.join(failedComps)}. See above for details.")
             else:
                 print("\nNetParams validation successful.")
         except Exception as e:
@@ -452,7 +454,7 @@ def setupRecording():
     # stim spike recording
     if 'plotRaster' in sim.cfg.analysis:
         if isinstance(sim.cfg.analysis['plotRaster'], dict) and 'include' in sim.cfg.analysis['plotRaster']:
-            netStimLabels = list(sim.net.params.stimSourceParams.keys()) + ['allNetStims']
+            netStimLabels = list(sim.net.params.stimSourceParams.keys()) + ['allNetStims'] + ['all']
             for item in sim.cfg.analysis['plotRaster']['include']:
                 if item in netStimLabels:
                     sim.cfg.recordStim = True

@@ -3,11 +3,15 @@ init.py
 
 Starting script to run NetPyNE-based model.
 
-Usage:  python init.py  # Run simulation, optionally plot a raster
+Usage: python src/init.py  # Run simulation, optionally plot a raster
 
-MPI usage:  mpiexec -n 4 nrniv -python -mpi init.py
+MPI usage:  mpiexec -n 4 nrniv -python -mpi src/init.py
 """
 
+# import os
+# os.chdir('examples/batchCellMapping')
+
 from netpyne import sim
-cfg, netParams = sim.readCmdLineArgs()					# read cfg and netParams from command line arguments
+# read cfg and netParams from command line arguments
+cfg, netParams = sim.readCmdLineArgs(simConfigDefault='src/cfg.py', netParamsDefault='src/netParams.py')
 sim.createSimulateAnalyze(simConfig = cfg, netParams = netParams)

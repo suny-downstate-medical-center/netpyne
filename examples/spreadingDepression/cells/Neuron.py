@@ -1,5 +1,8 @@
 from neuron import h
-from cfg import cfg 
+try:
+    from __main__ import cfg  # import SimConfig object with params from parent module
+except:
+    from src.cfg import cfg
 import numpy as np 
 
 class ENeuron:

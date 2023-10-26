@@ -27,6 +27,7 @@ import pickle as pk
 from . import gather
 from . import utils
 from ..specs import Dict, ODict
+from copy import copy, deepcopy
 
 
 # ------------------------------------------------------------------------------
@@ -198,7 +199,6 @@ def saveData(include=None, filename=None, saveLFP=True):
                 import pickle
 
                 path = filePath + '.pkl'
-                dataSave = utils.replaceDictODict(dataSave)
                 print(f'Saving output as {path} ... ')
                 with open(path, 'wb') as fileObj:
                     pickle.dump(dataSave, fileObj)
@@ -221,7 +221,6 @@ def saveData(include=None, filename=None, saveLFP=True):
                 path = filePath + '.json'
                 # Make it work for Python 2+3 and with Unicode
                 print(f'Saving output as {path} ... ')
-                # dataSave = utils.replaceDictODict(dataSave)  # not required since json saves as dict
                 sim.saveJSON(path, dataSave, checkFileTimeout=5)
                 savedFiles.append(path)
                 print('Finished saving!')
@@ -232,22 +231,32 @@ def saveData(include=None, filename=None, saveLFP=True):
 
                 path = filePath + '.mat'
                 print(f'Saving output as {path} ... ')
-                savemat(
-                    path, utils.tupleToList(utils.replaceNoneObj(dataSave))
-                )  # replace None and {} with [] so can save in .mat format
+
+                toSave = copy(dataSave)
+                simData = toSave.pop('simData') # for speed, exclude simData from subsequent manipulations (nothing to replace there)
+                toSave = utils.replaceDictODict(toSave)
+                toSave = deepcopy(toSave)
+                toSave = utils._ensureMatCompatible(toSave)
+                utils.tupleToList(toSave)
+                toSave['simData'] = simData # put back before saving
+
+                savemat(path, toSave, long_field_names=True)
                 savedFiles.append(path)
                 print('Finished saving!')
 
             # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)
             if sim.cfg.saveHDF5:
-                dataSaveUTF8 = utils._dict2utf8(
-                    utils.replaceNoneObj(dataSave)
-                )  # replace None and {} with [], and convert to utf
+                recXElectrode = dataSave['net'].get('recXElectrode')
+                if recXElectrode:
+                    dataSave['net']['recXElectrode'] = recXElectrode.toJSON()
+                dataSaveUTF8 = utils._ensureHDF5Compatible(dataSave)
+                keys = list(dataSaveUTF8.keys())
+                dataSaveUTF8['__np_keys__'] = keys
                 import hdf5storage
 
                 path = filePath + '.hdf5'
                 print(f'Saving output as {path} ... ')
-                hdf5storage.writes(dataSaveUTF8, filename=path)
+                hdf5storage.writes(dataSaveUTF8, filename=path, truncate_existing=True)
                 savedFiles.append(path)
                 print('Finished saving!')
 
@@ -552,8 +561,6 @@ def intervalSave(simTime, gatherLFP=True):
                     dataSave['net']['recXElectrode'] = sim.net.recXElectrode
             dataSave['simData'] = dict(sim.allSimData)
 
-        dataSave = utils.replaceDictODict(dataSave)
-
         with open(name, 'wb') as fileObj:
             pickle.dump(dataSave, fileObj, protocol=2)
 
@@ -720,7 +727,6 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
             try:
                 import pickle
 
-                dataSave = utils.replaceDictODict(dataSave)
                 fileName = filePath + '_node_' + str(sim.rank) + '.pkl'
                 print(('  Saving output as: %s ... ' % (fileName)))
                 with open(os.path.join(saveFolder, fileName), 'wb') as fileObj:
@@ -745,3 +751,149 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
 
                 with open('timing.pkl', 'wb') as file:
                     pickle.dump(sim.timing, file)
+
+
+def saveModel(netParams, simConfig, srcPath, dstPath=None, exportNetParamsAsPython=False, exportSimConfigAsPython=False):
+
+    assert (srcPath is not None) or (dstPath is not None), \
+        "Either srcPath or dstPath should be non-None"
+
+    import os, shutil, json
+    from netpyne.conversion import createPythonNetParams, createPythonSimConfig
+    
+    originalDir = os.getcwd()
+    if srcPath: srcPath = os.path.abspath(srcPath)
+    if dstPath: dstPath = os.path.abspath(dstPath)
+
+    fromScratch = False
+    if srcPath is None:
+        # creating model from scratch.
+        srcPath = dstPath
+        fromScratch = True
+    srcDir, srcPath = __getModelDirAndIndex(srcPath)
+
+    if dstPath is None:
+        # assume that dstPath is same as srcPath, i.e. original netParams and simConfig will be rewritten in-place
+        dstPath = srcPath
+    dstDir, dstPath = __getModelDirAndIndex(dstPath)
+
+    obsoleteNetParams, obsoleteCfg = None, None
+
+    modifyExistingModel = (fromScratch == False) and (dstPath == srcPath)
+
+    if fromScratch:
+        # by convention, saving the model will erase anything that already exists at dstPath
+        if os.path.exists(dstDir):
+            shutil.rmtree(dstDir)
+
+        # (re)create dstDir and create /src dir in it where files will be stored by default
+        os.makedirs(os.path.join(dstDir, 'src'))
+        # create default index
+        indexData = {
+            'netParams': f"src/netParams{'.py' if exportNetParamsAsPython else '.json'}",
+            'simConfig': f"src/cfg{'.py' if exportSimConfigAsPython else '.json'}"
+        }
+    else:
+        writeToSameDir = srcDir == dstDir
+
+        # if saving to same directory but with other index-file (i.e. another version of model),
+        # need to use some suffix with file names, to avoid rewriting original files
+        suffix = ''
+        if writeToSameDir and not modifyExistingModel:
+            suffix = __inferSuffix(dstPath)
+
+        # Load srcIndex as dict
+        fileObj = open(srcPath, 'r')
+        indexData = json.load(fileObj)
+
+        # Modify entry in indexfile if needed
+        altered = __alteredFilename(
+            indexData['netParams'],
+            suffix, exportNetParamsAsPython
+        )
+        if altered:
+            obsoleteNetParams = indexData['netParams']
+            indexData['netParams'] = altered
+
+        # Modify entry in indexfile if needed
+        altered = __alteredFilename(
+            indexData['simConfig'],
+            suffix, exportSimConfigAsPython
+        )
+        if altered:
+            obsoleteCfg = indexData['simConfig']
+            indexData['simConfig'] = altered
+
+        if not writeToSameDir:
+            # by convention, saving the model will erase anything that already exists at dstPath
+            if os.path.exists(dstDir):
+                shutil.rmtree(dstDir)
+
+            # copy the whole file struct to dstPath
+            shutil.copytree(srcDir, dstDir)
+            os.chdir(dstDir)
+            # .. except netParams and/or cfg in case they are to be rewritten
+            if obsoleteNetParams:
+                os.remove(obsoleteNetParams)
+            if obsoleteCfg:
+                os.remove(obsoleteCfg)
+            # and except original index file
+            os.remove(os.path.split(srcPath)[1])
+
+    netParamsPath = indexData['netParams']
+    cfgPath = indexData['simConfig']
+
+    os.chdir(dstDir)
+
+    # save netParams
+    if modifyExistingModel and obsoleteNetParams:
+        os.remove(obsoleteNetParams)
+    if exportNetParamsAsPython:
+        createPythonNetParams(netParamsPath, netParams)
+    else: # json
+        netParams.save(netParamsPath)
+
+    # save cfg
+    if modifyExistingModel and obsoleteCfg:
+        os.remove(obsoleteCfg)
+    if exportSimConfigAsPython:
+        createPythonSimConfig(cfgPath, simConfig, varName='cfg')
+    else: # json
+        simConfig.save(cfgPath)
+
+    # save new index file if needed
+    if (modifyExistingModel == False) or (obsoleteNetParams or obsoleteCfg):
+        from .. import sim
+        sim.saveJSON(dstPath, indexData)
+
+    os.chdir(originalDir)
+
+def __getModelDirAndIndex(path):
+    name, ext = os.path.splitext(path)
+    if ext == '': # check if directory (isdir() won't work because path may not exist)
+        # if path is directory, append default name of index-file
+        path = os.path.join(path, 'index.npjson')
+    dir = os.path.dirname(path)
+    return dir, path
+
+def __inferSuffix(dstPath):
+    # Suffix to be perpended to new netParams and cg filenames
+    fName, ext = os.path.splitext(os.path.split(dstPath)[1])
+    if fName.startswith('index'):
+        # if it's 'indexSOMETHING.npjson', use SOMETHING as suffix
+        return fName[5:]
+    else:
+        # use _ + whole filename as suffix
+        return '_' + fName
+
+def __alteredFilename(original, suffix, exportAsPython):
+    filename, ext = os.path.splitext(original)
+    if exportAsPython and (ext != '.py'):
+        ext = '.py'
+    elif not exportAsPython and (ext != '.json'):
+        ext = '.json'
+    altered = filename + suffix + ext
+    if altered != original:
+        return altered
+    else:
+        return None

@@ -92,17 +92,15 @@ def _loadFile(filename):
         print(('Loading file %s ... ' % (filename)))
         dataraw = loadmat(filename, struct_as_record=False, squeeze_me=True)
         data = utils._mat2dict(dataraw)
-        # savemat(sim.cfg.filename+'.mat', replaceNoneObj(dataSave))  # replace None and {} with [] so can save in .mat format
-        print('Finished saving!')
+        data = utils._restoreFromMat(data)
 
     # load HDF5 file (uses very inefficient hdf5storage module which supports dicts)
-    elif ext == 'saveHDF5':
-        # dataSaveUTF8 = _dict2utf8(replaceNoneObj(dataSave)) # replace None and {} with [], and convert to utf
+    elif ext in ['hdf5', 'h5']:
         import hdf5storage
 
         print(('Loading file %s ... ' % (filename)))
-        # hdf5storage.writes(dataSaveUTF8, filename=sim.cfg.filename+'.hdf5')
-        print('NOT IMPLEMENTED!')
+        keys = hdf5storage.read('__np_keys__', filename=filename)
+        data = {k: hdf5storage.read(k, filename=filename) for k in keys}
 
     # load CSV file (currently only saves spikes)
     elif ext == 'csv':
@@ -283,7 +281,7 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
 
                 def sort(popKeyValue):
                     # the assumption while sorting is that populations order corresponds to cell gids in this population
-                    cellGids = popKeyValue[1]['cellGids']
+                    cellGids = popKeyValue[1].get('cellGids', [])
                     if len(cellGids) > 0:
                         return cellGids[0]
                     else:
@@ -294,7 +292,8 @@ def loadNet(filename, data=None, instantiate=True, compactConnFormat=False):
                 for pop in loadedPops:
                     sim.net.allPops[pop[0]] = pop[1]
 
-            sim.net.allCells = data['net']['cells']
+            rawCells = data['net']['cells']
+            sim.net.allCells = [c if isinstance(c, Dict) else Dict(c) for c in rawCells]
         if instantiate:
             try:
                 # calculate cells to instantiate in this node
@@ -523,7 +522,8 @@ def loadModel(path, loadMechs=True, ignoreMechAlreadyExistsError=False):
 
         if configFile[-3:] == '.py':
             cfgModule = sim.loadPythonModule(configFile)
-            cfg = cfgModule.cfg
+            configVar = indexData.get('simConfig_variable', 'cfg')
+            cfg = getattr(cfgModule, configVar)
         else:
             configVar = indexData.get('simConfig_variable', 'simConfig')
             cfg = sim.loadSimCfg(configFile, variable=configVar, setLoaded=False)
@@ -537,7 +537,8 @@ def loadModel(path, loadMechs=True, ignoreMechAlreadyExistsError=False):
             __main__.cfg = cfg  # this is often required by netParams
 
             netParamsModule = sim.loadPythonModule(netParamsFile)
-            netParams = netParamsModule.netParams
+            paramsVar = indexData.get('netParams_variable', 'netParams')
+            netParams = getattr(netParamsModule, paramsVar)
         else:
             paramsVar = indexData.get('netParams_variable', None)
             netParams = sim.loadNetParams(netParamsFile, variable=paramsVar, setLoaded=False)

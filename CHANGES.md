@@ -14,6 +14,8 @@
 
 - Fix to automatically include netstims in the sim.allSimData object when plotRaster 'include' selects 'all'
 
+- Fixed loading netParams in some scenarios (bug caused by srting functions pre-processing)
+
 # Version 1.0.5
 
 **New features**

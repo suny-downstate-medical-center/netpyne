@@ -518,7 +518,7 @@ def jobSubmit(batch, pc, netParamsSavePath, jobPath, jobName, processes, process
     }
 
     runCfg_args.update(batch.runCfg)
-    run = batch.runCfg.get('run', True)
+    run = batch.runCfg.get('_generate_only', False) # set to True to generate cfg and netParams but not run
     jobFunc = False
     if batch.runCfg['type'] in jobTypes: # goal to eventually deprecate this for custom functions
         jobFunc = jobTypes[batch.runCfg['type']]

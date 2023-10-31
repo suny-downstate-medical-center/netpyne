@@ -152,5 +152,6 @@ jobTypes = {
     'hpc_slurm': jobHPCSlurm,
     'hpc_sge': jobHPCSGE,
     'mpi': jobMPIDirect,
-    'mpi_direct': jobMPIDirect
+    'mpi_direct': jobMPIDirect,
+    'mpi_bulletin': jobMPIDirect,
 }

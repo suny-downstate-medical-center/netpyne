@@ -90,24 +90,19 @@ class CompartCell(Cell):
         for propLabel, prop in sim.net.params.cellParams.items():  # for each set of cell properties
             conditionsMet = 1
             if 'conds' in prop and len(prop['conds']) > 0:
-                for (condKey, condVal) in prop['conds'].items():  # check if all conditions are met
-                    if isinstance(condVal, list):
-                        if isinstance(condVal[0], Number):
-                            if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
-                                conditionsMet = 0
-                                break
-                        elif isinstance(condVal[0], basestring):
-                            if self.tags.get(condKey) not in condVal:
-                                conditionsMet = 0
-                                break
-                    elif self.tags.get(condKey) != condVal:
-                        conditionsMet = 0
-                        break
+                conditionsMet = self.checkConditions(prop['conds'])
 
             elif self.tags['cellType'] != propLabel:  # simplified method for defining cell params (when no 'conds')
                 conditionsMet = False
 
             if conditionsMet:  # if all conditions are met, set values for this cell
+
+                # Intercept possible issue where the cell is designed to be PointCell but misclassfied as CompartCell in Pop._setCellClass()
+                # (may happen if .mod not compiled or mech name misspelled)
+                assert 'secs' in prop, \
+                    f"""Cell rule labeled '{propLabel}' is a compartment cell, but it doesn't have required entry 'secs'.
+If this cell is expected to be a point cell instead, make sure the correspondent mechanism is included and compiled."""
+
                 if sim.cfg.includeParamsLabel:
                     if 'label' not in self.tags:
                         self.tags['label'] = [propLabel]  # create list of property sets
@@ -125,32 +120,14 @@ class CompartCell(Cell):
     def modify(self, prop):
         from .. import sim
 
-        conditionsMet = 1
-        for (condKey, condVal) in prop['conds'].items():  # check if all conditions are met
-            if condKey == 'label':
-                if condVal not in self.tags['label']:
-                    conditionsMet = 0
-                    break
-            elif isinstance(condVal, list):
-                if isinstance(condVal[0], Number):
-                    if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
-                        conditionsMet = 0
-                        break
-                elif isinstance(condVal[0], basestring):
-                    if self.tags.get(condKey) not in condVal:
-                        conditionsMet = 0
-                        break
-            elif self.tags.get(condKey) != condVal:
-                conditionsMet = 0
-                break
+        conditionsMet = self.checkConditions(prop['conds'])
 
         if conditionsMet:  # if all conditions are met, set values for this cell
             if sim.cfg.createPyStruct:
                 self.createPyStruct(prop)
             if sim.cfg.createNEURONObj:
-                self.createNEURONObj(
-                    prop
-                )  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
+                # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
+                self.createNEURONObj(prop)
 
     def createPyStruct(self, prop):
         from .. import sim
@@ -840,45 +817,28 @@ class CompartCell(Cell):
 
         conditionsMet = 1
         if 'cellConds' in params:
-            if conditionsMet:
-                for (condKey, condVal) in params['cellConds'].items():  # check if all conditions are met
-                    # check if conditions met
-                    if isinstance(condVal, list):
-                        if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
-                            conditionsMet = 0
-                            break
-                    elif self.tags.get(condKey) != condVal:
-                        conditionsMet = 0
-                        break
+            conditionsMet = self.checkConditions(params['cellConds'])
 
         if conditionsMet:
             for secLabel, sec in self.secs.items():
                 for synMech in sec['synMechs']:
                     conditionsMet = 1
                     if 'conds' in params:
-                        for (condKey, condVal) in params['conds'].items():  # check if all conditions are met
-                            # check if conditions met
-                            if condKey == 'sec':
-                                if condVal != secLabel:
-                                    conditionsMet = 0
-                                    break
-                            elif isinstance(condVal, list) and isinstance(condVal[0], Number):
-                                if synMech.get(condKey) < condVal[0] or synMech.get(condKey) > condVal[1]:
-                                    conditionsMet = 0
-                                    break
-                            elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
-                                if synMech.get(condKey) not in condVal:
-                                    conditionsMet = 0
-                                    break
-                            elif synMech.get(condKey) != condVal:
-                                conditionsMet = 0
-                                break
+                        # first check if section matches
+                        secLabelInConds = params['conds'].get('sec')
+                        if secLabelInConds and (secLabelInConds != secLabel):
+                            # skip to next section
+                            break
+
+                        # then check the rest of conds
+                        synMechConds = deepcopy(params['conds'])
+                        synMechConds.pop('sec')
+                        conditionsMet = sim.utils.checkConditions(synMechConds, against=synMech)
 
                     if conditionsMet:  # if all conditions are met, set values for this cell
                         exclude = ['conds', 'cellConds'] + SynMechParams.reservedKeys()
-                        for synParamName, synParamValue in {
-                            k: v for k, v in params.items() if k not in exclude
-                        }.items():
+                        paramsToModify = {k: v for k, v in params.items() if k not in exclude}
+                        for synParamName, synParamValue in paramsToModify.items():
                             if sim.cfg.createPyStruct:
                                 synMech[synParamName] = synParamValue
                             if sim.cfg.createNEURONObj:
@@ -1191,59 +1151,22 @@ class CompartCell(Cell):
             conditionsMet = 1
 
             if 'conds' in params:
-                for (condKey, condVal) in params['conds'].items():  # check if all conditions are met
-                    # choose what to comapare to
-                    if condKey in ['postGid']:
-                        compareTo = self.gid
-                    else:
-                        compareTo = conn.get(condKey)
+                conds = params['conds']
 
-                    # check if conditions met
-                    if isinstance(condVal, list) and isinstance(condVal[0], Number):
-                        if compareTo < condVal[0] or compareTo > condVal[1]:
-                            conditionsMet = 0
-                            break
-                    elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
-                        if compareTo not in condVal:
-                            conditionsMet = 0
-                            break
-                    elif compareTo != condVal:
-                        conditionsMet = 0
-                        break
+                # `conds` may contain `postGid` key, which is deprecated in favour of having `gid` key in `postConds`,
+                # but for backward compatibility, try to detect it here and replace with `gid`, so checkConditions() can process it:
+                if 'postGid' in conds:
+                    conds['gid'] = conds.pop('postGid')
+                conditionsMet = sim.utils.checkConditions(conds, against=conn, cellGid=self.gid)
 
             if conditionsMet and 'postConds' in params:
-                for (condKey, condVal) in params['postConds'].items():  # check if all conditions are met
-                    # check if conditions met
-                    if isinstance(condVal, list) and isinstance(condVal[0], Number):
-                        if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
-                            conditionsMet = 0
-                            break
-                    elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
-                        if self.tags.get(condKey) not in condVal:
-                            conditionsMet = 0
-                            break
-                    elif self.tags.get(condKey) != condVal:
-                        conditionsMet = 0
-                        break
+                conditionsMet = self.checkConditions(params['postConds'])
 
             if conditionsMet and 'preConds' in params:
                 try:
                     cell = sim.net.cells[conn['preGid']]
-
                     if cell:
-                        for (condKey, condVal) in params['preConds'].items():  # check if all conditions are met
-                            # check if conditions met
-                            if isinstance(condVal, list) and isinstance(condVal[0], Number):
-                                if cell.tags.get(condKey) < condVal[0] or cell.tags.get(condKey) > condVal[1]:
-                                    conditionsMet = 0
-                                    break
-                            elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
-                                if cell.tags.get(condKey) not in condVal:
-                                    conditionsMet = 0
-                                    break
-                            elif cell.tags.get(condKey) != condVal:
-                                conditionsMet = 0
-                                break
+                        conditionsMet = cell.checkConditions(params['preConds'])
                 except:
                     pass
                     # print('Warning: modifyConns() does not yet support conditions of presynaptic cells when running parallel sims')
@@ -1272,34 +1195,14 @@ class CompartCell(Cell):
         conditionsMet = 1
         if 'cellConds' in params:
             if conditionsMet:
-                for (condKey, condVal) in params['cellConds'].items():  # check if all conditions are met
-                    # check if conditions met
-                    if isinstance(condVal, list):
-                        if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
-                            conditionsMet = 0
-                            break
-                    elif self.tags.get(condKey) != condVal:
-                        conditionsMet = 0
-                        break
+                conditionsMet = self.checkConditions(params['cellConds'])
 
         if conditionsMet == 1:
             for stim in self.stims:
                 conditionsMet = 1
 
                 if 'conds' in params:
-                    for (condKey, condVal) in params['conds'].items():  # check if all conditions are met
-                        # check if conditions met
-                        if isinstance(condVal, list) and isinstance(condVal[0], Number):
-                            if stim.get(condKey) < condVal[0] or stim.get(condKey) > condVal[1]:
-                                conditionsMet = 0
-                                break
-                        elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
-                            if stim.get(condKey) not in condVal:
-                                conditionsMet = 0
-                                break
-                        elif stim.get(condKey) != condVal:
-                            conditionsMet = 0
-                            break
+                    conditionsMet = sim.utils.checkConditions(params['conds'], against=stim)
 
                 if conditionsMet:  # if all conditions are met, set values for this cell
                     if stim['type'] == 'NetStim':  # for netstims, find associated netcon

@@ -1,7 +1,9 @@
 # Generate a spike frequency plot
 
+from netpyne import __gui__
+if __gui__:
+    import matplotlib.patches as mpatches
 import numpy as np
-import matplotlib.patches as mpatches
 from numbers import Number
 from ..analysis.utils import exception, _smooth1d
 from ..analysis.tools import loadData

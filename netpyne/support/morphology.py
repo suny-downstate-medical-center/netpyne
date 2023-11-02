@@ -20,7 +20,9 @@ standard_library.install_aliases()
 from builtins import object
 import numpy as np
 import pylab as plt
-from matplotlib.pyplot import cm
+from netpyne import __gui__
+if __gui__:
+    from matplotlib.pyplot import cm
 import string
 from neuron import h
 import numbers

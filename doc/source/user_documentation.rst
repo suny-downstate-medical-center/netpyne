@@ -305,7 +305,7 @@ Currently, 'rhythmic', 'evoked', 'poisson' and 'gauss' spike pattern generators 
 
 * **evoked** - creates the ongoing external inputs (rhythmic)
 
-    * **start** - time of first spike. if -1, uniform distribution between startMin and startMax (ms)
+    * **start** - time of first spike
 
     * **inc** - increase in time of first spike; from cfg.inc_evinput (ms)
 

@@ -459,6 +459,8 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
             elif type == 'hpc_sge':
                 executer = 'qsub'
                 queueName = args.get('queueName', 'default')
+                command = '%s -n $NSLOTS -hosts $(hostname) %s -python -mpi %s simConfig=%s netParams=%s' % (
+                    mpiCommand, nrnCommand, script, cfgSavePath, netParamsSavePath)
                 jobString = jobStringHPCSGE(
                     jobName, walltime, queueName, nodes, coresPerNode, jobPath, custom, command
                 )

@@ -1,7 +1,10 @@
 # Generate plots of LFP (local field potentials) and related analyses
 
-import matplotlib.patches as mpatches
-import matplotlib.pyplot as plt
+from netpyne import __gui__
+
+if __gui__:
+    import matplotlib.pyplot as plt
+
 import math
 from ..analysis.utils import exception  # , loadData
 from ..analysis.tools import loadData

@@ -1,10 +1,13 @@
 # PLOTTING CSD
 
+from netpyne import __gui__
+if __gui__:
+    import matplotlib
+    from matplotlib import pyplot as plt
+
 from ..analysis.utils import exception, _showFigure
 import numpy as np
 import scipy
-import matplotlib
-from matplotlib import pyplot as plt
 
 
 @exception

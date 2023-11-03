@@ -54,16 +54,23 @@ def saveJSON(fileName, data, checkFileTimeout=0):
 
     """
 
-    import json, io
+    import json, io, os
     from .utils import NpSerializer, JSONSerializer
 
-    with io.open(fileName, 'w', encoding='utf-8') as fileObj:
-        str_ = json.dumps(data, indent=4, sort_keys=True, separators=(',', ': '), ensure_ascii=False, cls=JSONSerializer)
-        fileObj.write(to_unicode(str_))
+    # basic traversal for io.open, most likely already exists.
+    try: #directory exists
+        with io.open(fileName, 'w', encoding='utf-8') as fileObj:
+            str_ = json.dumps(data, indent=4, sort_keys=True, separators=(',', ': '), ensure_ascii=False, cls=JSONSerializer)
+            fileObj.write(to_unicode(str_))
+    except: #directory doesn't exists
+        os.makedirs(fileName.rsplit('/', 1)[0], exist_ok=True)
+        with io.open(fileName, 'w', encoding='utf-8') as fileObj:
+            str_ = json.dumps(data, indent=4, sort_keys=True, separators=(',', ': '), ensure_ascii=False, cls=JSONSerializer)
+            fileObj.write(to_unicode(str_))
 
     if checkFileTimeout > 0:
         sleepTime = 0.1
-        timeoutCyles = checkFileTimeout / sleepTime
+        timeOutCycles = checkFileTimeout / sleepTime
         cycles = 0
         while not os.path.exists(fileName) and cycles <= timeOutCycles:
             sleep(sleepTime)

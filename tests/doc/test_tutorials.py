@@ -1,11 +1,14 @@
 import sys
 import json
 import pytest
+from tests import __path__ as tests_path
+
+netpyne_dir = tests_path[0].rstrip('tests')
 
 if "-nogui" not in sys.argv:
     sys.argv.append("-nogui")
-sys.path.append("doc/source/code/")
-sys.path.append("examples/HHTut/src")
+sys.path.append(netpyne_dir + "doc/source/code/")
+sys.path.append(netpyne_dir + "examples/HHTut/src")
 from multiprocessing import Process
 from netpyne import sim
 
@@ -51,20 +54,21 @@ def batch_example():
     from netpyne.batch import Batch
     import json
 
+
     params = specs.ODict()
     params["synMechTau2"] = [3.0]
     params["connWeight"] = [0.005]
     b = Batch(
         params=params,
-        cfgFile="doc/source/code/tut8_cfg.py",
-        netParamsFile="doc/source/code/tut8_netParams.py",
+        cfgFile=netpyne_dir + "/doc/source/code/tut8_cfg.py",
+        netParamsFile=netpyne_dir + "/doc/source/code/tut8_netParams.py",
     )
     b.batchLabel = "tauWeight"
     b.saveFolder = "/tmp/tut8_data"
     b.method = "grid"
     b.runCfg = {
         "type": "mpi_bulletin",
-        "script": "doc/source/code/tut8_init.py",
+        "script": netpyne_dir + "/doc/source/code/tut8_init.py",
         "skip": True,
     }
     # Run batch simulations

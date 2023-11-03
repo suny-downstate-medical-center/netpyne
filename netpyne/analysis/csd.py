@@ -34,7 +34,7 @@ from .filter import lowpass, bandpass
 from .utils import exception, _saveFigData
 
 
-def getbandpass(
+def getBandpass(
     lfps, 
     sampr, 
     minf=0.05, 
@@ -73,7 +73,7 @@ def getbandpass(
     datband = np.array(datband)
     return datband
 
-def Vaknin(x):
+def vakninCorrection(x):
     """ 
     Function to perform the Vaknin correction for CSD analysis
 
@@ -105,7 +105,7 @@ def Vaknin(x):
 
     return x_new
 
-def removemean(x, ax=1):
+def removeMean(x, ax=1):
     """
     Function to subtract the mean from an array or list
 
@@ -238,6 +238,12 @@ def prepareCSD(
     if dt is None:
         dt = sim.cfg.recordStep
 
+    # slice data by timeRange, if relevant 
+    if timeRange is None:
+        timeRange = [0, sim.cfg.duration]
+    else:
+        LFPData = LFPData[int(timeRange[0] / sim.cfg.recordStep) : int(timeRange[1] / sim.cfg.recordStep), :]
+
     # Sampling rate of data recording during the simulation
     if sampr is None:
         # divide by 1000.0 to turn denominator from units of ms to s
@@ -246,48 +252,29 @@ def prepareCSD(
 
     # Spacing between electrodes (in microns)
     if spacing_um is None:
-        spacing_um = sim.cfg.recordLFP[1][1] - sim.cfg.recordLFP[0][1]
+        # if not specified, use average spacing along y coord (depth)
+        yCoords = np.array(sim.cfg.recordLFP)[:,1]
+        spacing_um = (yCoords.max() - yCoords.min()) / (len(yCoords) - 1)
 
     # Convert spacing from microns to mm
     spacing_mm = spacing_um / 1000
 
-    print('dt, sampr, spacing_um, spacing_mm values determined')
+    # print('dt, sampr, spacing_um, spacing_mm values determined')
 
-
-    ## This retrieves:
-    #   LFPData (as an array)
-    #   dt --> recording time step (in ms)
-    #   sampr --> sampling rate of data recording (in Hz)
-    #   spacing_um --> spacing btwn electrodes (in um)
-
-    ####################################
-
-    # Bandpass filter the LFP data with getbandpass() fx defined above
-    datband = getbandpass(LFPData, sampr, minf, maxf)
-
-    # Take CSD along smaller dimension
-    if datband.shape[0] > datband.shape[1]:
-        ax = 1
-    else:
-        ax = 0
+    # Bandpass filter the LFP data with getBandpass() fx defined above
+    datband = getBandpass(LFPData, sampr, minf, maxf)
+    # now each row is an electrode - `datband` shape is (N_electrodes, N_timesteps)
 
     # Vaknin correction
     if vaknin:
-        datband = Vaknin(datband)
+        datband = vakninCorrection(datband)
 
     # norm data
     if norm:
-        removemean(datband, ax=ax)
+        removeMean(datband, ax=0)
 
-    # now each column (or row) is an electrode -- take CSD along electrodes
-    CSDData = -np.diff(datband, n=2, axis=ax) / spacing_mm**2
-
-    # # Splice CSD data by timeRange, if relevant 
-    # if timeRange is None:
-    #     timeRange = [0, sim.cfg.duration]
-    # else:
-    #     # lfpData = lfpData[int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep),:]
-    #     CSDData = CSDData[:,int(timeRange[0]/sim.cfg.recordStep):int(timeRange[1]/sim.cfg.recordStep)]
+    # take CSD along electrodes dimension
+    CSDData = -np.diff(datband, n=2, axis=0) / spacing_mm**2
 
     ##### SAVE DATA #######
     # Add CSDData to sim.allSimData for later access
@@ -298,249 +285,10 @@ def prepareCSD(
             sim.allSimData['CSDPops'] = {}
             sim.allSimData['CSDPops'][pop] = CSDData
 
-    # # create the output data dictionary
-    # data = {}
-    # data['electrodes'] = {}
-    # data['electrodes']['names'] = []
-    # data['electrodes']['locs'] = []
-    # data['electrodes']['csds'] = []
-
-    # # create an array of the time steps and store in output data 
-    # t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
-    # data['t'] = t
-
     # return CSD_data or all data
-    if getAllData is True:
+    if getAllData:
         return CSDData, LFPData, sampr, spacing_um, dt
-    elif getAllData is False:
-        return CSDData
-
-
-# def getbandpass(lfps, sampr, minf=0.05, maxf=300):
-#     """
-#     Function to bandpass filter data
-
-#     Parameters
-#     ----------
-#     lfps : list or array
-#         LFP signal data arranged spatially in a column.
-#         **Default:** *required*
-
-#     # electrode preparation (add average if needed)
-#     if 'all' in electrodes:
-#         electrodes.remove('all')
-#         electrodes.extend(list(range(int(sim.net.recXElectrode.nsites))))
-
-#     for i, elec in enumerate(electrodes):
-#         if elec == 'avg':
-#             csdSignal = np.mean(CSDData, axis=0)
-#             loc = None
-#         elif isinstance(elec, Number) and elec <= sim.net.recXElectrode.nsites:
-#             csdSignal = CSDData[elec,:] 
-#             loc = sim.cfg.recordLFP[elec]
-
-
-#         data['electrodes']['names'].append(str(elec))
-#         data['electrodes']['locs'].append(loc)
-#         data['electrodes']['csds'].append(csdSignal) ## <-- this can be turned into an array with np.array(data['electrodes']['csds'] -- NOTE: first row will be average -- data['electrodes']['csds'][0])
-
-#     ## testing line 
-#     data['CSDData'] = CSDData
-#     ### NOTE: 
-#     ### csd = np.array(data['electrodes']['csds'])
-#     ### csd = np.array(csd)
-#     ### csd[1:, :] == CSDData['CSDData']   ---> True, True, True... True 
-
-#     return data 
-
-
-# @exception
-# def prepareCSDPSD(
-#     CSDData=None, 
-#     sim=None,
-#     timeRange=None,
-#     electrodes=['avg', 'all'], 
-#     pop=None,
-#     minFreq=1, 
-#     maxFreq=100, 
-#     stepFreq=1, 
-#     normSignal=False, 
-#     normPSD=False, 
-#     transformMethod='morlet', 
-#     **kwargs
-#     ):
-
-#     """
-#     Function to prepare data for plotting of power spectral density (PSD) of current source density (CSD)
-#     """
-
-# <<<<<<< HEAD
-# =======
-#     datband = []
-#     for i in range(len(lfps[0])):
-#         datband.append(bandpass(lfps[:, i], minf, maxf, df=sampr, zerophase=True))
-# >>>>>>> development
-
-#     ## OLD ARGS --> 
-#     #   NFFT=256, 
-#     #   noverlap=128, 
-#     #   nperseg=256, 
-#     #   smooth=0,
-#     #   logy=False, 
-#     ##  --> These were args in preparePSD for LFP but I bet these won't be relevant --> 
-#     #   filtFreq=False, 
-#     #   filtOrder=3, 
-#     #   detrend=False, 
-
-
-# <<<<<<< HEAD
-# =======
-
-# def Vaknin(x):
-#     """
-#     Function to perform the Vaknin correction for CSD analysis
-# >>>>>>> development
-
-#     if not sim:
-#         from .. import sim
-
-# <<<<<<< HEAD
-# =======
-#     Parameters
-#     ----------
-#     x : array
-#         Data to be corrected.
-#         **Default:** *required*
-# >>>>>>> development
-
-#     data = prepareCSD(
-#         sim=sim,
-#         electrodes=electrodes,
-#         timeRange=timeRange,
-#         pop=pop,
-#         **kwargs)
-
-#     # prepareCSD args covered under kwargs --> 
-#         # dt=dt, 
-#         # sampr=sampr,
-#         # spacing_um=spacing_um,
-#         # minf=minf,
-#         # maxf=maxf,
-#         # vaknin=vaknin,
-#         # norm=norm,
-
-#     print('Preparing CSD PSD data...')
-
-
-#     names = data['electrodes']['names']
-#     csds = data['electrodes']['csds']       # KEEP IN MIND THAT THE FIRST [0] IS AVERAGE ELECTRODE!!! 
-
-#     allFreqs = []
-#     allSignal = []
-#     allNames = []
-
-
-#     # Used in both transforms
-#     fs = int(1000.0/sim.cfg.recordStep)
-
-
-#     for index, csd in enumerate(csds):
-
-#         # Morlet wavelet transform method
-#         if transformMethod == 'morlet':
-            
-#             from ..support.morlet import MorletSpec, index2ms
-#             morletSpec = MorletSpec(csd, fs, freqmin=minFreq, freqmax=maxFreq, freqstep=stepFreq)
-#             freqs = morletSpec.f
-#             spec = morletSpec.TFR
-#             signal = np.mean(spec, 1)
-#             ylabel = 'Power'
-
-
-#         allFreqs.append(freqs)
-#         allSignal.append(signal)
-#         allNames.append(names[index])
-
-#     if normPSD:
-#         vmax = np.max(allSignal)
-#         for index, signal in enumerate(allSignal):
-#             allSignal[index] = allSignal[index]/vmax
-
-
-#     psdFreqs = []
-#     psdSignal = []
-
-#     for index, name in enumerate(names):
-#         freqs = allFreqs[index]
-#         signal = allSignal[index]
-        
-#         psdFreqs.append(freqs[freqs<maxFreq])
-#         psdSignal.append(signal[freqs<maxFreq])
-
-#     data = {}
-#     data['psdFreqs'] = psdFreqs
-#     data['psdSignal'] = psdSignal
-#     data['psdNames'] = names
-
-#     return data
-
-
-# ### FUTURE WORK --> DEFINE FUNCTION prepareSpectrogram() ### 
-# # @exception
-# # def prepareSpectrogram(
-# #     sim=None,
-# #     timeRange=None,
-# #     electrodes=['avg', 'all'], 
-# #     pop=None,
-# #     CSDData=None, 
-# #     minFreq=1, 
-# #     maxFreq=100, 
-# #     stepFreq=1, 
-# #     normSignal=False, 
-# #     normPSD=False, 
-# #     normSpec=False, 
-# #     transformMethod='morlet', 
-# #     **kwargs):
-
-# #     """
-# #     Function to prepare data for plotting of the spectrogram
-# #     """
-
-
-
-# <<<<<<< HEAD
-# =======
-#     # Preallocate array with 2 more rows than input array
-#     x_new = np.zeros((x.shape[0] + 2, x.shape[1]))
-# >>>>>>> development
-
-
-
-
-# <<<<<<< HEAD
-
-# =======
-
-# def removemean(x, ax=1):
-#     """
-#     Function to subtract the mean from an array or list
-
-#     Parameters
-#     ----------
-#     x : array
-#         Data to be processed.
-#         **Default:** *required*
-# >>>>>>> development
-
-
-
-
-# <<<<<<< HEAD
-
-
-# =======
-#     """
-
-#     mean = np.mean(x, axis=ax, keepdims=True)
-#     x -= mean
-# >>>>>>> development
+    else:
+        from .lfp import prepareDataPerElectrode
+        CSDData = CSDData.T # to match the shape expected by prepareDataPerElectrode
+        return prepareDataPerElectrode(CSDData, electrodes, timeRange, sim)

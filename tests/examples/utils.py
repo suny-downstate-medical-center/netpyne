@@ -1,6 +1,9 @@
 import os
 import pytest
 import sys
+from tests import __path__ as tests_path
+
+netpyne_dir = tests_path[0].rstrip('tests') #get home dir of netpyne
 
 def compile_neuron_mod_dir(pkg_dir):
     try:
@@ -22,7 +25,8 @@ def pkg_setup(request):
         raise Exception('Missing package name')
     pkg, subdir = mark.args[0]
     cwd = os.getcwd()
-    os.chdir(pkg)
+    # absolute pathing
+    os.chdir(netpyne_dir + pkg)
     if subdir:
         compile_neuron_mod_dir(subdir)
     sys.path.append('.')

@@ -18,7 +18,7 @@ import json
 import pickle
 import subprocess
 import sys
-from subprocess import Popen
+from subprocess import Popen, PIPE
 
 from .templates import jobTypes
 
@@ -247,6 +247,42 @@ def runJob(nrnCommand, script, cfgSavePath, netParamsSavePath, simDataPath, rank
         file.write(str(pid) + ' ')
 
 
+def runJob_legacy(script, cfgSavePath, netParamsSavePath, processes, jobName, rankId): #rankId added v. legacy
+    """
+    #NB, in old python, there was a separate runJob in the grid.py file
+    #this is that function moved to utils <-
+    Function for/to <short description of `netpyne.batch.grid.runJob`>
+
+    Parameters
+    ----------
+    script : <type>
+        <Short description of script>
+        **Default:** *required*
+
+    cfgSavePath : <type>
+        <Short description of cfgSavePath>
+        **Default:** *required*
+
+    netParamsSavePath : <type>
+        <Short description of netParamsSavePath>
+        **Default:** *required*
+
+
+    """
+
+    print('\nJob in rank id: ', rankId)
+    command = "nrniv %s simConfig=%s netParams=%s" % (script, cfgSavePath, netParamsSavePath)
+    print(command + '\n')
+
+    stdout = open(jobName + '.run', 'w')
+    stderr = open(jobName + '.err', 'w')
+    proc = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
+
+    stdout.write(proc.stdout.read().decode())
+    stderr.write(proc.stderr.read().decode())
+
+    processes.append(proc)
+
 def evaluator(batch, candidates, args, ngen, pc, **kwargs):
 
     import os
@@ -271,7 +307,8 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
         'allocation':  'csd403',
         'sleepInterval':  0.2,
       }
-    args.update(default_args)
+    default_args.update(args)
+    args = default_args
     args['numproc'] = args['nodes'] * args['coresPerNode']
     paramLabels = args['paramLabels']
     sleepInterval = args['sleepInterval']
@@ -327,7 +364,7 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
         args['cfgSavePath'] = cfgSavePath
         args['jobPath'] = jobPath
 
-        if type == 'mpi_bulletin':
+        if args['type'] == 'mpi_bulletin':
             # ----------------------------------------------------------------------
             # MPI master-slaves
             # ----------------------------------------------------------------------
@@ -354,7 +391,7 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
             with open(batchfile, 'w') as text_file:
                 text_file.write("%s" % jobString)
 
-            if type == 'mpi_direct':
+            if args['type'] == 'mpi_direct':
                 with open(jobPath + '.run', 'a+') as outf, open(jobPath + '.err', 'w') as errf:
                     pids.append(subprocess.Popen([executer, batchfile], stdout=outf, stderr=errf,
                                                  start_new_session=True).pid)
@@ -366,7 +403,7 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
 
             sleep(0.1)
             # read = proc.stdout.read()
-            if type == 'mpi_direct':
+            if args['type'] == 'mpi_direct':
                 with open('./pids.pid', 'a') as file:
                     file.write(str(pids))
             else:
@@ -384,7 +421,7 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
     # ----------------------------------------------------------------------
     # gather data and compute fitness
     # ----------------------------------------------------------------------
-    if type == 'mpi_bulletin':
+    if args['type'] == 'mpi_bulletin':
         # wait for pc bulletin board jobs to finish
         try:
             while pc.working():
@@ -453,7 +490,7 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
                     pass
         sleep(args.get('time_sleep', 1))
     # kill all processes
-    if type == 'mpi_bulletin':
+    if args['type'] == 'mpi_bulletin':
         try:
             with open("./pids.pid", 'r') as file:  # read pids for mpi_bulletin
                 pids = [int(i) for i in file.read().split(' ')[:-1]]
@@ -466,7 +503,7 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
                     pass
         except:
             pass
-    elif type == 'mpi_direct':
+    elif args['type'] == 'mpi_direct':
         import psutil
 
         PROCNAME = "nrniv"
@@ -504,7 +541,8 @@ def jobSubmit(batch, pc, netParamsSavePath, jobPath, jobName, processes, process
 
     """
     # save simConfig json to saveFolder
-    batch.cfg.jobName = jobName
+    batch.cfg.simLabel = jobName
+    #batch.cfg.jobName = jobName
     batch.cfg.saveFolder = batch.saveFolder
     cfgSavePath = jobPath + '_cfg.json'
     batch.cfg.save(cfgSavePath)
@@ -518,7 +556,7 @@ def jobSubmit(batch, pc, netParamsSavePath, jobPath, jobName, processes, process
     }
 
     runCfg_args.update(batch.runCfg)
-    run = batch.runCfg.get('run', True)
+    generate_only = batch.runCfg.get('_generate_only', False) # set to True to generate cfg and netParams but not run
     jobFunc = False
     if batch.runCfg['type'] in jobTypes: # goal to eventually deprecate this for custom functions
         jobFunc = jobTypes[batch.runCfg['type']]
@@ -536,28 +574,25 @@ def jobSubmit(batch, pc, netParamsSavePath, jobPath, jobName, processes, process
         if batchfile:
             with open(batchfile, 'w') as text_file:
                 text_file.write("{}".format(job['filescript']))
-        if run:
-            proc = Popen(job['submit'].split(' '), stderr=job['stderr'], stdout=job['stdout'])  # Open a pipe to the pipe command.
-            (output, input) = (proc.stdin, proc.stdout)
-            processes.append(proc)
-            processFiles.append(jobPath + ".run")
-    # run mpi jobs directly e.g. if have 16 cores, can run 4 jobs * 4 cores in parallel
-    # eg. usage: python batch.py
-    # pc bulletin board job submission (master/slave) via mpi
-    # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
-    elif batch.runCfg.get('type', None) == 'mpi_bulletin':
-        script = batch.runCfg.get('script', 'init.py')
-
-        # unnecessary jobPath = batch.saveFolder + '/' + jobName --
-        print('Submitting job ', jobPath)
-        # master/slave bulletin board scheduling of jobs
-        pc.submit(runJob, script, cfgSavePath, netParamsSavePath, processes, jobPath)
-        print('Saving output to: ', jobPath + '.run')
-        print('Saving errors to: ', jobPath + '.err')
-        print('')
-
     else:
         print(batch.runCfg)
         print("Error: invalid runCfg 'type' selected; valid types are: \n")
         print(jobTypes)
         sys.exit(0)
+    if not generate_only: #_generate_only should be true
+        if batch.runCfg.get('type', None) not in ['mpi_bulletin']:
+            proc = Popen(job['submit'].split(' '), stderr=job['stderr'], stdout=job['stdout'])  # Open a pipe to the pipe command.
+            (output, input) = (proc.stdin, proc.stdout)
+            processes.append(proc)
+            processFiles.append(jobPath + ".run")
+        else:
+            script = batch.runCfg.get('script', 'init.py')
+            # unnecessary jobPath = batch.saveFolder + '/' + jobName --
+            print('Submitting job ', jobPath)
+            # master/slave bulletin board scheduling of jobs
+            # runJob just calls subprocess, not sure the purpose of this.
+            pc.submit(runJob_legacy, script, cfgSavePath, netParamsSavePath, processes, jobPath, pc.id())
+            print('Saving output to: ', jobPath + '.run')
+            print('Saving errors to: ', jobPath + '.err')
+            print('')
+

@@ -251,7 +251,6 @@ def gridSearch(batch, pc):
             pass
     outfiles = []
     # processFile polling for batch submission ... ?
-    """
     for procFile in processFiles:
         outfiles.append(open(procFile, 'r'))
 
@@ -278,7 +277,7 @@ def gridSearch(batch, pc):
     # TODO: line below was commented out due to issue on Netpyne-UI (https://dura-bernallab.slack.com/archives/C02UT6WECEL/p1671724489096569?thread_ts=1671646899.368969&cid=C02UT6WECEL)
     # Needs to be re-visited.
     # h.quit()
-    """
+
 
 
 def gridSubmit(batch, pc, netParamsSavePath, jobPath, jobName, processes, processFiles):
@@ -354,4 +353,17 @@ def gridSubmit(batch, pc, netParamsSavePath, jobPath, jobName, processes, proces
         print("Error: invalid runCfg 'type' selected; valid types are: \n")
         print(jobTypes)
         sys.exit(0)
+        
+        
+    else:
+        script = batch.runCfg.get('script', 'init.py')
+
+        jobName = batch.saveFolder + '/' + simLabel
+        print('Submitting job ', jobName)
+        # master/slave bulletin board scheduling of jobs
+        pc.submit(runJob, script, cfgSavePath, netParamsSavePath, processes, jobName)
+        print('Saving output to: ', jobName + '.run')
+        print('Saving errors to: ', jobName + '.err')
+        print('')
+
 """

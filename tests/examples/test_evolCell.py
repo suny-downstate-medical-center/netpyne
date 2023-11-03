@@ -5,12 +5,12 @@ import csv
 from netpyne.batch import Batch
 from netpyne import specs
 from multiprocessing import Process
+import numpy as np
 
 if "-nogui" not in sys.argv:
     sys.argv.append("-nogui")
 
-from .utils import pkg_setup
-
+from tests.examples.utils import pkg_setup # fixed relative pathing
 
 @pytest.mark.package_data(["examples/evolCell/", "mod"])
 class TestEvolCell:

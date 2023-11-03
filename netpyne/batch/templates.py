@@ -147,10 +147,24 @@ def jobMPIDirect(batchCfg):
                      stdout = stdout,
                      stderr = stderr)
 
+def jobMPIBulletin(batchCfg): #legacy
+    args = {
+        'script': 'init.py'
+    }
+    args.update(default_args)
+    args.update(batchCfg)
+    command = \
+        "nrniv {script} simConfig={cfgSavePath} netParams={netParamsSavePath}"
+    stdout = open("{jobName}.run".format(**args), 'w')
+    stderr = open("{jobName}.err".format(**args), 'w')
+    return createJob(submit = command.format(**args),
+                     stdout = stdout,
+                     stderr = stderr)
 jobTypes = {
     'hpc_torque': jobHPCTorque,
     'hpc_slurm': jobHPCSlurm,
     'hpc_sge': jobHPCSGE,
     'mpi': jobMPIDirect,
-    'mpi_direct': jobMPIDirect
+    'mpi_direct': jobMPIDirect,
+    'mpi_bulletin': jobMPIBulletin,
 }

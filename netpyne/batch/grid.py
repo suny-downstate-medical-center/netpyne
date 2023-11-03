@@ -277,8 +277,6 @@ def gridSearch(batch, pc):
     # TODO: line below was commented out due to issue on Netpyne-UI (https://dura-bernallab.slack.com/archives/C02UT6WECEL/p1671724489096569?thread_ts=1671646899.368969&cid=C02UT6WECEL)
     # Needs to be re-visited.
     # h.quit()
-    """
-
 
 
 def gridSubmit(batch, pc, netParamsSavePath, jobPath, jobName, processes, processFiles):
@@ -295,76 +293,3 @@ def gridSubmit(batch, pc, netParamsSavePath, jobPath, jobName, processes, proces
         return
 
     jobSubmit(batch, pc, netParamsSavePath, jobPath, jobName, processes, processFiles)
-"""
-    # save simConfig json to saveFolder
-    batch.cfg.jobName = jobName
-    batch.cfg.saveFolder = batch.saveFolder
-    cfgSavePath = jobPath + '_cfg.json'
-    batch.cfg.save(cfgSavePath)
-
-    # read params or set defaults
-    runCfg_args = {
-        'jobPath': jobPath,
-        'jobName': jobName,
-        'cfgSavePath': cfgSavePath,
-        'netParamsSavePath': netParamsSavePath,
-    }
-
-    runCfg_args.update(batch.runCfg)
-    run = batch.runCfg.get('run', True)
-    jobFunc = False
-    if batch.runCfg['type'] in jobTypes: # goal to eventually deprecate this for custom functions
-        jobFunc = jobTypes[batch.runCfg['type']]
-    if 'function' in batch.runCfg:
-        jobFunc = batch.runCfg['function']
-    if jobFunc:
-        job = jobFunc(runCfg_args)
-        print('Submitting job ', jobPath)
-        filescript = job['filescript']
-        if filescript:
-            print(job['filescript'] + '\n')
-        else:
-            print(job['submit'] + '\n')
-        batchfile = job['filename']
-        if batchfile:
-            with open(batchfile, 'w') as text_file:
-                text_file.write("{}".format(job['filescript']))
-        if run:
-            proc = Popen(job['submit'].split(' '), stderr=job['stderr'], stdout=job['stdout'])  # Open a pipe to the pipe command.
-            (output, input) = (proc.stdin, proc.stdout)
-            processes.append(proc)
-            processFiles.append(jobPath + ".run")
-    # run mpi jobs directly e.g. if have 16 cores, can run 4 jobs * 4 cores in parallel
-    # eg. usage: python batch.py
-    # pc bulletin board job submission (master/slave) via mpi
-    # eg. usage: mpiexec -n 4 nrniv -mpi batch.py
-    elif batch.runCfg.get('type', None) == 'mpi_bulletin':
-        script = batch.runCfg.get('script', 'init.py')
-
-        # unnecessary jobPath = batch.saveFolder + '/' + jobName --
-        print('Submitting job ', jobPath)
-        # master/slave bulletin board scheduling of jobs
-        pc.submit(runJob, script, cfgSavePath, netParamsSavePath, processes, jobPath)
-        print('Saving output to: ', jobPath + '.run')
-        print('Saving errors to: ', jobPath + '.err')
-        print('')
-
-    else:
-        print(batch.runCfg)
-        print("Error: invalid runCfg 'type' selected; valid types are: \n")
-        print(jobTypes)
-        sys.exit(0)
-        
-        
-    else:
-        script = batch.runCfg.get('script', 'init.py')
-
-        jobName = batch.saveFolder + '/' + simLabel
-        print('Submitting job ', jobName)
-        # master/slave bulletin board scheduling of jobs
-        pc.submit(runJob, script, cfgSavePath, netParamsSavePath, processes, jobPath)
-        print('Saving output to: ', jobPath + '.run')
-        print('Saving errors to: ', jobPath + '.err')
-        print('')
-
-"""

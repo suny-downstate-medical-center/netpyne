@@ -277,6 +277,7 @@ def gridSearch(batch, pc):
     # TODO: line below was commented out due to issue on Netpyne-UI (https://dura-bernallab.slack.com/archives/C02UT6WECEL/p1671724489096569?thread_ts=1671646899.368969&cid=C02UT6WECEL)
     # Needs to be re-visited.
     # h.quit()
+    """
 
 
 
@@ -361,9 +362,9 @@ def gridSubmit(batch, pc, netParamsSavePath, jobPath, jobName, processes, proces
         jobName = batch.saveFolder + '/' + simLabel
         print('Submitting job ', jobName)
         # master/slave bulletin board scheduling of jobs
-        pc.submit(runJob, script, cfgSavePath, netParamsSavePath, processes, jobName)
-        print('Saving output to: ', jobName + '.run')
-        print('Saving errors to: ', jobName + '.err')
+        pc.submit(runJob, script, cfgSavePath, netParamsSavePath, processes, jobPath)
+        print('Saving output to: ', jobPath + '.run')
+        print('Saving errors to: ', jobPath + '.err')
         print('')
 
 """

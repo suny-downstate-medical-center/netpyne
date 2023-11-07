@@ -3,13 +3,17 @@ Module for plotting analysed data
 
 """
 
-import matplotlib as mpl
-import matplotlib.pyplot as plt
+from netpyne import __gui__
+
+if __gui__:
+    import matplotlib as mpl
+    import matplotlib.pyplot as plt
+    from matplotlib.offsetbox import AnchoredOffsetbox
+
 import numpy as np
 from copy import deepcopy
 import pickle, json
 import os
-from matplotlib.offsetbox import AnchoredOffsetbox
 
 try:
     basestring
@@ -1244,64 +1248,67 @@ class ImagePlotter(GeneralPlotter):
         return self.fig
 
 
-class _AnchoredScaleBar(AnchoredOffsetbox):
-    """
-    A class used for adding scale bars to plots
-
-    Modified from here: https://gist.github.com/dmeliza/3251476
-    """
-
-    def __init__(
-        self,
-        axis,
-        sizex=0,
-        sizey=0,
-        labelx=None,
-        labely=None,
-        loc=4,
-        pad=0.1,
-        borderpad=0.1,
-        sep=2,
-        prop=None,
-        barcolor="black",
-        barwidth=None,
-        **kwargs
-    ):
+try:
+    class _AnchoredScaleBar(AnchoredOffsetbox):
         """
-        Draw a horizontal and/or vertical  bar with the size in data coordinate
-        of the give axes. A label will be drawn underneath (center-aligned).
+        A class used for adding scale bars to plots
 
-        - transform : the coordinate frame (typically axes.transData)
-        - sizex,sizey : width of x,y bar, in data units. 0 to omit
-        - labelx,labely : labels for x,y bars; None to omit
-        - loc : position in containing axes
-        - pad, borderpad : padding, in fraction of the legend font size (or prop)
-        - sep : separation between labels and bars in points.
-        - **kwargs : additional arguments passed to base class constructor
+        Modified from here: https://gist.github.com/dmeliza/3251476
         """
-        from matplotlib.patches import Rectangle
-        from matplotlib.offsetbox import AuxTransformBox, VPacker, HPacker, TextArea, DrawingArea
 
-        bars = AuxTransformBox(axis.transData)
-        if sizex:
-            if axis.xaxis_inverted():
-                sizex = -sizex
-            bars.add_artist(Rectangle((0, 0), sizex, 0, ec=barcolor, lw=barwidth, fc="none"))
-        if sizey:
-            if axis.yaxis_inverted():
-                sizey = -sizey
-            bars.add_artist(Rectangle((0, 0), 0, sizey, ec=barcolor, lw=barwidth, fc="none"))
+        def __init__(
+            self,
+            axis,
+            sizex=0,
+            sizey=0,
+            labelx=None,
+            labely=None,
+            loc=4,
+            pad=0.1,
+            borderpad=0.1,
+            sep=2,
+            prop=None,
+            barcolor="black",
+            barwidth=None,
+            **kwargs
+        ):
+            """
+            Draw a horizontal and/or vertical  bar with the size in data coordinate
+            of the give axes. A label will be drawn underneath (center-aligned).
 
-        if sizex and labelx:
-            self.xlabel = TextArea(labelx)
-            bars = VPacker(children=[bars, self.xlabel], align="center", pad=0, sep=sep)
-        if sizey and labely:
-            self.ylabel = TextArea(labely)
-            bars = HPacker(children=[self.ylabel, bars], align="center", pad=0, sep=sep)
+            - transform : the coordinate frame (typically axes.transData)
+            - sizex,sizey : width of x,y bar, in data units. 0 to omit
+            - labelx,labely : labels for x,y bars; None to omit
+            - loc : position in containing axes
+            - pad, borderpad : padding, in fraction of the legend font size (or prop)
+            - sep : separation between labels and bars in points.
+            - **kwargs : additional arguments passed to base class constructor
+            """
+            from matplotlib.patches import Rectangle
+            from matplotlib.offsetbox import AuxTransformBox, VPacker, HPacker, TextArea, DrawingArea
 
-        AnchoredOffsetbox.__init__(
-            self, loc, pad=pad, borderpad=borderpad, child=bars, prop=prop, frameon=False, **kwargs
-        )
+            bars = AuxTransformBox(axis.transData)
+            if sizex:
+                if axis.xaxis_inverted():
+                    sizex = -sizex
+                bars.add_artist(Rectangle((0, 0), sizex, 0, ec=barcolor, lw=barwidth, fc="none"))
+            if sizey:
+                if axis.yaxis_inverted():
+                    sizey = -sizey
+                bars.add_artist(Rectangle((0, 0), 0, sizey, ec=barcolor, lw=barwidth, fc="none"))
+
+            if sizex and labelx:
+                self.xlabel = TextArea(labelx)
+                bars = VPacker(children=[bars, self.xlabel], align="center", pad=0, sep=sep)
+            if sizey and labely:
+                self.ylabel = TextArea(labely)
+                bars = HPacker(children=[self.ylabel, bars], align="center", pad=0, sep=sep)
+
+                AnchoredOffsetbox.__init__(
+                    self, loc, pad=pad, borderpad=borderpad, child=bars, prop=prop, frameon=False, **kwargs
+                )
+except NameError:
+    print("-nogui passed, matplotlib is unavailable")
 
 
 def _add_scalebar(

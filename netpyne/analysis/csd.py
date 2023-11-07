@@ -20,9 +20,6 @@ except NameError:
 import numpy as np
 import scipy
 from numbers import Number
-import matplotlib
-from matplotlib import pyplot as plt
-from matplotlib import ticker as ticker
 import json
 import sys
 import os

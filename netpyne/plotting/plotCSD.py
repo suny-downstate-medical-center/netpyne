@@ -1,10 +1,13 @@
 # PLOTTING CSD
 
+from netpyne import __gui__
+if __gui__:
+    import matplotlib
+    from matplotlib import pyplot as plt
+
 from ..analysis.utils import exception, _showFigure
 import numpy as np
 import scipy
-import matplotlib
-from matplotlib import pyplot as plt
 
 
 @exception
@@ -16,7 +19,6 @@ def plotCSD(
     dt=None,
     sampr=None,
     spacing_um=None,
-    norm=True,
     fontSize=12,
     ymax=None,
     figSize=(8, 8),
@@ -110,6 +112,10 @@ def plotCSD(
         Whether or not to plot the smoothed interpoloation
         **Default:** ``True``
 
+    colorbar : bool
+        Whetehr or not to plot the colorbar
+        **Default:** ``True``
+
     """
 
     # If there is no input data, get the data from the NetPyNE sim object
@@ -119,17 +125,20 @@ def plotCSD(
         else:
             sim = kwargs['sim']
 
-        CSDData, LFPData, sampr, spacing_um, dt = sim.analysis.prepareCSD(sim=sim, pop=pop, dt=dt, sampr=sampr, spacing_um=spacing_um, getAllData=True, **kwargs)
+        CSDData, LFPData, sampr, spacing_um, dt = sim.analysis.prepareCSD(
+            sim=sim,
+            timeRange=timeRange,
+            pop=pop,
+            dt=dt,
+            sampr=sampr,
+            spacing_um=spacing_um,
+            getAllData=True,
+            **kwargs)
+    else:
+        pass # TODO: ensure time slicing works properly in case CSDData is passed as an argument
 
     if timeRange is None:
         timeRange = [0, sim.cfg.duration]
-    else:
-        LFPData = np.array(LFPData)[
-            int(timeRange[0] / dt) : int(timeRange[1] / dt), :
-        ]  # NOTE: THIS SHOULD ALREADY BE AN ARRAY
-        CSDData = CSDData[:, int(timeRange[0] / dt) : int(timeRange[1] / dt)]
-
-    tt = np.arange(timeRange[0], timeRange[1], dt)
 
     #####################################################
     print('Plotting CSD... ')
@@ -197,7 +206,7 @@ def plotCSD(
         print('No overlay')
         axs[0].set_title(csdTitle, fontsize=fontSize)
 
-    elif overlay is 'CSD' or overlay is 'LFP':
+    elif overlay == 'CSD' or overlay == 'LFP':
         nrow = LFPData.shape[1]
         if colorbar:
             gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(
@@ -241,7 +250,7 @@ def plotCSD(
                     legendLabel = False
 
     else:
-        print('Invalid option specified for overlay argument -- no data overlaid')
+        print(f'Invalid option specified for overlay argument ({overlay}) -- no data overlaid')
         axs[0].set_title('Current Source Density (CSD)', fontsize=fontSize)
 
     # add horizontal lines at electrode locations
@@ -308,4 +317,4 @@ def plotCSD(
         _showFigure()
         #plt.show()
 
-    return fig, axs 
+    return fig, axs

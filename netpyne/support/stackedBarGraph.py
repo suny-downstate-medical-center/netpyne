@@ -48,7 +48,9 @@ __status__ = "Development"
 ###############################################################################
 
 import numpy as np
-from matplotlib import pyplot as plt
+from netpyne import __gui__
+if __gui__:
+    from matplotlib import pyplot as plt
 
 ###############################################################################
 

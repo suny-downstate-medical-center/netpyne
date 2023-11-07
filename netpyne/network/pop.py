@@ -21,6 +21,7 @@ standard_library.install_aliases()
 from numpy import pi, sqrt, sin, cos, arccos
 import numpy as np
 from neuron import h  # Import NEURON
+from netpyne import sim
 
 
 ###############################################################################
@@ -39,15 +40,17 @@ class Pop(object):
         self.tags = tags  # list of tags/attributes of population (eg. numCells, cellModel,...)
         self.tags['pop'] = label
         self.cellGids = []  # list of cell gids beloging to this pop
+
         self._setCellClass()  # set type of cell
+        if self.cellModelClass == sim.PointCell:
+            self.__handlePointCellParams()
+
         self.rand = h.Random()  # random number generator
 
     def _distributeCells(self, numCellsPop):
         """
         Distribute cells across compute nodes using round-robin
         """
-
-        from .. import sim
 
         hostCells = {}
         for i in range(sim.nhosts):
@@ -105,8 +108,6 @@ class Pop(object):
         """
         Create population cells based on fixed number of cells
         """
-
-        from .. import sim
 
         cells = []
         self.rand.Random123(self.tags['numCells'], sim.net.lastGid, sim.cfg.seeds['loc'])
@@ -207,8 +208,6 @@ class Pop(object):
         Create population cells based on density
         """
 
-        from .. import sim
-
         cells = []
         shape = sim.net.params.shape
         sizeX = sim.net.params.sizeX
@@ -290,7 +289,13 @@ class Pop(object):
         self.rand.uniform(0, 1)
         vec = h.Vector(self.tags['numCells'] * 3)
         vec.setrand(self.rand)
-        randLocs = np.array(vec).reshape(self.tags['numCells'], 3)  # create random x,y,z locations
+        try:
+            randLocs = np.array(vec).reshape(self.tags['numCells'], 3)  # create random x,y,z locations
+        except Exception as e:
+            if 'numCells' in self.tags and self.tags['numCells'] == 0 or self.tags['numCells'] < 1:
+                print(f"Unable to create network, please validate that '{self.tags['pop']}' population size is > 0 ")
+            raise e
+
 
         if sim.net.params.shape == 'cylinder':
             # Use the x,z random vales
@@ -366,8 +371,6 @@ class Pop(object):
         Create population cells based on list of individual cells
         """
 
-        from .. import sim
-
         cells = []
         self.tags['numCells'] = len(self.tags['cellsList'])
         for i in self._distributeCells(len(self.tags['cellsList']))[sim.rank]:
@@ -404,8 +407,6 @@ class Pop(object):
         """
         Create population cells based on fixed number of cells
         """
-
-        from .. import sim
 
         cells = []
 
@@ -456,7 +457,6 @@ class Pop(object):
         return cells
 
     def _createCellTags(self):
-        from .. import sim
 
         # copy all pop tags to cell tags, except those that are pop-specific
         cellTags = {k: v for (k, v) in self.tags.items() if k in sim.net.params.popTagsCopiedToCells}
@@ -468,20 +468,6 @@ class Pop(object):
         Set cell class (CompartCell, PointCell, etc)
         """
 
-        from .. import sim
-
-        # obtain cellModel either from cellParams or popParams
-        if (
-            'cellType' in self.tags
-            and self.tags['cellType'] in sim.net.params.cellParams
-            and 'cellModel' in sim.net.params.cellParams[self.tags['cellType']]
-        ):
-            cellModel = sim.net.params.cellParams[self.tags['cellType']]['cellModel']
-        elif 'cellModel' in self.tags:
-            cellModel = self.tags['cellModel']
-        else:
-            cellModel = None
-
         # Check whether it's a NeuroML2 based cell
         # ! needs updating to read cellModel info from cellParams
         if 'originalFormat' in self.tags:
@@ -489,63 +475,76 @@ class Pop(object):
                 self.cellModelClass = sim.NML2Cell
             if self.tags['originalFormat'] == 'NeuroML2_SpikeSource':
                 self.cellModelClass = sim.NML2SpikeSource
-
         else:
+            # obtain cellModel either from popParams..
+            cellModel = self.tags.get('cellModel')
+
+            if cellModel is None:
+                # .. or from cellParams
+                cellType = self.tags.get('cellType')
+                if cellType:
+                    cellRule = sim.net.params.cellParams.get(cellType, {})
+                    cellModel = cellRule.get('cellModel')
+                else:
+                    # TODO: or throw error?
+                    pass
+
             # set cell class: CompartCell for compartmental cells of PointCell for point neurons (NetStims, IntFire1,...)
-            try:  # check if cellModel corresponds to an existing point process mechanism; if so, use PointCell
-                tmp = getattr(h, cellModel)
+            if cellModel and hasattr(h, cellModel):
+                # check if cellModel corresponds to an existing point process mechanism; if so, use PointCell
                 self.cellModelClass = sim.PointCell
-                excludeTags = [
-                    'pop',
-                    'cellModel',
-                    'cellType',
-                    'numCells',
-                    'density',
-                    'cellsList',
-                    'gridSpacing',
-                    'xRange',
-                    'yRange',
-                    'zRange',
-                    'xnormRange',
-                    'ynormRange',
-                    'znormRange',
-                    'vref',
-                    'spkTimes',
-                    'dynamicRates',
-                ]
-                params = {k: v for k, v in self.tags.items() if k not in excludeTags}
-                self.tags['params'] = params
-                for k in self.tags['params']:
-                    self.tags.pop(k)
-                sim.net.params.popTagsCopiedToCells.append('params')
-
-                # if point cell params defined directly in pop params, need to scan them for string functions
-                if len(params):
-                    from ..specs.netParams import CellParams
-
-                    CellParams.updateStringFuncsWithPopParams(self.tags['pop'], params)
-            except:
-                if getattr(self.tags, 'cellModel', None) in [
-                    'NetStim',
-                    'DynamicNetStim',
-                    'VecStim',
-                    'IntFire1',
-                    'IntFire2',
-                    'IntFire4',
-                ]:
+            else:
+                # otherwise assume has sections and some cellParam rules apply to it; use CompartCell
+                self.cellModelClass = sim.CompartCell
+                # if model is known but wasn't recognized, issue warning
+                knownPointps = ['NetStim', 'DynamicNetStim', 'VecStim', 'IntFire1', 'IntFire2', 'IntFire4']
+                if getattr(self.tags, 'cellModel', None) in knownPointps:
                     print(
                         'Warning: could not find %s point process mechanism required for population %s'
                         % (cellModel, self.tags['pop'])
                     )
-                self.cellModelClass = (
-                    sim.CompartCell
-                )  # otherwise assume has sections and some cellParam rules apply to it; use CompartCell
+
+    def __handlePointCellParams(self):
+
+        if 'params' in self.tags and isinstance(self.tags['params'], dict):
+            # in some cases, params for point cell may already be grouped in the nested 'params' dict.
+            params = self.tags['params']
+        else:
+            # otherwise, try extracting them from the top level of tags dict
+            excludeTags = [
+                'pop',
+                'cellModel',
+                'cellType',
+                'numCells',
+                'density',
+                'cellsList',
+                'gridSpacing',
+                'xRange',
+                'yRange',
+                'zRange',
+                'xnormRange',
+                'ynormRange',
+                'znormRange',
+                'vref',
+                'spkTimes',
+                'dynamicRates',
+            ]
+            params = {k: v for k, v in self.tags.items() if k not in excludeTags}
+            self.tags['params'] = params
+            for k in self.tags['params']:
+                self.tags.pop(k)
+        sim.net.params.popTagsCopiedToCells.append('params')
+
+        # if point cell params defined directly in pop params, need to scan them for string functions
+        if len(params):
+            from ..specs.netParams import CellParams
+
+            CellParams.updateStringFuncsWithPopParams(self.tags['pop'], params)
+
 
     def calcRelativeSegCoords(self):
         """Calculate segment coordinates from 3d point coordinates
         Used for LFP calc (one per population cell; assumes same morphology)"""
-
-        from .. import sim
 
         localPopGids = list(set(sim.net.gid2lid.keys()).intersection(set(self.cellGids)))
         if localPopGids:
@@ -614,8 +613,6 @@ class Pop(object):
 
     def __getstate__(self):
         """Removes non-picklable h objects so can be pickled and sent via py_alltoall"""
-
-        from .. import sim
 
         odict = self.__dict__.copy()  # copy the dict since we change it
         odict = sim.replaceFuncObj(odict)  # replace h objects with None so can be pickled

@@ -256,10 +256,10 @@ def plotData(sim=None):
             if sim.timingData['totalTime'] <= 1.2 * sumTime:  # Print total time (only if makes sense)
                 print(('\nTotal time = %0.2f s' % sim.timingData['totalTime']))
 
-        try:
-            print('\nEnd time: ', datetime.now())
-        except:
-            pass
+        # try:
+        #     print('\nEnd time: ', datetime.now())
+        # except:
+        #     pass
 
 
 def saveData(data, fileName=None, fileDesc=None, fileType=None, fileDir=None, sim=None, **kwargs):

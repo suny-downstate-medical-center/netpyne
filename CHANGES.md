@@ -2,6 +2,30 @@
 
 **New features**
 
+- Raster plot colored by phase
+
+- Examples based on the CA3 model using the 'colorbyPhase' option in the plotRaster
+
+**Bug fixes**
+
+- Fixed loading point cell params from legacy models (issue 607)
+
+- Fix voltage movie tutorial
+
+- Fix to automatically include netstims in the sim.allSimData object when plotRaster 'include' selects 'all'
+
+- Fixed loading netParams in some scenarios (bug caused by srting functions pre-processing)
+
+# Version 1.0.5
+
+**New features**
+
+- Time series and PSD plots for current source density (CSD)
+
+- Added colorbar to CSD plot
+
+- Support for Sun Grid Engine HPC
+
 - Extended sim.gatherData() with more optional arguments for flexibility
 
 - Specify linear/log scale in `plotRatePSD()`
@@ -9,6 +33,10 @@
 - Print more info about exceptions in plotting functions
 
 - Check RxD specification for potential syntax issues
+
+- Prevent zero population size in scaled-down models
+
+- Better messages for validation errors
 
 **Bug fixes**
 
@@ -21,6 +49,8 @@
 - Fixed sync lines in `plotRaster()`
 
 - Fixed performance issue in `plotConn()` with `groupBy='pop'` (default)
+
+- Fixed `recordTraces` to not require more presicion than segment size (for stim and synMech)
 
 # Version 1.0.4.2
 

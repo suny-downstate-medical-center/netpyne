@@ -192,6 +192,8 @@ class Batch(object):
             sim.saveJSON(filename, dataSave)
 
     def setCfgNestedParam(self, paramLabel, paramVal):
+        if '.' in paramLabel: #TODO jchen6727@gmail.com 195196 replace with my crawler code?
+            paramLabel = paramLabel.split('.')
         if isinstance(paramLabel, tuple):
             container = self.cfg
             for ip in range(len(paramLabel) - 1):

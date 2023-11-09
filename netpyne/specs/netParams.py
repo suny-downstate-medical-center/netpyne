@@ -846,5 +846,5 @@ class NetParams(object):
     def setCfgMapping(self, cfg):
         if hasattr(self, 'mapping'):
             for k, v in self.mapping.items():
-                if getattr(cfg, k, None):
+                if hasattr(cfg, k):
                     self.setNestedParam(v, getattr(cfg, k))

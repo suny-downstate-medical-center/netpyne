@@ -16,6 +16,8 @@
 
 - Fixed loading netParams in some scenarios (bug caused by srting functions pre-processing)
 
+- Fix of `plotRaster` pops coloring if ordered not by gid
+
 # Version 1.0.5
 
 **New features**

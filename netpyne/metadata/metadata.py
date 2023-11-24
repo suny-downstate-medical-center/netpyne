@@ -122,28 +122,28 @@ metadata = {
                         "help": "Fraction of noise in NetStim (0 = deterministic; 1 = completely random).",
                         "suggestions": "",
                         "hintText": "0.5",
-                        "type": "list(float)",
+                        "type": "float",
                     },
                     "start": {
                         "label": "Start time (ms)",
                         "help": "Time of first spike in ms (default = 0).",
                         "suggestions": "",
                         "hintText": "0",
-                        "type": "list(float)",
+                        "type": "float",
                     },
                     "number": {
                         "label": "Max number of spikes",
                         "help": "Max number of spikes generated (default = 1e12).",
                         "suggestions": "",
                         "hintText": "",
-                        "type": "list(float)",
+                        "type": "float",
                     },
                     "seed": {
                         "label": "Randomizer seed (optional)",
                         "help": " Seed for randomizer (optional; defaults to value set in simConfig.seeds['stim'])",
                         "suggestions": "",
                         "hintText": "",
-                        "type": "list(float)",
+                        "type": "float",
                     },
                     "spkTimes": {
                         "label": "Spike times",
@@ -159,6 +159,172 @@ metadata = {
                         "hintText": "",
                         "type": "list(float)",
                     },
+                    "spikePattern": {
+                        "label": "Simulation Patterns",
+                        "suggestions": "",
+                        "help": "",
+                        "hintText": "",
+                        "children": {
+                            "rhythmic": {
+                                "label": "Rhythmic Pattern",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": "",
+                                "children": {
+                                    "start": {
+                                        "label": "Start/Start min",
+                                        "help": "Time of first spike (ms). If max is set, uniform distribution between start and max",
+                                        "suggestions": "",
+                                        "hintText": "",
+                                        "type": "float",
+                                    },
+                                    "startMax": {
+                                        "label": "Max (optional)",
+                                        "help": "Maximum values of uniform distribution for start time (ms)",
+                                        "suggestions": "",
+                                        "hintText": "",
+                                        "type": "float",
+                                    },
+                                    "startStd": {
+                                        "label": "Std Deviation",
+                                        "help": "standard deviation of normal distribution for start time (ms); mean is set by start param. Only used if > 0.0",
+                                        "suggestions": "",
+                                        "hintText": "0.0",
+                                        "type": "float",
+                                    },
+                                    "freq": {
+                                        "label": "Frequency",
+                                        "help": "Oscillatory frequency of rhythmic pattern (Hz)",
+                                        "suggestions": "",
+                                        "hintText": "",
+                                        "type": "float",
+                                    },
+                                    "freqStd": {
+                                        "label": "Standard Deviation of oscillatory frequency",
+                                        "help": "Standard deviation of oscillatory frequency (Hz)",
+                                        "suggestions": "",
+                                        "hintText": "",
+                                        "type": "float",
+                                    },
+                                    "distribution": {
+                                        "label": "Distribution type",
+                                        "help": "Distribution type of oscillatory frequencies",
+                                        "suggestions": ["normal", "uniform"],
+                                        "hintText": "",
+                                        "type": "str",
+                                    },
+                                    "eventsPerCycle": {
+                                        "label": "Events per cycle",
+                                        "help": "spikes/burst per cycle; should be either 1 or 2",
+                                        "suggestions": "",
+                                        "hintText": "",
+                                        "type": "int",
+                                    },
+                                    "repeats": {
+                                        "label": "Number of repeats",
+                                        "help": "Number of times to repeat input pattern (equivalent to number of inputs)",
+                                        "suggestions": "",
+                                        "hintText": "",
+                                        "type": "int",
+                                    },
+                                    "stop": {
+                                        "label": "Spike pattern stop time",
+                                        "help": "Maximum time for last spike of pattern (ms)",
+                                        "suggestions": "",
+                                        "hintText": "",
+                                        "type": "int",
+                                    }
+                                }
+                            },
+                            "evoked": {
+                                "label": "Evoked Pattern",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": "",
+                                "children": {
+                                    "start": {
+                                        "label": "Start",
+                                        "help": "Time of first spike (ms)",
+                                        "suggestions": "",
+                                        "hintText": "",
+                                        "type": "float",
+                                    },
+                                    "inc": {
+                                        "label": "Increase",
+                                        "help": "Increase in time of first spike (ms)",
+                                        "suggestions": "",
+                                        "hintText": "",
+                                        "type": "float",
+                                    },
+                                    "startStd": {
+                                        "label": "Standard deviation",
+                                        "help": "Standard deviation of start (ms)",
+                                        "suggestions": "",
+                                        "hintText": "",
+                                        "type": "float",
+                                    },
+                                    "numspikes": {
+                                        "label": "Total number of spikes",
+                                        "help": "Total number of spikes to generate",
+                                        "suggestions": "",
+                                        "hintText": "",
+                                        "type": "int",
+                                    }
+                                }
+                            },
+                            "poisson": {
+                                "label": "Poisson Pattern",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": "",
+                                "children": {
+                                    "start": {
+                                        "label": "Start",
+                                        "help": "Time of first spike (ms)",
+                                        "suggestions": "",
+                                        "hintText": "",
+                                        "type": "float",
+                                    },
+                                    "stop": {
+                                        "label": "Stop",
+                                        "help": "stop time; if -1 the full duration (ms)",
+                                        "suggestions": "",
+                                        "hintText": "",
+                                        "type": "float",
+                                    },
+                                    "frequency": {
+                                        "label": "Frequency",
+                                        "help": "Frequency (ms)",
+                                        "suggestions": "",
+                                        "hintText": "",
+                                        "type": "float",
+                                    },
+                                }
+                            },
+                            "gauss": {
+                                "label": "Gauss Pattern",
+                                "suggestions": "",
+                                "help": "",
+                                "hintText": "",
+                                "children": {
+                                    "mu": {
+                                        "label": "Mu",
+                                        "help": "Gaussian mean",
+                                        "suggestions": "",
+                                        "hintText": "",
+                                        "type": "float",
+                                    },
+                                    "sigma": {
+                                        "label": "Signma",
+                                        "help": "Gaussian variance",
+                                        "suggestions": "",
+                                        "hintText": "",
+                                        "type": "float",
+                                    },
+                                }
+                            },
+                        }
+                    }
                 },
             },
             "scale": {

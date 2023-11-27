@@ -154,10 +154,40 @@ metadata = {
                     },
                     "pulses": {
                         "label": "Pulses",
-                        "help": "List of spiking pulses (only for 'VecStim'); each item includes the start (ms), end (ms), rate (Hz), and noise (0 to 1) pulse parameters. ",
+                        "help": "List of spiking pulses; each item includes the start (ms), end (ms), rate (Hz), and noise (0 to 1) pulse parameters. ",
                         "suggestions": "",
                         "hintText": "",
-                        "type": "list(float)",
+                        "type": "list(dict)",
+                        "children": {
+                            "start": {
+                                "label": "Start",
+                                "help": "start (ms)",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float",
+                            },
+                            "end": {
+                                "label": "End",
+                                "help": "end (ms)",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float",
+                            },
+                            "rate": {
+                                "label": "Rate",
+                                "help": "rate (Hz)",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float",
+                            },
+                            "noise": {
+                                "label": "Noise",
+                                "help": "noise (0 to 1) pulse parameters",
+                                "suggestions": "",
+                                "hintText": "",
+                                "type": "float",
+                            },
+                        }
                     },
                     "spikePattern": {
                         "label": "Simulation Patterns",

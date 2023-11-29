@@ -5,7 +5,7 @@ pandas
 future
 tables
 bokeh
-pyneuroml >= 1.1.5
+pyneuroml>=1.1.5
 neuron
 pytest
 inspyred >= 1.0.2

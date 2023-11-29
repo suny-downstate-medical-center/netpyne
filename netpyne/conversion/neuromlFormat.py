@@ -10,8 +10,12 @@ import pprint
 from builtins import range, str
 from collections import OrderedDict
 
+import logging
+
 from .. import specs
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 pp = pprint.PrettyPrinter(depth=6)
 try:
     from distutils.version import StrictVersion
@@ -999,8 +1003,18 @@ try:
             popInfo['numCells'] = size
 
             if population_id == 'pop':
-                print(
-                    "\n\n*****************************\nReconsider calling your population 'pop'; it leads to some errors in NetPyNE!\nGiving up...\n*****************************\n\n"
+                logger.critical(
+                    """
+                    ***************************** ERROR *****************************
+                    The 'pop' label for populations is reservered.
+                    Please use something else.
+
+                    See
+                    http://doc.netpyne.org/user_documentation.html#population-parameters
+
+                    Exiting.
+                    ***************************** ERROR *****************************
+                    """
                 )
                 quit()
 

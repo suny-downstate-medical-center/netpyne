@@ -3,20 +3,22 @@ Module for importing and exporting NeuroML 2
 
 """
 
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
+import math
+import pprint
+from builtins import range, str
+from collections import OrderedDict
 
-from builtins import str
+from .. import specs
 
-from builtins import range
-
+pp = pprint.PrettyPrinter(depth=6)
 try:
-    import neuroml
-    from pyneuroml import pynml
-    from pyneuroml import __version__ as pynml_ver
     from distutils.version import StrictVersion
+
+    import neuroml
+    from pyneuroml import __version__ as pynml_ver
+    from pyneuroml import pynml
 
     min_pynml_ver_required = '0.3.13'  # pyNeuroML will have a dependency on the correct version of libNeuroML...
 
@@ -42,13 +44,6 @@ except ImportError:
             'Warning: NeuroML import failed; import/export functions for NeuroML will not be available. \n  To install the pyNeuroML & libNeuroML Python packages visit: https://www.neuroml.org/getneuroml'
         )
     neuromlExists = False
-
-import pprint
-
-pp = pprint.PrettyPrinter(depth=6)
-import math
-from collections import OrderedDict
-from .. import specs
 
 ###############################################################################
 ### Get connection centric network representation as used in NeuroML2
@@ -1011,7 +1006,7 @@ try:
 
             self.popParams[population_id] = popInfo
 
-            from neuroml import Cell, BaseCell
+            from neuroml import BaseCell, Cell
 
             if isinstance(component_obj, Cell):
 

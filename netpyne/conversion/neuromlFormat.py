@@ -49,10 +49,21 @@ except ImportError:
         )
     neuromlExists = False
 
-###############################################################################
-### Get connection centric network representation as used in NeuroML2
-###############################################################################
+
 def _convertNetworkRepresentation(net, gids_vs_pop_indices):
+    """Get connection centric network representation as used in NeuroML2.
+
+    Parameters
+    ----------
+    net: netpyne.sim.net
+        a NetPyNE simulation network object
+        **Default:** required
+
+    gids_vs_pop_indices: dict
+        a dictionary with NetPyNE gids as keys and indices of cells in NetPyNE
+        populations as values
+        **Default:** required
+    """
 
     from .. import sim
 
@@ -96,11 +107,30 @@ def _convertNetworkRepresentation(net, gids_vs_pop_indices):
     return nn
 
 
-###############################################################################
-### Get stimulations in representation as used in NeuroML2
-###############################################################################
 def _convertStimulationRepresentation(net, gids_vs_pop_indices, nml_doc, populations_vs_components):
+    """Get stimulations in representation as used in NeuroML2.
 
+    Parameters
+    ----------
+    net: netpyne.sim.net
+        a NetPyNE simulation network object
+        **Default:** required
+
+    gids_vs_pop_indices: dict
+        a dictionary with NetPyNE gids as keys and indices of cells in NetPyNE
+        populations as values
+        **Default:** required
+
+    nml_doc: neuroml.NeuroMLDocument
+        a NeuroML document object
+        **Default:** required
+
+    populations_vs_components: dict
+        a dictionary with populations as keys, and cell components for those
+        populations as values
+        **Default:** required
+
+    """
     stims = {}
 
     for np_pop in list(net.pops.values()):
@@ -160,11 +190,9 @@ def _convertStimulationRepresentation(net, gids_vs_pop_indices, nml_doc, populat
     return stims
 
 
-#
-#  Heaviside function, required for expressions in <inhomogeneousValue>
-#
 def H(x):
-    """
+    """Heaviside function, required for expressions in <inhomogeneousValue>
+
     Short description of `netpyne.conversion.neuromlFormat.H`
 
     Parameters
@@ -186,12 +214,19 @@ def H(x):
     return 1 * (x > 0)
 
 
-# if neuromlExists:
-
-###############################################################################
-### Export synapses to NeuroML2
-###############################################################################
 def _export_synapses(net, nml_doc):
+    """Export synapses to NeuroML2.
+
+    Parameters
+    ----------
+    net: netpyne.sim.net
+        a NetPyNE network object
+        **Default:** required
+
+    nml_doc: neuroml.NeuroMLDocument
+        a NeuroML Document object
+        **Default:** required
+    """
 
     from .. import sim
 
@@ -268,9 +303,7 @@ hh_nml2_chans = """
 </neuroml>
 """
 
-###############################################################################
-### Export generated structure of network to NeuroML 2
-###############################################################################
+
 def exportNeuroML2(reference, connections=True, stimulations=True, format='xml', default_cell_radius=5):
     """
     Exports the current NetPyNE network to NeuroML format
@@ -900,6 +933,9 @@ try:
 
     class NetPyNEBuilder(DefaultNetworkHandler):
         """
+        Class for handling NeuroML2 constructs and generating the equivalent in
+        NetPyNE's internal representation.
+
         Works with libNeuroML's NeuroMLXMLParser and/or NeuroMLHdf5Parser to parse the NML & build equivalent in NetPyNE
 
         """

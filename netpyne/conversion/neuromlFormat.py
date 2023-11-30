@@ -1012,7 +1012,8 @@ try:
                 print("Setting global temperature to %s" % self.simConfig.hParams['celsius'])
 
         @override
-        def handle_population(self, population_id, component, size, component_obj, properties={}):
+        def handle_population(self, population_id, component, size,
+                              component_obj, properties={}, notes=None):
 
             if self.verbose:
                 print(

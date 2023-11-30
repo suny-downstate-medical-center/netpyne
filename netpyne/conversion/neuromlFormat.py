@@ -14,6 +14,12 @@ import logging
 
 from .. import specs
 
+try:
+    from typing import override
+except ImportError:
+    from overrides import override
+
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 pp = pprint.PrettyPrinter(depth=6)
@@ -1003,17 +1009,13 @@ try:
 
             return prox, dist
 
-        #
-        #  Overridden from DefaultNetworkHandler
-        #
+        @override
         def handle_network(self, network_id, notes, temperature=None):
             if temperature:
                 self.simConfig.hParams['celsius'] = pynml.convert_to_units(temperature, 'degC')
                 print("Setting global temperature to %s" % self.simConfig.hParams['celsius'])
 
-        #
-        #  Overridden from DefaultNetworkHandler
-        #
+        @override
         def handle_population(self, population_id, component, size, component_obj, properties={}):
 
             if self.verbose:
@@ -1487,9 +1489,7 @@ try:
                 # print("=============  Converted %s:%s on pop %s to %s on %s"%(seg_id, fract_along, population_id, nrn_sec, fract_sec))
                 return nrn_sec, fract_sec
 
-        #
-        #  Overridden from DefaultNetworkHandler
-        #
+        @override
         def handle_location(self, id, population_id, component, x, y, z):
             DefaultNetworkHandler.print_location_information(self, id, population_id, component, x, y, z)
 
@@ -1499,9 +1499,7 @@ try:
             self.gids[population_id][id] = self.next_gid
             self.next_gid += 1
 
-        #
-        #  Overridden from DefaultNetworkHandler
-        #
+        @override
         def handle_projection(
             self,
             projName,
@@ -1520,9 +1518,7 @@ try:
             self.projection_infos[projName] = (projName, prePop, postPop, synapse, type)
             self.connections[projName] = []
 
-        #
-        #  Overridden from DefaultNetworkHandler
-        #
+        @override
         def handle_connection(
             self,
             projName,
@@ -1560,9 +1556,7 @@ try:
                 )
             )
 
-        #
-        #  Overridden from DefaultNetworkHandler
-        #
+        @override
         def handle_input_list(self, inputListId, population_id, component, size, input_comp_obj=None):
             DefaultNetworkHandler.print_input_information(self, inputListId, population_id, component, size)
 
@@ -1598,9 +1592,7 @@ try:
                         'loc': 0.5,
                         'conds': {'pop':population_id, 'cellList': []}}'''
 
-        #
-        #  Overridden from DefaultNetworkHandler
-        #
+        @override
         def handle_single_input(self, inputListId, id, cellId, segId=0, fract=0.5, weight=1.0):
 
             pop_id = self.popStimLists[inputListId]['conds']['pop']

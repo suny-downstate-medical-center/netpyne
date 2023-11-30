@@ -1068,6 +1068,7 @@ try:
 
             assert component == component_obj.id
 
+            # dictionary used to populate netParams.popParams
             popInfo = OrderedDict()
             popInfo['pop'] = population_id
             # popInfo['cellModel'] = component
@@ -1100,6 +1101,8 @@ try:
 
             from neuroml import BaseCell, Cell
 
+            # Cell with morphology and biophysics
+            # https://docs.neuroml.org/Userdocs/Schemas/Cells.html#cell
             if isinstance(component_obj, Cell):
 
                 # popInfo['cellType'] = component
@@ -1128,6 +1131,7 @@ try:
                     threshold = 0
 
                 for seg_grp in cell.morphology.segment_groups:
+                    # Unbranched segment group -> NEURON section
                     if hasattr(seg_grp, 'neuro_lex_id') and seg_grp.neuro_lex_id == "sao864921383":
                         use_segment_groups_for_neuron = True
                         cellRule['secs'][seg_grp.id] = {'geom': {'pt3d': []}, 'mechs': {}, 'ions': {}}

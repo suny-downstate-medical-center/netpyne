@@ -986,6 +986,20 @@ try:
                 self.netParams.stimTargetParams[stimName] = self.stimLists[stimName]
 
         def _get_prox_dist(self, seg, seg_ids_vs_segs):
+            """Get proximal and distal points for a segment.
+
+            Parameters
+            -----------
+
+            seg: neuroml.Segment
+                segment object
+                **Default:**: required
+
+            seg_ids_vs_segs: dict
+                dictionary with segment ids as keys and segment objects as
+                values
+                **Default:**: required
+            """
             prox = None
             if seg.proximal:
                 prox = seg.proximal
@@ -996,7 +1010,7 @@ try:
             dist = seg.distal
 
             # Spherical root segment
-            if seg.parent == None and prox.x == dist.x and prox.y == dist.y and prox.z == dist.z:
+            if seg.parent is None and prox.x == dist.x and prox.y == dist.y and prox.z == dist.z:
 
                 if prox.diameter == dist.diameter:
                     dist.y = prox.diameter

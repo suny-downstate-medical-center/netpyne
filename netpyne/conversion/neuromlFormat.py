@@ -1014,6 +1014,35 @@ try:
         @override
         def handle_population(self, population_id, component, size,
                               component_obj, properties={}, notes=None):
+            """Handle a population.
+
+            Parameters
+            -----------
+
+            population_id: str
+                id of population
+                **Default:** required
+
+            component: str
+                id of the component used in the population
+                **Default:** required
+
+            size: int
+                size of population
+                **Default:** required
+
+            component_object: object
+                object of the component used in the population
+                **Default:** required
+
+            properties: dict
+                dictionary of properties (currently unused)
+                **Default:** {}
+
+            notes: str
+                notes (currently unused)
+                **Default:** None
+                """
 
             if self.verbose:
                 print(

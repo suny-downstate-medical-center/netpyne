@@ -1797,6 +1797,5 @@ try:
         else:
             return nmlHandler.gids
 
-except:
-    pass
-    # print(' Warning: An Exception occurred when loading NeuroML ...')
+except ImportError:
+    logger.critical("Could not import neuroml.DefaultNetworkHandler. Exiting")

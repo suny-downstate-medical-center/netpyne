@@ -927,13 +927,9 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
 
 
 ###############################################################################
-### Class for handling NeuroML2 constructs and generating the equivalent in
-### NetPyNE's internal representation
+# Class for handling NeuroML2 constructs and generating the equivalent in
+# NetPyNE's internal representation
 ###############################################################################
-
-#### NOTE: commented out because generated error when running via mpiexec
-####       maybe find way to check if exectued via mpi
-
 try:
     from neuroml.hdf5.DefaultNetworkHandler import DefaultNetworkHandler
 

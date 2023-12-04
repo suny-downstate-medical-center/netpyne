@@ -21,7 +21,7 @@ except ImportError:
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 pp = pprint.PrettyPrinter(depth=6)
 try:
     from distutils.version import StrictVersion
@@ -1113,6 +1113,8 @@ try:
                                         'cellModel': component},
                             'secs': {},
                             'secLists':{}}'''
+                # construct NetPyNE cellParams object
+                # http://doc.netpyne.org/modeling-specification-v1.0.html#cell-types
                 cellRule = {'secs': {}, 'secLists': {}}
 
                 seg_ids_vs_segs = cell.get_segment_ids_vs_segments()
@@ -1130,6 +1132,8 @@ try:
                 else:
                     threshold = 0
 
+                # Go over segment groups to see if they are unbranched.
+                # If they are, these directly become sections
                 for seg_grp in cell.morphology.segment_groups:
                     # Unbranched segment group -> NEURON section
                     if hasattr(seg_grp, 'neuro_lex_id') and seg_grp.neuro_lex_id == "sao864921383":
@@ -1146,6 +1150,8 @@ try:
                 self.pop_ids_vs_use_segment_groups_for_neuron[population_id] = use_segment_groups_for_neuron
 
                 if not use_segment_groups_for_neuron:
+                    # Unbranched segment groups not provided,
+                    # so we construct sections and geometry from individual segments
                     for seg in cell.morphology.segments:
 
                         seg_grps_vs_nrn_sections['all'].append(seg.name)
@@ -1165,6 +1171,7 @@ try:
                             }
 
                 else:
+                    # Get geometry from the unbranched segment groups
                     ordered_segs, cumulative_lengths = cell.get_ordered_segments_in_groups(
                         list(cellRule['secs'].keys()), include_cumulative_lengths=True
                     )
@@ -1172,8 +1179,10 @@ try:
                     self.pop_ids_vs_cumulative_lengths[population_id] = cumulative_lengths
 
                     for section in list(cellRule['secs'].keys()):
+                        logger.debug("Processing section: %s",  section)
                         # print("ggg %s: %s"%(section,ordered_segs[section]))
                         for seg in ordered_segs[section]:
+                            logger.debug("Processing segment: %s",  seg)
                             prox, dist = self._get_prox_dist(seg, seg_ids_vs_segs)
 
                             if seg.id == ordered_segs[section][0].id:
@@ -1189,6 +1198,12 @@ try:
                                             parent_sec = sec
                                     fract = float(seg.parent.fraction_along)
 
+                                    # Give user information about the assertion
+                                    if fract != 1.0 or fract != 0.0:
+                                        logger.critical(
+                                            "Segment (%s) must be attached to parent (%s) at proximal or distal point",
+                                            seg, seg.parent
+                                        )
                                     assert fract == 1.0 or fract == 0.0
 
                                     cellRule['secs'][section]['topol'] = {

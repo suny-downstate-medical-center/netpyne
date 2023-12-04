@@ -1064,7 +1064,7 @@ try:
             if self.verbose:
                 print(
                     "A population: %s with %i of %s (%s) "
-                    % (population_id, size, component, str(component_obj).strip())
+                    % (population_id, size, component, str(component_obj.id).strip())
                 )
 
             self.pop_ids_vs_components[population_id] = component_obj

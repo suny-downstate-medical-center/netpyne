@@ -968,6 +968,9 @@ try:
             self.simConfig = simConfig
             self.verbose = verbose
 
+            if self.verbose:
+                logger.setLevel(logging.DEBUG)
+
         def finalise(self):
 
             for popParam in list(self.popParams.keys()):
@@ -1186,6 +1189,12 @@ try:
                             prox, dist = self._get_prox_dist(seg, seg_ids_vs_segs)
 
                             if seg.id == ordered_segs[section][0].id:
+                                logger.debug(
+                                    "Processing first segment %s of section %s",
+                                    seg, section
+                                )
+                                # If it's the first segment, add the proximal
+                                # point to mark the start of the section
                                 cellRule['secs'][section]['geom']['pt3d'].append(
                                     (prox.x, prox.y, prox.z, prox.diameter)
                                 )
@@ -1212,11 +1221,13 @@ try:
                                         'childX': 0,
                                     }
 
+                            # add distal point for all segments
                             cellRule['secs'][section]['geom']['pt3d'].append((dist.x, dist.y, dist.z, dist.diameter))
 
+                # Inhomogeneous Parameters
                 inhomogeneous_parameters = {}
-
                 for seg_grp in cell.morphology.segment_groups:
+                    # 'all' has been populated, now populate individual groups
                     seg_grps_vs_nrn_sections[seg_grp.id] = []
 
                     if not use_segment_groups_for_neuron:
@@ -1238,6 +1249,11 @@ try:
                         cellRule['secLists'][seg_grp.id] = seg_grps_vs_nrn_sections[seg_grp.id]
 
                     for ip in seg_grp.inhomogeneous_parameters:
+                        logger.debug(
+                            "Processing inhomogeneous_parameter (%s) in segment group (%s)",
+                            ip, seg_grp.id
+                        )
+
                         # print("=====================\ninhomogeneousParameter: %s"%ip)
 
                         inhomogeneous_parameters[seg_grp.id] = {}
@@ -1260,12 +1276,16 @@ try:
                             last = sec_segs[nrn_sec][-1]
                             start_len = path_prox[seg_grp.id][first.id]
                             end_len = path_dist[seg_grp.id][last.id]
-                            # print("  Seg: %s (%s) -> %s (%s)"%(first,start_len,last,end_len))
 
                             inhomogeneous_parameters[seg_grp.id][nrn_sec] = (start_len, end_len)
+                            logger.debug(
+                                "Inhomogenrous parameter: Seg: %s (%s) -> %s (%s)",
+                                first, start_len, last, end_len
+                            )
 
+                # Channel Densities
                 for cm in cell.biophysical_properties.membrane_properties.channel_densities:
-
+                    logger.debug("Processing channel density %s", cm.id)
                     group = 'all' if not cm.segment_groups else cm.segment_groups
                     for section_name in seg_grps_vs_nrn_sections[group]:
                         gmax = pynml.convert_to_units(cm.cond_density, 'S_per_cm2')
@@ -1285,8 +1305,9 @@ try:
                                 cellRule['secs'][section_name]['ions'][ion] = {}
                             cellRule['secs'][section_name]['ions'][ion]['e'] = erev
 
+                # Channel Densities v-shifts
                 for cm in cell.biophysical_properties.membrane_properties.channel_density_v_shifts:
-
+                    logger.debug("Processing channel density v-shift %s", cm.id)
                     group = 'all' if not cm.segment_groups else cm.segment_groups
                     for section_name in seg_grps_vs_nrn_sections[group]:
                         gmax = pynml.convert_to_units(cm.cond_density, 'S_per_cm2')
@@ -1307,7 +1328,9 @@ try:
                             cellRule['secs'][section_name]['ions'][ion]['e'] = erev
                         mech['vShift'] = pynml.convert_to_units(cm.v_shift, 'mV')
 
+                # Channel Densities Nernsts
                 for cm in cell.biophysical_properties.membrane_properties.channel_density_nernsts:
+                    logger.debug("Processing channel density Nernst %s", cm.id)
                     group = 'all' if not cm.segment_groups else cm.segment_groups
                     for section_name in seg_grps_vs_nrn_sections[group]:
                         gmax = pynml.convert_to_units(cm.cond_density, 'S_per_cm2')

@@ -1207,6 +1207,9 @@ try:
                                             parent_sec = sec
                                     fract = float(seg.parent.fraction_along)
 
+                                    """
+                                    # TODO: why is this assertion required?
+                                    # NetPyNE seems to be happy to use parentX
                                     # Give user information about the assertion
                                     if fract != 1.0 or fract != 0.0:
                                         logger.critical(
@@ -1214,6 +1217,7 @@ try:
                                             seg, seg.parent
                                         )
                                     assert fract == 1.0 or fract == 0.0
+                                    """
 
                                     cellRule['secs'][section]['topol'] = {
                                         'parentSec': parent_sec,

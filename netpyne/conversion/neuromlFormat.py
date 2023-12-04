@@ -1346,6 +1346,8 @@ try:
                         cellRule['secs'][section_name]['mechs'][cm.ion_channel] = mech
 
                         # TODO: erev!!
+                        # erev is calculated by the Nernst equation, so not
+                        # required to be specified here
 
                         ion = self._determine_ion(cm)
                         if ion == 'non_specific':

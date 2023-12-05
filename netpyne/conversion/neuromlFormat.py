@@ -1359,6 +1359,21 @@ try:
                             if ion not in cellRule['secs'][section_name]['ions']:
                                 cellRule['secs'][section_name]['ions'][ion] = {}
 
+                for cm in cell.biophysical_properties.membrane_properties.channel_density_ghks:
+                    group = 'all' if not cm.segment_groups else cm.segment_groups
+                    for section_name in seg_grps_vs_nrn_sections[group]:
+                        permeability = pynml.convert_to_units(cm.permeability, 'um_per_ms')
+                        mech = {'permeability': permeability}
+
+                        cellRule['secs'][section_name]['mechs'][cm.ion_channel] = {}
+
+                        ion = self._determine_ion(cm)
+                        if ion == 'non_specific':
+                            pass
+                        else:
+                            if ion not in cellRule['secs'][section_name]['ions']:
+                                cellRule['secs'][section_name]['ions'][ion] = {}
+
                 for cm in cell.biophysical_properties.membrane_properties.channel_density_ghk2s:
 
                     group = 'all' if not cm.segment_groups else cm.segment_groups
@@ -1427,9 +1442,6 @@ try:
                                     if ion not in cellRule['secs'][section_name]['ions']:
                                         cellRule['secs'][section_name]['ions'][ion] = {}
                                     cellRule['secs'][section_name]['ions'][ion]['e'] = erev
-
-                for cm in cell.biophysical_properties.membrane_properties.channel_density_ghks:
-                    raise Exception("<channelDensityGHK> not yet supported!")
 
                 for cm in cell.biophysical_properties.membrane_properties.channel_density_non_uniform_nernsts:
                     raise Exception("<channelDensityNonUniformNernst> not yet supported!")

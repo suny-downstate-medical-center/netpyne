@@ -1261,8 +1261,8 @@ try:
 
                     for ip in seg_grp.inhomogeneous_parameters:
                         logger.debug(
-                            "Processing inhomogeneous_parameter (%s) in segment group (%s)",
-                            ip, seg_grp.id
+                            "Processing inhomogeneous_parameter (%s, %s) in segment group (%s)",
+                            ip.id, ip.variable, seg_grp.id
                         )
 
                         # print("=====================\ninhomogeneousParameter: %s"%ip)

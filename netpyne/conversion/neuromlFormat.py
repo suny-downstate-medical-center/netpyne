@@ -1352,18 +1352,12 @@ try:
 
                         cellRule['secs'][section_name]['mechs'][cm.ion_channel] = mech
 
-                        # TODO: erev!!
-                        # erev is calculated by the Nernst equation, so not
-                        # required to be specified here
-
                         ion = self._determine_ion(cm)
                         if ion == 'non_specific':
                             pass
-                            ##mech['e'] = erev
                         else:
                             if ion not in cellRule['secs'][section_name]['ions']:
                                 cellRule['secs'][section_name]['ions'][ion] = {}
-                            ##cellRule['secs'][section_name]['ions'][ion]['e'] = erev
 
                 for cm in cell.biophysical_properties.membrane_properties.channel_density_ghk2s:
 
@@ -1375,18 +1369,14 @@ try:
                         else:
                             mech = {'gmax': gmax}
 
-                        ##erev = pynml.convert_to_units(cm.erev,'mV')
-
                         cellRule['secs'][section_name]['mechs'][cm.ion_channel] = mech
 
                         ion = self._determine_ion(cm)
                         if ion == 'non_specific':
                             pass
-                            # mech['e'] = erev
                         else:
                             if ion not in cellRule['secs'][section_name]['ions']:
                                 cellRule['secs'][section_name]['ions'][ion] = {}
-                            ##cellRule['secs'][section_name]['ions'][ion]['e'] = erev
 
                 for cm in cell.biophysical_properties.membrane_properties.channel_density_non_uniforms:
 

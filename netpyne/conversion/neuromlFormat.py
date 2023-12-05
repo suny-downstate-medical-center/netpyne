@@ -1362,10 +1362,10 @@ try:
                 for cm in cell.biophysical_properties.membrane_properties.channel_density_ghks:
                     group = 'all' if not cm.segment_groups else cm.segment_groups
                     for section_name in seg_grps_vs_nrn_sections[group]:
-                        permeability = pynml.convert_to_units(cm.permeability, 'um_per_ms')
+                        permeability = pynml.convert_to_units(cm.permeability, 'cm_per_s')
                         mech = {'permeability': permeability}
 
-                        cellRule['secs'][section_name]['mechs'][cm.ion_channel] = {}
+                        cellRule['secs'][section_name]['mechs'][cm.ion_channel] = mech
 
                         ion = self._determine_ion(cm)
                         if ion == 'non_specific':

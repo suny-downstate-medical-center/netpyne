@@ -1207,17 +1207,24 @@ try:
                                             parent_sec = sec
                                     fract = float(seg.parent.fraction_along)
 
-                                    """
-                                    # TODO: why is this assertion required?
-                                    # NetPyNE seems to be happy to use parentX
-                                    # Give user information about the assertion
-                                    if fract != 1.0 or fract != 0.0:
+                                    # TODO: implement conversion of NeuroML segment's parent's fractAlong to
+                                    # Neuron's unbranched section's parentX.
+                                    # Until this is implemented, we only handle cases where the the first
+                                    # segment of a segment group is either attached to its parent at the
+                                    # parent's proximal or distal point.
+                                    if math.isclose(fract, 1.0, rel_tol=1e-4):
+                                        logger.debug("Approximating fract of %f to 1.0", fract)
+                                        fract = 1.0
+                                    if math.isclose(fract, 0.0, rel_tol=1e-4):
+                                        logger.debug("Approximating fract of %f to 0.0", fract)
+                                        fract = 0.0
+
+                                    if fract != 1.0 and fract != 0.0:
                                         logger.critical(
                                             "Segment (%s) must be attached to parent (%s) at proximal or distal point",
                                             seg, seg.parent
                                         )
                                     assert fract == 1.0 or fract == 0.0
-                                    """
 
                                     cellRule['secs'][section]['topol'] = {
                                         'parentSec': parent_sec,

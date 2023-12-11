@@ -61,7 +61,7 @@ def create(netParams=None, simConfig=None, output=False, clearAll=False):
     simData = sim.setupRecording()  # setup variables to record for each cell (spikes, V traces, etc)
 
     if output:
-        return (pops, cells, conns, rxd, stims, simData)
+        return (pops, cells, conns, stims, rxd, simData)
 
 
 # ------------------------------------------------------------------------------

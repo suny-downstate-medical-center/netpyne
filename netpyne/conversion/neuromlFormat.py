@@ -1417,7 +1417,10 @@ try:
                                     else 1
                                 )
 
-                                # print("   Cond dens %s: %s S_per_cm2 (%s um) -> %s S_per_cm2 (%s um); nseg = %s"%(section_name,gmax_start,path_start,gmax_end,path_end, nseg))
+                                logger.debug(
+                                    "Cond dens %s: %s S_per_cm2 (%s um) -> %s S_per_cm2 (%s um); nseg = %s",
+                                    section_name, gmax_start, path_start, gmax_end, path_end, nseg
+                                )
 
                                 gmax = []
                                 for fract in [(2 * i + 1.0) / (2 * nseg) for i in range(nseg)]:
@@ -1437,14 +1440,15 @@ try:
 
                                 ion = self._determine_ion(cm)
                                 if ion == 'non_specific':
-                                    pass
+                                    mech['e'] = erev
                                 else:
                                     if ion not in cellRule['secs'][section_name]['ions']:
                                         cellRule['secs'][section_name]['ions'][ion] = {}
                                     cellRule['secs'][section_name]['ions'][ion]['e'] = erev
 
                 for cm in cell.biophysical_properties.membrane_properties.channel_density_non_uniform_nernsts:
-                    # TODO: identical to non-uniform but not setting e-rev, so can be refractored
+                    # TODO: identical to non-uniform but not setting e-rev, so
+                    # can probably be refractored into a function
                     logger.debug("Processing channel density non uniform Nernst %s", cm.id)
                     for vp in cm.variable_parameters:
                         if vp.parameter == "condDensity":

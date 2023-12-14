@@ -1,7 +1,5 @@
 # Generate plots of LFP (local field potentials) and related analyses
 
-import matplotlib.patches as mpatches
-import matplotlib.pyplot as plt
 import math
 from ..analysis.utils import exception  # , loadData
 from ..analysis.tools import loadData

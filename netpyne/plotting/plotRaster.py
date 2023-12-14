@@ -1,6 +1,9 @@
 # Generate a raster plot of spiking
 
-import matplotlib.patches as mpatches
+from netpyne import __gui__
+
+if __gui__:
+    import matplotlib.patches as mpatches
 from ..analysis.utils import exception  # , loadData
 from ..analysis.tools import loadData
 from .plotter import ScatterPlotter
@@ -225,6 +228,8 @@ def plotRaster(
     if type(rasterData) == str:
         rasterData = loadData(rasterData)
 
+    popsOfCellsByGid = zip([], [])
+
     # If input is a dictionary, pull the data out of it
     if type(rasterData) == dict:
 
@@ -241,6 +246,10 @@ def plotRaster(
 
         axisArgs = rasterData.get('axisArgs')
         legendLabels = rasterData.get('legendLabels')
+
+        popsOfCellsByGid = zip( # ordered the same
+            rasterData.get('cellGids', []),
+            rasterData.get('cellPops', []))
 
     # If input is a list or tuple, the first item is spike times, the second is spike indices
     elif type(rasterData) == list or type(rasterData) == tuple:
@@ -285,32 +294,13 @@ def plotRaster(
             + ') must be the same size'
         )
 
-    # Create a dictionary with the color for each pop
-    if not colorList:
-        from .plotter import colorList
-    popColorsTemp = {popLabel: colorList[ipop % len(colorList)] for ipop, popLabel in enumerate(popLabels)}
-    if popColors:
-        popColorsTemp.update(popColors)
-    popColors = popColorsTemp
-
-    # Create a list to link cell indices to their populations
-    indPop = []
-    for popLabel, popNumCell in zip(popLabels, popNumCells):
-        indPop.extend(int(popNumCell) * [popLabel])
-
-    # Create a dictionary to link cells to their population color
-    cellInds = list(set(spkInds))
-    indColors = {cellInd: popColors[indPop[int(cellInd)]] for cellInd in cellInds}
-
-    # Create a list of spkColors to be fed into the scatter plot
-    spkColors = [indColors[spkInd] for spkGid, spkInd in zip(spkGids, spkInds)]
-
     # Set the time range appropriately
     if 'timeRange' in kwargs:
         timeRange = kwargs['timeRange']
     elif 'timeRange' in rasterData:
         timeRange = rasterData['timeRange']
     else:
+        import numpy as np
         timeRange = [0, np.ceil(max(spkTimes))]
 
     # Set features for raster plot colored by phase
@@ -322,6 +312,33 @@ def plotRaster(
         if 'pop_background' in colorbyPhase:
             if colorbyPhase['pop_background'] == True:
                 kwargs['background'] = {'popLabels': popLabels, 'popNumCells': popNumCells, 'timeRange': timeRange}
+    else:
+        # Create a dictionary with the color for each pop
+        if not colorList:
+            from .plotter import colorList
+        popColorsTemp = {popLabel: colorList[ipop % len(colorList)] for ipop, popLabel in enumerate(popLabels)}
+        if popColors:
+            popColorsTemp.update(popColors)
+        popColors = popColorsTemp
+
+        if orderBy == 'gid':
+            # Create a list to link cell indices to their populations
+            indPop = []
+            for popLabel, popNumCell in zip(popLabels, popNumCells):
+                indPop.extend(int(popNumCell) * [popLabel])
+
+            def color(_, ind):
+                return popColors[indPop[int(ind)]]
+        else:
+            popByGid = {gid: pop for (gid, pop) in popsOfCellsByGid}
+            def color(gid, _):
+                pop = popByGid.get(gid)
+                if not pop:
+                    return [.0, .0, .0] # default to black
+                return popColors.get(pop)
+
+        # Create a list of spkColors to be fed into the scatter plot
+        spkColors = [color(gid, ind) for gid, ind in zip(spkGids, spkInds)]
 
     # Create a dictionary with the inputs for a scatter plot
     scatterData = {}

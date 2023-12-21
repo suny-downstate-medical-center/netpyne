@@ -1478,10 +1478,10 @@ try:
 
                                 gmax = []
                                 for fract in [(2 * i + 1.0) / (2 * nseg) for i in range(nseg)]:
+                                    p = path_start + fract * (path_end - path_start)
                                     gmax_i = pynml.convert_to_units('%s S_per_m2' % eval(expr), 'S_per_cm2')
                                     gmax.append(gmax_i)
 
-                                    p = path_start + fract * (path_end - path_start)
                                     logger.debug("Point %s at %s = %s", p, fract, gmax_i)
 
                                 if cm.ion_channel == 'pas':

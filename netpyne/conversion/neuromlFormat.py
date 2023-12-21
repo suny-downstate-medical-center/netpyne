@@ -1400,7 +1400,6 @@ try:
                         if vp.parameter == "condDensity":
                             iv = vp.inhomogeneous_value
                             grp = vp.segment_groups
-                            path_vals = inhomogeneous_parameters[grp]
                             expr = iv.value.replace('exp(', 'math.exp(')
                             # print("variable_parameter: %s, %s, %s"%(grp,iv, expr))
 
@@ -1424,12 +1423,11 @@ try:
 
                                 gmax = []
                                 for fract in [(2 * i + 1.0) / (2 * nseg) for i in range(nseg)]:
-
                                     p = path_start + fract * (path_end - path_start)
-
                                     gmax_i = pynml.convert_to_units('%s S_per_m2' % eval(expr), 'S_per_cm2')
-                                    # print("     Point %s at %s = %s"%(p,fract, gmax_i))
                                     gmax.append(gmax_i)
+
+                                    logger.debug("Point %s at %s = %s", p, fract, gmax_i)
 
                                 if cm.ion_channel == 'pas':
                                     mech = {'g': gmax}
@@ -1454,7 +1452,6 @@ try:
                         if vp.parameter == "condDensity":
                             iv = vp.inhomogeneous_value
                             grp = vp.segment_groups
-                            path_vals = inhomogeneous_parameters[grp]
                             expr = iv.value.replace('exp(', 'math.exp(')
                             logger.debug("variable_parameter: %s, %s, %s", grp, iv, expr)
 

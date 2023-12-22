@@ -1025,7 +1025,7 @@ try:
         @override
         def handle_network(self, network_id, notes, temperature=None):
             if temperature:
-                self.simConfig.hParams['celsius'] = pynml.convert_to_units(temperature, 'degC')
+                self.simConfig.hParams['celsius'] = round(pynml.convert_to_units(temperature, 'degC'), 5)
                 print("Setting global temperature to %s" % self.simConfig.hParams['celsius'])
 
         @override

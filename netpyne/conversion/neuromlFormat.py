@@ -1632,7 +1632,7 @@ try:
                                 fract_sec = (to_start + fract_along * (to_end - to_start)) / (tot)
 
                         ind += 1
-                # print("=============  Converted %s:%s on pop %s to %s on %s"%(seg_id, fract_along, population_id, nrn_sec, fract_sec))
+                logger.debug("=============  Converted %s:%s on pop %s to %s on %s" % (seg_id, fract_along, population_id, nrn_sec, fract_sec))
                 return nrn_sec, fract_sec
 
         @override

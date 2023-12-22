@@ -1213,10 +1213,10 @@ try:
                                     # segment of a segment group is either attached to its parent at the
                                     # parent's proximal or distal point.
                                     if math.isclose(fract, 1.0, rel_tol=1e-4):
-                                        logger.warn("Approximating fract of %f to 1.0", fract)
+                                        logger.warning("Approximating fract of %f to 1.0", fract)
                                         fract = 1.0
                                     if math.isclose(fract, 0.0, rel_tol=1e-4):
-                                        logger.warn("Approximating fract of %f to 0.0", fract)
+                                        logger.warning("Approximating fract of %f to 0.0", fract)
                                         fract = 0.0
 
                                     if fract != 1.0 and fract != 0.0:

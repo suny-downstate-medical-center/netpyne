@@ -31,3 +31,6 @@ from netpyne import sim
 from netpyne import specs
 from netpyne import support
 from netpyne import tests
+
+import neuron
+neuron._netpyne_mech_hashes = {}

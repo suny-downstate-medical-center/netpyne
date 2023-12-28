@@ -298,6 +298,14 @@ def hashList(obj):
 
 
 # ------------------------------------------------------------------------------
+# Hash function for file (md5 hex)
+# ------------------------------------------------------------------------------
+def fileDigest(file):
+    fileStr = open(file,'rb').read()
+    return hashlib.md5(fileStr).hexdigest()
+
+
+# ------------------------------------------------------------------------------
 # Initialize the stim randomizer
 # ------------------------------------------------------------------------------
 def _init_stim_randomizer(rand, stimType, gid, seed):

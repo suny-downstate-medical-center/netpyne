@@ -1,6 +1,9 @@
 # Generate a raster plot of spiking
 
-import matplotlib.patches as mpatches
+from netpyne import __gui__
+
+if __gui__:
+    import matplotlib.patches as mpatches
 from ..analysis.utils import exception  # , loadData
 from ..analysis.tools import loadData
 from .plotter import ScatterPlotter
@@ -18,6 +21,7 @@ def plotRaster(
     popLabels=None,
     popColors=None,
     syncLines=False,
+    colorbyPhase = None,
     legend=True,
     colorList=None,
     orderInverse=False,
@@ -111,6 +115,27 @@ def plotRaster(
 
         *Default:* ``False``
 
+    colorbyPhase : dict
+        Dictionary specifying conditions to plot spikes colored by the phase of a simultaneous signal, filtered in a given range
+
+            *Default:* ``None`` colors spikes according to other options (by populations)
+
+            *Dictionary entries:*
+
+            ``'signal'`` specifies the signal. Options are: ``'LFP'``, which takes the signal from the local fiel potential generated in the ongoing simulation, a numpy array of scalars (for example, an external signal used for stimulation), or an external pickle file,
+
+            ``'fs'`` is the sampling frequency, which should be specified when the signal is obtained from external sources (pickle file or numpy array). Otherwise, it is assumed to be 1000 Hz. If the signal is specified by ``'LFP'``, then the sampling rate is obtained from the internal simulation (cfg.recordStep),
+
+            ``'electrode'`` selects the electrode from the LFP setup. Default is electrode 1,
+
+            ``'filtFreq'`` is a list specifying the range for filtering the signal (band-pass). For example, ``[4,8]`` to select theta rhythm. The default is a very broadband filtering (essentially, the raw signal) ``[1,500]``,
+
+            ``'filtOrder'`` is the filter order (Butterworth) to process the signal,
+
+            ``'pop_background'`` is a boolean option to color each population alternately with a gray background, for better visualization. The default is False,
+
+            ``'include_signal'`` is a boolean option to plot the filtered signal below the raster plot. The default is False.
+
     legend : bool
         Whether or not to add a legend to the plot.
 
@@ -193,7 +218,8 @@ def plotRaster(
             sim = kwargs['sim']
 
         rasterData = sim.analysis.prepareRaster(
-            timeRange=timeRange, maxSpikes=maxSpikes, orderBy=orderBy, popRates=popRates, **kwargs
+            timeRange=timeRange, maxSpikes=maxSpikes, orderBy=orderBy,
+			popRates=popRates, colorbyPhase=colorbyPhase, **kwargs
         )
 
     print('Plotting raster...')
@@ -202,12 +228,16 @@ def plotRaster(
     if type(rasterData) == str:
         rasterData = loadData(rasterData)
 
+    popsOfCellsByGid = zip([], [])
+
     # If input is a dictionary, pull the data out of it
     if type(rasterData) == dict:
 
         spkTimes = rasterData['spkTimes']
         spkInds = rasterData['spkInds']
         spkGids = rasterData['spkGids']
+        if colorbyPhase:
+            spkPhases = rasterData['spkPhases']
 
         if not popNumCells:
             popNumCells = rasterData.get('popNumCells')
@@ -216,6 +246,10 @@ def plotRaster(
 
         axisArgs = rasterData.get('axisArgs')
         legendLabels = rasterData.get('legendLabels')
+
+        popsOfCellsByGid = zip( # ordered the same
+            rasterData.get('cellGids', []),
+            rasterData.get('cellPops', []))
 
     # If input is a list or tuple, the first item is spike times, the second is spike indices
     elif type(rasterData) == list or type(rasterData) == tuple:
@@ -260,33 +294,51 @@ def plotRaster(
             + ') must be the same size'
         )
 
-    # Create a dictionary with the color for each pop
-    if not colorList:
-        from .plotter import colorList
-    popColorsTemp = {popLabel: colorList[ipop % len(colorList)] for ipop, popLabel in enumerate(popLabels)}
-    if popColors:
-        popColorsTemp.update(popColors)
-    popColors = popColorsTemp
-
-    # Create a list to link cell indices to their populations
-    indPop = []
-    for popLabel, popNumCell in zip(popLabels, popNumCells):
-        indPop.extend(int(popNumCell) * [popLabel])
-
-    # Create a dictionary to link cells to their population color
-    cellInds = list(set(spkInds))
-    indColors = {cellInd: popColors[indPop[int(cellInd)]] for cellInd in cellInds}
-
-    # Create a list of spkColors to be fed into the scatter plot
-    spkColors = [indColors[spkInd] for spkGid, spkInd in zip(spkGids, spkInds)]
-
     # Set the time range appropriately
     if 'timeRange' in kwargs:
         timeRange = kwargs['timeRange']
     elif 'timeRange' in rasterData:
         timeRange = rasterData['timeRange']
     else:
+        import numpy as np
         timeRange = [0, np.ceil(max(spkTimes))]
+
+    # Set features for raster plot colored by phase
+    if colorbyPhase:
+        spkColors = spkPhases
+        legend = False        
+        kwargs['colorbar'] = {'vmin': -180, 'vmax': 180}
+        kwargs['background'] = False
+        if 'pop_background' in colorbyPhase:
+            if colorbyPhase['pop_background'] == True:
+                kwargs['background'] = {'popLabels': popLabels, 'popNumCells': popNumCells, 'timeRange': timeRange}
+    else:
+        # Create a dictionary with the color for each pop
+        if not colorList:
+            from .plotter import colorList
+        popColorsTemp = {popLabel: colorList[ipop % len(colorList)] for ipop, popLabel in enumerate(popLabels)}
+        if popColors:
+            popColorsTemp.update(popColors)
+        popColors = popColorsTemp
+
+        if orderBy == 'gid':
+            # Create a list to link cell indices to their populations
+            indPop = []
+            for popLabel, popNumCell in zip(popLabels, popNumCells):
+                indPop.extend(int(popNumCell) * [popLabel])
+
+            def color(_, ind):
+                return popColors[indPop[int(ind)]]
+        else:
+            popByGid = {gid: pop for (gid, pop) in popsOfCellsByGid}
+            def color(gid, _):
+                pop = popByGid.get(gid)
+                if not pop:
+                    return [.0, .0, .0] # default to black
+                return popColors.get(pop)
+
+        # Create a list of spkColors to be fed into the scatter plot
+        spkColors = [color(gid, ind) for gid, ind in zip(spkGids, spkInds)]
 
     # Create a dictionary with the inputs for a scatter plot
     scatterData = {}
@@ -297,10 +349,16 @@ def plotRaster(
     scatterData['marker'] = '|'
     scatterData['markersize'] = 5
     scatterData['linewidth'] = 2
-    scatterData['cmap'] = None
     scatterData['norm'] = None
     scatterData['alpha'] = None
     scatterData['linewidths'] = None
+    scatterData['cmap'] = None
+    if colorbyPhase:
+        scatterData['cmap'] = 'hsv'
+        if 'include_signal' in colorbyPhase and colorbyPhase['include_signal']==True:
+            scatterData['time'] = rasterData.get('time')
+            scatterData['signal'] = rasterData.get('signal')
+            scatterData['timeRange'] = timeRange
 
     # If a kwarg matches a scatter input key, use the kwarg value instead of the default
     for kwarg in list(kwargs.keys()):
@@ -326,7 +384,10 @@ def plotRaster(
             kwargs.pop(kwarg)
 
     # create Plotter object
-    rasterPlotter = ScatterPlotter(data=scatterData, kind='raster', axis=axis, **axisArgs, **kwargs)
+    if 'signal' in scatterData:
+        rasterPlotter = ScatterPlotter(data=scatterData, kind='raster&signal', axis=axis, **axisArgs, **kwargs)
+    else:
+        rasterPlotter = ScatterPlotter(data=scatterData, kind='raster', axis=axis, **axisArgs, **kwargs)
     metaFig = rasterPlotter.metafig
 
     # add spike lines

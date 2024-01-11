@@ -333,6 +333,7 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
     paramLabels = args.get('paramLabels', [])
     coresPerNode = args.get('coresPerNode', 1)
 
+    executor = batch.runCfg.get("executor", "sh")
     mpiCommand = args.get('mpiCommand', batch.mpiCommandDefault)
     nrnCommand = args.get('nrnCommand', 'nrniv')
 
@@ -424,7 +425,7 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
             # ----------------------------------------------------------------------
             if type == 'mpi_direct':
                 #executer = '/bin/bash'
-                executer = 'sh' # OS agnostic (Windows)
+                executer = executor
                 jobString = jobStringMPIDirect(custom, folder, command)
             # ----------------------------------------------------------------------
             # Create script to run on HPC through slurm

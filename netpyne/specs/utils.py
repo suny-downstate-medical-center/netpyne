@@ -75,7 +75,7 @@ def validateFunction(strFunc, netParamsVars):
     Returns True if "strFunc" can be evaluated
     """
     # TODO: beware to avoid potential conflicts with similar functions imported from numpy globally
-    from math import exp, log, sqrt, sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, pi, e
+    from math import exp, log, sqrt, sin, cos, tan, asin, acos, atan, atan2, sinh, cosh, tanh, pi, e
 
     rand = h.Random()
     stringFuncRandMethods = [
@@ -129,6 +129,7 @@ def validateFunction(strFunc, netParamsVars):
         "asin": asin,
         "acos": acos,
         "atan": atan,
+        "atan2": atan2,
         "sinh": sinh,
         "cosh": cosh,
         "tanh": tanh,

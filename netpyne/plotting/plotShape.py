@@ -44,6 +44,7 @@ def plotShape(
     showElectrodes=False,
     synStyle='.',
     synSize=3,
+    synColor='tomato',
     dist=0.6,
     elev=90,
     azim=-90,
@@ -250,7 +251,7 @@ def plotShape(
 
         # Synapses
         if showSyns:
-            synColor = 'red'
+            # synColor = 'cyan'
             for cellPost in cellsPost:
                 for sec in list(cellPost.secs.values()):
                     for synMech in sec['synMechs']:
@@ -301,7 +302,7 @@ def plotShape(
                         filename = saveFig
                 else:
                     filename = sim.cfg.filename + '_shape.png'
-                plt.savefig(filename, dpi=dpi)
+                plt.savefig(filename, dpi=300)
 
             # show fig
             # if showFig: _showFigure()

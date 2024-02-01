@@ -12,7 +12,7 @@ from future import standard_library
 standard_library.install_aliases()
 from numbers import Number
 from neuron import h
-from numpy import array, sin, cos, tan, exp, remainder, sqrt, arctan2, pi, mean, inf, dstack, unravel_index, argsort, zeros, ceil, copy
+from numpy import array, sin, cos, tan, exp, remainder, sqrt, arctan2, pi, mean, inf, dstack, unravel_index, argsort, zeros, ceil, copy, log, log10
 
 try:
     basestring

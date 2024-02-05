@@ -17,7 +17,7 @@ class ValidationContext(object):
 
         self.validateModels = True # cfg.validateNetParamsMechs
 
-numberOrStringFunc = Or(int, float, str, error='Expected number (int, float) or a function as string.')
+numberOrStringFunc = Or(int, float, str, error='Expected a number (int, float) or a function as string.')
 
 def general_specs():
     specs = {

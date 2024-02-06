@@ -18,6 +18,8 @@
 
 - Fix of `plotRaster` pops coloring if ordered not by gid
 
+- Made cells diversity work with popParams based on `cellsList` and `gridSpacing`
+
 # Version 1.0.5
 
 **New features**

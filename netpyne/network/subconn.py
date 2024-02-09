@@ -238,7 +238,13 @@ def subcellularConn(self, allCellTags, allPopTags):
 
                         gridY = subConnParam['density']['gridY']
                         gridSigma = subConnParam['density']['gridValues']
-                        somaX, somaY, _ = posFromLoc(postCell.secs['soma'], 0.5)  # get cell pos move method to Cell!
+                         #TODO jchen.6727@gmail.com 241247 'soma' is not always the name of the soma section
+                        try:
+                            somaX, somaY, _ = posFromLoc(postCell.secs['soma'], 0.5)  # get cell pos move method to Cell!
+                        except KeyError:
+                            raise KeyError(
+                                "Error in subcellularConn: there is no section named soma in cell {}".format(postCell.gid)
+                            )
                         if 'fixedSomaY' in subConnParam['density']:  # is fixed cell soma y, adjust y grid accordingly
                             fixedSomaY = subConnParam['density'].get('fixedSomaY')
                             gridY = [

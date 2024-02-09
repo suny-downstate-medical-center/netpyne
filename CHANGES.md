@@ -22,6 +22,8 @@
 
 - Fixed handling of output of `sim.create()` (was wrong order)
 
+- Fixed undeclared var `dpi` in `plotShape()`
+
 # Version 1.0.5
 
 **New features**

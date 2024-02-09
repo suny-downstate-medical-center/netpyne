@@ -20,6 +20,8 @@
 
 - Made cells diversity work with popParams based on `cellsList` and `gridSpacing`
 
+- Fixed handling of output of `sim.create()` (was wrong order)
+
 # Version 1.0.5
 
 **New features**

@@ -6,6 +6,8 @@
 
 - Examples based on the CA3 model using the 'colorbyPhase' option in the plotRaster
 
+- API for loading .mod files selectively
+
 **Bug fixes**
 
 - Fixed loading point cell params from legacy models (issue 607)

@@ -8,6 +8,8 @@
 
 - API for loading .mod files selectively
 
+- Ability to specify custom executor to run batch with (defaults to `sh`)
+
 **Bug fixes**
 
 - Fixed loading point cell params from legacy models (issue 607)
@@ -22,9 +24,15 @@
 
 - Made cells diversity work with popParams based on `cellsList` and `gridSpacing`
 
-- Fixed handling of output of `sim.create()` (was wrong order)
+- Fixed handling of output of `sim.create()` - was wrong order (credit: Kate Doxey)
 
 - Fixed undeclared var `dpi` in `plotShape()`
+
+- Fixes in batch utils
+
+- Added some missing math functions to use with 'Functions as string' functionality
+
+- Switch file copying method to shutil to be compatible over all operating systems (credit: Henrik Podeus)
 
 # Version 1.0.5
 

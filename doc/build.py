@@ -11,11 +11,7 @@ The following are required:
 5) Twine packager: https://twine.readthedocs.io/en/latest/
 
 Which can be installed with:
-python3 -m pip install -U sphinx
-python3 -m pip install -U sphinx_rtd_theme
-python3 -m pip install -U autodocsumm
-python3 -m pip install -U wheel
-python3 -m pip install -U twine
+python3 -m pip install -U sphinx sphinx_rtd_theme autodocsumm wheel twine
 
 Here are the steps to release a new version of NetPyNE
 (step 10 is completed by executing this file):

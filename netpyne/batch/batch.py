@@ -75,9 +75,38 @@ def tupleToStr(obj):
 # -------------------------------------------------------------------------------
 class Batch(object):
     """
-    Class for/to <short description of `netpyne.batch.batch.Batch`>
-
-
+    Class that handles batch simulations on NetPyNE.
+    Relevant Attributes:
+        batchLabel : str
+            The label of the batch used for directory/file naming of batch generated files.
+        cfgFile : str
+            The path of the file containing the `netpyne.simConfig.SimConfig` object
+        cfg : `netpyne.simConfig.SimConfig`
+            The `netpyne.simConfig.SimConfig` object
+        N.B. either cfg or cfgFile should be specified #TODO: replace with typechecked single argument
+        netParamsFile : str
+            The path of the file containing the `netpyne.netParams.NetParams` object
+        netParams : `netpyne.netParams.NetParams`
+            The `netpyne.netParams.NetParams` object
+        N.B. either netParams or netParamsFile should be specified #TODO: replace with typechecked single argument
+        initCfg : dict
+            params dictionary that is used to modify the batch cfg prior to any algorithm based parameter modifications
+        saveFolder : str
+            The path of the folder where the batch will be saved (defaults to batchLabel)
+        method : str
+            The algorithm method used for batch
+        runCfg : dict
+            Keyword: Arg dictionary used to generate submission templates (see utils.py)
+        evolCfg : dict #TODO: replace with algoCfg? to merge with optimCfg
+            Keyword: Arg dictionary used to define evolutionary algorithm parameters (see evol.py)
+        optimCfg : dict #TODO: replace with algoCfg? to merge with evolCfg
+            Keyword: Arg dictionary used to define optimization algorithm parameters
+            (see asd_parallel.py, optuna_parallel.py, sbi_parallel.py)
+        params : list
+            Dictionary of parameters to be explored per algorithm (grid, evol, asd, optuna, sbi)
+            (see relevant algorithm script for details)
+        seed : int
+            Seed for random number generator for some algorithms
     """
 
     def __init__(
@@ -88,19 +117,23 @@ class Batch(object):
         netParams=None,
         params=None,
         groupedParams=None,
-        initCfg={},
+        initCfg=None,
         seed=None,
     ):
         self.batchLabel = 'batch_' + str(datetime.date.today())
         self.cfgFile = cfgFile
         self.cfg = cfg
         self.netParams = netParams
-        self.initCfg = initCfg
+        if initCfg:
+            self.initCfg = initCfg
+        else:
+            self.initCfg = {}
         self.netParamsFile = netParamsFile
         self.saveFolder = '/' + self.batchLabel
         self.method = 'grid'
         self.runCfg = {}
         self.evolCfg = {}
+        self.optimCfg = {}
         self.params = []
         self.seed = seed
         if params:
@@ -159,6 +192,8 @@ class Batch(object):
             sim.saveJSON(filename, dataSave)
 
     def setCfgNestedParam(self, paramLabel, paramVal):
+        if '.' in paramLabel: #TODO jchen6727@gmail.com 195196 replace with my crawler code?
+            paramLabel = paramLabel.split('.')
         if isinstance(paramLabel, tuple):
             container = self.cfg
             for ip in range(len(paramLabel) - 1):
@@ -172,6 +207,7 @@ class Batch(object):
 
     def saveScripts(self):
         import os
+        import shutil
 
         # create Folder to save simulation
         createFolder(self.saveFolder)
@@ -182,22 +218,22 @@ class Batch(object):
 
         # copy this batch script to folder
         targetFile = self.saveFolder + '/' + self.batchLabel + '_batchScript.py'
-        os.system('cp ' + os.path.realpath(__file__) + ' ' + targetFile)
+        shutil.copy2(os.path.realpath(__file__),  os.path.realpath(targetFile))
 
         # copy this batch script to folder, netParams and simConfig
-        # os.system('cp ' + self.netParamsFile + ' ' + self.saveFolder + '/netParams.py')
+        # shutil.copy2(os.path.realpath(self.netParamsFile), os.path.realpath(self.saveFolder + '/netParams.py'))
 
         # if user provided a netParams object as input argument
         if self.netParams:
             self.netParamsSavePath = self.saveFolder + '/' + self.batchLabel + '_netParams.json'
-            self.netParams.save(self.netParamsSavePath)
+            self.netParams.save(os.path.realpath(self.netParamsSavePath))
 
         # if not, use netParamsFile
         else:
             self.netParamsSavePath = self.saveFolder + '/' + self.batchLabel + '_netParams.py'
-            os.system('cp ' + self.netParamsFile + ' ' + self.netParamsSavePath)
+            shutil.copy2(os.path.realpath(self.netParamsFile), os.path.realpath(self.netParamsSavePath))
 
-        os.system('cp ' + os.path.realpath(__file__) + ' ' + self.saveFolder + '/batchScript.py')
+        shutil.copy2(os.path.realpath(__file__), os.path.realpath(self.saveFolder + '/batchScript.py'))
 
         # save initial seed
         with open(self.saveFolder + '/_seed.seed', 'w') as seed_file:

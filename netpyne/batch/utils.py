@@ -333,6 +333,7 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
     paramLabels = args.get('paramLabels', [])
     coresPerNode = args.get('coresPerNode', 1)
 
+    executor = batch.runCfg.get("executor", "sh")
     mpiCommand = args.get('mpiCommand', batch.mpiCommandDefault)
     nrnCommand = args.get('nrnCommand', 'nrniv')
 
@@ -424,7 +425,7 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
             # ----------------------------------------------------------------------
             if type == 'mpi_direct':
                 #executer = '/bin/bash'
-                executer = 'sh' # OS agnostic (Windows)
+                executer = executor
                 jobString = jobStringMPIDirect(custom, folder, command)
             # ----------------------------------------------------------------------
             # Create script to run on HPC through slurm
@@ -459,6 +460,8 @@ def evaluator(batch, candidates, args, ngen, pc, **kwargs):
             elif type == 'hpc_sge':
                 executer = 'qsub'
                 queueName = args.get('queueName', 'default')
+                command = '%s -n $NSLOTS -hosts $(hostname) %s -python -mpi %s simConfig=%s netParams=%s' % (
+                    mpiCommand, nrnCommand, script, cfgSavePath, netParamsSavePath)
                 jobString = jobStringHPCSGE(
                     jobName, walltime, queueName, nodes, coresPerNode, jobPath, custom, command
                 )

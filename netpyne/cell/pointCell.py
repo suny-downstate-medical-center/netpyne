@@ -66,6 +66,8 @@ class PointCell(Cell):
         if 'params' in self.tags:
             dictParams = sim.replaceDictODict(self.tags.pop('params'))
             self.params = deepcopy(dictParams)
+        else:
+            self.params = {}
 
         if create and sim.cfg.createNEURONObj:
             self.createNEURONObj()  # create cell

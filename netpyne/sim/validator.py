@@ -17,6 +17,8 @@ class ValidationContext(object):
 
         self.validateModels = True # cfg.validateNetParamsMechs
 
+numberOrStringFunc = Or(int, float, str, error='Expected a number (int, float) or a function as string.')
+
 def general_specs():
     specs = {
         '_labelid': int,
@@ -64,6 +66,7 @@ def pop_specs(context):
 
     specs = {
         str: {
+            # TODO: either cellType or cellModel has to be present??
             Optional('cellType'): And(
                 str,
                 lambda s: __isKeyIn(s, context.cellParams) or __isAmongConds(s, 'cellType', context.cellParams)
@@ -92,7 +95,7 @@ def pop_specs(context):
                 }
             ],
             Optional('numCells'): Or(int, float),
-            Optional('density'): Or(int, float, str),  # string-based function is allowed
+            Optional('density'): numberOrStringFunc,  # string-based function is allowed
             Optional('gridSpacing'): Or(And([Or(int, float)], lambda s: len(s) == 3), Or(int, float)),
             Optional('xRange'): And([Or(int, float)], lambda s: len(s) == 2),
             Optional('yRange'): And([Or(int, float)], lambda s: len(s) == 2),
@@ -208,11 +211,11 @@ def cell_specs(context):
             Optional('secs'): {     ## It is optional because it may NOT be a compartCell, but for compartCells this entry is mandatory
                 str: {
                     Optional('geom'): {
-                        Optional('diam'): Or(int, float, str),
-                        Optional('L'): Or(int, float, str),
-                        Optional('Ra'): Or(int, float, str),
-                        Optional('cm'): Or(int, float, str),
-                        Optional('nseg'): Or(int, float, str),
+                        Optional('diam'): numberOrStringFunc,
+                        Optional('L'): numberOrStringFunc,
+                        Optional('Ra'): numberOrStringFunc,
+                        Optional('cm'): numberOrStringFunc,
+                        Optional('nseg'): numberOrStringFunc,
                         Optional('pt3d'): [
                             And(
                                 lambda s: len(s) == 4,  # list of (list or tuples), each with 4 components
@@ -233,14 +236,14 @@ def cell_specs(context):
                     ),
                     Optional('mechs'): {
                         Optional('hh'): {  # one possible built-in mechanism, very used
-                            Optional('gnabar'): Or(int, float, str),
-                            Optional('gkbar'): Or(int, float, str),
-                            Optional('gl'): Or(int, float, str),
-                            Optional('el'): Or(int, float, str),
+                            Optional('gnabar'): numberOrStringFunc,
+                            Optional('gkbar'): numberOrStringFunc,
+                            Optional('gl'): numberOrStringFunc,
+                            Optional('el'): numberOrStringFunc,
                         },
                         Optional('pas'): {  # another one
-                            Optional('g'): Or(int, float, str),
-                            Optional('e'): Or(int, float, str),
+                            Optional('g'): numberOrStringFunc,
+                            Optional('e'): numberOrStringFunc,
                         },
                         Optional(str): {  # other possibilities (nonlinear mechanisms: .mod)
                             Optional(
@@ -256,7 +259,7 @@ def cell_specs(context):
                     # Optional('synMechs'): [{'label': str, 'loc': Or(int,float)}]
                     Optional('pointps'): {
                         str: {
-                            'mod': And( str, lambda s: __isPointpModel(s, context)),
+                            'mod': And( str, And(lambda s: __isPointpModel(s, context), error='no pointp'), error='Mod is bad'), # 'mod': And( str, And(lambda s: __isPointpModel(s, context), error='Bebe'), error='Meme'),
                             Optional('loc'): Or(int, float),
                             Optional('vref'): str,  # voltage calculated in the .mod
                             Optional('synList'): [
@@ -353,7 +356,7 @@ def cell_specs(context):
                 # Other options are possible, for example those from IntFire1, etcetera.
                 Optional(str): object,
             },
-            Optional('vars'): {Optional(str): Or(int, float, str)},
+            Optional('vars'): {Optional(str): numberOrStringFunc},
             Optional(str): object,
         }
     }
@@ -375,11 +378,11 @@ def synmech_specs(context):
             # lambda s: return True,
 
             # Options for ExpSyn
-            Optional('tau'): Or(int, float, str),
-            Optional('e'): Or(int, float, str),
+            Optional('tau'): numberOrStringFunc,
+            Optional('e'): numberOrStringFunc,
             # Options for Exp2Syn
-            Optional('tau1'): Or(int, float, str),
-            Optional('tau2'): Or(int, float, str),
+            Optional('tau1'): numberOrStringFunc,
+            Optional('tau2'): numberOrStringFunc,
             # Optional('e'): Or(int,float),       # already set in ExpSyn
             Optional('pointerParams'): {
                 'target_var': str,
@@ -442,9 +445,9 @@ def conn_specs(context):
                 Optional(str): Or(Or(str, int, float), [Or(str, int, float)]),
             },
             Optional('connFunc'): lambda s: s in ['fullConn', 'probConn', 'convConn', 'divConn', 'fromListConn'],
-            Optional('probability'): Or(int, float, str),  # it can also be a string-based function
-            Optional('convergence'): Or(int, float, str),  # it can also be a string-based function
-            Optional('divergence'): Or(int, float, str),   # it can also be a string-based function
+            Optional('probability'): numberOrStringFunc,  # it can also be a string-based function
+            Optional('convergence'): numberOrStringFunc,  # it can also be a string-based function
+            Optional('divergence'): numberOrStringFunc,   # it can also be a string-based function
             Optional('connList'): Or(
                 [And (Or(tuple, list), lambda s: len(s) == 2 and all(isinstance(n, int) for n in s))], # list of 2-element lists/tuples of two ints (pre, post)
                 lambda s: isinstance(s, np.ndarray) and s.shape[1] == 2 and s.dtype == 'int' # np.array of shape (x, 2) of ints
@@ -795,7 +798,7 @@ def rxd_specs():
             str: {
                 'reactant': str,  # validity of the expression will not be checked
                 'product': str,  # validity of the expression will not be checked
-                'rate_f': Or(int, float, str),
+                'rate_f': numberOrStringFunc,
                 Optional('rate_b'): Or(int, float, str, None),
                 Optional('regions'): Or(str, [str], [None]),
                 Optional('custom_dynamics'): Or(bool, None)
@@ -815,7 +818,7 @@ def rxd_specs():
             str: {
                 'reactant': str,  # validity of the expression will not be checked
                 'product': str,  # validity of the expression will not be checked
-                'rate_f': Or(int, float, str),
+                'rate_f': numberOrStringFunc,
                 Optional('rate_b'): Or(int, float, str, None),
                 Optional('regions'): Or(str, [str], [None]),
                 Optional('custom_dynamics'): Or(bool, None),
@@ -827,7 +830,7 @@ def rxd_specs():
         Optional('rates'): {
             str: {
                 'species': Or(str, [str]),  # string-based specification (see rxd_net example)
-                'rate': Or(int, float, str),
+                'rate': numberOrStringFunc,
                 Optional('regions'): Or(str, [str], [None]),
                 Optional('membrane_flux'): bool,
             }
@@ -844,19 +847,20 @@ def validateNetParams(net_params, printWarnings=True):
     global __mechVarList
     __mechVarList = None
 
-    def validate(data, specs, label):
+    def validate(data, specs, component):
 
         schema = Schema(specs)
         try:
             valid = schema.validate(data)
-            print(f"  Successfully validated {label}")
-            validatedSchemas[label] = valid
-        except SchemaError as error:
-            msg = __parseErrorMessage(error.autos, origIndent='    ')
+            print(f"  Successfully validated {component}")
+            validatedSchemas[component] = valid
+        except SchemaError as origError:
+            error = ValidationError(component, origError)
+            failedSchemas.append(error)
+
             if printWarnings:
-                print(f"\n  Error validating {label}:")
-                print(msg + "\n")
-            failedSchemas.append((label, error, msg))
+                print(f"\n  Error validating {component}:")
+                print(error.formattedMessage(baseIndent='    ') + "\n")
 
     context = ValidationContext(net_params)
 
@@ -924,17 +928,12 @@ def validateNetParams(net_params, printWarnings=True):
     )
 
     if net_params.rxdParams:
-
         validate(
             net_params.rxdParams,
             rxd_specs(),
             'rxdParams'
         )
 
-    if len(validatedSchemas) == 0:
-        validatedSchemas = None
-    if len(failedSchemas) == 0:
-        failedSchemas = None
     return validatedSchemas, failedSchemas
 
 #  utils
@@ -989,27 +988,54 @@ def __isModel(name, modelType, context):
         return all(isModel(n, modelType) for n in name)
     return isModel(name, modelType)
 
-def __parseErrorMessage(msg, origIndent=''):
-    import re
-    pattern = re.compile("key ('.*') error:", re.IGNORECASE) # TODO: need to freeze `schema` version to make sure this pattern is preserved
-    keySeq = []
-    other = []
-    # convert dict keys sequence to single string
-    for line in msg:
-        if line is None: line = ''
-        matches = pattern.match(line)
-        if matches:
-            matches = matches.groups()
-            if len(matches) > 0:
-                keySeq.append(matches[0]) # presume only one match
-        elif line != '':
-            other.append(line)
-    if len(keySeq) > 0:
-        newln = '\n' + origIndent + '  '
-        other = newln + newln.join(other)
-        return f"{origIndent}Error in {' -> '.join(keySeq)}:{other}"
-    else:
-        return msg
+
+class ValidationError(object):
+
+    def __init__(self, component, error):
+        self.component = component
+        self.originalError = error
+
+        self.keyPath, self.summary = self.__parseErrorMessage()
+
+    def formattedMessage(self, baseIndent=''):
+
+        message = ""
+        if len(self.keyPath) > 0:
+            keySeq = ' -> '.join(self.keyPath)
+            message += f"{baseIndent}Error in {keySeq}:"
+
+        newLine = '\n' + baseIndent + '  '
+        if len(self.summary):
+            message += newLine + newLine.join(self.summary)
+        else:
+            message += newLine + '<no additional info>'
+
+        return message
+
+    def __parseErrorMessage(self, indent=''):
+        import re
+        pattern = re.compile("key ('.*') error:", re.IGNORECASE) # TODO: need to freeze `schema` version to make sure this pattern is preserved
+        keySeq = []
+        other = []
+        err = self.originalError
+        # convert dict keys sequence to single string
+        for line in err.autos:
+            if line is None: line = ''
+            matches = pattern.match(line)
+            if matches:
+                matches = matches.groups()
+                if len(matches) > 0:
+                    keySeq.append(matches[0]) # presume only one match
+            elif line != '':
+                other.append(line)
+
+        errors = [e for e in err.errors if e is not None]
+        if errors: # custom errors (provided by netpyne validator)
+            summary = [errors[-1]] # take the last error (and put into list for consistency)
+        else: # auto-generated by `schema`
+            summary = other
+
+        return keySeq, summary
 
 
 
@@ -1025,25 +1051,33 @@ def checkValidation():
 
     def checkModelValid(index):
         print(f'PROCESSSING {index}')
-        _, netParams = sim.loadModel(index, loadMechs=True, ignoreMechAlreadyExistsError=True)
-        _, failed = validator.validateNetParams(net_params=netParams)
+        _, netParams = sim.loadModel(index, loadMechs=True)
+        valid, failed = validator.validateNetParams(net_params=netParams)
         if failed:
             print(f'FOUND {len(failed)} ERRORS IN {index}')
-            for (compName, error, errorAutos) in failed:
+            for compName in [f.component for f in failed]:
                 print(compName)
         else:
             print(f'VALIDATION SUCCEEDED FOR {index}')
+        return valid, failed
 
     os.chdir('examples')
 
     try:
+        valid, failed = [], []
+
         # TODO: for some reason, the models below fail to load when run in order of for-loop below.
         # Works okay when run individually though...
         exceptionFromLoop = ['batchCellMapping/index.npjson', 'batchCell/index.npjson']
 
         for index in [index for index in glob.glob('*/*.npjson') if index not in exceptionFromLoop ]:
-            checkModelValid(index)
+            v, f = checkModelValid(index)
+            valid.extend(v)
+            failed.extend(f)
     except Exception as e:
         print(f"FAILED VALIDATING EXAMPLES: {e}")
 
+    print(f'================\nValidation summary: {len(failed)} failed\n')
+
     os.chdir('..')
+    return failed

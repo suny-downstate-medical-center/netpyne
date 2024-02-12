@@ -340,7 +340,7 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
             'walltime': walltime,
             'vmem': '32G',
             'queueName': 'cpu.q',
-            'cores': 1,
+            'cores': 2,
             'pre': '', 'post': '',
             'mpiCommand': 'mpiexec',
             #'log': "~/qsub/{}".format(jobName)
@@ -350,7 +350,7 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
         sge_args.update(batch.runCfg)
 
         #(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles):
-        sge_args['command'] = '%s -n $NSLOTS nrniv -python -mpi %s simConfig=%s netParams=%s' % (
+        sge_args['command'] = '%s -n $NSLOTS -hosts $(hostname) nrniv -python -mpi %s simConfig=%s netParams=%s' % (
             sge_args['mpiCommand'],
             script,
             cfgSavePath,

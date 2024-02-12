@@ -298,6 +298,14 @@ def hashList(obj):
 
 
 # ------------------------------------------------------------------------------
+# Hash function for file (md5 hex)
+# ------------------------------------------------------------------------------
+def fileDigest(file):
+    fileStr = open(file,'rb').read()
+    return hashlib.md5(fileStr).hexdigest()
+
+
+# ------------------------------------------------------------------------------
 # Initialize the stim randomizer
 # ------------------------------------------------------------------------------
 def _init_stim_randomizer(rand, stimType, gid, seed):
@@ -1015,6 +1023,43 @@ def clearAll():
     import gc
 
     gc.collect()
+
+
+def checkConditions(conditions, against, cellGid=None):
+
+    conditionsMet = 1
+    for (condKey, condVal) in conditions.items():
+
+        # gid matching will be processed in specific way
+        gidCompare = False
+        if (cellGid is not None) and (condKey == 'gid'):
+            compareTo = cellGid
+            gidCompare = True
+
+        else:
+            compareTo = against.get(condKey)
+
+        if isinstance(condVal, list):
+            if isinstance(condVal[0], Number):
+                if gidCompare:
+                    if compareTo not in condVal:
+                        conditionsMet = 0
+                        break
+                elif compareTo < condVal[0] or compareTo > condVal[1]:
+                    conditionsMet = 0
+                    break
+            elif isinstance(condVal[0], basestring):
+                if compareTo not in condVal:
+                    conditionsMet = 0
+                    break
+        elif isinstance(compareTo, list): # e.g. to match 'label', which may be list
+            if condVal not in compareTo:
+                conditionsMet = 0
+                break
+        elif compareTo != condVal:
+            conditionsMet = 0
+            break
+    return conditionsMet
 
 
 # ------------------------------------------------------------------------------

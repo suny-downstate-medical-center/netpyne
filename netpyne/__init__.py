@@ -4,7 +4,7 @@ NetPyNE (Networks using Python and NEURON) is a Python package to facilitate the
 NetPyNE consists of a number of sub-packages and modules.
 """
 
-__version__ = '1.0.5'
+__version__ = '1.0.6'
 import os, sys
 
 display = os.getenv('DISPLAY')
@@ -31,3 +31,6 @@ from netpyne import sim
 from netpyne import specs
 from netpyne import support
 from netpyne import tests
+
+import neuron
+neuron._netpyne_mech_hashes = {}

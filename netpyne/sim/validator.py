@@ -17,7 +17,7 @@ class ValidationContext(object):
 
         self.validateModels = True # cfg.validateNetParamsMechs
 
-numberOrStringFunc = Or(int, float, str, error='Expected number (int, float) or a function as string.')
+numberOrStringFunc = Or(int, float, str, error='Expected a number (int, float) or a function as string.')
 
 def general_specs():
     specs = {
@@ -1051,7 +1051,7 @@ def checkValidation():
 
     def checkModelValid(index):
         print(f'PROCESSSING {index}')
-        _, netParams = sim.loadModel(index, loadMechs=True, ignoreMechAlreadyExistsError=True)
+        _, netParams = sim.loadModel(index, loadMechs=True)
         valid, failed = validator.validateNetParams(net_params=netParams)
         if failed:
             print(f'FOUND {len(failed)} ERRORS IN {index}')

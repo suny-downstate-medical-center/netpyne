@@ -483,8 +483,7 @@ def loadFromIndexFile(index):
     return loadModel(index, loadMechs=False)
 
 
-def loadModel(path, loadMechs=True, ignoreMechAlreadyExistsError=False):
-
+def loadModel(path, loadMechs=True, forceCompileMechs=False, returnLoadMechStatus=False):
     import __main__
     import json
     from .. import sim
@@ -511,7 +510,9 @@ def loadModel(path, loadMechs=True, ignoreMechAlreadyExistsError=False):
             modFolder = indexData.get('mod_folder')
             if modFolder:
                 modFolderPath = os.path.join(dir, modFolder)
-                __processMod(modFolderPath, ignoreMechAlreadyExistsError)
+                loadedMods, skippedMods = processModFiles(modFolderPath, forceCompile=forceCompileMechs)
+            else:
+                loadedMods, skippedMods = [], [] # for consistency
 
         os.chdir(dir)
 
@@ -545,53 +546,71 @@ def loadModel(path, loadMechs=True, ignoreMechAlreadyExistsError=False):
 
         os.chdir(originalDir)
 
-    return cfg, netParams
+    res = cfg, netParams
+    if returnLoadMechStatus:
+        res += loadedMods, skippedMods
+    return res
 
 
-def __processMod(modFolderPath, ignoreMechAlreadyExistsError):
-    import os, subprocess, shutil, time, glob
+def processModFiles(modFolderPath, forceCompile=False):
+    import os, glob
     import neuron
     from neuron import h
 
     if not os.path.exists(modFolderPath):
         print(f"Warning: specified 'mod_folder' path {modFolderPath} doesn't exist")
-        return
+        return None, None
 
     originalDir = os.getcwd()
     os.chdir(modFolderPath)
-    shutil.rmtree('x86_64', ignore_errors=True)
 
-    if not ignoreMechAlreadyExistsError:
-        # compile and load all the mods from folder. If some of them already exist,
-        # it will raise the error
-        subprocess.call(["nrnivmodl"])
-        neuron.load_mechanisms(os.path.abspath('.'))
+    # all mod file names in this dir (abs path)
+    allMods = glob.glob(f"{os.getcwd()}/*.mod")
+    
+    # mapping from file name to mechanism name
+    filesAndMechs = {file: __extractModelName(file) for file in allMods}
+
+    # first, try to identify which mechs are already loaded
+    modsToSkip = []
+    modsToSkipStatus = []
+    for fileName in allMods:
+        mechName = filesAndMechs[fileName]
+
+        if not hasattr(h, mechName):
+            continue
+
+        # this mech is already loaded, so it will be skipped
+        modsToSkip.append(fileName)
+
+        # now try to figure out if it's differs from loaded version
+        thisFileHash = utils.fileDigest(fileName)
+        alreadyLoadedModHash = neuron._netpyne_mech_hashes.get(mechName)
+
+        if not alreadyLoadedModHash:
+            modsToSkipStatus.append('unknown')
+        elif thisFileHash == alreadyLoadedModHash:
+            modsToSkipStatus.append('unmodified')
+        else:
+            modsToSkipStatus.append('modified')
+
+    modsToLoad = set(allMods) - set(modsToSkip)
+
+    if not modsToLoad:
+        print('All mods are already loaded. Skipping..')
+
+    elif len(modsToLoad) == len(allMods):
+        # no mods to skip, compile/load all at once
+        _compileAndLoadMechanisms(forceCompile=forceCompile, filesToMechsMapping=filesAndMechs)
     else:
-        # parse mod files and load only those not yet loaded
-        mods = glob.glob("*.mod")
+        # proceed only with files not loaded before
+        _compileAndLoadMechanisms(files=modsToLoad, forceCompile=forceCompile, filesToMechsMapping=filesAndMechs)
 
-        alreadyLoadedMods = []
-        for file in mods:
-            name = __extractModelName(file)
-            try:
-                getattr(h, name)
-                alreadyLoadedMods.append(file)
-            except:
-                pass
-
-        modsToLoad = set(mods) - set(alreadyLoadedMods)
-        if len(modsToLoad) > 0:
-            # compile into dir other than x86_64 to bypass possibly cached data
-            tmpDir = f'tmp_{os.getpid()}_{time.time()}'
-            os.mkdir(tmpDir)
-            os.chdir(tmpDir)
-            modsToLoad = list(map(lambda path: f'../{path}', modsToLoad))
-            subprocess.call(['nrnivmodl'] + list(modsToLoad))
-            neuron.load_mechanisms(os.path.abspath('.'))
-            os.chdir('..')
-            os.system(f'rm -rf {tmpDir}')
+    loadedMods = [(fileName, filesAndMechs[fileName]) for fileName in modsToLoad]
+    skippedMods = [(fileName, filesAndMechs[fileName], status) for fileName, status in zip(modsToSkip, modsToSkipStatus)]
 
     os.chdir(originalDir)
+    return [loadedMods, skippedMods]
+
 
 def __extractModelName(modFile):
     import re
@@ -608,6 +627,66 @@ def __extractModelName(modFile):
                 name = partWithName.strip().split(" ")[0]
                 return name
     return None
+
+
+def _compileAndLoadMechanisms(path=None, files=None, forceCompile=False, filesToMechsMapping={}):
+
+    import neuron, os, subprocess, shutil, platform, time
+
+    origPath = os.getcwd()
+
+    if path:
+        os.chdir(path)
+
+    if files:
+        files = [os.path.abspath(file) for file in files]
+
+    tmpDir = None
+    if hasattr(neuron, 'nrn_dll_loaded') \
+        and (os.getcwd() in neuron.nrn_dll_loaded):
+        # this path is already stored in NEURON's internal cache, which makes it not possible to load anything else from it.
+        # need to re-compile into another folder to load from there
+        compile = True
+
+        tmpDir = f'tmp_{os.getpid()}_{time.time()}'
+        os.mkdir(tmpDir)
+
+        os.chdir(tmpDir)
+    elif not os.path.exists(platform.machine()):
+        # there is no folder with compiled files (e.g. 'x86_64') at given path
+        compile = True
+    elif files:
+        # if about to load a specific subset of files, compilation is necessary
+        compile = True
+    else:
+        compile = forceCompile
+
+    if compile:
+        if files: # compile specific files
+            cmd = ['nrnivmodl'] + files
+        elif tmpDir: # being in temp dir, compile all files in parent folder
+            cmd = ['nrnivmodl', '..']
+        else: # compile all files in current folder
+            cmd = ['nrnivmodl']
+
+        subprocess.call(cmd)
+
+    neuron.load_mechanisms(os.path.abspath('.')) # load compiled dlls
+
+    # save md5 hashes of just loaded mod files
+    if not files:
+        import glob
+        files = glob.glob(f"{os.getcwd()}/*.mod")
+
+    for file in files:
+        mech = filesToMechsMapping.get(file, __extractModelName(file))
+        neuron._netpyne_mech_hashes[mech] = utils.fileDigest(file)
+
+    if tmpDir:
+        os.chdir('..')
+        os.system(f'rm -rf {tmpDir}')
+
+    os.chdir(origPath)
 
 
 # ------------------------------------------------------------------------------

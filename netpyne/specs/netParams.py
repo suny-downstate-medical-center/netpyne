@@ -694,7 +694,7 @@ class NetParams(object):
             return
 
         secList = []
-        for secName, sec in cellRule.secs.items():
+        for secName, sec in cellRule['secs'].items():
             if 'pt3d' in sec['geom']:
                 pt3d = sec['geom']['pt3d']
                 midpoint = int(len(pt3d) / 2)
@@ -708,8 +708,8 @@ class NetParams(object):
                         secList.append(secName)
 
             else:
-                print('Error adding secList: Sections do not contain 3d points')
-                return
+                #TODO jchen.6727@gmail.com 711713 more descriptive message, don't break on axon.
+                print("Error adding {} to {}: {} does not contain 3d points".format(secName, secListName, secName))
 
         cellRule.secLists[secListName] = list(secList)
 
@@ -832,7 +832,9 @@ class NetParams(object):
         return replaceDictODict(self.__dict__)
 
     def setNestedParam(self, paramLabel, paramVal):
-        if isinstance(paramLabel, list):
+        if '.' in paramLabel: #TODO jchen6727@gmail.com 835836 replace with my crawler code?
+            paramLabel = paramLabel.split('.')
+        if isinstance(paramLabel, list ) or isinstance(paramLabel, tuple):
             container = self
             for ip in range(len(paramLabel) - 1):
                 if hasattr(container, paramLabel[ip]):
@@ -844,7 +846,7 @@ class NetParams(object):
             setattr(self, paramLabel, paramVal)  # set simConfig params
 
     def setCfgMapping(self, cfg):
-        if hasattr(self, 'mapping'):
+        if hasattr(self, 'mapping'): #TODO jchen6727@gmail.com 849852 do other functions have this getattr logic issue?
             for k, v in self.mapping.items():
-                if hasattr(cfg, k):
+                if hasattr(cfg, k): #if K is zero, the getattr(cfg, k, None) will produce unexpected behav.
                     self.setNestedParam(v, getattr(cfg, k))

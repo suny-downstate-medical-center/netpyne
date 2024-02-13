@@ -124,7 +124,7 @@ class Network(object):
             if 'diversityFraction' in cellRule:
                 divFrac = cellRule['diversityFraction']
                 cellType = cellRule['conds'].get('cellType', None)
-                cellModel = cellRule['conds'].get('CellModel', None)
+                cellModel = cellRule['conds'].get('cellModel', None)
                 pop = cellRule['conds'].get('pop', None)
 
                 correction = 1e-12

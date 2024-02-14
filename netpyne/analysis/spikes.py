@@ -375,6 +375,8 @@ def prepareSpikeData(
         'orderBy': orderBy,
         'axisArgs': axisArgs,
         'legendLabels': legendLabels,
+        'cellGids': df['pop'].index.tolist(),
+        'cellPops': df['pop'].tolist(),
     }
     
     if colorbyPhase:

@@ -11,11 +11,7 @@ The following are required:
 5) Twine packager: https://twine.readthedocs.io/en/latest/
 
 Which can be installed with:
-python3 -m pip install -U sphinx
-python3 -m pip install -U sphinx_rtd_theme
-python3 -m pip install -U autodocsumm
-python3 -m pip install -U wheel
-python3 -m pip install -U twine
+python3 -m pip install -U sphinx sphinx_rtd_theme autodocsumm wheel twine
 
 Here are the steps to release a new version of NetPyNE
 (step 10 is completed by executing this file):
@@ -54,7 +50,7 @@ Here are the steps to release a new version of NetPyNE
          Username: salvadord
 13) Announce the new release
     13a) New release announcement text:
-         NetPyNE v#.#.# is now available. For a complete list of changes and bug fixes see: https://github.com/Neurosim-lab/netpyne/releases/tag/v#.#.#
+         NetPyNE v#.#.# is now available. For a complete list of changes and bug fixes see: https://github.com/suny-downstate-medical-center/netpyne/releases/tag/v#.#.#
          See here for instructions to install or update to the latest version: http://www.netpyne.org/install.html
     13b) Announce on NEURON forum:
          https://www.neuron.yale.edu/phpBB/viewtopic.php?f=45&t=3685&sid=9c380fe3a835babd47148c81ae71343e

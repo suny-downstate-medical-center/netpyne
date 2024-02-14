@@ -172,7 +172,7 @@ def createSimulate(netParams=None, simConfig=None, output=False):
 
     from .. import sim
 
-    (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
+    (pops, cells, conns, rxd, stims, simData) = sim.create(netParams, simConfig, output=True)
     sim.simulate()
 
     if output:
@@ -210,7 +210,7 @@ def createSimulateAnalyze(netParams=None, simConfig=None, output=False):
 
     from .. import sim
 
-    (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
+    (pops, cells, conns, rxd, stims, simData) = sim.create(netParams, simConfig, output=True)
     sim.simulate()
     sim.analyze()
     if output:
@@ -254,7 +254,7 @@ def createSimulateAnalyzeInterval(netParams, simConfig, output=False, interval=N
     import os
     from .. import sim
 
-    (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
+    (pops, cells, conns, rxd, stims, simData) = sim.create(netParams, simConfig, output=True)
     try:
         if sim.rank == 0:
             if os.path.exists('temp'):
@@ -317,7 +317,7 @@ def createSimulateAnalyzeDistributed(netParams, simConfig, output=False, filenam
     import os
     from .. import sim
 
-    (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
+    (pops, cells, conns, rxd, stims, simData) = sim.create(netParams, simConfig, output=True)
 
     sim.runSim()
     sim.saveDataInNodes(filename=filename, saveLFP=includeLFP, removeTraces=False)

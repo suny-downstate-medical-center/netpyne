@@ -1,10 +1,14 @@
-# Version in development
+# Version 1.0.6
 
 **New features**
 
 - Raster plot colored by phase
 
 - Examples based on the CA3 model using the 'colorbyPhase' option in the plotRaster
+
+- API for loading .mod files selectively
+
+- Ability to specify custom executor to run batch with (defaults to `sh`)
 
 **Bug fixes**
 
@@ -15,6 +19,20 @@
 - Fix to automatically include netstims in the sim.allSimData object when plotRaster 'include' selects 'all'
 
 - Fixed loading netParams in some scenarios (bug caused by srting functions pre-processing)
+
+- Fix of `plotRaster` pops coloring if ordered not by gid
+
+- Made cells diversity work with popParams based on `cellsList` and `gridSpacing`
+
+- Fixed handling of output of `sim.create()` - was wrong order (credit: Kate Doxey)
+
+- Fixed undeclared var `dpi` in `plotShape()`
+
+- Fixes in batch utils
+
+- Added some missing math functions to use with 'Functions as string' functionality
+
+- Switch file copying method to shutil to be compatible over all operating systems (credit: Henrik Podeus)
 
 # Version 1.0.5
 

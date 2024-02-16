@@ -155,10 +155,13 @@ class Pop(object):
                 randLocs[:, icoord] = randLocs[:, icoord] * (maxv - minv) + minv
 
         numCells = int(sim.net.params.scale * self.tags['numCells'])
+
+        diversityFractions = self._diversityFractions(numCells)
+
         for i in self._distributeCells(numCells)[sim.rank]:
             gid = sim.net.lastGid + i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
-            cellTags = self._createCellTags()
+            cellTags = self._createCellTags(i, diversityFractions)
             cellTags['xnorm'] = randLocs[i, 0]  # set x location (um)
             cellTags['ynorm'] = randLocs[i, 1]  # set y location (um)
             cellTags['znorm'] = randLocs[i, 2]  # set z location (um)
@@ -173,8 +176,6 @@ class Pop(object):
                         pass
                 else:
                     cellTags['params']['spkTimes'] = self.tags['spkTimes']  # 1D list (same for all)
-            if self.tags.get('diversity', False):  # if pop has cell diversity
-                cellTags['fraction'] = float(i) / float(numCells)
 
             if 'dynamicRates' in self.tags:  # if NetStim, copy rates array to params
                 if 'rates' in self.tags['dynamicRates'] and 'times' in self.tags['dynamicRates']:
@@ -336,10 +337,13 @@ class Pop(object):
         if sim.cfg.verbose and not funcLocs:
             print('Volume=%.4f, density=%.2f, numCells=%.0f' % (volume, self.tags['density'], self.tags['numCells']))
 
-        for i in self._distributeCells(self.tags['numCells'])[sim.rank]:
+        numCells = self.tags['numCells']
+        diversityFractions = self._diversityFractions(numCells)
+
+        for i in self._distributeCells(numCells)[sim.rank]:
             gid = sim.net.lastGid + i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
-            cellTags = self._createCellTags()
+            cellTags = self._createCellTags(i, diversityFractions)
             cellTags['xnorm'] = randLocs[i, 0]  # calculate x location (um)
             cellTags['ynorm'] = randLocs[i, 1]  # calculate y location (um)
             cellTags['znorm'] = randLocs[i, 2]  # calculate z location (um)
@@ -353,7 +357,7 @@ class Pop(object):
                         'Cell %d/%d (gid=%d) of pop %s, pos=(%2.f, %2.f, %2.f), on node %d, '
                         % (
                             i,
-                            self.tags['numCells'] - 1,
+                            numCells - 1,
                             gid,
                             self.tags['pop'],
                             cellTags['x'],
@@ -372,14 +376,19 @@ class Pop(object):
         """
 
         cells = []
-        self.tags['numCells'] = len(self.tags['cellsList'])
-        for i in self._distributeCells(len(self.tags['cellsList']))[sim.rank]:
+        cellsList = self.tags['cellsList']
+        numCells = len(cellsList)
+        self.tags['numCells'] = numCells
+
+        diversityFractions = self._diversityFractions(numCells)
+
+        for i in self._distributeCells(numCells)[sim.rank]:
             # if 'cellModel' in self.tags['cellsList'][i]:
             #    self.cellModelClass = getattr(f, self.tags['cellsList'][i]['cellModel'])  # select cell class to instantiate cells based on the cellModel tags
             gid = sim.net.lastGid + i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
-            cellTags = self._createCellTags()
-            cellTags.update(self.tags['cellsList'][i])  # add tags specific to this cells
+            cellTags = self._createCellTags(i, diversityFractions)
+            cellTags.update(cellsList[i])  # add tags specific to this cells
             for coord in ['x', 'y', 'z']:
                 if coord in cellTags:  # if absolute coord exists
                     cellTags[coord + 'norm'] = cellTags[coord] / getattr(
@@ -392,15 +401,15 @@ class Pop(object):
                 else:
                     cellTags[coord + 'norm'] = cellTags[coord] = 0
             if (
-                'cellModel' in self.tags.keys() and self.tags['cellModel'] == 'Vecstim'
+                'cellModel' in self.tags.keys() and self.tags['cellModel'] == 'VecStim'
             ):  # if VecStim, copy spike times to params
-                cellTags['params']['spkTimes'] = self.tags['cellsList'][i]['spkTimes']
+                cellTags['params']['spkTimes'] = cellsList[i]['spkTimes']
             cells.append(self.cellModelClass(gid, cellTags))  # instantiate Cell object
             if sim.cfg.verbose:
                 print(
                     ('Cell %d/%d (gid=%d) of pop %d, on node %d, ' % (i, self.tags['numCells'] - 1, gid, i, sim.rank))
                 )
-        sim.net.lastGid = sim.net.lastGid + len(self.tags['cellsList'])
+        sim.net.lastGid = sim.net.lastGid + numCells
         return cells
 
     def createCellsGrid(self):
@@ -440,10 +449,12 @@ class Pop(object):
 
         numCells = len(gridLocs)
 
+        diversityFractions = self._diversityFractions(numCells, shuffled=True)
+
         for i in self._distributeCells(numCells)[sim.rank]:
             gid = sim.net.lastGid + i
             self.cellGids.append(gid)  # add gid list of cells belonging to this population - not needed?
-            cellTags = self._createCellTags()
+            cellTags = self._createCellTags(i, diversityFractions)
             cellTags['xnorm'] = gridLocs[i][0] / sim.net.params.sizeX  # set x location (um)
             cellTags['ynorm'] = gridLocs[i][1] / sim.net.params.sizeY  # set y location (um)
             cellTags['znorm'] = gridLocs[i][2] / sim.net.params.sizeZ  # set z location (um)
@@ -456,11 +467,28 @@ class Pop(object):
         sim.net.lastGid = sim.net.lastGid + numCells
         return cells
 
-    def _createCellTags(self):
+    def _diversityFractions(self, numCells, shuffled=False):
+        """
+        Calculates diversity fraction (0 to 1) for each cell. Returns list of fractions or None, if no diversity involved
+        """
+        if not self.tags.get('diversity', False):
+            return None
+
+        rng = np.random.default_rng(seed=sim.cfg.seeds['cell'])
+        diversityFractions = np.arange(0, numCells, dtype=np.float64) / numCells
+        if shuffled:
+            rng.shuffle(diversityFractions)
+        return diversityFractions
+
+    def _createCellTags(self, ind=None, diversityFractions=None):
 
         # copy all pop tags to cell tags, except those that are pop-specific
         cellTags = {k: v for (k, v) in self.tags.items() if k in sim.net.params.popTagsCopiedToCells}
         cellTags['pop'] = self.tags['pop']
+
+        if diversityFractions is not None:
+            cellTags['fraction'] = diversityFractions[ind]
+
         return cellTags
 
     def _setCellClass(self):

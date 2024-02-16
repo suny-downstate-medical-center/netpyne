@@ -192,6 +192,8 @@ class Batch(object):
             sim.saveJSON(filename, dataSave)
 
     def setCfgNestedParam(self, paramLabel, paramVal):
+        if '.' in paramLabel: #TODO jchen6727@gmail.com 195196 replace with my crawler code?
+            paramLabel = paramLabel.split('.')
         if isinstance(paramLabel, tuple):
             container = self.cfg
             for ip in range(len(paramLabel) - 1):
@@ -205,6 +207,7 @@ class Batch(object):
 
     def saveScripts(self):
         import os
+        import shutil
 
         # create Folder to save simulation
         createFolder(self.saveFolder)
@@ -215,22 +218,22 @@ class Batch(object):
 
         # copy this batch script to folder
         targetFile = self.saveFolder + '/' + self.batchLabel + '_batchScript.py'
-        os.system('cp ' + os.path.realpath(__file__) + ' ' + targetFile)
+        shutil.copy2(os.path.realpath(__file__),  os.path.realpath(targetFile))
 
         # copy this batch script to folder, netParams and simConfig
-        # os.system('cp ' + self.netParamsFile + ' ' + self.saveFolder + '/netParams.py')
+        # shutil.copy2(os.path.realpath(self.netParamsFile), os.path.realpath(self.saveFolder + '/netParams.py'))
 
         # if user provided a netParams object as input argument
         if self.netParams:
             self.netParamsSavePath = self.saveFolder + '/' + self.batchLabel + '_netParams.json'
-            self.netParams.save(self.netParamsSavePath)
+            self.netParams.save(os.path.realpath(self.netParamsSavePath))
 
         # if not, use netParamsFile
         else:
             self.netParamsSavePath = self.saveFolder + '/' + self.batchLabel + '_netParams.py'
-            os.system('cp ' + self.netParamsFile + ' ' + self.netParamsSavePath)
+            shutil.copy2(os.path.realpath(self.netParamsFile), os.path.realpath(self.netParamsSavePath))
 
-        os.system('cp ' + os.path.realpath(__file__) + ' ' + self.saveFolder + '/batchScript.py')
+        shutil.copy2(os.path.realpath(__file__), os.path.realpath(self.saveFolder + '/batchScript.py'))
 
         # save initial seed
         with open(self.saveFolder + '/_seed.seed', 'w') as seed_file:

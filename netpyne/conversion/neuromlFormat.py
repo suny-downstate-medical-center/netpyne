@@ -21,8 +21,8 @@ except ImportError:
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-pp = pprint.PrettyPrinter(depth=6)
+logger.setLevel(logging.INFO)
+pp = pprint.PrettyPrinter(depth=6, indent=4)
 try:
     from distutils.version import StrictVersion
 
@@ -1819,25 +1819,15 @@ try:
 
         netParams = specs.NetParams()
 
-        import pprint
-
-        pp = pprint.PrettyPrinter(indent=4)
-
         print("Importing NeuroML 2 network from: %s" % fileName)
 
         nmlHandler = None
 
-        verbose = True
-
         if fileName.endswith(".nml"):
-
-            import logging
-
-            logging.basicConfig(level=logging.WARNING, format="%(name)-19s %(levelname)-5s - %(message)s")
 
             from neuroml.hdf5.NeuroMLXMLParser import NeuroMLXMLParser
 
-            nmlHandler = NetPyNEBuilder(netParams, simConfig=simConfig, verbose=verbose)
+            nmlHandler = NetPyNEBuilder(netParams, simConfig=simConfig)
 
             currParser = NeuroMLXMLParser(
                 nmlHandler
@@ -1855,13 +1845,9 @@ try:
 
         if fileName.endswith(".h5"):
 
-            import logging
-
-            logging.basicConfig(level=logging.WARNING, format="%(name)-19s %(levelname)-5s - %(message)s")
-
             from neuroml.hdf5.NeuroMLHdf5Parser import NeuroMLHdf5Parser
 
-            nmlHandler = NetPyNEBuilder(netParams, simConfig=simConfig, verbose=verbose)
+            nmlHandler = NetPyNEBuilder(netParams, simConfig=simConfig)
 
             currParser = NeuroMLHdf5Parser(
                 nmlHandler

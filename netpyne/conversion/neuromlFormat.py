@@ -1212,10 +1212,10 @@ try:
                                     # Until this is implemented, we only handle cases where the the first
                                     # segment of a segment group is either attached to its parent at the
                                     # parent's proximal or distal point.
-                                    if math.isclose(fract, 1.0, rel_tol=1e-4):
+                                    if (fract != 1.0) and (math.isclose(fract, 1.0, rel_tol=1e-4)):
                                         logger.warning("Approximating fract of %f to 1.0", fract)
                                         fract = 1.0
-                                    if math.isclose(fract, 0.0, rel_tol=1e-4):
+                                    if (fract != 0.0) and (math.isclose(fract, 0.0, rel_tol=1e-4)):
                                         logger.warning("Approximating fract of %f to 0.0", fract)
                                         fract = 0.0
 

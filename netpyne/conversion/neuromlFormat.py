@@ -245,18 +245,18 @@ def _export_synapses(net, nml_doc):
             syn0 = neuroml.ExpTwoSynapse(
                 id=id,
                 gbase='1uS',
-                erev='%smV' % syn['e'],
-                tau_rise='%sms' % syn['tau1'],
-                tau_decay='%sms' % syn['tau2'],
+                erev='%rmV' % syn['e'],
+                tau_rise='%rms' % syn['tau1'],
+                tau_decay='%rms' % syn['tau2'],
             )
 
             nml_doc.exp_two_synapses.append(syn0)
         elif syn['mod'] == 'ExpSyn':
-            syn0 = neuroml.ExpOneSynapse(id=id, gbase='1uS', erev='%smV' % syn['e'], tau_decay='%sms' % syn['tau'])
+            syn0 = neuroml.ExpOneSynapse(id=id, gbase='1uS', erev='%rmV' % syn['e'], tau_decay='%rms' % syn['tau'])
 
             nml_doc.exp_one_synapses.append(syn0)
         elif syn['mod'] == 'ElectSyn':
-            syn0 = neuroml.GapJunction(id=id, conductance='%smS' % syn['g'])
+            syn0 = neuroml.GapJunction(id=id, conductance='%rmS' % syn['g'])
 
             nml_doc.gap_junctions.append(syn0)
         else:
@@ -486,17 +486,17 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
 
                 if pproc['mod'] == 'Izhi2007b':
                     izh = neuroml.Izhikevich2007Cell(id=cell_id)
-                    izh.a = '%s per_ms' % pproc['a']
-                    izh.b = '%s nS' % pproc['b']
-                    izh.c = '%s mV' % pproc['c']
-                    izh.d = '%s pA' % pproc['d']
+                    izh.a = '%r per_ms' % pproc['a']
+                    izh.b = '%r nS' % pproc['b']
+                    izh.c = '%r mV' % pproc['c']
+                    izh.d = '%r pA' % pproc['d']
 
-                    izh.v0 = '%s mV' % pproc['vr']  # Note: using vr for v0
-                    izh.vr = '%s mV' % pproc['vr']
-                    izh.vt = '%s mV' % pproc['vt']
-                    izh.vpeak = '%s mV' % pproc['vpeak']
-                    izh.C = '%s pF' % (pproc['C'] * 100)
-                    izh.k = '%s nS_per_mV' % pproc['k']
+                    izh.v0 = '%r mV' % pproc['vr']  # Note: using vr for v0
+                    izh.vr = '%r mV' % pproc['vr']
+                    izh.vt = '%r mV' % pproc['vt']
+                    izh.vpeak = '%r mV' % pproc['vpeak']
+                    izh.C = '%r pF' % (pproc['C'] * 100)
+                    izh.k = '%r nS_per_mV' % pproc['k']
 
                     nml_doc.izhikevich2007_cells.append(izh)
                 else:
@@ -595,7 +595,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                     count += 1
 
                     ip.resistivities.append(
-                        neuroml.Resistivity(value="%s ohm_cm" % np_sec['geom']['Ra'], segment_groups=nml_seg_group.id)
+                        neuroml.Resistivity(value="%r ohm_cm" % np_sec['geom']['Ra'], segment_groups=nml_seg_group.id)
                     )
 
                     '''
@@ -605,7 +605,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                     if isinstance(cm, dict) and len(cm) == 0:
                         cm = 1
                     mp.specific_capacitances.append(
-                        neuroml.SpecificCapacitance(value="%s uF_per_cm2" % cm, segment_groups=nml_seg_group.id)
+                        neuroml.SpecificCapacitance(value="%r uF_per_cm2" % cm, segment_groups=nml_seg_group.id)
                     )
 
                     vinit = np_sec['vinit'] if 'vinit' in np_sec else -65
@@ -614,10 +614,10 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                         vinit = -65
 
                     if len(mp.init_memb_potentials) == 0:
-                        mp.init_memb_potentials.append(neuroml.InitMembPotential(value="%s mV" % vinit))
+                        mp.init_memb_potentials.append(neuroml.InitMembPotential(value="%r mV" % vinit))
 
                     if len(mp.spike_threshes) == 0:
-                        mp.spike_threshes.append(neuroml.SpikeThresh(value="%s mV" % sim.net.params.defaultThreshold))
+                        mp.spike_threshes.append(neuroml.SpikeThresh(value="%r mV" % sim.net.params.defaultThreshold))
 
                     # While testing HNN...
                     mechs_to_ignore = [
@@ -652,8 +652,8 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                             leak_cd = neuroml.ChannelDensity(
                                 id='leak_%s' % nml_seg_group.id,
                                 ion_channel='leak_hh',
-                                cond_density='%s S_per_cm2' % mech['gl'],
-                                erev='%s mV' % mech['el'],
+                                cond_density='%r S_per_cm2' % mech['gl'],
+                                erev='%r mV' % mech['el'],
                                 ion='non_specific',
                             )
                             mp.channel_densities.append(leak_cd)
@@ -661,8 +661,8 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                             k_cd = neuroml.ChannelDensity(
                                 id='k_%s' % nml_seg_group.id,
                                 ion_channel='k_hh',
-                                cond_density='%s S_per_cm2' % mech['gkbar'],
-                                erev='%s mV' % '-77',
+                                cond_density='%r S_per_cm2' % mech['gkbar'],
+                                erev='%r mV' % '-77',
                                 ion='k',
                             )
                             mp.channel_densities.append(k_cd)
@@ -670,8 +670,8 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                             na_cd = neuroml.ChannelDensity(
                                 id='na_%s' % nml_seg_group.id,
                                 ion_channel='na_hh',
-                                cond_density='%s S_per_cm2' % mech['gnabar'],
-                                erev='%s mV' % '50',
+                                cond_density='%r S_per_cm2' % mech['gnabar'],
+                                erev='%r mV' % '50',
                                 ion='na',
                             )
                             mp.channel_densities.append(na_cd)
@@ -687,8 +687,8 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                             leak_cd = neuroml.ChannelDensity(
                                 id='leak_%s' % nml_seg_group.id,
                                 ion_channel='leak_hh',
-                                cond_density='%s mS_per_cm2' % mech['g'],
-                                erev='%s mV' % mech['e'],
+                                cond_density='%r mS_per_cm2' % mech['g'],
+                                erev='%r mV' % mech['e'],
                                 ion='non_specific',
                             )
                             mp.channel_densities.append(leak_cd)
@@ -784,7 +784,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                         post_cell_id="../%s/%i/%s" % (popPost, conn['indexPost'], populations_vs_components[popPost]),
                         post_segment_id=0,
                         post_fraction_along=0.5,
-                        delay='%s ms' % conn['delay'],
+                        delay='%r ms' % conn['delay'],
                         weight=conn['weight'],
                     )
 
@@ -843,7 +843,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
             print('Adding the stim source: %s = %s' % (ssp, ss))
             if ss['type'] == 'IClamp':
                 pg = neuroml.PulseGenerator(
-                    id=ssp, delay="%sms" % ss['del'], duration="%sms" % ss['dur'], amplitude="%f nA" % ss['amp']
+                    id=ssp, delay="%rms" % ss['del'], duration="%rms" % ss['dur'], amplitude="%f nA" % ss['amp']
                 )
 
                 nml_doc.pulse_generators.append(pg)
@@ -857,10 +857,10 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                 print("Adding a NetStim stim: %s" % [stim_info])
 
             if noise == 0:
-                source = neuroml.SpikeGenerator(id=name_stim, period="%ss" % (1.0 / rate))
+                source = neuroml.SpikeGenerator(id=name_stim, period="%rs" % (1.0 / rate))
                 nml_doc.spike_generators.append(source)
             elif noise == 1:
-                source = neuroml.SpikeGeneratorPoisson(id=name_stim, average_rate="%s Hz" % (rate))
+                source = neuroml.SpikeGeneratorPoisson(id=name_stim, average_rate="%r Hz" % (rate))
                 nml_doc.spike_generator_poissons.append(source)
             else:
                 raise Exception("Noise = %s in a spike generator is not yet supported for NeuroML export!" % noise)
@@ -889,7 +889,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                     post_cell_id="../%s/%i/%s" % (post_pop, stim['index'], populations_vs_components[post_pop]),
                     post_segment_id=0,
                     post_fraction_along=0.5,
-                    delay='%s ms' % stim['delay'],
+                    delay='%r ms' % stim['delay'],
                     weight=stim['weight'],
                 )
                 count += 1
@@ -1405,13 +1405,10 @@ try:
 
                             for section_name in seg_grps_vs_nrn_sections[grp]:
                                 path_start, path_end = inhomogeneous_parameters[grp][section_name]
-                                path_start = round(path_start, 10)
-                                path_end = round(path_end, 10)
-
                                 p = path_start
-                                gmax_start = round(pynml.convert_to_units('%s S_per_m2' % round(eval(expr), 5), 'S_per_cm2'), 10)
-                                p = path_start
-                                gmax_end = round(pynml.convert_to_units('%s S_per_m2' % round(eval(expr), 5), 'S_per_cm2'), 10)
+                                gmax_start = pynml.convert_to_units('%r S_per_m2' % eval(expr), 'S_per_cm2')
+                                p = path_end
+                                gmax_end = pynml.convert_to_units('%r S_per_m2' % eval(expr), 'S_per_cm2')
 
                                 nseg = (
                                     cellRule['secs'][section_name]['geom']['nseg']
@@ -1420,18 +1417,17 @@ try:
                                 )
 
                                 logger.debug(
-                                    "Cond dens %s: %s S_per_cm2 (%s um) -> %s S_per_cm2 (%s um); nseg = %s",
+                                    "Cond dens %s: %r S_per_cm2 (%r um) -> %r S_per_cm2 (%r um); nseg = %s",
                                     section_name, gmax_start, path_start, gmax_end, path_end, nseg
                                 )
 
                                 gmax = []
                                 for fract in [(2 * i + 1.0) / (2 * nseg) for i in range(nseg)]:
-                                    fract = round(fract, 10)
-                                    p = round(path_start + fract * (path_end - path_start), 10)
-                                    gmax_i = round(pynml.convert_to_units('%s S_per_m2' % round(eval(expr), 5), 'S_per_cm2'), 10)
+                                    p = path_start + fract * (path_end - path_start)
+                                    gmax_i = pynml.convert_to_units('%r S_per_m2' % eval(expr), 'S_per_cm2')
                                     gmax.append(gmax_i)
 
-                                    logger.debug("Point %s at %s = %s", p, fract, gmax_i)
+                                    logger.debug("Point %s at %r = %r", p, fract, gmax_i)
 
                                 if cm.ion_channel == 'pas':
                                     mech = {'g': gmax}
@@ -1462,13 +1458,10 @@ try:
                             for section_name in seg_grps_vs_nrn_sections[grp]:
 
                                 path_start, path_end = inhomogeneous_parameters[grp][section_name]
-                                path_start = round(path_start, 10)
-                                path_end = round(path_end, 10)
-
                                 p = path_start
-                                gmax_start = round(pynml.convert_to_units('%s S_per_m2' % round(eval(expr), 5), 'S_per_cm2'), 10)
-                                p = path_start
-                                gmax_end = round(pynml.convert_to_units('%s S_per_m2' % round(eval(expr), 5), 'S_per_cm2'), 10)
+                                gmax_start = pynml.convert_to_units('%r S_per_m2' % eval(expr), 'S_per_cm2')
+                                p = path_end
+                                gmax_end = pynml.convert_to_units('%r S_per_m2' % eval(expr), 'S_per_cm2')
 
                                 nseg = (
                                     cellRule['secs'][section_name]['geom']['nseg']
@@ -1477,18 +1470,17 @@ try:
                                 )
 
                                 logger.debug(
-                                    "Cond dens %s: %s S_per_cm2 (%s um) -> %s S_per_cm2 (%s um); nseg = %s",
+                                    "Cond dens %s: %r S_per_cm2 (%r um) -> %r S_per_cm2 (%r um); nseg = %s",
                                     section_name, gmax_start, path_start, gmax_end, path_end, nseg
                                 )
 
                                 gmax = []
                                 for fract in [(2 * i + 1.0) / (2 * nseg) for i in range(nseg)]:
-                                    fract = round(fract, 10)
-                                    p = round(path_start + fract * (path_end - path_start), 10)
-                                    gmax_i = round(pynml.convert_to_units('%s S_per_m2' % round(eval(expr), 5), 'S_per_cm2'), 10)
+                                    p = path_start + fract * (path_end - path_start)
+                                    gmax_i = pynml.convert_to_units('%r S_per_m2' % eval(expr), 'S_per_cm2')
                                     gmax.append(gmax_i)
 
-                                    logger.debug("Point %s at %s = %s", p, fract, gmax_i)
+                                    logger.debug("Point %s at %r = %r", p, fract, gmax_i)
 
                                 if cm.ion_channel == 'pas':
                                     mech = {'g': gmax}

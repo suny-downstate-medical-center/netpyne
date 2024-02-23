@@ -486,17 +486,17 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
 
                 if pproc['mod'] == 'Izhi2007b':
                     izh = neuroml.Izhikevich2007Cell(id=cell_id)
-                    izh.a = '%f per_ms' % pproc['a']
-                    izh.b = '%f nS' % pproc['b']
-                    izh.c = '%f mV' % pproc['c']
-                    izh.d = '%f pA' % pproc['d']
+                    izh.a = '%r per_ms' % pproc['a']
+                    izh.b = '%r nS' % pproc['b']
+                    izh.c = '%r mV' % pproc['c']
+                    izh.d = '%r pA' % pproc['d']
 
-                    izh.v0 = '%f mV' % pproc['vr']  # Note: using vr for v0
-                    izh.vr = '%f mV' % pproc['vr']
-                    izh.vt = '%f mV' % pproc['vt']
-                    izh.vpeak = '%f mV' % pproc['vpeak']
-                    izh.C = '%f pF' % (pproc['C'] * 100)
-                    izh.k = '%f nS_per_mV' % pproc['k']
+                    izh.v0 = '%r mV' % pproc['vr']  # Note: using vr for v0
+                    izh.vr = '%r mV' % pproc['vr']
+                    izh.vt = '%r mV' % pproc['vt']
+                    izh.vpeak = '%r mV' % pproc['vpeak']
+                    izh.C = '%r pF' % (pproc['C'] * 100)
+                    izh.k = '%r nS_per_mV' % pproc['k']
 
                     nml_doc.izhikevich2007_cells.append(izh)
                 else:
@@ -595,7 +595,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                     count += 1
 
                     ip.resistivities.append(
-                        neuroml.Resistivity(value="%f ohm_cm" % np_sec['geom']['Ra'], segment_groups=nml_seg_group.id)
+                        neuroml.Resistivity(value="%r ohm_cm" % np_sec['geom']['Ra'], segment_groups=nml_seg_group.id)
                     )
 
                     '''
@@ -605,7 +605,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                     if isinstance(cm, dict) and len(cm) == 0:
                         cm = 1
                     mp.specific_capacitances.append(
-                        neuroml.SpecificCapacitance(value="%f uF_per_cm2" % cm, segment_groups=nml_seg_group.id)
+                        neuroml.SpecificCapacitance(value="%r uF_per_cm2" % cm, segment_groups=nml_seg_group.id)
                     )
 
                     vinit = np_sec['vinit'] if 'vinit' in np_sec else -65
@@ -614,10 +614,10 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                         vinit = -65
 
                     if len(mp.init_memb_potentials) == 0:
-                        mp.init_memb_potentials.append(neuroml.InitMembPotential(value="%f mV" % vinit))
+                        mp.init_memb_potentials.append(neuroml.InitMembPotential(value="%r mV" % vinit))
 
                     if len(mp.spike_threshes) == 0:
-                        mp.spike_threshes.append(neuroml.SpikeThresh(value="%f mV" % sim.net.params.defaultThreshold))
+                        mp.spike_threshes.append(neuroml.SpikeThresh(value="%r mV" % sim.net.params.defaultThreshold))
 
                     # While testing HNN...
                     mechs_to_ignore = [
@@ -652,8 +652,8 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                             leak_cd = neuroml.ChannelDensity(
                                 id='leak_%s' % nml_seg_group.id,
                                 ion_channel='leak_hh',
-                                cond_density='%f S_per_cm2' % mech['gl'],
-                                erev='%f mV' % mech['el'],
+                                cond_density='%r S_per_cm2' % mech['gl'],
+                                erev='%r mV' % mech['el'],
                                 ion='non_specific',
                             )
                             mp.channel_densities.append(leak_cd)
@@ -661,8 +661,8 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                             k_cd = neuroml.ChannelDensity(
                                 id='k_%s' % nml_seg_group.id,
                                 ion_channel='k_hh',
-                                cond_density='%f S_per_cm2' % mech['gkbar'],
-                                erev='%f mV' % '-77',
+                                cond_density='%r S_per_cm2' % mech['gkbar'],
+                                erev='%r mV' % '-77',
                                 ion='k',
                             )
                             mp.channel_densities.append(k_cd)
@@ -670,8 +670,8 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                             na_cd = neuroml.ChannelDensity(
                                 id='na_%s' % nml_seg_group.id,
                                 ion_channel='na_hh',
-                                cond_density='%f S_per_cm2' % mech['gnabar'],
-                                erev='%f mV' % '50',
+                                cond_density='%r S_per_cm2' % mech['gnabar'],
+                                erev='%r mV' % '50',
                                 ion='na',
                             )
                             mp.channel_densities.append(na_cd)
@@ -687,8 +687,8 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                             leak_cd = neuroml.ChannelDensity(
                                 id='leak_%s' % nml_seg_group.id,
                                 ion_channel='leak_hh',
-                                cond_density='%f mS_per_cm2' % mech['g'],
-                                erev='%f mV' % mech['e'],
+                                cond_density='%r mS_per_cm2' % mech['g'],
+                                erev='%r mV' % mech['e'],
                                 ion='non_specific',
                             )
                             mp.channel_densities.append(leak_cd)
@@ -784,7 +784,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                         post_cell_id="../%s/%i/%s" % (popPost, conn['indexPost'], populations_vs_components[popPost]),
                         post_segment_id=0,
                         post_fraction_along=0.5,
-                        delay='%f ms' % conn['delay'],
+                        delay='%r ms' % conn['delay'],
                         weight=conn['weight'],
                     )
 
@@ -843,7 +843,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
             print('Adding the stim source: %s = %s' % (ssp, ss))
             if ss['type'] == 'IClamp':
                 pg = neuroml.PulseGenerator(
-                    id=ssp, delay="%fms" % ss['del'], duration="%fms" % ss['dur'], amplitude="%f nA" % ss['amp']
+                    id=ssp, delay="%rms" % ss['del'], duration="%rms" % ss['dur'], amplitude="%f nA" % ss['amp']
                 )
 
                 nml_doc.pulse_generators.append(pg)
@@ -857,10 +857,10 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                 print("Adding a NetStim stim: %s" % [stim_info])
 
             if noise == 0:
-                source = neuroml.SpikeGenerator(id=name_stim, period="%fs" % (1.0 / rate))
+                source = neuroml.SpikeGenerator(id=name_stim, period="%rs" % (1.0 / rate))
                 nml_doc.spike_generators.append(source)
             elif noise == 1:
-                source = neuroml.SpikeGeneratorPoisson(id=name_stim, average_rate="%f Hz" % (rate))
+                source = neuroml.SpikeGeneratorPoisson(id=name_stim, average_rate="%r Hz" % (rate))
                 nml_doc.spike_generator_poissons.append(source)
             else:
                 raise Exception("Noise = %s in a spike generator is not yet supported for NeuroML export!" % noise)
@@ -889,7 +889,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                     post_cell_id="../%s/%i/%s" % (post_pop, stim['index'], populations_vs_components[post_pop]),
                     post_segment_id=0,
                     post_fraction_along=0.5,
-                    delay='%f ms' % stim['delay'],
+                    delay='%r ms' % stim['delay'],
                     weight=stim['weight'],
                 )
                 count += 1

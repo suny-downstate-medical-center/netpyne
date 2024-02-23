@@ -3,20 +3,32 @@ Module for importing and exporting NeuroML 2
 
 """
 
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
+import math
+import pprint
+from builtins import range, str
+from collections import OrderedDict
 
-from builtins import str
+import logging
 
-from builtins import range
+from .. import specs
 
 try:
-    import neuroml
-    from pyneuroml import pynml
-    from pyneuroml import __version__ as pynml_ver
+    from typing import override
+except ImportError:
+    from overrides import override
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+pp = pprint.PrettyPrinter(depth=6, indent=4)
+try:
     from distutils.version import StrictVersion
+
+    import neuroml
+    from pyneuroml import __version__ as pynml_ver
+    from pyneuroml import pynml
 
     min_pynml_ver_required = '0.3.13'  # pyNeuroML will have a dependency on the correct version of libNeuroML...
 
@@ -43,17 +55,21 @@ except ImportError:
         )
     neuromlExists = False
 
-import pprint
 
-pp = pprint.PrettyPrinter(depth=6)
-import math
-from collections import OrderedDict
-from .. import specs
-
-###############################################################################
-### Get connection centric network representation as used in NeuroML2
-###############################################################################
 def _convertNetworkRepresentation(net, gids_vs_pop_indices):
+    """Get connection centric network representation as used in NeuroML2.
+
+    Parameters
+    ----------
+    net: netpyne.sim.net
+        a NetPyNE simulation network object
+        **Default:** required
+
+    gids_vs_pop_indices: dict
+        a dictionary with NetPyNE gids as keys and indices of cells in NetPyNE
+        populations as values
+        **Default:** required
+    """
 
     from .. import sim
 
@@ -97,11 +113,30 @@ def _convertNetworkRepresentation(net, gids_vs_pop_indices):
     return nn
 
 
-###############################################################################
-### Get stimulations in representation as used in NeuroML2
-###############################################################################
 def _convertStimulationRepresentation(net, gids_vs_pop_indices, nml_doc, populations_vs_components):
+    """Get stimulations in representation as used in NeuroML2.
 
+    Parameters
+    ----------
+    net: netpyne.sim.net
+        a NetPyNE simulation network object
+        **Default:** required
+
+    gids_vs_pop_indices: dict
+        a dictionary with NetPyNE gids as keys and indices of cells in NetPyNE
+        populations as values
+        **Default:** required
+
+    nml_doc: neuroml.NeuroMLDocument
+        a NeuroML document object
+        **Default:** required
+
+    populations_vs_components: dict
+        a dictionary with populations as keys, and cell components for those
+        populations as values
+        **Default:** required
+
+    """
     stims = {}
 
     for np_pop in list(net.pops.values()):
@@ -161,11 +196,9 @@ def _convertStimulationRepresentation(net, gids_vs_pop_indices, nml_doc, populat
     return stims
 
 
-#
-#  Heaviside function, required for expressions in <inhomogeneousValue>
-#
 def H(x):
-    """
+    """Heaviside function, required for expressions in <inhomogeneousValue>
+
     Short description of `netpyne.conversion.neuromlFormat.H`
 
     Parameters
@@ -187,12 +220,19 @@ def H(x):
     return 1 * (x > 0)
 
 
-# if neuromlExists:
-
-###############################################################################
-### Export synapses to NeuroML2
-###############################################################################
 def _export_synapses(net, nml_doc):
+    """Export synapses to NeuroML2.
+
+    Parameters
+    ----------
+    net: netpyne.sim.net
+        a NetPyNE network object
+        **Default:** required
+
+    nml_doc: neuroml.NeuroMLDocument
+        a NeuroML Document object
+        **Default:** required
+    """
 
     from .. import sim
 
@@ -205,18 +245,18 @@ def _export_synapses(net, nml_doc):
             syn0 = neuroml.ExpTwoSynapse(
                 id=id,
                 gbase='1uS',
-                erev='%smV' % syn['e'],
-                tau_rise='%sms' % syn['tau1'],
-                tau_decay='%sms' % syn['tau2'],
+                erev='%rmV' % syn['e'],
+                tau_rise='%rms' % syn['tau1'],
+                tau_decay='%rms' % syn['tau2'],
             )
 
             nml_doc.exp_two_synapses.append(syn0)
         elif syn['mod'] == 'ExpSyn':
-            syn0 = neuroml.ExpOneSynapse(id=id, gbase='1uS', erev='%smV' % syn['e'], tau_decay='%sms' % syn['tau'])
+            syn0 = neuroml.ExpOneSynapse(id=id, gbase='1uS', erev='%rmV' % syn['e'], tau_decay='%rms' % syn['tau'])
 
             nml_doc.exp_one_synapses.append(syn0)
         elif syn['mod'] == 'ElectSyn':
-            syn0 = neuroml.GapJunction(id=id, conductance='%smS' % syn['g'])
+            syn0 = neuroml.GapJunction(id=id, conductance='%rmS' % syn['g'])
 
             nml_doc.gap_junctions.append(syn0)
         else:
@@ -269,9 +309,7 @@ hh_nml2_chans = """
 </neuroml>
 """
 
-###############################################################################
-### Export generated structure of network to NeuroML 2
-###############################################################################
+
 def exportNeuroML2(reference, connections=True, stimulations=True, format='xml', default_cell_radius=5):
     """
     Exports the current NetPyNE network to NeuroML format
@@ -343,11 +381,11 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
         cell_param_set = {}
 
         if (
-            (not 'cellModel' in np_pop.tags or np_pop.tags['cellModel'] == '')
+            ('cellModel' not in np_pop.tags or np_pop.tags['cellModel'] == '')
             and 'cellType' in np_pop.tags
             and np_pop.tags['cellType'] in net.params.cellParams.keys()
         ):
-            ## SIMPLE POP/CELLTYPE FORMAT
+            # SIMPLE POP/CELLTYPE FORMAT
             if sim.cfg.verbose:
                 print("Assuming simple pop/cell type format...")
             cell_param_set = net.params.cellParams[np_pop.tags['cellType']]
@@ -408,9 +446,9 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
 
         if not np_pop.tags['cellModel'] == 'NetStim':
             if 'conds' in cell_param_set and len(cell_param_set['conds']) > 0:
-                if not 'cellModel' in cell_param_set['conds'] or cell_param_set['conds']['cellModel'] == {}:
+                if 'cellModel' not in cell_param_set['conds'] or cell_param_set['conds']['cellModel'] == {}:
                     cell_id = 'CELL_%s' % (cell_param_set['conds']['cellType'])
-                elif not 'cellType' in cell_param_set['conds'] or cell_param_set['conds']['cellType'] == {}:
+                elif 'cellType' not in cell_param_set['conds'] or cell_param_set['conds']['cellType'] == {}:
                     cell_id = 'CELL_%s' % (cell_param_set['conds']['cellModel'])
                 else:
                     cell_id = 'CELL_%s_%s' % (
@@ -418,14 +456,14 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                         cell_param_set['conds']['cellType'],
                     )
             else:
-                ## SIMPLE POP/CELLTYPE FORMAT
+                # SIMPLE POP/CELLTYPE FORMAT
                 cell_id = 'CELL_%s' % (np_pop.tags['cellType'])
 
             populations_vs_components[np_pop.tags['pop']] = cell_id
 
         if sim.cfg.verbose:
             print("Checking whether to add cell: %s; already added: %s" % (cell_param_set, cells_added))
-        if 'cellModel' in np_pop.tags and not np_pop.tags['cellModel'] == 'NetStim' and not cell_id in cells_added:
+        if 'cellModel' in np_pop.tags and np_pop.tags['cellModel'] != 'NetStim' and cell_id not in cells_added:
 
             if sim.cfg.verbose:
                 print("---------------  Adding a cell from pop %s: \n%s" % (np_pop.tags, cell_param_set))
@@ -448,17 +486,17 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
 
                 if pproc['mod'] == 'Izhi2007b':
                     izh = neuroml.Izhikevich2007Cell(id=cell_id)
-                    izh.a = '%s per_ms' % pproc['a']
-                    izh.b = '%s nS' % pproc['b']
-                    izh.c = '%s mV' % pproc['c']
-                    izh.d = '%s pA' % pproc['d']
+                    izh.a = '%r per_ms' % pproc['a']
+                    izh.b = '%r nS' % pproc['b']
+                    izh.c = '%r mV' % pproc['c']
+                    izh.d = '%r pA' % pproc['d']
 
-                    izh.v0 = '%s mV' % pproc['vr']  # Note: using vr for v0
-                    izh.vr = '%s mV' % pproc['vr']
-                    izh.vt = '%s mV' % pproc['vt']
-                    izh.vpeak = '%s mV' % pproc['vpeak']
-                    izh.C = '%s pF' % (pproc['C'] * 100)
-                    izh.k = '%s nS_per_mV' % pproc['k']
+                    izh.v0 = '%r mV' % pproc['vr']  # Note: using vr for v0
+                    izh.vr = '%r mV' % pproc['vr']
+                    izh.vt = '%r mV' % pproc['vt']
+                    izh.vpeak = '%r mV' % pproc['vpeak']
+                    izh.C = '%r pF' % (pproc['C'] * 100)
+                    izh.k = '%r nS_per_mV' % pproc['k']
 
                     nml_doc.izhikevich2007_cells.append(izh)
                 else:
@@ -525,7 +563,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
 
                     if 'pt3d' not in np_sec['geom'] or len(np_sec['geom']['pt3d']) == 0:
 
-                        if parent_seg == None:
+                        if parent_seg is None:
                             nml_seg.proximal = neuroml.Point3DWithDiam(
                                 x=parentDistal.x, y=parentDistal.y, z=parentDistal.z, diameter=np_sec['geom']['diam']
                             )
@@ -557,7 +595,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                     count += 1
 
                     ip.resistivities.append(
-                        neuroml.Resistivity(value="%s ohm_cm" % np_sec['geom']['Ra'], segment_groups=nml_seg_group.id)
+                        neuroml.Resistivity(value="%r ohm_cm" % np_sec['geom']['Ra'], segment_groups=nml_seg_group.id)
                     )
 
                     '''
@@ -567,7 +605,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                     if isinstance(cm, dict) and len(cm) == 0:
                         cm = 1
                     mp.specific_capacitances.append(
-                        neuroml.SpecificCapacitance(value="%s uF_per_cm2" % cm, segment_groups=nml_seg_group.id)
+                        neuroml.SpecificCapacitance(value="%r uF_per_cm2" % cm, segment_groups=nml_seg_group.id)
                     )
 
                     vinit = np_sec['vinit'] if 'vinit' in np_sec else -65
@@ -576,10 +614,10 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                         vinit = -65
 
                     if len(mp.init_memb_potentials) == 0:
-                        mp.init_memb_potentials.append(neuroml.InitMembPotential(value="%s mV" % vinit))
+                        mp.init_memb_potentials.append(neuroml.InitMembPotential(value="%r mV" % vinit))
 
                     if len(mp.spike_threshes) == 0:
-                        mp.spike_threshes.append(neuroml.SpikeThresh(value="%s mV" % sim.net.params.defaultThreshold))
+                        mp.spike_threshes.append(neuroml.SpikeThresh(value="%r mV" % sim.net.params.defaultThreshold))
 
                     # While testing HNN...
                     mechs_to_ignore = [
@@ -606,7 +644,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
 
                             for chan in chans_doc.ion_channel_hhs:
                                 if chan.id == 'leak_hh' or chan.id == 'na_hh' or chan.id == 'k_hh':
-                                    if not chan.id in chans_added:
+                                    if chan.id not in chans_added:
                                         print(" > Adding %s since it's not in %s" % (chan.id, chans_added))
                                         nml_doc.ion_channel_hhs.append(chan)
                                         chans_added.append(chan.id)
@@ -614,8 +652,8 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                             leak_cd = neuroml.ChannelDensity(
                                 id='leak_%s' % nml_seg_group.id,
                                 ion_channel='leak_hh',
-                                cond_density='%s S_per_cm2' % mech['gl'],
-                                erev='%s mV' % mech['el'],
+                                cond_density='%r S_per_cm2' % mech['gl'],
+                                erev='%r mV' % mech['el'],
                                 ion='non_specific',
                             )
                             mp.channel_densities.append(leak_cd)
@@ -623,8 +661,8 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                             k_cd = neuroml.ChannelDensity(
                                 id='k_%s' % nml_seg_group.id,
                                 ion_channel='k_hh',
-                                cond_density='%s S_per_cm2' % mech['gkbar'],
-                                erev='%s mV' % '-77',
+                                cond_density='%r S_per_cm2' % mech['gkbar'],
+                                erev='%r mV' % -77.,
                                 ion='k',
                             )
                             mp.channel_densities.append(k_cd)
@@ -632,8 +670,8 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                             na_cd = neuroml.ChannelDensity(
                                 id='na_%s' % nml_seg_group.id,
                                 ion_channel='na_hh',
-                                cond_density='%s S_per_cm2' % mech['gnabar'],
-                                erev='%s mV' % '50',
+                                cond_density='%r S_per_cm2' % mech['gnabar'],
+                                erev='%r mV' % 50.,
                                 ion='na',
                             )
                             mp.channel_densities.append(na_cd)
@@ -642,15 +680,15 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
 
                             for chan in chans_doc.ion_channel_hhs:
                                 if chan.id == 'leak_hh':
-                                    if not chan.id in chans_added:
+                                    if chan.id not in chans_added:
                                         nml_doc.ion_channel_hhs.append(chan)
                                         chans_added.append(chan.id)
 
                             leak_cd = neuroml.ChannelDensity(
                                 id='leak_%s' % nml_seg_group.id,
                                 ion_channel='leak_hh',
-                                cond_density='%s mS_per_cm2' % mech['g'],
-                                erev='%s mV' % mech['e'],
+                                cond_density='%r mS_per_cm2' % mech['g'],
+                                erev='%r mV' % mech['e'],
                                 ion='non_specific',
                             )
                             mp.channel_densities.append(leak_cd)
@@ -746,7 +784,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                         post_cell_id="../%s/%i/%s" % (popPost, conn['indexPost'], populations_vs_components[popPost]),
                         post_segment_id=0,
                         post_fraction_along=0.5,
-                        delay='%s ms' % conn['delay'],
+                        delay='%r ms' % conn['delay'],
                         weight=conn['weight'],
                     )
 
@@ -781,7 +819,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                         connection.pre_fraction_along,
                     )
 
-                    if not other_half_elect_conn in half_elect_conns_added:
+                    if other_half_elect_conn not in half_elect_conns_added:
                         projection.electrical_connection_instances.append(connection)
                         half_elect_conns_added.append(
                             "%s_%s_%s_%s -> %s_%s_%s_%s"
@@ -805,7 +843,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
             print('Adding the stim source: %s = %s' % (ssp, ss))
             if ss['type'] == 'IClamp':
                 pg = neuroml.PulseGenerator(
-                    id=ssp, delay="%sms" % ss['del'], duration="%sms" % ss['dur'], amplitude="%f nA" % ss['amp']
+                    id=ssp, delay="%rms" % ss['del'], duration="%rms" % ss['dur'], amplitude="%f nA" % ss['amp']
                 )
 
                 nml_doc.pulse_generators.append(pg)
@@ -819,10 +857,10 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                 print("Adding a NetStim stim: %s" % [stim_info])
 
             if noise == 0:
-                source = neuroml.SpikeGenerator(id=name_stim, period="%ss" % (1.0 / rate))
+                source = neuroml.SpikeGenerator(id=name_stim, period="%rs" % (1.0 / rate))
                 nml_doc.spike_generators.append(source)
             elif noise == 1:
-                source = neuroml.SpikeGeneratorPoisson(id=name_stim, average_rate="%s Hz" % (rate))
+                source = neuroml.SpikeGeneratorPoisson(id=name_stim, average_rate="%r Hz" % (rate))
                 nml_doc.spike_generator_poissons.append(source)
             else:
                 raise Exception("Noise = %s in a spike generator is not yet supported for NeuroML export!" % noise)
@@ -851,7 +889,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                     post_cell_id="../%s/%i/%s" % (post_pop, stim['index'], populations_vs_components[post_pop]),
                     post_segment_id=0,
                     post_fraction_along=0.5,
-                    delay='%s ms' % stim['delay'],
+                    delay='%r ms' % stim['delay'],
                     weight=stim['weight'],
                 )
                 count += 1
@@ -889,18 +927,17 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
 
 
 ###############################################################################
-### Class for handling NeuroML2 constructs and generating the equivalent in
-### NetPyNE's internal representation
+# Class for handling NeuroML2 constructs and generating the equivalent in
+# NetPyNE's internal representation
 ###############################################################################
-
-#### NOTE: commented out because generated error when running via mpiexec
-####       maybe find way to check if exectued via mpi
-
 try:
     from neuroml.hdf5.DefaultNetworkHandler import DefaultNetworkHandler
 
     class NetPyNEBuilder(DefaultNetworkHandler):
         """
+        Class for handling NeuroML2 constructs and generating the equivalent in
+        NetPyNE's internal representation.
+
         Works with libNeuroML's NeuroMLXMLParser and/or NeuroMLHdf5Parser to parse the NML & build equivalent in NetPyNE
 
         """
@@ -931,6 +968,9 @@ try:
             self.simConfig = simConfig
             self.verbose = verbose
 
+            if self.verbose:
+                logger.setLevel(logging.DEBUG)
+
         def finalise(self):
 
             for popParam in list(self.popParams.keys()):
@@ -949,6 +989,20 @@ try:
                 self.netParams.stimTargetParams[stimName] = self.stimLists[stimName]
 
         def _get_prox_dist(self, seg, seg_ids_vs_segs):
+            """Get proximal and distal points for a segment.
+
+            Parameters
+            -----------
+
+            seg: neuroml.Segment
+                segment object
+                **Default:**: required
+
+            seg_ids_vs_segs: dict
+                dictionary with segment ids as keys and segment objects as
+                values
+                **Default:**: required
+            """
             prox = None
             if seg.proximal:
                 prox = seg.proximal
@@ -959,7 +1013,7 @@ try:
             dist = seg.distal
 
             # Spherical root segment
-            if seg.parent == None and prox.x == dist.x and prox.y == dist.y and prox.z == dist.z:
+            if seg.parent is None and prox.x == dist.x and prox.y == dist.y and prox.z == dist.z:
 
                 if prox.diameter == dist.diameter:
                     dist.y = prox.diameter
@@ -968,29 +1022,56 @@ try:
 
             return prox, dist
 
-        #
-        #  Overridden from DefaultNetworkHandler
-        #
+        @override
         def handle_network(self, network_id, notes, temperature=None):
             if temperature:
-                self.simConfig.hParams['celsius'] = pynml.convert_to_units(temperature, 'degC')
+                self.simConfig.hParams['celsius'] = round(pynml.convert_to_units(temperature, 'degC'), 5)
                 print("Setting global temperature to %s" % self.simConfig.hParams['celsius'])
 
-        #
-        #  Overridden from DefaultNetworkHandler
-        #
-        def handle_population(self, population_id, component, size, component_obj, properties={}):
+        @override
+        def handle_population(self, population_id, component, size,
+                              component_obj, properties={}, notes=None):
+            """Handle a population.
+
+            Parameters
+            -----------
+
+            population_id: str
+                id of population
+                **Default:** required
+
+            component: str
+                id of the component used in the population
+                **Default:** required
+
+            size: int
+                size of population
+                **Default:** required
+
+            component_object: object
+                object of the component used in the population
+                **Default:** required
+
+            properties: dict
+                dictionary of properties (currently unused)
+                **Default:** {}
+
+            notes: str
+                notes (currently unused)
+                **Default:** None
+                """
 
             if self.verbose:
                 print(
                     "A population: %s with %i of %s (%s) "
-                    % (population_id, size, component, str(component_obj).strip())
+                    % (population_id, size, component, str(component_obj.id).strip())
                 )
 
             self.pop_ids_vs_components[population_id] = component_obj
 
             assert component == component_obj.id
 
+            # dictionary used to populate netParams.popParams
             popInfo = OrderedDict()
             popInfo['pop'] = population_id
             # popInfo['cellModel'] = component
@@ -1004,15 +1085,27 @@ try:
             popInfo['numCells'] = size
 
             if population_id == 'pop':
-                print(
-                    "\n\n*****************************\nReconsider calling your population 'pop'; it leads to some errors in NetPyNE!\nGiving up...\n*****************************\n\n"
+                logger.critical(
+                    """
+                    ***************************** ERROR *****************************
+                    The 'pop' label for populations is reservered.
+                    Please use something else.
+
+                    See
+                    http://doc.netpyne.org/user_documentation.html#population-parameters
+
+                    Exiting.
+                    ***************************** ERROR *****************************
+                    """
                 )
                 quit()
 
             self.popParams[population_id] = popInfo
 
-            from neuroml import Cell, BaseCell
+            from neuroml import BaseCell, Cell
 
+            # Cell with morphology and biophysics
+            # https://docs.neuroml.org/Userdocs/Schemas/Cells.html#cell
             if isinstance(component_obj, Cell):
 
                 # popInfo['cellType'] = component
@@ -1023,6 +1116,8 @@ try:
                                         'cellModel': component},
                             'secs': {},
                             'secLists':{}}'''
+                # construct NetPyNE cellParams object
+                # http://doc.netpyne.org/modeling-specification-v1.0.html#cell-types
                 cellRule = {'secs': {}, 'secLists': {}}
 
                 seg_ids_vs_segs = cell.get_segment_ids_vs_segments()
@@ -1040,7 +1135,10 @@ try:
                 else:
                     threshold = 0
 
+                # Go over segment groups to see if they are unbranched.
+                # If they are, these directly become sections
                 for seg_grp in cell.morphology.segment_groups:
+                    # Unbranched segment group -> NEURON section
                     if hasattr(seg_grp, 'neuro_lex_id') and seg_grp.neuro_lex_id == "sao864921383":
                         use_segment_groups_for_neuron = True
                         cellRule['secs'][seg_grp.id] = {'geom': {'pt3d': []}, 'mechs': {}, 'ions': {}}
@@ -1055,6 +1153,8 @@ try:
                 self.pop_ids_vs_use_segment_groups_for_neuron[population_id] = use_segment_groups_for_neuron
 
                 if not use_segment_groups_for_neuron:
+                    # Unbranched segment groups not provided,
+                    # so we construct sections and geometry from individual segments
                     for seg in cell.morphology.segments:
 
                         seg_grps_vs_nrn_sections['all'].append(seg.name)
@@ -1074,6 +1174,7 @@ try:
                             }
 
                 else:
+                    # Get geometry from the unbranched segment groups
                     ordered_segs, cumulative_lengths = cell.get_ordered_segments_in_groups(
                         list(cellRule['secs'].keys()), include_cumulative_lengths=True
                     )
@@ -1081,11 +1182,19 @@ try:
                     self.pop_ids_vs_cumulative_lengths[population_id] = cumulative_lengths
 
                     for section in list(cellRule['secs'].keys()):
+                        logger.debug("Processing section: %s",  section)
                         # print("ggg %s: %s"%(section,ordered_segs[section]))
                         for seg in ordered_segs[section]:
+                            logger.debug("Processing segment: %s",  seg)
                             prox, dist = self._get_prox_dist(seg, seg_ids_vs_segs)
 
                             if seg.id == ordered_segs[section][0].id:
+                                logger.debug(
+                                    "Processing first segment %s of section %s",
+                                    seg, section
+                                )
+                                # If it's the first segment, add the proximal
+                                # point to mark the start of the section
                                 cellRule['secs'][section]['geom']['pt3d'].append(
                                     (prox.x, prox.y, prox.z, prox.diameter)
                                 )
@@ -1098,6 +1207,23 @@ try:
                                             parent_sec = sec
                                     fract = float(seg.parent.fraction_along)
 
+                                    # TODO: implement conversion of NeuroML segment's parent's fractAlong to
+                                    # Neuron's unbranched section's parentX.
+                                    # Until this is implemented, we only handle cases where the the first
+                                    # segment of a segment group is either attached to its parent at the
+                                    # parent's proximal or distal point.
+                                    if (fract != 1.0) and (math.isclose(fract, 1.0, rel_tol=1e-4)):
+                                        logger.warning("Approximating fract of %f to 1.0", fract)
+                                        fract = 1.0
+                                    if (fract != 0.0) and (math.isclose(fract, 0.0, rel_tol=1e-4)):
+                                        logger.warning("Approximating fract of %f to 0.0", fract)
+                                        fract = 0.0
+
+                                    if fract != 1.0 and fract != 0.0:
+                                        logger.critical(
+                                            "Segment (%s) must be attached to parent (%s) at proximal or distal point",
+                                            seg, seg.parent
+                                        )
                                     assert fract == 1.0 or fract == 0.0
 
                                     cellRule['secs'][section]['topol'] = {
@@ -1106,11 +1232,13 @@ try:
                                         'childX': 0,
                                     }
 
+                            # add distal point for all segments
                             cellRule['secs'][section]['geom']['pt3d'].append((dist.x, dist.y, dist.z, dist.diameter))
 
+                # Inhomogeneous Parameters
                 inhomogeneous_parameters = {}
-
                 for seg_grp in cell.morphology.segment_groups:
+                    # 'all' has been populated, now populate individual groups
                     seg_grps_vs_nrn_sections[seg_grp.id] = []
 
                     if not use_segment_groups_for_neuron:
@@ -1132,6 +1260,11 @@ try:
                         cellRule['secLists'][seg_grp.id] = seg_grps_vs_nrn_sections[seg_grp.id]
 
                     for ip in seg_grp.inhomogeneous_parameters:
+                        logger.debug(
+                            "Processing inhomogeneous_parameter (%s, %s) in segment group (%s)",
+                            ip.id, ip.variable, seg_grp.id
+                        )
+
                         # print("=====================\ninhomogeneousParameter: %s"%ip)
 
                         inhomogeneous_parameters[seg_grp.id] = {}
@@ -1154,20 +1287,24 @@ try:
                             last = sec_segs[nrn_sec][-1]
                             start_len = path_prox[seg_grp.id][first.id]
                             end_len = path_dist[seg_grp.id][last.id]
-                            # print("  Seg: %s (%s) -> %s (%s)"%(first,start_len,last,end_len))
 
-                            inhomogeneous_parameters[seg_grp.id][nrn_sec] = (start_len, end_len)
+                            inhomogeneous_parameters[seg_grp.id][nrn_sec] = (round(start_len, 10), round(end_len, 10))
+                            logger.debug(
+                                "Inhomogeneous parameter: Seg: %s (%s) -> %s (%s)",
+                                first, start_len, last, end_len
+                            )
 
+                # Channel Densities
                 for cm in cell.biophysical_properties.membrane_properties.channel_densities:
-
+                    logger.debug("Processing channel density %s", cm.id)
                     group = 'all' if not cm.segment_groups else cm.segment_groups
                     for section_name in seg_grps_vs_nrn_sections[group]:
-                        gmax = pynml.convert_to_units(cm.cond_density, 'S_per_cm2')
+                        gmax = round(pynml.convert_to_units(cm.cond_density, 'S_per_cm2'), 10)
                         if cm.ion_channel == 'pas':
                             mech = {'g': gmax}
                         else:
                             mech = {'gmax': gmax}
-                        erev = pynml.convert_to_units(cm.erev, 'mV')
+                        erev = round(pynml.convert_to_units(cm.erev, 'mV'), 10)
 
                         cellRule['secs'][section_name]['mechs'][cm.ion_channel] = mech
 
@@ -1179,16 +1316,17 @@ try:
                                 cellRule['secs'][section_name]['ions'][ion] = {}
                             cellRule['secs'][section_name]['ions'][ion]['e'] = erev
 
+                # Channel Densities v-shifts
                 for cm in cell.biophysical_properties.membrane_properties.channel_density_v_shifts:
-
+                    logger.debug("Processing channel density v-shift %s", cm.id)
                     group = 'all' if not cm.segment_groups else cm.segment_groups
                     for section_name in seg_grps_vs_nrn_sections[group]:
-                        gmax = pynml.convert_to_units(cm.cond_density, 'S_per_cm2')
+                        gmax = round(pynml.convert_to_units(cm.cond_density, 'S_per_cm2'), 10)
                         if cm.ion_channel == 'pas':
                             mech = {'g': gmax}
                         else:
                             mech = {'gmax': gmax}
-                        erev = pynml.convert_to_units(cm.erev, 'mV')
+                        erev = round(pynml.convert_to_units(cm.erev, 'mV'), 10)
 
                         cellRule['secs'][section_name]['mechs'][cm.ion_channel] = mech
 
@@ -1201,10 +1339,12 @@ try:
                             cellRule['secs'][section_name]['ions'][ion]['e'] = erev
                         mech['vShift'] = pynml.convert_to_units(cm.v_shift, 'mV')
 
+                # Channel Densities Nernsts
                 for cm in cell.biophysical_properties.membrane_properties.channel_density_nernsts:
+                    logger.debug("Processing channel density Nernst %s", cm.id)
                     group = 'all' if not cm.segment_groups else cm.segment_groups
                     for section_name in seg_grps_vs_nrn_sections[group]:
-                        gmax = pynml.convert_to_units(cm.cond_density, 'S_per_cm2')
+                        gmax = round(pynml.convert_to_units(cm.cond_density, 'S_per_cm2'), 10)
                         if cm.ion_channel == 'pas':
                             mech = {'g': gmax}
                         else:
@@ -1212,56 +1352,63 @@ try:
 
                         cellRule['secs'][section_name]['mechs'][cm.ion_channel] = mech
 
-                        # TODO: erev!!
+                        ion = self._determine_ion(cm)
+                        if ion == 'non_specific':
+                            pass
+                        else:
+                            if ion not in cellRule['secs'][section_name]['ions']:
+                                cellRule['secs'][section_name]['ions'][ion] = {}
+
+                for cm in cell.biophysical_properties.membrane_properties.channel_density_ghks:
+                    logger.debug("Processing channel density GHK %s", cm.id)
+                    group = 'all' if not cm.segment_groups else cm.segment_groups
+                    for section_name in seg_grps_vs_nrn_sections[group]:
+                        permeability = round(pynml.convert_to_units(cm.permeability, 'cm_per_s'), 10)
+                        mech = {'permeability': permeability}
+
+                        cellRule['secs'][section_name]['mechs'][cm.ion_channel] = mech
 
                         ion = self._determine_ion(cm)
                         if ion == 'non_specific':
                             pass
-                            ##mech['e'] = erev
                         else:
                             if ion not in cellRule['secs'][section_name]['ions']:
                                 cellRule['secs'][section_name]['ions'][ion] = {}
-                            ##cellRule['secs'][section_name]['ions'][ion]['e'] = erev
 
                 for cm in cell.biophysical_properties.membrane_properties.channel_density_ghk2s:
-
+                    logger.debug("Processing channel density GHK2 %s", cm.id)
                     group = 'all' if not cm.segment_groups else cm.segment_groups
                     for section_name in seg_grps_vs_nrn_sections[group]:
-                        gmax = pynml.convert_to_units(cm.cond_density, 'S_per_cm2')
+                        gmax = round(pynml.convert_to_units(cm.cond_density, 'S_per_cm2'), 10)
                         if cm.ion_channel == 'pas':
                             mech = {'g': gmax}
                         else:
                             mech = {'gmax': gmax}
-
-                        ##erev = pynml.convert_to_units(cm.erev,'mV')
 
                         cellRule['secs'][section_name]['mechs'][cm.ion_channel] = mech
 
                         ion = self._determine_ion(cm)
                         if ion == 'non_specific':
                             pass
-                            # mech['e'] = erev
                         else:
                             if ion not in cellRule['secs'][section_name]['ions']:
                                 cellRule['secs'][section_name]['ions'][ion] = {}
-                            ##cellRule['secs'][section_name]['ions'][ion]['e'] = erev
 
                 for cm in cell.biophysical_properties.membrane_properties.channel_density_non_uniforms:
-
+                    logger.debug("Processing channel density non uniform %s", cm.id)
                     for vp in cm.variable_parameters:
                         if vp.parameter == "condDensity":
                             iv = vp.inhomogeneous_value
                             grp = vp.segment_groups
-                            path_vals = inhomogeneous_parameters[grp]
                             expr = iv.value.replace('exp(', 'math.exp(')
-                            # print("variable_parameter: %s, %s, %s"%(grp,iv, expr))
+                            logger.debug("variable_parameter: %s, %s, %s"%(grp,iv, expr))
 
                             for section_name in seg_grps_vs_nrn_sections[grp]:
                                 path_start, path_end = inhomogeneous_parameters[grp][section_name]
                                 p = path_start
-                                gmax_start = pynml.convert_to_units('%s S_per_m2' % eval(expr), 'S_per_cm2')
+                                gmax_start = pynml.convert_to_units('%r S_per_m2' % eval(expr), 'S_per_cm2')
                                 p = path_end
-                                gmax_end = pynml.convert_to_units('%s S_per_m2' % eval(expr), 'S_per_cm2')
+                                gmax_end = pynml.convert_to_units('%r S_per_m2' % eval(expr), 'S_per_cm2')
 
                                 nseg = (
                                     cellRule['secs'][section_name]['geom']['nseg']
@@ -1269,22 +1416,23 @@ try:
                                     else 1
                                 )
 
-                                # print("   Cond dens %s: %s S_per_cm2 (%s um) -> %s S_per_cm2 (%s um); nseg = %s"%(section_name,gmax_start,path_start,gmax_end,path_end, nseg))
+                                logger.debug(
+                                    "Cond dens %s: %r S_per_cm2 (%r um) -> %r S_per_cm2 (%r um); nseg = %s",
+                                    section_name, gmax_start, path_start, gmax_end, path_end, nseg
+                                )
 
                                 gmax = []
                                 for fract in [(2 * i + 1.0) / (2 * nseg) for i in range(nseg)]:
-
                                     p = path_start + fract * (path_end - path_start)
-
-                                    gmax_i = pynml.convert_to_units('%s S_per_m2' % eval(expr), 'S_per_cm2')
-                                    # print("     Point %s at %s = %s"%(p,fract, gmax_i))
+                                    gmax_i = pynml.convert_to_units('%r S_per_m2' % eval(expr), 'S_per_cm2')
                                     gmax.append(gmax_i)
+
+                                    logger.debug("Point %s at %r = %r", p, fract, gmax_i)
 
                                 if cm.ion_channel == 'pas':
                                     mech = {'g': gmax}
                                 else:
                                     mech = {'gmax': gmax}
-                                erev = pynml.convert_to_units(cm.erev, 'mV')
 
                                 cellRule['secs'][section_name]['mechs'][cm.ion_channel] = mech
 
@@ -1296,11 +1444,57 @@ try:
                                         cellRule['secs'][section_name]['ions'][ion] = {}
                                     cellRule['secs'][section_name]['ions'][ion]['e'] = erev
 
-                for cm in cell.biophysical_properties.membrane_properties.channel_density_ghks:
-                    raise Exception("<channelDensityGHK> not yet supported!")
-
                 for cm in cell.biophysical_properties.membrane_properties.channel_density_non_uniform_nernsts:
-                    raise Exception("<channelDensityNonUniformNernst> not yet supported!")
+                    # TODO: identical to non-uniform but not setting e-rev, so
+                    # can probably be refractored into a function
+                    logger.debug("Processing channel density non uniform Nernst %s", cm.id)
+                    for vp in cm.variable_parameters:
+                        if vp.parameter == "condDensity":
+                            iv = vp.inhomogeneous_value
+                            grp = vp.segment_groups
+                            expr = iv.value.replace('exp(', 'math.exp(')
+                            logger.debug("variable_parameter: %s, %s, %s", grp, iv, expr)
+
+                            for section_name in seg_grps_vs_nrn_sections[grp]:
+
+                                path_start, path_end = inhomogeneous_parameters[grp][section_name]
+                                p = path_start
+                                gmax_start = pynml.convert_to_units('%r S_per_m2' % eval(expr), 'S_per_cm2')
+                                p = path_end
+                                gmax_end = pynml.convert_to_units('%r S_per_m2' % eval(expr), 'S_per_cm2')
+
+                                nseg = (
+                                    cellRule['secs'][section_name]['geom']['nseg']
+                                    if 'nseg' in cellRule['secs'][section_name]['geom']
+                                    else 1
+                                )
+
+                                logger.debug(
+                                    "Cond dens %s: %r S_per_cm2 (%r um) -> %r S_per_cm2 (%r um); nseg = %s",
+                                    section_name, gmax_start, path_start, gmax_end, path_end, nseg
+                                )
+
+                                gmax = []
+                                for fract in [(2 * i + 1.0) / (2 * nseg) for i in range(nseg)]:
+                                    p = path_start + fract * (path_end - path_start)
+                                    gmax_i = pynml.convert_to_units('%r S_per_m2' % eval(expr), 'S_per_cm2')
+                                    gmax.append(gmax_i)
+
+                                    logger.debug("Point %s at %r = %r", p, fract, gmax_i)
+
+                                if cm.ion_channel == 'pas':
+                                    mech = {'g': gmax}
+                                else:
+                                    mech = {'gmax': gmax}
+
+                                cellRule['secs'][section_name]['mechs'][cm.ion_channel] = mech
+
+                                ion = self._determine_ion(cm)
+                                if ion == 'non_specific':
+                                    pass
+                                else:
+                                    if ion not in cellRule['secs'][section_name]['ions']:
+                                        cellRule['secs'][section_name]['ions'][ion] = {}
 
                 for cm in cell.biophysical_properties.membrane_properties.channel_density_non_uniform_ghks:
                     raise Exception("<channelDensityNonUniformGHK> not yet supported!")
@@ -1439,12 +1633,10 @@ try:
                                 fract_sec = (to_start + fract_along * (to_end - to_start)) / (tot)
 
                         ind += 1
-                # print("=============  Converted %s:%s on pop %s to %s on %s"%(seg_id, fract_along, population_id, nrn_sec, fract_sec))
+                logger.debug("=============  Converted %s:%s on pop %s to %s on %s" % (seg_id, fract_along, population_id, nrn_sec, fract_sec))
                 return nrn_sec, fract_sec
 
-        #
-        #  Overridden from DefaultNetworkHandler
-        #
+        @override
         def handle_location(self, id, population_id, component, x, y, z):
             DefaultNetworkHandler.print_location_information(self, id, population_id, component, x, y, z)
 
@@ -1454,9 +1646,7 @@ try:
             self.gids[population_id][id] = self.next_gid
             self.next_gid += 1
 
-        #
-        #  Overridden from DefaultNetworkHandler
-        #
+        @override
         def handle_projection(
             self,
             projName,
@@ -1475,9 +1665,7 @@ try:
             self.projection_infos[projName] = (projName, prePop, postPop, synapse, type)
             self.connections[projName] = []
 
-        #
-        #  Overridden from DefaultNetworkHandler
-        #
+        @override
         def handle_connection(
             self,
             projName,
@@ -1515,9 +1703,7 @@ try:
                 )
             )
 
-        #
-        #  Overridden from DefaultNetworkHandler
-        #
+        @override
         def handle_input_list(self, inputListId, population_id, component, size, input_comp_obj=None):
             DefaultNetworkHandler.print_input_information(self, inputListId, population_id, component, size)
 
@@ -1553,9 +1739,7 @@ try:
                         'loc': 0.5,
                         'conds': {'pop':population_id, 'cellList': []}}'''
 
-        #
-        #  Overridden from DefaultNetworkHandler
-        #
+        @override
         def handle_single_input(self, inputListId, id, cellId, segId=0, fract=0.5, weight=1.0):
 
             pop_id = self.popStimLists[inputListId]['conds']['pop']
@@ -1627,25 +1811,15 @@ try:
 
         netParams = specs.NetParams()
 
-        import pprint
-
-        pp = pprint.PrettyPrinter(indent=4)
-
         print("Importing NeuroML 2 network from: %s" % fileName)
 
         nmlHandler = None
 
-        verbose = True
-
         if fileName.endswith(".nml"):
-
-            import logging
-
-            logging.basicConfig(level=logging.WARNING, format="%(name)-19s %(levelname)-5s - %(message)s")
 
             from neuroml.hdf5.NeuroMLXMLParser import NeuroMLXMLParser
 
-            nmlHandler = NetPyNEBuilder(netParams, simConfig=simConfig, verbose=verbose)
+            nmlHandler = NetPyNEBuilder(netParams, simConfig=simConfig)
 
             currParser = NeuroMLXMLParser(
                 nmlHandler
@@ -1663,13 +1837,9 @@ try:
 
         if fileName.endswith(".h5"):
 
-            import logging
-
-            logging.basicConfig(level=logging.WARNING, format="%(name)-19s %(levelname)-5s - %(message)s")
-
             from neuroml.hdf5.NeuroMLHdf5Parser import NeuroMLHdf5Parser
 
-            nmlHandler = NetPyNEBuilder(netParams, simConfig=simConfig, verbose=verbose)
+            nmlHandler = NetPyNEBuilder(netParams, simConfig=simConfig)
 
             currParser = NeuroMLHdf5Parser(
                 nmlHandler
@@ -1788,6 +1958,5 @@ try:
         else:
             return nmlHandler.gids
 
-except:
-    pass
-    # print(' Warning: An Exception occurred when loading NeuroML ...')
+except ImportError:
+    logger.critical("Could not import neuroml.DefaultNetworkHandler. Exiting")

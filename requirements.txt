@@ -11,3 +11,4 @@ pytest
 inspyred >= 1.0.2
 schema
 lfpykit
+overrides ; python_version >= '3.6' and python_version < '3.12'

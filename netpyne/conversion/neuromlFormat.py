@@ -381,11 +381,11 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
         cell_param_set = {}
 
         if (
-            (not 'cellModel' in np_pop.tags or np_pop.tags['cellModel'] == '')
+            ('cellModel' not in np_pop.tags or np_pop.tags['cellModel'] == '')
             and 'cellType' in np_pop.tags
             and np_pop.tags['cellType'] in net.params.cellParams.keys()
         ):
-            ## SIMPLE POP/CELLTYPE FORMAT
+            # SIMPLE POP/CELLTYPE FORMAT
             if sim.cfg.verbose:
                 print("Assuming simple pop/cell type format...")
             cell_param_set = net.params.cellParams[np_pop.tags['cellType']]
@@ -446,9 +446,9 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
 
         if not np_pop.tags['cellModel'] == 'NetStim':
             if 'conds' in cell_param_set and len(cell_param_set['conds']) > 0:
-                if not 'cellModel' in cell_param_set['conds'] or cell_param_set['conds']['cellModel'] == {}:
+                if 'cellModel' not in cell_param_set['conds'] or cell_param_set['conds']['cellModel'] == {}:
                     cell_id = 'CELL_%s' % (cell_param_set['conds']['cellType'])
-                elif not 'cellType' in cell_param_set['conds'] or cell_param_set['conds']['cellType'] == {}:
+                elif 'cellType' not in cell_param_set['conds'] or cell_param_set['conds']['cellType'] == {}:
                     cell_id = 'CELL_%s' % (cell_param_set['conds']['cellModel'])
                 else:
                     cell_id = 'CELL_%s_%s' % (
@@ -456,14 +456,14 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                         cell_param_set['conds']['cellType'],
                     )
             else:
-                ## SIMPLE POP/CELLTYPE FORMAT
+                # SIMPLE POP/CELLTYPE FORMAT
                 cell_id = 'CELL_%s' % (np_pop.tags['cellType'])
 
             populations_vs_components[np_pop.tags['pop']] = cell_id
 
         if sim.cfg.verbose:
             print("Checking whether to add cell: %s; already added: %s" % (cell_param_set, cells_added))
-        if 'cellModel' in np_pop.tags and not np_pop.tags['cellModel'] == 'NetStim' and not cell_id in cells_added:
+        if 'cellModel' in np_pop.tags and np_pop.tags['cellModel'] != 'NetStim' and cell_id not in cells_added:
 
             if sim.cfg.verbose:
                 print("---------------  Adding a cell from pop %s: \n%s" % (np_pop.tags, cell_param_set))
@@ -563,7 +563,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
 
                     if 'pt3d' not in np_sec['geom'] or len(np_sec['geom']['pt3d']) == 0:
 
-                        if parent_seg == None:
+                        if parent_seg is None:
                             nml_seg.proximal = neuroml.Point3DWithDiam(
                                 x=parentDistal.x, y=parentDistal.y, z=parentDistal.z, diameter=np_sec['geom']['diam']
                             )
@@ -644,7 +644,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
 
                             for chan in chans_doc.ion_channel_hhs:
                                 if chan.id == 'leak_hh' or chan.id == 'na_hh' or chan.id == 'k_hh':
-                                    if not chan.id in chans_added:
+                                    if chan.id not in chans_added:
                                         print(" > Adding %s since it's not in %s" % (chan.id, chans_added))
                                         nml_doc.ion_channel_hhs.append(chan)
                                         chans_added.append(chan.id)
@@ -680,7 +680,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
 
                             for chan in chans_doc.ion_channel_hhs:
                                 if chan.id == 'leak_hh':
-                                    if not chan.id in chans_added:
+                                    if chan.id not in chans_added:
                                         nml_doc.ion_channel_hhs.append(chan)
                                         chans_added.append(chan.id)
 
@@ -819,7 +819,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                         connection.pre_fraction_along,
                     )
 
-                    if not other_half_elect_conn in half_elect_conns_added:
+                    if other_half_elect_conn not in half_elect_conns_added:
                         projection.electrical_connection_instances.append(connection)
                         half_elect_conns_added.append(
                             "%s_%s_%s_%s -> %s_%s_%s_%s"

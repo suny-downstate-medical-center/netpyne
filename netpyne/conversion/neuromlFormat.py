@@ -662,7 +662,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                                 id='k_%s' % nml_seg_group.id,
                                 ion_channel='k_hh',
                                 cond_density='%r S_per_cm2' % mech['gkbar'],
-                                erev='%r mV' % '-77',
+                                erev='%r mV' % -77.,
                                 ion='k',
                             )
                             mp.channel_densities.append(k_cd)
@@ -671,7 +671,7 @@ def exportNeuroML2(reference, connections=True, stimulations=True, format='xml',
                                 id='na_%s' % nml_seg_group.id,
                                 ion_channel='na_hh',
                                 cond_density='%r S_per_cm2' % mech['gnabar'],
-                                erev='%r mV' % '50',
+                                erev='%r mV' % 50.,
                                 ion='na',
                             )
                             mp.channel_densities.append(na_cd)

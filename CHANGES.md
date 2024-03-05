@@ -1,3 +1,11 @@
+# Version in development
+
+**New features**
+
+**Bug fixes**
+
+- Better handling of exceptions in `importCellParams()` (incl. issue 782)
+
 # Version 1.0.6
 
 **New features**

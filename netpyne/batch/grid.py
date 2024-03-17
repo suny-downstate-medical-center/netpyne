@@ -24,7 +24,6 @@ except NameError:
     to_unicode = str
 
 import pandas as pd
-import imp
 import os, sys
 import glob
 from time import sleep

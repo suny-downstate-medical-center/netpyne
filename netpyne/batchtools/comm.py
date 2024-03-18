@@ -5,8 +5,8 @@ from neuron import h
 HOST = 0 # for the purposes of send and receive with mpi.
 
 class Comm(object):
-    def __init__(self, runner_type='socket'):
-        self.runner = specs
+    def __init__(self, runner = specs):
+        self.runner = runner
         h.nrnmpi_init()
         self.pc = h.ParallelContext()
         self.rank = self.pc.id()

@@ -1,3 +1,7 @@
-from pubtk.netpyne import specs
-# from pubtk.netpyne import specs ?
+from netpyne.batchtools.runners import NetpyneRunner
+from pubtk import runtk
+from comm import Comm
+
+specs = NetpyneRunner()
+
 

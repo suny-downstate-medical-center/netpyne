@@ -1,4 +1,4 @@
-from pubtk.netpyne import specs
+from netpyne.batchtools import specs
 from pubtk.runtk.runners import create_runner
 from neuron import h
 

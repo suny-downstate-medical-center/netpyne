@@ -25,7 +25,8 @@ SEE:
 'cfo'
 """
 
-
+def search():
+    pass
 
 
 def ray_search(dispatcher_constructor, submit_constructor, algorithm = "variant_generator", label = 'search',

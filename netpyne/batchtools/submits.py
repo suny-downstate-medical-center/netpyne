@@ -1,6 +1,10 @@
 from pubtk.runtk import Submit, Template
 from pubtk import runtk
 
+SFS_HANDLES = {runtk.SUBMIT: '{output_path}/{label}.sh',
+               runtk.STDOUT: '{output_path}/{label}.run',
+               runtk.MSGOUT: '{output_path}/{label}.out',
+               runtk.SGLOUT: '{output_path}/{label}.sgl'}
 class ZSHSubmit(Submit):
     script_args = {'label', 'project_path', 'output_path', 'env', 'command'}
     script_template = \
@@ -78,7 +82,7 @@ class SGESubmit(Submit):
     script_template = \
         """\
 #!/bin/bash
-#$ -N j{label}
+#$ -N job{label}
 #$ -pe smp {cores}
 #$ -l h_vmem={vmem}
 #$ -o {output_path}/{label}.run
@@ -103,7 +107,7 @@ export JOBID=$JOB_ID
         proc = super().submit_job()
         try:
             self.job_id = proc.stdout.split(' ')[2]
-        except Exception as e:
+        except Exception as e: #not quite sure how this would occur
             raise(Exception("{}\nJob submission failed:\n{}\n{}\n{}\n{}".format(e, self.submit, self.script, proc.stdout, proc.stderr)))
         return self.job_id
 
@@ -115,7 +119,7 @@ class SGESubmitSFS(SGESubmit):
     script_template = \
         """\
 #!/bin/bash
-#$ -N j{label}
+#$ -N job{label}
 #$ -pe smp {cores}
 #$ -l h_vmem={vmem}
 #$ -o {output_path}/{label}.run
@@ -138,7 +142,89 @@ class SGESubmitSOCK(SGESubmit):
     script_template = \
         """\
 #!/bin/bash
-#$ -N j{label}
+#$ -N job{label}
+#$ -pe smp {cores}
+#$ -l h_vmem={vmem}
+#$ -o {output_path}/{label}.run
+cd {project_path}
+source ~/.bashrc
+export SOCNAME="{sockname}"
+export JOBID=$JOB_ID
+{env}
+{command}
+"""
+    script_handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
+                      runtk.STDOUT: '{output_path}/{label}.run',
+                      runtk.SOCKET: '{sockname}'
+                      }
+
+
+class SGESubmit(Submit):
+    script_args = {'label', 'project_path', 'output_path', 'env', 'command', 'cores', 'vmem', }
+    script_template = \
+        """\
+#!/bin/bash
+#$ -N job{label}
+#$ -pe smp {cores}
+#$ -l h_vmem={vmem}
+#$ -o {output_path}/{label}.run
+cd {project_path}
+source ~/.bashrc
+export JOBID=$JOB_ID
+{env}
+{command}
+"""
+    script_handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
+                      runtk.STDOUT: '{output_path}/{label}.run'}
+    def __init__(self, **kwargs):
+        super().__init__(
+            submit_template = Template(template="qsub {output_path}/{label}.sh",
+                                       key_args={'output_path',  'label'}),
+            script_template = Template(template=self.script_template,
+                                       key_args=self.script_args),
+            handles = self.script_handles,
+            )
+
+    def submit_job(self, **kwargs):
+        proc = super().submit_job()
+        try:
+            self.job_id = proc.stdout.split(' ')[2]
+        except Exception as e: #not quite sure how this would occur
+            raise(Exception("{}\nJob submission failed:\n{}\n{}\n{}\n{}".format(e, self.submit, self.script, proc.stdout, proc.stderr)))
+        return self.job_id
+
+    def set_handles(self):
+        pass
+
+class SGESubmitSFS(SGESubmit):
+    script_args = {'label', 'project_path', 'output_path', 'env', 'command', 'cores', 'vmem', }
+    script_template = \
+        """\
+#!/bin/bash
+#$ -N job{label}
+#$ -pe smp {cores}
+#$ -l h_vmem={vmem}
+#$ -o {output_path}/{label}.run
+cd {project_path}
+source ~/.bashrc
+export OUTFILE="{output_path}/{label}.out"
+export SGLFILE="{output_path}/{label}.sgl"
+export JOBID=$JOB_ID
+{env}
+{command}
+"""
+    script_handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
+                      runtk.STDOUT: '{output_path}/{label}.run',
+                      runtk.MSGOUT: '{output_path}/{label}.out',
+                      runtk.SGLOUT: '{output_path}/{label}.sgl',
+                      }
+
+class SGESubmitSOCK(SGESubmit):
+    script_args = {'label', 'project_path', 'output_path', 'env', 'command', 'cores', 'vmem', 'sockname'}
+    script_template = \
+        """\
+#!/bin/bash
+#$ -N job{label}
 #$ -pe smp {cores}
 #$ -l h_vmem={vmem}
 #$ -o {output_path}/{label}.run

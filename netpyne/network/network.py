@@ -26,6 +26,8 @@ class Network(object):
     # initialize variables
     # -----------------------------------------------------------------------------
     def __init__(self, params=None):
+        from .. import sim
+
         self.params = params
 
         # params that can be expressed using string-based functions in connections
@@ -62,7 +64,11 @@ class Network(object):
             {}
         )  # Empty dict for storing GID -> local index (key = gid; value = local id) -- ~x6 faster than .index()
         self.lastGid = 0  # keep track of last cell gid
-        self.lastPointerId = 0  # keep track of last gap junction gid
+
+        # keep track of last gap junction gid
+        intMax = 2**(32-1) # pointer connection id in NEURON is signed 32-bit int
+        self.maxPointerIdPerNode = int(intMax / sim.nhosts)
+        self.lastPointerId = sim.rank * self.maxPointerIdPerNode # to avoid overlap of gids from different nodes 
 
     # -----------------------------------------------------------------------------
     # Set network params

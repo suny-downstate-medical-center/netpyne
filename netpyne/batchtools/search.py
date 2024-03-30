@@ -7,6 +7,7 @@ from ray.tune.search.basic_variant import BasicVariantGenerator
 from ray.tune.search import create_searcher, ConcurrencyLimiter, SEARCH_ALG_IMPORT
 from netpyne.batchtools import runtk
 from collections import namedtuple
+from pubtk.raytk.search import ray_trial
 import numpy
 """
 from netpyne.batchtools import search, paramtypes
@@ -122,6 +123,7 @@ def ray_search(dispatcher_constructor, submit_constructor, algorithm = "variant_
     )
     project_path = os.getcwd()
     def run(config):
+        data = ray_trial(config, label, dispatcher_constructor, project_path, output_path, submit)
         tid = ray.train.get_context().get_trial_id()
         tid = int(tid.split('_')[-1]) #integer value for the trial
         run_label = '{}_{}'.format(label, tid)

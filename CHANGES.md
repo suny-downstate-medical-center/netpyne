@@ -6,6 +6,8 @@
 
 - Better handling of exceptions in `importCellParams()` (incl. issue 782)
 
+- Fixed pointer id overflow on MPI (e.g. for gap junctions)
+
 # Version 1.0.6
 
 **New features**

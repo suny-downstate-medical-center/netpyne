@@ -1089,12 +1089,11 @@ If this cell is expected to be a point cell instead, make sure the correspondent
 
     def __generatePointerIds(self, pointerParams, params):
         from .. import sim
-
         # see comments in `__parsePointerParams()` for more details
-        if hasattr(sim, 'rank'):
-            preToPostId = 1e9 * sim.rank + sim.net.lastPointerId  # global index for presyn gap junc
-        else:
-            preToPostId = sim.net.lastPointerId
+
+        if sim.net.lastPointerId > sim.net.maxPointerIdPerNode:
+            print(f"WARNING: potential overflow of pointer connection id!")
+        preToPostId = sim.net.lastPointerId
         sim.net.lastPointerId += 1  # keep track of num of gap juncs in this node
 
         if pointerParams['bidirectional']:

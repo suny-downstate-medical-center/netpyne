@@ -1479,6 +1479,9 @@ If this cell is expected to be a point cell instead, make sure the correspondent
     def _setConnSynMechs(self, params, secLabels):
         from .. import sim
 
+        distributeSynsUniformly = params.get('distributeSynsUniformly', sim.cfg.distributeSynsUniformly)
+        connRandomSecFromList = params.get('connRandomSecFromList', sim.cfg.connRandomSecFromList)
+
         synsPerConn = params['synsPerConn']
         if not params.get('synMech'):
             if sim.net.params.synMechParams:  # if no synMech specified, but some synMech params defined
@@ -1515,20 +1518,17 @@ If this cell is expected to be a point cell instead, make sure the correspondent
                     synMechLocs = [i * (1.0 / synsPerConn) + 1.0 / synsPerConn / 2 for i in range(synsPerConn)]
             else:
                 # if multiple sections, distribute syns uniformly
-                if sim.cfg.distributeSynsUniformly:
+                if distributeSynsUniformly:
                     synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
                 else:
-                    if not sim.cfg.connRandomSecFromList and synsPerConn == len(
-                        secLabels
-                    ):  # have list of secs that matches num syns
+                    # have list of secs that matches num syns
+                    if not connRandomSecFromList and synsPerConn == len(secLabels):
                         synMechSecs = secLabels
                         if isinstance(params['loc'], list):
                             if len(params['loc']) == synsPerConn:  # list of locs matches num syns
                                 synMechLocs = params['loc']
                             else:  # list of locs does not match num syns
-                                print(
-                                    "Error: The length of the list of locations does not match synsPerConn (with cfg.distributeSynsUniformly = False"
-                                )
+                                print("Error: The length of the list of locations does not match synsPerConn (with distributeSynsUniformly = False)")
                                 return
                         else:  # single loc
                             synMechLocs = [params['loc']] * synsPerConn
@@ -1537,7 +1537,7 @@ If this cell is expected to be a point cell instead, make sure the correspondent
                         synMechLocs = params['loc'] if isinstance(params['loc'], list) else [params['loc']]
 
                         # randomize the section to connect to and move it to beginning of list
-                        if sim.cfg.connRandomSecFromList and len(synMechSecs) >= synsPerConn:
+                        if connRandomSecFromList and len(synMechSecs) >= synsPerConn:
                             if len(synMechLocs) == 1:
                                 synMechLocs = [params['loc']] * synsPerConn
                             rand = h.Random()
@@ -1554,9 +1554,7 @@ If this cell is expected to be a point cell instead, make sure the correspondent
                                 rand.uniform(0, 1)
                                 synMechLocs = [rand.repick() for i in range(synsPerConn)]
                         else:
-                            print(
-                                "\nError: The length of the list of sections needs to be greater or equal to the synsPerConn (with cfg.connRandomSecFromList = True"
-                            )
+                            print("\nError: The length of the list of sections needs to be greater or equal to the synsPerConn (with connRandomSecFromList = True)")
                             return
 
         else:  # if 1 synapse
@@ -1565,7 +1563,7 @@ If this cell is expected to be a point cell instead, make sure the correspondent
             synMechLocs = params['loc'] if isinstance(params['loc'], list) else [params['loc']]
 
             # randomize the section to connect to and move it to beginning of list
-            if sim.cfg.connRandomSecFromList and len(synMechSecs) > 1:
+            if connRandomSecFromList and len(synMechSecs) > 1:
                 rand = h.Random()
                 preGid = params['preGid'] if isinstance(params['preGid'], int) else 0
                 rand.Random123(sim.hashStr('connSynMechsSecs'), self.gid, preGid)  # initialize randomizer

@@ -923,6 +923,11 @@ def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags={}):
         if 'weightIndex' in connParam:
             params['weightIndex'] = connParam.get('weightIndex')
 
+        if 'distributeSynsUniformly' in connParam:
+            params['distributeSynsUniformly'] = connParam['distributeSynsUniformly']
+        if 'connRandomSecFromList' in connParam:
+            params['connRandomSecFromList'] = connParam['connRandomSecFromList']
+
         isGapJunction = 'gapJunction' in connParam  # deprecated way of defining gap junction
         if self.params.synMechParams.isPointerConn(params['synMech']) or isGapJunction:
             params['preLoc'] = connParam.get('preLoc')

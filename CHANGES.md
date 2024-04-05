@@ -2,6 +2,8 @@
 
 **New features**
 
+- cfg.connRandomSecFromList and cfg.distributeSynsUniformly can now be overriden in individual conn rule
+
 **Bug fixes**
 
 - Better handling of exceptions in `importCellParams()` (incl. issue 782)

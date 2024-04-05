@@ -8,6 +8,8 @@
 
 - Fixed pointer id overflow on MPI (e.g. for gap junctions)
 
+- preSec and preLoc are no longer lost for inverse pointer connection
+
 # Version 1.0.6
 
 **New features**

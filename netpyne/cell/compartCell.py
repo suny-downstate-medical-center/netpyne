@@ -1114,6 +1114,8 @@ If this cell is expected to be a point cell instead, make sure the correspondent
             'preGid': self.gid,
             'sec': params.get('preSec', 'soma'),
             'loc': params.get('preLoc', 0.5),
+            'preSec': params.get('sec', 'soma'),
+            'preLoc': params.get('loc', 0.5),
             'weight': params.get('weight', 0.0),
             'synMech': params['synMech'],
             '__preCellSidePointerParams__': preCellSideParams,

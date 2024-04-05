@@ -1091,7 +1091,7 @@ If this cell is expected to be a point cell instead, make sure the correspondent
         from .. import sim
         # see comments in `__parsePointerParams()` for more details
 
-        if sim.net.lastPointerId > sim.net.maxPointerIdPerNode:
+        if sim.net.lastPointerId > sim.net.maxPointerIdForGivenNode:
             print(f"WARNING: potential overflow of pointer connection id!")
         preToPostId = sim.net.lastPointerId
         sim.net.lastPointerId += 1  # keep track of num of gap juncs in this node

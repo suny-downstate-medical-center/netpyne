@@ -67,8 +67,9 @@ class Network(object):
 
         # keep track of last gap junction gid
         intMax = 2**(32-1) # pointer connection id in NEURON is signed 32-bit int
-        self.maxPointerIdPerNode = int(intMax / sim.nhosts)
-        self.lastPointerId = sim.rank * self.maxPointerIdPerNode # to avoid overlap of gids from different nodes 
+        maxPointerIdPerNode = int(intMax / sim.nhosts)
+        self.lastPointerId = sim.rank * maxPointerIdPerNode # to avoid overlap of gids from different nodes
+        self.maxPointerIdForGivenNode = self.lastPointerId + maxPointerIdPerNode
 
     # -----------------------------------------------------------------------------
     # Set network params

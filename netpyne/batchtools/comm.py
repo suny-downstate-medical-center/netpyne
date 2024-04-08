@@ -1,7 +1,8 @@
 from netpyne.batchtools import specs
-from pubtk.runtk.runners import create_runner
+from pubtk.runtk.runners import get_class
+from pubtk import runtk
 from neuron import h
-
+import warnings
 HOST = 0 # for the purposes of send and receive with mpi.
 
 class Comm(object):
@@ -10,21 +11,31 @@ class Comm(object):
         h.nrnmpi_init()
         self.pc = h.ParallelContext()
         self.rank = self.pc.id()
+        self.connected = False
 
     def initialize(self):
         if self.is_host():
-            self.runner.connect()
+            try:
+                self.runner.connect()
+                self.connected = True
+            except Exception as e:
+                print("Failed to connect to the Dispatch Server, failover to Local mode. See: {}".format(e))
+                self.runner._set_inheritance('file') #TODO or could change the inheritance of the runner ...
+                self.runner.env[runtk.MSGOUT] = "{}/{}.out".format(self.runner.cfg.saveFolder, self.runner.cfg.simLabel)
 
-    def set_runner(self, runner_type='socket'):
-        self.runner = create_runner(runner_type)
+    def set_runner(self, runner_type):
+        self.runner = get_class(runner_type)()
     def is_host(self):
         return self.rank == HOST
     def send(self, data):
         if self.is_host():
-            self.runner.send(data)
+            if self.connected:
+                self.runner.send(data)
+            else:
+                self.runner.write(data)
 
-    def recv(self): # to be implemented. need to broadcast value to all workers
-        if self.is_host():
+    def recv(self): #TODO to be tested, broadcast to all workers?
+        if self.is_host() and self.connected:
             data = self.runner.recv()
         else:
             data = None

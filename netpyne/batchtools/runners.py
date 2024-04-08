@@ -1,6 +1,7 @@
 from pubtk.runtk.utils import convert, set_map, create_script
 from pubtk import runtk
-from pubtk.runtk.runners import Runner, create_runner
+from pubtk.runtk.runners import Runner, get_class
+import os
 
 class NetpyneRunner(Runner):
     """
@@ -8,9 +9,8 @@ class NetpyneRunner(Runner):
     see class runner
     mappings <-
     """
-    def __new__(cls, inherit='socket', **kwargs):
-
-        _super = create_runner(inherit)
+    def __new__(cls, inherit=None, **kwargs):
+        _super = get_class(inherit)
 
         def __init__(self, netParams=None, cfg=None, **kwargs):
             """
@@ -43,6 +43,9 @@ class NetpyneRunner(Runner):
             if inherit in runtk.RUNNERS:
                 cls = type(self)
                 cls.__bases__ = (runtk.RUNNERS[inherit],)
+            else:
+                raise KeyError("inheritance {} not found in runtk.RUNNERS (please check runtk.RUNNERS for valid strings...".format(inherit))
+
 
         def get_NetParams(self):
             """

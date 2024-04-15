@@ -23,7 +23,7 @@ standard_library.install_aliases()
 import numpy as np
 from array import array as arrayFast
 from numbers import Number
-
+from tqdm import tqdm
 
 # -----------------------------------------------------------------------------
 # Connect Cells
@@ -418,6 +418,9 @@ def fullConn(self, preCellsTags, postCellsTags, connParam):
 
     if sim.cfg.verbose:
         print('Generating set of all-to-all connections (rule: %s) ...' % (connParam['label']))
+    if sim.rank == 0 and not sim.cfg.verbose: pbar = tqdm(total=len(postCellsTags.items()), ascii=True,
+                                  desc='  ' + connParam['label'], position=0, leave=True,
+                                  bar_format= '{l_bar}{bar}| Creating synaptic connections for {n_fmt}/{total_fmt} postsynaptic cells on node %i (all-to-all connectivity)' % sim.rank)
 
     # get list of params that have a lambda function
     paramsStrFunc = [param for param in [p + 'Func' for p in self.connStringFuncParams] if param in connParam]
@@ -436,9 +439,11 @@ def fullConn(self, preCellsTags, postCellsTags, connParam):
         }
 
     for postCellGid in postCellsTags:  # for each postsyn cell
+        if sim.rank == 0 and not sim.cfg.verbose: pbar.update(1)
         if postCellGid in self.gid2lid:  # check if postsyn is in this node's list of gids
             for preCellGid, preCellTags in preCellsTags.items():  # for each presyn cell
                 self._addCellConn(connParam, preCellGid, postCellGid, preCellsTags)  # add connection
+    if sim.rank == 0 and not sim.cfg.verbose: pbar.close()
 
 
 # -----------------------------------------------------------------------------
@@ -517,6 +522,9 @@ def probConn(self, preCellsTags, postCellsTags, connParam):
 
     if sim.cfg.verbose:
         print('Generating set of probabilistic connections (rule: %s) ...' % (connParam['label']))
+    if sim.rank == 0 and not sim.cfg.verbose: pbar = tqdm(total=len(postCellsTags.items()), ascii=True,
+                                  desc='  ' + connParam['label'], position=0, leave=True,
+                                  bar_format= '{l_bar}{bar}| Creating synaptic connections for {n_fmt}/{total_fmt} postsynaptic cells on node %i (probabilistic connectivity)' % sim.rank)
 
     allRands = self.generateRandsPrePost(preCellsTags, postCellsTags)
 
@@ -550,13 +558,14 @@ def probConn(self, preCellsTags, postCellsTags, connParam):
             probMatrix, allRands, connParam['disynapticBias'], prePreGids, postPreGids
         )
         for preCellGid, postCellGid in connGids:
+            if sim.rank == 0 and not sim.cfg.verbose: pbar.update(1)
             for paramStrFunc in paramsStrFunc:  # call lambda functions to get weight func args
                 connParam[paramStrFunc + 'Args'] = {
                     k: v if isinstance(v, Number) else v(preCellsTags[preCellGid], postCellsTags[postCellGid])
                     for k, v in connParam[paramStrFunc + 'Vars'].items()
                 }
             self._addCellConn(connParam, preCellGid, postCellGid, preCellsTags)  # add connection
-
+        if sim.rank == 0 and not sim.cfg.verbose: pbar.close()
     # standard probabilistic conenctions
     else:
         # print('rank %d'%(sim.rank))
@@ -564,6 +573,7 @@ def probConn(self, preCellsTags, postCellsTags, connParam):
         # calculate the conn preGids of the each pre and post cell
         # for postCellGid,postCellTags in sorted(postCellsTags.items()):  # for each postsyn cell
         for postCellGid, postCellTags in postCellsTags.items():  # for each postsyn cell  # for each postsyn cell
+            if sim.rank==0: pbar.update(1)
             if postCellGid in self.gid2lid:  # check if postsyn is in this node
                 for preCellGid, preCellTags in preCellsTags.items():  # for each presyn cell
                     probability = (
@@ -580,7 +590,7 @@ def probConn(self, preCellsTags, postCellsTags, connParam):
                                 )
                             # connParam[paramStrFunc+'Args'] = {k:v if isinstance(v, Number) else v(preCellTags,postCellTags) for k,v in connParam[paramStrFunc+'Vars'].items()}
                         self._addCellConn(connParam, preCellGid, postCellGid, preCellsTags)  # add connection
-
+        if sim.rank == 0 and not sim.cfg.verbose: pbar.close()
 
 # -----------------------------------------------------------------------------
 # Generate random unique integers
@@ -653,6 +663,9 @@ def convConn(self, preCellsTags, postCellsTags, connParam):
 
     if sim.cfg.verbose:
         print('Generating set of convergent connections (rule: %s) ...' % (connParam['label']))
+    if sim.rank == 0 and not sim.cfg.verbose: pbar = tqdm(total=len(postCellsTags.items()), ascii=True,
+                                  desc='  ' + connParam['label'], position=0, leave=True,
+                                  bar_format= '{l_bar}{bar}| Creating synaptic connections for {n_fmt}/{total_fmt} postsynaptic cells on node %i (convergent connectivity)' % sim.rank)
 
     # get list of params that have a lambda function
     paramsStrFunc = [param for param in [p + 'Func' for p in self.connStringFuncParams] if param in connParam]
@@ -672,6 +685,7 @@ def convConn(self, preCellsTags, postCellsTags, connParam):
     hashPreCells = sim.hashList(preCellsTagsKeys)
 
     for postCellGid, postCellTags in postCellsTags.items():  # for each postsyn cell
+        if sim.rank == 0 and not sim.cfg.verbose: pbar.update(1)
         if postCellGid in self.gid2lid:  # check if postsyn is in this node
             convergence = (
                 connParam['convergenceFunc'][postCellGid]
@@ -704,6 +718,7 @@ def convConn(self, preCellsTags, postCellsTags, connParam):
 
                 if preCellGid != postCellGid:  # if not self-connection
                     self._addCellConn(connParam, preCellGid, postCellGid, preCellsTags)  # add connection
+    if sim.rank == 0 and not sim.cfg.verbose: pbar.close()
 
 
 # -----------------------------------------------------------------------------
@@ -736,6 +751,9 @@ def divConn(self, preCellsTags, postCellsTags, connParam):
 
     if sim.cfg.verbose:
         print('Generating set of divergent connections (rule: %s) ...' % (connParam['label']))
+    if sim.rank == 0 and not sim.cfg.verbose: pbar = tqdm(total=len(preCellsTags.items()), ascii=True,
+                                  desc='  ' + connParam['label'], position=0, leave=True,
+                                  bar_format= '{l_bar}{bar}| Creating synaptic connections for {n_fmt}/{total_fmt} presynaptic cells on node %i (divergent connectivity)' % sim.rank)
 
     # get list of params that have a lambda function
     paramsStrFunc = [param for param in [p + 'Func' for p in self.connStringFuncParams] if param in connParam]
@@ -755,6 +773,7 @@ def divConn(self, preCellsTags, postCellsTags, connParam):
     hashPostCells = sim.hashList(postCellsTagsKeys)
 
     for preCellGid, preCellTags in preCellsTags.items():  # for each presyn cell
+        if sim.rank == 0 and not sim.cfg.verbose: pbar.update(1)
         divergence = (
             connParam['divergenceFunc'][preCellGid] if 'divergenceFunc' in connParam else connParam['divergence']
         )  # num of presyn conns / postsyn cell
@@ -781,6 +800,7 @@ def divConn(self, preCellsTags, postCellsTags, connParam):
 
             if preCellGid != postCellGid:  # if not self-connection
                 self._addCellConn(connParam, preCellGid, postCellGid, preCellsTags)  # add connection
+    if sim.rank == 0 and not sim.cfg.verbose: pbar.close()
 
 
 # -----------------------------------------------------------------------------
@@ -813,6 +833,9 @@ def fromListConn(self, preCellsTags, postCellsTags, connParam):
 
     if sim.cfg.verbose:
         print('Generating set of connections from list (rule: %s) ...' % (connParam['label']))
+    if sim.rank == 0 and not sim.cfg.verbose: pbar = tqdm(total=len(connParam['connList']), ascii=True,
+                                  desc='  ' + connParam['label'], position=0, leave=True,
+                                  bar_format= '{l_bar}{bar}| Creating synaptic connections for {n_fmt}/{total_fmt} pairs of neurons on node %i (from list)' % sim.rank)
 
     orderedPreGids = sorted(preCellsTags)
     orderedPostGids = sorted(postCellsTags)
@@ -841,6 +864,7 @@ def fromListConn(self, preCellsTags, postCellsTags, connParam):
         connParam['locFromList'] = list(connParam['loc'])  # if delay is a list, copy to locFromList
 
     for iconn, (relativePreId, relativePostId) in enumerate(connParam['connList']):  # for each postsyn cell
+        if sim.rank == 0 and not sim.cfg.verbose: pbar.update(1)
         preCellGid = orderedPreGids[relativePreId]
         postCellGid = orderedPostGids[relativePostId]
         if postCellGid in self.gid2lid:  # check if postsyn is in this node's list of gids
@@ -854,7 +878,8 @@ def fromListConn(self, preCellsTags, postCellsTags, connParam):
 
             if preCellGid != postCellGid:  # if not self-connection
                 self._addCellConn(connParam, preCellGid, postCellGid, preCellsTags)  # add connection
-
+    if sim.rank == 0 and not sim.cfg.verbose: pbar.close()
+    
 
 # -----------------------------------------------------------------------------
 # Set parameters and create connection

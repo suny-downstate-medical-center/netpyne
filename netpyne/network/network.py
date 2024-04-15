@@ -13,7 +13,7 @@ from future import standard_library
 standard_library.install_aliases()
 from ..specs import ODict
 from neuron import h  # import NEURON
-
+from tqdm import tqdm
 
 class Network(object):
     """
@@ -100,14 +100,18 @@ class Network(object):
             print(("\nCreating network of %i cell populations on %i hosts..." % (len(self.pops), sim.nhosts)))
 
         self._setDiversityRanges()  # update fractions for rules
-
+        if sim.rank == 0 and not sim.cfg.verbose: pbar = tqdm(total=len(self.pops.values()), ascii=True,
+                                                              desc="\nCreating network of %i cell populations on %i hosts..." % (len(self.pops), sim.nhosts),
+                                                              position=-1, leave=True,
+                                                              bar_format='{l_bar}{bar}|') #{n_fmt}/{total_fmt} populations created on node %i' % sim.rank)
         for ipop in list(self.pops.values()):  # For each pop instantiate the network cells (objects of class 'Cell')
+            if sim.rank == 0 and not sim.cfg.verbose: pbar.update(1)
             newCells = ipop.createCells()  # create cells for this pop using Pop method
             self.cells.extend(newCells)  # add to list of cells
             sim.pc.barrier()
             if sim.rank == 0 and sim.cfg.verbose:
                 print(('Instantiated %d cells of population %s' % (len(newCells), ipop.tags['pop'])))
-
+        if sim.rank == 0 and not sim.cfg.verbose: pbar.close()
         if self.params.defineCellShapes:
             self.defineCellShapes()
 

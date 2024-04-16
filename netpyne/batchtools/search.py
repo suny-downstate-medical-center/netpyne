@@ -107,7 +107,8 @@ evaluated_rewards –
 If you have previously evaluated the parameters passed in as points_to_evaluate you can avoid re-running those trials by passing in the reward attributes as a list so the optimiser can be told the results without needing to re-compute the trial. Must be the same length as points_to_evaluate.
 """
 
-def ray_search(dispatcher_constructor, submit_constructor, algorithm = "variant_generator", label = 'search',
+def ray_search(dispatcher_constructor, submit_constructor, algorithm = "variant_generator",
+               max_concurrent = 1, label = 'search', batch = True,
                params = None, output_path = '../batch', checkpoint_path = '../ray',
                batch_config = None, num_samples = 1, metric = "loss", mode = "min", algorithm_config = None):
     ray.init(runtime_env={"working_dir": "."}) # TODO needed for python import statements ?
@@ -115,15 +116,18 @@ def ray_search(dispatcher_constructor, submit_constructor, algorithm = "variant_
     if algorithm_config == None:
         algorithm_config = {}
 
-    if 'metric' in algorithm_config:
-        metric = algorithm_config['metric']
-    else:
-        metric = None
+    if 'metric' not in algorithm_config:
+        algorithm_config['metric'] = metric
 
-    if 'mode' in algorithm_config:
-        mode = algorithm_config['mode']
-    else:
-        mode = None
+    if 'mode' not in algorithm_config:
+        algorithm_config['mode'] = mode
+
+    if 'max_concurrent' not in algorithm_config:
+        algorithm_config['max_concurrent'] = max_concurrent
+
+    if 'batch' not in algorithm_config:
+        algorithm_config['batch'] = batch
+
     #TODO class this object for self calls? cleaner? vs nested functions
     #TODO clean up working_dir and excludes
     storage_path = get_path(checkpoint_path)

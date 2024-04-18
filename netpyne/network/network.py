@@ -96,7 +96,7 @@ class Network(object):
 
         sim.pc.barrier()
         sim.timing('start', 'createTime')
-        if sim.rank == 0:
+        if sim.rank == 0 and sim.cfg.verbose:
             print(("\nCreating network of %i cell populations on %i hosts..." % (len(self.pops), sim.nhosts)))
 
         self._setDiversityRanges()  # update fractions for rules

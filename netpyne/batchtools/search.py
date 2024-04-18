@@ -147,6 +147,7 @@ def ray_search(dispatcher_constructor, submit_constructor, algorithm = "variant_
     )
     project_path = os.getcwd()
     def run(config):
+        config.update({'saveFolder': output_path, 'simLabel': LABEL_POINTER})
         data = ray_trial(config, label, dispatcher_constructor, project_path, output_path, submit)
         if isinstance(metric, str):
             metrics = {'config': config, 'data': data, metric: data[metric]}
@@ -164,7 +165,8 @@ def ray_search(dispatcher_constructor, submit_constructor, algorithm = "variant_
         tune_config=tune.TuneConfig(
             search_alg=algo,
             num_samples=num_samples, # grid search samples 1 for each param
-            metric="data"
+            metric=algorithm_config['metric'],
+            mode=algorithm_config['mode'],
         ),
         run_config=RunConfig(
             storage_path=storage_path,

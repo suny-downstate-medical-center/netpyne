@@ -12,6 +12,8 @@
 
 - preSec and preLoc are no longer lost for inverse pointer connection
 
+- syncLines in rasterPlot restored
+
 # Version 1.0.6
 
 **New features**

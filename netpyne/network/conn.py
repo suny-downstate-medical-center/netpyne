@@ -840,6 +840,18 @@ def fromListConn(self, preCellsTags, postCellsTags, connParam):
     if 'loc' in connParam and isinstance(connParam['loc'], list):
         connParam['locFromList'] = list(connParam['loc'])  # if delay is a list, copy to locFromList
 
+    if connParam['synsPerConn'] == 1:
+        if isinstance(connParam.get('sec'), list):
+            connParam['secFromList'] = list(connParam['sec'])
+    else:
+        pass # TODO: needs consistent handling
+
+    # for pointer connections (e.g. gap junctions) only:
+    if isinstance(connParam.get('preLoc'), list):
+        connParam['preLocFromList'] = list(connParam['preLoc'])
+    if isinstance(connParam.get('preSec'), list):
+        connParam['preSecFromList'] = list(connParam['preSec'])
+
     for iconn, (relativePreId, relativePostId) in enumerate(connParam['connList']):  # for each postsyn cell
         preCellGid = orderedPreGids[relativePreId]
         postCellGid = orderedPostGids[relativePostId]
@@ -851,7 +863,14 @@ def fromListConn(self, preCellsTags, postCellsTags, connParam):
                 connParam['delay'] = connParam['delayFromList'][iconn]
             if 'locFromList' in connParam:
                 connParam['loc'] = connParam['locFromList'][iconn]
+            if 'secFromList' in connParam:
+                connParam['sec'] = connParam['secFromList'][iconn]
+            if 'preLocFromList' in connParam:
+                connParam['preLoc'] = connParam['preLocFromList'][iconn]
+            if 'preSecFromList' in connParam:
+                connParam['preSec'] = connParam['preSecFromList'][iconn]
 
+            # TODO: consider cfg.allowSelfConns?
             if preCellGid != postCellGid:  # if not self-connection
                 self._addCellConn(connParam, preCellGid, postCellGid, preCellsTags)  # add connection
 
@@ -922,6 +941,11 @@ def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags={}):
             params['plast'] = connParam.get('plast')
         if 'weightIndex' in connParam:
             params['weightIndex'] = connParam.get('weightIndex')
+
+        if 'distributeSynsUniformly' in connParam:
+            params['distributeSynsUniformly'] = connParam['distributeSynsUniformly']
+        if 'connRandomSecFromList' in connParam:
+            params['connRandomSecFromList'] = connParam['connRandomSecFromList']
 
         isGapJunction = 'gapJunction' in connParam  # deprecated way of defining gap junction
         if self.params.synMechParams.isPointerConn(params['synMech']) or isGapJunction:

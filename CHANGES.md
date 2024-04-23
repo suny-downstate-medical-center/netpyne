@@ -1,3 +1,19 @@
+# Version in development
+
+**New features**
+
+- cfg.connRandomSecFromList and cfg.distributeSynsUniformly can now be overriden in individual conn rule
+
+**Bug fixes**
+
+- Better handling of exceptions in `importCellParams()` (incl. issue 782)
+
+- Fixed pointer id overflow on MPI (e.g. for gap junctions)
+
+- preSec and preLoc are no longer lost for inverse pointer connection
+
+- syncLines in rasterPlot restored
+
 # Version 1.0.6
 
 **New features**

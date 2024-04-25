@@ -1,6 +1,6 @@
 from netpyne.batchtools import specs
-from pubtk.runtk.runners import get_class
-from pubtk import runtk
+from batchtk.runtk.runners import get_class
+from batchtk import runtk
 from neuron import h
 import warnings
 HOST = 0 # for the purposes of send and receive with mpi.

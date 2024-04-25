@@ -1,5 +1,5 @@
-from pubtk.runtk import Submit, Template
-from pubtk import runtk
+from batchtk.runtk import Submit, Template
+from batchtk import runtk
 
 SFS_HANDLES = {runtk.SUBMIT: '{output_path}/{label}.sh',
                runtk.STDOUT: '{output_path}/{label}.run',

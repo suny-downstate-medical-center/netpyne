@@ -7,8 +7,8 @@ from ray.tune.search.basic_variant import BasicVariantGenerator
 from ray.tune.search import create_searcher, ConcurrencyLimiter, SEARCH_ALG_IMPORT
 from netpyne.batchtools import runtk
 from collections import namedtuple
-from pubtk.raytk.search import ray_trial, LABEL_POINTER
-from pubtk.utils import get_path
+from batchtk.raytk.search import ray_trial, LABEL_POINTER
+from batchtk.utils import get_path
 import numpy
 
 

@@ -1,6 +1,6 @@
-from pubtk.runtk.utils import convert, set_map, create_script
-from pubtk import runtk
-from pubtk.runtk.runners import Runner, get_class
+from batchtk.runtk.utils import convert, set_map, create_script
+from batchtk import runtk
+from batchtk.runtk.runners import Runner, get_class
 import os
 
 class NetpyneRunner(Runner):

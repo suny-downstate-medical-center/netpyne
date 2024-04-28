@@ -1,4 +1,5 @@
 from netpyne.batchtools.runners import NetpyneRunner
+from batchtk.runtk import dispatchers
 from batchtk import runtk
 
 specs = NetpyneRunner()

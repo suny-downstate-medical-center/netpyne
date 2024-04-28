@@ -114,12 +114,28 @@ export JOBID=$JOB_ID
     def set_handles(self):
         pass
 
+
+"""
+#!/bin/bash
+#$ -cwd
+#$ -N tauWeight_0_1
+#$ -q cpu.q
+#$ -pe smp 4
+#$ -l h_vmem=32G
+#$ -l h_rt=00:30:00
+#$ -o /ddn/jchen/dev/mpitest/tut8_data/tauWeight_0_1.run
+#$ -e /ddn/jchen/dev/mpitest/tut8_data/tauWeight_0_1.err
+tree
+source ~/.bashrc
+mpiexec -n 4 nrniv -python -mpi init.py simConfig=tut8_data/tauWeight_0_1_cfg.json netParams=tut8_data/tauWeight_netParams.py
+"""
 class SGESubmitSFS(SGESubmit):
     script_args = {'label', 'project_path', 'output_path', 'env', 'command', 'cores', 'vmem', }
     script_template = \
         """\
 #!/bin/bash
 #$ -N job{label}
+#$ -q cpu.q
 #$ -pe smp {cores}
 #$ -l h_vmem={vmem}
 #$ -o {output_path}/{label}.run

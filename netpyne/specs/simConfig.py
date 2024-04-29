@@ -3,21 +3,11 @@ Module containing SimConfig class including simulation configuration and methods
 
 """
 
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import division
-from __future__ import absolute_import
-
 # required to make json saving work in Python 2/3
 try:
     to_unicode = unicode
 except NameError:
     to_unicode = str
-
-from builtins import open
-from future import standard_library
-
-standard_library.install_aliases()
 
 from collections import OrderedDict
 from .dicts import Dict, ODict

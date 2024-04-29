@@ -3,13 +3,6 @@ Module with helper functions for high-level specifications
 
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-from future import standard_library
-
-standard_library.install_aliases()
 from numbers import Number
 from neuron import h
 from numpy import array, sin, cos, tan, exp, remainder, sqrt, arctan2, pi, mean, inf, dstack, unravel_index, argsort, zeros, ceil, copy, log, log10

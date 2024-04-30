@@ -83,8 +83,10 @@ class SGESubmit(Submit):
         """\
 #!/bin/bash
 #$ -N job{label}
+#$ -q {queue}
 #$ -pe smp {cores}
 #$ -l h_vmem={vmem}
+#$ -l h_rt={realtime}
 #$ -o {output_path}/{label}.run
 cd {project_path}
 source ~/.bashrc
@@ -115,35 +117,22 @@ export JOBID=$JOB_ID
         pass
 
 
-"""
-#!/bin/bash
-#$ -cwd
-#$ -N tauWeight_0_1
-#$ -q cpu.q
-#$ -pe smp 4
-#$ -l h_vmem=32G
-#$ -l h_rt=00:30:00
-#$ -o /ddn/jchen/dev/mpitest/tut8_data/tauWeight_0_1.run
-#$ -e /ddn/jchen/dev/mpitest/tut8_data/tauWeight_0_1.err
-tree
-source ~/.bashrc
-mpiexec -n 4 nrniv -python -mpi init.py simConfig=tut8_data/tauWeight_0_1_cfg.json netParams=tut8_data/tauWeight_netParams.py
-"""
 class SGESubmitSFS(SGESubmit):
     script_args = {'label', 'project_path', 'output_path', 'env', 'command', 'cores', 'vmem', }
     script_template = \
         """\
 #!/bin/bash
 #$ -N job{label}
-#$ -q cpu.q
+#$ -q {queue}
 #$ -pe smp {cores}
 #$ -l h_vmem={vmem}
+#$ -l h_rt={realtime}
 #$ -o {output_path}/{label}.run
 cd {project_path}
 source ~/.bashrc
+export JOBID=$JOB_ID
 export OUTFILE="{output_path}/{label}.out"
 export SGLFILE="{output_path}/{label}.sgl"
-export JOBID=$JOB_ID
 {env}
 {command}
 """
@@ -159,13 +148,15 @@ class SGESubmitSOCK(SGESubmit):
         """\
 #!/bin/bash
 #$ -N job{label}
+#$ -q {queue}
 #$ -pe smp {cores}
 #$ -l h_vmem={vmem}
+#$ -l h_rt={realtime}
 #$ -o {output_path}/{label}.run
 cd {project_path}
 source ~/.bashrc
-export SOCNAME="{sockname}"
 export JOBID=$JOB_ID
+export SOCNAME="{sockname}"
 {env}
 {command}
 """

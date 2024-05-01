@@ -9,6 +9,14 @@ from ..analysis.utils import exception, _showFigure
 import numpy as np
 import scipy
 
+def getPaddedCSD (CSDData, pad):
+  # pad the first/last row of CSDData by replication (to avoid edge artifacts when drawing colors plots)
+  npcsd = []
+  for i in range(pad): npcsd.append(CSDData[0,:])
+  for i in range(CSDData.shape[0]): npcsd.append(CSDData[i,:])
+  for i in range(pad): npcsd.append(CSDData[-1,:])
+  npcsd=np.array(npcsd)
+  return npcsd
 
 @exception
 def plotCSD(
@@ -31,6 +39,7 @@ def plotCSD(
     showFig=False,
     smooth=True,
     colorbar=True,
+    pad=1,
     **kwargs
 ):
     """
@@ -113,8 +122,12 @@ def plotCSD(
         **Default:** ``True``
 
     colorbar : bool
-        Whetehr or not to plot the colorbar
+        Whether or not to plot the colorbar
         **Default:** ``True``
+
+    pad : int
+        Amount to pad CSDData on top/bottom for more accurate interpolation at edges
+        **Default:** ``1``
 
     """
 
@@ -137,6 +150,9 @@ def plotCSD(
     else:
         pass # TODO: ensure time slicing works properly in case CSDData is passed as an argument
 
+    npcsd = CSDData
+    if pad > 0: npcsd = getPaddedCSD(CSDData, pad) # apply padding (replicate first,last rows)
+
     if timeRange is None:
         timeRange = [0, sim.cfg.duration]
 
@@ -145,12 +161,13 @@ def plotCSD(
 
     # PLOTTING
     X = np.arange(timeRange[0], timeRange[1], dt)  # X == tt
-    Y = np.arange(CSDData.shape[0])
+    Y = np.arange(npcsd.shape[0])
 
     # interpolation
-    CSD_spline = scipy.interpolate.RectBivariateSpline(Y, X, CSDData)
-    Y_plot = np.linspace(0, CSDData.shape[0], num=1000)
-    Z = CSD_spline(Y_plot, X)
+    fctr = int(1000 / CSDData.shape[0])
+    CSD_spline = scipy.interpolate.RectBivariateSpline(Y, X, npcsd)
+    Y_plot = np.linspace(-pad, npcsd.shape[0] + pad, num=int(1000*npcsd.shape[0]/CSDData.shape[0]))    
+    Z = CSD_spline(Y_plot, X)[pad*fctr:pad*fctr+1000,:]
 
     # plotting options
     plt.rcParams.update({'font.size': fontSize})
@@ -158,7 +175,7 @@ def plotCSD(
     xmax = int(X[-1]) + 1
     ymin = 0
     if ymax is None:
-        ymax = sim.cfg.recordLFP[-1][1] + spacing_um
+        ymax = sim.cfg.recordLFP[-1][1] + spacing_um + pad
     extent_xy = [xmin, xmax, ymax, ymin]
 
     # set up figure
@@ -229,7 +246,7 @@ def plotCSD(
                 subaxs[chan].margins(0.0, 0.01)
                 subaxs[chan].get_xaxis().set_visible(False)
                 subaxs[chan].get_yaxis().set_visible(False)
-                subaxs[chan].plot(X, CSDData[chan, :], color='green', linewidth=0.3, label='CSD time series')
+                subaxs[chan].plot(X, npcsd[pad+chan, :], color='green', linewidth=0.3, label='CSD time series')
                 if legendLabel:
                     subaxs[chan].legend(loc='upper right', fontsize=fontSize)
                     legendLabel = False

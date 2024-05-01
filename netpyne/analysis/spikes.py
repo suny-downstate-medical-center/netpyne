@@ -70,7 +70,7 @@ def prepareSpikeData(
             orderBy = 'gid'
         elif orderBy == 'pop':
             df['popInd'] = df['pop'].astype('category')
-            df['popInd'].cat.set_categories(sim.net.pops.keys(), inplace=True)
+            df['popInd'] = df['popInd'].cat.set_categories(sim.net.pops.keys())
             orderBy = 'popInd'
         elif isinstance(orderBy, basestring) and not isinstance(cells[0]['tags'][orderBy], Number):
             orderBy = 'gid'
@@ -78,7 +78,7 @@ def prepareSpikeData(
         if isinstance(orderBy, list):
             if 'pop' in orderBy:
                 df['popInd'] = df['pop'].astype('category')
-                df['popInd'].cat.set_categories(sim.net.pops.keys(), inplace=True)
+                df['popInd'] = df['popInd'].cat.set_categories(sim.net.pops.keys())
                 orderBy[orderBy.index('pop')] = 'popInd'
             keep = keep + list(set(orderBy) - set(keep))
         elif orderBy not in keep:

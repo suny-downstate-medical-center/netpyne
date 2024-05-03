@@ -499,9 +499,9 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
                         for key in singleNodeVecs:
                             allSimData[key] = list(fileData['simData'][key])
                         allPopsCellGids = {popLabel: [] for popLabel in nodePopsCellGids}
-                    else:
-                        for popLabel, popCellGids in nodePopsCellGids.items():
-                            allPopsCellGids[popLabel].extend(popCellGids)
+
+                    for popLabel, popCellGids in nodePopsCellGids.items():
+                        allPopsCellGids[popLabel].extend(popCellGids)
 
                     mergedFiles.append(file)
 

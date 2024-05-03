@@ -2,6 +2,8 @@
 
 **New features**
 
+- Added progress-bar indicating network creation progress
+
 - cfg.connRandomSecFromList and cfg.distributeSynsUniformly can now be overriden in individual conn rule
 
 **Bug fixes**

@@ -101,7 +101,8 @@ class NetpyneRunner(Runner):
                 from netpyne import specs
                 self.cfg = type("Runner_SimConfig", (specs.SimConfig,),
                     {'__mappings__': self.mappings,
-                     'update_cfg': update_cfg})()
+                     'update_cfg': update_cfg,
+                     'update': update_cfg})()
                 return self.cfg
 
         def set_SimConfig(self):

@@ -5,10 +5,10 @@ import sys
 if '-nogui' not in sys.argv:
     sys.argv.append('-nogui')
 
-from .utils import pkg_setup
+from .utils import pkg_setup, NETPYNE_DIR
 
-
-@pytest.mark.package_data(['examples/rxd_net/', 'mod'])
+package_dir = NETPYNE_DIR + '/examples/rxd_net/'
+@pytest.mark.package_data([package_dir, 'mod'])
 class TestRxdNet:
     def test_init(self, pkg_setup):
         import src.init

@@ -511,7 +511,7 @@ def probConn(self, preCellsTags, postCellsTags, connParam):
     if sim.cfg.verbose:
         print('Generating set of probabilistic connections (rule: %s) ...' % (connParam['label']))
     if sim.rank == 0 and not sim.cfg.verbose: pbar = tqdm(total=len(postCellsTags.items()), ascii=True,
-                                  desc='  ' + connParam['label'], position=0, leave=True,
+                                  desc='  ' + str(connParam['label']), position=0, leave=True,
                                   bar_format= '{l_bar}{bar}| Creating synaptic connections for {n_fmt}/{total_fmt} postsynaptic cells on node %i (probabilistic connectivity)' % sim.rank)
 
     allRands = self.generateRandsPrePost(preCellsTags, postCellsTags)

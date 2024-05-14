@@ -23,11 +23,11 @@ sge_config = {
     'realtime': '00:30:00',
     'command': 'mpiexec -n $NSLOTS -hosts $(hostname) nrniv -python -mpi init.py'}
 
-run_config = shell_config
+run_config = sge_config
 
-search(job_type = 'sh',
+search(job_type = 'sge', # or shell
        comm_type = 'socket',
-       label = 'search',
+       label = 'grid',
        params = params,
        output_path = '../grid_batch',
        checkpoint_path = '../ray',

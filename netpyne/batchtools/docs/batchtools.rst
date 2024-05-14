@@ -20,7 +20,39 @@ The NetPyNE batchtools subpackage provides a method of automating job submission
              ...
 
 
-1. Retrieving batch configuration values through the ``specs`` object
+
+1. Setting up batchtools
+-----
+Beyond the necessary dependency installations for NetPyNE and NEURON, several additional `pip` installations are required.
+
+The NetPyNE installation should be handled as a development installation of the repository branch `batch`::
+
+    git clone https://github.com/Neurosim-lab/netpyne.git
+    cd netpyne
+    git checkout batch
+    pip install -e .
+
+The batchtools installation either::
+
+    pip install -u batchtk
+
+or a development install (recommended)::
+
+    git clone https://github.com/jchen6727/batchtk.git
+    cd batchtk
+    pip install -e .
+
+Ray is a dependency for batchtools, and should be installed with the following command::
+
+    pip install -u ray[default]
+
+2. Examples
+-----
+Examples of NetPyNE batchtools usage can be found in the ``examples`` directory `here <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples>`_.
+
+Examples of the underlying batchtk package can be in the ``examples`` directory `here <https://github.com/jchen6727/batchtk/tree/release/examples>`_.
+
+3. Retrieving batch configuration values through the ``specs`` object
 -----
 Each simulation is able to retrieve relevant configurations through the ``specs`` object, and communicate with
 the dispatcher through the ``comm`` object.
@@ -54,7 +86,7 @@ This replaces the previous idiom for updating the SimConfig object with mappings
 
 
 
-2. Communicating results to the ``dispatcher`` with the ``comm`` object
+4. Communicating results to the ``dispatcher`` with the ``comm`` object
 -----
 
 Prior batched simulations relied on ``.pkl`` files to communicate data. The ``netpyne.batch`` subpackage uses a specific ``comm`` object to send custom data back
@@ -65,10 +97,11 @@ In terms of the simulation, the following functions are available to the user:
 * **comm.initialize()**: establishes a connection with the batch ``dispatcher`` for sending data
 
 * **comm.send(<data>)**: sends ``<data>`` to the batch ``dispatcher``
+    * for ``search`` jobs, it is important to match the data sent with the metric specified in the search function
 
 * **comm.close()**: closes and cleans up the connection with the batch ``dispatcher``
 
-3. Specifying a batch job
+5. Specifying a batch job
 -----
 Batch job handling is implemented with methods from ``netpyne.batchtools.search``
 
@@ -202,5 +235,44 @@ The basic search implemented with the ``search`` function uses ``ray.tune`` as t
 
 * **mode**: either 'min' or 'max' (whether to minimize or maximize the metric)
 
-* **algorithm_config**: additional configuration for the search algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
+* **algorithm_config**: additional configuration for the search algorithm (see the `optuna docs <https://docs.ray.io/en/latest/tune/api/suggestion.html>`_)
 
+6. Performing parameter optimization searches (CA3 example)
+-----
+The ``examples`` directory `here <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples>`_ shows both a ``grid`` based search as well as an ``optuna`` based optimization.
+
+In the ``CA3`` example, we tune the ``PYR->BC`` ``NMDA`` and ``AMPA`` synaptic weights, as well as the ``BC->PYR`` ``GABA`` synaptic weight. Note the search space is defined::
+
+        # from optuna_search.py
+        params = {'nmda.PYR->BC' : [1e-3, 1.8e-3],
+                  'ampa.PYR->BC' : [0.2e-3, 0.5e-3],
+                  'gaba.BC->PYR' : [0.4e-3, 1.0e-3],
+                 }
+
+in both ``optuna_search.py``, defining the upper and lower bounds of the search space, while in ``grid_search.py`` the search space is defined::
+
+        # from grid_search.py
+        params = {'nmda.PYR->BC' : numpy.linspace(1e-3, 1.8e-3, 3),
+                  'ampa.PYR->BC' : numpy.linspace(0.2e-3, 0.5e-3, 3),
+                  'gaba.BC->PYR' : numpy.linspace(0.4e-3, 1.0e-3, 3),
+                 }
+
+which defines ``3x3x3`` specific values to search over
+
+Note that the ``metric`` specifies a specific ``string`` (``loss``) to report and optimize around. This value is generated and ``sent`` by the ``init.py`` simulation::
+
+        # from init.py
+        results['PYR_loss'] = (results['PYR'] - 3.33875)**2
+        results['BC_loss']  = (results['BC']  - 19.725 )**2
+        results['OLM_loss'] = (results['OLM'] - 3.470  )**2
+        results['loss'] = (results['PYR_loss'] + results['BC_loss'] + results['OLM_loss']) / 3
+        out_json = json.dumps({**inputs, **results})
+
+        print(out_json)
+        #TODO put all of this in a single function.
+        comm.send(out_json)
+        comm.close()
+
+The ``out_json`` output contains a dictionary which includes the ``loss`` metric (calculated as the MSE between observed and expected values)
+
+In a multi-objective optimization, the relevant ``PYR_loss``, ``BC_loss``, and ``OLM_loss`` components are additionally included (see ``mo_optuna_search.py``)

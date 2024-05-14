@@ -28,8 +28,8 @@ def ray_optuna_search(dispatcher_constructor: Callable, # constructor for the di
                       max_concurrent: Optional[int] = 1, # number of concurrent trials to run at one time
                       batch: Optional[bool] = True, # whether concurrent trials should run synchronously or asynchronously
                       num_samples: Optional[int] = 1, # number of trials to run
-                      metric: Optional[str] = "loss", # metric to optimize (this should match some key: value pair in the returned data
-                      mode: Optional[str] = "min", # either 'min' or 'max' (whether to minimize or maximize the metric
+                      metric: Optional[str|list|tuple] = "loss", # metric to optimize (this should match some key: value pair in the returned data
+                      mode: Optional[str|list|tuple] = "min", # either 'min' or 'max' (whether to minimize or maximize the metric
                       optuna_config: Optional[dict] = None, # additional configuration for the optuna search algorithm
                       ) -> namedtuple('Study', ['algo', 'results']):
     """

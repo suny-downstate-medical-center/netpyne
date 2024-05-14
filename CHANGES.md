@@ -2,9 +2,23 @@
 
 **New features**
 
+- Added progress-bar indicating network creation progress
+
+- cfg.connRandomSecFromList and cfg.distributeSynsUniformly can now be overriden in individual conn rule
+
+- Updated tests.examples.utils to allow for dynamic pathing
+
 **Bug fixes**
 
 - Better handling of exceptions in `importCellParams()` (incl. issue 782)
+
+- Fixed pointer id overflow on MPI (e.g. for gap junctions)
+
+- preSec and preLoc are no longer lost for inverse pointer connection
+
+- syncLines in rasterPlot restored
+
+- Fixed a bug in `gatherDataFromFiles()` where cellGids for node 0 were lost
 
 # Version 1.0.6
 

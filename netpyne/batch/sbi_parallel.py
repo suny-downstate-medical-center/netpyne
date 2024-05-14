@@ -2,20 +2,8 @@
 Module for SBI optimization
 """
 
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import division
-from __future__ import absolute_import
-
-from builtins import zip
-
-from builtins import range
-from builtins import open
-from builtins import str
 from lib2to3.pytree import NegatedPattern
-from future import standard_library
 
-standard_library.install_aliases()
 
 # required to make json saving work in Python 2/3
 try:

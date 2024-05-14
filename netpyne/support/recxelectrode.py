@@ -3,11 +3,6 @@ Module with RecXElectrode from Allen Brain Institute
 
 """
 
-from __future__ import print_function
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
 # Allen Institute Software License - This software license is the 2-clause BSD license plus clause a third
 # clause that prohibits redistribution for commercial purposes without further permission.
 #
@@ -38,10 +33,6 @@ from __future__ import absolute_import
 # Adapted to NetPyNE by salvadordura@gmail.com
 #
 
-from builtins import range
-from future import standard_library
-
-standard_library.install_aliases()
 import numpy as np
 import math
 

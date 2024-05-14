@@ -5,10 +5,10 @@ import sys
 if '-nogui' not in sys.argv:
     sys.argv.append('-nogui')
 
-from .utils import pkg_setup
+from .utils import pkg_setup, NETPYNE_DIR
 
-
-@pytest.mark.package_data(['examples/LFPrecording/', 'mod'])
+package_dir = NETPYNE_DIR + '/examples/LFPrecording/'
+@pytest.mark.package_data([package_dir, 'mod'])
 class TestLFPrecording:
     def test_cell_lfp(self, pkg_setup):
         import src.cell.init

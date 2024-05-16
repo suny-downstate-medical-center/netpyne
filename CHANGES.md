@@ -2,7 +2,7 @@
 
 **New features**
 
-- Added progress-bar indicating network creation progress
+- Added progress-bar indicating network creation progress. Toggle the progress bar with cfg.progressBar
 
 - cfg.connRandomSecFromList and cfg.distributeSynsUniformly can now be overriden in individual conn rule
 

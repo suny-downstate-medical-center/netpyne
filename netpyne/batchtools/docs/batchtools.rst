@@ -21,6 +21,7 @@ The NetPyNE batchtools subpackage provides a method of automating job submission
 
 
 
+
 1. Setting up batchtools
 -----
 Beyond the necessary dependency installations for NetPyNE and NEURON, several additional `pip` installations are required.
@@ -53,6 +54,7 @@ Examples of NetPyNE batchtools usage can be found in the ``examples`` directory 
 Examples of the underlying batchtk package can be in the ``examples`` directory `here <https://github.com/jchen6727/batchtk/tree/release/examples>`_.
 
 3. Retrieving batch configuration values through the ``specs`` object
+
 -----
 Each simulation is able to retrieve relevant configurations through the ``specs`` object, and communicate with
 the dispatcher through the ``comm`` object.
@@ -86,7 +88,9 @@ This replaces the previous idiom for updating the SimConfig object with mappings
 
 
 
+
 4. Communicating results to the ``dispatcher`` with the ``comm`` object
+
 -----
 
 Prior batched simulations relied on ``.pkl`` files to communicate data. The ``netpyne.batch`` subpackage uses a specific ``comm`` object to send custom data back
@@ -97,11 +101,13 @@ In terms of the simulation, the following functions are available to the user:
 * **comm.initialize()**: establishes a connection with the batch ``dispatcher`` for sending data
 
 * **comm.send(<data>)**: sends ``<data>`` to the batch ``dispatcher``
+
     * for ``search`` jobs, it is important to match the data sent with the metric specified in the search function
 
 * **comm.close()**: closes and cleans up the connection with the batch ``dispatcher``
 
 5. Specifying a batch job
+
 -----
 Batch job handling is implemented with methods from ``netpyne.batchtools.search``
 
@@ -276,3 +282,4 @@ Note that the ``metric`` specifies a specific ``string`` (``loss``) to report an
 The ``out_json`` output contains a dictionary which includes the ``loss`` metric (calculated as the MSE between observed and expected values)
 
 In a multi-objective optimization, the relevant ``PYR_loss``, ``BC_loss``, and ``OLM_loss`` components are additionally included (see ``mo_optuna_search.py``)
+

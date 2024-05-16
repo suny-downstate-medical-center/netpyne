@@ -22,6 +22,7 @@ sge_config = {
     'realtime': '00:30:00',
     'command': 'mpiexec -n $NSLOTS -hosts $(hostname) nrniv -python -mpi init.py'}
 
+
 run_config = sge_config
 
 search(job_type = 'sge', # or sh

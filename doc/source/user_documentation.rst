@@ -2548,7 +2548,7 @@ The code for neural network optimization through evolutionary algorithm used in 
 .. --------------------
 
 Running a Batch Job (Beta)
------
+
 
 The NetPyNE batchtools subpackage provides a method of automating job submission and reporting::
 
@@ -2571,7 +2571,7 @@ The NetPyNE batchtools subpackage provides a method of automating job submission
 
 
 1. Setting up batchtools
-^^^^^
+
 Beyond the necessary dependency installations for NetPyNE and NEURON, several additional `pip` installations are required.
 
 The NetPyNE installation should be handled as a development installation of the repository branch `batch`::
@@ -2596,13 +2596,13 @@ Ray is a dependency for batchtools, and should be installed with the following c
     pip install -u ray[default]
 
 2. Examples
-^^^^^
+
 Examples of NetPyNE batchtools usage can be found in the ``examples`` directory `here <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples>`_.
 
 Examples of the underlying batchtk package can be in the ``examples`` directory `here <https://github.com/jchen6727/batchtk/tree/release/examples>`_.
 
 3. Retrieving batch configuration values through the ``specs`` object
-^^^^^
+
 Each simulation is able to retrieve relevant configurations through the ``specs`` object, and communicate with
 the dispatcher through the ``comm`` object.
 
@@ -2636,7 +2636,6 @@ This replaces the previous idiom for updating the SimConfig object with mappings
 
 
 4. Communicating results to the ``dispatcher`` with the ``comm`` object
-^^^^^
 
 Prior batched simulations relied on ``.pkl`` files to communicate data. The ``netpyne.batch`` subpackage uses a specific ``comm`` object to send custom data back
 The ``comm`` object determines the method of communication based on the batch job submission type.
@@ -2651,7 +2650,7 @@ In terms of the simulation, the following functions are available to the user:
 * **comm.close()**: closes and cleans up the connection with the batch ``dispatcher``
 
 5. Specifying a batch job
-^^^^^
+
 Batch job handling is implemented with methods from ``netpyne.batchtools.search``
 
 **search**::
@@ -2787,7 +2786,7 @@ The basic search implemented with the ``search`` function uses ``ray.tune`` as t
 * **algorithm_config**: additional configuration for the search algorithm (see the `optuna docs <https://docs.ray.io/en/latest/tune/api/suggestion.html>`_)
 
 6. Performing parameter optimization searches (CA3 example)
-^^^^^
+
 The ``examples`` directory `here <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples>`_ shows both a ``grid`` based search as well as an ``optuna`` based optimization.
 
 In the ``CA3`` example, we tune the ``PYR->BC`` ``NMDA`` and ``AMPA`` synaptic weights, as well as the ``BC->PYR`` ``GABA`` synaptic weight. Note the search space is defined::

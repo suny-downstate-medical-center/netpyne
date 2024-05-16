@@ -511,6 +511,7 @@ def probConn(self, preCellsTags, postCellsTags, connParam):
 
     if sim.cfg.verbose:
         print('Generating set of probabilistic connections (rule: %s) ...' % (connParam['label']))
+
     if sim.rank == 0 and not sim.cfg.verbose and sim.cfg.progressBar:
         pbar = tqdm(total=len(postCellsTags.items()), ascii=True,
                     desc='  ' + str(connParam['label']), position=0, leave=(sim.cfg.progressBar == 2),

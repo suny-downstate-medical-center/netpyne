@@ -103,12 +103,15 @@ def saveData(include=None, filename=None, saveLFP=True):
             print(('Copying cfg file %s ... ' % simName))
             source = sim.cfg.backupCfgFile[0]
             targetFolder = sim.cfg.backupCfgFile[1]
-            # make dir
+
+            # make directories required to make the target folder
             try:
-                os.mkdir(targetFolder)
-            except OSError:
+                os.makedirs(targetFolder)
+            except OSError as e:
                 if not os.path.exists(targetFolder):
-                    print(' Could not create target folder: %s' % (targetFolder))
+                    print('%s: OSError: %s,' % (os.path.abspath(__file__), e))
+                    raise SystemExit('Could not create target folder: %s' % (targetFolder))
+                
             # copy file
             targetFile = targetFolder + '/' + simName + '_cfg.py'
             if os.path.exists(targetFile):
@@ -116,13 +119,14 @@ def saveData(include=None, filename=None, saveLFP=True):
                 os.system('rm ' + targetFile)
             os.system('cp ' + source + ' ' + targetFile)
 
-        # create folder if missing
+        # create the missing folder & directory for folder if one or both are missing
         targetFolder = os.path.dirname(sim.cfg.filename)
         if targetFolder and not os.path.exists(targetFolder):
             try:
-                os.mkdir(targetFolder)
-            except OSError:
-                print(' Could not create target folder: %s' % (targetFolder))
+                os.makedirs(targetFolder)
+            except OSError as e:
+                print('%s: OSError: %s,' % (os.path.abspath(__file__), e))
+                raise SystemExit('Could not create target folder: %s' % (targetFolder))
 
         # saving data
         if not include:
@@ -175,13 +179,14 @@ def saveData(include=None, filename=None, saveLFP=True):
                 if hasattr(sim.cfg, 'simLabel') and sim.cfg.simLabel:
                     filePath = os.path.join(sim.cfg.saveFolder, sim.cfg.simLabel + '_data' + timestampStr)
 
-            # create folder if missing
+            # make directories for the target folder if they do not already exist
             targetFolder = os.path.dirname(filePath)
             if targetFolder and not os.path.exists(targetFolder):
                 try:
-                    os.mkdir(targetFolder)
-                except OSError:
-                    print(' Could not create target folder: %s' % (targetFolder))
+                    os.makedirs(targetFolder)
+                except OSError as e:
+                    print('%s: OSError: %s,' % (os.path.abspath(__file__), e))
+                    raise SystemExit('Could not create target folder: %s' % (targetFolder))
 
             # Save to pickle file
             if sim.cfg.savePickle:

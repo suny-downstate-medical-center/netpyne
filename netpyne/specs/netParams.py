@@ -547,12 +547,13 @@ class NetParams(object):
         folder = filename.split(basename)[0]
         ext = basename.split('.')[1]
 
-        # make dir
+        # make directories if they do not already exist:
         try:
-            os.mkdir(folder)
-        except OSError:
+            os.makedirs(folder)
+        except OSError as e:
             if not os.path.exists(folder):
-                print(' Could not create', folder)
+                print('%s: OSError: %s,' % (os.path.abspath(__file__), e))
+                raise SystemExit('Could not create %s' % (folder))
 
         dataSave = {'net': {'params': self.todict()}}
 

@@ -106,11 +106,10 @@ def saveData(include=None, filename=None, saveLFP=True):
 
             # make directories required to make the target folder
             try:
-                os.makedirs(targetFolder)
-            except OSError as e:
-                if not os.path.exists(targetFolder):
-                    print('%s: OSError: %s,' % (os.path.abspath(__file__), e))
-                    raise SystemExit('Could not create target folder: %s' % (targetFolder))
+                os.makedirs(targetFolder, exist_ok=True)
+            except Exception as e:
+                print('%s: Exception: %s,' % (os.path.abspath(__file__), e))
+                raise SystemExit('Could not create %s' % (folder))                
                 
             # copy file
             targetFile = targetFolder + '/' + simName + '_cfg.py'
@@ -118,15 +117,16 @@ def saveData(include=None, filename=None, saveLFP=True):
                 print(' Removing prior cfg file', targetFile)
                 os.system('rm ' + targetFile)
             os.system('cp ' + source + ' ' + targetFile)
-
+        # looks like the logic for sim.cfg.filename and targetFolder is not entirely there,
+        # could be calling os.path.dirname(None) ? #TODO
         # create the missing folder & directory for folder if one or both are missing
         targetFolder = os.path.dirname(sim.cfg.filename)
-        if targetFolder and not os.path.exists(targetFolder):
-            try:
-                os.makedirs(targetFolder)
-            except OSError as e:
-                print('%s: OSError: %s,' % (os.path.abspath(__file__), e))
-                raise SystemExit('Could not create target folder: %s' % (targetFolder))
+
+        try:
+            os.makedirs(targetFolder, exist_ok=True)
+        except Exception as e:
+            print('%s: Exception: %s,' % (os.path.abspath(__file__), e))
+            raise SystemExit('Could not create %s' % (folder))
 
         # saving data
         if not include:
@@ -179,15 +179,14 @@ def saveData(include=None, filename=None, saveLFP=True):
                 if hasattr(sim.cfg, 'simLabel') and sim.cfg.simLabel:
                     filePath = os.path.join(sim.cfg.saveFolder, sim.cfg.simLabel + '_data' + timestampStr)
 
-            # make directories for the target folder if they do not already exist
-            targetFolder = os.path.dirname(filePath)
-            if targetFolder and not os.path.exists(targetFolder):
-                try:
-                    os.makedirs(targetFolder)
-                except OSError as e:
-                    print('%s: OSError: %s,' % (os.path.abspath(__file__), e))
-                    raise SystemExit('Could not create target folder: %s' % (targetFolder))
-
+            # also strange conditional ^^^, filePath must exist or an error occurs. make directories for the target folder if they do not already exist
+            # targetFolder = os.path.dirname(filePath)
+            # if targetFolder:
+            try:
+                os.makedirs(folder, exist_ok=True)
+            except Exception as e:
+                print('%s: Exception: %s,' % (os.path.abspath(__file__), e))
+                raise SystemExit('Could not create %s' % (folder))
             # Save to pickle file
             if sim.cfg.savePickle:
                 import pickle
@@ -395,12 +394,12 @@ def intervalSave(simTime, gatherLFP=True):
             targetFolder = os.path.join(sim.cfg.saveFolder, 'interval_data')
         else:
             targetFolder = 'interval_data'
-
-        if targetFolder and not os.path.exists(targetFolder):
-            try:
-                os.makedirs(targetFolder)
-            except OSError:
-                print(' Could not create target folder: %s' % (targetFolder))
+        # how can targetFolder ^^^ NOT have a value within this conditional 
+        try:
+            os.makedirs(targetFolder, exist_ok=True)
+        except Exception as e:
+            print('%s: Exception: %s,' % (os.path.abspath(__file__), e))
+            raise SystemExit('Could not create %s' % (folder))
 
         include = sim.cfg.saveDataInclude
 
@@ -629,8 +628,11 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
     else:
         saveFolder = os.path.join(saveFolder, sim.cfg.simLabel + '_node_data')  # YES saveFolder
 
-    if not os.path.exists(saveFolder):
+    try:
         os.makedirs(saveFolder, exist_ok=True)
+    except Exception as e:
+        print('%s: Exception: %s,' % (os.path.abspath(__file__), e))
+        raise SystemExit('Could not create %s' % (folder))
 
     sim.pc.barrier()
     if sim.rank == 0:
@@ -781,7 +783,8 @@ def saveModel(netParams, simConfig, srcPath, dstPath=None, exportNetParamsAsPyth
             shutil.rmtree(dstDir)
 
         # (re)create dstDir and create /src dir in it where files will be stored by default
-        os.makedirs(os.path.join(dstDir, 'src'))
+        # TODO try: except around makedirs = necessary?
+        os.makedirs(os.path.join(dstDir, 'src'), exist_ok=True)
         # create default index
         indexData = {
             'netParams': f"src/netParams{'.py' if exportNetParamsAsPython else '.json'}",

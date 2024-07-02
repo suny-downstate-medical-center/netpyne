@@ -26,7 +26,7 @@ sge_config = {
 
 run_config = sge_config
 
-search(job_type = 'sge', # or shell
+search(job_type = 'sge', # or 'sh'
        comm_type = 'socket',
        label = 'grid',
 

@@ -20,6 +20,8 @@
 
 - Fixed a bug in `gatherDataFromFiles()` where cellGids for node 0 were lost
 
+- Fixed generating rhythmic spiking pattern with 'uniform' option
+
 # Version 1.0.6
 
 **New features**

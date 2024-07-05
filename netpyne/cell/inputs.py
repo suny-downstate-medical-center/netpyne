@@ -89,7 +89,9 @@ def createRhythmicPattern(params, rand):
     # Uniform Distribution
     elif distribution == 'uniform':
         n_inputs = params['repeats'] * freq * (stop - start) / 1000.0
-        t_array = rand.uniform(start, stop, int(n_inputs))
+        rand.uniform(start, stop)
+        vec = h.Vector(int(n_inputs))
+        t_array = np.array(vec.setrand(rand))
         if eventsPerCycle == 2:
             # Two arrays store doublet times
             t_input_low = t_array - 5

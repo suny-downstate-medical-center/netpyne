@@ -22,6 +22,8 @@
 
 - Fixed generating rhythmic spiking pattern with 'uniform' option
 
+- Fixed misleading console output when cfg.recordStims is On
+
 # Version 1.0.6
 
 **New features**

@@ -1,8 +1,9 @@
 Running a Batch Job
 ===================
 
-The NetPyNE batchtools subpackage provides a method of automating job submission and reporting::
+The NetPyNE batchtools subpackage provides a method of automating job submission and reporting
 
+A diagram of the object interfaces...::
 
  batch<-->\               /---> configuration_0 >---\
            \             /                         specs---\
@@ -19,8 +20,25 @@ The NetPyNE batchtools subpackage provides a method of automating job submission
              \
              ...
 
+While objects and interfaces can be handled directly, batchtools offers simple wrapper commands applicable to most use-cases, where
+automatic parameter searches can be done by specifying a search space and algorithm through `netpyne.batchtools.search`, and
+parameter to model translation and result communication is handled through `netpyne.batchtools.specs` and `netpyne.batchtools.comm` respectively.
 
+A diagram of the wrapper interactions...::
 
+ netpyne.batchtools.search.search(   ) ----------------------------\                 host
+        |                                                          |
+        | search(   )                                              |
+ ==============================================================================================
+        |                                                      comm.initialize(   )
+        |                                                      comm.send(   )
+        |  cfg = netpyne.batchtools.specs.SimConfig(   )       comm.close(   )
+        |            |                                           ^     ^
+        v            v                                           |     |
+        cfg.update_cfg() ----------------------------------------/     |
+                                                                       |
+        send(   )                                               netpyne.batchtools.comm(   )
+                                                                                    simulation
 
 1. Setting up batchtools
 -----
@@ -243,7 +261,18 @@ The basic search implemented with the ``search`` function uses ``ray.tune`` as t
 
 * **algorithm_config**: additional configuration for the search algorithm (see the `optuna docs <https://docs.ray.io/en/latest/tune/api/suggestion.html>`_)
 
-6. Performing parameter optimization searches (CA3 example)
+6. Batch searches on the Rosenbrock function (some simple examples)
+-----
+The ``examples`` directory `here <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples/rosenbrock>`_ contains multiple methods of performing automatic parameter search of a
+2 dimensional Rosenbrock function.  These examples are used to quickly demonstrate some of the functionality of batch communications rather than the full process of running parameter searches on a detailed
+NEURON simulation (see 7. Performing parameter optimization searches (CA3 example)) and therefore only contain the a `batch.py` file containing the script detailing the parameter space and search method, and a
+`rosenbrock.py` file containing the function to explore, and the appropriate declarations and calls for batch automation and communication (rather than the traditional `cfg.py`, `netParams.py`, and `init.py` files).
+
+1. `basic_rosenbrock <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples/rosenbrock/basic_rosenbrock>`_
+
+This demonstrates a basic grid search of the Rosenbrock function using the new ``batchtools``, where the search space is defined as the cartesian product of
+the 
+7. Performing parameter optimization searches (CA3 example)
 -----
 The ``examples`` directory `here <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples>`_ shows both a ``grid`` based search as well as an ``optuna`` based optimization.
 

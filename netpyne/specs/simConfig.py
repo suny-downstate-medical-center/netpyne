@@ -147,11 +147,10 @@ class SimConfig(object):
 
         # make directories if they do not already exist: 
         try:
-            os.makedirs(folder)
-        except OSError as e:
-            if not os.path.exists(folder):
-                print('%s: OSError: %s,' % (os.path.abspath(__file__), e))
-                raise SystemExit('Could not create %s' % (folder))
+            os.makedirs(folder, exist_ok=True)
+        except Exception as e:
+            print('%s: Exception: %s,' % (os.path.abspath(__file__), e))
+            raise SystemExit('Could not create %s' % (folder))
 
         dataSave = {'simConfig': self.__dict__}
 

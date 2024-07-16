@@ -64,12 +64,14 @@ class NetpyneRunner(Runner):
                 raise KeyError("inheritance {} not found in runtk.RUNNERS (please check runtk.RUNNERS for valid strings...".format(inherit))
 
 
-        def get_NetParams(self):
+        def get_NetParams(self, netParamsDict=None):
             """
             Creates / Returns a NetParams instance
             Parameters
             ----------
             self
+            netParamsDict - optional dictionary to create NetParams instance (defaults to None)
+                          - to be called during initial function call only
 
             Returns
             -------
@@ -80,7 +82,7 @@ class NetpyneRunner(Runner):
                 return self.netParams
             else:
                 from netpyne import specs
-                self.netParams = specs.NetParams()
+                self.netParams = specs.NetParams(netParamsDict)
                 return self.netParams
 
         def update_cfg(self): #intended to take `cfg` instance as self
@@ -101,12 +103,14 @@ class NetpyneRunner(Runner):
                 except Exception as e:
                     raise Exception("failed on mapping: cfg.{} with value: {}\n{}".format(assign_path, value, e))
 
-        def get_SimConfig(self):
+        def get_SimConfig(self, simConfigDict=None):
             """
             Creates / Returns a SimConfig instance
             Parameters
             ----------
             self - NetpyneRunner instance
+            simConfigDict - optional dictionary to create NetParams instance (defaults to None)
+                          - to be called during initial function call only
 
             Returns
             -------
@@ -119,7 +123,7 @@ class NetpyneRunner(Runner):
                 self.cfg = type("Runner_SimConfig", (specs.SimConfig,),
                     {'__mappings__': self.mappings,
                      'update_cfg': update_cfg,
-                     'update': update_cfg})()
+                     'update': update_cfg})(simConfigDict)
                 return self.cfg
 
         def set_SimConfig(self):

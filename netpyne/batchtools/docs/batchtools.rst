@@ -80,7 +80,7 @@ the dispatcher through the ``comm`` object.
 importing the relevant objects::
 
      from netpyne.batchtools import specs, comm
-     cfg = specs.SimConfig()  # create a SimConfig object
+     cfg = specs.SimConfig()  # create a SimConfig object, can be provided with a dictionary on initial call to set initial values
      netParams = specs.NetParams()  # create a netParams object
 
 ``netpyne.batchtools.specs`` behaves similarly to ``netpyne.sim.specs`` except in the following cases:

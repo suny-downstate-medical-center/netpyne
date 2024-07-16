@@ -15,11 +15,12 @@ A = 1
 # ----------- cfg creation & batch update ----------- #
 
 cfg = specs.SimConfig()
-cfg.x0 = 1
-cfg.x1 = 1
 
 cfg.simLabel = 'rosenbrock'
 cfg.saveFolder = '.'
+
+cfg.x0 = 1
+cfg.x1 = 1
 
 cfg.update_cfg()
 

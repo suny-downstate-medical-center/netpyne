@@ -72,7 +72,7 @@ class SimConfig(object):
         self.printPopAvgRates = False  # print population avg firing rates after run
         self.printSynsAfterRule = False  # print total of connections after each conn rule is applied
         self.verbose = False  # show detailed messages
-
+        self.progressBar = 2 # (0: no progress bar; 1: progress bar w/ leave = False; 2: progress bar w/ leave = True)
         # Recording
         self.recordCells = []  # what cells to record traces from (eg. 'all', 5, or 'PYR')
         self.recordTraces = {}  # Dict of traces to record
@@ -145,12 +145,12 @@ class SimConfig(object):
         folder = filename.split(basename)[0]
         ext = basename.split('.')[1]
 
-        # make dir
+        # make directories if they do not already exist: 
         try:
-            os.mkdir(folder)
-        except OSError:
-            if not os.path.exists(folder):
-                print(' Could not create', folder)
+            os.makedirs(folder, exist_ok=True)
+        except Exception as e:
+            print('%s: Exception: %s,' % (os.path.abspath(__file__), e))
+            raise SystemExit('Could not create %s' % (folder))
 
         dataSave = {'simConfig': self.__dict__}
 

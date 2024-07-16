@@ -28,11 +28,13 @@ def createFolder(folder):
 
     import os
 
-    if not os.path.exists(folder):
-        try:
-            os.mkdir(folder)
-        except OSError:
-            print(' Could not create %s' % (folder))
+    # If file path does not exist, it will create the file path (parent and sub-directories)
+    
+    try:
+        os.makedirs(folder, exist_ok=True)
+    except Exception as e:
+        print('%s: Exception: %s,' % (os.path.abspath(__file__), e))
+        raise SystemExit('Could not create %s' % (folder))
 
 
 # -------------------------------------------------------------------------------

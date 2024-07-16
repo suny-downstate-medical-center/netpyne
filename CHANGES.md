@@ -2,7 +2,7 @@
 
 **New features**
 
-- Added progress-bar indicating network creation progress
+- Added progress-bar indicating network creation progress. Toggle the progress bar with cfg.progressBar
 
 - cfg.connRandomSecFromList and cfg.distributeSynsUniformly can now be overriden in individual conn rule
 
@@ -19,6 +19,10 @@
 - syncLines in rasterPlot restored
 
 - Fixed a bug in `gatherDataFromFiles()` where cellGids for node 0 were lost
+
+- Fixed generating rhythmic spiking pattern with 'uniform' option
+
+- Fixed misleading console output when cfg.recordStims is On
 
 # Version 1.0.6
 

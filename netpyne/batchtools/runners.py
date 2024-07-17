@@ -1,7 +1,24 @@
-from batchtk.runtk.utils import convert, set_map, create_script
+#from batchtk.runtk.utils import convert, set_map, create_script
 from batchtk import runtk
 from batchtk.runtk.runners import Runner, get_class
 import os
+
+def set_map(self, assign_path, value):
+    assigns = assign_path.split('.')
+    if len(assigns) == 1:
+        self.__setitem__(assigns[0], value)
+        return
+    crawler = self.__getitem__(assigns[0])
+    for gi in assigns[1:-1]:
+        try:
+            crawler = crawler.__getitem__(gi)
+        except TypeError: # case for lists.
+            crawler = crawler.__getitem__(int(gi))
+    try:
+        crawler.__setitem__(assigns[-1], value)
+    except TypeError:
+        crawler.__setitem__(int(assigns[-1]), value)
+    return
 
 class NetpyneRunner(Runner):
     """
@@ -47,12 +64,14 @@ class NetpyneRunner(Runner):
                 raise KeyError("inheritance {} not found in runtk.RUNNERS (please check runtk.RUNNERS for valid strings...".format(inherit))
 
 
-        def get_NetParams(self):
+        def get_NetParams(self, netParamsDict=None):
             """
             Creates / Returns a NetParams instance
             Parameters
             ----------
             self
+            netParamsDict - optional dictionary to create NetParams instance (defaults to None)
+                          - to be called during initial function call only
 
             Returns
             -------
@@ -63,7 +82,7 @@ class NetpyneRunner(Runner):
                 return self.netParams
             else:
                 from netpyne import specs
-                self.netParams = specs.NetParams()
+                self.netParams = specs.NetParams(netParamsDict)
                 return self.netParams
 
         def update_cfg(self): #intended to take `cfg` instance as self
@@ -84,12 +103,14 @@ class NetpyneRunner(Runner):
                 except Exception as e:
                     raise Exception("failed on mapping: cfg.{} with value: {}\n{}".format(assign_path, value, e))
 
-        def get_SimConfig(self):
+        def get_SimConfig(self, simConfigDict=None):
             """
             Creates / Returns a SimConfig instance
             Parameters
             ----------
             self - NetpyneRunner instance
+            simConfigDict - optional dictionary to create NetParams instance (defaults to None)
+                          - to be called during initial function call only
 
             Returns
             -------
@@ -102,7 +123,7 @@ class NetpyneRunner(Runner):
                 self.cfg = type("Runner_SimConfig", (specs.SimConfig,),
                     {'__mappings__': self.mappings,
                      'update_cfg': update_cfg,
-                     'update': update_cfg})()
+                     'update': update_cfg})(simConfigDict)
                 return self.cfg
 
         def set_SimConfig(self):

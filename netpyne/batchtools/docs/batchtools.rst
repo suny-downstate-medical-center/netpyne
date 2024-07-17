@@ -1,8 +1,11 @@
 Running a Batch Job
 ===================
 
-The NetPyNE batchtools subpackage provides a method of automating job submission and reporting::
+The NetPyNE batchtools subpackage provides a method of automating job submission and reporting
 
+A diagram of the object interfaces...
+
+::
 
  batch<-->\               /---> configuration_0 >---\
            \             /                         specs---\
@@ -19,11 +22,30 @@ The NetPyNE batchtools subpackage provides a method of automating job submission
              \
              ...
 
+While objects and interfaces can be handled directly, batchtools offers simple wrapper commands applicable to most use-cases, where
+automatic parameter searches can be done by specifying a search space and algorithm through `netpyne.batchtools.search`, and
+parameter to model translation and result communication is handled through `netpyne.batchtools.specs` and `netpyne.batchtools.comm` respectively.
 
+A diagram of the wrapper interactions...
 
+::
+
+ netpyne.batchtools.search.search(   ) ----------------------------\                 host
+        |                                                          |
+        | search(   )                                              |
+ ==============================================================================================
+        |                                                      comm.initialize(   )
+        |                                                      comm.send(   )
+        |  cfg = netpyne.batchtools.specs.SimConfig(   )       comm.close(   )
+        |            |                                           ^     ^
+        v            v                                           |     |
+        cfg.update_cfg() ----------------------------------------/     |
+                                                                       |
+        send(   )                                               netpyne.batchtools.comm(   )
+                                                                                    simulation
 
 1. Setting up batchtools
------
+------------------------
 Beyond the necessary dependency installations for NetPyNE and NEURON, several additional `pip` installations are required.
 
 The NetPyNE installation should be handled as a development installation of the repository branch `batch`::
@@ -48,21 +70,20 @@ Ray is a dependency for batchtools, and should be installed with the following c
     pip install -u ray[default]
 
 2. Examples
------
-Examples of NetPyNE batchtools usage can be found in the ``examples`` directory `here <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples>`_.
+-----------
+Examples of NetPyNE batchtools usage can be found in the ``examples`` directory `on the NetPyNE github <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples>`_.
 
-Examples of the underlying batchtk package can be in the ``examples`` directory `here <https://github.com/jchen6727/batchtk/tree/release/examples>`_.
+Examples of the underlying batchtk package can be in the ``examples`` directory `on the batchtk github <https://github.com/jchen6727/batchtk/tree/release/examples>`_.
 
 3. Retrieving batch configuration values through the ``specs`` object
-
------
+---------------------------------------------------------------------
 Each simulation is able to retrieve relevant configurations through the ``specs`` object, and communicate with
 the dispatcher through the ``comm`` object.
 
 importing the relevant objects::
 
      from netpyne.batchtools import specs, comm
-     cfg = specs.SimConfig()  # create a SimConfig object
+     cfg = specs.SimConfig()  # create a SimConfig object, can be provided with a dictionary on initial call to set initial values
      netParams = specs.NetParams()  # create a netParams object
 
 ``netpyne.batchtools.specs`` behaves similarly to ``netpyne.sim.specs`` except in the following cases:
@@ -90,8 +111,7 @@ This replaces the previous idiom for updating the SimConfig object with mappings
 
 
 4. Communicating results to the ``dispatcher`` with the ``comm`` object
-
------
+-----------------------------------------------------------------------
 
 Prior batched simulations relied on ``.pkl`` files to communicate data. The ``netpyne.batch`` subpackage uses a specific ``comm`` object to send custom data back
 The ``comm`` object determines the method of communication based on the batch job submission type.
@@ -107,11 +127,12 @@ In terms of the simulation, the following functions are available to the user:
 * **comm.close()**: closes and cleans up the connection with the batch ``dispatcher``
 
 5. Specifying a batch job
-
------
+-------------------------
 Batch job handling is implemented with methods from ``netpyne.batchtools.search``
 
-**search**::
+**search**
+
+.. code-block:: python
 
     def search(job_type: str, # the submission engine to run a single simulation (e.g. 'sge', 'sh')
                comm_type: str, # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'filesystem')
@@ -165,7 +186,9 @@ The basic search implemented with the ``search`` function uses ``ray.tune`` as t
 
 * **params**: a dictionary of config values to perform the search over. The keys of the dictionary should match the keys of the config object to be updated. Lists or numpy generators >2 values will force a grid search over the values; otherwise, a list of two values will create a uniform distribution sample space.
 
-    **usage 1**: updating a constant value specified in the ``SimConfig`` object ::
+    **usage 1**: updating a constant value specified in the ``SimConfig`` object
+
+.. code-block:: python
 
         # take a config object with the following parameter ``foo``
         cfg = specs.SimConfig()
@@ -184,7 +207,9 @@ The basic search implemented with the ``search`` function uses ``ray.tune`` as t
             'foo': range(10)
         }
 
-    **usage 2**: updating a nested object in the ``SimConfig`` object::
+    **usage 2**: updating a nested object in the ``SimConfig`` object
+
+.. code-block:: python
 
         # to update a nested object, the package uses the `.` operator to specify reflection into the object.
         # take a config object with the following parameter object ``foo``
@@ -209,9 +234,35 @@ The basic search implemented with the ``search`` function uses ``ray.tune`` as t
         # cfg.foo = {'bar': {'baz': 0}}
         # params = {'foo.bar.baz': range(10)}
 
+    **usage 3**: updating a list object in the ``SimConfig`` object
+
+.. code-block:: python
+
+        # to update a nested object, the package uses the `.` operator to specify reflection into the object.
+        # take a config object with the following
+        cfg = specs.SimConfig()
+        cfg.foo = [0, 1, 4, 9, 16]
+        cfg.update()
+
+        # specify a search space for ``foo[0]`` with `foo.0` such that a simulation will run:
+        # cfg.foo[0] = 0
+        # cfg.foo[0] = 1
+        # cfg.foo[0] = 2
+        # ...
+        # cfg.foo[0] = 9
+
+        # using:
+        params = {
+            'foo.0': range(10)
+        }
+
+        # this reflection works with nested objects as well...
+
 * **algorithm** : the search algorithm (supported within ``ray.tune``)
 
-    **Supported algorithms**::
+    **Supported algorithms**
+
+.. code-block:: python
 
         * "variant_generator": grid and random based search of the parameter space (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
         * "random": grid and random based search of the parameter space (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
@@ -243,11 +294,87 @@ The basic search implemented with the ``search`` function uses ``ray.tune`` as t
 
 * **algorithm_config**: additional configuration for the search algorithm (see the `optuna docs <https://docs.ray.io/en/latest/tune/api/suggestion.html>`_)
 
-6. Performing parameter optimization searches (CA3 example)
------
-The ``examples`` directory `here <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples>`_ shows both a ``grid`` based search as well as an ``optuna`` based optimization.
+6. Batch searches on the Rosenbrock function (some simple examples)
+-------------------------------------------------------------------
+The ``examples`` directory `on the NetPyNE github <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples/rosenbrock>`_ contains multiple methods of performing automatic parameter search of a
+2 dimensional Rosenbrock function.  These examples are used to quickly demonstrate some of the functionality of batch communications rather than the full process of running parameter searches on a detailed
+NEURON simulation (see 7. Performing parameter optimization searches (CA3 example)) and therefore only contain the a `batch.py` file containing the script detailing the parameter space and search method, and a
+`rosenbrock.py` file containing the function to explore, and the appropriate declarations and calls for batch automation and communication (rather than the traditional `cfg.py`, `netParams.py`, and `init.py` files).
 
-In the ``CA3`` example, we tune the ``PYR->BC`` ``NMDA`` and ``AMPA`` synaptic weights, as well as the ``BC->PYR`` ``GABA`` synaptic weight. Note the search space is defined::
+1. `basic_rosenbrock <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples/rosenbrock/basic_rosenbrock>`_
+
+This demonstrates a basic grid search of the Rosenbrock function using the new ``batchtools``, where the search space is defined as the cartesian product of ``params['x0']`` and ``params['x1']``
+
+.. code-block:: python
+
+        # from batch.py
+        params = {'x0': [0, 3],
+                  'x1': [0, 3],
+                 }
+
+that is, with the values ``cfg.x0``, ``cfg.x1`` iterating over: ``[(0, 0), (0, 3), (3, 0), (3, 3)]`` list
+
+2. `coupled_rosenbrock <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples/rosenbrock/coupled_rosenbrock>`_
+
+This demonstrates a basic paired grid search, where ``x0`` is ``[0, 1, 2]`` and x1[n] is ``x0[n]**2``
+
+.. code-block:: python
+
+        # from batch.py
+        x0 = numpy.arange(0, 3)
+        x1 = x0**2
+
+        x0_x1 = [*zip(x0, x1)]
+        params = {'x0_x1': x0_x1
+                  }
+
+the ``x0`` and ``x1`` values are paired together to create a search space ``x0_x1`` iterating over: ``[(0, 0), (1, 1), (2, 4)]`` list
+
+then, in the ``rosenbrock.py`` file, a list of two values ``cfg.x0_x1`` is created to capture the ``x0_x1`` values, which is then unpacked into individual ``x0`` and ``x1`` values
+
+.. code-block:: python
+
+        # from rosenbrock.py
+        cfg.x0_x1 = [1, 1]
+
+        cfg.update_cfg()
+
+        # -------------- unpacking x0_x1 list  -------------- #
+        x0, x1 = cfg.x0_x1
+
+then the Rosenbrock function is evaluated with the unpacked ``x0`` and ``x1``
+
+3. `random_rosenbrock <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples/rosenbrock/random_rosenbrock>`_
+
+This demonstrates a grid search over a nested object, where ``xn`` is a list of 2 values which are independently modified to search the cartesian product of ``[0, 1, 2, 3, 4]`` and ``[0, 1, 2, 3, 4]``
+
+.. code-block:: python
+
+        # from batch.py
+        params = {'xn.0': numpy.arange(0, 5),
+                  'xn.1': numpy.arange(0, 5)
+                 }
+
+By using ``xn.0`` and ``xn.1`` we can reference the 0th and 1st elements of the list, which is created and modified in rosenbrock.py
+
+.. code-block:: python
+
+        # from rosenbrock.py
+        cfg.xn = [1, 1]
+
+        cfg.update_cfg()
+
+        # ---------------- unpacking x list  ---------------- #
+        x0, x1 = cfg.xn
+
+
+7. Performing parameter optimization searches (CA3 example)
+-----------------------------------------------------------
+The ``examples`` directory `on the NetPyNE github <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples>`_ shows both a ``grid`` based search as well as an ``optuna`` based optimization.
+
+In the ``CA3`` example, we tune the ``PYR->BC`` ``NMDA`` and ``AMPA`` synaptic weights, as well as the ``BC->PYR`` ``GABA`` synaptic weight. Note the search space is defined
+
+.. code-block:: python
 
         # from optuna_search.py
         params = {'nmda.PYR->BC' : [1e-3, 1.8e-3],
@@ -255,7 +382,9 @@ In the ``CA3`` example, we tune the ``PYR->BC`` ``NMDA`` and ``AMPA`` synaptic w
                   'gaba.BC->PYR' : [0.4e-3, 1.0e-3],
                  }
 
-in both ``optuna_search.py``, defining the upper and lower bounds of the search space, while in ``grid_search.py`` the search space is defined::
+in both ``optuna_search.py``, defining the upper and lower bounds of the search space, while in ``grid_search.py`` the search space is defined
+
+.. code-block:: python
 
         # from grid_search.py
         params = {'nmda.PYR->BC' : numpy.linspace(1e-3, 1.8e-3, 3),
@@ -265,7 +394,9 @@ in both ``optuna_search.py``, defining the upper and lower bounds of the search 
 
 which defines ``3x3x3`` specific values to search over
 
-Note that the ``metric`` specifies a specific ``string`` (``loss``) to report and optimize around. This value is generated and ``sent`` by the ``init.py`` simulation::
+Note that the ``metric`` specifies a specific ``string`` (``loss``) to report and optimize around. This value is generated and ``sent`` by the ``init.py`` simulation
+
+.. code-block:: python
 
         # from init.py
         results['PYR_loss'] = (results['PYR'] - 3.33875)**2

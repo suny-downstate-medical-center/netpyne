@@ -17,6 +17,9 @@ cfg.saveDat = False
 cfg.saveJson = True
 cfg.printRunTime = 0.1 
 cfg.recordLFP = None # don't save this
+cfg.simLabel = 'ca3'
+cfg.saveFolder = '.'
+
 
 cfg.analysis['plotRaster'] = {'saveFig': True} # raster ok
 cfg.analysis['plotTraces'] = { } # don't save this

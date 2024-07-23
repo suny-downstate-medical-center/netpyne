@@ -1,9 +1,10 @@
 from netpyne.batchtools.search import search
+import numpy
 
-params = {'x.0': [0, 3],
-          'x.1': [0, 3],
-          'x.2': [0, 3],
-          'x.3': [0, 3],
+params = {'x.0': numpy.linspace(-1, 3, 5),
+          'x.1': numpy.linspace(-1, 3, 5),
+          'x.2': numpy.linspace(-1, 3, 5),
+          'x.3': numpy.linspace(-1, 3, 5),
           }
 
 # use shell_config if running directly on the machine
@@ -13,11 +14,11 @@ search(job_type = 'sh', # or sh
        comm_type = 'socket',
        label = 'optuna',
        params = params,
-       output_path = '../optuna_batch',
+       output_path = '../grid_batch',
        checkpoint_path = '../ray',
        run_config = {'command': 'python rosenbrock.py'},
-       num_samples = 9,
+       num_samples = 1,
        metric = 'fx',
        mode = 'min',
-       algorithm = 'optuna',
+       algorithm = 'variant_generator',
        max_concurrent = 3)

@@ -12,7 +12,7 @@ shell_config = {'command': 'python rosenbrock.py',}
 
 search(job_type = 'sh', # or sh
        comm_type = 'socket',
-       label = 'optuna',
+       label = 'grid',
        params = params,
        output_path = '../grid_batch',
        checkpoint_path = '../ray',

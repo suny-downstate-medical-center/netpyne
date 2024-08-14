@@ -2965,13 +2965,13 @@ In a multi-objective optimization, the relevant ``PYR_loss``, ``BC_loss``, and `
 
 8. Parameter Importance Evaluation Using fANOVA
 -----------------------------------------------
-A new feature in the batchtools beta release is the ability to evaluate parameter importance using a functional ANOVA inspired algorithm via the `Optuna` and `scikit-learn` libraries.
+A new feature in the batchtools beta release is the ability to evaluate parameter importance using a functional ANOVA inspired algorithm via the ``Optuna`` and ``scikit-learn`` libraries.
 (See `the original Hutter paper <http://proceedings.mlr.press/v32/hutter14.pdf>`_  and its `citation <https://automl.github.io/fanova/cite.html>`_)
 
-Currently, only unpaired single parameter importance to a single metric score is supported through the `NetPyNE.batchtools.analysis` `Analyzer` object, with an example of its usage
+Currently, only unpaired single parameter importance to a single metric score is supported through the ``NetPyNE.batchtools.analysis`` ``Analyzer`` object, with an example of its usage
 `here <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples/rosenbrock/fanova_rosenbrock>`_:
 
-In its current iteration, demonstrating the example requires generating an output `grid.csv` using `batch.py`, then loading that `grid.csv` into the `Analyzer` object. Then, using `run_analysis` will generate, per parameter, a single score indicative of the estimated `importance` of the parameter: that is, the estimated effect on the total variance of the model within the given bounds.
+In its current iteration, demonstrating the example requires generating an output ``grid.csv`` using ``batch.py``, then loading that ``grid.csv`` into the ``Analyzer`` object. Then, using ``run_analysis`` will generate, per parameter, a single score indicative of the estimated ``importance`` of the parameter: that is, the estimated effect on the total variance of the model within the given bounds.
 
 .. code-block:: python
 

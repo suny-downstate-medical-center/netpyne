@@ -2595,20 +2595,15 @@ A diagram of the wrapper interactions...
 
 1. Setting up batchtools
 ------------------------
-Beyond the necessary dependency installations for NetPyNE and NEURON, several additional `pip` installations are required.
+Beyond the necessary dependency installations for NetPyNE and NEURON, the following `pip` installations are preferred.
 
-The NetPyNE installation should be handled as a development installation of the repository branch `batch`::
+The NetPyNE installation should be handled as a development installation to allow for up to date fixes::
 
     git clone https://github.com/Neurosim-lab/netpyne.git
     cd netpyne
-    git checkout batch
     pip install -e .
 
-The batchtools installation either::
-
-    pip install -u batchtk
-
-or a development install (recommended)::
+A development install of the batchtools subpackage::
 
     git clone https://github.com/jchen6727/batchtk.git
     cd batchtk
@@ -2616,7 +2611,7 @@ or a development install (recommended)::
 
 Ray is a dependency for batchtools, and should be installed with the following command::
 
-    pip install -u ray[default]
+    pip install -U ray[default]
 
 2. Examples
 -----------
@@ -2629,7 +2624,9 @@ Examples of the underlying batchtk package can be in the ``examples`` directory 
 Each simulation is able to retrieve relevant configurations through the ``specs`` object, and communicate with
 the dispatcher through the ``comm`` object.
 
-importing the relevant objects::
+importing the relevant objects
+
+.. code-block:: python
 
      from netpyne.batchtools import specs, comm
      cfg = specs.SimConfig()  # create a SimConfig object, can be provided with a dictionary on initial call to set initial values
@@ -2641,7 +2638,9 @@ importing the relevant objects::
 
    * these mappings can be retrieved via ``specs.get_mappings()``
 
-* the SimConfig object created by ``netpyne.batch.specs.SimConfig()`` will update itself with relevant configuration mappings through the ``update()`` method::
+* the SimConfig object created by ``netpyne.batch.specs.SimConfig()`` will update itself with relevant configuration mappings through the ``update()`` method
+
+.. code-block:: python
 
     from netpyne.batchtools import specs # import the custom batch specs
     cfg = specs.SimConfig()              # create a SimConfig object
@@ -2649,17 +2648,47 @@ importing the relevant objects::
 
 The ``update`` method will update the ``SimConfig`` object with the configuration mappings captured in ``specs`` (see: ``specs.get_mappings()``)
 
-This replaces the previous idiom for updating the SimConfig object with mappings from the batched job submission::
+This replaces the previous idiom for updating the SimConfig object with mappings from the batched job submission
 
+.. code-block:: python
     try:
         from __main__ import cfg  # import SimConfig object with params from parent module
     except:
         from cfg import cfg  # if no simConfig in parent module, import directly from tut8_cfg module
 
+4. Additional functionality within the simConfig object
+-------------------------------------------------------
 
+Rather than handling custom ``SimConfig`` object attribute declaration through the ``batch`` ``initCfg`` argument, the new NetPyNE batchtools subpackage moves the custom declaration of ``SimConfig`` attributes to the actual ``SimConfig`` object, allowing them both during instantiation of the object as well as when calling ``cfg.update()``
 
+.. code-block:: python
 
-4. Communicating results to the ``dispatcher`` with the ``comm`` object
+        from netpyne.batchtools import specs                     # import the custom batch specs
+        cfg = specs.SimConfig({'foo': 0, 'bar': 1, 'baz': 2})    # create a SimConfig object, initializes it with a dictionary {'foo': 0} such that
+        assert cfg.foo == 0                                      # cfg.foo == 0
+        assert cfg.bar == 1                                      # cfg.bar == 1
+        assert cfg.baz == 2                                      # cfg.baz == 2
+        cfg.update({'foo': 3})                                   # update the cfg object with any relevant mappings for this particular batch job
+        assert cfg.foo == 3                                      # cfg.foo == 3
+        assert cfg.bar == 1                                      # cfg.bar remains unchanged
+        assert cfg.baz == 2                                      # cfg.baz remains unchanged
+
+``cfg.update()`` supports also supports the optional argument ``force_match``, which forces values in the update dictionary to match existing attributes within the ``SimConfig`` object. This setting is recommended to be set to ``True`` in order to prevent the unanticipated creation of new attributes within the ``SimConfig`` object at runtime ...
+
+.. code-block:: python
+
+        from netpyne.batchtools import specs                     # import the custom batch specs
+        cfg = specs.SimConfig({'type': 0})                       # create a SimConfig object, initializes it with a dictionary {'type': 0} such that
+        assert cfg.foo == 0                                      # cfg.type == 0
+        try:
+            cfg.update({'typo': 1}, force_match=True)            # cfg.typo is not defined, so this line will raise an AttributeError
+        except AttributeError as e:
+            print(e)
+        cfg.update({'typo': 1})                                  # without force_match, the typo attribute cfg.fooo is created and set to 1
+        assert cfg.type == 0                                     # cfg.type remains unchanged due to a typo in the attribute name 'type' -> 'typo'
+        assert cfg.typo == 1                                     # instead, cfg.typo is created and set to the value 1
+
+5. Communicating results to the ``dispatcher`` with the ``comm`` object
 -----------------------------------------------------------------------
 
 Prior batched simulations relied on ``.pkl`` files to communicate data. The ``netpyne.batch`` subpackage uses a specific ``comm`` object to send custom data back
@@ -2675,7 +2704,7 @@ In terms of the simulation, the following functions are available to the user:
 
 * **comm.close()**: closes and cleans up the connection with the batch ``dispatcher``
 
-5. Specifying a batch job
+6. Specifying a batch job
 -------------------------
 Batch job handling is implemented with methods from ``netpyne.batchtools.search``
 
@@ -2829,7 +2858,7 @@ The basic search implemented with the ``search`` function uses ``ray.tune`` as t
 
 * **output_path**: the directory for storing generated files, can be a relative or absolute path
 
-* **checkpoint_path**: the directory for storing checkpoint files in case the search needs to be restored, can be a relative or absolute path
+* **checkpoint_path**: the directory for storing checkpoint files (maintained by ``ray.tune``)in case the search needs to be restored, can be a relative or absolute path
 
 * **max_concurrent**: the number of concurrent trials to run at one time, it is recommended to keep in mind the resource usage of each trial to avoid overscheduling
 
@@ -2843,7 +2872,7 @@ The basic search implemented with the ``search`` function uses ``ray.tune`` as t
 
 * **algorithm_config**: additional configuration for the search algorithm (see the `optuna docs <https://docs.ray.io/en/latest/tune/api/suggestion.html>`_)
 
-6. Batch searches on the Rosenbrock function (some simple examples)
+7. Batch searches on the Rosenbrock function (some simple examples)
 -------------------------------------------------------------------
 The ``examples`` directory `on the NetPyNE github <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples/rosenbrock>`_ contains multiple methods of performing automatic parameter search of a
 2 dimensional Rosenbrock function.  These examples are used to quickly demonstrate some of the functionality of batch communications rather than the full process of running parameter searches on a detailed
@@ -2917,7 +2946,7 @@ By using ``xn.0`` and ``xn.1`` we can reference the 0th and 1st elements of the 
         x0, x1 = cfg.xn
 
 
-7. Performing parameter optimization searches (CA3 example)
+8. Performing parameter optimization searches (CA3 example)
 -----------------------------------------------------------
 The ``examples`` directory `on the NetPyNE github <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples>`_ shows both a ``grid`` based search as well as an ``optuna`` based optimization.
 
@@ -2963,7 +2992,7 @@ The ``out_json`` output contains a dictionary which includes the ``loss`` metric
 
 In a multi-objective optimization, the relevant ``PYR_loss``, ``BC_loss``, and ``OLM_loss`` components are additionally included (see ``mo_optuna_search.py``)
 
-8. Parameter Importance Evaluation Using fANOVA
+9. Parameter Importance Evaluation Using fANOVA
 -----------------------------------------------
 A new feature in the batchtools beta release is the ability to evaluate parameter importance using a functional ANOVA inspired algorithm via the ``Optuna`` and ``scikit-learn`` libraries.
 (See `the original Hutter paper <http://proceedings.mlr.press/v32/hutter14.pdf>`_  and its `citation <https://automl.github.io/fanova/cite.html>`_)
@@ -2971,7 +3000,7 @@ A new feature in the batchtools beta release is the ability to evaluate paramete
 Currently, only unpaired single parameter importance to a single metric score is supported through the ``NetPyNE.batchtools.analysis`` ``Analyzer`` object, with an example of its usage
 `here <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples/rosenbrock/fanova_rosenbrock>`_:
 
-In its current iteration, demonstrating the example requires generating an output ``grid.csv`` using ``batch.py``, then loading that ``grid.csv`` into the ``Analyzer`` object. Then, using ``run_analysis`` will generate, per parameter, a single score indicative of the estimated ``importance`` of the parameter: that is, the estimated effect on the total variance of the model within the given bounds.
+To run the example, generate an output ``grid.csv`` using ``batch.py``, then loading that ``grid.csv`` into the ``Analyzer`` object. Then, using ``run_analysis`` will generate, per parameter, a single score indicative of the estimated ``importance`` of the parameter: that is, the estimated effect on the total variance of the model within the given bounds.
 
 .. code-block:: python
 

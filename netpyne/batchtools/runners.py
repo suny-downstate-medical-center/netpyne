@@ -7,14 +7,19 @@ import collections
 
 def validate(element, container):
     try:
-        if element.isdigit() and isinstance(container, list) and int(element) < len(container):
-            assert int(element) < len(container) or element in container
-        else:
-            assert element in container
-    except AssertionError:
-        raise(AttributeError("Error when calling set_map with force_match, element {} does not exist in {}".format(element, container)))
-    return True
+        match container:
+            case list(): #container is a list, check validity of index
+                assert int(element) < len(container)
+            case dict(): #container is a dictionary, check validity of key
+                assert element in container
+            case _: #invalid container type
+                raise AttributeError("container type is not supported, cfg attributes support dictionary and "
+                                     "list objects, container {} is of type {}".format(container, type(container)))
+    except Exception as e:
+        raise AttributeError("error when validating {} within container {}: {}".format(element, container, e))
+    return True #element is valid, return True for boolean
 
+"""
 def set_map(self, assign_path, value, force_match=False):
     assigns = assign_path.split('.')
     if len(assigns) == 1 and not (force_match and not validate(assigns[0], self)):
@@ -33,7 +38,23 @@ def set_map(self, assign_path, value, force_match=False):
         except TypeError:
             crawler.__setitem__(int(assigns[-1]), value)
     return
+"""
 
+def set_map(self, assign_path, value, force_match=False):
+    def recursive_set(crawler, assigns):
+        if len(assigns) == 1:
+            if not (force_match and not validate(assigns[0], crawler)):
+                crawler.__setitem__(assigns[0], value)
+            return
+        if not (force_match and not validate(assigns[0], crawler)):
+            try:
+                next_crawler = crawler.__getitem__(assigns[0])
+            except TypeError:  # use for indexing into a list or in case the dictionary entry? is an int.
+                next_crawler = crawler.__getitem__(int(assigns[0]))
+            recursive_set(next_crawler, assigns[1:])
+
+    assigns = assign_path.split('.')
+    recursive_set(self, assigns)
 
 def update_items(d, u, force_match = False):
     for k, v in u.items():
@@ -125,7 +146,7 @@ class NetpyneRunner(Runner):
             """
             for assign_path, value in mappings.items():
                 try:
-                    set_map(self, assign_path, value)
+                    set_map(self, assign_path, value, force_match=True)
                     print("successfully assigned: cfg.{} with value: {}".format(assign_path, value))
                 except Exception as e:
                     raise Exception("failed on mapping: cfg.{} with value: {}\n{}".format(assign_path, value, e))
@@ -228,3 +249,10 @@ test_list = {
         2: {'g': 6, 'h': 7, 'i': 8}
     }
 }
+
+"""
+Test statements
+In [3]: set_map(test_list, 'lists_of_dicts.0.a', 'a', force_match = True)
+In [4]: set_map(test_list, 'lists_of_dicts.0.a', 0, force_match = True)
+In [5]: set_map(test_list, 'lists_of_dicts.0.d', 0, force_match = True)
+"""

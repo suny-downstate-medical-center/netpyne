@@ -20,11 +20,22 @@ TESTS = [
 
 ]
 
-cfg0 = {'lists': [{'a': 0, 'b': 1, 'c': 2}, {'d': 3, 'e': 4, 'f': 5}, {'g': 6, 'h': 7, 'i': 8}],
-        'dicts': {'abc': [0, 1, 2], 'def': [3, 4, 5], 'ghi': [6, 7, 8]},
-        'val0': 0, 'val1': 1, 'val2': 2}
+cfg = {
+    'list': [{'a': 0, 'b': 1, 'c': 2},
+             {'d': 3, 'e': 4, 'f': 5},
+             {'g': 6, 'h': 7, 'i': 8}],
+    'dict': {'abc': [0, 1, 2],
+             'def': [3, 4, 5],
+             'ghi': [6, 7, 8]},
+    'val0': 0, 'val1': 1, 'val2': 2}
 
-
+mapping = {
+    'list': 'list',
+    'dict': 'dict',
+    'val0': 'val0',
+    'val1': 'val1',
+    'val2': 'val2'
+}
 logger = logging.getLogger('test')
 logger.setLevel(logging.INFO)
 handler = logging.FileHandler('test_job.log')
@@ -35,7 +46,7 @@ logger.addHandler(handler)
 class TestMap:
     @pytest.fixture(params=TESTS)
     def setup(self, request):
-        self.assertEqual(True, False)  # add assertion here
+         n here
 
 
 if __name__ == '__main__':

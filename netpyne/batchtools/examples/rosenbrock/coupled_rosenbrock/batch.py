@@ -3,7 +3,7 @@ import numpy
 x0 = numpy.arange(0, 3)
 x1 = x0**2
 
-x0_x1 = [*zip(x0, x1)]
+x0_x1 = [*zip(x0.tolist(), x1.tolist())]
 params = {'x0_x1': x0_x1
           }
 

@@ -40,7 +40,21 @@ def set_map(self, assign_path, value, force_match=False):
     return
 """
 
+
+def traverse(obj, path, force_match=False):
+    if len(path) == 1:
+        if not (force_match and not validate(path[0], obj)):
+            return obj
+    if not (force_match and not validate(path[0], obj)):
+        try:
+            crawler = obj.__getitem__(path[0])
+        except TypeError:  # use for indexing into a list or in case the dictionary entry? is an int.
+            crawler = obj.__getitem__(int(path[0]))
+        return traverse(crawler, path[1:])
+
 def set_map(self, assign_path, value, force_match=False):
+    #assigns = assign_path.split('.')
+    #traverse(self, assigns, force_match)[assigns[-1]] = value
     def recursive_set(crawler, assigns):
         if len(assigns) == 1:
             if not (force_match and not validate(assigns[0], crawler)):
@@ -57,20 +71,8 @@ def set_map(self, assign_path, value, force_match=False):
     recursive_set(self, assigns)
 
 def get_map(self, assign_path, force_match=False):
-    def recursive_get(crawler, assigns):
-        if len(assigns) == 1:
-            if not (force_match and not validate(assigns[0], crawler)):
-                return crawler
-        if not (force_match and not validate(assigns[0], crawler)):
-            try:
-                crawler = crawler.__getitem__(assigns[0])
-            except TypeError:  # use for indexing into a list or in case the dictionary entry? is an int.
-                crawler = crawler.__getitem__(int(assigns[0]))
-            return recursive_get(crawler, assigns[1:])
-
     assigns = assign_path.split('.')
-    return recursive_get(self, assigns)
-
+    return traverse(self, assigns, force_match)[assigns[-1]]
 
 def update_items(d, u, force_match = False):
     for k, v in u.items():
@@ -205,6 +207,8 @@ class NetpyneRunner(Runner):
             SimConfig instance
             """
             if self.cfg:
+                if simConfigDict:
+                    update_items(self.cfg,simConfigDict, force_match=False)
                 return self.cfg
             else:
                 from netpyne import specs

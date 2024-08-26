@@ -56,6 +56,22 @@ def set_map(self, assign_path, value, force_match=False):
     assigns = assign_path.split('.')
     recursive_set(self, assigns)
 
+def get_map(self, assign_path, force_match=False):
+    def recursive_get(crawler, assigns):
+        if len(assigns) == 1:
+            if not (force_match and not validate(assigns[0], crawler)):
+                return crawler
+        if not (force_match and not validate(assigns[0], crawler)):
+            try:
+                crawler = crawler.__getitem__(assigns[0])
+            except TypeError:  # use for indexing into a list or in case the dictionary entry? is an int.
+                crawler = crawler.__getitem__(int(assigns[0]))
+            return recursive_get(crawler, assigns[1:])
+
+    assigns = assign_path.split('.')
+    return recursive_get(self, assigns)
+
+
 def update_items(d, u, force_match = False):
     for k, v in u.items():
         if k in d or not force_match:

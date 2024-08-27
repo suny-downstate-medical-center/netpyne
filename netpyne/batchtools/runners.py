@@ -13,8 +13,9 @@ def validate(element, container):
             case dict(): #container is a dictionary, check validity of key
                 assert element in container
             case _: #invalid container type
-                raise AttributeError("container type is not supported, cfg attributes support dictionary and "
-                                     "list objects, container {} is of type {}".format(container, type(container)))
+                assert element in container
+                #raise AttributeError("container type is not supported, cfg attributes support dictionary and "
+                #                     "list objects, container {} is of type {}".format(container, type(container)))
     except Exception as e:
         raise AttributeError("error when validating {} within container {}: {}".format(element, container, e))
     return True #element is valid, return True for boolean
@@ -50,25 +51,11 @@ def traverse(obj, path, force_match=False):
             crawler = obj.__getitem__(path[0])
         except TypeError:  # use for indexing into a list or in case the dictionary entry? is an int.
             crawler = obj.__getitem__(int(path[0]))
-        return traverse(crawler, path[1:])
+        return traverse(crawler, path[1:], force_match)
 
 def set_map(self, assign_path, value, force_match=False):
-    #assigns = assign_path.split('.')
-    #traverse(self, assigns, force_match)[assigns[-1]] = value
-    def recursive_set(crawler, assigns):
-        if len(assigns) == 1:
-            if not (force_match and not validate(assigns[0], crawler)):
-                crawler.__setitem__(assigns[0], value)
-            return
-        if not (force_match and not validate(assigns[0], crawler)):
-            try:
-                next_crawler = crawler.__getitem__(assigns[0])
-            except TypeError:  # use for indexing into a list or in case the dictionary entry? is an int.
-                next_crawler = crawler.__getitem__(int(assigns[0]))
-            recursive_set(next_crawler, assigns[1:])
-
     assigns = assign_path.split('.')
-    recursive_set(self, assigns)
+    traverse(self, assigns, force_match)[assigns[-1]] = value
 
 def get_map(self, assign_path, force_match=False):
     assigns = assign_path.split('.')
@@ -76,12 +63,10 @@ def get_map(self, assign_path, force_match=False):
 
 def update_items(d, u, force_match = False):
     for k, v in u.items():
-        if k in d or not force_match:
-            if isinstance(v, collections.abc.Mapping):
-                d[k] = update_items(d.get(k, {}), v, force_match)
-            else:
-                d[k] = v
-        else:
+        try:
+            force_match and validate(k, d)
+            d[k] = update_items(d.get(k), v, force_match)
+        except Exception as e:
             raise AttributeError("Error when calling update_items with force_match, item {} does not exist".format(k))
     return d
 

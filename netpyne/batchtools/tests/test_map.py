@@ -37,7 +37,7 @@ mapping_str = {
     'val0': True,       # should exist
     'list.0.d'  : True, # should not exist
     'dict.abc.4': True, # should not exist
-    'val4': True        # should not exist2
+    'val4': True        # should not exist
 }
 
 mapping_trav = {
@@ -48,8 +48,6 @@ mapping_trav = {
     'dict.abc.4': True, # should not exist
     'val4': True        # should not exist2
 }
-
-
 
 logger = logging.getLogger('test')
 logger.setLevel(logging.INFO)

@@ -126,6 +126,25 @@ class SimConfig(object):
                 else:
                     setattr(self, k, v)
 
+    def __repr__(self): #functions to make the cfg function more like a dictionary
+        return str(self.__dict__)
+
+
+    def __contains__(self, item):
+        return item in self.__dict__
+
+
+    def __iter__(self):
+        return iter(self.__dict__)
+
+
+    def get(self, k, d=None):
+        try:
+            return self.__getitem__(k)
+        except:
+            return d
+
+
     def __getitem__(self, k):
         try:
             return object.__getattribute__(self, k)
@@ -147,11 +166,10 @@ class SimConfig(object):
 
         # make directories if they do not already exist: 
         try:
-            os.makedirs(folder)
-        except OSError as e:
-            if not os.path.exists(folder):
-                print('%s: OSError: %s,' % (os.path.abspath(__file__), e))
-                raise SystemExit('Could not create %s' % (folder))
+            os.makedirs(folder, exist_ok=True)
+        except Exception as e:
+            print('%s: Exception: %s,' % (os.path.abspath(__file__), e))
+            raise SystemExit('Could not create %s' % (folder))
 
         dataSave = {'simConfig': self.__dict__}
 

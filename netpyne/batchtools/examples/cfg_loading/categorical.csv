@@ -1,0 +1,13 @@
+,data,return,timestamp,checkpoint_dir_name,done,training_iteration,trial_id,date,time_this_iter_s,time_total_s,pid,hostname,node_ip,time_since_restore,iterations_since_restore,config/param_str,config/saveFolder,config/simLabel,logdir
+0,"return                   0
+param_str          string0
+type         <class 'str'>
+dtype: object",0,1724028563,,False,1,de3ff_00000,2024-08-18_19-49-23,1.7559211254119873,1.7559211254119873,87347,Jamess-MacBook-Pro.local,127.0.0.1,1.7559211254119873,1,string0,../grid_batch,categorical_00000,de3ff_00000
+1,"return                   0
+param_str          string1
+type         <class 'str'>
+dtype: object",0,1724028563,,False,1,de3ff_00001,2024-08-18_19-49-23,1.754591941833496,1.754591941833496,87348,Jamess-MacBook-Pro.local,127.0.0.1,1.754591941833496,1,string1,../grid_batch,categorical_00001,de3ff_00001
+2,"return                   0
+param_str          string2
+type         <class 'str'>
+dtype: object",0,1724028563,,False,1,de3ff_00002,2024-08-18_19-49-23,1.7577638626098633,1.7577638626098633,87349,Jamess-MacBook-Pro.local,127.0.0.1,1.7577638626098633,1,string2,../grid_batch,categorical_00002,de3ff_00002

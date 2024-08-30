@@ -65,7 +65,10 @@ def update_items(d, u, force_match = False):
     for k, v in u.items():
         try:
             force_match and validate(k, d)
-            d[k] = update_items(d.get(k), v, force_match)
+            if isinstance(v, collections.abc.Container):
+                d[k] = update_items(d.get(k), v, force_match)
+            else:
+                d[k] = v
         except Exception as e:
             raise AttributeError("Error when calling update_items with force_match, item {} does not exist".format(k))
     return d

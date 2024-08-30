@@ -1,5 +1,4 @@
-from netpyne.batchtools import specs
-from netpyne.batchtools import comm
+from netpyne.batchtools import specs, comm
 from netpyne import sim
 from netParams import netParams, cfg
 import json
@@ -17,9 +16,6 @@ if comm.is_host():
     #print(json.dumps({**inputs}))
     results = sim.analysis.popAvgRates(show=False)
 
-
-#out_json = json.dumps({**inputs, **rates})
-
     results['PYR_loss'] = (results['PYR'] - 3.33875)**2
     results['BC_loss']  = (results['BC']  - 19.725 )**2
     results['OLM_loss'] = (results['OLM'] - 3.470  )**2
@@ -27,6 +23,5 @@ if comm.is_host():
     out_json = json.dumps({**inputs, **results})
 
     print(out_json)
-#TODO put all of this in a single function.
     comm.send(out_json)
     comm.close()

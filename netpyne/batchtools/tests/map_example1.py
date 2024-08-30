@@ -10,5 +10,8 @@ cfg = specs.SimConfig({
     'val0': False, 'val1': False, 'val2': False}
 )
 
-cfg.test_mappings({'list.0.fofof': 3})
+cfg.test_mappings({'list.0.d': 3, # creation of a new element which does not exist.
+                   'list.1.a': 1,})
+
+
 

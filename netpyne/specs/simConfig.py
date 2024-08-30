@@ -140,7 +140,7 @@ class SimConfig(object):
 
     def get(self, k, d=None):
         try:
-            return object.__getitem__(self, k)
+            return self.__getitem__(k)
         except:
             return d
 

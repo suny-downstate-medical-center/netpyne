@@ -2646,7 +2646,7 @@ importing the relevant objects
     cfg = specs.SimConfig()              # create a SimConfig object
     cfg.update()                         # update the cfg object with any relevant mappings for this particular batch job
 
-The ``update`` method will update the ``SimConfig`` object with the configuration mappings captured in ``specs`` (see: ``specs.get_mappings()``)
+The ``update`` method will update the ``SimConfig`` object ``first`` with values supplied in the argument call, and ``then`` with the configuration mappings captured in ``specs`` (see: ``specs.get_mappings()``)
 
 This replaces the previous idiom for updating the SimConfig object with mappings from the batched job submission
 
@@ -2682,11 +2682,29 @@ Rather than handling custom ``SimConfig`` object attribute declaration through t
         assert cfg.foo == 0                                      # cfg.type == 0
         try:
             cfg.update({'typo': 1}, force_match=True)            # cfg.typo is not defined, so this line will raise an AttributeError
-        except AttributeError as e:
+        except Exception as e:
             print(e)
         cfg.update({'typo': 1})                                  # without force_match, the typo attribute cfg.fooo is created and set to 1
         assert cfg.type == 0                                     # cfg.type remains unchanged due to a typo in the attribute name 'type' -> 'typo'
         assert cfg.typo == 1                                     # instead, cfg.typo is created and set to the value 1
+
+Both the initialization of the ``cfg`` object with ``specs.SimConfig()`` and the subsequent call to ``cfg.update()`` handle nested containers...
+
+.. code-block:: python
+
+        from netpyne.batchtools import specs
+        cfg = specs.SimConfig({'foo': {'val0': 0, 'arr0': [0, 1, 2]}})
+        assert cfg.foo['val0'] == 0
+        assert cfg.foo['arr0'][0] == 0
+        cfg.update({'foo': {'val0': 10,           # update cfg.foo['val0'] to 10
+                            'arr0': {0: 20        # update cfg.arr0[0] to 20
+                                     1: 30}}})    # update cfg.arr0[1] to 30
+        assert cfg.foo['val0'] == 10
+        assert cfg.foo['arr0'][0] == 20
+        assert cfg.foo['arr0'][1] == 30
+        assert cfg.foo['arr0'][2] == 2            # cfg.arr0[2] remains unchanged
+
+After updating the ``cfg`` object with the supplied dictionary, further updates will be made as appropriate by the calling ``batch`` processes search parameters...
 
 5. Communicating results to the ``dispatcher`` with the ``comm`` object
 -----------------------------------------------------------------------
@@ -2991,6 +3009,18 @@ Note that the ``metric`` specifies a specific ``string`` (``loss``) to report an
 The ``out_json`` output contains a dictionary which includes the ``loss`` metric (calculated as the MSE between observed and expected values)
 
 In a multi-objective optimization, the relevant ``PYR_loss``, ``BC_loss``, and ``OLM_loss`` components are additionally included (see ``mo_optuna_search.py``)
+
+9. Multiprocessing and parallelization
+--------------------------------------
+When using ``mpiexec`` to run simulations, it is important to only have one thread handle communications with the ``dispatcher`` host. To do this, encapsulate calls to ``comm.send()`` and ``comm.close()`` within
+a conditional block which checks that the proper thread (set as the 0th thread) executes communication calls as follows...
+
+.. code-block:: python
+
+    out_json = json.dumps({**inputs, **results}) # prepare message to send to host...
+    if comm.is_host():                           # only single thread enters this execution block...
+        comm.send(out_json)
+        comm.close()
 
 9. Parameter Importance Evaluation Using fANOVA
 -----------------------------------------------

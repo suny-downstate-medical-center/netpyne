@@ -856,7 +856,7 @@ def fromListConn(self, preCellsTags, postCellsTags, connParam):
     if 'loc' in connParam and isinstance(connParam['loc'], list):
         connParam['locFromList'] = list(connParam['loc'])  # if delay is a list, copy to locFromList
 
-    if connParam['synsPerConn'] == 1:
+    if connParam.get('synsPerConn', 1) == 1:
         if isinstance(connParam.get('sec'), list):
             connParam['secFromList'] = list(connParam['sec'])
     else:

@@ -69,7 +69,6 @@ class RunNetPyneTests(object):
         #
         # # Saving
         # simConfigParams.simConfig.saveJson=1
-        # simConfigParams.simConfig.saveFileStep = simConfigParams.simConfig.dt # step size in ms to save data to disk
         #
         # self.paramsMap["simConfig"]["durationTest"].append(simConfigParams)
 

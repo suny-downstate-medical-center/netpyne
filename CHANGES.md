@@ -16,7 +16,7 @@
 
 **Bug fixes**
 
-- Better handling of exceptions in `importCellParams()` (incl. issue 782)
+- Better handling of exceptions in `importCellParams()` (incl. `h.load_file()` - issue 782)
 
 - Pandas deprecated parameter fix
 

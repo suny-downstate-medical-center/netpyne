@@ -3,17 +3,9 @@ Module defining Network class and methods
 
 """
 
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import division
-from __future__ import absolute_import
-
-from future import standard_library
-
-standard_library.install_aliases()
 from ..specs import ODict
 from neuron import h  # import NEURON
-
+from tqdm import tqdm
 
 class Network(object):
     """
@@ -26,6 +18,8 @@ class Network(object):
     # initialize variables
     # -----------------------------------------------------------------------------
     def __init__(self, params=None):
+        from .. import sim
+
         self.params = params
 
         # params that can be expressed using string-based functions in connections
@@ -62,7 +56,12 @@ class Network(object):
             {}
         )  # Empty dict for storing GID -> local index (key = gid; value = local id) -- ~x6 faster than .index()
         self.lastGid = 0  # keep track of last cell gid
-        self.lastPointerId = 0  # keep track of last gap junction gid
+
+        # keep track of last gap junction gid
+        intMax = 2**(32-1) # pointer connection id in NEURON is signed 32-bit int
+        maxPointerIdPerNode = int(intMax / sim.nhosts)
+        self.lastPointerId = sim.rank * maxPointerIdPerNode # to avoid overlap of gids from different nodes
+        self.maxPointerIdForGivenNode = self.lastPointerId + maxPointerIdPerNode
 
     # -----------------------------------------------------------------------------
     # Set network params
@@ -90,18 +89,22 @@ class Network(object):
 
         sim.pc.barrier()
         sim.timing('start', 'createTime')
-        if sim.rank == 0:
+        if sim.rank == 0 and sim.cfg.verbose:
             print(("\nCreating network of %i cell populations on %i hosts..." % (len(self.pops), sim.nhosts)))
 
         self._setDiversityRanges()  # update fractions for rules
-
+        if sim.rank == 0 and not sim.cfg.verbose: pbar = tqdm(total=len(self.pops.values()), ascii=True,
+                                                              desc="\nCreating network of %i cell populations on %i hosts..." % (len(self.pops), sim.nhosts),
+                                                              position=-1, leave=True,
+                                                              bar_format='{l_bar}{bar}|') #{n_fmt}/{total_fmt} populations created on node %i' % sim.rank)
         for ipop in list(self.pops.values()):  # For each pop instantiate the network cells (objects of class 'Cell')
+            if sim.rank == 0 and not sim.cfg.verbose: pbar.update(1)
             newCells = ipop.createCells()  # create cells for this pop using Pop method
             self.cells.extend(newCells)  # add to list of cells
             sim.pc.barrier()
             if sim.rank == 0 and sim.cfg.verbose:
                 print(('Instantiated %d cells of population %s' % (len(newCells), ipop.tags['pop'])))
-
+        if sim.rank == 0 and not sim.cfg.verbose: pbar.close()
         if self.params.defineCellShapes:
             self.defineCellShapes()
 

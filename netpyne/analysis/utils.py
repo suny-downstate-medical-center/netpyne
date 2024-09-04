@@ -3,15 +3,6 @@ Module for utilities to help analyze and plot results
 
 """
 
-from __future__ import print_function
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
-from builtins import round
-from builtins import open
-from builtins import range
-
 # required to make json saving work in Python 2/3
 try:
     to_unicode = unicode
@@ -22,9 +13,6 @@ try:
 except NameError:
     basestring = str
 
-from future import standard_library
-
-standard_library.install_aliases()
 from netpyne import __gui__
 
 if __gui__:

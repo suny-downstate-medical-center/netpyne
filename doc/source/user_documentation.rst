@@ -2710,6 +2710,7 @@ The ``update`` method will update the ``SimConfig`` object ``first`` with values
 This replaces the previous idiom for updating the SimConfig object with mappings from the batched job submission
 
 .. code-block:: python
+
     try:
         from __main__ import cfg  # import SimConfig object with params from parent module
     except:

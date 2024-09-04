@@ -1678,7 +1678,7 @@ If this cell is expected to be a point cell instead, make sure the correspondent
         self._segCoords['d1'] = morphSegCoords['d1']
 
     def setImembPtr(self):
-        """Set PtrVector to point to the i_membrane_"""
+        """Set PtrVector to point to the `i_membrane_`"""
         jseg = 0
         for sec in list(self.secs.values()):
             hSec = sec['hObj']

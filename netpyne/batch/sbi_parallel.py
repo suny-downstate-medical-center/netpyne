@@ -20,16 +20,11 @@ import dill as pickle
 from neuron import h
 from sbi import utils as utils
 from sbi import analysis as analysis
-from sbi.inference.base import infer
-from sbi.analysis.plot import pairplot
 from sbi import utils
 from sbi import analysis
-from sbi import inference
-from sbi.inference import SNPE, SNLE, SNRE, simulate_for_sbi, prepare_for_sbi
+from sbi.inference import SNPE, SNLE, SNRE, simulate_for_sbi
+from sbi.inference.trainers.base import process_simulator, process_prior
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from scipy.stats import kurtosis
 
 pc = h.ParallelContext()  # use bulletin board master/slave
 
@@ -188,7 +183,11 @@ def sbiOptim(batch, pc):
             updateBestFit(candidate, fitness)
             return torch.as_tensor(fitness + sum_statistics)
 
-        simulator, prior = prepare_for_sbi(lambda param: objectiveFunc(param), prior)
+        # Check prior, return PyTorch prior.
+        prior, _, prior_returns_numpy = process_prior(prior)
+        # Check simulator, returns PyTorch simulator able to simulate batches.
+        simulator = process_simulator(simulator, prior, prior_returns_numpy)
+
         inference = sbi_md[sbi_method](prior=prior)
 
         if inference_type == 'single':

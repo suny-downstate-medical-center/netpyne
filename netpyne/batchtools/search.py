@@ -237,14 +237,19 @@ def generate_constructors(job_type, comm_type = 'socket', **kwargs):
 
 def generate_parameters(params, algorithm, **kwargs):
     """
-    returns a dictionary of parameters for ray_search based on the input dictionary
-    from NOTES Salvador:
+
+    Parameters
+    ----------
     params = {'synMechTau2': [3.0, 5.0, 7.0], # assumes list of values by default if grid search-like algo
 		  #'synMechTau2': [3.0, 7.0], # assumes lower/upper bounds by default if evol-like algo
           'connWeight' : paramtypes.sample_from(lambda _: numpy.random.uniform(0.005, 0.15))} # can optionally pass any of the paramtypes (= ray.tune data types)
 
-    #TODO: bloated function, prone to error
+    Returns
+    -------
+    a dictionary of parameters for ray_search based on the input dictionary
+
     """
+     #TODO: bloated function, prone to error
     ray_params = {}
     for param, space in params.items():
         if   isinstance(space, (list, tuple, range, numpy.ndarray)) and algorithm in {'variant_generator'}:

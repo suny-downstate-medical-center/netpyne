@@ -78,7 +78,7 @@ echo $pid >&1
                       runtk.SOCKET: '{sockname}'}
 
 class SGESubmit(Submit):
-    script_args = {'label', 'project_path', 'output_path', 'env', 'command', 'cores', 'vmem', }
+    script_args = {'label', 'queue', 'cores', 'vmem' 'realtime', 'output_path', 'project_path', 'env', 'command', }
     script_template = \
         """\
 #!/bin/bash
@@ -118,7 +118,7 @@ export JOBID=$JOB_ID
 
 
 class SGESubmitSFS(SGESubmit):
-    script_args = {'label', 'project_path', 'output_path', 'env', 'command', 'cores', 'vmem', }
+    script_args = {'label', 'queue', 'cores', 'vmem' 'realtime', 'output_path', 'project_path', 'env', 'command', }
     script_template = \
         """\
 #!/bin/bash
@@ -143,7 +143,7 @@ export SGLFILE="{output_path}/{label}.sgl"
                       }
 
 class SGESubmitSOCK(SGESubmit):
-    script_args = {'label', 'project_path', 'output_path', 'env', 'command', 'cores', 'vmem', 'sockname'}
+    script_args = {'label', 'queue', 'cores', 'vmem' 'realtime', 'output_path', 'project_path', 'sockname', 'env', 'command', }
     script_template = \
         """\
 #!/bin/bash

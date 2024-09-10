@@ -11,8 +11,7 @@ from batchtk.raytk.search import ray_trial, LABEL_POINTER
 from batchtk.utils import get_path
 import numpy
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
-
-
+import submits
 
 choice = tune.choice
 grid = tune.grid_search
@@ -216,12 +215,12 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
 #should be constant?
 constructors = namedtuple('constructors', 'dispatcher, submit')
 constructor_tuples = {
-    ('sge', 'socket'): constructors(runtk.dispatchers.INETDispatcher, runtk.submits.SGESubmitSOCK),
+    ('sge', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SGESubmitSOCK),
     #('sge', 'unix'): constructors(runtk.dispatchers.UNIXDispatcher, runtk.submits.SGESubmitSOCK), #can't use AF_UNIX sockets on networked machines
-    ('sge', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , runtk.submits.SGESubmitSFS ),
+    ('sge', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SGESubmitSFS ),
     #('zsh', 'inet'): constructors(runtk.dispatchers.INETDispatcher, runtk.submits.ZSHSubmitSOCK), #TODO preferable to use AF_UNIX sockets on local machines
-    ('sh', 'socket'): constructors(runtk.dispatchers.UNIXDispatcher, runtk.submits.SHSubmitSOCK),
-    ('sh', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , runtk.submits.SHSubmitSFS ),
+    ('sh', 'socket'): constructors(runtk.dispatchers.UNIXDispatcher, submits.SHSubmitSOCK),
+    ('sh', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SHSubmitSFS ),
 }#TODO, just say "socket"?
 
 """
@@ -243,7 +242,7 @@ def generate_parameters(params, algorithm, **kwargs):
 		  #'synMechTau2': [3.0, 7.0], # assumes lower/upper bounds by default if evol-like algo
           'connWeight' : paramtypes.sample_from(lambda _: numpy.random.uniform(0.005, 0.15))} # can optionally pass any of the paramtypes (= ray.tune data types)
 
-    #TODO: bloated function, prone to error
+    #TODO: check coverage of conditional statements (looks okay?)
     """
     ray_params = {}
     for param, space in params.items():
@@ -329,79 +328,6 @@ def search(job_type: str, # the submission engine to run a single simulation (e.
 
 
 """
-def ray_search(dispatcher_constructor, submit_constructor, algorithm = "variant_generator", label = 'search',
-               params = None, concurrency = 1, output_path = '../batch', checkpoint_path = '../ray',
-               run_config = None, num_samples = 1):
-    ray.init(
-        runtime_env={"working_dir": "."}) # needed for python import statements
-
-    #TODO class this object for self calls? cleaner? vs nested functions
-    #TODO clean up working_dir and excludes
-    if checkpoint_path[0] == '/':
-        storage_path = os.path.normpath(checkpoint_path)
-    elif checkpoint_path[0] == '.':
-        storage_path = os.path.normpath(os.path.join(os.getcwd(), checkpoint_path))
-    else:
-        raise ValueError("checkpoint_dir must be an absolute path (starts with /) or relative to the current working directory (starts with .)")
-    algo = create_searcher(algorithm, max_concurrent=concurrency, batch=True)
-    #algo = ConcurrencyLimiter(searcher=algo, max_concurrent=concurrency, batch=True)
-    submit = submit_constructor()
-    submit.update_templates(
-        **run_config
-    )
-    project_path = os.getcwd()
-    def run(config):
-        config.update({'saveFolder': output_path, 'simLabel': LABEL_POINTER})
-        data = ray_trial(config, label, dispatcher_constructor, project_path, output_path, submit)
-        session.report({'data': data, 'config': config})
-
-    tuner = tune.Tuner(
-        run,
-        tune_config=tune.TuneConfig(
-            search_alg=algo,
-            num_samples=num_samples, # grid search samples 1 for each param
-            metric="data"
-        ),
-        run_config=RunConfig(
-            storage_path=storage_path,
-            name=algorithm,
-        ),
-        param_space=params,
-    )
-
-    results = tuner.fit()
-    resultsdf = results.get_dataframe()
-    resultsdf.to_csv("{}.csv".format(label))
-"""
-
-
-
-
-"""
-from netpyne.batchtools import search, paramtypes
-import numpy
-
-https://docs.ray.io/en/latest/tune/api/doc/ray.tune.search.Searcher.html#ray.tune.search.Searcher
-
-
-
-params = {'synMechTau2': [3.0, 5.0, 7.0], # assumes list of values by default if grid search-like algo
-		  #'synMechTau2': [3.0, 7.0], # assumes lower/upper bounds by default if evol-like algo
-          'connWeight' : paramtypes.sample_from(lambda _: numpy.random.uniform(0.005, 0.15))} # can optionally pass any of the paramtypes (= ray.tune data types)
-
-run_config = {'sge': 5, 'command': 'python init.py'}
-
-#TODO rename ray_search to search
-search(dispatcher = 'inet', # defaults to 'inet' if no arg is passed?
-           submit = 'socket', # defaults to 'socket' if no arg is passed?
-           params = params,
-           run_config = run_config, #
-           algorithm = "variant_generator",
-           concurrency = 9,
-           output_path = '../batch_func',
-           checkpoint_path = '../grid_func',
-           label = 'func_search',
-           num_samples = 3)
 SEE:
 'variant_generator'
 'random' -> points to variant_generator

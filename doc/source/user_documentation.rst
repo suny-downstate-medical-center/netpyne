@@ -1183,6 +1183,65 @@ From a specific section and location, you can record section variables such as v
 	# is equivalent to recording soma.myPP.V in NEURON. 
 	simConfig.recordTraces['VmyPP'] = {'sec': 'soma', 'pointp': 'myPP', 'var': 'V'} 
 
+	## Recording from Synaptic Currents Mechanisms 
+
+	# Example of recording from an excitatory synaptic mechanism
+	# record the 'i' variable (current) from an excitatory synaptic mechanism located
+	# in the middle of the 'dend' section. This is equivalent to recording
+	# dend(0.5).exc._ref_i in NEURON.
+	simConfig.recordTraces['iExcSyn'] = {'sec': 'dend',  'loc': 0.5, 'synMech': 'exc',  'var': 'i'}
+
+	# Example of recording from an inhibitory synaptic mechanism
+	# record the 'i' variable (current) from an inhibitory synaptic mechanism located
+	# at 0.3 of the 'soma' section. This is equivalent to recording
+	# soma(0.3).inh._ref_i in NEURON.
+	simConfig.recordTraces['iInhSyn'] = {'sec': 'soma', 'loc': 0.3, 'synMech': 'inh',  'var': 'i'}
+
+	# Example of recording multiple synaptic currents
+	# Recording synaptic currents
+	simConfig.recordSynapticCurrents = True
+	synaptic_curr = [
+    		('AMPA', 'i'),   # Excitatory synaptic current
+    		('NMDA', 'i'),   # Excitatory synaptic current
+    		('GABA_A', 'i')  # Inhibitory synaptic current
+	]
+	if simConfig.recordSynapticCurrents:
+    	for syn_curr in synaptic_curr:
+        	trace_label = f'i__soma_0__{syn_curr[0]}__{syn_curr[1]}'
+        	simConfig.recordTraces.update({trace_label: {'sec': 'soma_0', 'loc': 0.5, 'mech': syn_curr[0], 'var': syn_curr[1]}})
+
+The names ``'iExcSyn'`` , ``'iInhSyn'`` , ``'AMPA'`` , ``'NMDA'`` , ``'GABA_A'`` are those defined by the user in ``netParams.synMechParams``, and can be found using ``netParams.synMechParams.keys()``. The variables that can be paired with the synaptic mechanism in ``synaptic_curr`` tuples can be found by inspecting the MOD file that is used to define that synaptic mechanism, and the ones that can be recorded are defined as ``RANGE`` type in the MOD file.
+
+Example:
+
+* A synaptic mechanism defined in ``netParams.synMechParamsas`` as ``'AMPA'`` that uses the ``MyExp2SynBB.mod`` template.
+
+	* The user can go to the source ``/mod`` folder, and open the ``MyExp2SynBB.mod`` file, to inspect which variables are defined as ``RANGE``, and those can be recorded.
+	* The user can also modify the variable type, and define as ``RANGE``, and then recompile the mechanism to make it recordable in netpyne.
+
+* Example of variables that can be recorded for the given file
+
+	* The user can record ``'tau1'``, ``'tau2'``, ``'e'``, ``'i'``, ``'g'``, ``'Vwt'``, ``'gmax'``.
+
+ 
+.. code-block:: python
+
+   : $Id: MyExp2SynBB.mod,v 1.4 2010/12/13 21:27:51 samn Exp $ 
+   NEURON {
+   :  THREADSAFE
+     POINT_PROCESS MyExp2SynBB
+     RANGE tau1, tau2, e, i, g, Vwt, gmax
+     NONSPECIFIC_CURRENT i
+   }
+
+Those should be specified in  ``synaptic_curr`` as:
+
+.. code-block:: python
+
+	synaptic_curr = [
+    	('AMPA', 'i'),    # Excitatory synaptic current
+    	('AMPA', 'g'),    # Channel conductance
+	]	
 
 .. _package_functions:
 
@@ -2651,6 +2710,7 @@ The ``update`` method will update the ``SimConfig`` object ``first`` with values
 This replaces the previous idiom for updating the SimConfig object with mappings from the batched job submission
 
 .. code-block:: python
+
     try:
         from __main__ import cfg  # import SimConfig object with params from parent module
     except:

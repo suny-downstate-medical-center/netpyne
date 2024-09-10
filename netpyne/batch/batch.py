@@ -62,37 +62,40 @@ def tupleToStr(obj):
 class Batch(object):
     """
     Class that handles batch simulations on NetPyNE.
-    Relevant Attributes:
-        batchLabel : str
-            The label of the batch used for directory/file naming of batch generated files.
-        cfgFile : str
-            The path of the file containing the `netpyne.simConfig.SimConfig` object
-        cfg : `netpyne.simConfig.SimConfig`
-            The `netpyne.simConfig.SimConfig` object
-        N.B. either cfg or cfgFile should be specified #TODO: replace with typechecked single argument
-        netParamsFile : str
-            The path of the file containing the `netpyne.netParams.NetParams` object
-        netParams : `netpyne.netParams.NetParams`
-            The `netpyne.netParams.NetParams` object
-        N.B. either netParams or netParamsFile should be specified #TODO: replace with typechecked single argument
-        initCfg : dict
-            params dictionary that is used to modify the batch cfg prior to any algorithm based parameter modifications
-        saveFolder : str
-            The path of the folder where the batch will be saved (defaults to batchLabel)
-        method : str
-            The algorithm method used for batch
-        runCfg : dict
-            Keyword: Arg dictionary used to generate submission templates (see utils.py)
-        evolCfg : dict #TODO: replace with algoCfg? to merge with optimCfg
-            Keyword: Arg dictionary used to define evolutionary algorithm parameters (see evol.py)
-        optimCfg : dict #TODO: replace with algoCfg? to merge with evolCfg
-            Keyword: Arg dictionary used to define optimization algorithm parameters
-            (see asd_parallel.py, optuna_parallel.py, sbi_parallel.py)
-        params : list
-            Dictionary of parameters to be explored per algorithm (grid, evol, asd, optuna, sbi)
-            (see relevant algorithm script for details)
-        seed : int
-            Seed for random number generator for some algorithms
+
+    Attributes
+    ----------
+
+    batchLabel : str
+        The label of the batch used for directory/file naming of batch generated files.
+    cfgFile : str
+        The path of the file containing the `netpyne.simConfig.SimConfig` object
+    cfg : `netpyne.simConfig.SimConfig`
+        The `netpyne.simConfig.SimConfig` object
+    N.B. either cfg or cfgFile should be specified #TODO: replace with typechecked single argument
+    netParamsFile : str
+        The path of the file containing the `netpyne.netParams.NetParams` object
+    netParams : `netpyne.netParams.NetParams`
+        The `netpyne.netParams.NetParams` object
+    N.B. either netParams or netParamsFile should be specified #TODO: replace with typechecked single argument
+    initCfg : dict
+        params dictionary that is used to modify the batch cfg prior to any algorithm based parameter modifications
+    saveFolder : str
+        The path of the folder where the batch will be saved (defaults to batchLabel)
+    method : str
+        The algorithm method used for batch
+    runCfg : dict
+        Keyword: Arg dictionary used to generate submission templates (see utils.py)
+    evolCfg : dict #TODO: replace with algoCfg? to merge with optimCfg
+        Keyword: Arg dictionary used to define evolutionary algorithm parameters (see evol.py)
+    optimCfg : dict #TODO: replace with algoCfg? to merge with evolCfg
+        Keyword: Arg dictionary used to define optimization algorithm parameters
+        (see asd_parallel.py, optuna_parallel.py, sbi_parallel.py)
+    params : list
+        Dictionary of parameters to be explored per algorithm (grid, evol, asd, optuna, sbi)
+        (see relevant algorithm script for details)
+    seed : int
+        Seed for random number generator for some algorithms
     """
 
     def __init__(

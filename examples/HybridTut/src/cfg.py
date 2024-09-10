@@ -23,7 +23,6 @@ cfg.recordStep = 0.025 # Step size in ms to save data (eg. V traces, LFP, etc)
 
 # Saving
 cfg.filename = 'mpiHybridTut'  # Set file output name
-cfg.saveFileStep = 1000 # step size in ms to save data to disk
 cfg.savePickle = False # Whether or not to write spikes etc. to a .mat file
 cfg.saveJson = False # Whether or not to write spikes etc. to a .mat file
 cfg.saveMat = False # Whether or not to write spikes etc. to a .mat file

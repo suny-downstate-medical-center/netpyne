@@ -219,6 +219,8 @@ constructor_tuples = {
     #('sge', 'unix'): constructors(runtk.dispatchers.UNIXDispatcher, runtk.submits.SGESubmitSOCK), #can't use AF_UNIX sockets on networked machines
     ('sge', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SGESubmitSFS ),
     #('zsh', 'inet'): constructors(runtk.dispatchers.INETDispatcher, runtk.submits.ZSHSubmitSOCK), #TODO preferable to use AF_UNIX sockets on local machines
+    ('slurm', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SLURMSubmitSOCK),
+    ('slurm', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SLURMSubmitSFS ),
     ('sh', 'socket'): constructors(runtk.dispatchers.UNIXDispatcher, submits.SHSubmitSOCK),
     ('sh', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SHSubmitSFS ),
 }#TODO, just say "socket"?

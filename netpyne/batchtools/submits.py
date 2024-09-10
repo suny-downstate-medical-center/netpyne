@@ -165,3 +165,102 @@ export SOCNAME="{sockname}"
                       runtk.SOCKET: '{sockname}'
                       }
 
+class SlurmSubmit(Submit):
+    script_args = {'label', 'allocation', 'walltime', 'nodes', 'coresPerNode', 'output_path', 'email', 'reservation', 'custom', 'project_path', 'command'}
+    script_template = \
+        """\
+#SBATCH --job-name={label}
+#SBATCH -A {allocation}
+#SBATCH -t {walltime}
+#SBATCH --nodes={nodes}
+#SBATCH --ntasks-per-node={coresPerNode}
+#SBATCH -o {output_path}/{label}.run
+#SBATCH -e {output_path}/{label}.err
+#SBATCH --mail-user={email}
+#SBATCH --mail-type=end
+export JOBID=$SLURM_JOB_ID
+{res}
+{custom}
+source ~/.bashrc
+cd {project_path}
+{command}
+wait
+"""
+    script_handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
+                      runtk.STDOUT: '{output_path}/{label}.run'}
+    def __init__(self, **kwargs):
+        super().__init__(
+            submit_template = Template(template="sbatch {output_path}/{label}.sh",
+                                       key_args={'output_path',  'label'}),
+            script_template = Template(template=self.script_template,
+                                       key_args=self.script_args),
+            handles = self.script_handles,
+            )
+
+    def submit_job(self, **kwargs):
+        proc = super().submit_job()
+        self.job_id = 0 #TODO, what is the output of an sbatch command?
+        return self.job_id
+        #validate job id
+        #try:
+        #    self.job_id = proc.stdout.split(' ')[2]
+        #except Exception as e: #not quite sure how this would occur
+        #    raise(Exception("{}\nJob submission failed:\n{}\n{}\n{}\n{}".format(e, self.submit, self.script, proc.stdout, proc.stderr)))
+        #return self.job_id
+
+    def set_handles(self):
+        pass
+
+class SlurmSubmitSFS(SlurmSubmit):
+    script_args = {'label', 'allocation', 'walltime', 'nodes', 'coresPerNode', 'output_path', 'email', 'custom', 'project_path', 'command'}
+    script_template = \
+        """\
+#SBATCH --job-name={label}
+#SBATCH -A {allocation}
+#SBATCH -t {walltime}
+#SBATCH --nodes={nodes}
+#SBATCH --ntasks-per-node={coresPerNode}
+#SBATCH -o {output_path}/{label}.run
+#SBATCH -e {output_path}/{label}.err
+#SBATCH --mail-user={email}
+#SBATCH --mail-type=end
+export JOBID=$SLURM_JOB_ID
+export OUTFILE="{output_path}/{label}.out"
+export SGLFILE="{output_path}/{label}.sgl"
+{custom}
+source ~/.bashrc
+cd {project_path}
+{command}
+wait
+"""
+    script_handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
+                      runtk.STDOUT: '{output_path}/{label}.run',
+                      runtk.MSGOUT: '{output_path}/{label}.out',
+                      runtk.SGLOUT: '{output_path}/{label}.sgl',
+                      }
+
+class SlurmSubmitSFS(SlurmSubmit):
+    script_args = {'label', 'allocation', 'walltime', 'nodes', 'coresPerNode', 'output_path', 'email', 'reservation', 'custom', 'project_path', 'command'}
+    script_template = \
+        """\
+#SBATCH --job-name={label}
+#SBATCH -A {allocation}
+#SBATCH -t {walltime}
+#SBATCH --nodes={nodes}
+#SBATCH --ntasks-per-node={coresPerNode}
+#SBATCH -o {output_path}/{label}.run
+#SBATCH -e {output_path}/{label}.err
+#SBATCH --mail-user={email}
+#SBATCH --mail-type=end
+export JOBID=$SLURM_JOB_ID
+export SOCNAME="{sockname}"
+{custom}
+source ~/.bashrc
+cd {project_path}
+{command}
+wait
+"""
+    script_handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
+                      runtk.STDOUT: '{output_path}/{label}.run',
+                      runtk.SOCKET: '{sockname}'
+                      }

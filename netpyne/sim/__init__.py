@@ -66,6 +66,7 @@ from .utils import (
     _init_stim_randomizer,
     unique,
     checkMemory,
+    close,
 )
 
 # import utils functions to manipulate objects

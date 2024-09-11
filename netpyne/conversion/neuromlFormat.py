@@ -1448,11 +1448,8 @@ try:
                                         seg.parent.segments
                                     ]
                                     parent_sec = None
-                                    # TODO: optimise
-                                    for sec in ordered_segs.keys():
-                                        if parent_seg.id in [
-                                            s.id for s in ordered_segs[sec]
-                                        ]:
+                                    for sec, segments in ordered_segs:
+                                        if parent_seg in segments:
                                             parent_sec = sec
                                             break
 

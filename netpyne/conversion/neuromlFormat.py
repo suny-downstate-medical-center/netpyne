@@ -23,6 +23,7 @@ pp = pprint.PrettyPrinter(depth=6, indent=4)
 
 try:
     import neuroml
+    from neuroml.neuro_lex_ids import neuro_lex_ids
     from pyneuroml import pynml
     from pyneuroml import __version__ as pynml_ver
     from distutils.version import StrictVersion
@@ -1354,7 +1355,7 @@ try:
                     # Unbranched segment group -> NEURON section
                     if (
                         hasattr(seg_grp, "neuro_lex_id")
-                        and seg_grp.neuro_lex_id == "sao864921383"
+                        and seg_grp.neuro_lex_id == neuro_lex_ids["section"]
                     ):
                         use_segment_groups_for_neuron = True
                         cellRule["secs"][seg_grp.id] = {
@@ -1524,7 +1525,7 @@ try:
 
                     if (
                         not seg_grp.neuro_lex_id
-                        or seg_grp.neuro_lex_id != "sao864921383"
+                        or seg_grp.neuro_lex_id != neuro_lex_ids["section"]
                     ):
                         cellRule["secLists"][seg_grp.id] = seg_grps_vs_nrn_sections[
                             seg_grp.id

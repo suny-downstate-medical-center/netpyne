@@ -2186,7 +2186,7 @@ try:
 
         netParams = specs.NetParams()
 
-        print("Importing NeuroML 2 network from: %s" % fileName)
+        logger.info("Importing NeuroML 2 network from: %s" % fileName)
 
         nmlHandler = None
 
@@ -2203,12 +2203,12 @@ try:
 
             nmlHandler.finalise()
 
-            print(
+            logger.debug(
                 "Finished import of NeuroML2; populations vs gids NML has calculated: "
             )
             for pop in nmlHandler.gids:
                 g = nmlHandler.gids[pop]
-                print(
+                logger.debug(
                     "   %s: %s"
                     % (
                         pop,
@@ -2232,7 +2232,7 @@ try:
 
             nmlHandler.finalise()
 
-            print("Finished import: %s" % nmlHandler.gids)
+            logger.info("Finished import: %s" % nmlHandler.gids)
             # print('Connections: %s'%nmlHandler.connections)
 
         sim.initialize(
@@ -2249,7 +2249,7 @@ try:
         # Check gids equal....
         for popLabel, pop in sim.net.pops.items():
             if sim.cfg.verbose:
-                print("gid: %s: %s, %s" % (popLabel, pop, pop.cellGids))
+                logger.debug("gid: %s: %s, %s" % (popLabel, pop, pop.cellGids))
             for gid in pop.cellGids:
                 assert gid in nmlHandler.gids[popLabel]
 
@@ -2258,18 +2258,17 @@ try:
                 proj_id
             ]
             if sim.cfg.verbose:
-                print(
+                logger.debug(
                     "Creating connections for %s (%s): %s->%s via %s"
                     % (projName, ptype, prePop, postPop, synapse)
                 )
-
-            preComp = nmlHandler.pop_ids_vs_components[prePop]
 
             """
 
             No longer used in connections, defined in section on cell...
 
             from neuroml import Cell
+            preComp = nmlHandler.pop_ids_vs_components[prePop]
 
             if isinstance(preComp,Cell):
                 if len(preComp.biophysical_properties.membrane_properties.spike_threshes)>0:
@@ -2341,7 +2340,7 @@ try:
                 cell = sim.net.cells[sim.net.gid2lid[preGapParams["gid"]]]
                 cell.addConn(preGapParams)
 
-        print(
+        logger.info(
             "  Number of connections on node %i: %i "
             % (sim.rank, sum([len(cell.conns) for cell in sim.net.cells]))
         )

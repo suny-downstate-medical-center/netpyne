@@ -7,6 +7,7 @@ import logging
 import math
 import pprint
 from collections import OrderedDict
+from typing import Dict, Any, Optional, Tuple
 
 from .. import specs
 
@@ -1088,28 +1089,34 @@ try:
 
         """
 
-        cellParams = OrderedDict()
-        popParams = OrderedDict()
+        # TODO: narrow down type hints to specific types instead of Any
+        cellParams: Dict[Any, Any] = OrderedDict()
+        popParams: Dict[Any, Any] = OrderedDict()
 
-        pop_ids_vs_seg_ids_vs_segs = {}
-        pop_ids_vs_components = {}
-        pop_ids_vs_use_segment_groups_for_neuron = {}
-        pop_ids_vs_ordered_segs = {}
-        pop_ids_vs_cumulative_lengths = {}
+        pop_ids_vs_seg_ids_vs_segs: Dict[Any, Any] = {}
+        pop_ids_vs_components: Dict[Any, Any] = {}
+        pop_ids_vs_use_segment_groups_for_neuron: Dict[Any, Any] = {}
+        pop_ids_vs_ordered_segs: Dict[Any, Any] = {}
+        pop_ids_vs_cumulative_lengths: Dict[Any, Any] = {}
 
-        projection_infos = OrderedDict()
-        connections = OrderedDict()
+        projection_infos: Dict[Any, Any] = OrderedDict()
+        connections: Dict[Any, Any] = OrderedDict()
 
-        popStimSources = OrderedDict()
-        stimSources = OrderedDict()
-        popStimLists = OrderedDict()
-        stimLists = OrderedDict()
+        popStimSources: Dict[Any, Any] = OrderedDict()
+        stimSources: Dict[Any, Any] = OrderedDict()
+        popStimLists: Dict[Any, Any] = OrderedDict()
+        stimLists: Dict[Any, Any] = OrderedDict()
 
-        gids = OrderedDict()
+        gids: Dict[Any, Any] = OrderedDict()
         next_gid = 0
         stochastic_input_count = 0
 
-        def __init__(self, netParams, simConfig=None, verbose=False):
+        def __init__(
+            self,
+            netParams: Dict[Any, Any],
+            simConfig: Optional[Dict[Any, Any]] = None,
+            verbose: bool = False,
+        ):
             self.netParams = netParams
             self.simConfig = simConfig
             self.verbose = verbose
@@ -1135,7 +1142,9 @@ try:
                 self.netParams.stimSourceParams[stimName] = self.stimSources[stimName]
                 self.netParams.stimTargetParams[stimName] = self.stimLists[stimName]
 
-        def _get_prox_dist(self, seg, seg_ids_vs_segs):
+        def _get_prox_dist(
+            self, seg: neuroml.Segment, seg_ids_vs_segs: Dict[str, neuroml.Segment]
+        ) -> Tuple[neuroml.Point3DWithDiam, neuroml.Point3DWithDiam]:
             """Get proximal and distal points for a segment.
 
             Parameters
@@ -1177,11 +1186,30 @@ try:
 
         @override
         def handle_network(self, network_id, notes, temperature=None):
+            """Handle the network
+
+            Currently, only sets the temperature if provided.
+
+            Parameters
+            -----------
+
+            network_id: str
+                id of the network
+                **Default:** required
+
+            notes: str
+                notes (currently unused)
+                **Default:** None
+
+            temperature: str
+                network temperature
+                **Default:** None
+            """
             if temperature:
                 self.simConfig.hParams["celsius"] = round(
                     pynml.convert_to_units(temperature, "degC"), 5
                 )
-                print(
+                logger.info(
                     "Setting global temperature to %s"
                     % self.simConfig.hParams["celsius"]
                 )
@@ -1227,7 +1255,7 @@ try:
             """
 
             if self.verbose:
-                print(
+                logger.debug(
                     "A population: %s with %i of %s (%s) "
                     % (population_id, size, component, str(component_obj.id).strip())
                 )

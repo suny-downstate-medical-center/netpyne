@@ -1091,12 +1091,19 @@ try:
 
         # TODO: narrow down type hints to specific types instead of Any
         cellParams: Dict[Any, Any] = OrderedDict()
-        popParams: Dict[Any, Any] = OrderedDict()
+        popParams: Dict[Any, Dict[str, Any]] = OrderedDict()
 
+        # population ids and dictionary of segment ids and their segment
+        # objects
         pop_ids_vs_seg_ids_vs_segs: Dict[Any, Any] = {}
+        # population ids and the components they consist of
         pop_ids_vs_components: Dict[Any, Any] = {}
+        # track whether unbranched segment groups are being used as Neuron
+        # sections for populations
         pop_ids_vs_use_segment_groups_for_neuron: Dict[Any, Any] = {}
+        # population ids and segments in order
         pop_ids_vs_ordered_segs: Dict[Any, Any] = {}
+        # population ids and cumulative segment lengths
         pop_ids_vs_cumulative_lengths: Dict[Any, Any] = {}
 
         projection_infos: Dict[Any, Any] = OrderedDict()
@@ -1265,7 +1272,7 @@ try:
             assert component == component_obj.id
 
             # dictionary used to populate netParams.popParams
-            popInfo = OrderedDict()
+            popInfo: Dict[str, Any] = OrderedDict()
             popInfo["pop"] = population_id
             # popInfo['cellModel'] = component
 
@@ -1278,7 +1285,7 @@ try:
             popInfo["numCells"] = size
 
             if population_id == "pop":
-                logger.critical(
+                logger.error(
                     """
                     ***************************** ERROR *****************************
                     The 'pop' label for populations is reservered.
@@ -1295,11 +1302,11 @@ try:
 
             self.popParams[population_id] = popInfo
 
-            from neuroml import BaseCell, Cell
+            # Now, let us handle the component of the population #
 
             # Cell with morphology and biophysics
             # https://docs.neuroml.org/Userdocs/Schemas/Cells.html#cell
-            if isinstance(component_obj, Cell):
+            if isinstance(component_obj, neuroml.Cell):
                 # popInfo['cellType'] = component
 
                 cell = component_obj
@@ -1307,17 +1314,13 @@ try:
                 cellRule = {'conds':{'cellType': component,
                                         'cellModel': component},
                             'secs': {},
-                            'secLists':{}}"""
+                            'secLists':{}}
+                """
                 # construct NetPyNE cellParams object
                 # http://doc.netpyne.org/modeling-specification-v1.0.html#cell-types
                 cellRule = {"secs": {}, "secLists": {}}
 
-                seg_ids_vs_segs = cell.get_segment_ids_vs_segments()
-                seg_grps_vs_nrn_sections = {}
-                seg_grps_vs_nrn_sections["all"] = []
-
-                use_segment_groups_for_neuron = False
-
+                # set spike threshold for the cell
                 if (
                     len(cell.biophysical_properties.membrane_properties.spike_threshes)
                     > 0
@@ -1337,7 +1340,15 @@ try:
                 else:
                     threshold = 0
 
-                # Go over segment groups to see if they are unbranched.
+                # Handle segments and segment groups #
+                # segment groups and their corresponding Neuron sections
+                seg_grps_vs_nrn_sections = {}
+                seg_grps_vs_nrn_sections["all"] = []
+
+                use_segment_groups_for_neuron = False
+
+                # Go over segment groups to see if unbranched segment groups
+                # are marked using the neurolex id.
                 # If they are, these directly become sections
                 for seg_grp in cell.morphology.segment_groups:
                     # Unbranched segment group -> NEURON section
@@ -1361,13 +1372,15 @@ try:
 
                         cellRule["secs"][seg_grp.id]["threshold"] = threshold
 
+                # track whether unbranched segment groups are used as
+                # Neuron sections for this population
                 self.pop_ids_vs_use_segment_groups_for_neuron[population_id] = (
                     use_segment_groups_for_neuron
                 )
 
                 if not use_segment_groups_for_neuron:
-                    # Unbranched segment groups not provided,
-                    # so we construct sections and geometry from individual segments
+                    # Unbranched segment groups not marked, so we construct
+                    # sections and geometry from individual segments
                     for seg in cell.morphology.segments:
                         seg_grps_vs_nrn_sections["all"].append(seg.name)
                         cellRule["secs"][seg.name] = {
@@ -1376,7 +1389,9 @@ try:
                             "ions": {},
                         }
 
-                        prox, dist = self._get_prox_dist(seg, seg_ids_vs_segs)
+                        prox, dist = self._get_prox_dist(
+                            seg, cell.segment_ids_vs_segments
+                        )
 
                         cellRule["secs"][seg.name]["geom"]["pt3d"].append(
                             (prox.x, prox.y, prox.z, prox.diameter)
@@ -1386,7 +1401,9 @@ try:
                         )
 
                         if seg.parent:
-                            parent_seg = seg_ids_vs_segs[seg.parent.segments]
+                            parent_seg = cell.segment_ids_vs_segments[
+                                seg.parent.segments
+                            ]
                             cellRule["secs"][seg.name]["topol"] = {
                                 "parentSec": parent_seg.name,
                                 "parentX": float(seg.parent.fraction_along),
@@ -1411,7 +1428,9 @@ try:
                         # print("ggg %s: %s"%(section,ordered_segs[section]))
                         for seg in ordered_segs[section]:
                             logger.debug("Processing segment: %s", seg)
-                            prox, dist = self._get_prox_dist(seg, seg_ids_vs_segs)
+                            prox, dist = self._get_prox_dist(
+                                seg, cell.segment_ids_vs_segments
+                            )
 
                             if seg.id == ordered_segs[section][0].id:
                                 logger.debug(
@@ -1425,7 +1444,9 @@ try:
                                     (prox.x, prox.y, prox.z, prox.diameter)
                                 )
                                 if seg.parent:
-                                    parent_seg = seg_ids_vs_segs[seg.parent.segments]
+                                    parent_seg = cell.segment_ids_vs_segments[
+                                        seg.parent.segments
+                                    ]
                                     parent_sec = None
                                     # TODO: optimise
                                     for sec in list(ordered_segs.keys()):
@@ -1483,7 +1504,7 @@ try:
                     if not use_segment_groups_for_neuron:
                         for member in seg_grp.members:
                             seg_grps_vs_nrn_sections[seg_grp.id].append(
-                                seg_ids_vs_segs[member.segments].name
+                                cell.segment_ids_vs_segments[member.segments].name
                             )
 
                     for inc in seg_grp.includes:
@@ -1877,13 +1898,18 @@ try:
                 # for cp in self.cellParams.keys():
                 #    pp.pprint(self.cellParams[cp])
 
-                self.pop_ids_vs_seg_ids_vs_segs[population_id] = seg_ids_vs_segs
+                self.pop_ids_vs_seg_ids_vs_segs[population_id] = (
+                    cell.segment_ids_vs_segments
+                )
 
             else:  # Abstract cell
                 # popInfo['cellType'] = component
 
                 if self.verbose:
-                    print("Abstract cell: %s" % (isinstance(component_obj, BaseCell)))
+                    print(
+                        "Abstract cell: %s"
+                        % (isinstance(component_obj, neuroml.BaseCell))
+                    )
 
                 if hasattr(component_obj, "thresh"):
                     threshold = pynml.convert_to_units(component_obj.thresh, "mV")
@@ -1892,7 +1918,7 @@ try:
                 else:
                     threshold = 0.0
 
-                if not isinstance(component_obj, BaseCell):
+                if not isinstance(component_obj, neuroml.BaseCell):
                     popInfo["originalFormat"] = "NeuroML2_SpikeSource"
 
                 cellRule = {

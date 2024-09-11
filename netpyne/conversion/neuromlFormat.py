@@ -1423,7 +1423,7 @@ try:
                         cumulative_lengths
                     )
 
-                    for section in list(cellRule["secs"].keys()):
+                    for section in cellRule["secs"].keys():
                         logger.debug("Processing section: %s", section)
                         # print("ggg %s: %s"%(section,ordered_segs[section]))
                         for seg in ordered_segs[section]:
@@ -1449,11 +1449,13 @@ try:
                                     ]
                                     parent_sec = None
                                     # TODO: optimise
-                                    for sec in list(ordered_segs.keys()):
+                                    for sec in ordered_segs.keys():
                                         if parent_seg.id in [
                                             s.id for s in ordered_segs[sec]
                                         ]:
                                             parent_sec = sec
+                                            break
+
                                     fract = float(seg.parent.fraction_along)
 
                                     # TODO: implement conversion of NeuroML segment's parent's fractAlong to

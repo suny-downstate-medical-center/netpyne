@@ -239,7 +239,7 @@ wait
                       runtk.SGLOUT: '{output_path}/{label}.sgl',
                       }
 
-class SlurmSubmitSFS(SlurmSubmit):
+class SlurmSubmitSOCK(SlurmSubmit):
     script_args = {'label', 'allocation', 'walltime', 'nodes', 'coresPerNode', 'output_path', 'email', 'reservation', 'custom', 'project_path', 'command'}
     script_template = \
         """\

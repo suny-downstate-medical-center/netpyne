@@ -52,8 +52,6 @@ except ImportError:
     neuromlExists = False
 
 
-
-
 def _convertNetworkRepresentation(net, gids_vs_pop_indices):
     """Get connection centric network representation as used in NeuroML2.
 
@@ -106,7 +104,7 @@ def _convertNetworkRepresentation(net, gids_vs_pop_indices):
                                 )
 
                             projection_info = (popPre, popPost, synMech)
-                            if not projection_info in list(nn.keys()):
+                            if projection_info not in list(nn.keys()):
                                 nn[projection_info] = []
 
                             nn[projection_info].append(
@@ -211,7 +209,7 @@ def _convertStimulationRepresentation(
                             )
 
                             stim_info = (name_stim, pop, rate, noise, synMech)
-                            if not stim_info in list(stims.keys()):
+                            if stim_info not in list(stims.keys()):
                                 stims[stim_info] = []
 
                             stims[stim_info].append(
@@ -1243,7 +1241,7 @@ try:
             popInfo["pop"] = population_id
             # popInfo['cellModel'] = component
 
-            ## SIMPLE POP/CELLTYPE FORMAT
+            # SIMPLE POP/CELLTYPE FORMAT
             popInfo["cellType"] = component
             popInfo["originalFormat"] = (
                 "NeuroML2"  # This parameter is required to distinguish NML2 "point processes" from abstract cells
@@ -1496,7 +1494,7 @@ try:
 
                         inhomogeneous_parameters[seg_grp.id] = {}
 
-                        ## Some checks here to ensure the defaults/recommended values are selected
+                        # Some checks here to ensure the defaults/recommended values are selected
                         # Can be made more general
                         assert ip.metric == "Path Length from root"
                         assert ip.variable == "p"
@@ -2267,11 +2265,11 @@ try:
 
             preComp = nmlHandler.pop_ids_vs_components[prePop]
 
-            from neuroml import Cell
-
             """
 
             No longer used in connections, defined in section on cell...
+
+            from neuroml import Cell
 
             if isinstance(preComp,Cell):
                 if len(preComp.biophysical_properties.membrane_properties.spike_threshes)>0:
@@ -2328,7 +2326,7 @@ try:
                         "sec": post_seg,
                         "loc": post_fract,
                     }
-                    #'threshold': threshold}
+                    # 'threshold': threshold}
 
                 connParam["synMech"] = synapse
 

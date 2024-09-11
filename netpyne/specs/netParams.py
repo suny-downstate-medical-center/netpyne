@@ -3,15 +3,6 @@ Module containing classes for high-level network parameters and methods
 
 """
 
-from __future__ import print_function
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
-from builtins import next
-from builtins import open
-from builtins import range
-
 # required to make json saving work in Python 2/3
 try:
     to_unicode = unicode
@@ -23,9 +14,6 @@ try:
 except NameError:
     basestring = str
 
-from future import standard_library
-
-standard_library.install_aliases()
 from collections import OrderedDict
 from .dicts import Dict, ODict
 from .. import conversion
@@ -559,12 +547,12 @@ class NetParams(object):
         folder = filename.split(basename)[0]
         ext = basename.split('.')[1]
 
-        # make dir
+        # make directories if they do not already exist:
         try:
-            os.mkdir(folder)
-        except OSError:
-            if not os.path.exists(folder):
-                print(' Could not create', folder)
+            os.makedirs(folder, exist_ok=True)
+        except Exception as e:
+            print('%s: Exception: %s,' % (os.path.abspath(__file__), e))
+            raise SystemExit('Could not create %s' % (folder))
 
         dataSave = {'net': {'params': self.todict()}}
 

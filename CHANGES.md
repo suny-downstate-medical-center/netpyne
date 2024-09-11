@@ -1,18 +1,42 @@
-# Version in development
+# Version 1.0.7
 
 **New features**
 
+- Introducing `batchtools` subpackage for parameters exploration and optimization
+
+- Added progress-bar indicating network creation progress. Toggle the progress bar with cfg.progressBar
+
 - cfg.connRandomSecFromList and cfg.distributeSynsUniformly can now be overriden in individual conn rule
+
+- Added ability to use `sec`, `loc`, `preSec` and `preLoc` from list in connList-type connParams
+
+- Updated tests.examples.utils to allow for dynamic pathing
+
+- Dropped python2 support
 
 **Bug fixes**
 
-- Better handling of exceptions in `importCellParams()` (incl. issue 782)
+- Better handling of exceptions in `importCellParams()` (incl. `h.load_file()` - issue 782)
+
+- Pandas deprecated parameter fix
 
 - Fixed pointer id overflow on MPI (e.g. for gap junctions)
 
 - preSec and preLoc are no longer lost for inverse pointer connection
 
+- Fixed crash due to use of matplotlib.TextArea deprecated param (credit: Christian O'Reilly)
+
 - syncLines in rasterPlot restored
+
+- Fixed a bug in `gatherDataFromFiles()` where cellGids for node 0 were lost
+
+- Fixed generating rhythmic spiking pattern with 'uniform' option
+
+- Fixed misleading console output when cfg.recordStims is On
+
+- The colors in CSD plots are now properly aligned vertically with the CSD time-series overlays (credit: Sam Neymotin)
+
+- Update mkdir to makedirs (credit: Jacob Sprouse)
 
 # Version 1.0.6
 

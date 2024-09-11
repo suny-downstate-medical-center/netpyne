@@ -3,19 +3,6 @@ Module containing a compartmental cell class
 
 """
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
-from builtins import super
-from builtins import next
-from builtins import zip
-from builtins import range
-
-from builtins import round
-from builtins import str
-
 from netpyne.specs.netParams import CellParams, SynMechParams
 
 try:
@@ -23,9 +10,6 @@ try:
 except NameError:
     basestring = str
 
-from future import standard_library
-
-standard_library.install_aliases()
 from numbers import Number
 from copy import deepcopy
 from neuron import h  # Import NEURON
@@ -1694,7 +1678,7 @@ If this cell is expected to be a point cell instead, make sure the correspondent
         self._segCoords['d1'] = morphSegCoords['d1']
 
     def setImembPtr(self):
-        """Set PtrVector to point to the i_membrane_"""
+        """Set PtrVector to point to the `i_membrane_`"""
         jseg = 0
         for sec in list(self.secs.values()):
             hSec = sec['hObj']

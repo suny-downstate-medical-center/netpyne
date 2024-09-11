@@ -8,10 +8,10 @@ from multiprocessing import Process
 if "-nogui" not in sys.argv:
     sys.argv.append("-nogui")
 
-from .utils import pkg_setup
+from .utils import pkg_setup, NETPYNE_DIR
 
-
-@pytest.mark.package_data(["examples/batchCell/", "mod"])
+package_dir = NETPYNE_DIR + "/examples/batchCell/"
+@pytest.mark.package_data([package_dir, "mod"])
 class TestBatchCell:
     def batch_run(self, pkg_setup):
         """run a reduced version of the batchCell example"""

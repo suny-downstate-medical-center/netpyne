@@ -3,16 +3,23 @@ Module for importing and exporting NeuroML 2
 
 """
 
-from __future__ import absolute_import, division, print_function
 
 import math
 import pprint
-from builtins import range, str
 from collections import OrderedDict
 
 import logging
 
 from .. import specs
+
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+
+
+from builtins import str
+
+from builtins import range
 
 try:
     from typing import override

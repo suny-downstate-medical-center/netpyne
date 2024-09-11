@@ -3,16 +3,6 @@ Module for setting up simulations
 
 """
 
-from __future__ import print_function
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
-#
-from builtins import str
-from future import standard_library
-
-standard_library.install_aliases()
 import sys
 import os
 import numpy as np
@@ -473,6 +463,8 @@ def setupRecording():
                     break
 
     if sim.cfg.recordStim:
+        if sim.cfg.verbose:
+            print("   Recording stims")
         sim.simData['stims'] = Dict()
         for cell in sim.net.cells:
             cell.recordStimSpikes()
@@ -505,6 +497,8 @@ def setupRecording():
 
         # record h.t
         if sim.cfg.recordTime and len(sim.simData) > 0:
+            if sim.cfg.verbose:
+                print("   Recording h.t")
             try:
                 sim.simData['t'] = h.Vector()  # sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
                 if hasattr(sim.cfg, 'use_local_dt') and sim.cfg.use_local_dt:
@@ -520,7 +514,8 @@ def setupRecording():
         # print recorded traces
         cat = 0
         total = 0
-        for key in sim.simData:
+        keys = [k for k in sim.simData.keys() if k not in ['t', 'stims', 'spkt', 'spkid']]
+        for key in keys:
             if sim.cfg.verbose:
                 print(("   Recording: %s:" % key))
             if len(sim.simData[key]) > 0:

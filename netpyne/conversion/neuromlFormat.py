@@ -1711,7 +1711,7 @@ try:
                         set_erev = True
                     elif (
                         cm
-                        in cell.biophysical_properties.membrane_properties.channel_density_non_uniforms_nernsts
+                        in cell.biophysical_properties.membrane_properties.channel_density_non_uniform_nernsts
                     ):
                         logger.debug(
                             "Processing channel density non uniform nernsts %s", cm.id

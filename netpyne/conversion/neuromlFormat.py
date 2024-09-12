@@ -1449,7 +1449,7 @@ try:
                                         seg.parent.segments
                                     ]
                                     parent_sec = None
-                                    for sec, segments in ordered_segs:
+                                    for sec, segments in ordered_segs.items():
                                         if parent_seg in segments:
                                             parent_sec = sec
                                             break

@@ -1692,8 +1692,24 @@ try:
                             if ion not in cellRule["secs"][section_name]["ions"]:
                                 cellRule["secs"][section_name]["ions"][ion] = {}
 
-                for cm in cell.biophysical_properties.membrane_properties.channel_density_non_uniforms:
-                    logger.debug("Processing channel density non uniform %s", cm.id)
+                for cm in (
+                    cell.biophysical_properties.membrane_properties.channel_density_non_uniforms
+                    + cell.biophysical_properties.membrane_properties.channel_density_non_uniform_nernsts
+                ):
+                    # erev does not need to be set for nernsts
+                    set_erev = True
+                    if (
+                        cm
+                        in cell.biophysical_properties.membrane_properties.channel_density_non_uniforms
+                    ):
+                        logger.debug("Processing channel density non uniform %s", cm.id)
+                        set_erev = True
+                    else:
+                        logger.debug(
+                            "Processing channel density non uniform nernsts %s", cm.id
+                        )
+                        set_erev = False
+
                     for vp in cm.variable_parameters:
                         if vp.parameter == "condDensity":
                             iv = vp.inhomogeneous_value
@@ -1757,93 +1773,18 @@ try:
 
                                 ion = self._determine_ion(cm)
                                 if ion == "non_specific":
-                                    mech["e"] = erev
+                                    if set_erev:
+                                        mech["e"] = erev
                                 else:
                                     if (
                                         ion
                                         not in cellRule["secs"][section_name]["ions"]
                                     ):
                                         cellRule["secs"][section_name]["ions"][ion] = {}
-                                    cellRule["secs"][section_name]["ions"][ion]["e"] = (
-                                        erev
-                                    )
-
-                for cm in cell.biophysical_properties.membrane_properties.channel_density_non_uniform_nernsts:
-                    # TODO: identical to non-uniform but not setting e-rev, so
-                    # can probably be refractored into a function
-                    logger.debug(
-                        "Processing channel density non uniform Nernst %s", cm.id
-                    )
-                    for vp in cm.variable_parameters:
-                        if vp.parameter == "condDensity":
-                            iv = vp.inhomogeneous_value
-                            grp = vp.segment_groups
-                            expr = iv.value.replace("exp(", "math.exp(")
-                            logger.debug(
-                                "variable_parameter: %s, %s, %s", grp, iv, expr
-                            )
-
-                            for section_name in seg_grps_vs_nrn_sections[grp]:
-                                path_start, path_end = inhomogeneous_parameters[grp][
-                                    section_name
-                                ]
-                                p = path_start
-                                gmax_start = pynml.convert_to_units(
-                                    "%r S_per_m2" % eval(expr), "S_per_cm2"
-                                )
-                                p = path_end
-                                gmax_end = pynml.convert_to_units(
-                                    "%r S_per_m2" % eval(expr), "S_per_cm2"
-                                )
-
-                                nseg = (
-                                    cellRule["secs"][section_name]["geom"]["nseg"]
-                                    if "nseg" in cellRule["secs"][section_name]["geom"]
-                                    else 1
-                                )
-
-                                logger.debug(
-                                    "Cond dens %s: %r S_per_cm2 (%r um) -> %r S_per_cm2 (%r um); nseg = %s",
-                                    section_name,
-                                    gmax_start,
-                                    path_start,
-                                    gmax_end,
-                                    path_end,
-                                    nseg,
-                                )
-
-                                gmax = []
-                                for fract in [
-                                    (2 * i + 1.0) / (2 * nseg) for i in range(nseg)
-                                ]:
-                                    p = path_start + fract * (path_end - path_start)
-                                    gmax_i = pynml.convert_to_units(
-                                        "%r S_per_m2" % eval(expr), "S_per_cm2"
-                                    )
-                                    gmax.append(gmax_i)
-
-                                    logger.debug(
-                                        "Point %s at %r = %r", p, fract, gmax_i
-                                    )
-
-                                if cm.ion_channel == "pas":
-                                    mech = {"g": gmax}
-                                else:
-                                    mech = {"gmax": gmax}
-
-                                cellRule["secs"][section_name]["mechs"][
-                                    cm.ion_channel
-                                ] = mech
-
-                                ion = self._determine_ion(cm)
-                                if ion == "non_specific":
-                                    pass
-                                else:
-                                    if (
-                                        ion
-                                        not in cellRule["secs"][section_name]["ions"]
-                                    ):
-                                        cellRule["secs"][section_name]["ions"][ion] = {}
+                                    if set_erev:
+                                        cellRule["secs"][section_name]["ions"][ion][
+                                            "e"
+                                        ] = erev
 
                 for cm in cell.biophysical_properties.membrane_properties.channel_density_non_uniform_ghks:
                     raise Exception("<channelDensityNonUniformGHK> not yet supported!")

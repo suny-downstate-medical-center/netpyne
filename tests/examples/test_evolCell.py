@@ -9,10 +9,10 @@ from multiprocessing import Process
 if "-nogui" not in sys.argv:
     sys.argv.append("-nogui")
 
-from .utils import pkg_setup
+from .utils import pkg_setup, NETPYNE_DIR
 
-
-@pytest.mark.package_data(["examples/evolCell/", "mod"])
+package_dir = NETPYNE_DIR + "/examples/evolCell/"
+@pytest.mark.package_data([package_dir, "mod"])
 class TestEvolCell:
     def evol_run(self, pkg_setup):
         """run a reduced version of the evolCell example"""

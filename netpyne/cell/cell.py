@@ -3,23 +3,11 @@ Module containing a generic cell class
 
 """
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
-
-from builtins import zip
-from builtins import next
-from builtins import str
-
 try:
     basestring
 except NameError:
     basestring = str
-from future import standard_library
 
-standard_library.install_aliases()
 from numbers import Number
 from copy import deepcopy
 from neuron import h  # Import NEURON

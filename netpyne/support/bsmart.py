@@ -42,15 +42,8 @@ polynomial order p. Larger values of p give less-smooth spectra.
 
 Version: 2019jun17 by Cliff Kerr (cliff@thekerrlab.com)
 """
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import absolute_import
-import numpy as np
-from builtins import range
-from future import standard_library
 
-standard_library.install_aliases()
+import numpy as np
 
 # ARMORF -- AR parameter estimation via LWR method modified by Morf.
 #

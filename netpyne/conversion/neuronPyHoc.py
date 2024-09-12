@@ -3,18 +3,6 @@ Module for importing cells, synapses, and networks from NEURON
 
 """
 
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import division
-from __future__ import absolute_import
-from builtins import range
-from builtins import dict
-
-from builtins import zip
-from builtins import str
-from future import standard_library
-
-standard_library.install_aliases()
 import os, sys, signal
 from numbers import Number
 from neuron import h
@@ -286,7 +274,9 @@ def importCell(fileName, cellName, cellArgs=None, cellInstance=False):
         cellArgs = []  # Define as empty list if not otherwise defined
 
     if fileName.endswith('.hoc') or fileName.endswith('.tem'):
-        h.load_file(fileName)
+        resultCode = h.load_file(fileName)
+        if resultCode == 0: # error
+            raise Exception(f"Error occured in h.load_file() when loading {fileName}. See above for details.")
         if not cellInstance:
             if isinstance(cellArgs, dict):
                 cell = getattr(h, cellName)(**cellArgs)  # create cell using template, passing dict with args
@@ -318,9 +308,7 @@ def importCell(fileName, cellName, cellArgs=None, cellInstance=False):
 
         cell = load(fileName)
     else:
-        print("File name should end in '.hoc', '.py', or '.swc'")
-        return
-
+        raise Exception("File name should end in '.hoc', '.py', or '.swc'")
     secDic, secListDic, synMechs, globs = getCellParams(cell, varList, origGlob)
 
     if fileName.endswith('.py'):

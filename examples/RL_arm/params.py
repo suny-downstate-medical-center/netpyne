@@ -308,7 +308,6 @@ simConfig.recordStep = 1.0 # Step size in ms to save data (eg. V traces, LFP, et
 
 # Saving
 simConfig.filename = 'simdata'  # Set file output name
-simConfig.saveFileStep = 1000 # step size in ms to save data to disk
 simConfig.savePickle = True # Whether or not to write spikes etc. to a .mat file
 simConfig.saveJson = False # Whether or not to write spikes etc. to a .mat file
 simConfig.saveMat = False # Whether or not to write spikes etc. to a .mat file

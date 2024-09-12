@@ -3,26 +3,13 @@ Module for utilities related to simulation
 
 """
 
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import division
-from __future__ import absolute_import
-
-
-from builtins import next
-from builtins import dict
-from builtins import map
-from builtins import str
-
 from netpyne.support.recxelectrode import RecXElectrode
 
 try:
     basestring
 except NameError:
     basestring = str
-from future import standard_library
 
-standard_library.install_aliases()
 from time import time
 import hashlib
 import array

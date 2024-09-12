@@ -5,10 +5,10 @@ if '-nogui' not in sys.argv:
     sys.argv.append('-nogui')
 
 
-from .utils import pkg_setup
+from .utils import pkg_setup, NETPYNE_DIR
 
-
-@pytest.mark.package_data(['examples/saving', None])
+package_dir = NETPYNE_DIR + '/examples/saving/'
+@pytest.mark.package_data([package_dir, None])
 class Test_saving():
     def test_init(self, pkg_setup):
         import src.init

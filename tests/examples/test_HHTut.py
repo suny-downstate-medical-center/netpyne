@@ -4,9 +4,10 @@ from netpyne import sim
 if '-nogui' not in sys.argv:
     sys.argv.append('-nogui')
 
-from .utils import pkg_setup
+from .utils import pkg_setup, NETPYNE_DIR
 
-@pytest.mark.package_data(['examples/HHTut/', None])
+package_dir = NETPYNE_DIR + '/examples/HHTut/'
+@pytest.mark.package_data([package_dir, None])
 class TestHHTut():
     def test_run(self, pkg_setup):
         import src.init

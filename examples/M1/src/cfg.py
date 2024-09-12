@@ -34,7 +34,6 @@ cfg.recordStep = 0.1 # Step size in ms to save data (eg. V traces, LFP, etc)
 
 # Saving
 cfg.filename = 'data/M1_ynorm_izhi'  # Set file output name
-cfg.saveFileStep = 1000 # step size in ms to save data to disk
 cfg.savePickle = False # save to pickle file
 cfg.saveJson = False # save to json file
 cfg.saveMat = False # save to mat file

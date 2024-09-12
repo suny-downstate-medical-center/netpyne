@@ -1,7 +1,10 @@
 import os
 import pytest
 import sys
+import inspect
+import netpyne
 
+NETPYNE_DIR = '/' + os.path.join(*inspect.getfile(netpyne).split('/')[:-2])
 def compile_neuron_mod_dir(pkg_dir):
     try:
         print('Compiling {}'.format(pkg_dir))
@@ -13,7 +16,6 @@ def compile_neuron_mod_dir(pkg_dir):
         print(' Error compiling support folder mod files')
         print(err)
         return
-
 
 @pytest.fixture
 def pkg_setup(request):

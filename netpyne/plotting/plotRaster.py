@@ -392,6 +392,7 @@ def plotRaster(
 
     # add spike lines
     if syncLines:
+        cellInds = list(set(spkInds))
         rasterPlotter.axis.vlines(spkTimes, 0, len(cellInds), 'red', linewidth=0.1)
 
     # add legend

@@ -3,21 +3,11 @@ Module containing SimConfig class including simulation configuration and methods
 
 """
 
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import division
-from __future__ import absolute_import
-
 # required to make json saving work in Python 2/3
 try:
     to_unicode = unicode
 except NameError:
     to_unicode = str
-
-from builtins import open
-from future import standard_library
-
-standard_library.install_aliases()
 
 from collections import OrderedDict
 from .dicts import Dict, ODict
@@ -82,7 +72,7 @@ class SimConfig(object):
         self.printPopAvgRates = False  # print population avg firing rates after run
         self.printSynsAfterRule = False  # print total of connections after each conn rule is applied
         self.verbose = False  # show detailed messages
-
+        self.progressBar = 2 # (0: no progress bar; 1: progress bar w/ leave = False; 2: progress bar w/ leave = True)
         # Recording
         self.recordCells = []  # what cells to record traces from (eg. 'all', 5, or 'PYR')
         self.recordTraces = {}  # Dict of traces to record
@@ -136,6 +126,25 @@ class SimConfig(object):
                 else:
                     setattr(self, k, v)
 
+    def __repr__(self): #functions to make the cfg function more like a dictionary
+        return str(self.__dict__)
+
+
+    def __contains__(self, item):
+        return item in self.__dict__
+
+
+    def __iter__(self):
+        return iter(self.__dict__)
+
+
+    def get(self, k, d=None):
+        try:
+            return self.__getitem__(k)
+        except:
+            return d
+
+
     def __getitem__(self, k):
         try:
             return object.__getattribute__(self, k)
@@ -155,12 +164,12 @@ class SimConfig(object):
         folder = filename.split(basename)[0]
         ext = basename.split('.')[1]
 
-        # make dir
+        # make directories if they do not already exist: 
         try:
-            os.mkdir(folder)
-        except OSError:
-            if not os.path.exists(folder):
-                print(' Could not create', folder)
+            os.makedirs(folder, exist_ok=True)
+        except Exception as e:
+            print('%s: Exception: %s,' % (os.path.abspath(__file__), e))
+            raise SystemExit('Could not create %s' % (folder))
 
         dataSave = {'simConfig': self.__dict__}
 

@@ -1695,6 +1695,7 @@ try:
                 for cm in (
                     cell.biophysical_properties.membrane_properties.channel_density_non_uniforms
                     + cell.biophysical_properties.membrane_properties.channel_density_non_uniform_nernsts
+                    + cell.biophysical_properties.membrane_properties.channel_density_non_uniform_ghks
                 ):
                     # erev does not need to be set for nernsts
                     set_erev = True
@@ -1704,9 +1705,17 @@ try:
                     ):
                         logger.debug("Processing channel density non uniform %s", cm.id)
                         set_erev = True
-                    else:
+                    elif (
+                        cm
+                        in cell.biophysical_properties.membrane_properties.channel_density_non_uniforms_nernsts
+                    ):
                         logger.debug(
                             "Processing channel density non uniform nernsts %s", cm.id
+                        )
+                        set_erev = False
+                    else:
+                        logger.debug(
+                            "Processing channel density non uniform GHK %s", cm.id
                         )
                         set_erev = False
 
@@ -1785,9 +1794,6 @@ try:
                                         cellRule["secs"][section_name]["ions"][ion][
                                             "e"
                                         ] = erev
-
-                for cm in cell.biophysical_properties.membrane_properties.channel_density_non_uniform_ghks:
-                    raise Exception("<channelDensityNonUniformGHK> not yet supported!")
 
                 for vi in (
                     cell.biophysical_properties.membrane_properties.init_memb_potentials

@@ -1651,6 +1651,7 @@ try:
                             if ion not in cellRule["secs"][section_name]["ions"]:
                                 cellRule["secs"][section_name]["ions"][ion] = {}
 
+                # Channel Densities GHK
                 for cm in (
                     cell.biophysical_properties.membrane_properties.channel_density_ghks
                 ):
@@ -1671,6 +1672,7 @@ try:
                             if ion not in cellRule["secs"][section_name]["ions"]:
                                 cellRule["secs"][section_name]["ions"][ion] = {}
 
+                # Channel Densities GHK2
                 for cm in cell.biophysical_properties.membrane_properties.channel_density_ghk2s:
                     logger.debug("Processing channel density GHK2 %s", cm.id)
                     group = "all" if not cm.segment_groups else cm.segment_groups
@@ -1692,6 +1694,8 @@ try:
                             if ion not in cellRule["secs"][section_name]["ions"]:
                                 cellRule["secs"][section_name]["ions"][ion] = {}
 
+                # Channel Densities non uniform, non uniform nernst, non
+                # uniform GHK
                 for cm in (
                     cell.biophysical_properties.membrane_properties.channel_density_non_uniforms
                     + cell.biophysical_properties.membrane_properties.channel_density_non_uniform_nernsts

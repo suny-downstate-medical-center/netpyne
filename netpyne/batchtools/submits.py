@@ -179,9 +179,8 @@ class SlurmSubmit(Submit):
 #SBATCH --mail-user={email}
 #SBATCH --mail-type=end
 export JOBID=$SLURM_JOB_ID
-{res}
+{env}
 {custom}
-source ~/.bashrc
 cd {project_path}
 {command}
 wait
@@ -227,8 +226,8 @@ class SlurmSubmitSFS(SlurmSubmit):
 export JOBID=$SLURM_JOB_ID
 export OUTFILE="{output_path}/{label}.out"
 export SGLFILE="{output_path}/{label}.sgl"
+{env}
 {custom}
-source ~/.bashrc
 cd {project_path}
 {command}
 wait
@@ -254,8 +253,8 @@ class SlurmSubmitSOCK(SlurmSubmit):
 #SBATCH --mail-type=end
 export JOBID=$SLURM_JOB_ID
 export SOCNAME="{sockname}"
+{env}
 {custom}
-source ~/.bashrc
 cd {project_path}
 {command}
 wait
@@ -264,3 +263,4 @@ wait
                       runtk.STDOUT: '{output_path}/{label}.run',
                       runtk.SOCKET: '{sockname}'
                       }
+

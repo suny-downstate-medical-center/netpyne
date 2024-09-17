@@ -225,6 +225,7 @@ constructor_tuples = {
     ('sh', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SHSubmitSFS),
 }#TODO, just say "socket"?
 
+
 """
 some shim functions before ray_search
 """

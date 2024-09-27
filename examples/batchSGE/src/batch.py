@@ -19,7 +19,7 @@ def batchTauWeight():
         b.runCfg = {'type': 'hpc_sge',
                     'jobName': 'my_batch',
                     'cores': 4,
-                    'script': 'init.py',
+                    'script': 'src/init.py',
                     'skip': True}
 
         # Run batch simulations

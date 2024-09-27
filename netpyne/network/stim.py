@@ -85,9 +85,19 @@ def addStims(self):
 
             # subset of cells from selected pops (by relative indices)
             if 'cellList' in target['conds']:
-                orderedPostGids = sorted(postCellsTags.keys())
-                gidList = [orderedPostGids[i] for i in target['conds']['cellList']]
-                postCellsTags = {gid: tags for (gid, tags) in postCellsTags.items() if gid in gidList}
+                if isinstance(target['conds']['cellList'],list):
+                    orderedPostGids = sorted(postCellsTags.keys())
+                    gidList = [orderedPostGids[i] for i in target['conds']['cellList']]
+                    postCellsTags = {gid: tags for (gid, tags) in postCellsTags.items() if gid in gidList}
+                elif target['conds']['cellList']=='all':
+                    # it would be: postCellsTags = allCellTags
+                    if sim.cfg.verbose:
+                        print('  Warning: all cells included in stimulation %s' % (targetLabel))
+                else:
+                    if sim.cfg.verbose:
+                        print('  Warning: cellList not valid for stimulation %s' % (targetLabel))
+                        postCellsTags = {}
+
 
             # initialize randomizer in case used in string-based function (see issue #89 for more details)
             self.rand.Random123(
@@ -96,6 +106,59 @@ def addStims(self):
 
             # calculate params if string-based funcs
             strParams = self._stimStrToFunc(postCellsTags, source, target)
+
+            if source['type'] == 'XStim':
+                from neuron import h
+                import numpy as np
+
+                # Obtaining information needed when adding extracellular stimulation
+                if not sim.net.params.defineCellShapes:
+                    sim.net.defineCellShapes()  # convert cell shapes (if not previously done already)
+                sim.net.calcSegCoords()
+
+                # Creating the temporal pattern for external stimulation (common to all cells)
+                times = np.arange(0,sim.cfg.duration,sim.cfg.dt)
+                
+                if 'del' in source:
+                    t_start = source['del']
+                else:
+                    t_start = 0
+                    
+                if 'del' in source and 'dur' in source:
+                    t_end = source['del'] + source['dur']
+                else:
+                    t_end = sim.cfg.duration
+
+                if t_start > sim.cfg.duration:
+                    print(" Extracellular stimulation defined beyond simulation time")
+                    t_start = 0
+
+                if t_end > sim.cfg.duration:
+                    print(" Extracellular stimulation defined beyond simulation time")
+                    t_end = sim.cfg.duration
+
+                if 'amp' in source:
+                    amp = source['amp']
+                else:
+                    amp = 0
+
+                if 'waveform' in source:
+                    if source['waveform']=='sinusoidal':
+                        if 'freq' in source:
+                            freq = source['freq']
+                        else:
+                            print(" Extracellular stimulation (Sinusoidal). No frequency given")
+                            freq = 0               # no stimulation
+                        signal = np.array([amp*np.sin(2*np.pi*freq*t/1000) if t>t_start and t<t_end else 0 for t in times])
+                    
+                    elif source['waveform']=='pulse':
+                        signal = np.array([amp if t>t_start and t<t_end else 0 for t in times])
+
+                    else:
+                        signal = np.array([0 if t>t_start and t<t_end else 0 for t in times])
+                        print(" Extracellular stimulation. Waveform not recognized")
+
+                self.t = h.Vector(times.tolist())
 
             # loop over postCells and add stim target
             for postCellGid in postCellsTags:  # for each postsyn cell
@@ -143,6 +206,14 @@ def addStims(self):
 
                     if source['type'] == 'NetStim':
                         self._addCellStim(params, postCell)  # call method to add connections (sort out synMechs first)
+                    
+                    elif source['type'] == 'XStim':
+                        # Adding extracellular stimulation
+                        params['segCoords'] = postCell._segCoords
+                        params['time'] = self.t
+                        params['stim'] = signal
+                        postCell.addStim(params)  # call cell method to add connection
+
                     else:
                         postCell.addStim(params)  # call cell method to add connection
 

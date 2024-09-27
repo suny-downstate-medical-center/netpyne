@@ -1309,6 +1309,149 @@ If this cell is expected to be a point cell instead, make sure the correspondent
                     )
                 )
 
+        elif params['type'] == 'XStim':
+
+            # Addition of extracellular mechanism in all sections/segments
+            segCoords = params['segCoords']
+            r05 = (segCoords['p0'] + segCoords['p1']) / 2
+            nseg = r05.shape[1]
+
+            ## OPTIONS ABOUT EXTRACELLULAR STIMULATION
+            if isinstance(params['field'],dict):
+                if params['field']['class'] == 'pointSource':
+                    from math import pi
+
+                    if 'sigma' in  params['field']:
+                        sigma = params['field']['sigma']
+                    else:
+                        sigma = 0.3  # mS/mm   --- same value used in LFP calculations
+
+                    if 'location' in  params['field']:
+                        electrodePos = params['field']['location']
+                    else:
+                        print(" Electrode position not defined for extracellular stimulation")
+                        # set at the midpoint
+                        electrodePos = [sim.net.params.sizeX/2, -sim.net.params.sizeY/2, sim.net.params.sizeZ/2]
+
+                    # transfer resistance
+                    tr = np.zeros(nseg)          # single electrode (for now)
+
+                    # Segment position relative to the point source                
+                    rel_05 = r05 - np.expand_dims(electrodePos, axis=1)
+                    r2 = np.einsum('ij,ij->j', rel_05, rel_05)  # compute dot product column-wise, the resulting array has as many columns as original
+                    r = np.sqrt(r2)
+                    tr += 1. / r
+                    tr *= 1 / (4 * pi * sigma)
+
+                elif params['field']['class'] == 'uniform':
+                    from math import pi
+
+                    # set a nominal transfer resistance based on the shortcut depicted by Ted Carnevale
+                    # see discussion in https://www.neuron.yale.edu/phpbb/viewtopic.php?p=20131&hilit=Applying+Sinusoidal+Voltage+to+Membrane#p20131
+                    # and relevant code in https://modeldb.science/239006
+                    # BUT ... the direction of the field is incorporated here (transfer resistance is a scalar value)
+
+                    if 'referencePoint' in  params['field']:
+                        referencePoint = params['field']['referencePoint']
+                    else:
+                        # set at the midpoint
+                        referencePoint = [sim.net.params.sizeX/2, -sim.net.params.sizeY/2, sim.net.params.sizeZ/2]
+
+                    if 'fieldDirection' in  params['field']:
+                        phi, theta = [val*pi/180 for val in params['field']['fieldDirection']]
+                    else:
+                        # default values
+                        phi, theta = [val*pi/180 for val in [0, 180]]    # vertical field, pointing down 
+
+                    # transfer resistance
+                    tr = np.zeros(nseg)          # single electrode (for now)
+
+                    # Segment position relative to the point source                
+                    rel_05 = r05 - np.expand_dims(referencePoint, axis=1)
+                    Ex = sin(theta)*cos(phi)
+                    Ey = cos(theta)
+                    Ez = sin(theta)*sin(phi)
+                    E_field = np.expand_dims([Ex, Ey, Ez], axis=1)
+                    tr = np.einsum('ij,ij->j', E_field, rel_05)  # compute dot product column-wise, the resulting array has as many columns as original
+                    tr *= 1e-9
+                else:
+                    print(" Extracellular stimulation not defined")
+
+            else:
+                print(" Extracellular stimulation not defined")
+
+            ## Addition of extracellular mechanisms in all segments
+            ## Running through all segments
+            nseg = 0
+            self.hvec = []
+            for secLabel,sec in self.secs.items():
+
+                hSec = sec['hObj']
+                hSec.push()
+
+                if not h.ismembrane('extracellular',sec = hSec): 
+                    hSec.insert('extracellular')
+
+                    # saving in case we have multiple stimulations
+                    self.secs[secLabel]['geom']['xtra_stim'] = []
+
+                    # for development (only saves properly for single stimulation)
+                    #self.secs[secLabel]['geom'].update({'r05':[]})
+                    #self.secs[secLabel]['geom'].update({'rel_05':[]})
+                    #self.secs[secLabel]['geom'].update({'tr':[]})
+                    for ns, seg in enumerate(hSec):
+
+                        #self.secs[secLabel]['geom']['r05'].append(r05[:,nseg])
+                        #self.secs[secLabel]['geom']['rel_05'].append(rel_05[:,nseg])
+                        #self.secs[secLabel]['geom']['tr'].append(tr[nseg])
+
+                        vec = [val*tr[nseg]*(1e6) for val in params['stim']]
+                        hStim = h.Vector(vec)  # add stim object to dict in stims list
+                        
+                        self.stims.append(Dict(params))  # add to python structure
+                        self.stims[-1]['sec_xtra'] = secLabel
+                        self.stims[-1]['seg_xtra'] = ns
+                        self.stims[-1]['hObj'] = hStim
+
+                        self.secs[secLabel]['geom']['xtra_stim'].append({})
+                        self.secs[secLabel]['geom']['xtra_stim'][ns].update({'vec' : vec, 
+                                                                             'stim_index': len(self.stims)-1})
+
+                        self.hvec.append(hStim)
+                        self.hvec[nseg].play(seg._ref_e_extracellular, params['time'],1)
+
+                        nseg += 1
+    
+                else: ## Extracellular mechanism already inserted: Putatively multiple stimulation
+                    #print("Multiple stimulation")
+                    for ns, seg in enumerate(hSec):
+
+                        vec_previous = self.secs[secLabel]['geom']['xtra_stim'][ns]['vec']
+                        vec_new = [val*tr[nseg]*(1e6) for val in params['stim']]
+                        if len(vec_previous)==len(vec_new):
+                            vec = [vec_previous[ii] + vec_new[ii] for ii in range(len(vec_new))]
+                        else:
+                            print('Loading multiple Xtra stimulation failed')
+                            vec = vec_previous
+                        
+                        # saving in case we have more multiple stimulations
+                        #self.secs[secLabel]['geom']['xtra_stim'][ns].update({'old_vec': vec_previous})
+                        self.secs[secLabel]['geom']['xtra_stim'][ns]['vec'] = vec
+
+                        # update the value in the vector to be play for extracellular stimulation
+                        for index in range(len(vec)):
+                            nst = self.secs[secLabel]['geom']['xtra_stim'][ns]['stim_index']
+                            self.stims[nst]['hObj'].x[index] = vec[index]
+
+                        nseg += 1
+
+
+                h.pop_section()
+
+            #print(nseg)
+            if nseg != r05.shape[1]:
+                print('We have an issue setting extracellular mechanism at segments')
+
         else:
             if sim.cfg.verbose:
                 print(('Adding exotic stim (NeuroML 2 based?): %s' % params))

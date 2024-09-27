@@ -825,6 +825,62 @@ The code below shows an example of how to create different types of stimulation 
 		'conds': {'pop': 'PYR3', 'cellList': [0, 1, 2, 5, 10, 14, 15]}}
 
 
+**Extracellular stimulation** - This is a distributed mechanism of stimulation, involving all sections/segments of a ``CompartCell``. To specify this kind of stimulation, in ``stimSourceParams`` we should set ``'type': 'XStim'`` and provide a number of parameters:
+
+	* ``field``: a dictionary that specifies the characteristics of the stimulation. It is composed by:
+
+		* ``class``: Type of stimulation. Available options: ``pointSource`` and ``uniform``, for a single point electrode injecting current or a uniform electrical field, respectively.
+
+		For ``'class': 'pointSource'``, it should be specified ``location`` (the location of the tip of the electrode) and ``sigma`` (the conductivity of the brain tisse in mS/mm).
+
+		For ``'class': 'uniform'``, it should be specified ``referencePoint`` (optional - the point where the field is 0) and ``fieldDirection`` (the direction of the field as a list of two angles: the polar angle -between 0 and 180- and the azimuthal angle -between 0 and 360-).
+
+	* ``amp`` (optional): the amplitude of the external stimulation (mA for point source stimulation - V/m for uniform electrical field). If not specified, it is set to 0 (no stimulation).
+
+	* ``del`` (optional): starting time of the stimulation. If not specified, it is the simulation start time.
+
+	* ``dur`` (optional): duration (following starting time) of the stimulation. If not specified, it is the simulation end time.
+
+	* ``waveform`` (optional): Temporal shape of the external stimulation. Available options: ``sinusoidal`` and ``pulse``. If not specified, the external stimulation is set to 0 (ground). If ``'waveform': 'sinusoidal'``, then the frequency should be specified via ``freq``. Otherwise it is set to 0 (no stimulation).
+
+In addition, in ``stimSourceParams`` we should set the ``source`` (the label of the stimulation source specifying the extracellular stimulation) and ``conds`` with the conditions that should satisfy target cells, typically ``'conds': {'cellList': 'all'}`` would provide the global stimulation represented by an extracellular (ubiquitous) source.
+
+
+The code below shows a detailed example of superimposed external stimulations (which are allowed):
+
+.. code-block:: python
+
+	# Stimulation parameters
+
+	## Stimulation sources parameters
+	netParams.stimSourceParams['XStim1'] =  {
+		'type': 'XStim', 
+		'field': {'class': 'pointSource', 'location': [100,-100,0], 'sigma': 0.276}, 
+		'amp' : 0.020, 
+		'del' : 20, 
+		'dur' : 80, 
+		'waveform': 'sinusoidal', 
+		'freq': 250}
+
+	netParams.stimSourceParams['XStim2'] =  {
+		'type': 'XStim', 
+		'field': {'class': 'uniform', 'referencePoint': [0,-netParams.sizeY,0], 'fieldDirection': [180,0]}, 
+		'amp' : 100.0, 
+		'del' : 50, 
+		'dur' : 20, 
+		'waveform': 'pulse'}
+
+	## Stimulation target parameters
+	netParams.stimTargetParams['XStim1->all'] = {
+		'source': 'XStim1', 
+		'conds': {'cellList': 'all'}}
+
+	netParams.stimTargetParams['XStim2->all'] = {
+		'source': 'XStim2', 
+		'conds': {'cellList': 'all'}}
+
+
+
 Reaction-Diffusion (RxD) parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

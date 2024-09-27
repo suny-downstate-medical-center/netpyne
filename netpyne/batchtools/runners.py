@@ -65,7 +65,7 @@ def update_items(d, u, force_match = False):
     for k, v in u.items():
         try:
             force_match and validate(k, d)
-            if isinstance(v, collections.abc.Container):
+            if isinstance(v, collections.abc.Mapping): #TODO this will currently break on lists of dicts
                 d[k] = update_items(d.get(k), v, force_match)
             else:
                 d[k] = v

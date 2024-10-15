@@ -1831,12 +1831,16 @@ try:
                         "all" if not specie.segment_groups else specie.segment_groups
                     )
                     for section_name in seg_grps_vs_nrn_sections[group]:
-                        cellRule["secs"][section_name]["ions"][specie.ion]["o"] = (
+                        ion = specie.ion
+                        if ion not in cellRule["secs"][section_name]["ions"]:
+                            cellRule["secs"][section_name]["ions"][ion] = {}
+
+                        cellRule["secs"][section_name]["ions"][ion]["o"] = (
                             pynml.convert_to_units(
                                 specie.initial_ext_concentration, "mM"
                             )
                         )
-                        cellRule["secs"][section_name]["ions"][specie.ion]["i"] = (
+                        cellRule["secs"][section_name]["ions"][ion]["i"] = (
                             pynml.convert_to_units(specie.initial_concentration, "mM")
                         )
 

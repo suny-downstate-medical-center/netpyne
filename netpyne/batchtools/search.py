@@ -30,6 +30,7 @@ def ray_optuna_search(dispatcher_constructor: Callable, # constructor for the di
                       metric: Optional[str|list|tuple] = "loss", # metric to optimize (this should match some key: value pair in the returned data
                       mode: Optional[str|list|tuple] = "min", # either 'min' or 'max' (whether to minimize or maximize the metric
                       optuna_config: Optional[dict] = None, # additional configuration for the optuna search algorithm
+                      ray_config: Optional[dict] = None, # additional configuration for the ray initialization
                       ) -> namedtuple('Study', ['algo', 'results']):
     """
     ray_optuna_search(...)
@@ -49,6 +50,7 @@ def ray_optuna_search(dispatcher_constructor: Callable, # constructor for the di
     metric:Optional[str] = "loss", # metric to optimize (this should match some key: value pair in the returned data
     mode:Optional[str] = "min", # either 'min' or 'max' (whether to minimize or maximize the metric
     optuna_config:Optional[dict] = None, # additional configuration for the optuna search algorithm (incl. sampler, seed, etc.)
+    ray_config:Optional[dict] = None, # additional configuration for the ray initialization
 
     Creates
     -------
@@ -60,7 +62,10 @@ def ray_optuna_search(dispatcher_constructor: Callable, # constructor for the di
     """
     from ray.tune.search.optuna import OptunaSearch
 
-    ray.init(runtime_env={"working_dir": "."})# TODO needed for python import statements ?
+    if ray_config is None:
+        ray_config = {}
+    ray_init_kwargs = {"runtime_env": {"working_dir:": "."}} | ray_config
+    ray.init(**ray_init_kwargs)# TODO needed for python import statements ?
     if optuna_config == None:
         optuna_config = {}
 
@@ -141,28 +146,30 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
                metric: Optional[str] = "loss", # metric to optimize (this should match some key: value pair in the returned data
                mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
                algorithm_config: Optional[dict] = None, # additional configuration for the search algorithm
+               ray_config: Optional[dict] = None, # additional configuration for the ray initialization
                ) -> tune.ResultGrid:
-    ray.init(runtime_env={"working_dir": "."}) # TODO needed for python import statements ?
 
-    if algorithm_config == None:
+    if ray_config is None:
+        ray_config = {}
+
+    ray_init_kwargs = {"runtime_env": {"working_dir:": "."}} | ray_config
+
+    ray.init(**ray_init_kwargs) # TODO needed for python import statements ?
+
+    if algorithm_config is None:
         algorithm_config = {}
 
-    if 'metric' not in algorithm_config:
-        algorithm_config['metric'] = metric
-
-    if 'mode' not in algorithm_config:
-        algorithm_config['mode'] = mode
-
-    if 'max_concurrent' not in algorithm_config:
-        algorithm_config['max_concurrent'] = max_concurrent
-
-    if 'batch' not in algorithm_config:
-        algorithm_config['batch'] = batch
+    algorithm_kwargs = {
+        'metric': metric,
+        'mode': mode,
+        'max_concurrent': max_concurrent,
+        'batch': batch,
+    } | algorithm_config
 
     #TODO class this object for self calls? cleaner? vs nested functions
     #TODO clean up working_dir and excludes
     storage_path = get_path(checkpoint_path)
-    algo = create_searcher(algorithm, **algorithm_config) #concurrency may not be accepted by all algo
+    algo = create_searcher(algorithm, **algorithm_kwargs) #concurrency may not be accepted by all algo
     #search_alg – The search algorithm to use.
     #  metric – The training result objective value attribute. Stopping procedures will use this attribute.
     #  mode – One of {min, max}. Determines whether objective is minimizing or maximizing the metric attribute.
@@ -260,10 +267,13 @@ def generate_parameters(params, algorithm, **kwargs):
             ray_params[param] = space
     return ray_params
 
-def shim(job_type: str, # the submission engine to run a single simulation (e.g. 'sge', 'sh')
-         comm_type: str, # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'filesystem')
-         run_config: Dict,  # batch configuration, (keyword: string pairs to customize the submit template)
-         params: Dict,  # search space (dictionary of parameter keys: tune search spaces)
+
+def shim(dispatcher_constructor: Optional[Callable] = None, # constructor for the dispatcher (e.g. INETDispatcher)
+         submit_constructor: Optional[Callable] = None, # constructor for the submit (e.g. SHubmitSOCK)
+         job_type: Optional[str] = None, # the submission engine to run a single simulation (e.g. 'sge', 'sh')
+         comm_type: Optional[str] = None, # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'filesystem')
+         run_config: Optional[Dict] = None,  # batch configuration, (keyword: string pairs to customize the submit template)
+         params: Optional[Dict] = None,  # search space (dictionary of parameter keys: tune search spaces)
          algorithm: Optional[str] = "variant_generator", # search algorithm to use, see SEARCH_ALG_IMPORT for available options
          label: Optional[str] = 'search',  # label for the search
          output_path: Optional[str] = '../batch',  # directory for storing generated files
@@ -276,16 +286,28 @@ def shim(job_type: str, # the submission engine to run a single simulation (e.g.
          algorithm_config: Optional[dict] = None,  # additional configuration for the search algorithm
          ):
     kwargs = locals()
-    kwargs['dispatcher_constructor'], kwargs['submit_constructor'] = generate_constructors(**kwargs)
+    if job_type is not None and comm_type is not None:
+        kwargs['dispatcher_constructor'], kwargs['submit_constructor'] = generate_constructors(job_type, comm_type)
+    if dispatcher_constructor is not None and submit_constructor is not None:
+        kwargs['dispatcher_constructor'] = dispatcher_constructor
+        kwargs['submit_constructor'] = submit_constructor
+    if kwargs['dispatcher_constructor'] is None or kwargs['submit_constructor'] is None:
+        raise ValueError("missing job method and communication type, either specify a dispatcher_constructor and submit_constructor or a job_type and comm_type")
+    if params is None:
+        raise ValueError("missing parameters, specify params")
+    if run_config is None:
+        run_config = {}
     [kwargs.pop(args) for args in ['job_type', 'comm_type']]
     kwargs['params'] = generate_parameters(**kwargs)
     return kwargs
 
 
-def search(job_type: str, # the submission engine to run a single simulation (e.g. 'sge', 'sh')
-           comm_type: str, # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'filesystem')
-           run_config: Dict,  # batch configuration, (keyword: string pairs to customize the submit template)
-           params: Dict,  # search space (dictionary of parameter keys: tune search spaces)
+def search(dispatcher_constructor: Optional[Callable] = None, # constructor for the dispatcher (e.g. INETDispatcher)
+           submit_constructor: Optional[Callable] = None, # constructor for the submit (e.g. SHubmitSOCK)
+           job_type: Optional[str] = None, # the submission engine to run a single simulation (e.g. 'sge', 'sh')
+           comm_type: Optional[str] = None, # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'filesystem')
+           run_config: Optional[dict] = None,  # batch configuration, (keyword: string pairs to customize the submit template)
+           params: Optional[dict] = None,  # search space (dictionary of parameter keys: tune search spaces)
            algorithm: Optional[str] = "variant_generator", # search algorithm to use, see SEARCH_ALG_IMPORT for available options
            label: Optional[str] = 'search',  # label for the search
            output_path: Optional[str] = '../batch',  # directory for storing generated files
@@ -296,12 +318,15 @@ def search(job_type: str, # the submission engine to run a single simulation (e.
            metric: Optional[str] = "loss", # metric to optimize (this should match some key: value pair in the returned data
            mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
            algorithm_config: Optional[dict] = None,  # additional configuration for the search algorithm
+           ray_config: Optional[dict] = None,  # additional configuration for the ray initialization
            ) -> tune.ResultGrid: # results of the search
     """
     search(...)
 
     Parameters
     ----------
+    dispatcher_constructor: Callable, # constructor for the dispatcher (e.g. INETDispatcher)
+    submit_constructor: Callable, # constructor for the submit (e.g. SHubmitSOCK)
     job_type: str, # the submission engine to run a single simulation (e.g. 'sge', 'sh')
     comm_type: str, # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'filesystem')
     run_config: Dict,  # batch configuration, (keyword: string pairs to customize the submit template)
@@ -316,6 +341,7 @@ def search(job_type: str, # the submission engine to run a single simulation (e.
     metric: Optional[str] = "loss", # metric to optimize (this should match some key: value pair in the returned data
     mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
     algorithm_config: Optional[dict] = None,  # additional configuration for the search algorithm
+    ray_config: Optional[dict] = None,  # additional configuration for the ray initialization
 
     Creates
     -------

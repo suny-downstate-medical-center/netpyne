@@ -20,6 +20,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 pp = pprint.PrettyPrinter(depth=6, indent=4)
+ROUND_PRECISION = 10
 
 try:
     import neuroml
@@ -1215,7 +1216,8 @@ try:
             """
             if temperature:
                 self.simConfig.hParams["celsius"] = round(
-                    pynml.convert_to_units(temperature, "degC"), 5
+                    pynml.convert_to_units(temperature, "degC"),
+                    ROUND_PRECISION
                 )
                 logger.info(
                     "Setting global temperature to %s"
@@ -1567,8 +1569,8 @@ try:
                             end_len = path_dist[seg_grp.id][last.id]
 
                             inhomogeneous_parameters[seg_grp.id][nrn_sec] = (
-                                round(start_len, 10),
-                                round(end_len, 10),
+                                round(start_len, ROUND_PRECISION),
+                                round(end_len, ROUND_PRECISION),
                             )
                             logger.debug(
                                 "Inhomogeneous parameter: Seg: %s (%s) -> %s (%s)",
@@ -1586,13 +1588,16 @@ try:
                     group = "all" if not cm.segment_groups else cm.segment_groups
                     for section_name in seg_grps_vs_nrn_sections[group]:
                         gmax = round(
-                            pynml.convert_to_units(cm.cond_density, "S_per_cm2"), 10
+                            pynml.convert_to_units(cm.cond_density,
+                                                   "S_per_cm2"),
+                            ROUND_PRECISION
                         )
                         if cm.ion_channel == "pas":
                             mech = {"g": gmax}
                         else:
                             mech = {"gmax": gmax}
-                        erev = round(pynml.convert_to_units(cm.erev, "mV"), 10)
+                        erev = round(pynml.convert_to_units(cm.erev, "mV"),
+                                     ROUND_PRECISION)
 
                         cellRule["secs"][section_name]["mechs"][cm.ion_channel] = mech
 
@@ -1610,13 +1615,16 @@ try:
                     group = "all" if not cm.segment_groups else cm.segment_groups
                     for section_name in seg_grps_vs_nrn_sections[group]:
                         gmax = round(
-                            pynml.convert_to_units(cm.cond_density, "S_per_cm2"), 10
+                            pynml.convert_to_units(cm.cond_density,
+                                                   "S_per_cm2"),
+                            ROUND_PRECISION
                         )
                         if cm.ion_channel == "pas":
                             mech = {"g": gmax}
                         else:
                             mech = {"gmax": gmax}
-                        erev = round(pynml.convert_to_units(cm.erev, "mV"), 10)
+                        erev = round(pynml.convert_to_units(cm.erev, "mV"),
+                                     ROUND_PRECISION)
 
                         cellRule["secs"][section_name]["mechs"][cm.ion_channel] = mech
 
@@ -1635,7 +1643,9 @@ try:
                     group = "all" if not cm.segment_groups else cm.segment_groups
                     for section_name in seg_grps_vs_nrn_sections[group]:
                         gmax = round(
-                            pynml.convert_to_units(cm.cond_density, "S_per_cm2"), 10
+                            pynml.convert_to_units(cm.cond_density,
+                                                   "S_per_cm2"),
+                            ROUND_PRECISION
                         )
                         if cm.ion_channel == "pas":
                             mech = {"g": gmax}
@@ -1659,7 +1669,8 @@ try:
                     group = "all" if not cm.segment_groups else cm.segment_groups
                     for section_name in seg_grps_vs_nrn_sections[group]:
                         permeability = round(
-                            pynml.convert_to_units(cm.permeability, "cm_per_s"), 10
+                            pynml.convert_to_units(cm.permeability,
+                                                   "cm_per_s"), ROUND_PRECISION
                         )
                         mech = {"permeability": permeability}
 
@@ -1678,7 +1689,9 @@ try:
                     group = "all" if not cm.segment_groups else cm.segment_groups
                     for section_name in seg_grps_vs_nrn_sections[group]:
                         gmax = round(
-                            pynml.convert_to_units(cm.cond_density, "S_per_cm2"), 10
+                            pynml.convert_to_units(cm.cond_density,
+                                                   "S_per_cm2"),
+                            ROUND_PRECISION
                         )
                         if cm.ion_channel == "pas":
                             mech = {"g": gmax}

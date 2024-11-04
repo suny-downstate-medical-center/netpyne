@@ -159,7 +159,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
     if algorithm_config is None:
         algorithm_config = {}
 
-    algorithm_kwargs = {
+    algorithm_config = {
         'metric': metric,
         'mode': mode,
         'max_concurrent': max_concurrent,
@@ -169,7 +169,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
     #TODO class this object for self calls? cleaner? vs nested functions
     #TODO clean up working_dir and excludes
     storage_path = get_path(checkpoint_path)
-    algo = create_searcher(algorithm, **algorithm_kwargs) #concurrency may not be accepted by all algo
+    algo = create_searcher(algorithm, **algorithm_config) #concurrency may not be accepted by all algo
     #search_alg – The search algorithm to use.
     #  metric – The training result objective value attribute. Stopping procedures will use this attribute.
     #  mode – One of {min, max}. Determines whether objective is minimizing or maximizing the metric attribute.
@@ -284,6 +284,7 @@ def shim(dispatcher_constructor: Optional[Callable] = None, # constructor for th
          metric: Optional[str] = "loss", # metric to optimize (this should match some key: value pair in the returned data
          mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
          algorithm_config: Optional[dict] = None,  # additional configuration for the search algorithm
+         ray_config: Optional[dict] = None,  # additional configuration for the ray initialization
          ):
     kwargs = locals()
     if job_type is not None and comm_type is not None:

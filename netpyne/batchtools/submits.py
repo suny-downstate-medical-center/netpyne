@@ -47,7 +47,7 @@ class SHSubmitSFS(SHSubmit):
         """\
 #!/bin/sh
 cd {project_path}
-export OUTFILE="{output_path}/{label}.out"
+export MSGFILE="{output_path}/{label}.out"
 export SGLFILE="{output_path}/{label}.sgl"
 export JOBID=$$
 {env}
@@ -131,7 +131,7 @@ class SGESubmitSFS(SGESubmit):
 cd {project_path}
 source ~/.bashrc
 export JOBID=$JOB_ID
-export OUTFILE="{output_path}/{label}.out"
+export MSGFILE="{output_path}/{label}.out"
 export SGLFILE="{output_path}/{label}.sgl"
 {env}
 {command}
@@ -224,7 +224,7 @@ class SlurmSubmitSFS(SlurmSubmit):
 #SBATCH --mail-user={email}
 #SBATCH --mail-type=end
 export JOBID=$SLURM_JOB_ID
-export OUTFILE="{output_path}/{label}.out"
+export MSGFILE="{output_path}/{label}.out"
 export SGLFILE="{output_path}/{label}.sgl"
 {env}
 {custom}

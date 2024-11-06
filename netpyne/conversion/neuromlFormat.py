@@ -1716,12 +1716,15 @@ try:
                 ):
                     # erev does not need to be set for nernsts
                     set_erev = True
+
                     if (
                         cm
                         in cell.biophysical_properties.membrane_properties.channel_density_non_uniforms
                     ):
                         logger.debug("Processing channel density non uniform %s", cm.id)
                         set_erev = True
+                        erev = round(pynml.convert_to_units(cm.erev, "mV"),
+                                     ROUND_PRECISION)
                     elif (
                         cm
                         in cell.biophysical_properties.membrane_properties.channel_density_non_uniform_nernsts

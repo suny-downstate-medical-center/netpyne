@@ -328,6 +328,7 @@ def shapeplot(
         diams = allDiams[isec]  # represent diams as linewidths
         linewidths = diams  # linewidth is in points so can use actual diams to plot
         # linewidths = [min(d/meanDiams*meanLineWidth, maxLineWidth) for d in diams]  # use if want to scale size
+        # linewidths = [np.log(1+d) for d in diams]  # use if want to scale size
 
         for (j, path) in enumerate(seg_paths):
             (line,) = plt.plot(path[:, 0], path[:, 1], path[:, 2], '-k', **kwargs)

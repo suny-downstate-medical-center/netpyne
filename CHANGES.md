@@ -1,3 +1,8 @@
+- Added extracellular stimulation (option: without compiling an additional .mod file - large memory requirements-)
+
+- Update of documentation (stimSourceParams and stimTargetParams) incorporating how to define extracellular stimulations
+
+
 # Version 1.0.7
 
 **New features**

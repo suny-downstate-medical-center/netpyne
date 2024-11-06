@@ -11,7 +11,7 @@ from batchtk.raytk.search import ray_trial, LABEL_POINTER
 from batchtk.utils import get_path
 import numpy
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
-import submits
+from netpyne.batchtools import submits
 
 choice = tune.choice
 grid = tune.grid_search
@@ -219,11 +219,12 @@ constructor_tuples = {
     #('sge', 'unix'): constructors(runtk.dispatchers.UNIXDispatcher, runtk.submits.SGESubmitSOCK), #can't use AF_UNIX sockets on networked machines
     ('sge', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SGESubmitSFS ),
     #('zsh', 'inet'): constructors(runtk.dispatchers.INETDispatcher, runtk.submits.ZSHSubmitSOCK), #TODO preferable to use AF_UNIX sockets on local machines
-    ('slurm', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SLURMSubmitSOCK),
-    ('slurm', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SLURMSubmitSFS ),
-    ('sh', 'socket'): constructors(runtk.dispatchers.UNIXDispatcher, submits.SHSubmitSOCK),
-    ('sh', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SHSubmitSFS ),
+    ('slurm', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SlurmSubmitSOCK),
+    ('slurm', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SlurmSubmitSFS),
+    ('sh', 'socket'): constructors(runtk.dispatchers.UNIXDispatcher, submits.SHSubmitSOCK), #
+    ('sh', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SHSubmitSFS),
 }#TODO, just say "socket"?
+
 
 """
 some shim functions before ray_search

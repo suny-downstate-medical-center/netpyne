@@ -19,7 +19,7 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
         print('\nLoading single file with all data...')
         filename = '%s/%s/%s_allData.json' % (dataFolder, batchLabel, batchLabel)
         with open(filename, 'r') as fileObj:
-            dataLoad = json.load(fileObj, object_pairs_hook=specs.OrderedDict)
+            dataLoad = json.load(fileObj, object_pairs_hook=specs.ODict)
         params = dataLoad['params']
         data = dataLoad['data']
         return params, data
@@ -52,10 +52,10 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
                 # read output file
                 iCombStr = ''.join([''.join('_'+str(i)) for i in iComb])
                 simLabel = b['batchLabel']+iCombStr
-                outFile = b['saveFolder']+'/'+simLabel+'.json'
+                outFile = b['saveFolder']+'/'+simLabel+'_data.json'
                 try:
                     with open(outFile, 'r') as fileObj:
-                        output = json.load(fileObj, object_pairs_hook=specs.OrderedDict)
+                        output = json.load(fileObj, object_pairs_hook=specs.ODict)
 
                     # save output file in data dict
                     data[iCombStr] = {}

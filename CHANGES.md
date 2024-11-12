@@ -1,3 +1,5 @@
+- Solved conflict between diversity and segment coordinates (per population), used in LFP setups
+
 - Added extracellular stimulation (option: without compiling an additional .mod file - large memory requirements-)
 
 - Update of documentation (stimSourceParams and stimTargetParams) incorporating how to define extracellular stimulations

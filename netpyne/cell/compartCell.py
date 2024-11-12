@@ -1808,17 +1808,27 @@ If this cell is expected to be a point cell instead, make sure the correspondent
         p3dsoma = p3dsoma[np.newaxis].T  # trasnpose 1d array to enable matrix calculation
 
         if hasattr(sim.net.pops[pop], '_morphSegCoords'):
-            # rotated coordinates around z axis first then shift relative to the soma
-            morphSegCoords = sim.net.pops[pop]._morphSegCoords
+
+            # check whether there is a single cell per pop or multiple subpopulations (diversity)
+            if 'diversity' not in sim.net.pops[pop].tags.keys():
+                # rotated coordinates around z axis first then shift relative to the soma
+                morphSegCoords = sim.net.pops[pop]._morphSegCoords
+            else:
+                label = self.tags['label'][0]
+                morphSegCoords = sim.net.pops[pop]._morphSegCoords[label]
+
             self._segCoords['p0'] = p3dsoma + morphSegCoords['p0']
             self._segCoords['p1'] = p3dsoma + morphSegCoords['p1']
+            
+            # moved here, as morphSegCoords are defined here exclusively 
+            self._segCoords['d0'] = morphSegCoords['d0']
+            self._segCoords['d1'] = morphSegCoords['d1']
+
         else:
             # rotated coordinates around z axis
             self._segCoords['p0'] = p3dsoma
             self._segCoords['p1'] = p3dsoma
 
-        self._segCoords['d0'] = morphSegCoords['d0']
-        self._segCoords['d1'] = morphSegCoords['d1']
 
     def setImembPtr(self):
         """Set PtrVector to point to the `i_membrane_`"""

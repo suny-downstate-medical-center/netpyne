@@ -1,3 +1,5 @@
+- Solved small bug when plotting colorbar in the raster plot colored by the LFP phase 
+
 - Solved conflict between diversity and segment coordinates (per population), used in LFP setups
 
 - Added extracellular stimulation (option: without compiling an additional .mod file - large memory requirements-)

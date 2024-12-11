@@ -1392,36 +1392,63 @@ If this cell is expected to be a point cell instead, make sure the correspondent
                 if not h.ismembrane('extracellular',sec = hSec): 
                     hSec.insert('extracellular')
 
-                    # saving in case we have multiple stimulations
-                    self.secs[secLabel]['geom']['xtra_stim'] = []
+                    # if the extracellular mechanism is associated to the xtra.mod, then
+                    if 'mod_based' in params and params['mod_based']==True:
+                        hSec.insert('xtra')
+                    else:
+                        # not using .mod
+                        # saving in case we have multiple stimulations (only defined with params['mod_based'] == False)
+                        self.secs[secLabel]['geom']['xtra_stim'] = []
 
-                    # for development (only saves properly for single stimulation)
-                    #self.secs[secLabel]['geom'].update({'r05':[]})
-                    #self.secs[secLabel]['geom'].update({'rel_05':[]})
-                    #self.secs[secLabel]['geom'].update({'tr':[]})
+                        # for development (only saves properly for single stimulation)
+                        #self.secs[secLabel]['geom'].update({'r05':[]})
+                        #self.secs[secLabel]['geom'].update({'rel_05':[]})
+                        #self.secs[secLabel]['geom'].update({'tr':[]})
+
+                    #h.psection(hSec)
+
                     for ns, seg in enumerate(hSec):
 
-                        #self.secs[secLabel]['geom']['r05'].append(r05[:,nseg])
-                        #self.secs[secLabel]['geom']['rel_05'].append(rel_05[:,nseg])
-                        #self.secs[secLabel]['geom']['tr'].append(tr[nseg])
+                        # if the extracellular mechanism is associated to the xtra.mod, then
+                        if 'mod_based' in params and params['mod_based']==True:
+                            # using xtra.mod - link extracellular and xtra
+                            sourceVar = seg.xtra._ref_ex
+                            targetVar = seg._ref_e_extracellular
+                            sim.pc.source_var(sourceVar, sim.net.lastPointerId)
+                            sim.pc.target_var(targetVar, sim.net.lastPointerId)
+                            sim.net.lastPointerId += 1
 
-                        vec = [val*tr[nseg]*(1e6) for val in params['stim']]
-                        hStim = h.Vector(vec)  # add stim object to dict in stims list
-                        
-                        self.stims.append(Dict(params))  # add to python structure
-                        self.stims[-1]['sec_xtra'] = secLabel
-                        self.stims[-1]['seg_xtra'] = ns
-                        self.stims[-1]['hObj'] = hStim
+                            # # setting coordinates in xtra (not neccesary)
+                            # seg.xtra.x = r05[0,nseg]
+                            # seg.xtra.y = r05[1,nseg]
+                            # seg.xtra.z = r05[2,nseg]
 
-                        self.secs[secLabel]['geom']['xtra_stim'].append({})
-                        self.secs[secLabel]['geom']['xtra_stim'][ns].update({'vec' : vec, 
-                                                                             'stim_index': len(self.stims)-1})
+                            # # setting transfer resistance in xtra
+                            seg.xtra.rx = tr[nseg]
 
-                        self.hvec.append(hStim)
-                        self.hvec[nseg].play(seg._ref_e_extracellular, params['time'],1)
+                        else:
+                            # not using .mod
+                            #self.secs[secLabel]['geom']['r05'].append(r05[:,nseg])
+                            #self.secs[secLabel]['geom']['rel_05'].append(rel_05[:,nseg])
+                            #self.secs[secLabel]['geom']['tr'].append(tr[nseg])
+
+                            vec = [val*tr[nseg]*(1e6) for val in params['stim']]
+                            hStim = h.Vector(vec)  # add stim object to dict in stims list
+
+                            self.stims.append(Dict(params))  # add to python structure
+                            self.stims[-1]['sec_xtra'] = secLabel
+                            self.stims[-1]['seg_xtra'] = ns
+                            self.stims[-1]['hObj'] = hStim
+
+                            self.secs[secLabel]['geom']['xtra_stim'].append({})
+                            self.secs[secLabel]['geom']['xtra_stim'][ns].update({'vec' : vec, 
+                                                                                 'stim_index': len(self.stims)-1})
+
+                            self.hvec.append(hStim)
+                            self.hvec[nseg].play(seg._ref_e_extracellular, params['time'],1)
 
                         nseg += 1
-    
+
                 else: ## Extracellular mechanism already inserted: Putatively multiple stimulation
                     #print("Multiple stimulation")
                     for ns, seg in enumerate(hSec):
@@ -1444,7 +1471,6 @@ If this cell is expected to be a point cell instead, make sure the correspondent
                             self.stims[nst]['hObj'].x[index] = vec[index]
 
                         nseg += 1
-
 
                 h.pop_section()
 

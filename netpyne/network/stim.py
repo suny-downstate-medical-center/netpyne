@@ -119,46 +119,107 @@ def addStims(self):
                 # Creating the temporal pattern for external stimulation (common to all cells)
                 times = np.arange(0,sim.cfg.duration,sim.cfg.dt)
                 
-                if 'del' in source:
-                    t_start = source['del']
-                else:
-                    t_start = 0
-                    
-                if 'del' in source and 'dur' in source:
-                    t_end = source['del'] + source['dur']
-                else:
-                    t_end = sim.cfg.duration
-
-                if t_start > sim.cfg.duration:
-                    print(" Extracellular stimulation defined beyond simulation time")
-                    t_start = 0
-
-                if t_end > sim.cfg.duration:
-                    print(" Extracellular stimulation defined beyond simulation time")
-                    t_end = sim.cfg.duration
-
-                if 'amp' in source:
-                    amp = source['amp']
-                else:
-                    amp = 0
-
                 if 'waveform' in source:
-                    if source['waveform']=='sinusoidal':
-                        if 'freq' in source:
-                            freq = source['freq']
+                    if source['waveform']['type']=='pulse' or source['waveform']['type']=='sinusoidal':
+
+                        if 'amp' in source['waveform']:
+                            amp = source['waveform']['amp']
+                        else:
+                            amp = 0
+
+                        if 'del' in source['waveform']:
+                            t_start = source['waveform']['del']
+                        else:
+                            t_start = 0
+                    
+                        if 'del' in source['waveform'] and 'dur' in source['waveform']:
+                            t_end = source['waveform']['del'] + source['waveform']['dur']
+                        else:
+                            t_end = sim.cfg.duration
+
+                        if t_start > sim.cfg.duration:
+                            print(" Extracellular stimulation defined beyond simulation time")
+                            t_start = 0
+
+                        if t_end > sim.cfg.duration:
+                            print(" Extracellular stimulation defined beyond simulation time")
+                            t_end = sim.cfg.duration
+
+                    if source['waveform']['type']=='sinusoidal':
+                        if 'freq' in source['waveform']:
+                            freq = source['waveform']['freq']
                         else:
                             print(" Extracellular stimulation (Sinusoidal). No frequency given")
                             freq = 0               # no stimulation
                         signal = np.array([amp*np.sin(2*np.pi*freq*t/1000) if t>t_start and t<t_end else 0 for t in times])
                     
-                    elif source['waveform']=='pulse':
+                    elif source['waveform']['type']=='pulse':
                         signal = np.array([amp if t>t_start and t<t_end else 0 for t in times])
+
+                    elif source['waveform']['type']=='external':
+                        # load time and signal
+                        # time
+                        try:
+                            times_ext_ = source['waveform']['time']
+                            if isinstance(times_ext_,np.ndarray):
+                                times_ext = times_ext_.tolist()
+
+                            elif times_ext_.endswith('.pkl'):
+                                import pickle
+
+                                with open(times_ext_, 'rb') as input_file:
+                                    times_ext = pickle.load(input_file)
+                        except:
+                            print('Extracellular estimulation defined by external file. Please, provide "time"')
+
+                        # signal
+                        try:
+                            signal_ext_ = source['waveform']['signal']
+                            if isinstance(signal_ext_,np.ndarray):
+                                signal_ext = signal_ext_.tolist()
+
+                            elif signal_ext_.endswith('.pkl'):
+                                import pickle
+
+                                with open(signal_ext_, 'rb') as input_file:
+                                    signal_ext = pickle.load(input_file)
+
+                        except:
+                            print('Extracellular estimulation defined by external file. Please, provide "signal"')
+
+                        # Checking for simulation time-step and simulation time
+                        if len(times_ext)!=len(signal_ext):
+                            print("Extracellular stimulation has different dimensions for time and value")
+
+                        dt_ext = times_ext[1]-times_ext[0]    # assuming constant time-step
+                        if dt_ext != sim.cfg.dt:
+                            print("Please, accomodate external extracellular signal to simulation timestep")
+
+                        if len(times_ext) > len(times):
+                            times = np.array(times_ext[0:len(times)])           # rewrite times np array
+                            signal = np.array(signal_ext[0:len(times)])
+                        elif len(times_ext) < len(times):
+                            signal = [0]*len(times)
+                            for nn in range(len(signal_ext)):
+                                signal[nn] = signal_ext[nn]
+                            signal = np.array(signal)
+                        else:
+                            times = np.array(times_ext)           # rewrite times np array
+                            signal = np.array(signal_ext)
 
                     else:
                         signal = np.array([0 if t>t_start and t<t_end else 0 for t in times])
                         print(" Extracellular stimulation. Waveform not recognized")
+                        
 
                 self.t = h.Vector(times.tolist())
+                if 'mod_based' in source and source['mod_based']==True:
+                    # when using xtra.mod
+                    self.stim = h.Vector(signal.tolist())
+                    try:
+                        self.stim.play(h._ref_is_xtra, self.t )
+                    except:
+                        print("Extracellular stimulation with 'mod_based' requires compilation of xtra.mod with a global variable called 'is'")
 
             # loop over postCells and add stim target
             for postCellGid in postCellsTags:  # for each postsyn cell
@@ -210,8 +271,10 @@ def addStims(self):
                     elif source['type'] == 'XStim':
                         # Adding extracellular stimulation
                         params['segCoords'] = postCell._segCoords
-                        params['time'] = self.t
-                        params['stim'] = signal
+                        if not('mod_based' in source and source['mod_based']==True):
+                            # these are not used when compiling the xtra.mod, as it is already played a h.Vector with a global temporal stimulation 
+                            params['time'] = self.t
+                            params['stim'] = signal
                         postCell.addStim(params)  # call cell method to add connection
 
                     else:

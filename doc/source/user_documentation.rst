@@ -835,13 +835,24 @@ The code below shows an example of how to create different types of stimulation 
 
 		For ``'class': 'uniform'``, it should be specified ``referencePoint`` (optional - the point where the field is 0) and ``fieldDirection`` (the direction of the field as a list of two angles: the polar angle -between 0 and 180- and the azimuthal angle -between 0 and 360-).
 
-	* ``amp`` (optional): the amplitude of the external stimulation (mA for point source stimulation - V/m for uniform electrical field). If not specified, it is set to 0 (no stimulation).
+	* ``waveform``: a dictionary that specifies the temporal modulation. It is composed by:
 
-	* ``del`` (optional): starting time of the stimulation. If not specified, it is the simulation start time.
+		* ``type``: Temporal shape of the external stimulation. Available options: ``sinusoidal``, ``pulse``, ``external``. If not specified, the external stimulation is set to 0 (ground).
 
-	* ``dur`` (optional): duration (following starting time) of the stimulation. If not specified, it is the simulation end time.
+		* ``amp`` (optional): the amplitude of the external stimulation (mA for point source stimulation - V/m for uniform electrical field), valid for ``sinusoidal`` or ``pulse``. If not specified, it is set to 0 (no stimulation).
 
-	* ``waveform`` (optional): Temporal shape of the external stimulation. Available options: ``sinusoidal`` and ``pulse``. If not specified, the external stimulation is set to 0 (ground). If ``'waveform': 'sinusoidal'``, then the frequency should be specified via ``freq``. Otherwise it is set to 0 (no stimulation).
+		* ``del`` (optional): starting time of the stimulation, valid for ``sinusoidal`` or ``pulse``. If not specified, it is the simulation start time.
+
+		* ``dur`` (optional): duration (following starting time) of the stimulation, valid for ``sinusoidal`` or ``pulse``. If not specified, it is the simulation end time.
+
+		* ``freq`` (optional): frequency of the ``sinusoidal`` stimulation. If not specified, it is set to 0 (no stimulation).
+
+		* ``time`` (optional): when the stimulation is uploaded externally (``type``: ``external``), then this entry specifies either a pickle file with a list of times, or a numpy array with the same information. The (fixed) time interval between consecutive time points should be consistent to the integration timestep.
+
+		* ``signal`` (optional): when the stimulation is uploaded externally (``type``: ``external``), then this entry specifies either a pickle file with a list of values corresponding to the amplitudes (mA for point source stimulation - V/m for uniform electrical field) of the external signal, paired to the ``time`` list, or a numpy array with the same information.
+
+	* ``mod_based``: Boolean (default: False). It specifies if the simulation is based an external mod file (xtra.mod with a POINTER/RANGE called "ex" and a GLOBAL called "is"), following the guidelines in the NEURON forum. It is appropriate for large networks, althought is restricted to a single temporal modulation. With ``mod_based``: False, you can set superposition of many sources.
+
 
 In addition, in ``stimSourceParams`` we should set the ``source`` (the label of the stimulation source specifying the extracellular stimulation) and ``conds`` with the conditions that should satisfy target cells, typically ``'conds': {'cellList': 'all'}`` would provide the global stimulation represented by an extracellular (ubiquitous) source.
 
@@ -856,19 +867,14 @@ The code below shows a detailed example of superimposed external stimulations (w
 	netParams.stimSourceParams['XStim1'] =  {
 		'type': 'XStim', 
 		'field': {'class': 'pointSource', 'location': [100,-100,0], 'sigma': 0.276}, 
-		'amp' : 0.020, 
-		'del' : 20, 
-		'dur' : 80, 
-		'waveform': 'sinusoidal', 
-		'freq': 250}
+		'waveform': {'type': 'sinusoidal', 'amp' : 0.020, 'del' : 20, 'dur' : 80, 'freq': 250}
+		}
 
 	netParams.stimSourceParams['XStim2'] =  {
 		'type': 'XStim', 
 		'field': {'class': 'uniform', 'referencePoint': [0,-netParams.sizeY,0], 'fieldDirection': [180,0]}, 
-		'amp' : 100.0, 
-		'del' : 50, 
-		'dur' : 20, 
-		'waveform': 'pulse'}
+		'waveform': {'type': 'pulse', 'amp' : 10.0, 'del' : 50, 'dur' : 20}
+		}
 
 	## Stimulation target parameters
 	netParams.stimTargetParams['XStim1->all'] = {

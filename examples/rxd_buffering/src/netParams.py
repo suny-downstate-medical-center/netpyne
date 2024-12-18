@@ -1,4 +1,3 @@
-import imp
 from netpyne import specs
 
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters

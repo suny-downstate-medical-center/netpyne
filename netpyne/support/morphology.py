@@ -3,21 +3,8 @@ Module with support functions for morphology
 
 """
 
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import absolute_import
-
 # Code adapted from https://github.com/ahwillia/PyNeuron-Toolbox under MIT license
 
-
-from builtins import zip
-from builtins import range
-
-from future import standard_library
-
-standard_library.install_aliases()
-from builtins import object
 import numpy as np
 import pylab as plt
 from netpyne import __gui__
@@ -341,6 +328,7 @@ def shapeplot(
         diams = allDiams[isec]  # represent diams as linewidths
         linewidths = diams  # linewidth is in points so can use actual diams to plot
         # linewidths = [min(d/meanDiams*meanLineWidth, maxLineWidth) for d in diams]  # use if want to scale size
+        # linewidths = [np.log(1+d) for d in diams]  # use if want to scale size
 
         for (j, path) in enumerate(seg_paths):
             (line,) = plt.plot(path[:, 0], path[:, 1], path[:, 2], '-k', **kwargs)

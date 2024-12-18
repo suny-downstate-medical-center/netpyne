@@ -2076,7 +2076,7 @@ try:
 
             import neuroml
 
-            format = "NeuroML2"
+            format_ = "NeuroML2"
 
             # TODO Make better check for stoch/poisson/noisy inputs!
             if (
@@ -2085,12 +2085,12 @@ try:
                 or "noisy" in component.lower()
                 or "poisson" in component.lower()
             ):
-                format = "NeuroML2_stochastic_input"
+                format_ = "NeuroML2_stochastic_input"
 
             self.popStimSources[inputListId] = {
                 "label": inputListId,
                 "type": component,
-                "originalFormat": format,
+                "originalFormat": format_,
             }
             self.popStimLists[inputListId] = {
                 "source": inputListId,

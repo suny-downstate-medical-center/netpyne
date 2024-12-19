@@ -3,14 +3,6 @@ Module for adding stimulations to networks
 
 """
 
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import division
-from __future__ import absolute_import
-
-from future import standard_library
-
-standard_library.install_aliases()
 from numbers import Number
 
 try:
@@ -26,19 +18,19 @@ def addStims(self):
     """
     Internal function to add stims specified in specs.NetParams 
     Usage:
-        Creates and attaches stims to targets via CompartCell.addstim() based on entries in the specs.NetParams sub-
-        dictionaries -- specs.NetParams.stimSourceParams and specs.NetParams.stimTargetParams (see below)
-        NetParams.stimSourceParams entries contain key-value pairs to describe NEURON point processes specified by the
-        'type' entry (i.e. 'IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse', 'VecStim')
-        NetParams.stimTargetParams entries contain key-value pairs to describe the post-synaptic connections for a
-        stimSourceParam entry specified by the 'source' entry, including a 'sec' and 'loc' entry (describing section
-        and location) for where the post-synaptic connection will exist and a 'conds' entry with a dictionary
-        specifying the cell criteria for the post-synaptic connections: (i.e. 'x', 'y', 'z' or 'xnorm', 'ynorm', 'znorm'
-        specifying cell criteria by location, 'cellList' specifying cell criteria by specific gid, or arbitrary
-        'key': 'value' tags.
-        For 'VecStim' point processes, it may be more convenient to create an artificial cell (i.e.netParams.popParams
-        see: netpyne/cell/pointCell.py) which allows pattern generation ('rhythmic', 'evoked', 'poisson', 'gauss')
-        by key-value entries in a 'spikePattern' dictionary.
+    Creates and attaches stims to targets via CompartCell.addstim() based on entries in the specs.NetParams sub-
+    dictionaries -- specs.NetParams.stimSourceParams and specs.NetParams.stimTargetParams (see below)
+    NetParams.stimSourceParams entries contain key-value pairs to describe NEURON point processes specified by the
+    'type' entry (i.e. 'IClamp', 'VClamp', 'SEClamp', 'AlphaSynapse', 'VecStim')
+    NetParams.stimTargetParams entries contain key-value pairs to describe the post-synaptic connections for a
+    stimSourceParam entry specified by the 'source' entry, including a 'sec' and 'loc' entry (describing section
+    and location) for where the post-synaptic connection will exist and a 'conds' entry with a dictionary
+    specifying the cell criteria for the post-synaptic connections: (i.e. 'x', 'y', 'z' or 'xnorm', 'ynorm', 'znorm'
+    specifying cell criteria by location, 'cellList' specifying cell criteria by specific gid, or arbitrary
+    'key': 'value' tags.
+    For 'VecStim' point processes, it may be more convenient to create an artificial cell (i.e.netParams.popParams
+    see: netpyne/cell/pointCell.py) which allows pattern generation ('rhythmic', 'evoked', 'poisson', 'gauss')
+    by key-value entries in a 'spikePattern' dictionary.
 
     Parameters
     ----------
@@ -93,9 +85,19 @@ def addStims(self):
 
             # subset of cells from selected pops (by relative indices)
             if 'cellList' in target['conds']:
-                orderedPostGids = sorted(postCellsTags.keys())
-                gidList = [orderedPostGids[i] for i in target['conds']['cellList']]
-                postCellsTags = {gid: tags for (gid, tags) in postCellsTags.items() if gid in gidList}
+                if isinstance(target['conds']['cellList'],list):
+                    orderedPostGids = sorted(postCellsTags.keys())
+                    gidList = [orderedPostGids[i] for i in target['conds']['cellList']]
+                    postCellsTags = {gid: tags for (gid, tags) in postCellsTags.items() if gid in gidList}
+                elif target['conds']['cellList']=='all':
+                    # it would be: postCellsTags = allCellTags
+                    if sim.cfg.verbose:
+                        print('  Warning: all cells included in stimulation %s' % (targetLabel))
+                else:
+                    if sim.cfg.verbose:
+                        print('  Warning: cellList not valid for stimulation %s' % (targetLabel))
+                        postCellsTags = {}
+
 
             # initialize randomizer in case used in string-based function (see issue #89 for more details)
             self.rand.Random123(
@@ -104,6 +106,120 @@ def addStims(self):
 
             # calculate params if string-based funcs
             strParams = self._stimStrToFunc(postCellsTags, source, target)
+
+            if source['type'] == 'XStim':
+                from neuron import h
+                import numpy as np
+
+                # Obtaining information needed when adding extracellular stimulation
+                if not sim.net.params.defineCellShapes:
+                    sim.net.defineCellShapes()  # convert cell shapes (if not previously done already)
+                sim.net.calcSegCoords()
+
+                # Creating the temporal pattern for external stimulation (common to all cells)
+                times = np.arange(0,sim.cfg.duration,sim.cfg.dt)
+                
+                if 'waveform' in source:
+                    if source['waveform']['type']=='pulse' or source['waveform']['type']=='sinusoidal':
+
+                        if 'amp' in source['waveform']:
+                            amp = source['waveform']['amp']
+                        else:
+                            amp = 0
+
+                        if 'del' in source['waveform']:
+                            t_start = source['waveform']['del']
+                        else:
+                            t_start = 0
+                    
+                        if 'del' in source['waveform'] and 'dur' in source['waveform']:
+                            t_end = source['waveform']['del'] + source['waveform']['dur']
+                        else:
+                            t_end = sim.cfg.duration
+
+                        if t_start > sim.cfg.duration:
+                            print(" Extracellular stimulation defined beyond simulation time")
+                            t_start = 0
+
+                        if t_end > sim.cfg.duration:
+                            print(" Extracellular stimulation defined beyond simulation time")
+                            t_end = sim.cfg.duration
+
+                    if source['waveform']['type']=='sinusoidal':
+                        if 'freq' in source['waveform']:
+                            freq = source['waveform']['freq']
+                        else:
+                            print(" Extracellular stimulation (Sinusoidal). No frequency given")
+                            freq = 0               # no stimulation
+                        signal = np.array([amp*np.sin(2*np.pi*freq*t/1000) if t>t_start and t<t_end else 0 for t in times])
+                    
+                    elif source['waveform']['type']=='pulse':
+                        signal = np.array([amp if t>t_start and t<t_end else 0 for t in times])
+
+                    elif source['waveform']['type']=='external':
+                        # load time and signal
+                        # time
+                        try:
+                            times_ext_ = source['waveform']['time']
+                            if isinstance(times_ext_,np.ndarray):
+                                times_ext = times_ext_.tolist()
+
+                            elif times_ext_.endswith('.pkl'):
+                                import pickle
+
+                                with open(times_ext_, 'rb') as input_file:
+                                    times_ext = pickle.load(input_file)
+                        except:
+                            print('Extracellular estimulation defined by external file. Please, provide "time"')
+
+                        # signal
+                        try:
+                            signal_ext_ = source['waveform']['signal']
+                            if isinstance(signal_ext_,np.ndarray):
+                                signal_ext = signal_ext_.tolist()
+
+                            elif signal_ext_.endswith('.pkl'):
+                                import pickle
+
+                                with open(signal_ext_, 'rb') as input_file:
+                                    signal_ext = pickle.load(input_file)
+
+                        except:
+                            print('Extracellular estimulation defined by external file. Please, provide "signal"')
+
+                        # Checking for simulation time-step and simulation time
+                        if len(times_ext)!=len(signal_ext):
+                            print("Extracellular stimulation has different dimensions for time and value")
+
+                        dt_ext = times_ext[1]-times_ext[0]    # assuming constant time-step
+                        if dt_ext != sim.cfg.dt:
+                            print("Please, accomodate external extracellular signal to simulation timestep")
+
+                        if len(times_ext) > len(times):
+                            times = np.array(times_ext[0:len(times)])           # rewrite times np array
+                            signal = np.array(signal_ext[0:len(times)])
+                        elif len(times_ext) < len(times):
+                            signal = [0]*len(times)
+                            for nn in range(len(signal_ext)):
+                                signal[nn] = signal_ext[nn]
+                            signal = np.array(signal)
+                        else:
+                            times = np.array(times_ext)           # rewrite times np array
+                            signal = np.array(signal_ext)
+
+                    else:
+                        signal = np.array([0 if t>t_start and t<t_end else 0 for t in times])
+                        print(" Extracellular stimulation. Waveform not recognized")
+                        
+
+                self.t = h.Vector(times.tolist())
+                if 'mod_based' in source and source['mod_based']==True:
+                    # when using xtra.mod
+                    self.stim = h.Vector(signal.tolist())
+                    try:
+                        self.stim.play(h._ref_is_xtra, self.t )
+                    except:
+                        print("Extracellular stimulation with 'mod_based' requires compilation of xtra.mod with a global variable called 'is'")
 
             # loop over postCells and add stim target
             for postCellGid in postCellsTags:  # for each postsyn cell
@@ -151,6 +267,16 @@ def addStims(self):
 
                     if source['type'] == 'NetStim':
                         self._addCellStim(params, postCell)  # call method to add connections (sort out synMechs first)
+                    
+                    elif source['type'] == 'XStim':
+                        # Adding extracellular stimulation
+                        params['segCoords'] = postCell._segCoords
+                        if not('mod_based' in source and source['mod_based']==True):
+                            # these are not used when compiling the xtra.mod, as it is already played a h.Vector with a global temporal stimulation 
+                            params['time'] = self.t
+                            params['stim'] = signal
+                        postCell.addStim(params)  # call cell method to add connection
+
                     else:
                         postCell.addStim(params)  # call cell method to add connection
 

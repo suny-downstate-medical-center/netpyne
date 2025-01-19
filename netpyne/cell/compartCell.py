@@ -853,7 +853,7 @@ If this cell is expected to be a point cell instead, make sure the correspondent
         if params.get('preLoc') is None:
             params['preLoc'] = 0.5  # if no preLoc, set default
 
-        # same logic for `loc` is no longer here  because we want to differ default case from explicitly stating 0.5 by user
+        # same logic for `loc` is no longer here, it will be processed later in `_setConnSynMechs()` (see `isExplicitLoc` there)
 
         if params.get('synsPerConn') is None:
             params['synsPerConn'] = 1  # if no synsPerConn, set default
@@ -1626,7 +1626,7 @@ If this cell is expected to be a point cell instead, make sure the correspondent
             params['loc'] = 0.5
             isExplicitLoc = False
         else:
-            isExplicitLoc = True # keep track is loc was statet explicitly (for proper error/warning handling)
+            isExplicitLoc = True
 
         if synsPerConn > 1:  # if more than 1 synapse
             synMechSecs, synMechLocs = self._secsAndLocsForMultisynapse(params, isExplicitLoc, secLabels, connRandomSecFromList, distributeSynsUniformly)

@@ -23,7 +23,7 @@ jobs:
         run: sudo apt-get update
 
       - name: Install packages
-        run: sudo apt-get install python-tk python3-tables
+        run: sudo apt-get install python3-tables
 
       - name: Install dependencies
         run: |

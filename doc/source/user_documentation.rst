@@ -851,7 +851,7 @@ The code below shows an example of how to create different types of stimulation 
 
 		* ``signal`` (optional): when the stimulation is uploaded externally (``type``: ``external``), then this entry specifies either a pickle file with a list of values corresponding to the amplitudes (mA for point source stimulation - V/m for uniform electrical field) of the external signal, paired to the ``time`` list, or a numpy array with the same information.
 
-	* ``mod_based``: Boolean (default: False). It specifies if the simulation is based an external mod file (xtra.mod with a POINTER/RANGE called "ex" and a GLOBAL called "is"), following the guidelines in the NEURON forum. It is appropriate for large networks, althought is restricted to a single temporal modulation. With ``mod_based``: False, you can set superposition of many sources.
+	* ``mod_based``: Boolean (default: False). It specifies if the simulation is based an external mod file (xtra.mod with a POINTER/RANGE called "ex" and a GLOBAL called "is"), following the guidelines in the NEURON forum. It is appropriate for large networks, althought is restricted to a single temporal modulation. With ``mod_based``: False, you can set superposition of many sources. A NetPyNE-compatible ``xtra.mod`` can be downloaded from the ``support`` module. 
 
 
 In addition, in ``stimSourceParams`` we should set the ``source`` (the label of the stimulation source specifying the extracellular stimulation) and ``conds`` with the conditions that should satisfy target cells, typically ``'conds': {'cellList': 'all'}`` would provide the global stimulation represented by an extracellular (ubiquitous) source.

@@ -1369,7 +1369,7 @@ If this cell is expected to be a point cell instead, make sure the correspondent
                     Ey = cos(theta)
                     Ez = sin(theta)*sin(phi)
                     E_field = np.expand_dims([Ex, Ey, Ez], axis=1)
-                    tr = np.einsum('ij,ij->j', E_field, rel_05)  # compute dot product column-wise, the resulting array has as many columns as original
+                    tr = -np.einsum('ij,ij->j', E_field, rel_05)  # compute dot product column-wise, the resulting array has as many columns as original
                     tr *= 1e-9
                 else:
                     print(" Extracellular stimulation not defined")

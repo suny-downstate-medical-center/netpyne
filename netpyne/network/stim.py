@@ -185,7 +185,7 @@ def addStims(self):
                                     signal_ext = pickle.load(input_file)
 
                         except:
-                            print('Extracellular estimulation defined by external file. Please, provide "signal"')
+                            print('Extracellular stimulation defined by external file. Please, provide "signal"')
 
                         # Checking for simulation time-step and simulation time
                         if len(times_ext)!=len(signal_ext):

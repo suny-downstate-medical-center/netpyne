@@ -124,6 +124,38 @@ class Cell(object):
         stimvecs = deepcopy([fulltime, fulloutput, events])  # Combine vectors into a matrix
 
         return stimvecs
+    
+    def _connWeightsAndDelays(self, params, netStimParams):
+        from .. import sim
+
+        # Scale factor for connection weights
+        if netStimParams:
+            scaleFactor = sim.net.params.scaleConnWeightNetStims
+        else:
+            connWeights = sim.net.params.scaleConnWeightModels
+            if isinstance(connWeights, dict) and (self.tags['cellModel'] in connWeights):
+                # use scale factor specific for this cell model
+                scaleFactor = connWeights[self.tags['cellModel']]
+            else:
+                scaleFactor = sim.net.params.scaleConnWeight # use global scale factor
+
+        synsPerConn = params['synsPerConn']
+
+        # Weights
+        if isinstance(params['weight'], list):
+            assert len(params['weight']) == synsPerConn, 'Number of weights must match synsPerConn'
+            weights = [scaleFactor * w for w in params['weight']]
+        else:
+            weights = [scaleFactor * params['weight']] * synsPerConn
+
+        # Delays
+        if isinstance(params['delay'], list):
+            assert len(params['delay']) == synsPerConn, 'Number of delays must match synsPerConn'
+            delays = params['delay']
+        else:
+            delays = [params['delay']] * synsPerConn
+
+        return weights, delays
 
     def addNetStim(self, params, stimContainer=None):
         from .. import sim

@@ -1,3 +1,16 @@
+- Solve minor bug in the uniform field for extracelular stimulation (sign). Deposited the xtra.mod in support module.
+
+- Added extracellular stimulation with a supporting xtra.mod (which includes a global variable defining the temporal modulation and a pointer to link the extracellular mechanism in NEURON). Useful for large networks
+
+- Solved small bug when plotting colorbar in the raster plot colored by the LFP phase 
+
+- Solved conflict between diversity and segment coordinates (per population), used in LFP setups
+
+- Added extracellular stimulation (option: without compiling an additional .mod file - large memory requirements-)
+
+- Update of documentation (stimSourceParams and stimTargetParams) incorporating how to define extracellular stimulations
+
+
 # Version 1.0.7
 
 **New features**

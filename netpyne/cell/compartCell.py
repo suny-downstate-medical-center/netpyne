@@ -861,8 +861,9 @@ If this cell is expected to be a point cell instead, make sure the correspondent
             params['delay'] = sim.net.params.defaultDelay  # if no delay, set default
         if params.get('preLoc') is None:
             params['preLoc'] = 0.5  # if no preLoc, set default
-        if params.get('loc') is None:
-            params['loc'] = 0.5  # if no loc, set default
+
+        # same logic for `loc` is no longer here, it will be processed later in `_setConnSynMechs()` (see `isExplicitLoc` there)
+
         if params.get('synsPerConn') is None:
             params['synsPerConn'] = 1  # if no synsPerConn, set default
 
@@ -889,15 +890,10 @@ If this cell is expected to be a point cell instead, make sure the correspondent
                     )
                 return  # if self-connection return
 
-        # Weight
-        weights = self._setConnWeights(params, netStimParams, secLabels)
-        weightIndex = 0  # set default weight matrix index
+        # Weights and delays:
+        weights, delays = self._connWeightsAndDelays(params, netStimParams)
 
-        # Delays
-        if isinstance(params['delay'], list):
-            delays = params['delay']
-        else:
-            delays = [params['delay']] * params['synsPerConn']
+        weightIndex = 0  # set default weight matrix index
 
         # Check if target is point process (artificial cell) with V not in section
         pointp, weightIndex = self._setConnPointP(params, secLabels, weightIndex)
@@ -927,6 +923,7 @@ If this cell is expected to be a point cell instead, make sure the correspondent
             if pointerParams:
                 if isPreToPostPointerConn:
                     # generate new ids
+                    # TODO: will it even works with synsPerConn > 1? (in particular, loc in params now can be None)
                     preToPostPointerId, postToPrePointerId = self.__generatePointerIds(pointerParams, params)
                 else:
                     # use pre-generated
@@ -1318,6 +1315,175 @@ If this cell is expected to be a point cell instead, make sure the correspondent
                     )
                 )
 
+        elif params['type'] == 'XStim':
+
+            # Addition of extracellular mechanism in all sections/segments
+            segCoords = params['segCoords']
+            r05 = (segCoords['p0'] + segCoords['p1']) / 2
+            nseg = r05.shape[1]
+
+            ## OPTIONS ABOUT EXTRACELLULAR STIMULATION
+            if isinstance(params['field'],dict):
+                if params['field']['class'] == 'pointSource':
+                    from math import pi
+
+                    if 'sigma' in  params['field']:
+                        sigma = params['field']['sigma']
+                    else:
+                        sigma = 0.3  # mS/mm   --- same value used in LFP calculations
+
+                    if 'location' in  params['field']:
+                        electrodePos = params['field']['location']
+                    else:
+                        print(" Electrode position not defined for extracellular stimulation")
+                        # set at the midpoint
+                        electrodePos = [sim.net.params.sizeX/2, -sim.net.params.sizeY/2, sim.net.params.sizeZ/2]
+
+                    # transfer resistance
+                    tr = np.zeros(nseg)          # single electrode (for now)
+
+                    # Segment position relative to the point source                
+                    rel_05 = r05 - np.expand_dims(electrodePos, axis=1)
+                    r2 = np.einsum('ij,ij->j', rel_05, rel_05)  # compute dot product column-wise, the resulting array has as many columns as original
+                    r = np.sqrt(r2)
+                    tr += 1. / r
+                    tr *= 1 / (4 * pi * sigma)
+
+                elif params['field']['class'] == 'uniform':
+                    from math import pi
+
+                    # set a nominal transfer resistance based on the shortcut depicted by Ted Carnevale
+                    # see discussion in https://www.neuron.yale.edu/phpbb/viewtopic.php?p=20131&hilit=Applying+Sinusoidal+Voltage+to+Membrane#p20131
+                    # and relevant code in https://modeldb.science/239006
+                    # BUT ... the direction of the field is incorporated here (transfer resistance is a scalar value)
+
+                    if 'referencePoint' in  params['field']:
+                        referencePoint = params['field']['referencePoint']
+                    else:
+                        # set at the midpoint
+                        referencePoint = [sim.net.params.sizeX/2, -sim.net.params.sizeY/2, sim.net.params.sizeZ/2]
+
+                    if 'fieldDirection' in  params['field']:
+                        phi, theta = [val*pi/180 for val in params['field']['fieldDirection']]
+                    else:
+                        # default values
+                        phi, theta = [val*pi/180 for val in [0, 180]]    # vertical field, pointing down 
+
+                    # transfer resistance
+                    tr = np.zeros(nseg)          # single electrode (for now)
+
+                    # Segment position relative to the point source                
+                    rel_05 = r05 - np.expand_dims(referencePoint, axis=1)
+                    Ex = sin(theta)*cos(phi)
+                    Ey = cos(theta)
+                    Ez = sin(theta)*sin(phi)
+                    E_field = np.expand_dims([Ex, Ey, Ez], axis=1)
+                    tr = -np.einsum('ij,ij->j', E_field, rel_05)  # compute dot product column-wise, the resulting array has as many columns as original
+                    tr *= 1e-9
+                else:
+                    print(" Extracellular stimulation not defined")
+
+            else:
+                print(" Extracellular stimulation not defined")
+
+            ## Addition of extracellular mechanisms in all segments
+            ## Running through all segments
+            nseg = 0
+            self.hvec = []
+            for secLabel,sec in self.secs.items():
+
+                hSec = sec['hObj']
+                hSec.push()
+
+                if not h.ismembrane('extracellular',sec = hSec): 
+                    hSec.insert('extracellular')
+
+                    # if the extracellular mechanism is associated to the xtra.mod, then
+                    if 'mod_based' in params and params['mod_based']==True:
+                        hSec.insert('xtra')
+                    else:
+                        # not using .mod
+                        # saving in case we have multiple stimulations (only defined with params['mod_based'] == False)
+                        self.secs[secLabel]['geom']['xtra_stim'] = []
+
+                        # for development (only saves properly for single stimulation)
+                        #self.secs[secLabel]['geom'].update({'r05':[]})
+                        #self.secs[secLabel]['geom'].update({'rel_05':[]})
+                        #self.secs[secLabel]['geom'].update({'tr':[]})
+
+                    #h.psection(hSec)
+
+                    for ns, seg in enumerate(hSec):
+
+                        # if the extracellular mechanism is associated to the xtra.mod, then
+                        if 'mod_based' in params and params['mod_based']==True:
+                            # using xtra.mod - link extracellular and xtra
+                            sourceVar = seg.xtra._ref_ex
+                            targetVar = seg._ref_e_extracellular
+                            sim.pc.source_var(sourceVar, sim.net.lastPointerId)
+                            sim.pc.target_var(targetVar, sim.net.lastPointerId)
+                            sim.net.lastPointerId += 1
+
+                            # # setting coordinates in xtra (not neccesary)
+                            # seg.xtra.x = r05[0,nseg]
+                            # seg.xtra.y = r05[1,nseg]
+                            # seg.xtra.z = r05[2,nseg]
+
+                            # # setting transfer resistance in xtra
+                            seg.xtra.rx = tr[nseg]
+
+                        else:
+                            # not using .mod
+                            #self.secs[secLabel]['geom']['r05'].append(r05[:,nseg])
+                            #self.secs[secLabel]['geom']['rel_05'].append(rel_05[:,nseg])
+                            #self.secs[secLabel]['geom']['tr'].append(tr[nseg])
+
+                            vec = [val*tr[nseg]*(1e6) for val in params['stim']]
+                            hStim = h.Vector(vec)  # add stim object to dict in stims list
+
+                            self.stims.append(Dict(params))  # add to python structure
+                            self.stims[-1]['sec_xtra'] = secLabel
+                            self.stims[-1]['seg_xtra'] = ns
+                            self.stims[-1]['hObj'] = hStim
+
+                            self.secs[secLabel]['geom']['xtra_stim'].append({})
+                            self.secs[secLabel]['geom']['xtra_stim'][ns].update({'vec' : vec, 
+                                                                                 'stim_index': len(self.stims)-1})
+
+                            self.hvec.append(hStim)
+                            self.hvec[nseg].play(seg._ref_e_extracellular, params['time'],1)
+
+                        nseg += 1
+
+                else: ## Extracellular mechanism already inserted: Putatively multiple stimulation
+                    #print("Multiple stimulation")
+                    for ns, seg in enumerate(hSec):
+
+                        vec_previous = self.secs[secLabel]['geom']['xtra_stim'][ns]['vec']
+                        vec_new = [val*tr[nseg]*(1e6) for val in params['stim']]
+                        if len(vec_previous)==len(vec_new):
+                            vec = [vec_previous[ii] + vec_new[ii] for ii in range(len(vec_new))]
+                        else:
+                            print('Loading multiple Xtra stimulation failed')
+                            vec = vec_previous
+                        
+                        # saving in case we have more multiple stimulations
+                        #self.secs[secLabel]['geom']['xtra_stim'][ns].update({'old_vec': vec_previous})
+                        self.secs[secLabel]['geom']['xtra_stim'][ns]['vec'] = vec
+
+                        # update the value in the vector to be play for extracellular stimulation
+                        for index in range(len(vec)):
+                            nst = self.secs[secLabel]['geom']['xtra_stim'][ns]['stim_index']
+                            self.stims[nst]['hObj'].x[index] = vec[index]
+
+                        nseg += 1
+
+                h.pop_section()
+
+            #print(nseg)
+            if nseg != r05.shape[1]:
+                print('We have an issue setting extracellular mechanism at segments')
+
         else:
             if sim.cfg.verbose:
                 print(('Adding exotic stim (NeuroML 2 based?): %s' % params))
@@ -1413,30 +1579,6 @@ If this cell is expected to be a point cell instead, make sure the correspondent
 
         return secLabels
 
-    def _setConnWeights(self, params, netStimParams, secLabels):
-        from .. import sim
-
-        if netStimParams:
-            scaleFactor = sim.net.params.scaleConnWeightNetStims
-        elif (
-            isinstance(sim.net.params.scaleConnWeightModels, dict)
-            and sim.net.params.scaleConnWeightModels.get(self.tags['cellModel'], None) is not None
-        ):
-            scaleFactor = sim.net.params.scaleConnWeightModels[
-                self.tags['cellModel']
-            ]  # use scale factor specific for this cell model
-        else:
-            scaleFactor = sim.net.params.scaleConnWeight  # use global scale factor
-
-        if isinstance(params['weight'], list):
-            weights = [scaleFactor * w for w in params['weight']]
-            if len(weights) == 1:
-                weights = [weights[0]] * params['synsPerConn']
-        else:
-            weights = [scaleFactor * params['weight']] * params['synsPerConn']
-
-        return weights
-
     def _setConnPointP(self, params, secLabels, weightIndex):
         from .. import sim
 
@@ -1471,16 +1613,14 @@ If this cell is expected to be a point cell instead, make sure the correspondent
 
     def _setConnSynMechs(self, params, secLabels):
         from .. import sim
-
-        distributeSynsUniformly = params.get('distributeSynsUniformly', sim.cfg.distributeSynsUniformly)
         connRandomSecFromList = params.get('connRandomSecFromList', sim.cfg.connRandomSecFromList)
+        distributeSynsUniformly = params.get('distributeSynsUniformly', sim.cfg.distributeSynsUniformly)
 
         synsPerConn = params['synsPerConn']
         if not params.get('synMech'):
             if sim.net.params.synMechParams:  # if no synMech specified, but some synMech params defined
-                synLabel = list(sim.net.params.synMechParams.keys())[
-                    0
-                ]  # select first synMech from net params and add syn
+                # select first synMech from net params and add syn:
+                synLabel = list(sim.net.params.synMechParams.keys())[0] 
                 params['synMech'] = synLabel
                 if sim.cfg.verbose:
                     print(
@@ -1488,91 +1628,106 @@ If this cell is expected to be a point cell instead, make sure the correspondent
                         % (self.gid, synLabel)
                     )
             else:  # if no synaptic mechanism specified and no synMech params available
-                if sim.cfg.verbose:
-                    print('  Error: no synaptic mechanisms available to add conn on cell gid=%d ' % (self.gid))
-                return -1  # if no Synapse available print error and exit
+                _ensure(False, params, f"no synaptic mechanisms available to add conn on cell gid={self.gid}")
 
-        # if desired synaptic mechanism specified in conn params
+        # make difference between loc explicitly specified by user vs set by default
+        if params.get('loc') is None:
+            params['loc'] = 0.5
+            isExplicitLoc = False
+        else:
+            isExplicitLoc = True
+
         if synsPerConn > 1:  # if more than 1 synapse
-            if len(secLabels) == 1:  # if single section, create all syns there
-                synMechSecs = [secLabels[0]] * synsPerConn  # same section for all
-                if isinstance(params['loc'], list):
-                    if len(params['loc']) == synsPerConn:
-                        synMechLocs = params['loc']
-                    else:
-                        if sim.cfg.verbose:
-                            print(
-                                "Error: The length of the list of locations does not match synsPerConn (distributing uniformly)"
-                            )
-                        synMechSecs, synMechLocs = self._distributeSynsUniformly(
-                            secList=secLabels, numSyns=synsPerConn
-                        )
-                else:
-                    synMechLocs = [i * (1.0 / synsPerConn) + 1.0 / synsPerConn / 2 for i in range(synsPerConn)]
-            else:
-                # if multiple sections, distribute syns uniformly
-                if distributeSynsUniformly:
-                    synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
-                else:
-                    # have list of secs that matches num syns
-                    if not connRandomSecFromList and synsPerConn == len(secLabels):
-                        synMechSecs = secLabels
-                        if isinstance(params['loc'], list):
-                            if len(params['loc']) == synsPerConn:  # list of locs matches num syns
-                                synMechLocs = params['loc']
-                            else:  # list of locs does not match num syns
-                                print("Error: The length of the list of locations does not match synsPerConn (with distributeSynsUniformly = False)")
-                                return
-                        else:  # single loc
-                            synMechLocs = [params['loc']] * synsPerConn
-                    else:
-                        synMechSecs = secLabels
-                        synMechLocs = params['loc'] if isinstance(params['loc'], list) else [params['loc']]
-
-                        # randomize the section to connect to and move it to beginning of list
-                        if connRandomSecFromList and len(synMechSecs) >= synsPerConn:
-                            if len(synMechLocs) == 1:
-                                synMechLocs = [params['loc']] * synsPerConn
-                            rand = h.Random()
-                            preGid = params['preGid'] if isinstance(params['preGid'], int) else 0
-                            rand.Random123(sim.hashStr('connSynMechsSecs'), self.gid, preGid)  # initialize randomizer
-
-                            randSecPos = sim.net.randUniqueInt(rand, synsPerConn, 0, len(synMechSecs) - 1)
-                            synMechSecs = [synMechSecs[i] for i in randSecPos]
-
-                            if isinstance(params['loc'], list):
-                                randLocPos = sim.net.randUniqueInt(rand, synsPerConn, 0, len(synMechLocs) - 1)
-                                synMechLocs = [synMechLocs[i] for i in randLocPos]
-                            else:
-                                rand.uniform(0, 1)
-                                synMechLocs = [rand.repick() for i in range(synsPerConn)]
-                        else:
-                            print("\nError: The length of the list of sections needs to be greater or equal to the synsPerConn (with connRandomSecFromList = True)")
-                            return
-
+            synMechSecs, synMechLocs = self._secsAndLocsForMultisynapse(params, isExplicitLoc, secLabels, connRandomSecFromList, distributeSynsUniformly)
         else:  # if 1 synapse
-            # by default place on 1st section of list and location available
-            synMechSecs = secLabels
-            synMechLocs = params['loc'] if isinstance(params['loc'], list) else [params['loc']]
-
-            # randomize the section to connect to and move it to beginning of list
-            if connRandomSecFromList and len(synMechSecs) > 1:
-                rand = h.Random()
-                preGid = params['preGid'] if isinstance(params['preGid'], int) else 0
-                rand.Random123(sim.hashStr('connSynMechsSecs'), self.gid, preGid)  # initialize randomizer
-                pos = int(rand.discunif(0, len(synMechSecs) - 1))
-                synMechSecs[pos], synMechSecs[0] = synMechSecs[0], synMechSecs[pos]
-                if len(synMechLocs) > 1:
-                    synMechLocs[pos], synMechLocs[0] = synMechLocs[0], synMechLocs[pos]
+            synMechSecs, synMechLocs = self._secsAndLocsForSingleSynapse(params, isExplicitLoc, secLabels, connRandomSecFromList)
 
         # add synaptic mechanism to section based on synMechSecs and synMechLocs (if already exists won't be added unless nonLinear set to True)
-        synMechs = [
-            self.addSynMech(
-                synLabel=params['synMech'], secLabel=synMechSecs[i], loc=synMechLocs[i], preLoc=params['preLoc']
-            )
-            for i in range(synsPerConn)
-        ]
+        synMechs = []
+        for i in range(synsPerConn):
+            synMech = self.addSynMech(synLabel=params['synMech'], secLabel=synMechSecs[i], loc=synMechLocs[i], preLoc=params['preLoc'])
+            synMechs.append(synMech)
         return synMechs, synMechSecs, synMechLocs
+
+    def _secsAndLocsForSingleSynapse(self, params, isExplicitLoc, secLabels, connRandomSecFromList):
+
+        # by default place on 1st section of list and location available
+        synMechSecs = secLabels
+        loc = params['loc']
+        synMechLocs = loc if isinstance(loc, list) else [loc]
+
+        # randomize the section to connect to and move it to beginning of list
+        if connRandomSecFromList and len(synMechSecs) > 1:
+            if isExplicitLoc: # if loc was specified explicitly by user, they should've provided correct number of locs
+                _ensure(len(synMechSecs) == len(synMechLocs), params, "With connRandomSecFromList == True and synsPerConn == 1 (defaults), the lengths of the list of locations and the list of sections must be the same, in order to use the same randomly generated index for both")
+            else: # if using defaults, adjust it to match the number of sections
+                synMechLocs = synMechLocs * len(synMechSecs)
+
+            rand = h.Random()
+            preGid = params['preGid'] if isinstance(params['preGid'], int) else 0
+            rand.Random123(sim.hashStr('connSynMechsSecs'), self.gid, preGid)  # initialize randomizer
+            pos = int(rand.discunif(0, len(synMechSecs) - 1))
+            synMechSecs = [synMechSecs[pos]]
+            synMechLocs = [synMechLocs[pos]]
+        return synMechSecs, synMechLocs
+
+    def _secsAndLocsForMultisynapse(self, params, isExplicitLoc, secLabels, connRandomSecFromList, distributeSynsUniformly):
+
+        synsPerConn = params['synsPerConn']
+        loc = params['loc']
+    
+        if len(secLabels) == 1:  # if single section, create all syns there
+            synMechSecs = [secLabels[0]] * synsPerConn  # same section for all
+            if isinstance(loc, list):
+                _ensure(len(loc) == synsPerConn, params, "The length of the list of locations does not match synsPerConn")
+                synMechLocs = loc
+            else: # single value or no value
+                _ensure(isExplicitLoc == False, params, f"specifiyng the `loc` as single value when synsPerConn > 1 ({synsPerConn} in your case) is deprecated. To silence this warning, remove `loc` from the connection parameters or provide a list of {synsPerConn} values (per each synMech if they are several).")
+                synMechLocs = [i / synsPerConn + 1 / synsPerConn / 2 for i in range(synsPerConn)]
+        else:
+            # if multiple sections, distribute syns uniformly
+            if distributeSynsUniformly:
+                _ensure(isExplicitLoc == False, params, f"specifiyng the `loc` explicitly when distributeSynsUniformly is True and multiple sections provided is deprecated. To silence this warning, remove `loc` from the connection parameters or set distributeSynsUniformly to False.")
+                synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
+            else:
+                if connRandomSecFromList:
+                    synMechSecs, synMechLocs = self._randomSecAndLocFromList(params, synsPerConn, secLabels, loc, isExplicitLoc)
+                else:
+                    # Deterministic. Need to have lists of secs and locs that matches num syns
+                    if not isinstance(loc, list):
+                        loc = [loc] * synsPerConn
+
+                    _ensure(synsPerConn == len(secLabels), params,
+                            f"With connRandomSecFromList = False, the length of the list of sections should match synsPerConn")
+                    _ensure(synsPerConn == len(loc), params, 
+                            f"The length of the list of locations does not match synsPerConn (with distributeSynsUniformly = False, connRandomSecFromList = False)")
+
+                    synMechSecs = secLabels
+                    synMechLocs = loc
+        return synMechSecs, synMechLocs
+    
+    def _randomSecAndLocFromList(self, params, synsPerConn, secLabels, loc, isExplicitLoc):
+        rand = h.Random()
+        preGid = params['preGid'] if isinstance(params['preGid'], int) else 0
+        rand.Random123(sim.hashStr('connSynMechsSecs'), self.gid, preGid)  # initialize randomizer
+
+        from ..network.conn import randInt
+        maxval = len(secLabels) - 1
+        isUnique = synsPerConn <= maxval + 1
+        randSecPos = randInt(rand, N=synsPerConn, vmin=0, vmax=maxval, unique=isUnique)
+        synMechSecs = [secLabels[i] for i in randSecPos]
+
+        if isinstance(loc, list):
+            maxval = len(loc) - 1
+            isUnique = synsPerConn <= maxval + 1
+            randLocPos = randInt(rand, N=synsPerConn, vmin=0, vmax=maxval, unique=isUnique)
+            synMechLocs = [loc[i] for i in randLocPos]
+        else:
+            _ensure(isExplicitLoc == False, params, f"specifiyng the `loc` explicitly when distributeSynsUniformly is False and connRandomSecFromList is True (with multiple sections provided) is deprecated. To silence this warning, remove `loc` from the connection parameters.")
+
+            rand.uniform(0, 1)
+            synMechLocs = h.Vector(synsPerConn).setrand(rand).to_python()
+        return synMechSecs, synMechLocs
 
     def _distributeSynsUniformly(self, secList, numSyns):
         from .. import sim
@@ -1674,17 +1829,27 @@ If this cell is expected to be a point cell instead, make sure the correspondent
         p3dsoma = p3dsoma[np.newaxis].T  # trasnpose 1d array to enable matrix calculation
 
         if hasattr(sim.net.pops[pop], '_morphSegCoords'):
-            # rotated coordinates around z axis first then shift relative to the soma
-            morphSegCoords = sim.net.pops[pop]._morphSegCoords
+
+            # check whether there is a single cell per pop or multiple subpopulations (diversity)
+            if 'diversity' not in sim.net.pops[pop].tags.keys():
+                # rotated coordinates around z axis first then shift relative to the soma
+                morphSegCoords = sim.net.pops[pop]._morphSegCoords
+            else:
+                label = self.tags['label'][0]
+                morphSegCoords = sim.net.pops[pop]._morphSegCoords[label]
+
             self._segCoords['p0'] = p3dsoma + morphSegCoords['p0']
             self._segCoords['p1'] = p3dsoma + morphSegCoords['p1']
+            
+            # moved here, as morphSegCoords are defined here exclusively 
+            self._segCoords['d0'] = morphSegCoords['d0']
+            self._segCoords['d1'] = morphSegCoords['d1']
+
         else:
             # rotated coordinates around z axis
             self._segCoords['p0'] = p3dsoma
             self._segCoords['p1'] = p3dsoma
 
-        self._segCoords['d0'] = morphSegCoords['d0']
-        self._segCoords['d1'] = morphSegCoords['d1']
 
     def setImembPtr(self):
         """Set PtrVector to point to the `i_membrane_`"""
@@ -1734,3 +1899,8 @@ If this cell is expected to be a point cell instead, make sure the correspondent
 
     def originSec(self):
         return self.secs[self.originSecName()]
+
+def _ensure(condition, params, message):
+    connLabel = params.get('label')
+    connLabelStr = f'[{connLabel}]' if connLabel else ''
+    assert condition, f"  Error in connParams{connLabelStr}: {message}"

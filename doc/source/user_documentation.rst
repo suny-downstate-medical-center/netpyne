@@ -825,6 +825,68 @@ The code below shows an example of how to create different types of stimulation 
 		'conds': {'pop': 'PYR3', 'cellList': [0, 1, 2, 5, 10, 14, 15]}}
 
 
+**Extracellular stimulation** - This is a distributed mechanism of stimulation, involving all sections/segments of a ``CompartCell``. To specify this kind of stimulation, in ``stimSourceParams`` we should set ``'type': 'XStim'`` and provide a number of parameters:
+
+	* ``field``: a dictionary that specifies the characteristics of the stimulation. It is composed by:
+
+		* ``class``: Type of stimulation. Available options: ``pointSource`` and ``uniform``, for a single point electrode injecting current or a uniform electrical field, respectively.
+
+		For ``'class': 'pointSource'``, it should be specified ``location`` (the location of the tip of the electrode) and ``sigma`` (the conductivity of the brain tisse in mS/mm).
+
+		For ``'class': 'uniform'``, it should be specified ``referencePoint`` (optional - the point where the field is 0) and ``fieldDirection`` (the direction of the field as a list of two angles: the polar angle -between 0 and 180- and the azimuthal angle -between 0 and 360-).
+
+	* ``waveform``: a dictionary that specifies the temporal modulation. It is composed by:
+
+		* ``type``: Temporal shape of the external stimulation. Available options: ``sinusoidal``, ``pulse``, ``external``. If not specified, the external stimulation is set to 0 (ground).
+
+		* ``amp`` (optional): the amplitude of the external stimulation (mA for point source stimulation - V/m for uniform electrical field), valid for ``sinusoidal`` or ``pulse``. If not specified, it is set to 0 (no stimulation).
+
+		* ``del`` (optional): starting time of the stimulation, valid for ``sinusoidal`` or ``pulse``. If not specified, it is the simulation start time.
+
+		* ``dur`` (optional): duration (following starting time) of the stimulation, valid for ``sinusoidal`` or ``pulse``. If not specified, it is the simulation end time.
+
+		* ``freq`` (optional): frequency of the ``sinusoidal`` stimulation. If not specified, it is set to 0 (no stimulation).
+
+		* ``time`` (optional): when the stimulation is uploaded externally (``type``: ``external``), then this entry specifies either a pickle file with a list of times, or a numpy array with the same information. The (fixed) time interval between consecutive time points should be consistent to the integration timestep.
+
+		* ``signal`` (optional): when the stimulation is uploaded externally (``type``: ``external``), then this entry specifies either a pickle file with a list of values corresponding to the amplitudes (mA for point source stimulation - V/m for uniform electrical field) of the external signal, paired to the ``time`` list, or a numpy array with the same information.
+
+	* ``mod_based``: Boolean (default: False). It specifies if the simulation is based an external mod file (xtra.mod with a POINTER/RANGE called "ex" and a GLOBAL called "is"), following the guidelines in the NEURON forum. It is appropriate for large networks, althought is restricted to a single temporal modulation. With ``mod_based``: False, you can set superposition of many sources. A NetPyNE-compatible ``xtra.mod`` can be downloaded from the ``support`` module. 
+
+
+In addition, in ``stimSourceParams`` we should set the ``source`` (the label of the stimulation source specifying the extracellular stimulation) and ``conds`` with the conditions that should satisfy target cells, typically ``'conds': {'cellList': 'all'}`` would provide the global stimulation represented by an extracellular (ubiquitous) source.
+
+
+The code below shows a detailed example of superimposed external stimulations (which are allowed):
+
+.. code-block:: python
+
+	# Stimulation parameters
+
+	## Stimulation sources parameters
+	netParams.stimSourceParams['XStim1'] =  {
+		'type': 'XStim', 
+		'field': {'class': 'pointSource', 'location': [100,-100,0], 'sigma': 0.276}, 
+		'waveform': {'type': 'sinusoidal', 'amp' : 0.020, 'del' : 20, 'dur' : 80, 'freq': 250}
+		}
+
+	netParams.stimSourceParams['XStim2'] =  {
+		'type': 'XStim', 
+		'field': {'class': 'uniform', 'referencePoint': [0,-netParams.sizeY,0], 'fieldDirection': [180,0]}, 
+		'waveform': {'type': 'pulse', 'amp' : 10.0, 'del' : 50, 'dur' : 20}
+		}
+
+	## Stimulation target parameters
+	netParams.stimTargetParams['XStim1->all'] = {
+		'source': 'XStim1', 
+		'conds': {'cellList': 'all'}}
+
+	netParams.stimTargetParams['XStim2->all'] = {
+		'source': 'XStim2', 
+		'conds': {'cellList': 'all'}}
+
+
+
 Reaction-Diffusion (RxD) parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

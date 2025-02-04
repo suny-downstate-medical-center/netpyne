@@ -1008,12 +1008,16 @@ def clearAll():
     sim.pc.barrier()
     sim.pc.gid_clear()  # clear previous gid settings
 
-def close(clear=True):
+def close(message=None, clear=True):
     """
     Function to close simulation
 
     """
     from .. import sim
+    from netpyne.specs import _batch_specs
+    if sim.rank == 0 and _batch_specs:
+        from netpyne.specs import comm
+        comm.send(message)
     if clear:
         clearAll()
     else:

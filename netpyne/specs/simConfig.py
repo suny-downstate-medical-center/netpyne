@@ -116,6 +116,10 @@ class SimConfig(object):
         # Analysis and plotting
         self.analysis = ODict()
 
+        # batchtool developmental flag
+        self._recv_metric = 0
+
+        # Analysis and plotting
         # fill in params from dict passed as argument
         if simConfigDict:
             for k, v in simConfigDict.items():
@@ -190,6 +194,10 @@ class SimConfig(object):
         from ..sim import replaceDictODict
 
         return replaceDictODict(self.__dict__)
+
+    def update(self, *args, **kwargs):
+        # currently does nothing,
+        pass
 
     def validateDataSaveOptions(self, printWarning=True):
 

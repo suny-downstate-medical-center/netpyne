@@ -15,7 +15,7 @@ from datetime import datetime
 import pickle as pk
 from . import gather
 from . import utils
-from ..specs import Dict, ODict
+from ..specs import Dict, ODict, _batch_specs
 from copy import copy, deepcopy
 
 
@@ -96,6 +96,14 @@ def saveData(include=None, filename=None, saveLFP=True):
     if sim.rank == 0:
         sim.timing('start', 'saveTime')
         import os
+
+
+        # checking if any comm needs to be automatically sent
+        if sim.cfg._recv_metric == 0 and _batch_specs is not None:
+            msg = {'saveFolder': sim.cfg.saveFolder, 'simLabel': sim.cfg.simLabel}
+            from ..specs import comm
+            import json
+            comm.send(json.dumps(msg))
 
         # copy source files
         if isinstance(sim.cfg.backupCfgFile, list) and len(sim.cfg.backupCfgFile) == 2:

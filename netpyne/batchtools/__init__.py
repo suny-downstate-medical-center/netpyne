@@ -1,4 +1,6 @@
-from netpyne.batchtools.runners import NetpyneRunner
+from batchtk.runtk.runners import Runner, get_class
+RS = get_class() # get appropriate Runner object for inheritance and comms
+from netpyne.batchtools.runners import Runner_SimConfig
 from batchtk.runtk import dispatchers
 from netpyne.batchtools import submits
 from batchtk import runtk
@@ -15,12 +17,7 @@ submits = submits
 runtk = runtk
 
 
-"""
-def analyze_from_file(filename):
-    analyzer = Fanova()
-    analyzer.load_file(filename)
-    analyzer.run_analysis(
-"""
+
 
 #from ray import tune as space.comm
 #list and lb ub

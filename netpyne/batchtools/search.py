@@ -31,6 +31,7 @@ def ray_optuna_search(dispatcher_constructor: Callable, # constructor for the di
                       mode: Optional[str|list|tuple] = "min", # either 'min' or 'max' (whether to minimize or maximize the metric
                       optuna_config: Optional[dict] = None, # additional configuration for the optuna search algorithm
                       ray_config: Optional[dict] = None, # additional configuration for the ray initialization
+                      clean_checkpoint = True, # whether to clean the checkpoint directory after the search
                       ) -> namedtuple('Study', ['algo', 'results']):
     """
     ray_optuna_search(...)
@@ -110,6 +111,8 @@ def ray_optuna_search(dispatcher_constructor: Callable, # constructor for the di
     resultsdf = results.get_dataframe()
     resultsdf.to_csv("{}.csv".format(label))
     #return namedtuple('Study', ['algo', 'results'])(algo, results)
+    if clean_checkpoint:
+        os.system("rm -r {}".format(storage_path))
     return namedtuple('Study', ['algo', 'results'])(algo.searcher._ot_study, results)
 
 """
@@ -143,7 +146,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
                max_concurrent: Optional[int] = 1, # number of concurrent trials to run at one time
                batch: Optional[bool] = True, # whether concurrent trials should run synchronously or asynchronously
                num_samples: Optional[int] = 1, # number of trials to run
-               metric: Optional[str] = "loss", # metric to optimize (this should match some key: value pair in the returned data
+               metric: Optional[str] = 0, # metric to optimize, if not supplied, no data will be collated.
                mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
                algorithm_config: Optional[dict] = None, # additional configuration for the search algorithm
                ray_config: Optional[dict] = None, # additional configuration for the ray initialization
@@ -166,6 +169,9 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
         'batch': batch,
     } | algorithm_config
 
+    if metric == 0:
+        algorithm_config['metric'] = 'loss'
+
     #TODO class this object for self calls? cleaner? vs nested functions
     #TODO clean up working_dir and excludes
     storage_path = get_path(checkpoint_path)
@@ -185,9 +191,12 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
     )
     project_path = os.getcwd()
     def run(config):
-        config.update({'saveFolder': output_path, 'simLabel': LABEL_POINTER})
+        config.update({'saveFolder': output_path, 'simLabel': LABEL_POINTER, '_recv_metric': metric})
         data = ray_trial(config, label, dispatcher_constructor, project_path, output_path, submit)
-        if isinstance(metric, str):
+        if metric == 0:
+            metrics = {'config': config, 'data': data, 'loss': -1}
+            session.report(metrics)
+        elif isinstance(metric, str):
             metrics = {'config': config, 'data': data, metric: data[metric]}
             session.report(metrics)
         elif isinstance(metric, (list, tuple)):

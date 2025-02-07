@@ -246,7 +246,7 @@ constructor_tuples = {
     #('zsh', 'inet'): constructors(runtk.dispatchers.INETDispatcher, runtk.submits.ZSHSubmitSOCK), #TODO preferable to use AF_UNIX sockets on local machines
     #('slurm', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SlurmSubmitSOCK),
     #('slurm', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SlurmSubmitSFS),
-    ('sh', 'socket'): constructors(runtk.dispatchers.UNIXDispatcher, submits.SHSubmitSOCK), #
+    ('sh', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SHSubmitSOCK), #
     ('sh', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SHSubmitSFS),
     ('sh', None): constructors(GridDispatcher, runtk.submits.SHSubmit),
 }#TODO, just say "socket"?
@@ -341,7 +341,7 @@ def search(dispatcher_constructor: Optional[Callable] = None, # constructor for 
            max_concurrent: Optional[int] = 1,  # number of concurrent trials to run at one time
            batch: Optional[bool] = True,  # whether concurrent trials should run synchronously or asynchronously
            num_samples: Optional[int] = 1,  # number of trials to run
-           metric: Optional[str] = 0, # metric to optimize (this should match some key: value pair in the returned data
+           metric: Optional[str] = None, # metric to optimize (this should match some key: value pair in the returned data
            mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
            algorithm_config: Optional[dict] = None,  # additional configuration for the search algorithm
            ray_config: Optional[dict] = None,  # additional configuration for the ray initialization

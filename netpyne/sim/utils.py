@@ -1014,7 +1014,6 @@ def close(message=None, clear=True):
 
     """
     from .. import sim
-    from netpyne.specs import _batch_specs
     if clear:
         clearAll()
     else:

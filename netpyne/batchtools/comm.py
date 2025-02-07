@@ -33,6 +33,7 @@ class Comm(object):
                 self.runner.send(data)
             else:
                 self.runner.write(data)
+            self.close()
 
     def recv(self): #TODO to be tested, broadcast to all workers?
         if self.is_host() and self.connected:

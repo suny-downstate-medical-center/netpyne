@@ -12,5 +12,5 @@ try:# this SimConfig occurs before Runner_SimConfig
     comm.initialize()
 except Exception as e:
     #from .simConfig import SimConfig
-    _batch_specs = None
+    _batch_specs = False
 from .netParams import CellParams, NetParams

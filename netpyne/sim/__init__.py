@@ -123,5 +123,5 @@ from netpyne.specs import _batch_specs
 if _batch_specs is not None:
     from netpyne.specs import comm
     send = comm.send
-    end_comm = comm.close
+    end_comm = comm.close # send automatically closes comm now #TODO remove.
 

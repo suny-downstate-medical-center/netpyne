@@ -15,7 +15,7 @@ from datetime import datetime
 import pickle as pk
 from . import gather
 from . import utils
-from ..specs import Dict, ODict, _batch_specs
+from ..specs import Dict, ODict
 from copy import copy, deepcopy
 
 

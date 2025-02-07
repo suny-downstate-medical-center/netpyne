@@ -1015,9 +1015,6 @@ def close(message=None, clear=True):
     """
     from .. import sim
     from netpyne.specs import _batch_specs
-    if sim.rank == 0 and _batch_specs:
-        from netpyne.specs import comm
-        comm.send(message)
     if clear:
         clearAll()
     else:

@@ -117,3 +117,11 @@ from ..tests.tests import SimTestObj
 # import export/import-related functions
 from .. import conversion
 from ..conversion.neuromlFormat import *
+
+# comm imports
+from netpyne.specs import _batch_specs
+if _batch_specs is not None:
+    from netpyne.specs import comm
+    send = comm.send
+    end_comm = comm.close
+

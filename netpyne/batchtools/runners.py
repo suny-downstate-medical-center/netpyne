@@ -1,8 +1,7 @@
-from batchtk import runtk
-from batchtk.runtk.runners import Runner, get_class
 import collections
 from netpyne.batchtools import RS
 from netpyne import specs
+
 def validate(element, container):
     try:
         match container:
@@ -53,10 +52,10 @@ def update_items(d, u, force_match = False):
 
 class Runner_SimConfig(RS, specs.simConfig.SimConfig):
     def __init__(self, *args, **kwargs):
-        RS.__init__(self, *args, **kwargs)
+        RS.__init__(self)
         specs.simConfig.SimConfig.__init__(self, *args, **kwargs)
 
-    def update_cfg(self, simConfigDict=None, force_match=False):  # intended to take `cfg` instance as self
+    def update(self, simConfigDict=None, force_match=False):  # intended to take `cfg` instance as self
         """
         Updates the SimConfig instance with mappings to the runner, called from a SimConfig instance
 
@@ -97,175 +96,14 @@ class Runner_SimConfig(RS, specs.simConfig.SimConfig):
                 raise Exception("failed on mapping: cfg.{} with value: {}\n{}".format(assign_path, value, e))
         return True
 
-"""
-class NetpyneRunner(Runner):
-    """
-    runner for netpyne
-    see class runner
-    mappings <-
-    """
-    def __new__(cls, inherit=None, **kwargs):
-        _super = get_class(inherit)
+    def __getitem__(self, item):
+        try:
+            return specs.simConfig.SimConfig.__getitem__(self, item)
+        except:
+            return RS.__getitem__(self, item)
 
-        def __init__(self, netParams=None, cfg=None, **kwargs):
-            """
-            NetpyneRunner constructor
-
-            Parameters
-            ----------
-            self - NetpyneRunner instance
-            netParams - optional netParams instance (defaults to None, created with method: get_NetParams)
-            cfg - optional SimConfig instance (defaults to None, created with method: get_SimConfig)
-                  N.B. requires cfg with the update_cfg method. see in get_SimConfig:
-                                   self.cfg = type("Runner_SimConfig", (specs.SimConfig,),
-                                   {'__mappings__': self.mappings,
-                                   'update_cfg': update_cfg})()
-            kwargs - Unused
-            """
-            _super.__init__(self, **kwargs)
-            self.netParams = netParams
-            self.cfg = cfg
-
-        def _set_inheritance(self, inherit):
-            """
-            Method for changing inheritance of NetpyneRunner
-            see runtk.RUNNERS
-            Parameters
-            ----------
-            self
-            inherit
-            """
-            if inherit in runtk.RUNNERS:
-                cls = type(self)
-                cls.__bases__ = (runtk.RUNNERS[inherit],)
-            else:
-                raise KeyError("inheritance {} not found in runtk.RUNNERS (please check runtk.RUNNERS for valid strings...".format(inherit))
-
-
-        def get_NetParams(self, netParamsDict=None):
-            """
-            Creates / Returns a NetParams instance
-            Parameters
-            ----------
-            self
-            netParamsDict - optional dictionary to create NetParams instance (defaults to None)
-                          - to be called during initial function call only
-
-            Returns
-            -------
-            NetParams instance
-
-            """
-            if self.netParams:
-                return self.netParams
-            else:
-                from netpyne.specs.netParams import NetParams
-                self.netParams = NetParams(netParamsDict)
-                return self.netParams
-
-        def test_mappings(self, mappings):
-            """
-            Tests mappings for validity
-
-            Parameters
-            ----------
-            mappings - dictionary of mappings to test
-
-            Returns
-            -------
-            bool - True if mappings are valid, False otherwise
-            """
-            for assign_path, value in mappings.items():
-                try:
-                    set_map(self, assign_path, value, force_match=True)
-                    print("successfully assigned: cfg.{} with value: {}".format(assign_path, value))
-                except Exception as e:
-                    raise Exception("failed on mapping: cfg.{} with value: {}\n{}".format(assign_path, value, e))
-            return True
-
-
-        def __call__(self, *args, **kwargs):
-            return self.__class__(*args, **kwargs)
-
-        def update_cfg(self, simConfigDict=None, force_match=False): #intended to take `cfg` instance as self
-            """
-            Updates the SimConfig instance with mappings to the runner, called from a SimConfig instance
-
-            Parameters
-            ----------
-            self - specs (NetpyneRunner) SimConfig instance
-            simConfigDict - optional dictionary to update SimConfig instance (defaults to None)
-                          - to be called during initial function call only
-
-            Returns
-            -------
-            None (updates SimConfig instance in place)
-            """
-            if simConfigDict:
-                update_items(self, simConfigDict, force_match)
-            for assign_path, value in self.__mappings__.items():
-                try:
-                    set_map(self, assign_path, value)
-                except Exception as e:
-                    raise Exception("failed on mapping: cfg.{} with value: {}\n{}".format(assign_path, value, e))
-
-        def get_SimConfig(self, simConfigDict=None):
-            """
-            Creates / Returns a SimConfig instance
-            Parameters
-            ----------
-            self - NetpyneRunner instance
-            simConfigDict - optional dictionary to create NetParams instance (defaults to None)
-                          - to be called during initial function call only
-
-            Returns
-            -------
-            SimConfig instance
-            """
-            if self.cfg:
-                if simConfigDict:
-                    update_items(self.cfg,simConfigDict, force_match=False)
-                return self.cfg
-            else:
-                from netpyne.specs.simConfig import SimConfig
-                self.cfg = type("Runner_SimConfig", (SimConfig,),
-                    {'__mappings__': self.mappings,
-                     'update_cfg': update_cfg,
-                     'update': update_cfg,
-                     'test_mappings': test_mappings,
-                     '__call__': __call__})(simConfigDict)
-                return self.cfg
-
-        def set_SimConfig(self):
-            """
-            updates the SimConfig instance with mappings to the runner, called from a Runner instance
-
-            Parameters
-            ----------
-            self
-            """
-            # assumes values are only in 'cfg'
-            for assign_path, value in self.mappings.items():
-                try:
-                    set_map(self, "cfg.{}".format(assign_path), value)
-                except Exception as e:
-                    raise Exception("failed on mapping: cfg.{} with value: {}\n{}".format(assign_path, value, e))
-
-        def set_mappings(self, filter=''):
-            # arbitrary filter, can work with 'cfg' or 'netParams'
-            for assign_path, value in self.mappings.items():
-                if filter in assign_path:
-                    set_map(self, assign_path, value)
-
-        return type("NetpyneRunner{}".format(str(_super.__name__)), (_super,),
-                    {'__init__': __init__,
-                     '_set_inheritance': _set_inheritance,
-                     'get_NetParams': get_NetParams,
-                     'NetParams': get_NetParams,
-                     'SimConfig': get_SimConfig,
-                     'get_SimConfig': get_SimConfig,
-                     'set_SimConfig': set_SimConfig,
-                     'set_mappings': set_mappings,
-                     'test_mappings': test_mappings,
-                     })(**kwargs) # need to override __init__ or else will call parent
-"""
+    def __getattr__(self, item):
+        try:
+            return specs.simConfig.SimConfig.__getattribute__(self, item)
+        except:
+            return RS.__getattribute__(self, item)

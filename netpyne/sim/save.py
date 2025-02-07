@@ -97,14 +97,6 @@ def saveData(include=None, filename=None, saveLFP=True):
         sim.timing('start', 'saveTime')
         import os
 
-
-        # checking if any comm needs to be automatically sent
-        if sim.cfg._recv_metric == 0 and _batch_specs is not None:
-            msg = {'saveFolder': sim.cfg.saveFolder, 'simLabel': sim.cfg.simLabel}
-            from ..specs import comm
-            import json
-            comm.send(json.dumps(msg))
-
         # copy source files
         if isinstance(sim.cfg.backupCfgFile, list) and len(sim.cfg.backupCfgFile) == 2:
             simName = sim.cfg.simLabel if sim.cfg.simLabel else os.path.basename(sim.cfg.filename)
@@ -164,7 +156,9 @@ def saveData(include=None, filename=None, saveLFP=True):
         if net:
             dataSave['net'] = net
         if 'simConfig' in include:
-            dataSave['simConfig'] = sim.cfg.__dict__
+            # exclude from dataSave due to pickling but keep in simConfig later, for integrity
+            savedict = {k: v for k, v in sim.cfg.__dict__.items() if k not in ['logger', 'supports', 'grepfunc']}
+            dataSave['simConfig'] = savedict
         if 'simData' in include:
             if saveLFP:
                 if 'LFP' in sim.allSimData:
@@ -554,7 +548,8 @@ def intervalSave(simTime, gatherLFP=True):
         if net:
             dataSave['net'] = net
         if 'simConfig' in include:
-            dataSave['simConfig'] = sim.cfg.__dict__
+            savedict = {k: v for k, v in sim.cfg.__dict__.items() if k not in ['logger', 'supports', 'grepfunc']}
+            dataSave['simConfig'] = savedict
         if 'simData' in include:
             if 'LFP' in sim.allSimData:
                 sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist()
@@ -688,7 +683,8 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
         else:
             saveSimData[key] = val  # update simData dicts which are not Vectors
 
-    dataSave['simConfig'] = sim.cfg.__dict__
+    savedict = {k: v for k, v in sim.cfg.__dict__.items() if k not in ['logger', 'supports', 'grepfunc']}
+    dataSave['simConfig'] = savedict
     dataSave['simData'] = saveSimData
     dataSave['cells'] = [c.__getstate__() for c in sim.net.cells]  # sim.net.cells
     dataSave['pops'] = {}

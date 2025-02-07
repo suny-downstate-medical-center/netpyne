@@ -116,8 +116,6 @@ class SimConfig(object):
         # Analysis and plotting
         self.analysis = ODict()
 
-        # batchtool developmental flag
-        self._recv_metric = 0
 
         # Analysis and plotting
         # fill in params from dict passed as argument

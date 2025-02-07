@@ -17,6 +17,15 @@ choice = tune.choice
 grid = tune.grid_search
 uniform = tune.uniform
 
+class GridDispatcher(runtk.dispatchers.SHDispatcher):
+    def accept(self):
+        return
+
+    def recv(self):
+        return '{}'  # dummy json value to return...
+
+
+
 def ray_optuna_search(dispatcher_constructor: Callable, # constructor for the dispatcher (e.g. INETDispatcher)
                       submit_constructor: Callable, # constructor for the submit (e.g. SHubmitSOCK)
                       run_config: Dict, # batch configuration, (keyword: string pairs to customize the submit template)
@@ -191,10 +200,10 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
     )
     project_path = os.getcwd()
     def run(config):
-        config.update({'saveFolder': output_path, 'simLabel': LABEL_POINTER, '_recv_metric': metric})
+        config.update({'saveFolder': output_path, 'simLabel': LABEL_POINTER})
         data = ray_trial(config, label, dispatcher_constructor, project_path, output_path, submit)
-        if metric == 0:
-            metrics = {'config': config, 'data': data, 'loss': -1}
+        if metric is None:
+            metrics = {'config': config, 'loss': 0}
             session.report(metrics)
         elif isinstance(metric, str):
             metrics = {'config': config, 'data': data, metric: data[metric]}
@@ -232,13 +241,14 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
 constructors = namedtuple('constructors', 'dispatcher, submit')
 constructor_tuples = {
     ('sge', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SGESubmitSOCK),
-    #('sge', 'unix'): constructors(runtk.dispatchers.UNIXDispatcher, runtk.submits.SGESubmitSOCK), #can't use AF_UNIX sockets on networked machines
     ('sge', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SGESubmitSFS ),
+    ('sge', None): constructors(GridDispatcher, runtk.submits.SGESubmit),
     #('zsh', 'inet'): constructors(runtk.dispatchers.INETDispatcher, runtk.submits.ZSHSubmitSOCK), #TODO preferable to use AF_UNIX sockets on local machines
-    ('slurm', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SlurmSubmitSOCK),
-    ('slurm', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SlurmSubmitSFS),
+    #('slurm', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SlurmSubmitSOCK),
+    #('slurm', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SlurmSubmitSFS),
     ('sh', 'socket'): constructors(runtk.dispatchers.UNIXDispatcher, submits.SHSubmitSOCK), #
     ('sh', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SHSubmitSFS),
+    ('sh', None): constructors(GridDispatcher, runtk.submits.SHSubmit),
 }#TODO, just say "socket"?
 
 
@@ -266,7 +276,7 @@ def generate_parameters(params, algorithm, **kwargs):
     ray_params = {}
     for param, space in params.items():
         if   isinstance(space, (list, tuple, range, numpy.ndarray)) and algorithm in {'variant_generator'}:
-            ray_params[param] = tune.grid_search(space)
+            ray_params[param] = tune.grid_search(space) #specify random for uniform and choice.
         elif isinstance(space, (list, tuple)) and algorithm in SEARCH_ALG_IMPORT.keys():
             if len(space) == 2: #if 2 sample from uniform lb, ub
                 ray_params[param] = tune.uniform(*space)
@@ -280,7 +290,7 @@ def generate_parameters(params, algorithm, **kwargs):
 def shim(dispatcher_constructor: Optional[Callable] = None, # constructor for the dispatcher (e.g. INETDispatcher)
          submit_constructor: Optional[Callable] = None, # constructor for the submit (e.g. SHubmitSOCK)
          job_type: Optional[str] = None, # the submission engine to run a single simulation (e.g. 'sge', 'sh')
-         comm_type: Optional[str] = None, # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'filesystem')
+         comm_type: Optional[str] = None, # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'sfs' (shared filesystem), None (no communication) )
          run_config: Optional[Dict] = None,  # batch configuration, (keyword: string pairs to customize the submit template)
          params: Optional[Dict] = None,  # search space (dictionary of parameter keys: tune search spaces)
          algorithm: Optional[str] = "variant_generator", # search algorithm to use, see SEARCH_ALG_IMPORT for available options
@@ -290,19 +300,25 @@ def shim(dispatcher_constructor: Optional[Callable] = None, # constructor for th
          max_concurrent: Optional[int] = 1,  # number of concurrent trials to run at one time
          batch: Optional[bool] = True,  # whether concurrent trials should run synchronously or asynchronously
          num_samples: Optional[int] = 1,  # number of trials to run
-         metric: Optional[str] = "loss", # metric to optimize (this should match some key: value pair in the returned data
+         metric: Optional[str] = None, # metric to optimize (this should match some key: value pair in the returned data
          mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
          algorithm_config: Optional[dict] = None,  # additional configuration for the search algorithm
          ray_config: Optional[dict] = None,  # additional configuration for the ray initialization
          ):
     kwargs = locals()
-    if job_type is not None and comm_type is not None:
+    if metric is None and algorithm not in ['variant_generator', 'random', 'grid']:
+        raise ValueError("a metric (string) must be specified for optimization searches")
+    if algorithm == 'grid':
+        kwargs['algorithm'] = 'variant_generator'
+    if job_type is not None and (comm_type is not None or metric is None):
         kwargs['dispatcher_constructor'], kwargs['submit_constructor'] = generate_constructors(job_type, comm_type)
-    if dispatcher_constructor is not None and submit_constructor is not None:
+    if dispatcher_constructor is not None and (submit_constructor is not None or metric is None):
         kwargs['dispatcher_constructor'] = dispatcher_constructor
         kwargs['submit_constructor'] = submit_constructor
-    if kwargs['dispatcher_constructor'] is None or kwargs['submit_constructor'] is None:
-        raise ValueError("missing job method and communication type, either specify a dispatcher_constructor and submit_constructor or a job_type and comm_type")
+    if kwargs['dispatcher_constructor'] is None or (kwargs['submit_constructor'] is None and metric is not None):
+        raise ValueError("missing job method and communication type for an optimization search, either specify a dispatcher_constructor and submit_constructor or a job_type and comm_type")
+    if kwargs['dispatcher_constructor'] is None:
+        raise ValueError("missing job type for grid or random based search, specify a job type")
     if params is None:
         raise ValueError("missing parameters, specify params")
     if run_config is None:
@@ -325,7 +341,7 @@ def search(dispatcher_constructor: Optional[Callable] = None, # constructor for 
            max_concurrent: Optional[int] = 1,  # number of concurrent trials to run at one time
            batch: Optional[bool] = True,  # whether concurrent trials should run synchronously or asynchronously
            num_samples: Optional[int] = 1,  # number of trials to run
-           metric: Optional[str] = "loss", # metric to optimize (this should match some key: value pair in the returned data
+           metric: Optional[str] = 0, # metric to optimize (this should match some key: value pair in the returned data
            mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
            algorithm_config: Optional[dict] = None,  # additional configuration for the search algorithm
            ray_config: Optional[dict] = None,  # additional configuration for the ray initialization
@@ -384,6 +400,8 @@ SEE:
 'blendsearch'
 'cfo'
 """
+
+
 
 
 

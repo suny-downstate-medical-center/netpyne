@@ -1085,5 +1085,7 @@ class NpSerializer(json.JSONEncoder):
             return obj.to_python()
         elif isinstance(obj, RecXElectrode):
             return obj.toJSON()
+        elif callable(obj):
+            return obj.__name__
         else:
             return super(NpSerializer, self).default(obj)

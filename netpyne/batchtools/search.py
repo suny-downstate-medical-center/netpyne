@@ -42,7 +42,7 @@ def ray_optuna_search(dispatcher_constructor: Callable, # constructor for the di
                       ray_config: Optional[dict] = None, # additional configuration for the ray initialization
                       clean_checkpoint = True, # whether to clean the checkpoint directory after the search
                       ) -> namedtuple('Study', ['algo', 'results']):
-    """
+    """ #TODO -- fold this into the ray_search object later---
     ray_optuna_search(...)
 
     Parameters
@@ -74,7 +74,7 @@ def ray_optuna_search(dispatcher_constructor: Callable, # constructor for the di
 
     if ray_config is None:
         ray_config = {}
-    ray_init_kwargs = {"runtime_env": {"working_dir:": "."}} | ray_config
+    ray_init_kwargs = ray_config#{"runtime_env": {"working_dir:": "."}} | ray_config # do not actually need to specify a working dir, can
     ray.init(**ray_init_kwargs)# TODO needed for python import statements ?
     if optuna_config == None:
         optuna_config = {}
@@ -150,21 +150,24 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
                params: Dict, # search space (dictionary of parameter keys: tune search spaces)
                algorithm: Optional[str] = "variant_generator", # search algorithm to use, see SEARCH_ALG_IMPORT for available options
                label: Optional[str] = 'search', # label for the search
-               output_path: Optional[str] = '../batch', # directory for storing generated files
-               checkpoint_path: Optional[str] = '../ray', # directory for storing checkpoint files
+               output_path: Optional[str] = './batch', # directory for storing generated files
+               checkpoint_path: Optional[str] = './ray', # directory for storing checkpoint files
                max_concurrent: Optional[int] = 1, # number of concurrent trials to run at one time
                batch: Optional[bool] = True, # whether concurrent trials should run synchronously or asynchronously
                num_samples: Optional[int] = 1, # number of trials to run
-               metric: Optional[str] = 0, # metric to optimize, if not supplied, no data will be collated.
+               metric: Optional[str] = None, # metric to optimize, if not supplied, no data will be collated.
                mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
                algorithm_config: Optional[dict] = None, # additional configuration for the search algorithm
                ray_config: Optional[dict] = None, # additional configuration for the ray initialization
+               attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
+               clean_checkpoint = True, # whether to clean the checkpoint directory after the search
+               prune_metadata = True, # whether to prune the metadata from the results.csv
                ) -> tune.ResultGrid:
 
     if ray_config is None:
         ray_config = {}
 
-    ray_init_kwargs = {"runtime_env": {"working_dir:": "."}} | ray_config
+    ray_init_kwargs = ray_config#{"runtime_env": {"working_dir:": "."}} | ray_config
 
     ray.init(**ray_init_kwargs) # TODO needed for python import statements ?
 
@@ -178,8 +181,8 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
         'batch': batch,
     } | algorithm_config
 
-    if metric == 0:
-        algorithm_config['metric'] = 'loss'
+    if metric is None:
+        algorithm_config['metric'] = 'data'
 
     #TODO class this object for self calls? cleaner? vs nested functions
     #TODO clean up working_dir and excludes
@@ -203,7 +206,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
         config.update({'saveFolder': output_path, 'simLabel': LABEL_POINTER})
         data = ray_trial(config, label, dispatcher_constructor, project_path, output_path, submit)
         if metric is None:
-            metrics = {'config': config, 'loss': 0}
+            metrics = {'config': config, 'data': numpy.nan}
             session.report(metrics)
         elif isinstance(metric, str):
             metrics = {'config': config, 'data': data, metric: data[metric]}
@@ -215,25 +218,46 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
             session.report(metrics)
         else:
             session.report({'data': data, 'config': config})
-
-    tuner = tune.Tuner(
-        run,
-        tune_config=tune.TuneConfig(
-            search_alg=algo,
-            num_samples=num_samples, # grid search samples 1 for each param
-            metric=algorithm_config['metric'],
-            mode=algorithm_config['mode'],
-        ),
-        run_config=RunConfig(
-            storage_path=storage_path,
-            name=algorithm,
-        ),
-        param_space=params,
-    )
+    if attempt_restore and tune.Tuner.can_restore(storage_path):
+        print("resuming previous run from {}".format(storage_path))
+        tuner = tune.Tuner.restore(path=storage_path,
+                                   trainable=run,
+                                   resume_unfinished=True,
+                                   resume_errored=False,
+                                   restart_errored=True,
+                                   param_space=params,
+                                   )
+    else:
+        print("starting new run to {}".format(storage_path))
+        tuner = tune.Tuner(
+            run,
+            tune_config=tune.TuneConfig(
+                search_alg=algo,
+                num_samples=num_samples, # grid search samples 1 for each param
+                metric=algorithm_config['metric'],
+                mode=algorithm_config['mode'],
+            ),
+            run_config=RunConfig(
+                storage_path=storage_path,
+                name=algorithm,
+            ),
+            param_space=params,
+        )
 
     results = tuner.fit()
     resultsdf = results.get_dataframe()
+    if prune_metadata:
+        if metric is None:
+            regex_pattern = '^config|^data'
+        else:
+            if isinstance(metric, str):
+                metric = [metric]
+            metric_pattern = '|'.join(metric)
+            regex_pattern = '^config|^data|^{}'.format(metric_pattern)
+        resultsdf = resultsdf.filter(regex=regex_pattern)
     resultsdf.to_csv("{}.csv".format(label))
+    if clean_checkpoint:
+        os.system("rm -r {}".format(storage_path))
     return results
 
 
@@ -295,8 +319,8 @@ def shim(dispatcher_constructor: Optional[Callable] = None, # constructor for th
          params: Optional[Dict] = None,  # search space (dictionary of parameter keys: tune search spaces)
          algorithm: Optional[str] = "variant_generator", # search algorithm to use, see SEARCH_ALG_IMPORT for available options
          label: Optional[str] = 'search',  # label for the search
-         output_path: Optional[str] = '../batch',  # directory for storing generated files
-         checkpoint_path: Optional[str] = '../ray',  # directory for storing checkpoint files
+         output_path: Optional[str] = './batch',  # directory for storing generated files
+         checkpoint_path: Optional[str] = './ray',  # directory for storing checkpoint files
          max_concurrent: Optional[int] = 1,  # number of concurrent trials to run at one time
          batch: Optional[bool] = True,  # whether concurrent trials should run synchronously or asynchronously
          num_samples: Optional[int] = 1,  # number of trials to run
@@ -304,6 +328,9 @@ def shim(dispatcher_constructor: Optional[Callable] = None, # constructor for th
          mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
          algorithm_config: Optional[dict] = None,  # additional configuration for the search algorithm
          ray_config: Optional[dict] = None,  # additional configuration for the ray initialization
+         attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
+         clean_checkpoint: Optional[bool] = True, # whether to clean the checkpoint directory after the search
+            prune_metadata: Optional[bool] = True, # whether to prune the metadata from the results.csv
          ):
     kwargs = locals()
     if metric is None and algorithm not in ['variant_generator', 'random', 'grid']:
@@ -336,8 +363,8 @@ def search(dispatcher_constructor: Optional[Callable] = None, # constructor for 
            params: Optional[dict] = None,  # search space (dictionary of parameter keys: tune search spaces)
            algorithm: Optional[str] = "variant_generator", # search algorithm to use, see SEARCH_ALG_IMPORT for available options
            label: Optional[str] = 'search',  # label for the search
-           output_path: Optional[str] = '../batch',  # directory for storing generated files
-           checkpoint_path: Optional[str] = '../ray',  # directory for storing checkpoint files
+           output_path: Optional[str] = './batch',  # directory for storing generated files
+           checkpoint_path: Optional[str] = './ray',  # directory for storing checkpoint files
            max_concurrent: Optional[int] = 1,  # number of concurrent trials to run at one time
            batch: Optional[bool] = True,  # whether concurrent trials should run synchronously or asynchronously
            num_samples: Optional[int] = 1,  # number of trials to run
@@ -345,6 +372,9 @@ def search(dispatcher_constructor: Optional[Callable] = None, # constructor for 
            mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
            algorithm_config: Optional[dict] = None,  # additional configuration for the search algorithm
            ray_config: Optional[dict] = None,  # additional configuration for the ray initialization
+           attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
+           clean_checkpoint: Optional[bool] = True, # whether to clean the checkpoint directory after the search
+           prune_metadata: Optional[bool] = True, # whether to prune the metadata from the results.csv
            ) -> tune.ResultGrid: # results of the search
     """
     search(...)

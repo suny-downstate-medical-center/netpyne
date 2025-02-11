@@ -393,24 +393,28 @@ def search(dispatcher_constructor: Optional[Callable] = None, # constructor for 
     dispatcher_constructor: Callable, # constructor for the dispatcher (e.g. INETDispatcher)
     submit_constructor: Callable, # constructor for the submit (e.g. SHubmitSOCK)
     job_type: str, # the submission engine to run a single simulation (e.g. 'sge', 'sh')
-    comm_type: str, # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'filesystem')
+    comm_type: Optional[str], # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'filesystem', None), if None, expects a non-optimization based search (grid/random/etc.)
     run_config: Dict,  # batch configuration, (keyword: string pairs to customize the submit template)
     params: Dict,  # search space (dictionary of parameter keys: tune search spaces)
     algorithm: Optional[str] = "variant_generator", # search algorithm to use, see SEARCH_ALG_IMPORT for available options
     label: Optional[str] = 'search',  # label for the search
-    output_path: Optional[str] = '../batch',  # directory for storing generated files
-    checkpoint_path: Optional[str] = '../ray',  # directory for storing checkpoint files
+    output_path: Optional[str] = './batch',  # directory for storing generated files
+    checkpoint_path: Optional[str] = './ray',  # directory for storing checkpoint files
     max_concurrent: Optional[int] = 1,  # number of concurrent trials to run at one time
     batch: Optional[bool] = True,  # whether concurrent trials should run synchronously or asynchronously
     num_samples: Optional[int] = 1,  # number of trials to run
-    metric: Optional[str] = "loss", # metric to optimize (this should match some key: value pair in the returned data
+    metric: Optional[str] = None, # metric to optimize (this should match some key: value pair in the returned data, or None if no optimization is desired
     mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
     algorithm_config: Optional[dict] = None,  # additional configuration for the search algorithm
     ray_config: Optional[dict] = None,  # additional configuration for the ray initialization
+    attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
+    clean_checkpoint: Optional[bool] = True, # whether to clean the checkpoint directory after the search
+    prune_metadata: Optional[bool] = True, # whether to prune the metadata from the results.csv
 
-    Creates
+    Creates (upon completed fitting run...)
     -------
     <label>.csv: file containing the results of the search
+
 
     Returns
     -------

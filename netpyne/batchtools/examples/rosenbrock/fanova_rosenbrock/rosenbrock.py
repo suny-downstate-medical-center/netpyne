@@ -1,4 +1,4 @@
-from netpyne.batchtools import specs, comm
+from netpyne import sim, specs
 import json
 
 # --- Rosenbrock Functions & Constant Definitions --- #
@@ -38,12 +38,8 @@ cfg.update_cfg()
 
 # --------------------------------------------------- #
 
-# comm creation, calculation and result transmission  #
-comm.initialize()
+# calculation and result transmission  #
 
 out_json = json.dumps({'x': cfg.x, 'fx': rosenbrock_v0(*cfg.x)})
-if comm.is_host():
-    print(out_json)
-    comm.send(out_json)
-    comm.close()
+sim.send(out_json)
 

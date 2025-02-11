@@ -160,7 +160,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
                algorithm_config: Optional[dict] = None, # additional configuration for the search algorithm
                ray_config: Optional[dict] = None, # additional configuration for the ray initialization
                attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
-               clean_checkpoint = True, # whether to clean the checkpoint directory after the search
+               clean_checkpoint = True, # whether to clean the checkpoint directory after a completed successful search, errored searches will skip cleanup.
                prune_metadata = True, # whether to prune the metadata from the results.csv
                ) -> tune.ResultGrid:
 
@@ -244,7 +244,16 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
             param_space=params,
         )
 
+
     results = tuner.fit()
+    errors = results.errors
+    if errors:
+        print("errors occured during execution: {}".format(errors))
+        print("see {} for more information".format(output_path))
+        print("keeping {} for checkpointing".format(storage_path))
+        print("rerunning the same search again will keep any valid checkpointed data")
+        return results
+    # only execute if tuner.fit() is completed...
     resultsdf = results.get_dataframe()
     if prune_metadata:
         if metric is None:

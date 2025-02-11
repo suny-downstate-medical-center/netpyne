@@ -27,15 +27,13 @@ sge_config = {
 run_config = sge_config
 
 search(job_type = 'sge', # or 'sh'
-       comm_type = 'socket',
+       comm_type = 'socket', # if a metric and mode is specified, some method of communicating with the host needs to be defined
        label = 'grid',
-
        params = params,
-       output_path = '../grid_batch',
-       checkpoint_path = '../ray',
+       output_path = './grid_batch',
+       checkpoint_path = './ray',
        run_config = run_config,
-       num_samples = 1,
-       metric = 'loss',
+       metric = 'loss', # if a metric and mode is specified, the search will collect metric data and report on the optimal configuration
        mode = 'min',
-       algorithm = "variant_generator",
+       algorithm = "grid",
        max_concurrent = 9)

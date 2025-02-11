@@ -435,7 +435,16 @@ If this cell is expected to be a point cell instead, make sure the correspondent
                                 mechParamValueFinal = self.__evaluateCellParamsStringFunc(
                                     func, vars, sec, seg.x, cellVars
                                 )
-                        setattr(getattr(seg, mechName), mechParamName, mechParamValueFinal)
+                        try:
+                            setattr(getattr(seg, mechName), mechParamName, mechParamValueFinal)
+                        except Exception as e:
+                            #  if it's not a global raise AttributeError
+                            if getattr(h, "%s_%s".format(mechParamName, mechName), AttributeError) is AttributeError:
+                                raise AttributeError(
+                                    "Error setting %s.%s.%s = %s\nmechanism parameter is neither a mechanism attribute nor a mechanism global" % (sectName, mechName, mechParamName, mechParamValueFinal)
+                                )
+                            else: #
+                                pass
         return mechInsertError
 
     def _addIons(self, sectName, sectParams):

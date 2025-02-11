@@ -1,4 +1,4 @@
-from netpyne.batchtools import specs
+from netpyne import specs
 from cfg import cfg
 
 cfg.update_cfg()

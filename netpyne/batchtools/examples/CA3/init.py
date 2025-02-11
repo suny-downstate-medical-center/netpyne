@@ -1,18 +1,17 @@
-from netpyne.batchtools import specs, comm
+from netpyne import specs
 from netpyne import sim
 from netParams import netParams, cfg
 import json
 
-comm.initialize()
+
 
 sim.createSimulate(netParams=netParams, simConfig=cfg)
 print('completed simulation...')
-#comm.pc.barrier()
-#sim.gatherData()
-if comm.is_host():
+
+if sim.rank == 0:
     netParams.save("{}/{}_params.json".format(cfg.saveFolder, cfg.simLabel))
     print('transmitting data...')
-    inputs = specs.get_mappings()
+    inputs = cfg.get_mappings()
     #print(json.dumps({**inputs}))
     results = sim.analysis.popAvgRates(show=False)
 
@@ -23,5 +22,5 @@ if comm.is_host():
     out_json = json.dumps({**inputs, **results})
 
     print(out_json)
-    comm.send(out_json)
-    comm.close()
+    sim.send(out_json)
+

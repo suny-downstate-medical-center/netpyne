@@ -17,6 +17,15 @@ choice = tune.choice
 grid = tune.grid_search
 uniform = tune.uniform
 
+class GridDispatcher(runtk.dispatchers.SHDispatcher):
+    def accept(self):
+        return
+
+    def recv(self):
+        return '{}'  # dummy json value to return...
+
+
+
 def ray_optuna_search(dispatcher_constructor: Callable, # constructor for the dispatcher (e.g. INETDispatcher)
                       submit_constructor: Callable, # constructor for the submit (e.g. SHubmitSOCK)
                       run_config: Dict, # batch configuration, (keyword: string pairs to customize the submit template)
@@ -30,8 +39,10 @@ def ray_optuna_search(dispatcher_constructor: Callable, # constructor for the di
                       metric: Optional[str|list|tuple] = "loss", # metric to optimize (this should match some key: value pair in the returned data
                       mode: Optional[str|list|tuple] = "min", # either 'min' or 'max' (whether to minimize or maximize the metric
                       optuna_config: Optional[dict] = None, # additional configuration for the optuna search algorithm
+                      ray_config: Optional[dict] = None, # additional configuration for the ray initialization
+                      clean_checkpoint = True, # whether to clean the checkpoint directory after the search
                       ) -> namedtuple('Study', ['algo', 'results']):
-    """
+    """ #TODO -- fold this into the ray_search object later---
     ray_optuna_search(...)
 
     Parameters
@@ -49,6 +60,7 @@ def ray_optuna_search(dispatcher_constructor: Callable, # constructor for the di
     metric:Optional[str] = "loss", # metric to optimize (this should match some key: value pair in the returned data
     mode:Optional[str] = "min", # either 'min' or 'max' (whether to minimize or maximize the metric
     optuna_config:Optional[dict] = None, # additional configuration for the optuna search algorithm (incl. sampler, seed, etc.)
+    ray_config:Optional[dict] = None, # additional configuration for the ray initialization
 
     Creates
     -------
@@ -60,7 +72,10 @@ def ray_optuna_search(dispatcher_constructor: Callable, # constructor for the di
     """
     from ray.tune.search.optuna import OptunaSearch
 
-    ray.init(runtime_env={"working_dir": "."})# TODO needed for python import statements ?
+    if ray_config is None:
+        ray_config = {}
+    ray_init_kwargs = ray_config#{"runtime_env": {"working_dir:": "."}} | ray_config # do not actually need to specify a working dir, can
+    ray.init(**ray_init_kwargs)# TODO needed for python import statements ?
     if optuna_config == None:
         optuna_config = {}
 
@@ -105,6 +120,8 @@ def ray_optuna_search(dispatcher_constructor: Callable, # constructor for the di
     resultsdf = results.get_dataframe()
     resultsdf.to_csv("{}.csv".format(label))
     #return namedtuple('Study', ['algo', 'results'])(algo, results)
+    if clean_checkpoint:
+        os.system("rm -r {}".format(storage_path))
     return namedtuple('Study', ['algo', 'results'])(algo.searcher._ot_study, results)
 
 """
@@ -133,31 +150,39 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
                params: Dict, # search space (dictionary of parameter keys: tune search spaces)
                algorithm: Optional[str] = "variant_generator", # search algorithm to use, see SEARCH_ALG_IMPORT for available options
                label: Optional[str] = 'search', # label for the search
-               output_path: Optional[str] = '../batch', # directory for storing generated files
-               checkpoint_path: Optional[str] = '../ray', # directory for storing checkpoint files
+               output_path: Optional[str] = './batch', # directory for storing generated files
+               checkpoint_path: Optional[str] = './ray', # directory for storing checkpoint files
                max_concurrent: Optional[int] = 1, # number of concurrent trials to run at one time
                batch: Optional[bool] = True, # whether concurrent trials should run synchronously or asynchronously
                num_samples: Optional[int] = 1, # number of trials to run
-               metric: Optional[str] = "loss", # metric to optimize (this should match some key: value pair in the returned data
+               metric: Optional[str] = None, # metric to optimize, if not supplied, no data will be collated.
                mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
                algorithm_config: Optional[dict] = None, # additional configuration for the search algorithm
+               ray_config: Optional[dict] = None, # additional configuration for the ray initialization
+               attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
+               clean_checkpoint = True, # whether to clean the checkpoint directory after a completed successful search, errored searches will skip cleanup.
+               prune_metadata = True, # whether to prune the metadata from the results.csv
                ) -> tune.ResultGrid:
-    ray.init(runtime_env={"working_dir": "."}) # TODO needed for python import statements ?
 
-    if algorithm_config == None:
+    if ray_config is None:
+        ray_config = {}
+
+    ray_init_kwargs = ray_config#{"runtime_env": {"working_dir:": "."}} | ray_config
+
+    ray.init(**ray_init_kwargs) # TODO needed for python import statements ?
+
+    if algorithm_config is None:
         algorithm_config = {}
 
-    if 'metric' not in algorithm_config:
-        algorithm_config['metric'] = metric
+    algorithm_config = {
+        'metric': metric,
+        'mode': mode,
+        'max_concurrent': max_concurrent,
+        'batch': batch,
+    } | algorithm_config
 
-    if 'mode' not in algorithm_config:
-        algorithm_config['mode'] = mode
-
-    if 'max_concurrent' not in algorithm_config:
-        algorithm_config['max_concurrent'] = max_concurrent
-
-    if 'batch' not in algorithm_config:
-        algorithm_config['batch'] = batch
+    if metric is None:
+        algorithm_config['metric'] = 'data'
 
     #TODO class this object for self calls? cleaner? vs nested functions
     #TODO clean up working_dir and excludes
@@ -180,7 +205,10 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
     def run(config):
         config.update({'saveFolder': output_path, 'simLabel': LABEL_POINTER})
         data = ray_trial(config, label, dispatcher_constructor, project_path, output_path, submit)
-        if isinstance(metric, str):
+        if metric is None:
+            metrics = {'config': config, 'data': numpy.nan}
+            session.report(metrics)
+        elif isinstance(metric, str):
             metrics = {'config': config, 'data': data, metric: data[metric]}
             session.report(metrics)
         elif isinstance(metric, (list, tuple)):
@@ -190,25 +218,55 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
             session.report(metrics)
         else:
             session.report({'data': data, 'config': config})
+    if attempt_restore and tune.Tuner.can_restore(storage_path):
+        print("resuming previous run from {}".format(storage_path))
+        tuner = tune.Tuner.restore(path=storage_path,
+                                   trainable=run,
+                                   resume_unfinished=True,
+                                   resume_errored=False,
+                                   restart_errored=True,
+                                   param_space=params,
+                                   )
+    else:
+        print("starting new run to {}".format(storage_path))
+        tuner = tune.Tuner(
+            run,
+            tune_config=tune.TuneConfig(
+                search_alg=algo,
+                num_samples=num_samples, # grid search samples 1 for each param
+                metric=algorithm_config['metric'],
+                mode=algorithm_config['mode'],
+            ),
+            run_config=RunConfig(
+                storage_path=storage_path,
+                name=algorithm,
+            ),
+            param_space=params,
+        )
 
-    tuner = tune.Tuner(
-        run,
-        tune_config=tune.TuneConfig(
-            search_alg=algo,
-            num_samples=num_samples, # grid search samples 1 for each param
-            metric=algorithm_config['metric'],
-            mode=algorithm_config['mode'],
-        ),
-        run_config=RunConfig(
-            storage_path=storage_path,
-            name=algorithm,
-        ),
-        param_space=params,
-    )
 
     results = tuner.fit()
+    errors = results.errors
+    if errors:
+        print("errors occured during execution: {}".format(errors))
+        print("see {} for more information".format(output_path))
+        print("keeping {} for checkpointing".format(storage_path))
+        print("rerunning the same search again will keep any valid checkpointed data")
+        return results
+    # only execute if tuner.fit() is completed...
     resultsdf = results.get_dataframe()
+    if prune_metadata:
+        if metric is None:
+            regex_pattern = '^config|^data'
+        else:
+            if isinstance(metric, str):
+                metric = [metric]
+            metric_pattern = '|'.join(metric)
+            regex_pattern = '^config|^data|^{}'.format(metric_pattern)
+        resultsdf = resultsdf.filter(regex=regex_pattern)
     resultsdf.to_csv("{}.csv".format(label))
+    if clean_checkpoint:
+        os.system("rm -r {}".format(storage_path))
     return results
 
 
@@ -216,13 +274,14 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
 constructors = namedtuple('constructors', 'dispatcher, submit')
 constructor_tuples = {
     ('sge', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SGESubmitSOCK),
-    #('sge', 'unix'): constructors(runtk.dispatchers.UNIXDispatcher, runtk.submits.SGESubmitSOCK), #can't use AF_UNIX sockets on networked machines
     ('sge', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SGESubmitSFS ),
+    ('sge', None): constructors(GridDispatcher, runtk.submits.SGESubmit),
     #('zsh', 'inet'): constructors(runtk.dispatchers.INETDispatcher, runtk.submits.ZSHSubmitSOCK), #TODO preferable to use AF_UNIX sockets on local machines
-    ('slurm', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SlurmSubmitSOCK),
-    ('slurm', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SlurmSubmitSFS),
-    ('sh', 'socket'): constructors(runtk.dispatchers.UNIXDispatcher, submits.SHSubmitSOCK), #
+    #('slurm', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SlurmSubmitSOCK),
+    #('slurm', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SlurmSubmitSFS),
+    ('sh', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SHSubmitSOCK), #
     ('sh', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SHSubmitSFS),
+    ('sh', None): constructors(GridDispatcher, runtk.submits.SHSubmit),
 }#TODO, just say "socket"?
 
 
@@ -250,7 +309,7 @@ def generate_parameters(params, algorithm, **kwargs):
     ray_params = {}
     for param, space in params.items():
         if   isinstance(space, (list, tuple, range, numpy.ndarray)) and algorithm in {'variant_generator'}:
-            ray_params[param] = tune.grid_search(space)
+            ray_params[param] = tune.grid_search(space) #specify random for uniform and choice.
         elif isinstance(space, (list, tuple)) and algorithm in SEARCH_ALG_IMPORT.keys():
             if len(space) == 2: #if 2 sample from uniform lb, ub
                 ray_params[param] = tune.uniform(*space)
@@ -260,66 +319,102 @@ def generate_parameters(params, algorithm, **kwargs):
             ray_params[param] = space
     return ray_params
 
-def shim(job_type: str, # the submission engine to run a single simulation (e.g. 'sge', 'sh')
-         comm_type: str, # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'filesystem')
-         run_config: Dict,  # batch configuration, (keyword: string pairs to customize the submit template)
-         params: Dict,  # search space (dictionary of parameter keys: tune search spaces)
+
+def shim(dispatcher_constructor: Optional[Callable] = None, # constructor for the dispatcher (e.g. INETDispatcher)
+         submit_constructor: Optional[Callable] = None, # constructor for the submit (e.g. SHubmitSOCK)
+         job_type: Optional[str] = None, # the submission engine to run a single simulation (e.g. 'sge', 'sh')
+         comm_type: Optional[str] = None, # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'sfs' (shared filesystem), None (no communication) )
+         run_config: Optional[Dict] = None,  # batch configuration, (keyword: string pairs to customize the submit template)
+         params: Optional[Dict] = None,  # search space (dictionary of parameter keys: tune search spaces)
          algorithm: Optional[str] = "variant_generator", # search algorithm to use, see SEARCH_ALG_IMPORT for available options
          label: Optional[str] = 'search',  # label for the search
-         output_path: Optional[str] = '../batch',  # directory for storing generated files
-         checkpoint_path: Optional[str] = '../ray',  # directory for storing checkpoint files
+         output_path: Optional[str] = './batch',  # directory for storing generated files
+         checkpoint_path: Optional[str] = './ray',  # directory for storing checkpoint files
          max_concurrent: Optional[int] = 1,  # number of concurrent trials to run at one time
          batch: Optional[bool] = True,  # whether concurrent trials should run synchronously or asynchronously
          num_samples: Optional[int] = 1,  # number of trials to run
-         metric: Optional[str] = "loss", # metric to optimize (this should match some key: value pair in the returned data
+         metric: Optional[str] = None, # metric to optimize (this should match some key: value pair in the returned data
          mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
          algorithm_config: Optional[dict] = None,  # additional configuration for the search algorithm
+         ray_config: Optional[dict] = None,  # additional configuration for the ray initialization
+         attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
+         clean_checkpoint: Optional[bool] = True, # whether to clean the checkpoint directory after the search
+            prune_metadata: Optional[bool] = True, # whether to prune the metadata from the results.csv
          ):
     kwargs = locals()
-    kwargs['dispatcher_constructor'], kwargs['submit_constructor'] = generate_constructors(**kwargs)
+    if metric is None and algorithm not in ['variant_generator', 'random', 'grid']:
+        raise ValueError("a metric (string) must be specified for optimization searches")
+    if algorithm == 'grid':
+        kwargs['algorithm'] = 'variant_generator'
+    if job_type is not None and (comm_type is not None or metric is None):
+        kwargs['dispatcher_constructor'], kwargs['submit_constructor'] = generate_constructors(job_type, comm_type)
+    if dispatcher_constructor is not None and (submit_constructor is not None or metric is None):
+        kwargs['dispatcher_constructor'] = dispatcher_constructor
+        kwargs['submit_constructor'] = submit_constructor
+    if kwargs['dispatcher_constructor'] is None or (kwargs['submit_constructor'] is None and metric is not None):
+        raise ValueError("missing job method and communication type for an optimization search, either specify a dispatcher_constructor and submit_constructor or a job_type and comm_type")
+    if kwargs['dispatcher_constructor'] is None:
+        raise ValueError("missing job type for grid or random based search, specify a job type")
+    if params is None:
+        raise ValueError("missing parameters, specify params")
+    if run_config is None:
+        run_config = {}
     [kwargs.pop(args) for args in ['job_type', 'comm_type']]
     kwargs['params'] = generate_parameters(**kwargs)
     return kwargs
 
 
-def search(job_type: str, # the submission engine to run a single simulation (e.g. 'sge', 'sh')
-           comm_type: str, # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'filesystem')
-           run_config: Dict,  # batch configuration, (keyword: string pairs to customize the submit template)
-           params: Dict,  # search space (dictionary of parameter keys: tune search spaces)
+def search(dispatcher_constructor: Optional[Callable] = None, # constructor for the dispatcher (e.g. INETDispatcher)
+           submit_constructor: Optional[Callable] = None, # constructor for the submit (e.g. SHubmitSOCK)
+           job_type: Optional[str] = None, # the submission engine to run a single simulation (e.g. 'sge', 'sh')
+           comm_type: Optional[str] = None, # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'filesystem')
+           run_config: Optional[dict] = None,  # batch configuration, (keyword: string pairs to customize the submit template)
+           params: Optional[dict] = None,  # search space (dictionary of parameter keys: tune search spaces)
            algorithm: Optional[str] = "variant_generator", # search algorithm to use, see SEARCH_ALG_IMPORT for available options
            label: Optional[str] = 'search',  # label for the search
-           output_path: Optional[str] = '../batch',  # directory for storing generated files
-           checkpoint_path: Optional[str] = '../ray',  # directory for storing checkpoint files
+           output_path: Optional[str] = './batch',  # directory for storing generated files
+           checkpoint_path: Optional[str] = './ray',  # directory for storing checkpoint files
            max_concurrent: Optional[int] = 1,  # number of concurrent trials to run at one time
            batch: Optional[bool] = True,  # whether concurrent trials should run synchronously or asynchronously
            num_samples: Optional[int] = 1,  # number of trials to run
-           metric: Optional[str] = "loss", # metric to optimize (this should match some key: value pair in the returned data
+           metric: Optional[str] = None, # metric to optimize (this should match some key: value pair in the returned data
            mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
            algorithm_config: Optional[dict] = None,  # additional configuration for the search algorithm
+           ray_config: Optional[dict] = None,  # additional configuration for the ray initialization
+           attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
+           clean_checkpoint: Optional[bool] = True, # whether to clean the checkpoint directory after the search
+           prune_metadata: Optional[bool] = True, # whether to prune the metadata from the results.csv
            ) -> tune.ResultGrid: # results of the search
     """
     search(...)
 
     Parameters
     ----------
+    dispatcher_constructor: Callable, # constructor for the dispatcher (e.g. INETDispatcher)
+    submit_constructor: Callable, # constructor for the submit (e.g. SHubmitSOCK)
     job_type: str, # the submission engine to run a single simulation (e.g. 'sge', 'sh')
-    comm_type: str, # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'filesystem')
+    comm_type: Optional[str], # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'filesystem', None), if None, expects a non-optimization based search (grid/random/etc.)
     run_config: Dict,  # batch configuration, (keyword: string pairs to customize the submit template)
     params: Dict,  # search space (dictionary of parameter keys: tune search spaces)
     algorithm: Optional[str] = "variant_generator", # search algorithm to use, see SEARCH_ALG_IMPORT for available options
     label: Optional[str] = 'search',  # label for the search
-    output_path: Optional[str] = '../batch',  # directory for storing generated files
-    checkpoint_path: Optional[str] = '../ray',  # directory for storing checkpoint files
+    output_path: Optional[str] = './batch',  # directory for storing generated files
+    checkpoint_path: Optional[str] = './ray',  # directory for storing checkpoint files
     max_concurrent: Optional[int] = 1,  # number of concurrent trials to run at one time
     batch: Optional[bool] = True,  # whether concurrent trials should run synchronously or asynchronously
     num_samples: Optional[int] = 1,  # number of trials to run
-    metric: Optional[str] = "loss", # metric to optimize (this should match some key: value pair in the returned data
+    metric: Optional[str] = None, # metric to optimize (this should match some key: value pair in the returned data, or None if no optimization is desired
     mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
     algorithm_config: Optional[dict] = None,  # additional configuration for the search algorithm
+    ray_config: Optional[dict] = None,  # additional configuration for the ray initialization
+    attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
+    clean_checkpoint: Optional[bool] = True, # whether to clean the checkpoint directory after the search
+    prune_metadata: Optional[bool] = True, # whether to prune the metadata from the results.csv
 
-    Creates
+    Creates (upon completed fitting run...)
     -------
     <label>.csv: file containing the results of the search
+
 
     Returns
     -------
@@ -348,6 +443,8 @@ SEE:
 'blendsearch'
 'cfo'
 """
+
+
 
 
 

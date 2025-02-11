@@ -1,4 +1,4 @@
-from netpyne.batchtools import specs
+from netpyne.batchtools import RS
 from batchtk.runtk.runners import get_class
 from batchtk import runtk
 from neuron import h
@@ -6,8 +6,8 @@ import warnings
 HOST = 0 # for the purposes of send and receive with mpi.
 
 class Comm(object):
-    def __init__(self, runner = specs):
-        self.runner = runner
+    def __init__(self):
+        self.runner = RS()
         h.nrnmpi_init()
         self.pc = h.ParallelContext()
         self.rank = self.pc.id()
@@ -33,6 +33,7 @@ class Comm(object):
                 self.runner.send(data)
             else:
                 self.runner.write(data)
+            self.close()
 
     def recv(self): #TODO to be tested, broadcast to all workers?
         if self.is_host() and self.connected:

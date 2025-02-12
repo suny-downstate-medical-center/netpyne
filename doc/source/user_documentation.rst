@@ -2845,7 +2845,7 @@ Batch job handling is implemented from ``netpyne.batchtools.search``. Below is a
                algorithm: Optional[str] = "variant_generator", # search algorithm to use, see SEARCH_ALG_IMPORT for available options
                label: Optional[str] = 'search',  # label for the search
                output_path: Optional[str] = './batch',  # directory for storing generated files
-               checkpoint_path: Optional[str] = './ray',  # directory for storing checkpoint files
+               checkpoint_path: Optional[str] = './checkpoint',  # directory for storing checkpoint files
                max_concurrent: Optional[int] = 1,  # number of concurrent trials to run at one time
                num_samples: Optional[int] = 1,  # number of trials to run
                metric: Optional[str] = None, # metric to optimize (this should match some key: value pair in the returned data
@@ -3137,5 +3137,5 @@ To run the example, generate an output ``grid.csv`` using ``batch.py``, then loa
 
 10. Ray Checkpointing and Resuming Interrupted Searches
 -------------------------------------------------------
-A new feature in this beta release is the checkpointing and saving of search progress via the ``ray`` backend. This data is saved in the ``checkpoint_path`` directory specified in the ``search`` function, (which defaults to a newly created ``ray`` folder within the source directory, and the default behavior of ``search`` is to automatically attempt a restore if the batch job is interrupted.
+A new feature in this beta release is the checkpointing and saving of search progress via the ``ray`` backend. This data is saved in the ``checkpoint_path`` directory specified in the ``search`` function, (which defaults to a newly created ``checkpoint`` folder within the source directory, and the default behavior of ``search`` is to automatically attempt a restore if the batch job is interrupted.
 Upon successful completion of the search, the default behavior is to delete these checkpoint files. If the user manually ends the search due to coding error and wishes to restart the search, the ``checkpoint_path`` should be deleted first.

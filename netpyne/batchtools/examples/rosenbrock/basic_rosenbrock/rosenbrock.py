@@ -22,7 +22,7 @@ cfg.saveFolder = '.'
 cfg.x0 = 1
 cfg.x1 = 1
 
-cfg.update_cfg()
+cfg.update()
 
 # --------------------------------------------------- #
 

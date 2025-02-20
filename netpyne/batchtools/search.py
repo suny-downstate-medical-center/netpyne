@@ -17,13 +17,15 @@ choice = tune.choice
 grid = tune.grid_search
 uniform = tune.uniform
 
-class GridDispatcher(runtk.dispatchers.SHDispatcher):
-    def accept(self):
+class GridDispatcher(runtk.dispatchers.LocalDispatcher):
+    def start(self):
+        super().start(restart=True)
+
+    def connect(self):
         return
 
-    def recv(self):
+    def recv(self, interval):
         return '{}'  # dummy json value to return...
-
 
 
 def ray_optuna_search(dispatcher_constructor: Callable, # constructor for the dispatcher (e.g. INETDispatcher)
@@ -157,6 +159,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
                num_samples: Optional[int] = 1, # number of trials to run
                metric: Optional[str] = None, # metric to optimize, if not supplied, no data will be collated.
                mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
+               sample_interval: Optional[int] = 15,  # interval to check for new results (in seconds)
                algorithm_config: Optional[dict] = None, # additional configuration for the search algorithm
                ray_config: Optional[dict] = None, # additional configuration for the ray initialization
                attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
@@ -204,7 +207,9 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
     project_path = os.getcwd()
     def run(config):
         config.update({'saveFolder': output_path, 'simLabel': LABEL_POINTER})
-        data = ray_trial(config, label, dispatcher_constructor, project_path, output_path, submit)
+        data = ray_trial(config=config, label=label, dispatcher_constructor=dispatcher_constructor,
+                         project_path=project_path, output_path=output_path, submit=submit,
+                         dispatcher_kwargs=None, interval=sample_interval)
         if metric is None:
             metrics = {'config': config, 'data': numpy.nan}
             session.report(metrics)
@@ -274,14 +279,14 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
 constructors = namedtuple('constructors', 'dispatcher, submit')
 constructor_tuples = {
     ('sge', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SGESubmitSOCK),
-    ('sge', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SGESubmitSFS ),
-    ('sge', None): constructors(GridDispatcher, runtk.submits.SGESubmit),
+    ('sge', 'sfs' ): constructors(runtk.dispatchers.LocalDispatcher , submits.SGESubmitSFS ),
+    ('sge', None): constructors(GridDispatcher, submits.SGESubmit),
     #('zsh', 'inet'): constructors(runtk.dispatchers.INETDispatcher, runtk.submits.ZSHSubmitSOCK), #TODO preferable to use AF_UNIX sockets on local machines
     #('slurm', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SlurmSubmitSOCK),
     #('slurm', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SlurmSubmitSFS),
     ('sh', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SHSubmitSOCK), #
-    ('sh', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SHSubmitSFS),
-    ('sh', None): constructors(GridDispatcher, runtk.submits.SHSubmit),
+    ('sh', 'sfs' ): constructors(runtk.dispatchers.LocalDispatcher , submits.SHSubmitSFS),
+    ('sh', None): constructors(GridDispatcher, submits.SHSubmit),
 }#TODO, just say "socket"?
 
 
@@ -335,11 +340,12 @@ def shim(dispatcher_constructor: Optional[Callable] = None, # constructor for th
          num_samples: Optional[int] = 1,  # number of trials to run
          metric: Optional[str] = None, # metric to optimize (this should match some key: value pair in the returned data
          mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
+         sample_interval: Optional[int] = 15,  # interval to check for new results (in seconds)
          algorithm_config: Optional[dict] = None,  # additional configuration for the search algorithm
          ray_config: Optional[dict] = None,  # additional configuration for the ray initialization
          attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
          clean_checkpoint: Optional[bool] = True, # whether to clean the checkpoint directory after the search
-            prune_metadata: Optional[bool] = True, # whether to prune the metadata from the results.csv
+         prune_metadata: Optional[bool] = True, # whether to prune the metadata from the results.csv
          ):
     kwargs = locals()
     if metric is None and algorithm not in ['variant_generator', 'random', 'grid']:
@@ -379,6 +385,7 @@ def search(dispatcher_constructor: Optional[Callable] = None, # constructor for 
            num_samples: Optional[int] = 1,  # number of trials to run
            metric: Optional[str] = None, # metric to optimize (this should match some key: value pair in the returned data
            mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
+           sample_interval: Optional[int] = 15,  # interval to check for new results (in seconds)
            algorithm_config: Optional[dict] = None,  # additional configuration for the search algorithm
            ray_config: Optional[dict] = None,  # additional configuration for the ray initialization
            attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
@@ -405,6 +412,7 @@ def search(dispatcher_constructor: Optional[Callable] = None, # constructor for 
     num_samples: Optional[int] = 1,  # number of trials to run
     metric: Optional[str] = None, # metric to optimize (this should match some key: value pair in the returned data, or None if no optimization is desired
     mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
+    sample_interval: Optional[int] = 15,  # interval to check for new results (in seconds)
     algorithm_config: Optional[dict] = None,  # additional configuration for the search algorithm
     ray_config: Optional[dict] = None,  # additional configuration for the ray initialization
     attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint

@@ -2,6 +2,7 @@ from netpyne import specs                     # import the custom batch specs
 
 cfg = specs.SimConfig({'type': 0})                       # create a SimConfig object, initializes it with a dictionary {'type': 0} such that
 print("cfg.type={}".format(cfg.type))                    # cfg.type == 0
+
 try:
     cfg.update({'typo': 1}, force_match=True)            # cfg.typo is not defined, so this line will raise an AttributeError
 except Exception as e:

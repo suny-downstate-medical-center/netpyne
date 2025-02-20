@@ -53,9 +53,7 @@ def update_items(d, u, force_match = False):
 class Runner_SimConfig(RS, specs.simConfig.SimConfig):
     def __init__(self, *args, **kwargs):
         specs.simConfig.SimConfig.__init__(self, *args, **kwargs)
-        #mappings = getattr(self, 'mappings', dict()) # save over mappings but others not important.
         RS.__init__(self)
-        #self.mappings = {**mappings, **self.mappings}
 
     def update(self, simConfigDict=None, force_match=False):  # intended to take `cfg` instance as self
         """

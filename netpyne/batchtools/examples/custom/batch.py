@@ -3,7 +3,7 @@ from netpyne.batchtools import dispatchers, submits
 import numpy
 from batchtk import runtk
 
-dispatcher = dispatchers.SFSDispatcher
+dispatcher = dispatchers.LocalDispatcher
 
 shell_script = """\
 #!/bin/sh
@@ -39,7 +39,7 @@ python rosenbrock.py
 class CustomSubmit(submits.SHSubmitSFS):
     script_args = {'label', 'output_path', 'project_path'}
     script_template = shell_script
-    script_handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
+    handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
                       runtk.STDOUT: '{output_path}/{label}.run',
                       runtk.MSGOUT: '{output_path}/{label}.out',
                       runtk.SGLOUT: '{output_path}/{label}.sgl',

@@ -1,7 +1,7 @@
 from netpyne import specs
 from cfg import cfg
 
-cfg.update_cfg()
+cfg.update()
 ### params ###
 # Network parameters
 netParams = specs.NetParams()  # object of class NetParams to store the network parameters

@@ -3,14 +3,6 @@ Module containing wrappers to create, load, simulate, analyze networks
 
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-from future import standard_library
-
-standard_library.install_aliases()
-
 # ------------------------------------------------------------------------------
 # Wrapper to create network
 # ------------------------------------------------------------------------------
@@ -137,8 +129,8 @@ def analyze():
 
     from .. import sim
 
-    sim.saveData()  # run parallel Neuron simulation
-    sim.analysis.plotData()  # gather spiking data and cell info from each node
+    sim.saveData()
+    sim.analysis.plotData()
 
 
 # ------------------------------------------------------------------------------
@@ -172,7 +164,7 @@ def createSimulate(netParams=None, simConfig=None, output=False):
 
     from .. import sim
 
-    (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
+    (pops, cells, conns, rxd, stims, simData) = sim.create(netParams, simConfig, output=True)
     sim.simulate()
 
     if output:
@@ -210,7 +202,7 @@ def createSimulateAnalyze(netParams=None, simConfig=None, output=False):
 
     from .. import sim
 
-    (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
+    (pops, cells, conns, rxd, stims, simData) = sim.create(netParams, simConfig, output=True)
     sim.simulate()
     sim.analyze()
     if output:
@@ -254,7 +246,7 @@ def createSimulateAnalyzeInterval(netParams, simConfig, output=False, interval=N
     import os
     from .. import sim
 
-    (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
+    (pops, cells, conns, rxd, stims, simData) = sim.create(netParams, simConfig, output=True)
     try:
         if sim.rank == 0:
             if os.path.exists('temp'):
@@ -317,7 +309,7 @@ def createSimulateAnalyzeDistributed(netParams, simConfig, output=False, filenam
     import os
     from .. import sim
 
-    (pops, cells, conns, stims, rxd, simData) = sim.create(netParams, simConfig, output=True)
+    (pops, cells, conns, rxd, stims, simData) = sim.create(netParams, simConfig, output=True)
 
     sim.runSim()
     sim.saveDataInNodes(filename=filename, saveLFP=includeLFP, removeTraces=False)

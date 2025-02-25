@@ -1,11 +1,22 @@
 # PLOTTING CSD
 
-from ..analysis.utils import exception
+from netpyne import __gui__
+if __gui__:
+    import matplotlib
+    from matplotlib import pyplot as plt
+
+from ..analysis.utils import exception, _showFigure
 import numpy as np
 import scipy
-import matplotlib
-from matplotlib import pyplot as plt
 
+def getPaddedCSD (CSDData, pad):
+  # pad the first/last row of CSDData by replication (to avoid edge artifacts when drawing colors plots)
+  npcsd = []
+  for i in range(pad): npcsd.append(CSDData[0,:])
+  for i in range(CSDData.shape[0]): npcsd.append(CSDData[i,:])
+  for i in range(pad): npcsd.append(CSDData[-1,:])
+  npcsd=np.array(npcsd)
+  return npcsd
 
 @exception
 def plotCSD(
@@ -27,6 +38,8 @@ def plotCSD(
     dpi=200,
     showFig=False,
     smooth=True,
+    colorbar=True,
+    pad=1,
     **kwargs
 ):
     """
@@ -108,6 +121,14 @@ def plotCSD(
         Whether or not to plot the smoothed interpoloation
         **Default:** ``True``
 
+    colorbar : bool
+        Whether or not to plot the colorbar
+        **Default:** ``True``
+
+    pad : int
+        Amount to pad CSDData on top/bottom for more accurate interpolation at edges
+        **Default:** ``1``
+
     """
 
     # If there is no input data, get the data from the NetPyNE sim object
@@ -118,30 +139,35 @@ def plotCSD(
             sim = kwargs['sim']
 
         CSDData, LFPData, sampr, spacing_um, dt = sim.analysis.prepareCSD(
-            sim=sim, pop=pop, dt=dt, sampr=sampr, spacing_um=spacing_um, getAllData=True, **kwargs
-        )
+            sim=sim,
+            timeRange=timeRange,
+            pop=pop,
+            dt=dt,
+            sampr=sampr,
+            spacing_um=spacing_um,
+            getAllData=True,
+            **kwargs)
+    else:
+        pass # TODO: ensure time slicing works properly in case CSDData is passed as an argument
+
+    npcsd = CSDData
+    if pad > 0: npcsd = getPaddedCSD(CSDData, pad) # apply padding (replicate first,last rows)
 
     if timeRange is None:
         timeRange = [0, sim.cfg.duration]
-    else:
-        LFPData = np.array(LFPData)[
-            int(timeRange[0] / dt) : int(timeRange[1] / dt), :
-        ]  # NOTE: THIS SHOULD ALREADY BE AN ARRAY
-        CSDData = CSDData[:, int(timeRange[0] / dt) : int(timeRange[1] / dt)]
-
-    tt = np.arange(timeRange[0], timeRange[1], dt)
 
     #####################################################
     print('Plotting CSD... ')
 
     # PLOTTING
     X = np.arange(timeRange[0], timeRange[1], dt)  # X == tt
-    Y = np.arange(CSDData.shape[0])
+    Y = np.arange(npcsd.shape[0])
 
     # interpolation
-    CSD_spline = scipy.interpolate.RectBivariateSpline(Y, X, CSDData)
-    Y_plot = np.linspace(0, CSDData.shape[0], num=1000)
-    Z = CSD_spline(Y_plot, X)
+    fctr = int(1000 / CSDData.shape[0])
+    CSD_spline = scipy.interpolate.RectBivariateSpline(Y, X, npcsd)
+    Y_plot = np.linspace(-pad, npcsd.shape[0] + pad, num=int(1000*npcsd.shape[0]/CSDData.shape[0]))    
+    Z = CSD_spline(Y_plot, X)[pad*fctr:pad*fctr+1000,:]
 
     # plotting options
     plt.rcParams.update({'font.size': fontSize})
@@ -149,7 +175,7 @@ def plotCSD(
     xmax = int(X[-1]) + 1
     ymin = 0
     if ymax is None:
-        ymax = sim.cfg.recordLFP[-1][1] + spacing_um
+        ymax = sim.cfg.recordLFP[-1][1] + spacing_um + pad
     extent_xy = [xmin, xmax, ymax, ymin]
 
     # set up figure
@@ -157,24 +183,35 @@ def plotCSD(
 
     # create plots w/ common axis labels and tick marks
     axs = []
-    numplots = 1
-    gs_outer = matplotlib.gridspec.GridSpec(1, 1)
+    if colorbar:
+        numplots = 2
+        gs_outer = matplotlib.gridspec.GridSpec(2, 1, height_ratios=[20,3])
+    else:
+        numplots = 1
+        gs_outer = matplotlib.gridspec.GridSpec(1, 1)
+
 
     for i in range(numplots):
-        axs.append(plt.Subplot(fig, gs_outer[i * 2 : i * 2 + 2]))
-        fig.add_subplot(axs[i])
-        axs[i].set_xlabel('Time (ms)', fontsize=fontSize)
-        axs[i].tick_params(axis='y', which='major', labelsize=fontSize)
-        axs[i].tick_params(axis='x', which='major', labelsize=fontSize)
+        if colorbar:
+            axs.append(plt.Subplot(fig, gs_outer[i, 0:2]))#i * 2 : i * 2 + 2]))
+            fig.add_subplot(axs[i])
+        else:
+            axs.append(plt.Subplot(fig, gs_outer[i * 2 : i * 2 + 2]))
+            fig.add_subplot(axs[i])
+            axs[i].set_xlabel('Time (ms)', fontsize=fontSize)
+            axs[i].tick_params(axis='y', which='major', labelsize=fontSize)
+            axs[i].tick_params(axis='x', which='major', labelsize=fontSize)
+
 
     # plot interpolated CSD color map
     if smooth:
-        Z = scipy.ndimage.filters.gaussian_filter(Z, sigma=5, mode='nearest')
+        Z = scipy.ndimage.filters.gaussian_filter(Z, sigma=smooth, mode='nearest')
 
     spline = axs[0].imshow(
         Z, extent=extent_xy, interpolation='none', aspect='auto', origin='upper', cmap='jet_r', alpha=0.9
     )
     axs[0].set_ylabel('Contact depth (um)', fontsize=fontSize)
+
 
     # OVERLAY DATA ('LFP', 'CSD', or None) & Set title of plot
     if pop is None:
@@ -186,12 +223,18 @@ def plotCSD(
         print('No overlay')
         axs[0].set_title(csdTitle, fontsize=fontSize)
 
-    elif overlay is 'CSD' or overlay is 'LFP':
+    elif overlay == 'CSD' or overlay == 'LFP':
         nrow = LFPData.shape[1]
-        gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(
-            nrow, 1, subplot_spec=gs_outer[0:2], wspace=0.0, hspace=0.0
-        )
-        subaxs = []
+        if colorbar:
+            gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(
+                nrow, 1, subplot_spec=gs_outer[0, 0:2], wspace=0.0, hspace=0.0
+            )
+            subaxs = []
+        else:
+            gs_inner = matplotlib.gridspec.GridSpecFromSubplotSpec(
+                nrow, 1, subplot_spec=gs_outer[0:2], wspace=0.0, hspace=0.0
+            )
+            subaxs = []
 
         if overlay == 'CSD':
             print('Overlaying with CSD time series data')
@@ -203,9 +246,9 @@ def plotCSD(
                 subaxs[chan].margins(0.0, 0.01)
                 subaxs[chan].get_xaxis().set_visible(False)
                 subaxs[chan].get_yaxis().set_visible(False)
-                subaxs[chan].plot(X, CSDData[chan, :], color='green', linewidth=0.3, label='CSD timeSeries')
+                subaxs[chan].plot(X, npcsd[pad+chan, :], color='green', linewidth=0.3, label='CSD time series')
                 if legendLabel:
-                    subaxs[chan].legend(loc='upper right', fontsize='small')
+                    subaxs[chan].legend(loc='upper right', fontsize=fontSize)
                     legendLabel = False
 
         elif overlay == 'LFP':
@@ -218,19 +261,31 @@ def plotCSD(
                 subaxs[chan].margins(0.0, 0.01)
                 subaxs[chan].get_xaxis().set_visible(False)
                 subaxs[chan].get_yaxis().set_visible(False)
-                subaxs[chan].plot(X, LFPData[:, chan], color='gray', linewidth=0.3, label='LFP timeSeries')
+                subaxs[chan].plot(X, LFPData[:, chan], color='gray', linewidth=0.3, label='LFP time series')
                 if legendLabel:
-                    subaxs[chan].legend(loc='upper right', fontsize='small')
+                    subaxs[chan].legend(loc='upper right', fontsize=fontSize)
                     legendLabel = False
 
     else:
-        print('Invalid option specified for overlay argument -- no data overlaid')
+        print(f'Invalid option specified for overlay argument ({overlay}) -- no data overlaid')
         axs[0].set_title('Current Source Density (CSD)', fontsize=fontSize)
 
     # add horizontal lines at electrode locations
     if hlines:
         for i in range(len(sim.cfg.recordLFP)):
             axs[0].hlines(sim.cfg.recordLFP[i][1], xmin, xmax, colors='pink', linewidth=1, linestyles='dashed')
+
+
+    ## colorbar at the bottom using unsmoothed data for values
+    if colorbar:
+        ax_bottom = plt.subplot(gs_outer[1,0:1])   # gs_outer[1,0:1]
+        ax_bottom.axis('off')
+        cbar_min = round(np.min(Z)) 
+        cbar_max = round(np.max(Z)) 
+        cbar_ticks = np.linspace(cbar_min, cbar_max, 3, endpoint=True)
+        cbar = plt.colorbar(spline, ax=ax_bottom, ticks=cbar_ticks, orientation='horizontal', shrink=1.0)
+        cbar.set_label(label=r'CSD (mV/mm$^2$)', fontsize=fontSize) # ,use_gridspec=True,
+        cbar.ax.tick_params(labelsize=fontSize)
 
     # if layerBounds:
     if layerBounds is None:
@@ -254,6 +309,8 @@ def plotCSD(
                     verticalalignment='center',
                 )
 
+
+
     # set vertical line(s) at stimulus onset(s)
     if type(stimTimes) is int or type(stimTimes) is float:
         axs[0].vlines(stimTimes, ymin, ymax, colors='red', linewidth=1, linestyles='dashed')
@@ -274,4 +331,7 @@ def plotCSD(
 
     # display figure
     if showFig:
-        plt.show()
+        _showFigure()
+        #plt.show()
+
+    return fig, axs

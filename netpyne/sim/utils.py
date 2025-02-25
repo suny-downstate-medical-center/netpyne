@@ -3,26 +3,13 @@ Module for utilities related to simulation
 
 """
 
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import division
-from __future__ import absolute_import
-
-
-from builtins import next
-from builtins import dict
-from builtins import map
-from builtins import str
-
 from netpyne.support.recxelectrode import RecXElectrode
 
 try:
     basestring
 except NameError:
     basestring = str
-from future import standard_library
 
-standard_library.install_aliases()
 from time import time
 import hashlib
 import array
@@ -295,6 +282,14 @@ def hashList(obj):
     """
 
     return int(hashlib.md5(array.array(chr(ord('L')), obj)).hexdigest()[0:8], 16)
+
+
+# ------------------------------------------------------------------------------
+# Hash function for file (md5 hex)
+# ------------------------------------------------------------------------------
+def fileDigest(file):
+    fileStr = open(file,'rb').read()
+    return hashlib.md5(fileStr).hexdigest()
 
 
 # ------------------------------------------------------------------------------
@@ -592,39 +587,7 @@ def replaceFuncObj(obj):
     return obj
 
 
-# ------------------------------------------------------------------------------
-# Replace None from dict or list with [](so can be saved to .mat)
-# ------------------------------------------------------------------------------
-def replaceNoneObj(obj):
-    """
-    Function for/to <short description of `netpyne.sim.utils.replaceNoneObj`>
-
-    Parameters
-    ----------
-    obj : <type>
-        <Short description of obj>
-        **Default:** *required*
-
-
-    """
-
-    if type(obj) == list:  # or type(obj) == tuple:
-        for item in obj:
-            if isinstance(item, (list, dict, Dict, ODict)):
-                replaceNoneObj(item)
-
-    elif isinstance(obj, (dict, Dict, ODict)):
-        for key, val in obj.items():
-            if isinstance(val, (list, dict, Dict, ODict)):
-                replaceNoneObj(val)
-            if val == None:
-                obj[key] = []
-            elif val == {}:
-                obj[key] = []  # also replace empty dicts with empty list
-    return obj
-
-
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Replace Dict with dict and Odict with OrderedDict
 # ------------------------------------------------------------------------------
 def replaceDictODict(obj):
@@ -640,26 +603,33 @@ def replaceDictODict(obj):
 
     """
 
-    if type(obj) == list:
-        for item in obj:
+    if type(obj) in [list, tuple]:
+        new = []
+        for ind, item in enumerate(obj):
             if type(item) == Dict:
                 item = item.todict()
             elif type(item) == ODict:
                 item = item.toOrderedDict()
-            if type(item) in [list, dict, OrderedDict]:
-                replaceDictODict(item)
+            else:
+                item = replaceDictODict(item)
+
+            new.append(item)
 
     elif type(obj) in [dict, OrderedDict, Dict, ODict]:
+        new = dict() if type(obj) in [dict, Dict] else OrderedDict()
         for key, val in obj.items():
             if type(val) == Dict:
-                obj[key] = val.todict()
+                val = val.todict()
             elif type(val) == ODict:
-                obj[key] = val.toOrderedDict()
-            if type(val) in [list, dict, OrderedDict]:
-                replaceDictODict(val)
+                val = val.toOrderedDict()
+            else:
+                val = replaceDictODict(val)
 
-    return obj
+            new[key] = val
+    else:
+        new = obj
 
+    return new
 
 # ------------------------------------------------------------------------------
 # Rename objects
@@ -799,47 +769,106 @@ def clearObj(obj):
 
 # ------------------------------------------------------------------------------
 # Support funcs to load from mat
-# ------------------------------------------------------------------------------
-def _mat2dict(obj):
+#------------------------------------------------------------------------------
+
+def _ensureMatCompatible(obj):
+    """
+    Function for/to <short description of `netpyne.sim.utils._ensureMatCompatible`>
+
+    Parameters
+    ----------
+    obj : <type>
+        <Short description of obj>
+        **Default:** *required*
+
+
+    """
+
+
+    if type(obj) == list:# or type(obj) == tuple:
+        for item in obj:
+            if isinstance(item, (list, dict, Dict, ODict)):
+                _ensureMatCompatible(item)
+
+    elif isinstance(obj, (dict, Dict, ODict)):
+        for key,val in obj.items():
+            if isinstance(val, (list, dict, Dict, ODict)):
+                _ensureMatCompatible(val)
+            if val is None:
+                obj[key] = '__np_none__'
+            elif isinstance(val, list) and len(val) > 0 and all(isinstance(s, str) for s in val):
+                # string arrays get corrupted while saving to mat, so converting it to csv beforehand
+                elements = ','.join(val)
+                obj[key] = f'[{elements}]'
+    return obj
+
+def _restoreFromMat(obj):
+    """
+    Function for/to <short description of `netpyne.sim.utils._restoreFromMat`>
+
+    Parameters
+    ----------
+    obj : <type>
+        <Short description of obj>
+        **Default:** *required*
+
+
+    """
+
+
+    if type(obj) == list:
+        for item in obj:
+            if isinstance(item, (list, dict, Dict, ODict)):
+                _restoreFromMat(item)
+
+    elif isinstance(obj, (dict, Dict, ODict)):
+        for key,val in obj.items():
+            if isinstance(val, (list, dict, Dict, ODict)):
+                _restoreFromMat(val)
+            if val == '__np_none__':
+                obj[key] = None
+            elif isinstance(val, str) and val.startswith('[') and val.endswith(']'):
+                obj[key] = val[1:-1].split(',')
+    return obj
+
+def _mat2dict(obj, parentKey=None):
     """
     A recursive function which constructs from matobjects nested dictionaries
     Enforce lists for conns, synMechs and stims even if 1 element (matlab converts to dict otherwise)
     """
 
-    import scipy.io as spio
+    from scipy.io.matlab.mio5_params import mat_struct
     import numpy as np
 
-    if isinstance(obj, dict):
+    isMatStruct = isinstance(obj, mat_struct)
+    if isinstance(obj, (dict, mat_struct)):
         out = {}
-        for key in obj:
-            if isinstance(obj[key], spio.matlab.mio5_params.mat_struct):
-                if key in ['conns', 'stims', 'synMechs']:
-                    out[key] = [_mat2dict(obj[key])]  # convert to 1-element list
-                else:
-                    out[key] = _mat2dict(obj[key])
-            elif isinstance(obj[key], np.ndarray):
-                out[key] = _mat2dict(obj[key])
-            else:
-                out[key] = obj[key]
+        if isMatStruct: fieldNames = obj._fieldnames
+        else: fieldNames = obj
 
-    elif isinstance(obj, spio.matlab.mio5_params.mat_struct):
-        out = {}
-        for key in obj._fieldnames:
-            val = obj.__dict__[key]
-            if isinstance(val, spio.matlab.mio5_params.mat_struct):
-                if key in ['conns', 'stims', 'synMechs']:
-                    out[key] = [_mat2dict(val)]  # convert to 1-element list
+        keysOfLists = ['conns', 'stims', 'synMechs', 'cells', 'cellGids', 'include']
+        if parentKey == 'tags':
+            keysOfLists.append('label')
+        for key in fieldNames:
+            if isMatStruct: val = obj.__dict__[key]
+            else: val = obj[key]
+
+            if isinstance(val, mat_struct):
+                if key in keysOfLists:
+                    out[key] = [_mat2dict(val, parentKey=key)]  # convert to 1-element list
                 else:
-                    out[key] = _mat2dict(val)
+                    out[key] = _mat2dict(val, parentKey=key)
             elif isinstance(val, np.ndarray):
-                out[key] = _mat2dict(val)
+                out[key] = _mat2dict(val, parentKey=key)
+            elif key in keysOfLists: # isinstance(val, Number) and 
+                out[key] = [val]   # convert to 1-element list
             else:
                 out[key] = val
 
     elif isinstance(obj, np.ndarray):
         out = []
         for item in obj:
-            if isinstance(item, spio.matlab.mio5_params.mat_struct) or isinstance(item, np.ndarray):
+            if isinstance(item, mat_struct) or isinstance(item, np.ndarray):
                 out.append(_mat2dict(item))
             else:
                 out.append(item)
@@ -851,23 +880,22 @@ def _mat2dict(obj):
 
 
 # ------------------------------------------------------------------------------
-# Convert dict strings to utf8 so can be saved in HDF5 format
+# Support funcs to save in HDF5 format
 # ------------------------------------------------------------------------------
-def _dict2utf8(obj):
-    # unidict = {k.decode('utf8'): v.decode('utf8') for k, v in strdict.items()}
-    # print obj
+def _ensureHDF5Compatible(obj):
     import collections
 
     if isinstance(obj, basestring):
-        return obj.decode('utf8')
+        return obj
     elif isinstance(obj, collections.Mapping):
         for key in list(obj.keys()):
             if isinstance(key, Number):
-                obj[str(key).decode('utf8')] = obj[key]
-                obj.pop(key)
-        return dict(list(map(_dict2utf8, iter(obj.items()))))
+                obj[str(key)] = obj.pop(key)
+        return dict(list(map(_ensureHDF5Compatible, iter(obj.items()))))
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
     elif isinstance(obj, collections.Iterable):
-        return type(obj)(list(map(_dict2utf8, obj)))
+        return type(obj)(list(map(_ensureHDF5Compatible, obj)))
     else:
         return obj
 
@@ -982,6 +1010,43 @@ def clearAll():
     import gc
 
     gc.collect()
+
+
+def checkConditions(conditions, against, cellGid=None):
+
+    conditionsMet = 1
+    for (condKey, condVal) in conditions.items():
+
+        # gid matching will be processed in specific way
+        gidCompare = False
+        if (cellGid is not None) and (condKey == 'gid'):
+            compareTo = cellGid
+            gidCompare = True
+
+        else:
+            compareTo = against.get(condKey)
+
+        if isinstance(condVal, list):
+            if isinstance(condVal[0], Number):
+                if gidCompare:
+                    if compareTo not in condVal:
+                        conditionsMet = 0
+                        break
+                elif compareTo < condVal[0] or compareTo > condVal[1]:
+                    conditionsMet = 0
+                    break
+            elif isinstance(condVal[0], basestring):
+                if compareTo not in condVal:
+                    conditionsMet = 0
+                    break
+        elif isinstance(compareTo, list): # e.g. to match 'label', which may be list
+            if condVal not in compareTo:
+                conditionsMet = 0
+                break
+        elif compareTo != condVal:
+            conditionsMet = 0
+            break
+    return conditionsMet
 
 
 # ------------------------------------------------------------------------------

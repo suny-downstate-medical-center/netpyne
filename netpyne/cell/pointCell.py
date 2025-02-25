@@ -7,23 +7,12 @@ Contains pointCell class
 
 Contributors: salvadordura@gmail.com, samnemo@gmail.com
 """
-from __future__ import print_function
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
-from builtins import super
-from builtins import zip
-from builtins import range
 
 try:
     basestring
 except NameError:
     basestring = str
 
-from future import standard_library
-
-standard_library.install_aliases()
 from copy import deepcopy
 from neuron import h  # Import NEURON
 import numpy as np
@@ -66,6 +55,8 @@ class PointCell(Cell):
         if 'params' in self.tags:
             dictParams = sim.replaceDictODict(self.tags.pop('params'))
             self.params = deepcopy(dictParams)
+        else:
+            self.params = {}
 
         if create and sim.cfg.createNEURONObj:
             self.createNEURONObj()  # create cell

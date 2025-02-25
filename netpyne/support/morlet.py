@@ -10,14 +10,12 @@ Time-frequency representation using Morlet wavelets
  subtract mean from time series within the wavelet class)
 """
 
-from __future__ import print_function
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import absolute_import
+from netpyne import __gui__
+if __gui__:
+    import matplotlib.pyplot as plt
 
 import numpy as np
 import scipy.signal as sps
-import matplotlib.pyplot as plt
 
 
 def index2ms(idx, sampr):

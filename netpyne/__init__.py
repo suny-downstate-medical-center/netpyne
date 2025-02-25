@@ -4,14 +4,7 @@ NetPyNE (Networks using Python and NEURON) is a Python package to facilitate the
 NetPyNE consists of a number of sub-packages and modules.
 """
 
-###############################################################################
-# Note: this branch should NOT be merged to master/development
-# Updates for NeuroML support will be added on https://github.com/Neurosim-lab/netpyne/tree/neuroml_updates
-# and those changes pushed to development. This branch is for stable releases for
-# use on osbv2
-__version__ = '1.0.4.1+osbv2'
-###############################################################################
-
+__version__ = '1.0.7+osbv2'
 import os, sys
 
 display = os.getenv('DISPLAY')
@@ -38,3 +31,6 @@ from netpyne import sim
 from netpyne import specs
 from netpyne import support
 from netpyne import tests
+
+import neuron
+neuron._netpyne_mech_hashes = {}

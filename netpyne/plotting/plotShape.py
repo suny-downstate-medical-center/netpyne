@@ -3,26 +3,11 @@ Module for generating a shape plot (3D network layout)
 
 """
 
-from __future__ import print_function
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
-from builtins import open
-from builtins import next
-from builtins import range
-from builtins import str
-
 try:
     basestring
 except NameError:
     basestring = str
-from builtins import zip
 
-from builtins import round
-from future import standard_library
-
-standard_library.install_aliases()
 from netpyne import __gui__
 
 if __gui__:
@@ -44,6 +29,7 @@ def plotShape(
     showElectrodes=False,
     synStyle='.',
     synSize=3,
+    synColor='red',
     dist=0.6,
     elev=90,
     azim=-90,
@@ -58,6 +44,7 @@ def plotShape(
     axisLabels=False,
     kind='shape',
     returnPlotter=False,
+    dpi=300,
     **kwargs
 ):
     """
@@ -250,7 +237,6 @@ def plotShape(
 
         # Synapses
         if showSyns:
-            synColor = 'red'
             for cellPost in cellsPost:
                 for sec in list(cellPost.secs.values()):
                     for synMech in sec['synMechs']:

@@ -3,19 +3,6 @@ Module containing a compartmental cell class
 
 """
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
-from builtins import super
-from builtins import next
-from builtins import zip
-from builtins import range
-
-from builtins import round
-from builtins import str
-
 from netpyne.specs.netParams import CellParams, SynMechParams
 
 try:
@@ -23,9 +10,6 @@ try:
 except NameError:
     basestring = str
 
-from future import standard_library
-
-standard_library.install_aliases()
 from numbers import Number
 from copy import deepcopy
 from neuron import h  # Import NEURON
@@ -90,24 +74,19 @@ class CompartCell(Cell):
         for propLabel, prop in sim.net.params.cellParams.items():  # for each set of cell properties
             conditionsMet = 1
             if 'conds' in prop and len(prop['conds']) > 0:
-                for (condKey, condVal) in prop['conds'].items():  # check if all conditions are met
-                    if isinstance(condVal, list):
-                        if isinstance(condVal[0], Number):
-                            if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
-                                conditionsMet = 0
-                                break
-                        elif isinstance(condVal[0], basestring):
-                            if self.tags.get(condKey) not in condVal:
-                                conditionsMet = 0
-                                break
-                    elif self.tags.get(condKey) != condVal:
-                        conditionsMet = 0
-                        break
+                conditionsMet = self.checkConditions(prop['conds'])
 
             elif self.tags['cellType'] != propLabel:  # simplified method for defining cell params (when no 'conds')
                 conditionsMet = False
 
             if conditionsMet:  # if all conditions are met, set values for this cell
+
+                # Intercept possible issue where the cell is designed to be PointCell but misclassfied as CompartCell in Pop._setCellClass()
+                # (may happen if .mod not compiled or mech name misspelled)
+                assert 'secs' in prop, \
+                    f"""Cell rule labeled '{propLabel}' is a compartment cell, but it doesn't have required entry 'secs'.
+If this cell is expected to be a point cell instead, make sure the correspondent mechanism is included and compiled."""
+
                 if sim.cfg.includeParamsLabel:
                     if 'label' not in self.tags:
                         self.tags['label'] = [propLabel]  # create list of property sets
@@ -125,32 +104,14 @@ class CompartCell(Cell):
     def modify(self, prop):
         from .. import sim
 
-        conditionsMet = 1
-        for (condKey, condVal) in prop['conds'].items():  # check if all conditions are met
-            if condKey == 'label':
-                if condVal not in self.tags['label']:
-                    conditionsMet = 0
-                    break
-            elif isinstance(condVal, list):
-                if isinstance(condVal[0], Number):
-                    if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
-                        conditionsMet = 0
-                        break
-                elif isinstance(condVal[0], basestring):
-                    if self.tags.get(condKey) not in condVal:
-                        conditionsMet = 0
-                        break
-            elif self.tags.get(condKey) != condVal:
-                conditionsMet = 0
-                break
+        conditionsMet = self.checkConditions(prop['conds'])
 
         if conditionsMet:  # if all conditions are met, set values for this cell
             if sim.cfg.createPyStruct:
                 self.createPyStruct(prop)
             if sim.cfg.createNEURONObj:
-                self.createNEURONObj(
-                    prop
-                )  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
+                # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
+                self.createNEURONObj(prop)
 
     def createPyStruct(self, prop):
         from .. import sim
@@ -840,45 +801,28 @@ class CompartCell(Cell):
 
         conditionsMet = 1
         if 'cellConds' in params:
-            if conditionsMet:
-                for (condKey, condVal) in params['cellConds'].items():  # check if all conditions are met
-                    # check if conditions met
-                    if isinstance(condVal, list):
-                        if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
-                            conditionsMet = 0
-                            break
-                    elif self.tags.get(condKey) != condVal:
-                        conditionsMet = 0
-                        break
+            conditionsMet = self.checkConditions(params['cellConds'])
 
         if conditionsMet:
             for secLabel, sec in self.secs.items():
                 for synMech in sec['synMechs']:
                     conditionsMet = 1
                     if 'conds' in params:
-                        for (condKey, condVal) in params['conds'].items():  # check if all conditions are met
-                            # check if conditions met
-                            if condKey == 'sec':
-                                if condVal != secLabel:
-                                    conditionsMet = 0
-                                    break
-                            elif isinstance(condVal, list) and isinstance(condVal[0], Number):
-                                if synMech.get(condKey) < condVal[0] or synMech.get(condKey) > condVal[1]:
-                                    conditionsMet = 0
-                                    break
-                            elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
-                                if synMech.get(condKey) not in condVal:
-                                    conditionsMet = 0
-                                    break
-                            elif synMech.get(condKey) != condVal:
-                                conditionsMet = 0
-                                break
+                        # first check if section matches
+                        secLabelInConds = params['conds'].get('sec')
+                        if secLabelInConds and (secLabelInConds != secLabel):
+                            # skip to next section
+                            break
+
+                        # then check the rest of conds
+                        synMechConds = deepcopy(params['conds'])
+                        synMechConds.pop('sec')
+                        conditionsMet = sim.utils.checkConditions(synMechConds, against=synMech)
 
                     if conditionsMet:  # if all conditions are met, set values for this cell
                         exclude = ['conds', 'cellConds'] + SynMechParams.reservedKeys()
-                        for synParamName, synParamValue in {
-                            k: v for k, v in params.items() if k not in exclude
-                        }.items():
+                        paramsToModify = {k: v for k, v in params.items() if k not in exclude}
+                        for synParamName, synParamValue in paramsToModify.items():
                             if sim.cfg.createPyStruct:
                                 synMech[synParamName] = synParamValue
                             if sim.cfg.createNEURONObj:
@@ -1129,12 +1073,11 @@ class CompartCell(Cell):
 
     def __generatePointerIds(self, pointerParams, params):
         from .. import sim
-
         # see comments in `__parsePointerParams()` for more details
-        if hasattr(sim, 'rank'):
-            preToPostId = 1e9 * sim.rank + sim.net.lastPointerId  # global index for presyn gap junc
-        else:
-            preToPostId = sim.net.lastPointerId
+
+        if sim.net.lastPointerId > sim.net.maxPointerIdForGivenNode:
+            print(f"WARNING: potential overflow of pointer connection id!")
+        preToPostId = sim.net.lastPointerId
         sim.net.lastPointerId += 1  # keep track of num of gap juncs in this node
 
         if pointerParams['bidirectional']:
@@ -1155,6 +1098,8 @@ class CompartCell(Cell):
             'preGid': self.gid,
             'sec': params.get('preSec', 'soma'),
             'loc': params.get('preLoc', 0.5),
+            'preSec': params.get('sec', 'soma'),
+            'preLoc': params.get('loc', 0.5),
             'weight': params.get('weight', 0.0),
             'synMech': params['synMech'],
             '__preCellSidePointerParams__': preCellSideParams,
@@ -1191,59 +1136,22 @@ class CompartCell(Cell):
             conditionsMet = 1
 
             if 'conds' in params:
-                for (condKey, condVal) in params['conds'].items():  # check if all conditions are met
-                    # choose what to comapare to
-                    if condKey in ['postGid']:
-                        compareTo = self.gid
-                    else:
-                        compareTo = conn.get(condKey)
+                conds = params['conds']
 
-                    # check if conditions met
-                    if isinstance(condVal, list) and isinstance(condVal[0], Number):
-                        if compareTo < condVal[0] or compareTo > condVal[1]:
-                            conditionsMet = 0
-                            break
-                    elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
-                        if compareTo not in condVal:
-                            conditionsMet = 0
-                            break
-                    elif compareTo != condVal:
-                        conditionsMet = 0
-                        break
+                # `conds` may contain `postGid` key, which is deprecated in favour of having `gid` key in `postConds`,
+                # but for backward compatibility, try to detect it here and replace with `gid`, so checkConditions() can process it:
+                if 'postGid' in conds:
+                    conds['gid'] = conds.pop('postGid')
+                conditionsMet = sim.utils.checkConditions(conds, against=conn, cellGid=self.gid)
 
             if conditionsMet and 'postConds' in params:
-                for (condKey, condVal) in params['postConds'].items():  # check if all conditions are met
-                    # check if conditions met
-                    if isinstance(condVal, list) and isinstance(condVal[0], Number):
-                        if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
-                            conditionsMet = 0
-                            break
-                    elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
-                        if self.tags.get(condKey) not in condVal:
-                            conditionsMet = 0
-                            break
-                    elif self.tags.get(condKey) != condVal:
-                        conditionsMet = 0
-                        break
+                conditionsMet = self.checkConditions(params['postConds'])
 
             if conditionsMet and 'preConds' in params:
                 try:
                     cell = sim.net.cells[conn['preGid']]
-
                     if cell:
-                        for (condKey, condVal) in params['preConds'].items():  # check if all conditions are met
-                            # check if conditions met
-                            if isinstance(condVal, list) and isinstance(condVal[0], Number):
-                                if cell.tags.get(condKey) < condVal[0] or cell.tags.get(condKey) > condVal[1]:
-                                    conditionsMet = 0
-                                    break
-                            elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
-                                if cell.tags.get(condKey) not in condVal:
-                                    conditionsMet = 0
-                                    break
-                            elif cell.tags.get(condKey) != condVal:
-                                conditionsMet = 0
-                                break
+                        conditionsMet = cell.checkConditions(params['preConds'])
                 except:
                     pass
                     # print('Warning: modifyConns() does not yet support conditions of presynaptic cells when running parallel sims')
@@ -1272,34 +1180,14 @@ class CompartCell(Cell):
         conditionsMet = 1
         if 'cellConds' in params:
             if conditionsMet:
-                for (condKey, condVal) in params['cellConds'].items():  # check if all conditions are met
-                    # check if conditions met
-                    if isinstance(condVal, list):
-                        if self.tags.get(condKey) < condVal[0] or self.tags.get(condKey) > condVal[1]:
-                            conditionsMet = 0
-                            break
-                    elif self.tags.get(condKey) != condVal:
-                        conditionsMet = 0
-                        break
+                conditionsMet = self.checkConditions(params['cellConds'])
 
         if conditionsMet == 1:
             for stim in self.stims:
                 conditionsMet = 1
 
                 if 'conds' in params:
-                    for (condKey, condVal) in params['conds'].items():  # check if all conditions are met
-                        # check if conditions met
-                        if isinstance(condVal, list) and isinstance(condVal[0], Number):
-                            if stim.get(condKey) < condVal[0] or stim.get(condKey) > condVal[1]:
-                                conditionsMet = 0
-                                break
-                        elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
-                            if stim.get(condKey) not in condVal:
-                                conditionsMet = 0
-                                break
-                        elif stim.get(condKey) != condVal:
-                            conditionsMet = 0
-                            break
+                    conditionsMet = sim.utils.checkConditions(params['conds'], against=stim)
 
                 if conditionsMet:  # if all conditions are met, set values for this cell
                     if stim['type'] == 'NetStim':  # for netstims, find associated netcon
@@ -1575,6 +1463,9 @@ class CompartCell(Cell):
     def _setConnSynMechs(self, params, secLabels):
         from .. import sim
 
+        distributeSynsUniformly = params.get('distributeSynsUniformly', sim.cfg.distributeSynsUniformly)
+        connRandomSecFromList = params.get('connRandomSecFromList', sim.cfg.connRandomSecFromList)
+
         synsPerConn = params['synsPerConn']
         if not params.get('synMech'):
             if sim.net.params.synMechParams:  # if no synMech specified, but some synMech params defined
@@ -1611,20 +1502,17 @@ class CompartCell(Cell):
                     synMechLocs = [i * (1.0 / synsPerConn) + 1.0 / synsPerConn / 2 for i in range(synsPerConn)]
             else:
                 # if multiple sections, distribute syns uniformly
-                if sim.cfg.distributeSynsUniformly:
+                if distributeSynsUniformly:
                     synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
                 else:
-                    if not sim.cfg.connRandomSecFromList and synsPerConn == len(
-                        secLabels
-                    ):  # have list of secs that matches num syns
+                    # have list of secs that matches num syns
+                    if not connRandomSecFromList and synsPerConn == len(secLabels):
                         synMechSecs = secLabels
                         if isinstance(params['loc'], list):
                             if len(params['loc']) == synsPerConn:  # list of locs matches num syns
                                 synMechLocs = params['loc']
                             else:  # list of locs does not match num syns
-                                print(
-                                    "Error: The length of the list of locations does not match synsPerConn (with cfg.distributeSynsUniformly = False"
-                                )
+                                print("Error: The length of the list of locations does not match synsPerConn (with distributeSynsUniformly = False)")
                                 return
                         else:  # single loc
                             synMechLocs = [params['loc']] * synsPerConn
@@ -1633,7 +1521,7 @@ class CompartCell(Cell):
                         synMechLocs = params['loc'] if isinstance(params['loc'], list) else [params['loc']]
 
                         # randomize the section to connect to and move it to beginning of list
-                        if sim.cfg.connRandomSecFromList and len(synMechSecs) >= synsPerConn:
+                        if connRandomSecFromList and len(synMechSecs) >= synsPerConn:
                             if len(synMechLocs) == 1:
                                 synMechLocs = [params['loc']] * synsPerConn
                             rand = h.Random()
@@ -1650,9 +1538,7 @@ class CompartCell(Cell):
                                 rand.uniform(0, 1)
                                 synMechLocs = [rand.repick() for i in range(synsPerConn)]
                         else:
-                            print(
-                                "\nError: The length of the list of sections needs to be greater or equal to the synsPerConn (with cfg.connRandomSecFromList = True"
-                            )
+                            print("\nError: The length of the list of sections needs to be greater or equal to the synsPerConn (with connRandomSecFromList = True)")
                             return
 
         else:  # if 1 synapse
@@ -1661,7 +1547,7 @@ class CompartCell(Cell):
             synMechLocs = params['loc'] if isinstance(params['loc'], list) else [params['loc']]
 
             # randomize the section to connect to and move it to beginning of list
-            if sim.cfg.connRandomSecFromList and len(synMechSecs) > 1:
+            if connRandomSecFromList and len(synMechSecs) > 1:
                 rand = h.Random()
                 preGid = params['preGid'] if isinstance(params['preGid'], int) else 0
                 rand.Random123(sim.hashStr('connSynMechsSecs'), self.gid, preGid)  # initialize randomizer
@@ -1792,7 +1678,7 @@ class CompartCell(Cell):
         self._segCoords['d1'] = morphSegCoords['d1']
 
     def setImembPtr(self):
-        """Set PtrVector to point to the i_membrane_"""
+        """Set PtrVector to point to the `i_membrane_`"""
         jseg = 0
         for sec in list(self.secs.values()):
             hSec = sec['hObj']

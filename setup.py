@@ -59,11 +59,12 @@ else:
             "License :: OSI Approved :: MIT License",
             # Specify the Python versions you support here. In particular, ensure
             # that you indicate whether you support Python 2, Python 3 or both.
-            "Programming Language :: Python :: 2",
-            "Programming Language :: Python :: 2.7",
             "Programming Language :: Python :: 3",
-            "Programming Language :: Python :: 3.6",
             "Programming Language :: Python :: 3.7",
+            "Programming Language :: Python :: 3.8",
+            "Programming Language :: Python :: 3.9",
+            "Programming Language :: Python :: 3.10",
+            "Programming Language :: Python :: 3.11",
         ],
         # What does project relate to?
         keywords=["neuron", "network", "developing", "framework", "biological", "simulation"],
@@ -74,7 +75,7 @@ else:
         # your project is installed. For an analysis of "install_requires" vs pip's
         # requirements files see:
         # https://packaging.python.org/en/latest/requirements.html
-        install_requires=["numpy", "scipy", "matplotlib<=3.5.1", "matplotlib-scalebar", "future", "pandas", "bokeh", "schema", "lfpykit"],
+        install_requires=["numpy", "scipy", "matplotlib", "matplotlib-scalebar", "future", "pandas", "bokeh", "schema", "lfpykit", "tqdm"],
         # List additional groups of dependencies here (e.g. development
         # dependencies). You can install these using the following syntax,
         # for example:

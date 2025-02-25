@@ -3,18 +3,6 @@ Module for checking the output of tests
 
 """
 
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import division
-from __future__ import absolute_import
-
-# checks.py
-
-from future import standard_library
-
-standard_library.install_aliases()
-
-
 def checkOutput(modelName, verbose=False):
     """
     Function to compare the output of tutorials and examples with their expected output

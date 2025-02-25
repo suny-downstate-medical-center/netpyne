@@ -3,23 +3,11 @@ Module containing a generic cell class
 
 """
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
-
-from builtins import zip
-from builtins import next
-from builtins import str
-
 try:
     basestring
 except NameError:
     basestring = str
-from future import standard_library
 
-standard_library.install_aliases()
 from numbers import Number
 from copy import deepcopy
 from neuron import h  # Import NEURON
@@ -186,44 +174,29 @@ class Cell(object):
             conditionsMet = 1
 
             if 'conds' in params:
-                for (condKey, condVal) in params['conds'].items():  # check if all conditions are met
-                    # choose what to comapare to
-                    if condKey in ['gid']:  # CHANGE TO GID
-                        compareTo = self.gid
-                    else:
-                        compareTo = self.tags[condKey]
+                conditionsMet = self.checkConditions(params['conds'])
 
-                    # check if conditions met
-                    if isinstance(condVal, list) and isinstance(condVal[0], Number):
-                        if compareTo == self.gid:
-                            if compareTo not in condVal:
-                                conditionsMet = 0
-                                break
-                        elif compareTo < condVal[0] or compareTo > condVal[1]:
-                            conditionsMet = 0
-                            break
-                    elif isinstance(condVal, list) and isinstance(condVal[0], basestring):
-                        if compareTo not in condVal:
-                            conditionsMet = 0
-                            break
-                    elif compareTo != condVal:
-                        conditionsMet = 0
-                        break
             if conditionsMet:
                 try:
                     ptr = None
-                    if 'loc' in params and params['sec'] in self.secs:
+                    if 'sec' in params and params['sec'] in self.secs:
+
+                        if not 'loc' in params:
+                            params['loc'] = 0.5  # if no loc, set default
+
+                        sec = self.secs[params['sec']]
+                        seg = sec.hObj(params['loc'])
+
                         if 'mech' in params:  # eg. soma(0.5).hh._ref_gna
                             ptr = getattr(
-                                getattr(self.secs[params['sec']]['hObj'](params['loc']), params['mech']),
+                                getattr(seg, params['mech']),
                                 '_ref_' + params['var'],
                             )
                         elif 'synMech' in params:  # eg. soma(0.5).AMPA._ref_g
-                            sec = self.secs[params['sec']]
                             synMechList = [
                                 synMech
                                 for synMech in sec['synMechs']
-                                if synMech['label'] == params['synMech'] and synMech['loc'] == params['loc']
+                                if synMech['label'] == params['synMech'] and synMech['hObj'].get_segment() == seg
                             ]  # make list with this label/loc
                             ptr = None
                             if len(synMechList) > 0:
@@ -236,12 +209,11 @@ class Cell(object):
                                     ptr = getattr(synMech['hObj'], '_ref_' + params['var'])
                         elif 'stim' in params:  # e.g. sim.net.cells[0].stims[0]['hObj'].i
                             if 'sec' in params and 'loc' in params and 'var' in params:
-                                sec = self.secs[params['sec']]
                                 stimList = [
                                     stim
                                     for stim in self.stims
-                                    if stim['label'] == params['stim'] and stim['loc'] == params['loc']
-                                ]  # make list with this label/loc
+                                    if stim['label'] == params['stim'] and stim['hObj'].get_segment() == seg
+                                ]  # make list with this label/loc (loc's precision up to segment)
                                 ptr = None
                                 if len(stimList) > 0:
                                     if 'index' in params:
@@ -367,6 +339,12 @@ class Cell(object):
                     print('  Conditions preclude recording ', key, ' from cell ', self.gid)
         # else:
         #    if sim.cfg.verbose: print '  NOT recording ', key, 'from cell ', self.gid, ' with parameters: ',str(params)
+
+
+    def checkConditions(self, conditions):
+        from ..sim.utils import checkConditions
+        return checkConditions(conditions=conditions, against=self.tags, cellGid=self.gid)
+
 
     def _randomizer(self):
         try:

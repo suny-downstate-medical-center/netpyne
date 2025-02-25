@@ -3,19 +3,11 @@ Module for plotting and analysis of reaction/diffusion-related results
 
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-
 try:
     basestring
 except NameError:
     basestring = str
 
-from future import standard_library
-
-standard_library.install_aliases()
 from netpyne import __gui__
 
 if __gui__:

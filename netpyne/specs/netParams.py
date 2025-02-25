@@ -3,15 +3,6 @@ Module containing classes for high-level network parameters and methods
 
 """
 
-from __future__ import print_function
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
-from builtins import next
-from builtins import open
-from builtins import range
-
 # required to make json saving work in Python 2/3
 try:
     to_unicode = unicode
@@ -23,9 +14,6 @@ try:
 except NameError:
     basestring = str
 
-from future import standard_library
-
-standard_library.install_aliases()
 from collections import OrderedDict
 from .dicts import Dict, ODict
 from .. import conversion
@@ -559,12 +547,12 @@ class NetParams(object):
         folder = filename.split(basename)[0]
         ext = basename.split('.')[1]
 
-        # make dir
+        # make directories if they do not already exist:
         try:
-            os.mkdir(folder)
-        except OSError:
-            if not os.path.exists(folder):
-                print(' Could not create', folder)
+            os.makedirs(folder, exist_ok=True)
+        except Exception as e:
+            print('%s: Exception: %s,' % (os.path.abspath(__file__), e))
+            raise SystemExit('Could not create %s' % (folder))
 
         dataSave = {'net': {'params': self.todict()}}
 
@@ -694,7 +682,7 @@ class NetParams(object):
             return
 
         secList = []
-        for secName, sec in cellRule.secs.items():
+        for secName, sec in cellRule['secs'].items():
             if 'pt3d' in sec['geom']:
                 pt3d = sec['geom']['pt3d']
                 midpoint = int(len(pt3d) / 2)
@@ -708,8 +696,8 @@ class NetParams(object):
                         secList.append(secName)
 
             else:
-                print('Error adding secList: Sections do not contain 3d points')
-                return
+                #TODO jchen.6727@gmail.com 711713 more descriptive message, don't break on axon.
+                print("Error adding {} to {}: {} does not contain 3d points".format(secName, secListName, secName))
 
         cellRule.secLists[secListName] = list(secList)
 
@@ -832,7 +820,9 @@ class NetParams(object):
         return replaceDictODict(self.__dict__)
 
     def setNestedParam(self, paramLabel, paramVal):
-        if isinstance(paramLabel, list):
+        if '.' in paramLabel: #TODO jchen6727@gmail.com 835836 replace with my crawler code?
+            paramLabel = paramLabel.split('.')
+        if isinstance(paramLabel, list ) or isinstance(paramLabel, tuple):
             container = self
             for ip in range(len(paramLabel) - 1):
                 if hasattr(container, paramLabel[ip]):
@@ -844,7 +834,7 @@ class NetParams(object):
             setattr(self, paramLabel, paramVal)  # set simConfig params
 
     def setCfgMapping(self, cfg):
-        if hasattr(self, 'mapping'):
+        if hasattr(self, 'mapping'): #TODO jchen6727@gmail.com 849852 do other functions have this getattr logic issue?
             for k, v in self.mapping.items():
-                if getattr(cfg, k, None):
+                if hasattr(cfg, k): #if K is zero, the getattr(cfg, k, None) will produce unexpected behav.
                     self.setNestedParam(v, getattr(cfg, k))

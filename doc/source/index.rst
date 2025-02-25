@@ -37,9 +37,8 @@ Table of Contents
    about
    install
    tutorial
-   reference
-   advanced
-   package_index
+   user_documentation
+   package_reference
    modeling-specification-v1.0
 
 

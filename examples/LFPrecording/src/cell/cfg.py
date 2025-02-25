@@ -14,7 +14,5 @@ cfg.recordLFP = [[x, y, 35] for y in range(280, 1000, 150) for x in [30, 90]]
 
 cfg.analysis['plotTraces'] = {'include': [('E',0)], 'oneFigPer':'cell', 'overlay': False, 'figSize': (5,6),'saveFig': True}      # Plot recorded traces for this list of cells
 cfg.analysis['plotLFP'] = {'includeAxon': False, 'plots': ['timeSeries',  'locations'], 'figSize': (7.5,13.5), 'saveFig': True}
-#simConfig.analysis['getCSD'] = {'timeRange': [10,45],'spacing_um': 150, 'vaknin': True}
-#simConfig.analysis['plotCSD'] = {'timeRange': [10,45]}
-#sim.analysis.getCSD(...args...)
-#simConfig.analysis['plotCSD'] = {}
+# cfg.analysis['plotCSD'] = {'timeRange': [10,45],'spacing_um': 150, 'vaknin': True, 'saveFig': True}
+# cfg.analysis['plotCSDTimeSeries'] = {'saveFig': True}

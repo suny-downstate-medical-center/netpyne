@@ -3,17 +3,6 @@ Module related to saving
 
 """
 
-from __future__ import print_function
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
-from builtins import range
-from builtins import open
-from future import standard_library
-
-standard_library.install_aliases()
-
 # required to make json saving work in Python 2/3
 try:
     to_unicode = unicode
@@ -27,6 +16,7 @@ import pickle as pk
 from . import gather
 from . import utils
 from ..specs import Dict, ODict
+from copy import copy, deepcopy
 
 
 # ------------------------------------------------------------------------------
@@ -113,26 +103,30 @@ def saveData(include=None, filename=None, saveLFP=True):
             print(('Copying cfg file %s ... ' % simName))
             source = sim.cfg.backupCfgFile[0]
             targetFolder = sim.cfg.backupCfgFile[1]
-            # make dir
+
+            # make directories required to make the target folder
             try:
-                os.mkdir(targetFolder)
-            except OSError:
-                if not os.path.exists(targetFolder):
-                    print(' Could not create target folder: %s' % (targetFolder))
+                os.makedirs(targetFolder, exist_ok=True)
+            except Exception as e:
+                print('%s: Exception: %s,' % (os.path.abspath(__file__), e))
+                raise SystemExit('Could not create %s' % (targetFolder))
+                
             # copy file
             targetFile = targetFolder + '/' + simName + '_cfg.py'
             if os.path.exists(targetFile):
                 print(' Removing prior cfg file', targetFile)
                 os.system('rm ' + targetFile)
             os.system('cp ' + source + ' ' + targetFile)
-
-        # create folder if missing
+        # looks like the logic for sim.cfg.filename and targetFolder is not entirely there,
+        # could be calling os.path.dirname(None) ? #TODO
+        # create the missing folder & directory for folder if one or both are missing
         targetFolder = os.path.dirname(sim.cfg.filename)
-        if targetFolder and not os.path.exists(targetFolder):
+        if targetFolder:
             try:
-                os.mkdir(targetFolder)
-            except OSError:
-                print(' Could not create target folder: %s' % (targetFolder))
+                os.makedirs(targetFolder, exist_ok=True)
+            except Exception as e:
+                print('%s: Exception: %s,' % (os.path.abspath(__file__), e))
+                raise SystemExit('Could not create %s' % (targetFolder))
 
         # saving data
         if not include:
@@ -185,20 +179,19 @@ def saveData(include=None, filename=None, saveLFP=True):
                 if hasattr(sim.cfg, 'simLabel') and sim.cfg.simLabel:
                     filePath = os.path.join(sim.cfg.saveFolder, sim.cfg.simLabel + '_data' + timestampStr)
 
-            # create folder if missing
+            # also strange conditional ^^^, filePath must exist or an error occurs. make directories for the target folder if they do not already exist
             targetFolder = os.path.dirname(filePath)
-            if targetFolder and not os.path.exists(targetFolder):
+            if targetFolder:
                 try:
-                    os.mkdir(targetFolder)
-                except OSError:
-                    print(' Could not create target folder: %s' % (targetFolder))
-
+                    os.makedirs(targetFolder, exist_ok=True)
+                except Exception as e:
+                    print('%s: Exception: %s,' % (os.path.abspath(__file__), e))
+                    raise SystemExit('Could not create %s' % (targetFolder))
             # Save to pickle file
             if sim.cfg.savePickle:
                 import pickle
 
                 path = filePath + '.pkl'
-                dataSave = utils.replaceDictODict(dataSave)
                 print(f'Saving output as {path} ... ')
                 with open(path, 'wb') as fileObj:
                     pickle.dump(dataSave, fileObj)
@@ -221,7 +214,6 @@ def saveData(include=None, filename=None, saveLFP=True):
                 path = filePath + '.json'
                 # Make it work for Python 2+3 and with Unicode
                 print(f'Saving output as {path} ... ')
-                # dataSave = utils.replaceDictODict(dataSave)  # not required since json saves as dict
                 sim.saveJSON(path, dataSave, checkFileTimeout=5)
                 savedFiles.append(path)
                 print('Finished saving!')
@@ -232,22 +224,32 @@ def saveData(include=None, filename=None, saveLFP=True):
 
                 path = filePath + '.mat'
                 print(f'Saving output as {path} ... ')
-                savemat(
-                    path, utils.tupleToList(utils.replaceNoneObj(dataSave))
-                )  # replace None and {} with [] so can save in .mat format
+
+                toSave = copy(dataSave)
+                simData = toSave.pop('simData') # for speed, exclude simData from subsequent manipulations (nothing to replace there)
+                toSave = utils.replaceDictODict(toSave)
+                toSave = deepcopy(toSave)
+                toSave = utils._ensureMatCompatible(toSave)
+                utils.tupleToList(toSave)
+                toSave['simData'] = simData # put back before saving
+
+                savemat(path, toSave, long_field_names=True)
                 savedFiles.append(path)
                 print('Finished saving!')
 
             # Save to HDF5 file (uses very inefficient hdf5storage module which supports dicts)
             if sim.cfg.saveHDF5:
-                dataSaveUTF8 = utils._dict2utf8(
-                    utils.replaceNoneObj(dataSave)
-                )  # replace None and {} with [], and convert to utf
+                recXElectrode = dataSave['net'].get('recXElectrode')
+                if recXElectrode:
+                    dataSave['net']['recXElectrode'] = recXElectrode.toJSON()
+                dataSaveUTF8 = utils._ensureHDF5Compatible(dataSave)
+                keys = list(dataSaveUTF8.keys())
+                dataSaveUTF8['__np_keys__'] = keys
                 import hdf5storage
 
                 path = filePath + '.hdf5'
                 print(f'Saving output as {path} ... ')
-                hdf5storage.writes(dataSaveUTF8, filename=path)
+                hdf5storage.writes(dataSaveUTF8, filename=path, truncate_existing=True)
                 savedFiles.append(path)
                 print('Finished saving!')
 
@@ -392,12 +394,12 @@ def intervalSave(simTime, gatherLFP=True):
             targetFolder = os.path.join(sim.cfg.saveFolder, 'interval_data')
         else:
             targetFolder = 'interval_data'
-
-        if targetFolder and not os.path.exists(targetFolder):
-            try:
-                os.makedirs(targetFolder)
-            except OSError:
-                print(' Could not create target folder: %s' % (targetFolder))
+        # how can targetFolder ^^^ NOT have a value within this conditional 
+        try:
+            os.makedirs(targetFolder, exist_ok=True)
+        except Exception as e:
+            print('%s: Exception: %s,' % (os.path.abspath(__file__), e))
+            raise SystemExit('Could not create %s' % (targetFolder))
 
         include = sim.cfg.saveDataInclude
 
@@ -552,8 +554,6 @@ def intervalSave(simTime, gatherLFP=True):
                     dataSave['net']['recXElectrode'] = sim.net.recXElectrode
             dataSave['simData'] = dict(sim.allSimData)
 
-        dataSave = utils.replaceDictODict(dataSave)
-
         with open(name, 'wb') as fileObj:
             pickle.dump(dataSave, fileObj, protocol=2)
 
@@ -628,8 +628,11 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
     else:
         saveFolder = os.path.join(saveFolder, sim.cfg.simLabel + '_node_data')  # YES saveFolder
 
-    if not os.path.exists(saveFolder):
+    try:
         os.makedirs(saveFolder, exist_ok=True)
+    except Exception as e:
+        print('%s: Exception: %s,' % (os.path.abspath(__file__), e))
+        raise SystemExit('Could not create %s' % (saveFolder))
 
     sim.pc.barrier()
     if sim.rank == 0:
@@ -720,7 +723,6 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
             try:
                 import pickle
 
-                dataSave = utils.replaceDictODict(dataSave)
                 fileName = filePath + '_node_' + str(sim.rank) + '.pkl'
                 print(('  Saving output as: %s ... ' % (fileName)))
                 with open(os.path.join(saveFolder, fileName), 'wb') as fileObj:
@@ -781,7 +783,7 @@ def saveModel(netParams, simConfig, srcPath, dstPath=None, exportNetParamsAsPyth
             shutil.rmtree(dstDir)
 
         # (re)create dstDir and create /src dir in it where files will be stored by default
-        os.makedirs(os.path.join(dstDir, 'src'))
+        os.makedirs(os.path.join(dstDir, 'src'), exist_ok=True)
         # create default index
         indexData = {
             'netParams': f"src/netParams{'.py' if exportNetParamsAsPython else '.json'}",

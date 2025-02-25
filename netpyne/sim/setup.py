@@ -3,16 +3,6 @@ Module for setting up simulations
 
 """
 
-from __future__ import print_function
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
-#
-from builtins import str
-from future import standard_library
-
-standard_library.install_aliases()
 import sys
 import os
 import numpy as np
@@ -94,8 +84,6 @@ def initialize(netParams=None, simConfig=None, net=None):
         sim.setNet(sim.Network())  # or create new network
 
     sim.setNetParams(netParams)  # set network parameters
-    sim.net.params.synMechParams.preprocessStringFunctions()
-    sim.net.params.cellParams.preprocessStringFunctions()
 
     if sim.nhosts > 1:
         sim.cfg.validateNetParams = False  # turn of error chceking if using multiple cores
@@ -104,11 +92,12 @@ def initialize(netParams=None, simConfig=None, net=None):
         try:
             print('Validating NetParams ...')
             sim.timing('start', 'validationTime')
-            validated, failed = validator.validateNetParams(netParams)
+            valid, failed = validator.validateNetParams(netParams)
             sim.timing('stop', 'validationTime')
             if failed:
-                failed = map(lambda entry: entry[0], failed) # get failed component name
-                print(f"\nNetParams validation identified some potential issues in: {', '.join(failed)}. See above for details.")
+                failedComps = [err.component for err in failed] # get failed component name
+                failedComps = list(set(failedComps)) # keep unique elements only
+                print(f"\nNetParams validation identified some potential issues in {', '.join(failedComps)}. See above for details.")
             else:
                 print("\nNetParams validation successful.")
         except Exception as e:
@@ -171,6 +160,9 @@ def setNetParams(params):
 
     # set mapping from netParams variables to cfg (used in batch)
     sim.net.params.setCfgMapping(sim.cfg)
+
+    sim.net.params.cellParams.preprocessStringFunctions()
+    sim.net.params.synMechParams.preprocessStringFunctions()
 
 
 # ------------------------------------------------------------------------------
@@ -453,7 +445,7 @@ def setupRecording():
     # stim spike recording
     if 'plotRaster' in sim.cfg.analysis:
         if isinstance(sim.cfg.analysis['plotRaster'], dict) and 'include' in sim.cfg.analysis['plotRaster']:
-            netStimLabels = list(sim.net.params.stimSourceParams.keys()) + ['allNetStims']
+            netStimLabels = list(sim.net.params.stimSourceParams.keys()) + ['allNetStims'] + ['all']
             for item in sim.cfg.analysis['plotRaster']['include']:
                 if item in netStimLabels:
                     sim.cfg.recordStim = True
@@ -471,6 +463,8 @@ def setupRecording():
                     break
 
     if sim.cfg.recordStim:
+        if sim.cfg.verbose:
+            print("   Recording stims")
         sim.simData['stims'] = Dict()
         for cell in sim.net.cells:
             cell.recordStimSpikes()
@@ -503,6 +497,8 @@ def setupRecording():
 
         # record h.t
         if sim.cfg.recordTime and len(sim.simData) > 0:
+            if sim.cfg.verbose:
+                print("   Recording h.t")
             try:
                 sim.simData['t'] = h.Vector()  # sim.cfg.duration/sim.cfg.recordStep+1).resize(0)
                 if hasattr(sim.cfg, 'use_local_dt') and sim.cfg.use_local_dt:
@@ -518,7 +514,8 @@ def setupRecording():
         # print recorded traces
         cat = 0
         total = 0
-        for key in sim.simData:
+        keys = [k for k in sim.simData.keys() if k not in ['t', 'stims', 'spkt', 'spkid']]
+        for key in keys:
             if sim.cfg.verbose:
                 print(("   Recording: %s:" % key))
             if len(sim.simData[key]) > 0:

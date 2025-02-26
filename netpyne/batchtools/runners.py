@@ -51,10 +51,10 @@ def update_items(d, u, force_match = False):
 
 #RS = get_class()
 
-class Runner_SimConfig(RS, specs.simConfig.SimConfig, dict):
+class Runner_SimConfig(specs.simConfig.SimConfig):
     def __init__(self, *args, **kwargs):
         specs.simConfig.SimConfig.__init__(self, *args, **kwargs)
-        RS.__init__(self)
+        self._runner = RS()
 
     def update(self, simConfigDict=None, force_match=False):  # intended to take `cfg` instance as self
         """
@@ -72,7 +72,7 @@ class Runner_SimConfig(RS, specs.simConfig.SimConfig, dict):
         """
         if simConfigDict:
             update_items(self, simConfigDict, force_match)
-        update_config(self, **self.mappings)
+        update_config(self.__dict__, **self._runner.mappings)
 
         #for assign_path, value in self.mappings.items():
         #    try:
@@ -99,14 +99,5 @@ class Runner_SimConfig(RS, specs.simConfig.SimConfig, dict):
                 raise Exception("failed on mapping: cfg.{} with value: {}\n{}".format(assign_path, value, e))
         return True
 
-    def __getitem__(self, item):
-        try:
-            return specs.simConfig.SimConfig.__getitem__(self, item)
-        except:
-            return RS.__getitem__(self, item)
-
-    def __getattribute__(self, item):
-        try:
-            return specs.simConfig.SimConfig.__getattribute__(self, item)
-        except:
-            return RS.__getattribute__(self, item)
+    def get_mappings(self):
+        return self._runner.mappings

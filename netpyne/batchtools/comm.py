@@ -20,8 +20,6 @@ class Comm(object):
                 self.connected = True
             except Exception as e:
                 print("Failed to connect to the Dispatch Server, failover to Local mode. See: {}".format(e))
-                self.runner._set_inheritance('file') #TODO or could change the inheritance of the runner ...
-                self.runner.env[runtk.MSGOUT] = "{}/{}.out".format(self.runner.cfg.saveFolder, self.runner.cfg.simLabel)
 
     def set_runner(self, runner_type):
         self.runner = get_class(runner_type)()
@@ -32,7 +30,8 @@ class Comm(object):
             if self.connected:
                 self.runner.send(data)
             else:
-                self.runner.write(data)
+                with open("{}/{}.out".format(self.runner.mappings['saveFolder'], self.runner.mappings['simLabel']), 'w') as fptr:
+                    fptr.write(data)    
             self.close()
 
     def recv(self): #TODO to be tested, broadcast to all workers?

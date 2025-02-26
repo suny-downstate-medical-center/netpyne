@@ -28,8 +28,7 @@ def init_cfg(cfg):
 def init_params(cell, syn, sec, loc, weight):
     netParams = specs.NetParams()
     netParams.cellParams['CELL'] = cell
-    #cell['conds']['cellModel'] = ''
-    #cell['conds']['cellType'] = ''
+
     netParams.popParams['CELL'] = {'cellModel': cell['conds']['cellModel'],
                                    'cellType': cell['conds']['cellType'],
                                    'numCells': 1}

@@ -31,8 +31,8 @@ echo $pid >&1
     def set_handles(self):
         pass
 
-    def submit_job(self):
-        proc = super().submit_job()
+    def submit_job(self, **kwargs):
+        proc = super().submit_job(**kwargs)
         try:
             self.job_id = int(proc.stdout)
         except Exception as e:
@@ -106,7 +106,7 @@ export JOBID=$JOB_ID
             )
 
     def submit_job(self, **kwargs):
-        proc = super().submit_job()
+        proc = super().submit_job(**kwargs)
         try:
             self.job_id = proc.stdout.split(' ')[2]
         except Exception as e: #not quite sure how this would occur
@@ -197,7 +197,7 @@ wait
             )
 
     def submit_job(self, **kwargs):
-        proc = super().submit_job()
+        proc = super().submit_job(**kwargs)
         self.job_id = 0 #TODO, what is the output of an sbatch command?
         return self.job_id
         #validate job id

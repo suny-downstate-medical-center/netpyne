@@ -34,7 +34,7 @@ cfg = specs.SimConfig({'x': [None] * 4})
 cfg.simLabel = 'rosenbrock'
 cfg.saveFolder = '.'
 
-cfg.update_cfg()
+cfg.update()
 
 # --------------------------------------------------- #
 

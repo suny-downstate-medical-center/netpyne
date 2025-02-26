@@ -1,10 +1,6 @@
 from netpyne.batchtools.search import search
-import pandas as pd
-import os
 import json
-import pickle
 import numpy
-import itertools
 
 with open('Na12HH16HH_TF.json', 'r') as fptr:
     #cell_params = pickle.load(fptr, encoding='latin1')

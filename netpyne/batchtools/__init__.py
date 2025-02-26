@@ -1,5 +1,6 @@
 from batchtk.runtk.runners import Runner, get_class
-RS = get_class() # get appropriate Runner object for inheritance and comms
+RS = get_class()
+RS._reinstance = True# get appropriate Runner object for inheritance and comms
 from netpyne.batchtools.runners import Runner_SimConfig
 from netpyne.batchtools.comm import Comm
 from batchtk.runtk import dispatchers

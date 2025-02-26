@@ -10,6 +10,7 @@ from neuron import h  # Import NEURON
 from .. import specs
 from ..specs import Dict, ODict
 from . import utils, validator
+from netpyne.specs.simConfig import SimConfig
 
 try:
     from datetime import datetime
@@ -182,6 +183,10 @@ def setSimCfg(cfg):
     """
 
     from .. import sim
+
+    #if sim._batch_specs is True:
+    #    cfg = SimConfig(cfg.__dict__)
+    #    print("setup SimCfg, now is {}".format(type(cfg)))
 
     if cfg and isinstance(cfg, specs.SimConfig):
         sim.cfg = cfg  # set

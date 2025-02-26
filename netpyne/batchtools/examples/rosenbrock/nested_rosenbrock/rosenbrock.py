@@ -1,8 +1,10 @@
-from netpyne.batchtools import specs, comm
+from netpyne import sim, specs
+from dotenv import load_dotenv
 import json
 
 # ---- Rosenbrock Function & Constant Definition ---- #
 
+load_dotenv('test.env')
 """
 The rosenbrock minimum is at (A, A**2), where rosenbrock(A, A**2) = 0
 """
@@ -21,7 +23,7 @@ cfg.saveFolder = '.'
 
 cfg.xn = [1, 1]
 
-cfg.update_cfg()
+cfg.update()
 
 # --------------------------------------------------- #
 
@@ -30,12 +32,6 @@ x0, x1 = cfg.xn
 # --------------------------------------------------- #
 
 
-# comm creation, calculation and result transmission  #
-comm.initialize()
-
 out_json = json.dumps({'x0': x0, 'x1': x1, 'fx': rosenbrock(x0, x1)})
-if comm.is_host():
-    print(out_json)
-    comm.send(out_json)
-    comm.close()
 
+sim.send(out_json)

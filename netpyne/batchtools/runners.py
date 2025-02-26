@@ -1,7 +1,8 @@
 import collections
 from netpyne.batchtools import RS
 from netpyne import specs
-
+from batchtk.runtk import update_config
+import collections
 def validate(element, container):
     try:
         match container:
@@ -50,12 +51,10 @@ def update_items(d, u, force_match = False):
 
 #RS = get_class()
 
-class Runner_SimConfig(RS, specs.simConfig.SimConfig):
+class Runner_SimConfig(specs.simConfig.SimConfig):
     def __init__(self, *args, **kwargs):
         specs.simConfig.SimConfig.__init__(self, *args, **kwargs)
-        #mappings = getattr(self, 'mappings', dict()) # save over mappings but others not important.
-        RS.__init__(self)
-        #self.mappings = {**mappings, **self.mappings}
+        self._runner = RS()
 
     def update(self, simConfigDict=None, force_match=False):  # intended to take `cfg` instance as self
         """
@@ -73,11 +72,13 @@ class Runner_SimConfig(RS, specs.simConfig.SimConfig):
         """
         if simConfigDict:
             update_items(self, simConfigDict, force_match)
-        for assign_path, value in self.mappings.items():
-            try:
-                set_map(self, assign_path, value)
-            except Exception as e:
-                raise Exception("failed on mapping: cfg.{} with value: {}\n{}".format(assign_path, value, e))
+        update_config(self.__dict__, **self._runner.mappings)
+
+        #for assign_path, value in self.mappings.items():
+        #    try:
+        #        set_map(self, assign_path, value)
+        #    except Exception as e:
+        #        raise Exception("failed on mapping: cfg.{} with value: {}\n{}".format(assign_path, value, e))
     def test_mappings(self, mappings):
         """
         Tests mappings for validity
@@ -98,14 +99,5 @@ class Runner_SimConfig(RS, specs.simConfig.SimConfig):
                 raise Exception("failed on mapping: cfg.{} with value: {}\n{}".format(assign_path, value, e))
         return True
 
-    def __getitem__(self, item):
-        try:
-            return specs.simConfig.SimConfig.__getitem__(self, item)
-        except:
-            return RS.__getitem__(self, item)
-
-    def __getattr__(self, item):
-        try:
-            return specs.simConfig.SimConfig.__getattribute__(self, item)
-        except:
-            return RS.__getattribute__(self, item)
+    def get_mappings(self):
+        return self._runner.mappings

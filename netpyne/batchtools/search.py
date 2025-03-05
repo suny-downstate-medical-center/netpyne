@@ -165,8 +165,20 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
                attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
                clean_checkpoint = True, # whether to clean the checkpoint directory after a completed successful search, errored searches will skip cleanup.
                prune_metadata = True, # whether to prune the metadata from the results.csv
+               remote_dir: Optional[str] = None, # absolute path for directory to run the search on (for submissions over SSH)
+               host: Optional[str] = None,  # host to run the search on
+               key: Optional[str] = None  # key for TOTP generator...
                ) -> tune.ResultGrid:
 
+    if dispatcher_constructor == runtk.dispatchers.SSHDispatcher:
+        if submit_constructor == submits.SGESubmitSFS:
+            from fabric import connection
+            dispatcher_kwargs = {'connection': connection.Connection(host)}
+        if submit_constructor == submits.SlurmSubmitSFS:
+            from batchtk.utils import TOTPConnection
+            dispatcher_kwargs = {'connection': TOTPConnection(host, key)}
+    else:
+        dispatcher_kwargs = {}
     if ray_config is None:
         ray_config = {}
 
@@ -204,12 +216,12 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
     submit.update_templates(
         **run_config
     )
-    project_path = os.getcwd()
+    project_path = remote_dir or os.getcwd() # if remote_dir is None, then use the current working directory
     def run(config):
         config.update({'saveFolder': output_path, 'simLabel': LABEL_POINTER})
         data = ray_trial(config=config, label=label, dispatcher_constructor=dispatcher_constructor,
                          project_path=project_path, output_path=output_path, submit=submit,
-                         dispatcher_kwargs=None, interval=sample_interval)
+                         dispatcher_kwargs=dispatcher_kwargs, interval=sample_interval)
         if metric is None:
             metrics = {'config': config, 'data': numpy.nan}
             session.report(metrics)
@@ -281,6 +293,8 @@ constructor_tuples = {
     ('sge', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SGESubmitSOCK),
     ('sge', 'sfs' ): constructors(runtk.dispatchers.LocalDispatcher , submits.SGESubmitSFS ),
     ('sge', None): constructors(GridDispatcher, submits.SGESubmit),
+    ('sge', 'ssh'): constructors(runtk.dispatchers.SSHDispatcher, submits.SGESubmitSFS), #TODO, both of these need comm types
+    ('slurm', 'ssh'): constructors(runtk.dispatchers.SSHDispatcher, submits.SlurmSubmitSFS),
     #('zsh', 'inet'): constructors(runtk.dispatchers.INETDispatcher, runtk.submits.ZSHSubmitSOCK), #TODO preferable to use AF_UNIX sockets on local machines
     #('slurm', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SlurmSubmitSOCK),
     #('slurm', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SlurmSubmitSFS),
@@ -293,7 +307,7 @@ constructor_tuples = {
 """
 some shim functions before ray_search
 """
-def generate_constructors(job_type, comm_type = 'socket', **kwargs):
+def generate_constructors(job_type, comm_type, **kwargs):
     """"
     returns the dispatcher, submit constructor pair for ray_search based on the job_type and comm_type inputs
     """
@@ -346,6 +360,9 @@ def shim(dispatcher_constructor: Optional[Callable] = None, # constructor for th
          attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
          clean_checkpoint: Optional[bool] = True, # whether to clean the checkpoint directory after the search
          prune_metadata: Optional[bool] = True, # whether to prune the metadata from the results.csv
+         remote_dir: Optional[str] = None, # absolute path for directory to run the search on (for submissions over SSH)
+         host: Optional[str] = None,  # host to run the search on
+         key: Optional[str] = None  # key for TOTP generator...
          ):
     kwargs = locals()
     if metric is None and algorithm not in ['variant_generator', 'random', 'grid']:
@@ -359,6 +376,10 @@ def shim(dispatcher_constructor: Optional[Callable] = None, # constructor for th
         kwargs['submit_constructor'] = submit_constructor
     if kwargs['dispatcher_constructor'] is None or (kwargs['submit_constructor'] is None and metric is not None):
         raise ValueError("missing job method and communication type for an optimization search, either specify a dispatcher_constructor and submit_constructor or a job_type and comm_type")
+    if (kwargs['dispatcher_constructor'] == runtk.dispatchers.SSHDispatcher) and (host is None or remote_dir is None):
+        raise ValueError("missing host and remote directory for SSH based dispatcher")
+    if (kwargs['submit_constructor'] == submits.SlurmSubmitSFS) and key is None:
+        raise ValueError("missing key for Slurm based dispatcher")
     if kwargs['dispatcher_constructor'] is None:
         raise ValueError("missing job type for grid or random based search, specify a job type")
     if params is None:
@@ -391,6 +412,9 @@ def search(dispatcher_constructor: Optional[Callable] = None, # constructor for 
            attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
            clean_checkpoint: Optional[bool] = True, # whether to clean the checkpoint directory after the search
            prune_metadata: Optional[bool] = True, # whether to prune the metadata from the results.csv
+           remote_dir: Optional[str] = None, # absolute path for directory to run the search on (for submissions over SSH)
+           host: Optional[str] = None, # host to run the search on
+           key: Optional[str] = None # key for TOTP generator...
            ) -> tune.ResultGrid: # results of the search
     """
     search(...)
@@ -418,7 +442,9 @@ def search(dispatcher_constructor: Optional[Callable] = None, # constructor for 
     attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
     clean_checkpoint: Optional[bool] = True, # whether to clean the checkpoint directory after the search
     prune_metadata: Optional[bool] = True, # whether to prune the metadata from the results.csv
-
+    remote_dir: Optional[str] = None, # absolute path for directory to run the search on (for submissions over SSH)
+    host: Optional[str] = None, # host to run the search on (for submissions over SSH)
+    key: Optional[str] = None # key for TOTP generator (for submissions over SSH)
     Creates (upon completed fitting run...)
     -------
     <label>.csv: file containing the results of the search

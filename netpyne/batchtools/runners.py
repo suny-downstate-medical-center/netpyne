@@ -3,7 +3,7 @@ from netpyne.batchtools import RS
 from netpyne import specs
 from batchtk.runtk import update_config
 import collections
-def validate(element, container):
+def validate(element, container): # is validation important?
     try:
         match container:
             case list(): #container is a list, check validity of index
@@ -17,25 +17,6 @@ def validate(element, container):
     except Exception as e:
         raise AttributeError("error when validating {} within container {}: {}".format(element, container, e))
     return True #element is valid, return True for boolean
-
-def traverse(obj, path, force_match=False):
-    if len(path) == 1:
-        if not (force_match and not validate(path[0], obj)):
-            return obj
-    if not (force_match and not validate(path[0], obj)):
-        try:
-            crawler = obj.__getitem__(path[0])
-        except TypeError:  # use for indexing into a list or in case the dictionary entry? is an int.
-            crawler = obj.__getitem__(int(path[0]))
-        return traverse(crawler, path[1:], force_match)
-
-def set_map(self, assign_path, value, force_match=False):
-    assigns = assign_path.split('.')
-    traverse(self, assigns, force_match)[assigns[-1]] = value
-
-def get_map(self, assign_path, force_match=False):
-    assigns = assign_path.split('.')
-    return traverse(self, assigns, force_match)[assigns[-1]]
 
 def update_items(d, u, force_match = False):
     for k, v in u.items():

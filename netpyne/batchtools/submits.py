@@ -110,6 +110,7 @@ export JOBID=$JOB_ID
         #raise(Exception("Job submission failed:\n{}\n{}\n{}".format(self.submit, self.script, proc)))
         return proc
 
+
     def set_handles(self):
         pass #TODO get rid of this in both NetPyNE and batchtk
 
@@ -197,6 +198,7 @@ cd {project_path}
     def submit_job(self, **kwargs):
         proc = super().submit_job(**kwargs)
         return proc
+
 
     def set_handles(self):
         pass

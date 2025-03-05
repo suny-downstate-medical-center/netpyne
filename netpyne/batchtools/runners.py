@@ -3,7 +3,8 @@ from netpyne.batchtools import RS
 from netpyne import specs
 from batchtk.runtk import update_config
 import collections
-def validate(element, container): # is validation important?
+
+def validate(element, container):
     try:
         match container:
             case list(): #container is a list, check validity of index

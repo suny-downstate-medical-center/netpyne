@@ -98,7 +98,7 @@ export JOBID=$JOB_ID
                       runtk.STDOUT: '{output_path}/{label}.run'}
     def __init__(self, **kwargs):
         super().__init__(
-            submit_template = Template(template="source ~/.bash_profile; /ddn/age/bin/lx-amd64/qsub {output_path}/{label}.sh",
+            submit_template = Template(template="qsub {output_path}/{label}.sh",
                                        key_args={'output_path',  'label'}),
             script_template = Template(template=self.script_template,
                                        key_args=self.script_args),
@@ -114,6 +114,46 @@ export JOBID=$JOB_ID
     def set_handles(self):
         pass #TODO get rid of this in both NetPyNE and batchtk
 
+
+class SGESubmitSSH(Submit):
+    script_args = {'label', 'queue', 'cores', 'vmem' 'realtime', 'output_path', 'project_path', 'env', 'command', }
+    script_template = \
+        """\
+#!/bin/bash
+#$ -N job{label}
+#$ -q {queue}
+#$ -pe smp {cores}
+#$ -l h_vmem={vmem}
+#$ -l h_rt={realtime}
+#$ -o {output_path}/{label}.run
+source ~/.bashrc
+cd {project_path}
+export JOBID=$JOB_ID
+export MSGFILE="{output_path}/{label}.out"
+export SGLFILE="{output_path}/{label}.sgl"
+{env}
+touch $MSGFILE
+{command}
+"""
+    script_handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
+                      runtk.STDOUT: '{output_path}/{label}.run'}
+    def __init__(self, **kwargs):
+        super().__init__(
+            submit_template = Template(template="source ~/.bash_profile; /ddn/age/bin/lx-amd64/qsub {output_path}/{label}.sh",
+                                       key_args={'output_path',  'label'}),
+            script_template = Template(template=self.script_template,
+                                       key_args=self.script_args),
+            handles = self.script_handles,
+            )
+
+    def submit_job(self, **kwargs):
+        proc = super().submit_job(**kwargs)
+        #raise(Exception("Job submission failed:\n{}\n{}\n{}".format(self.submit, self.script, proc)))
+        return proc
+
+
+    def set_handles(self):
+        pass #TODO get rid of this in both NetPyNE and batchtk
 
 class SGESubmitSFS(SGESubmit):
     script_args = {'label', 'queue', 'cores', 'vmem' 'realtime', 'output_path', 'project_path', 'env', 'command', }

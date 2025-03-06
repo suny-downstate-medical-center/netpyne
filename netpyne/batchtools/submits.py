@@ -98,7 +98,7 @@ export JOBID=$JOB_ID
                       runtk.STDOUT: '{output_path}/{label}.run'}
     def __init__(self, **kwargs):
         super().__init__(
-            submit_template = Template(template="source ~/.bash_profile; /ddn/age/bin/lx-amd64/qsub {output_path}/{label}.sh",
+            submit_template = Template(template="qsub {output_path}/{label}.sh",
                                        key_args={'output_path',  'label'}),
             script_template = Template(template=self.script_template,
                                        key_args=self.script_args),

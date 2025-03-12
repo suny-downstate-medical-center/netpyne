@@ -479,20 +479,27 @@ def _addReactions(self, params, multicompartment=False):
                 dynamicVars['rate_b']  # fix for python 2
         else:
             rate_b = param['rate_b']
-
+            
         # regions
-        if 'regions' not in param:
-            param['regions'] = [None]
-        elif not isinstance(param['regions'], list):
-            param['regions'] = [param['regions']]
+        if "regions" not in param:
+            param["regions"] = None
+        elif not isinstance(param["regions"], list):
+            param["regions"] = [param["regions"]]
         try:
-            nrnRegions = [
-                self.rxd['regions'][region]['hObj']
-                for region in param['regions']
-                if region is not None and self.rxd['regions'][region]['hObj'] != None
-            ]
+            if param["regions"] is None:
+                nrnRegions = None
+            else:
+                nrnRegions = [
+                    self.rxd["regions"][region]["hObj"]
+                    for region in param["regions"]
+                    if region is not None
+                    and self.rxd["regions"][region]["hObj"] != None
+                ]
         except:
-            print('  Error creating %s %s: could not find regions %s' % (reactionStr, label, param['regions']))
+            print(
+                "  Error creating %s %s: could not find regions %s"
+                % (reactionStr, label, param["regions"])
+            )
 
         # membrane
         if 'membrane' not in param:

@@ -174,7 +174,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
         if submit_constructor == submits.SGESubmitSFS:
             from fabric import connection
             dispatcher_kwargs = {'connection': connection.Connection(host)}
-        if submit_constructor == submits.SlurmSubmitSFS:
+        if submit_constructor == submits.SlurmSubmitSSH:
             from batchtk.utils import TOTPConnection
             dispatcher_kwargs = {'connection': TOTPConnection(host, key)}
     else:
@@ -294,7 +294,7 @@ constructor_tuples = {
     ('sge', 'sfs' ): constructors(runtk.dispatchers.LocalDispatcher , submits.SGESubmitSFS ),
     ('sge', None): constructors(GridDispatcher, submits.SGESubmit),
     ('sge', 'ssh'): constructors(runtk.dispatchers.SSHDispatcher, submits.SGESubmitSSH), #TODO, both of these need comm types
-    ('slurm', 'ssh'): constructors(runtk.dispatchers.SSHDispatcher, submits.SlurmSubmitSFS),
+    ('slurm', 'ssh'): constructors(runtk.dispatchers.SSHDispatcher, submits.SlurmSubmitSSH),
     #('zsh', 'inet'): constructors(runtk.dispatchers.INETDispatcher, runtk.submits.ZSHSubmitSOCK), #TODO preferable to use AF_UNIX sockets on local machines
     #('slurm', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SlurmSubmitSOCK),
     #('slurm', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SlurmSubmitSFS),
@@ -378,7 +378,7 @@ def shim(dispatcher_constructor: Optional[Callable] = None, # constructor for th
         raise ValueError("missing job method and communication type for an optimization search, either specify a dispatcher_constructor and submit_constructor or a job_type and comm_type")
     if (kwargs['dispatcher_constructor'] == runtk.dispatchers.SSHDispatcher) and (host is None or remote_dir is None):
         raise ValueError("missing host and remote directory for SSH based dispatcher")
-    if (kwargs['submit_constructor'] == submits.SlurmSubmitSFS) and key is None:
+    if (kwargs['submit_constructor'] == submits.SlurmSubmitSSH) and key is None:
         raise ValueError("missing key for Slurm based dispatcher")
     if kwargs['dispatcher_constructor'] is None:
         raise ValueError("missing job type for grid or random based search, specify a job type")

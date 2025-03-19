@@ -207,6 +207,7 @@ wait
 
     def set_handles(self):
         pass #TODO get rid of this in both NetPyNE and batchtk
+
 class SGESubmitSFS(SGESubmit):
     script_args = {'label', 'queue', 'cores', 'vmem' 'realtime', 'output_path', 'project_path', 'env', 'command', }
     script_template = \

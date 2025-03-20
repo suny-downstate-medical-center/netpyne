@@ -169,6 +169,7 @@ class SlurmSubmitSSH(Submit):
 #SBATCH -t {realtime}
 #SBATCH --nodes={nodes}
 #SBATCH --ntasks-per-node={coresPerNode}
+#SBATCH --cpus-per-task=1
 #SBATCH --mem={mem}
 #SBATCH --partition={partition}
 #SBATCH -o {output_path}/{label}.run

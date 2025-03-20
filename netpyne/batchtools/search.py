@@ -202,6 +202,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
     #TODO class this object for self calls? cleaner? vs nested functions
     #TODO clean up working_dir and excludes
     storage_path = get_path(checkpoint_path)
+    load_path = "{}/{}".format(storage_path, label)
     algo = create_searcher(algorithm, **algorithm_config) #concurrency may not be accepted by all algo
     #search_alg – The search algorithm to use.
     #  metric – The training result objective value attribute. Stopping procedures will use this attribute.
@@ -235,9 +236,9 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
             session.report(metrics)
         else:
             session.report({'data': data, 'config': config})
-    if attempt_restore and tune.Tuner.can_restore(storage_path):
-        print("resuming previous run from {}".format(storage_path))
-        tuner = tune.Tuner.restore(path=storage_path,
+    if attempt_restore and tune.Tuner.can_restore(load_path):#TODO check restore
+        print("resuming previous run from {}".format(load_path))
+        tuner = tune.Tuner.restore(path=load_path,
                                    trainable=run,
                                    resume_unfinished=True,
                                    resume_errored=False,
@@ -245,7 +246,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
                                    param_space=params,
                                    )
     else:
-        print("starting new run to {}".format(storage_path))
+        print("starting new run to {}".format(load_path))
         tuner = tune.Tuner(
             run,
             tune_config=tune.TuneConfig(
@@ -256,7 +257,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
             ),
             run_config=RunConfig(
                 storage_path=storage_path,
-                name=algorithm,
+                name=label,
             ),
             param_space=params,
         )

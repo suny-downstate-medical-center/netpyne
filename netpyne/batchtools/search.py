@@ -174,7 +174,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
         if submit_constructor == submits.SGESubmitSFS:
             from fabric import connection
             dispatcher_kwargs = {'connection': connection.Connection(host)}
-        if submit_constructor == submits.SlurmSubmitSFS:
+        if submit_constructor == submits.SlurmSubmitSSH:
             from batchtk.utils import TOTPConnection
             dispatcher_kwargs = {'connection': TOTPConnection(host, key)}
     else:
@@ -202,6 +202,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
     #TODO class this object for self calls? cleaner? vs nested functions
     #TODO clean up working_dir and excludes
     storage_path = get_path(checkpoint_path)
+    load_path = "{}/{}".format(storage_path, label)
     algo = create_searcher(algorithm, **algorithm_config) #concurrency may not be accepted by all algo
     #search_alg – The search algorithm to use.
     #  metric – The training result objective value attribute. Stopping procedures will use this attribute.
@@ -235,9 +236,9 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
             session.report(metrics)
         else:
             session.report({'data': data, 'config': config})
-    if attempt_restore and tune.Tuner.can_restore(storage_path):
-        print("resuming previous run from {}".format(storage_path))
-        tuner = tune.Tuner.restore(path=storage_path,
+    if attempt_restore and tune.Tuner.can_restore(load_path):#TODO check restore
+        print("resuming previous run from {}".format(load_path))
+        tuner = tune.Tuner.restore(path=load_path,
                                    trainable=run,
                                    resume_unfinished=True,
                                    resume_errored=False,
@@ -245,7 +246,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
                                    param_space=params,
                                    )
     else:
-        print("starting new run to {}".format(storage_path))
+        print("starting new run to {}".format(load_path))
         tuner = tune.Tuner(
             run,
             tune_config=tune.TuneConfig(
@@ -256,7 +257,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
             ),
             run_config=RunConfig(
                 storage_path=storage_path,
-                name=algorithm,
+                name=label,
             ),
             param_space=params,
         )
@@ -294,7 +295,7 @@ constructor_tuples = {
     ('sge', 'sfs' ): constructors(runtk.dispatchers.LocalDispatcher , submits.SGESubmitSFS ),
     ('sge', None): constructors(GridDispatcher, submits.SGESubmit),
     ('sge', 'ssh'): constructors(runtk.dispatchers.SSHDispatcher, submits.SGESubmitSSH), #TODO, both of these need comm types
-    ('slurm', 'ssh'): constructors(runtk.dispatchers.SSHDispatcher, submits.SlurmSubmitSFS),
+    ('slurm', 'ssh'): constructors(runtk.dispatchers.SSHDispatcher, submits.SlurmSubmitSSH),
     #('zsh', 'inet'): constructors(runtk.dispatchers.INETDispatcher, runtk.submits.ZSHSubmitSOCK), #TODO preferable to use AF_UNIX sockets on local machines
     #('slurm', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SlurmSubmitSOCK),
     #('slurm', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SlurmSubmitSFS),
@@ -378,7 +379,7 @@ def shim(dispatcher_constructor: Optional[Callable] = None, # constructor for th
         raise ValueError("missing job method and communication type for an optimization search, either specify a dispatcher_constructor and submit_constructor or a job_type and comm_type")
     if (kwargs['dispatcher_constructor'] == runtk.dispatchers.SSHDispatcher) and (host is None or remote_dir is None):
         raise ValueError("missing host and remote directory for SSH based dispatcher")
-    if (kwargs['submit_constructor'] == submits.SlurmSubmitSFS) and key is None:
+    if (kwargs['submit_constructor'] == submits.SlurmSubmitSSH) and key is None:
         raise ValueError("missing key for Slurm based dispatcher")
     if kwargs['dispatcher_constructor'] is None:
         raise ValueError("missing job type for grid or random based search, specify a job type")

@@ -13,11 +13,12 @@ cfg.verbose = False # show detailed messages
 
 # Recording
 cfg.recordCells = []  # list of cells to record from
-cfg.recordTraces = {'V':{'sec':'soma','loc':0.5,'var':'v'},
-    'u':{'sec':'soma', 'pointp':'Izhi', 'var':'u'},
-    'I':{'sec':'soma', 'pointp':'Izhi', 'var':'i'},
-    'AMPA_g': {'sec':'soma', 'loc':0.5, 'synMech':'AMPA', 'var':'g'},
-    'AMPA_i': {'sec':'soma', 'loc':0.5, 'synMech':'AMPA', 'var':'i'}}
+cfg.recordTraces = {
+    'V':{'sec':'soma', 'loc':0.5, 'var':'v', 'conds':{'cellType':'PYR_HH'}},
+    'u':{'sec':'soma', 'pointp':'Izhi', 'var':'u', 'conds': {'cellType': 'PYR_Izhi'}},
+    'I':{'sec':'soma', 'pointp':'Izhi', 'var':'i', 'conds': {'cellType': 'PYR_Izhi'}},
+    'AMPA_g': {'sec':'soma', 'loc':0.5, 'synMech':'AMPA', 'var':'g', 'conds': {'cellType': 'PYR_HH'}},
+    'AMPA_i': {'sec':'soma', 'loc':0.5, 'synMech':'AMPA', 'var':'i', 'conds': {'cellType': 'PYR_HH'}}}
 cfg.recordStim = True  # record spikes of cell stims
 cfg.recordStep = 0.025 # Step size in ms to save data (eg. V traces, LFP, etc)
 

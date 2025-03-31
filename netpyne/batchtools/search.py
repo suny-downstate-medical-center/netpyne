@@ -424,7 +424,7 @@ def search(dispatcher_constructor: Optional[Callable] = None, # constructor for 
            remote_dir: Optional[str] = None, # absolute path for directory to run the search on (for submissions over SSH)
            host: Optional[str] = None, # host to run the search on
            key: Optional[str] = None # key for TOTP generator...
-           ) -> tune.ResultGrid: # results of the search
+           ) -> study: # results of the search
     """
     search(...)
 

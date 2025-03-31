@@ -9,6 +9,7 @@ from netpyne.batchtools import runtk
 from collections import namedtuple
 from batchtk.raytk.search import ray_trial, LABEL_POINTER
 from batchtk.utils import get_path
+from io import StringIO
 import numpy
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from netpyne.batchtools import submits
@@ -144,8 +145,11 @@ seed – Seed to initialize sampler with. This parameter is only used when sampl
 evaluated_rewards –
 If you have previously evaluated the parameters passed in as points_to_evaluate you can avoid re-running those trials by passing in the reward attributes as a list so the optimiser can be told the results without needing to re-compute the trial. Must be the same length as points_to_evaluate.
 """
+def prune_dataframe(results: pandas.DataFrame) -> pandas.DataFrame:
+    data = results['data'].apply(lambda x: pandas.read_csv(StringIO(x), sep='\s+', header=None))
+    return pandas.DataFrame([d.values.T[1] for d in data], columns=data[0].values.T[0]).drop(columns=['dtype:'])
 
-
+study = namedtuple('Study', ['results', 'data'])
 def ray_search(dispatcher_constructor: Callable, # constructor for the dispatcher (e.g. INETDispatcher)
                submit_constructor: Callable, # constructor for the submit (e.g. SHubmitSOCK)
                run_config: Dict, # batch configuration, (keyword: string pairs to customize the submit template)
@@ -168,7 +172,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
                remote_dir: Optional[str] = None, # absolute path for directory to run the search on (for submissions over SSH)
                host: Optional[str] = None,  # host to run the search on
                key: Optional[str] = None  # key for TOTP generator...
-               ) -> tune.ResultGrid:
+               ) -> study:
 
     if dispatcher_constructor == runtk.dispatchers.SSHDispatcher:
         if submit_constructor == submits.SGESubmitSFS:
@@ -261,32 +265,25 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
             ),
             param_space=params,
         )
-
-
     results = tuner.fit()
     errors = results.errors
     if errors:
         print("errors occured during execution: {}".format(errors))
         print("see {} for more information".format(output_path))
-        print("keeping {} for checkpointing".format(storage_path))
+        print("keeping {} for checkpointing".format(load_path))
         print("rerunning the same search again will keep any valid checkpointed data")
-        return results
-    # only execute if tuner.fit() is completed...
-    resultsdf = results.get_dataframe()
+        df = results.get_dataframe()
+        if prune_metadata:
+            df = prune_dataframe(df)
+        return study( results, df)
+    # only execute if tuner.fit() is completed without errors...
+    df = results.get_dataframe()
     if prune_metadata:
-        if metric is None:
-            regex_pattern = '^config|^data'
-        else:
-            if isinstance(metric, str):
-                metric = [metric]
-            metric_pattern = '|'.join(metric)
-            regex_pattern = '^config|^data|^{}'.format(metric_pattern)
-        resultsdf = resultsdf.filter(regex=regex_pattern)
-    resultsdf.to_csv("{}.csv".format(label))
+        df = prune_dataframe(df)
+    df.to_csv("{}.csv".format(label))
     if clean_checkpoint:
-        os.system("rm -r {}".format(storage_path))
-    return results
-
+        os.system("rm -r {}".format(load_path))
+    return study( results, df)
 
 #should be constant?
 constructors = namedtuple('constructors', 'dispatcher, submit')
@@ -304,7 +301,18 @@ constructor_tuples = {
     ('sh', None): constructors(GridDispatcher, submits.SHSubmit),
 }#TODO, just say "socket"?
 
-
+def load_search(path: str, prune_metadata=True) -> pandas.DataFrame:
+    def run(config):
+        pass
+    path = get_path(path)
+    try:
+        tuner = tune.Tuner.restore(path, run)
+    except Exception as e:
+        raise e
+    df = tuner.get_results().get_dataframe()
+    if prune_metadata:
+        df = prune_dataframe(df)
+    return df
 """
 some shim functions before ray_search
 """
@@ -364,7 +372,7 @@ def shim(dispatcher_constructor: Optional[Callable] = None, # constructor for th
          remote_dir: Optional[str] = None, # absolute path for directory to run the search on (for submissions over SSH)
          host: Optional[str] = None,  # host to run the search on
          key: Optional[str] = None  # key for TOTP generator...
-         ):
+         ) -> Dict:
     kwargs = locals()
     if metric is None and algorithm not in ['variant_generator', 'random', 'grid']:
         raise ValueError("a metric (string) must be specified for optimization searches")

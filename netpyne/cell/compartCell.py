@@ -435,16 +435,7 @@ If this cell is expected to be a point cell instead, make sure the correspondent
                                 mechParamValueFinal = self.__evaluateCellParamsStringFunc(
                                     func, vars, sec, seg.x, cellVars
                                 )
-                        try:
-                            setattr(getattr(seg, mechName), mechParamName, mechParamValueFinal)
-                        except Exception as e:
-                            #  if it's not a global raise AttributeError
-                            if getattr(h, "%s_%s".format(mechParamName, mechName), AttributeError) is AttributeError:
-                                raise AttributeError(
-                                    "Error setting %s.%s.%s = %s\nmechanism parameter is neither a mechanism attribute nor a mechanism global" % (sectName, mechName, mechParamName, mechParamValueFinal)
-                                )
-                            else: #
-                                pass
+                        setattr(getattr(seg, mechName), mechParamName, mechParamValueFinal)
         return mechInsertError
 
     def _addIons(self, sectName, sectParams):
@@ -1378,7 +1369,7 @@ If this cell is expected to be a point cell instead, make sure the correspondent
                     Ey = cos(theta)
                     Ez = sin(theta)*sin(phi)
                     E_field = np.expand_dims([Ex, Ey, Ez], axis=1)
-                    tr = -np.einsum('ij,ij->j', E_field, rel_05)  # compute dot product column-wise, the resulting array has as many columns as original
+                    tr = np.einsum('ij,ij->j', E_field, rel_05)  # compute dot product column-wise, the resulting array has as many columns as original
                     tr *= 1e-9
                 else:
                     print(" Extracellular stimulation not defined")
@@ -1640,7 +1631,7 @@ If this cell is expected to be a point cell instead, make sure the correspondent
         if synsPerConn > 1:  # if more than 1 synapse
             synMechSecs, synMechLocs = self._secsAndLocsForMultisynapse(params, isExplicitLoc, secLabels, connRandomSecFromList, distributeSynsUniformly)
         else:  # if 1 synapse
-            synMechSecs, synMechLocs = self._secsAndLocsForSingleSynapse(params, isExplicitLoc, secLabels, connRandomSecFromList)
+            synMechSecs, synMechLocs = self._secsAndLocsForSingleSynapse(params, secLabels, connRandomSecFromList)
 
         # add synaptic mechanism to section based on synMechSecs and synMechLocs (if already exists won't be added unless nonLinear set to True)
         synMechs = []
@@ -1649,7 +1640,7 @@ If this cell is expected to be a point cell instead, make sure the correspondent
             synMechs.append(synMech)
         return synMechs, synMechSecs, synMechLocs
 
-    def _secsAndLocsForSingleSynapse(self, params, isExplicitLoc, secLabels, connRandomSecFromList):
+    def _secsAndLocsForSingleSynapse(self, params, secLabels, connRandomSecFromList):
 
         # by default place on 1st section of list and location available
         synMechSecs = secLabels
@@ -1658,9 +1649,9 @@ If this cell is expected to be a point cell instead, make sure the correspondent
 
         # randomize the section to connect to and move it to beginning of list
         if connRandomSecFromList and len(synMechSecs) > 1:
-            if isExplicitLoc: # if loc was specified explicitly by user, they should've provided correct number of locs
+            if len(synMechLocs) > 1: # if loc was specified as list, its length should match the number of sections
                 _ensure(len(synMechSecs) == len(synMechLocs), params, "With connRandomSecFromList == True and synsPerConn == 1 (defaults), the lengths of the list of locations and the list of sections must be the same, in order to use the same randomly generated index for both")
-            else: # if using defaults, adjust it to match the number of sections
+            else: # for single loc (or 1-element list), adjust it to match the number of sections
                 synMechLocs = synMechLocs * len(synMechSecs)
 
             rand = h.Random()
@@ -1682,12 +1673,12 @@ If this cell is expected to be a point cell instead, make sure the correspondent
                 _ensure(len(loc) == synsPerConn, params, "The length of the list of locations does not match synsPerConn")
                 synMechLocs = loc
             else: # single value or no value
-                _ensure(isExplicitLoc == False, params, f"specifiyng the `loc` as single value when synsPerConn > 1 ({synsPerConn} in your case) is deprecated. To silence this warning, remove `loc` from the connection parameters or provide a list of {synsPerConn} values (per each synMech if they are several).")
+                _ensure(isExplicitLoc == False, params, f"specifiyng the `loc` as single value when synsPerConn > 1 ({synsPerConn} in your case) is deprecated. To silence this warning, remove `loc` from the connection parameters (locations will be distributed uniformly along the section) or provide a list of {synsPerConn} values (or list of such lists, if your connParams has multiple synMechs).")
                 synMechLocs = [i / synsPerConn + 1 / synsPerConn / 2 for i in range(synsPerConn)]
         else:
             # if multiple sections, distribute syns uniformly
             if distributeSynsUniformly:
-                _ensure(isExplicitLoc == False, params, f"specifiyng the `loc` explicitly when distributeSynsUniformly is True and multiple sections provided is deprecated. To silence this warning, remove `loc` from the connection parameters or set distributeSynsUniformly to False.")
+                _ensure(isExplicitLoc == False, params, f"specifiyng the `loc` explicitly when distributeSynsUniformly is True (default) and multiple sections are provided is deprecated. To silence this warning, remove `loc` from the connection parameters or set distributeSynsUniformly to False.")
                 synMechSecs, synMechLocs = self._distributeSynsUniformly(secList=secLabels, numSyns=synsPerConn)
             else:
                 if connRandomSecFromList:
@@ -1705,7 +1696,7 @@ If this cell is expected to be a point cell instead, make sure the correspondent
                     synMechSecs = secLabels
                     synMechLocs = loc
         return synMechSecs, synMechLocs
-    
+
     def _randomSecAndLocFromList(self, params, synsPerConn, secLabels, loc, isExplicitLoc):
         rand = h.Random()
         preGid = params['preGid'] if isinstance(params['preGid'], int) else 0
@@ -1723,7 +1714,7 @@ If this cell is expected to be a point cell instead, make sure the correspondent
             randLocPos = randInt(rand, N=synsPerConn, vmin=0, vmax=maxval, unique=isUnique)
             synMechLocs = [loc[i] for i in randLocPos]
         else:
-            _ensure(isExplicitLoc == False, params, f"specifiyng the `loc` explicitly when distributeSynsUniformly is False and connRandomSecFromList is True (with multiple sections provided) is deprecated. To silence this warning, remove `loc` from the connection parameters.")
+            _ensure(isExplicitLoc == False, params, f"specifiyng the `loc` as single value when connRandomSecFromList is True (with multiple sections provided) is deprecated. To silence this warning, provide a list, or remove `loc` from the connection parameters (locations will be picked from a uniform distribution).")
 
             rand.uniform(0, 1)
             synMechLocs = h.Vector(synsPerConn).setrand(rand).to_python()

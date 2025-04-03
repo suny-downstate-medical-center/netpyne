@@ -13,6 +13,8 @@ from io import StringIO
 import numpy
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from netpyne.batchtools import submits
+#import signal #incompatible with signal and threading from ray
+#import threading
 
 choice = tune.choice
 grid = tune.grid_search
@@ -27,7 +29,6 @@ class GridDispatcher(runtk.dispatchers.LocalDispatcher):
 
     def recv(self, interval):
         return '{}'  # dummy json value to return...
-
 
 def ray_optuna_search(dispatcher_constructor: Callable, # constructor for the dispatcher (e.g. INETDispatcher)
                       submit_constructor: Callable, # constructor for the submit (e.g. SHubmitSOCK)
@@ -174,6 +175,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
                key: Optional[str] = None  # key for TOTP generator...
                ) -> study:
 
+    expected_total = params.pop('_expected_trials_per_sample') * num_samples
     if dispatcher_constructor == runtk.dispatchers.SSHDispatcher:
         if submit_constructor == submits.SGESubmitSFS:
             from fabric import connection
@@ -228,7 +230,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
                          project_path=project_path, output_path=output_path, submit=submit,
                          dispatcher_kwargs=dispatcher_kwargs, interval=sample_interval)
         if metric is None:
-            metrics = {'config': config, 'data': numpy.nan}
+            metrics = {'config': config, 'data': numpy.nan} #TODO, should include 'config' now with purge_metadata?
             session.report(metrics)
         elif isinstance(metric, str):
             metrics = {'config': config, 'data': data, metric: data[metric]}
@@ -267,19 +269,23 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
         )
     results = tuner.fit()
     errors = results.errors
-    if errors:
-        print("errors occured during execution: {}".format(errors))
+    df = results.get_dataframe() # note that results.num_terminated DOES NOT CURRENTLY reflect collected datapoints.
+    num_total = len(df)
+    if errors or num_total < expected_total:
+        print("errors/SIGINT occurred during execution: {}".format(errors))
+        print("only {} of {} expected trials completed successfully".format(num_total, expected_total))
         print("see {} for more information".format(output_path))
-        print("keeping {} for checkpointing".format(load_path))
-        print("rerunning the same search again will keep any valid checkpointed data")
-        df = results.get_dataframe()
+        print("keeping {} checkpoint directory".format(load_path))
+        print("rerunning the same search again will restore valid checkpointed data in {}".format(load_path))
         if prune_metadata:
             df = prune_dataframe(df)
+        print("saving current results to {}.csv".format(label))
+        df.to_csv("{}.csv".format(label))
         return study( results, df)
-    # only execute if tuner.fit() is completed without errors...
-    df = results.get_dataframe()
+    #df = results.get_dataframe()
     if prune_metadata:
         df = prune_dataframe(df)
+    print("saving results to {}.csv".format(label))
     df.to_csv("{}.csv".format(label))
     if clean_checkpoint:
         os.system("rm -r {}".format(load_path))
@@ -335,9 +341,11 @@ def generate_parameters(params, algorithm, **kwargs):
     #TODO: check coverage of conditional statements (looks okay?)
     """
     ray_params = {}
+    _expected_trials_per_sample = 1
     for param, space in params.items():
         if   isinstance(space, (list, tuple, range, numpy.ndarray)) and algorithm in {'variant_generator'}:
             ray_params[param] = tune.grid_search(space) #specify random for uniform and choice.
+            _expected_trials_per_sample *= len(space)
         elif isinstance(space, (list, tuple)) and algorithm in SEARCH_ALG_IMPORT.keys():
             if len(space) == 2: #if 2 sample from uniform lb, ub
                 ray_params[param] = tune.uniform(*space)
@@ -345,6 +353,9 @@ def generate_parameters(params, algorithm, **kwargs):
                 ray_params[param] = tune.choice(space)
         else: #assume a tune search space was defined
             ray_params[param] = space
+            if isinstance(space, dict):
+                _expected_trials_per_sample *= len(space['grid_search'])
+    ray_params['_expected_trials_per_sample'] = _expected_trials_per_sample
     return ray_params
 
 

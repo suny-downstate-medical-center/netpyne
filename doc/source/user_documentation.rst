@@ -2786,14 +2786,14 @@ The code for neural network optimization through evolutionary algorithm used in 
 .. Adding cell classes
 .. --------------------
 
-Running a Batch Job
-===================
+Running a Batch Job (Beta)
+==========================
 
-The NetPyNE batchtools subpackage provides a new method of automating submission of simulations and collating results
+The NetPyNE batchtools subpackage provides a new method of automating submission of simulations and collating results, built as a dispatcher <-> runner communication. Currently it uses `Ray Tune parameter optimization and checkpointing package`
 
-While objects and interfaces can be handled directly, we have integrated and automated everything into simple wrapper commands applicable to most use-cases.
+While objects and interfaces can be handled directly, we have integrated and automated everything into simple wrapper commands applicable to this use-case.
 automatic parameter searches can be done by specifying a search space and algorithm through `netpyne.batchtools.search`, and
-parameter to model translation and result communication is handled through `netpyne.specs` and `netpyne.sim.comm` respectively.
+parameter to model translation and result communication is handled through `netpyne.specs` and `netpyne.sim` respectively.
 
 A diagram of the wrapper interactions...
 
@@ -2801,8 +2801,10 @@ A diagram of the wrapper interactions...
 
  netpyne.batchtools.search.search(   ) ----------------------------\                 host
         |                                                          |
-        | search(   )                                              |
- ==============================================================================================
+        | search(   )                                   collects and collates data
+        |  runs a single simulation with                           |
+        |  generated mappings                                      |
+ === mappings =================================================== data ==========================
         |                                                        ^     ^
         |                                                        |     |
         |  cfg = netpyne.specs.SimConfig(   )                    |     |
@@ -2810,7 +2812,7 @@ A diagram of the wrapper interactions...
         v            v                                           |     |
         cfg.update_cfg() ----------------------------------------/     |
                                                                        |
-        send(   )                                               netpyne.sim.send(   )
+        send(   )                                               netpyne.sim.send(data)
                                                                                     simulation
 
 1. Setting up batchtools
@@ -2832,6 +2834,40 @@ A development install of the batchtools subpackage::
 Ray is a dependency for batchtools, and should be installed with the following command::
 
     pip install -U ray[default]
+
+You can validate that the correct packages are installed by checking the ``sim.send`` and ``cfg.update`` methods in an interactive python instance::
+
+    In [1]: from netpyne import sim, specs
+    Warning: no DISPLAY environment variable.
+    --No graphics will be displayed.
+    numprocs=1
+
+    In [2]: help(sim.send)
+    Help on method send in module netpyne.batchtools.comm:
+
+    send(data) method of netpyne.batchtools.comm.Comm instance
+
+
+    In [3]: cfg = specs.SimConfig()
+
+    In [4]: help(cfg.update)
+    Help on method update in module netpyne.batchtools.runners:
+    ...
+
+If there is an issue with installation, the following message will be presented instead when calling help on either function::
+
+    In [2]: help(sim.send)
+    Help on function send in module netpyne.sim:
+
+    send(*args, **kwargs)
+    This method is implemented in batchtools,
+    which requires the batchtk package to be
+    installed. If you are seeing this message
+    when calling help, it indicates there is
+    an issue with your current batchtools
+    installation
+
+Though the relevant methods can be called without raising an exception, they will not perform any operation.
 
 2. Examples
 -----------
@@ -2868,7 +2904,7 @@ Truncated output of the above code block...:
 
     class Runner_SimConfig(batchtk.runtk.runners.Runner, netpyne.specs.simConfig.SimConfig)
 
-* This updated ``cfg`` instance automatically captures relevant configuration mappings created by upon initialization
+* This updated ``cfg`` instance automatically captures relevant configuration mappings created upon initialization
 
    * these mappings can be retrieved via ``cfg.get_mappings()``
 
@@ -2899,7 +2935,7 @@ This REPLACES the previous idiom for updating the SimConfig object with mappings
 4. Additional functionality within the simConfig object
 -------------------------------------------------------
 
-``cfg.update()`` supports also supports the optional argument ``force_match``, which forces values in the update dictionary to match existing attributes within the ``SimConfig`` object. This setting is recommended to be set to ``True`` in order to prevent the unanticipated creation of new attributes within the ``SimConfig`` object at runtime ...
+``cfg.update()`` also supports the optional argument ``force_match``, which forces values in the update dictionary to match existing attributes within the ``SimConfig`` object. This setting is recommended to be set to ``True`` during debugging to check for accidental creation of new attributes within the ``SimConfig`` object at runtime ...
 
 .. code-block:: python
 
@@ -2910,7 +2946,7 @@ This REPLACES the previous idiom for updating the SimConfig object with mappings
             cfg.update({'typo': 1}, force_match=True)            # cfg.typo is not defined, so this line will raise an AttributeError
         except Exception as e:
             print(e)
-        cfg.update({'typo': 1})                                  # without force_match, the typo attribute cfg.fooo is created and set to 1
+        cfg.update({'typo': 1})                                  # without force_match, the typo attribute is created and set to 1
         assert cfg.type == 0                                     # cfg.type remains unchanged due to a typo in the attribute name 'type' -> 'typo'
         assert cfg.typo == 1                                     # instead, cfg.typo is created and set to the value 1
 
@@ -2939,7 +2975,7 @@ Prior batched simulations relied on ``.pkl`` files to communicate data. In order
 
 In terms of the simulation, the following functions are available to the user:
 
-* **sim.send(<data>)**: sends ``<data>`` to the batch ``dispatcher``
+* **sim.send(<data>)**: sends ``<data>`` to the batch ``dispatcher``, esp.
 
     * for ``search`` jobs, it is important to match the data sent with the metric specified in the search function
 

@@ -194,7 +194,14 @@ class SimConfig(object):
         return replaceDictODict(self.__dict__)
 
     def update(self, *args, **kwargs):
-        # currently does nothing,
+        """
+        This method is implemented in batchtools,
+        which requires the batchtk package to be
+        installed. If you are seeing this message
+        when calling help, it indicates there is
+        an issue with your current batchtools
+        installation
+        """
         pass
 
     def validateDataSaveOptions(self, printWarning=True):

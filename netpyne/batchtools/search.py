@@ -20,7 +20,17 @@ choice = tune.choice
 grid = tune.grid_search
 uniform = tune.uniform
 
-class GridDispatcher(runtk.dispatchers.LocalDispatcher):
+class LocalGridDispatcher(runtk.dispatchers.LocalDispatcher):
+    def start(self):
+        super().start(restart=True)
+
+    def connect(self):
+        return
+
+    def recv(self, interval):
+        return '{}'  # dummy json value to return...
+
+class SSHGridDispatcher(runtk.dispatchers.SSHDispatcher):
     def start(self):
         super().start(restart=True)
 
@@ -88,15 +98,17 @@ def ray_optuna_search(dispatcher_constructor: Callable, # constructor for the di
                               max_concurrent=max_concurrent,
                               batch=batch) #TODO does max_concurrent and batch work?
 
-    submit = submit_constructor()
-    submit.update_templates(
-        **run_config
-    )
+    #submit = submit_constructor()
+    #submit.update_templates(
+    #    **run_config
+    #)
     project_path = os.getcwd()
 
     def run(config):
         config.update({'saveFolder': output_path, 'simLabel': LABEL_POINTER})
-        data = ray_trial(config, label, dispatcher_constructor, project_path, output_path, submit)
+        data = ray_trial(config=config, label=label, dispatcher_constructor=dispatcher_constructor,
+                         project_path=project_path, output_path=output_path, submit_constructor=submit_constructor,
+                         submit_kwargs=run_config, log=None)
         if isinstance(metric, str):#TODO only Optuna supports multiobjective?
             metrics = {'config': config, 'data': data, metric: data[metric]}
             session.report(metrics)
@@ -147,8 +159,19 @@ evaluated_rewards –
 If you have previously evaluated the parameters passed in as points_to_evaluate you can avoid re-running those trials by passing in the reward attributes as a list so the optimiser can be told the results without needing to re-compute the trial. Must be the same length as points_to_evaluate.
 """
 def prune_dataframe(results: pandas.DataFrame) -> pandas.DataFrame:
-    data = results['data'].apply(lambda x: pandas.read_csv(StringIO(x), sep='\s+', header=None))
-    return pandas.DataFrame([d.values.T[1] for d in data], columns=data[0].values.T[0]).drop(columns=['dtype:'])
+    #def process_column(column):
+    #    expanded_column = column.apply(lambda x: pandas.read_csv(StringIO(x), sep='\s\s+', header=None))
+    #    return pandas.DataFrame([c.values.T[1] for c in expanded_column], columns=expanded_column[0].values.T[0]).drop(columns=['dtype:'])
+    # call process_column instead, with both 'config' and 'data'
+    try:
+        data   = results['data'].apply(lambda x: pandas.read_csv(StringIO(x), sep='\s\s+', header=None))
+        df     = pandas.DataFrame([d.values.T[1] for d in data], columns=data[0].values.T[0]).iloc[ :, :-1]
+    except Exception as e:
+        df = results
+    # use >=2 whitespace delimiter for compatibility with lists, dictionaries, where single whitespace character is placed between
+    # objects.
+    #config = results['config'].apply(lambda x: pandas.read_csv(StringIO(x), sep='\s+', header=None))
+    return df
 
 study = namedtuple('Study', ['results', 'data'])
 def ray_search(dispatcher_constructor: Callable, # constructor for the dispatcher (e.g. INETDispatcher)
@@ -169,6 +192,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
                ray_config: Optional[dict] = None, # additional configuration for the ray initialization
                attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
                clean_checkpoint = True, # whether to clean the checkpoint directory after a completed successful search, errored searches will skip cleanup.
+               report_config = ('path', 'config', 'data'), # what to report back to the user
                prune_metadata = True, # whether to prune the metadata from the results.csv
                remote_dir: Optional[str] = None, # absolute path for directory to run the search on (for submissions over SSH)
                host: Optional[str] = None,  # host to run the search on
@@ -219,29 +243,30 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
     except:
         pass
 
-    submit = submit_constructor()
-    submit.update_templates(
-        **run_config
-    )
+    #submit = submit_constructor()
+    #submit.update_templates(
+    #    **run_config
+    #)
     project_path = remote_dir or os.getcwd() # if remote_dir is None, then use the current working directory
     def run(config):
         config.update({'saveFolder': output_path, 'simLabel': LABEL_POINTER})
         data = ray_trial(config=config, label=label, dispatcher_constructor=dispatcher_constructor,
-                         project_path=project_path, output_path=output_path, submit=submit,
-                         dispatcher_kwargs=dispatcher_kwargs, interval=sample_interval)
+                         project_path=project_path, output_path=output_path, submit_constructor=submit_constructor,
+                         dispatcher_kwargs=dispatcher_kwargs, submit_kwargs=run_config,
+                         interval=sample_interval, log=None, report=report_config)
         if metric is None:
-            metrics = {'config': config, 'data': numpy.nan} #TODO, should include 'config' now with purge_metadata?
+            metrics = {'data': data} #TODO, should include 'config' now with purge_metadata?
             session.report(metrics)
         elif isinstance(metric, str):
-            metrics = {'config': config, 'data': data, metric: data[metric]}
+            metrics = {'data': data, metric: data[metric]}
             session.report(metrics)
         elif isinstance(metric, (list, tuple)):
             metrics = {k: data[k] for k in metric}
             metrics['data'] = data
-            metrics['config'] = config
+            #metrics['config'] = config
             session.report(metrics)
         else:
-            session.report({'data': data, 'config': config})
+            session.report({'data': data})
     if attempt_restore and tune.Tuner.can_restore(load_path):#TODO check restore
         print("resuming previous run from {}".format(load_path))
         tuner = tune.Tuner.restore(path=load_path,
@@ -296,15 +321,17 @@ constructors = namedtuple('constructors', 'dispatcher, submit')
 constructor_tuples = {
     ('sge', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SGESubmitSOCK),
     ('sge', 'sfs' ): constructors(runtk.dispatchers.LocalDispatcher , submits.SGESubmitSFS ),
-    ('sge', None): constructors(GridDispatcher, submits.SGESubmit),
-    ('sge', 'ssh'): constructors(runtk.dispatchers.SSHDispatcher, submits.SGESubmitSSH), #TODO, both of these need comm types
-    ('slurm', 'ssh'): constructors(runtk.dispatchers.SSHDispatcher, submits.SlurmSubmitSSH),
+    ('sge', None): constructors(LocalGridDispatcher, submits.SGESubmit),
+    ('ssh_sge', 'ssh'): constructors(runtk.dispatchers.SSHDispatcher, submits.SGESubmitSSH), #TODO, both of these need comm types
+    ('ssh_slurm', 'ssh'): constructors(runtk.dispatchers.SSHDispatcher, submits.SlurmSubmitSSH),
+    ('ssh_sge', None): constructors(SSHGridDispatcher, submits.SGESubmitSSH), #don't need to worry about changing the handl
+    ('ssh_slurm', None): constructors(SSHGridDispatcher, submits.SlurmSubmitSSH),
     #('zsh', 'inet'): constructors(runtk.dispatchers.INETDispatcher, runtk.submits.ZSHSubmitSOCK), #TODO preferable to use AF_UNIX sockets on local machines
     #('slurm', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SlurmSubmitSOCK),
     #('slurm', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SlurmSubmitSFS),
     ('sh', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SHSubmitSOCK), #
     ('sh', 'sfs' ): constructors(runtk.dispatchers.LocalDispatcher , submits.SHSubmitSFS),
-    ('sh', None): constructors(GridDispatcher, submits.SHSubmit),
+    ('sh', None): constructors(LocalGridDispatcher, submits.SHSubmit),
 }#TODO, just say "socket"?
 
 def load_search(path: str, prune_metadata=True) -> pandas.DataFrame:
@@ -379,6 +406,7 @@ def shim(dispatcher_constructor: Optional[Callable] = None, # constructor for th
          ray_config: Optional[dict] = None,  # additional configuration for the ray initialization
          attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
          clean_checkpoint: Optional[bool] = True, # whether to clean the checkpoint directory after the search
+         report_config=('path', 'config', 'data'),  # what to report back to the user
          prune_metadata: Optional[bool] = True, # whether to prune the metadata from the results.csv
          remote_dir: Optional[str] = None, # absolute path for directory to run the search on (for submissions over SSH)
          host: Optional[str] = None,  # host to run the search on
@@ -431,6 +459,7 @@ def search(dispatcher_constructor: Optional[Callable] = None, # constructor for 
            ray_config: Optional[dict] = None,  # additional configuration for the ray initialization
            attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
            clean_checkpoint: Optional[bool] = True, # whether to clean the checkpoint directory after the search
+           report_config=('path', 'config', 'data'),  # what to report back to the user
            prune_metadata: Optional[bool] = True, # whether to prune the metadata from the results.csv
            remote_dir: Optional[str] = None, # absolute path for directory to run the search on (for submissions over SSH)
            host: Optional[str] = None, # host to run the search on

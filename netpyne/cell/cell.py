@@ -261,25 +261,6 @@ class Cell(object):
                                     self.secs[params['sec']]['pointps'][params['pointp']]['hObj'],
                                     '_ref_' + params['var'],
                                 )
-                        # TODO: this block seems to be obsolete, need to re-visit
-                        elif 'conns' in params:  # e.g. cell.conns
-                            if 'mech' in params:
-                                ptr = []
-                                secLocs = []
-                                for conn_idx, conn in enumerate(self.conns):
-                                    if params['mech'] in conn.keys():
-                                        if (
-                                            isinstance(conn[params['mech']], dict)
-                                            and 'hObj' in conn[params['mech']].keys()
-                                        ):
-                                            ptr.extend(
-                                                [getattr(conn[params['mech']]['hObj'], '_ref_' + params['var'])]
-                                            )
-                                        else:
-                                            ptr.extend([getattr(conn[params['mech']], '_ref_' + params['var'])])
-                                        secLocs.extend([params['sec'] + '_conn_' + str(conn_idx)])
-                            else:
-                                print("Error recording conn trace, you need to specify the conn mech to record from.")
                         else:  # eg. soma(0.5)._ref_v
                             ptr = getattr(self.secs[params['sec']]['hObj'](params['loc']), '_ref_' + params['var'])
                     elif 'synMech' in params:  # special case where want to record from multiple synMechs

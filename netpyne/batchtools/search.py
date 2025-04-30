@@ -28,7 +28,7 @@ class LocalGridDispatcher(runtk.dispatchers.LocalDispatcher):
         return
 
     def recv(self, interval):
-        return '{}'  # dummy json value to return...
+        return '{"_none": 0}'  # dummy json value to return...
 
 class SSHGridDispatcher(runtk.dispatchers.SSHDispatcher):
     def start(self):
@@ -38,7 +38,7 @@ class SSHGridDispatcher(runtk.dispatchers.SSHDispatcher):
         return
 
     def recv(self, interval):
-        return '{}'  # dummy json value to return...
+        return '{"_none": 0}'  # dummy json value to return...
 
 def ray_optuna_search(dispatcher_constructor: Callable, # constructor for the dispatcher (e.g. INETDispatcher)
                       submit_constructor: Callable, # constructor for the submit (e.g. SHubmitSOCK)
@@ -200,7 +200,8 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
                ) -> study:
 
     expected_total = params.pop('_expected_trials_per_sample') * num_samples
-    if dispatcher_constructor == runtk.dispatchers.SSHDispatcher:
+    if (dispatcher_constructor == runtk.dispatchers.SSHDispatcher) or \
+       (dispatcher_constructor == SSHGridDispatcher):
         if submit_constructor == submits.SGESubmitSFS:
             from fabric import connection
             dispatcher_kwargs = {'connection': connection.Connection(host)}
@@ -227,7 +228,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
     } | algorithm_config
 
     if metric is None:
-        algorithm_config['metric'] = 'data'
+        algorithm_config['metric'] = '_none'
 
     #TODO class this object for self calls? cleaner? vs nested functions
     #TODO clean up working_dir and excludes
@@ -255,7 +256,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
                          dispatcher_kwargs=dispatcher_kwargs, submit_kwargs=run_config,
                          interval=sample_interval, log=None, report=report_config)
         if metric is None:
-            metrics = {'data': data} #TODO, should include 'config' now with purge_metadata?
+            metrics = {'data': data, '_none': 0} #TODO, should include 'config' now with purge_metadata?
             session.report(metrics)
         elif isinstance(metric, str):
             metrics = {'data': data, metric: data[metric]}
@@ -266,7 +267,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
             #metrics['config'] = config
             session.report(metrics)
         else:
-            session.report({'data': data})
+            session.report({'data': data, '_none': 0})
     if attempt_restore and tune.Tuner.can_restore(load_path):#TODO check restore
         print("resuming previous run from {}".format(load_path))
         tuner = tune.Tuner.restore(path=load_path,

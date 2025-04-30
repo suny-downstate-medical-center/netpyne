@@ -323,8 +323,8 @@ constructor_tuples = {
     ('sge', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SGESubmitSOCK),
     ('sge', 'sfs' ): constructors(runtk.dispatchers.LocalDispatcher , submits.SGESubmitSFS ),
     ('sge', None): constructors(LocalGridDispatcher, submits.SGESubmit),
-    ('ssh_sge', 'ssh'): constructors(runtk.dispatchers.SSHDispatcher, submits.SGESubmitSSH), #TODO, both of these need comm types
-    ('ssh_slurm', 'ssh'): constructors(runtk.dispatchers.SSHDispatcher, submits.SlurmSubmitSSH),
+    ('ssh_sge', 'sftp'): constructors(runtk.dispatchers.SSHDispatcher, submits.SGESubmitSSH), #TODO, both of these need comm types
+    ('ssh_slurm', 'sftp'): constructors(runtk.dispatchers.SSHDispatcher, submits.SlurmSubmitSSH),
     ('ssh_sge', None): constructors(SSHGridDispatcher, submits.SGESubmitSSH), #don't need to worry about changing the handl
     ('ssh_slurm', None): constructors(SSHGridDispatcher, submits.SlurmSubmitSSH),
     #('zsh', 'inet'): constructors(runtk.dispatchers.INETDispatcher, runtk.submits.ZSHSubmitSOCK), #TODO preferable to use AF_UNIX sockets on local machines

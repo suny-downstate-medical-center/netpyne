@@ -1,4 +1,3 @@
-from netpyne import specs
 from netpyne import sim
 from netParams import netParams, cfg
 import json

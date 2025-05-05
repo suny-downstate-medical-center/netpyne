@@ -2988,7 +2988,7 @@ Batch job handling is implemented from ``netpyne.batchtools.search``. Below is a
     from netpyne.batchtools import search
     help(search)
 
-**search**
+**search (truncated API)**
 
 .. code-block:: python
 
@@ -3002,16 +3002,11 @@ def search(
            output_path: Optional[str] = './batch',  # directory for storing generated files, either relative to the current working directory if starting with '.' or an absolute path if starting with '/'
            checkpoint_path: Optional[str] = './checkpoint',  # directory for storing checkpoint files, either relative to the current working directory if starting with '.' or an absolute path if starting with '/'
            max_concurrent: Optional[int] = 1,  # number of concurrent trials to run at one time
-           batch: Optional[bool] = True,  # whether concurrent trials should run synchronously or asynchronously
            num_samples: Optional[int] = 1,  # number of trials to run, for parameter grids, a value of 1 means that the search will sample the parameter space of each value in the grid
            metric: Optional[str] = None, # metric to optimize (this should match some key: value pair in the returned data
            mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
            sample_interval: Optional[int] = 15,  # interval to poll for new results (in seconds)
-           algorithm_config: Optional[dict] = None,  # additional configuration for the search algorithm
-           ray_config: Optional[dict] = None,  # additional configuration for the ray initialization
            attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
-           clean_checkpoint: Optional[bool] = True, # whether to clean the checkpoint directory after a successful search
-           host: Optional[str] = None, # host to run the search on
            ) -> study: # results of the search
 The basic search implemented with the ``search`` function uses ``ray.tune`` as the search algorithm backend, creates a `.csv` storing the results, and returning a ``study`` object containing. It takes the following parameters;
 
@@ -3187,17 +3182,20 @@ Currently, the following argument pairs are acceptable for ``job_type`` and ``co
 
 * **output_path**: the directory for storing generated files, can be a relative or absolute path
 
-* **checkpoint_path**: the directory for storing checkpoint files (maintained by ``ray.tune``)in case the search needs to be restored, can be a relative or absolute path
+* **checkpoint_path**: the directory for storing internal ray checkpoint files (maintained by ``ray.tune``)in case the search needs to be restored, can be a relative or absolute path. This checkpoint path maintains search state and allows for restoring searches. On successful completion of a search, the default behavior of the search is to delete the checkpoint directory.
 
-* **max_concurrent**: the number of concurrent trials to run at one time, it is recommended to keep in mind the resource usage of each trial to avoid overscheduling
+* **max_concurrent**: the number of concurrent trials to run at one time
 
-* **num_samples**: the number of trials to run, for any grid search, each value in the grid will be sampled ``num_samples`` times.
+* **num_samples**: the number of trials to run, for parameter grids, a value of 1 means that the search will sample the parameter space of each value in the grid
 
 * **metric**: the metric to optimize (this should match some key: value pair in the returned data). Optional for ``"grid"``, ``"variant_generator"`` and ``"random"`` algorithms with ``None`` specified as the ``comm_type``, but required for optimization algorithms
 
 * **mode**: either 'min' or 'max' (whether to minimize or maximize the metric). Optional as above.
 
+* **sample_interval**: interval in seconds to poll for new results (polling for file system based communication methods).
+
 * **attempt_restore**: If True, the search will first attempt to restore from the checkpoint at **checkpoint_path**, useful for restoring interrupted batch jobs (simply rerun the same script again)
+
 
 7. Batch searches on the Rosenbrock function (some simple examples)
 -------------------------------------------------------------------
@@ -3318,8 +3316,13 @@ The ``out_json`` output contains a dictionary which includes the ``loss`` metric
 
 In a multi-objective optimization, the relevant ``PYR_loss``, ``BC_loss``, and ``OLM_loss`` components are additionally included (see ``mo_optuna_search.py``)
 
-9. Parameter Importance Evaluation Using fANOVA
------------------------------------------------
+9. Ray Checkpointing and Resuming Interrupted Searches
+-------------------------------------------------------
+A new feature in this beta release is the checkpointing and saving of search progress via the ``ray`` backend. This data is saved in the ``checkpoint_path`` directory specified in the ``search`` function, (which defaults to a newly created ``checkpoint`` folder within the source directory, and the default behavior of ``search`` is to automatically attempt a restore if the batch job is interrupted.
+Upon successful completion of the search, the default behavior is to delete these checkpoint files. If the user manually ends the search due to coding error and wishes to restart the search, the ``checkpoint_path`` should be deleted first.
+
+10. Parameter Importance Evaluation Using fANOVA (unstable)
+----------------------------------------------------------
 A new feature in this beta release is the ability to evaluate parameter importance using a functional ANOVA inspired algorithm via the ``Optuna`` and ``scikit-learn`` libraries.
 (See `the original Hutter paper <http://proceedings.mlr.press/v32/hutter14.pdf>`_  and its `citation <https://automl.github.io/fanova/cite.html>`_)
 
@@ -3338,7 +3341,4 @@ To run the example, generate an output ``grid.csv`` using ``batch.py``, then loa
         results = analyzer.run_analysis() # run fANOVA analysis and store the importance values in a results dictionary
 
 
-10. Ray Checkpointing and Resuming Interrupted Searches
--------------------------------------------------------
-A new feature in this beta release is the checkpointing and saving of search progress via the ``ray`` backend. This data is saved in the ``checkpoint_path`` directory specified in the ``search`` function, (which defaults to a newly created ``checkpoint`` folder within the source directory, and the default behavior of ``search`` is to automatically attempt a restore if the batch job is interrupted.
-Upon successful completion of the search, the default behavior is to delete these checkpoint files. If the user manually ends the search due to coding error and wishes to restart the search, the ``checkpoint_path`` should be deleted first.
+

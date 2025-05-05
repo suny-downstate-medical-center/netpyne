@@ -2789,31 +2789,17 @@ The code for neural network optimization through evolutionary algorithm used in 
 Running a Batch Job (Beta)
 ==========================
 
-The NetPyNE batchtools subpackage provides a new method of automating submission of simulations and collating results, built as a dispatcher <-> runner communication. Currently it uses `Ray Tune parameter optimization and checkpointing package`
+The NetPyNE batchtools subpackage provides a new method of automating submission of simulations and collating results, built as a dispatcher <-> runner communication. Currently it uses the ``Ray Tune`` parameter optimization and checkpointing package`
 
 While objects and interfaces can be handled directly, we have integrated and automated everything into simple wrapper commands applicable to this use-case.
-automatic parameter searches can be done by specifying a search space and algorithm through `netpyne.batchtools.search`, and
-parameter to model translation and result communication is handled through `netpyne.specs` and `netpyne.sim` respectively.
+automatic parameter searches can be done by specifying a search space and algorithm through ``netpyne.batchtools.search``, and
+parameter to model translation and result communication is handled through ``netpyne.specs`` and ``netpyne.sim`` respectively.
 
 A diagram of the wrapper interactions...
 
-::
-
- netpyne.batchtools.search.search(   ) ----------------------------\                 host
-        |                                                          |
-        | search(   )                                   collects and collates data
-        |  runs a single simulation with                           |
-        |  generated mappings                                      |
- === mappings =================================================== data ==========================
-        |                                                        ^     ^
-        |                                                        |     |
-        |  cfg = netpyne.specs.SimConfig(   )                    |     |
-        |            |                                           |     |
-        v            v                                           |     |
-        cfg.update_cfg() ----------------------------------------/     |
-                                                                       |
-        send(   )                                               netpyne.sim.send(data)
-                                                                                    simulation
+.. image:: figs/batchtools_netpyne.png
+    :width: 90%
+    :align: center
 
 1. Setting up batchtools
 ------------------------
@@ -2992,7 +2978,7 @@ Batch job handling is implemented from ``netpyne.batchtools.search``. Below is a
 
 .. code-block:: python
 
-def search(
+     def search(
            job_type: Optional[str] = None, # the submission engine to run a single simulation (e.g. 'sge', 'sh')
            comm_type: Optional[str] = None, # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'filesystem')
            run_config: Optional[dict] = None,  # batch configuration, (keyword: string pairs to customize the submit template)
@@ -3008,6 +2994,7 @@ def search(
            sample_interval: Optional[int] = 15,  # interval to poll for new results (in seconds)
            attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
            ) -> study: # results of the search
+
 The basic search implemented with the ``search`` function uses ``ray.tune`` as the search algorithm backend, creates a `.csv` storing the results, and returning a ``study`` object containing. It takes the following parameters;
 
 * **job_type**: "``sge``", "``sh``", "``ssh_slurm``", "``ssh_sge``" specifies how the job should be submitted, "``sge``" will submit batch jobs through the Sun Grid Engine. "``sh``" will submit bach jobs through the shell on a local machine, "``ssh_slurm``" or "``ssh_sge``" will submit batch jobs through Slurm workload manager or Sun Grid Engine through an SSH connection.

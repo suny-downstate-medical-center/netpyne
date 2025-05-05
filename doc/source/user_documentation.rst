@@ -2867,7 +2867,7 @@ If there is an issue with installation, the following message will be presented 
     an issue with your current batchtools
     installation
 
-Though the relevant methods can be called without raising an exception, they will not perform any operation.
+Though the relevant methods can be called without raising an exception, they only act as placeholders.
 
 2. Examples
 -----------
@@ -2930,7 +2930,7 @@ The ``update`` method will update the ``SimConfig`` object ``first`` with values
         assert cfg.bar == 1                                      # cfg.bar remains unchanged
         assert cfg.baz == 2                                      # cfg.baz remains unchanged
 
-This REPLACES the previous idiom for updating the SimConfig object with mappings from the batched job submission
+This REPLACES the previous NetPyNE code idiom for updating the SimConfig object with mappings from the batched job submission
 
 4. Additional functionality within the simConfig object
 -------------------------------------------------------
@@ -2992,21 +2992,32 @@ Batch job handling is implemented from ``netpyne.batchtools.search``. Below is a
 
 .. code-block:: python
 
-    def search(job_type: Optional[str] = None, # the submission engine to run a single simulation (e.g. 'sge', 'sh')
-               comm_type: Optional[str] = None, # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'filesystem')
-               run_config: Optional[dict] = None,  # batch configuration, (keyword: string pairs to customize the submit template)
-               params: Optional[dict] = None,  # search space (dictionary of parameter keys: tune search spaces)
-               algorithm: Optional[str] = "variant_generator", # search algorithm to use, see SEARCH_ALG_IMPORT for available options
-               label: Optional[str] = 'search',  # label for the search
-               output_path: Optional[str] = './batch',  # directory for storing generated files
-               checkpoint_path: Optional[str] = './checkpoint',  # directory for storing checkpoint files
-               max_concurrent: Optional[int] = 1,  # number of concurrent trials to run at one time
-               num_samples: Optional[int] = 1,  # number of trials to run
-               metric: Optional[str] = None, # metric to optimize (this should match some key: value pair in the returned data
-               mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
-               attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
-               ) -> tune.ResultGrid: # results of the search
-
+def search(dispatcher_constructor: Optional[Callable] = None, # constructor for the dispatcher (e.g. INETDispatcher)
+           submit_constructor: Optional[Callable] = None, # constructor for the submit (e.g. SHubmitSOCK)
+           job_type: Optional[str] = None, # the submission engine to run a single simulation (e.g. 'sge', 'sh')
+           comm_type: Optional[str] = None, # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'filesystem')
+           run_config: Optional[dict] = None,  # batch configuration, (keyword: string pairs to customize the submit template)
+           params: Optional[dict] = None,  # search space (dictionary of parameter keys: tune search spaces)
+           algorithm: Optional[str] = "variant_generator", # search algorithm to use, see SEARCH_ALG_IMPORT for available options
+           label: Optional[str] = 'search',  # label for the search
+           output_path: Optional[str] = './batch',  # directory for storing generated files
+           checkpoint_path: Optional[str] = './checkpoint',  # directory for storing checkpoint files
+           max_concurrent: Optional[int] = 1,  # number of concurrent trials to run at one time
+           batch: Optional[bool] = True,  # whether concurrent trials should run synchronously or asynchronously
+           num_samples: Optional[int] = 1,  # number of trials to run
+           metric: Optional[str] = None, # metric to optimize (this should match some key: value pair in the returned data
+           mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
+           sample_interval: Optional[int] = 15,  # interval to check for new results (in seconds)
+           algorithm_config: Optional[dict] = None,  # additional configuration for the search algorithm
+           ray_config: Optional[dict] = None,  # additional configuration for the ray initialization
+           attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
+           clean_checkpoint: Optional[bool] = True, # whether to clean the checkpoint directory after the search
+           report_config=('path', 'config', 'data'),  # what to report back to the user
+           prune_metadata: Optional[bool] = True, # whether to prune the metadata from the results.csv
+           remote_dir: Optional[str] = None, # absolute path for directory to run the search on (for submissions over SSH)
+           host: Optional[str] = None, # host to run the search on
+           key: Optional[str] = None # key for TOTP generator...
+           ) -> study: # results of the search
 The basic search implemented with the ``search`` function uses ``ray.tune`` as the search algorithm backend, creates a `.csv` storing the results, and returning a ``tune.ResultGrid``. It takes the following parameters;
 
 * **job_type**: either "``sge``" or "``sh``", specifying how the job should be submitted, "``sge``" will submit batch jobs through the Sun Grid Engine. "``sh``" will submit bach jobs through the shell on a local machine

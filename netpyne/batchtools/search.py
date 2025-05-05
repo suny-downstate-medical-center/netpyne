@@ -460,12 +460,12 @@ def search(dispatcher_constructor: Optional[Callable] = None, # constructor for 
            ray_config: Optional[dict] = None,  # additional configuration for the ray initialization
            attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
            clean_checkpoint: Optional[bool] = True, # whether to clean the checkpoint directory after the search
-           report_config=('path', 'config', 'data'),  # what to report back to the user
+           report_config=('path', 'config', 'data'),  # what to report back to the user within data.
            prune_metadata: Optional[bool] = True, # whether to prune the metadata from the results.csv
            remote_dir: Optional[str] = None, # absolute path for directory to run the search on (for submissions over SSH)
            host: Optional[str] = None, # host to run the search on
-           key: Optional[str] = None # key for TOTP generator...
-           ) -> study: # results of the search
+           key: Optional[str] = None # key for TOTP generator.
+           ) -> study: # results of the search -> study.results (raw tune.ResultGrid), study.data (pandas.DataFrame conversion)
     """
     search(...)
 
@@ -502,7 +502,9 @@ def search(dispatcher_constructor: Optional[Callable] = None, # constructor for 
 
     Returns
     -------
-    ResultGrid: tune.ResultGrid # results of the search
+    study instance with two attributes
+        .results : tune.ResultGrid # raw data yielded from the search
+        .data    : pandas.DataFrame # pandas dataframe containing the results of the search
     """
     kwargs = locals()
     kwargs = shim(**kwargs)

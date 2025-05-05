@@ -2977,7 +2977,7 @@ In terms of the simulation, the following functions are available to the user:
 
 * **sim.send(<data>)**: sends ``<data>`` to the batch ``dispatcher``, esp.
 
-    * for ``search`` jobs, it is important to match the data sent with the metric specified in the search function
+    * for ``search`` jobs, it is important to match the data sent with the metric specified in the search function. For instance, if the search call specifies a metric "loss", then ``sim.send`` should specify a key: value pair: ``{'loss': <value>}``
 
 6. Specifying a batch job
 -------------------------
@@ -2988,44 +2988,56 @@ Batch job handling is implemented from ``netpyne.batchtools.search``. Below is a
     from netpyne.batchtools import search
     help(search)
 
-**search (truncated API)**
+**search**
 
 .. code-block:: python
 
-def search(dispatcher_constructor: Optional[Callable] = None, # constructor for the dispatcher (e.g. INETDispatcher)
-           submit_constructor: Optional[Callable] = None, # constructor for the submit (e.g. SHubmitSOCK)
+def search(
            job_type: Optional[str] = None, # the submission engine to run a single simulation (e.g. 'sge', 'sh')
            comm_type: Optional[str] = None, # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'filesystem')
            run_config: Optional[dict] = None,  # batch configuration, (keyword: string pairs to customize the submit template)
            params: Optional[dict] = None,  # search space (dictionary of parameter keys: tune search spaces)
            algorithm: Optional[str] = "variant_generator", # search algorithm to use, see SEARCH_ALG_IMPORT for available options
-           label: Optional[str] = 'search',  # label for the search
-           output_path: Optional[str] = './batch',  # directory for storing generated files
-           checkpoint_path: Optional[str] = './checkpoint',  # directory for storing checkpoint files
+           label: Optional[str] = 'search',  # label for the search, any files generated will be prefixed with this string
+           output_path: Optional[str] = './batch',  # directory for storing generated files, either relative to the current working directory if starting with '.' or an absolute path if starting with '/'
+           checkpoint_path: Optional[str] = './checkpoint',  # directory for storing checkpoint files, either relative to the current working directory if starting with '.' or an absolute path if starting with '/'
            max_concurrent: Optional[int] = 1,  # number of concurrent trials to run at one time
            batch: Optional[bool] = True,  # whether concurrent trials should run synchronously or asynchronously
-           num_samples: Optional[int] = 1,  # number of trials to run
+           num_samples: Optional[int] = 1,  # number of trials to run, for parameter grids, a value of 1 means that the search will sample the parameter space of each value in the grid
            metric: Optional[str] = None, # metric to optimize (this should match some key: value pair in the returned data
            mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
-           sample_interval: Optional[int] = 15,  # interval to check for new results (in seconds)
+           sample_interval: Optional[int] = 15,  # interval to poll for new results (in seconds)
            algorithm_config: Optional[dict] = None,  # additional configuration for the search algorithm
            ray_config: Optional[dict] = None,  # additional configuration for the ray initialization
            attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
-           clean_checkpoint: Optional[bool] = True, # whether to clean the checkpoint directory after the search
-           report_config=('path', 'config', 'data'),  # what to report back to the user
-           prune_metadata: Optional[bool] = True, # whether to prune the metadata from the results.csv
-           remote_dir: Optional[str] = None, # absolute path for directory to run the search on (for submissions over SSH)
+           clean_checkpoint: Optional[bool] = True, # whether to clean the checkpoint directory after a successful search
            host: Optional[str] = None, # host to run the search on
-           key: Optional[str] = None # key for TOTP generator...
            ) -> study: # results of the search
-The basic search implemented with the ``search`` function uses ``ray.tune`` as the search algorithm backend, creates a `.csv` storing the results, and returning a ``tune.ResultGrid``. It takes the following parameters;
+The basic search implemented with the ``search`` function uses ``ray.tune`` as the search algorithm backend, creates a `.csv` storing the results, and returning a ``study`` object containing. It takes the following parameters;
 
-* **job_type**: either "``sge``" or "``sh``", specifying how the job should be submitted, "``sge``" will submit batch jobs through the Sun Grid Engine. "``sh``" will submit bach jobs through the shell on a local machine
-* **comm_type**: either "``socket``", "``filesystem``" or ``None``, specifying how the job should communicate with the dispatcher. If the ``comm_type`` is specified as ``None``, the search will not await or receive any data from the simulation before executing the next job submission. This is only applicable to searches that are executed in `"grid"`, `"variant_generator"` or `"random"` algorithms where results are not used to infer subsequent search suggestions...
+* **job_type**: "``sge``", "``sh``", "``ssh_slurm``", "``ssh_sge``" specifies how the job should be submitted, "``sge``" will submit batch jobs through the Sun Grid Engine. "``sh``" will submit bach jobs through the shell on a local machine, "``ssh_slurm``" or "``ssh_sge``" will submit batch jobs through Slurm workload manager or Sun Grid Engine through an SSH connection.
+* **comm_type**: either "``socket``" (INET socket), "``sfs``" (shared file system), "``sftp``" (secure file transfer protocol for jobs run through SSH) or ``None``, specifying how the job should communicate with the dispatcher. If the ``comm_type`` is specified as ``None``, the search will not await or receive any data from the simulation before executing the next job submission. This is only applicable to searches that are executed in `"grid"`, `"variant_generator"` or `"random"` algorithms where results are not used to infer subsequent search suggestions...
+
+Currently, the following argument pairs are acceptable for ``job_type`` and ``comm_type``::
+
+    =======================
+    job_type    , comm_type
+    =======================
+    'sge'       , 'socket'    -> job submission through Sun Grid Engine, INET socket based communication
+    'sge'       , 'sfs'       -> job submission through Sun Grid Engine, communication via shared file system
+    'sge'       , None        -> job submission through Sun Grid Engine, no communication (only grid or random searches)
+    'ssh_sge'   , 'sftp'      -> remote SSH onto a gateway, job submission through Sun Grid Engine, communication via Secure FTP
+    'ssh_slurm' , 'sftp'      -> remote SSH onto a gateway, job submission through Slurm, communication via Secure FTP
+    'ssh_sge'   , None        -> remote SSH onto a gateway, job submission through Sun Grid Engine, no communication (only grid or random searches)
+    'ssh_slurm' , None        -> remote SSH onto a gateway, job submission through Slurm, no communication (only grid or random searches)
+    'sh'        , 'socket'    -> job run directly on local shell, INET socket based communication
+    'sh'        , 'sfs'       -> job run directly on local shell, communication via shared file system
+    'sh'        , None        -> job run directly on local shell, no communication (only grid or random searches)
+
 * **run_config**: a dictionary of keyword: string pairs to customize the submit template, the expected keyword: string pairs are dependent on the job_type::
 
     =======
-    sge
+    sge (job_type as sge or ssh_sge)
     =======
     queue: the queue to submit the job to (#$ -q {queue})
     cores: the number of cores to request for the job (#$ -pe smp {cores})
@@ -3043,7 +3055,7 @@ The basic search implemented with the ``search`` function uses ``ray.tune`` as t
     } # set the command to be run to 'mpiexec -n $NSLOTS -hosts $(hostname) nrniv -python -mpi init.py'
 
     =======
-    sh
+    sh (job_type is sh)
     =======
     command: the command to run for the job
 
@@ -3051,6 +3063,32 @@ The basic search implemented with the ``search`` function uses ``ray.tune`` as t
     run_config = {
         'command': 'mpiexec -n 8 nrniv -python -mpi init.py'
     } # set the command to be run
+
+    =======
+    slurm (job_type as ssh_slurm)
+    =======
+    allocation:   the allocation for the job (#SBATCH -A {allocation})
+    partition:    the partition for the job (#SBATCH --partition={partition})
+    nodes:        the number of nodes to distribute the job (#SBATCH --nodes={nodes})
+    coresPerNode: the number of cores per node (#SBATCH --ntasks-per-node={coresPerNode})
+    mem:          the amount of memory to request for the job (#SBATCH --mem={mem})
+    email:        the user's email for status communication (#SBATCH --mail-user={email})
+    custom:       any commands to run before the job command
+    command:      the command to run for the job
+
+    example:
+    run_config = {
+        'allocation': 'aaa111',
+        'partition': 'cpu.q',
+        'nodes': 1,
+        'coresPerNode': 4,
+        'mem': '8G',
+        'email': 'a.b.c@email.com,
+        'custom': 'conda activate myenv',
+        'command': 'mpiexec -n 4 nrniv -python -mpi init.py'
+    }
+
+
 
 * **params**: a dictionary of config values to perform the search over. The keys of the dictionary should match the keys of the config object to be updated. Lists or numpy generators >2 values will enforce a grid or choice search over the values; otherwise, a list of two values will create a uniform distribution sample space except when the search algorithm is explicitly set to `"grid"`
 

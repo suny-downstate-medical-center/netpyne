@@ -2,6 +2,8 @@ from netpyne.batchtools import RS
 from batchtk.runtk.runners import get_class
 from batchtk import runtk
 from neuron import h
+import json
+from pandas import Series
 import warnings
 HOST = 0 # for the purposes of send and receive with mpi.
 
@@ -26,6 +28,14 @@ class Comm(object):
     def is_host(self):
         return self.rank == HOST
     def send(self, data):
+        if isinstance(data, dict):
+            data = json.dumps(data)
+        elif isinstance(data, str):
+            data = data
+        elif isinstance(data,Series):
+            data = data.to_json()
+        else:
+            raise TypeError("data must be either a dict, str or pandas.Series")
         if self.is_host():
             if self.connected:
                 self.runner.send(data)

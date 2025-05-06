@@ -2787,7 +2787,7 @@ The code for neural network optimization through evolutionary algorithm used in 
 .. --------------------
 
 Running a Batch Job (Beta)
-==========================
+--------------------------
 
 The NetPyNE batchtools subpackage provides a new method of automating submission of simulations and collating results, built as a dispatcher <-> runner communication. Currently it uses the ``Ray Tune`` parameter optimization and checkpointing package`
 
@@ -2802,26 +2802,34 @@ A diagram of the wrapper interactions...
     :align: center
 
 1. Setting up batchtools
-------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^
 Beyond the necessary dependency installations for NetPyNE and NEURON, the following `pip` installations are preferred.
 
-The NetPyNE installation should be handled as a development installation to allow for up to date fixes::
+The NetPyNE installation should be handled as a development installation to allow for up to date fixes
+
+.. code-block::
 
     git clone https://github.com/Neurosim-lab/netpyne.git
     cd netpyne
     pip install -e .
 
-A development install of the batchtools subpackage::
+A development install of the batchtools subpackage
+
+.. code-block::
 
     git clone https://github.com/jchen6727/batchtk.git
     cd batchtk
     pip install -e .
 
-Ray is a dependency for batchtools, and should be installed with the following command::
+Ray is a dependency for batchtools, and should be installed with the following command
+
+.. code-block::
 
     pip install -U ray[default]
 
-You can validate that the correct packages are installed by checking the ``sim.send`` and ``cfg.update`` methods in an interactive python instance::
+You can validate that the correct packages are installed by checking the ``sim.send`` and ``cfg.update`` methods in an interactive python instance
+
+.. code-block::
 
     In [1]: from netpyne import sim, specs
     Warning: no DISPLAY environment variable.
@@ -2840,7 +2848,9 @@ You can validate that the correct packages are installed by checking the ``sim.s
     Help on method update in module netpyne.batchtools.runners:
     ...
 
-If there is an issue with installation, the following message will be presented instead when calling help on either function::
+If there is an issue with installation, the following message will be presented instead when calling help on either function
+
+.. code-block::
 
     In [2]: help(sim.send)
     Help on function send in module netpyne.sim:
@@ -2856,13 +2866,13 @@ If there is an issue with installation, the following message will be presented 
 Though the relevant methods can be called without raising an exception, they only act as placeholders.
 
 2. Examples
------------
+^^^^^^^^^^^
 Examples of NetPyNE batchtools usage can be found in the ``examples`` directory `on the NetPyNE github <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples>`_.
 
 Examples of the underlying batchtk package can be in the ``examples`` directory `on the batchtk github <https://github.com/jchen6727/batchtk/tree/release/examples>`_.
 
 3. Retrieving batch configuration values through the ``specs`` object
----------------------------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Each simulation is able to retrieve relevant configurations through the ``specs`` object, and communicate with
 the dispatcher through the ``send`` function within ``netpyne.sim``.
 
@@ -2919,7 +2929,7 @@ The ``update`` method will update the ``SimConfig`` object ``first`` with values
 This REPLACES the previous NetPyNE code idiom for updating the SimConfig object with mappings from the batched job submission
 
 4. Additional functionality within the simConfig object
--------------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``cfg.update()`` also supports the optional argument ``force_match``, which forces values in the update dictionary to match existing attributes within the ``SimConfig`` object. This setting is recommended to be set to ``True`` during debugging to check for accidental creation of new attributes within the ``SimConfig`` object at runtime ...
 
@@ -2955,7 +2965,7 @@ Both the initialization of the ``cfg`` object with ``specs.SimConfig()`` and the
 updating the ``cfg`` object with the supplied dictionary will occur before updating it with parameters specified by the batch search
 
 5. Communicating results to the search algorithm through the ``sim.send`` function
------------------------------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Prior batched simulations relied on ``.pkl`` files to communicate data. In order to facilitate collation, specific data values can be sent at the end of the simulation via: ``netpyne.sim.send(...)``
 
@@ -2966,7 +2976,7 @@ In terms of the simulation, the following functions are available to the user:
     * for ``search`` jobs, it is important to match the data sent with the metric specified in the search function. For instance, if the search call specifies a metric "loss", then ``sim.send`` should specify a key: value pair: ``{'loss': <value>}``
 
 6. Specifying a batch job
--------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^
 Batch job handling is implemented from ``netpyne.batchtools.search``. Below is a selection of relevant arguments for the ``search`` function, the full list of arguments can be referenced by calling:
 
 .. code-block:: python
@@ -3016,7 +3026,9 @@ Currently, the following argument pairs are acceptable for ``job_type`` and ``co
     'sh'        , 'sfs'       -> job run directly on local shell, communication via shared file system
     'sh'        , None        -> job run directly on local shell, no communication (only grid or random searches)
 
-* **run_config**: a dictionary of keyword: string pairs to customize the submit template, the expected keyword: string pairs are dependent on the job_type::
+* **run_config**: a dictionary of keyword: string pairs to customize the submit template, the expected keyword: string pairs are dependent on the job_type
+
+.. code-block::
 
     =======
     sge (job_type as sge or ssh_sge)
@@ -3074,7 +3086,7 @@ Currently, the following argument pairs are acceptable for ``job_type`` and ``co
 
 * **params**: a dictionary of config values to perform the search over. The keys of the dictionary should match the keys of the config object to be updated. Lists or numpy generators >2 values will enforce a grid or choice search over the values; otherwise, a list of two values will create a uniform distribution sample space except when the search algorithm is explicitly set to `"grid"`
 
-    **usage 1**: updating a constant value specified in the ``SimConfig`` object
+**usage 1**: updating a constant value specified in the ``SimConfig`` object
 
 .. code-block:: python
 
@@ -3095,7 +3107,7 @@ Currently, the following argument pairs are acceptable for ``job_type`` and ``co
             'foo': range(10)
         }
 
-    **usage 2**: updating a nested object in the ``SimConfig`` object
+**usage 2**: updating a nested object in the ``SimConfig`` object
 
 .. code-block:: python
 
@@ -3122,7 +3134,7 @@ Currently, the following argument pairs are acceptable for ``job_type`` and ``co
         # cfg.foo = {'bar': {'baz': 0}}
         # params = {'foo.bar.baz': range(10)}
 
-    **usage 3**: updating a list object in the ``SimConfig`` object
+**usage 3**: updating a list object in the ``SimConfig`` object
 
 .. code-block:: python
 
@@ -3185,7 +3197,7 @@ Currently, the following argument pairs are acceptable for ``job_type`` and ``co
 
 
 7. Batch searches on the Rosenbrock function (some simple examples)
--------------------------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The ``examples`` directory `on the NetPyNE github <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples/rosenbrock>`_ contains multiple methods of performing automatic parameter search of a
 2 dimensional Rosenbrock function.  These examples are used to quickly demonstrate some of the functionality of batch communications rather than the full process of running parameter searches on a detailed
 NEURON simulation (see 7. Performing parameter optimization searches (CA3 example)) and therefore only contain the a `batch.py` file containing the script detailing the parameter space and search method, and a
@@ -3259,7 +3271,7 @@ By using ``xn.0`` and ``xn.1`` we can reference the 0th and 1st elements of the 
 
 
 8. Performing parameter optimization searches (CA3 example)
------------------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The ``examples`` directory `on the NetPyNE github <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples>`_ shows both a ``grid`` based search as well as an ``optuna`` based optimization.
 
 In the ``CA3`` example, we tune the ``PYR->BC`` ``NMDA`` and ``AMPA`` synaptic weights, as well as the ``BC->PYR`` ``GABA`` synaptic weight. Note the search space is defined
@@ -3304,12 +3316,12 @@ The ``out_json`` output contains a dictionary which includes the ``loss`` metric
 In a multi-objective optimization, the relevant ``PYR_loss``, ``BC_loss``, and ``OLM_loss`` components are additionally included (see ``mo_optuna_search.py``)
 
 9. Ray Checkpointing and Resuming Interrupted Searches
--------------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 A new feature in this beta release is the checkpointing and saving of search progress via the ``ray`` backend. This data is saved in the ``checkpoint_path`` directory specified in the ``search`` function, (which defaults to a newly created ``checkpoint`` folder within the source directory, and the default behavior of ``search`` is to automatically attempt a restore if the batch job is interrupted.
 Upon successful completion of the search, the default behavior is to delete these checkpoint files. If the user manually ends the search due to coding error and wishes to restart the search, the ``checkpoint_path`` should be deleted first.
 
 10. Parameter Importance Evaluation Using fANOVA (unstable)
-----------------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 A new feature in this beta release is the ability to evaluate parameter importance using a functional ANOVA inspired algorithm via the ``Optuna`` and ``scikit-learn`` libraries.
 (See `the original Hutter paper <http://proceedings.mlr.press/v32/hutter14.pdf>`_  and its `citation <https://automl.github.io/fanova/cite.html>`_)
 

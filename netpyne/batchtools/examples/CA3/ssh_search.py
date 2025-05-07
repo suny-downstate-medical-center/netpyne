@@ -25,11 +25,11 @@ sge_config = {
 
 run_config = sge_config
 
-search(job_type = 'sge', # or 'sh'
-       comm_type = 'ssh', # if a metric and mode is specified, some method of communicating with the host needs to be defined
+search(job_type = 'ssh_sge', # ssh onto an sge based submission gateway
+       comm_type = 'sftp', # communication through sftp
        label = 'grid',
        params = params,
-       remote_dir = '/ddn/...',#path to your remote directory here (make sure everything is compiled in that directory)
+       remote_dir = '/ddn/',#path to your remote directory here (make sure everything is compiled in that directory)
        output_path = './grid_batch', # this will also be created as a remote directory
        checkpoint_path = '/tmp/ray/grid', # local checkpointing directory here
        run_config = run_config,
@@ -37,5 +37,5 @@ search(job_type = 'sge', # or 'sh'
        mode = 'min', # currently remote submissions only support projects where session data (sim.send) is implemented
        algorithm = "grid",
        max_concurrent = 5,
-       host='grid0')
+       host='grid0') # host alias (can use ssh tunneling through config file)
 

@@ -9,15 +9,18 @@ from netpyne.batchtools import runtk
 from collections import namedtuple
 from batchtk.raytk.search import ray_trial, LABEL_POINTER
 from batchtk.utils import get_path
+from io import StringIO
 import numpy
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from netpyne.batchtools import submits
+#import signal #incompatible with signal and threading from ray
+#import threading
 
 choice = tune.choice
 grid = tune.grid_search
 uniform = tune.uniform
 
-class GridDispatcher(runtk.dispatchers.LocalDispatcher):
+class LocalGridDispatcher(runtk.dispatchers.LocalDispatcher):
     def start(self):
         super().start(restart=True)
 
@@ -25,8 +28,17 @@ class GridDispatcher(runtk.dispatchers.LocalDispatcher):
         return
 
     def recv(self, interval):
-        return '{}'  # dummy json value to return...
+        return '{"_none_placeholder": 0}'  # dummy json value to return...
 
+class SSHGridDispatcher(runtk.dispatchers.SSHDispatcher):
+    def start(self):
+        super().start(restart=True)
+
+    def connect(self):
+        return
+
+    def recv(self, interval):
+        return '{"_none_placeholder": 0}'  # dummy json value to return...
 
 def ray_optuna_search(dispatcher_constructor: Callable, # constructor for the dispatcher (e.g. INETDispatcher)
                       submit_constructor: Callable, # constructor for the submit (e.g. SHubmitSOCK)
@@ -86,15 +98,17 @@ def ray_optuna_search(dispatcher_constructor: Callable, # constructor for the di
                               max_concurrent=max_concurrent,
                               batch=batch) #TODO does max_concurrent and batch work?
 
-    submit = submit_constructor()
-    submit.update_templates(
-        **run_config
-    )
+    #submit = submit_constructor()
+    #submit.update_templates(
+    #    **run_config
+    #)
     project_path = os.getcwd()
 
     def run(config):
         config.update({'saveFolder': output_path, 'simLabel': LABEL_POINTER})
-        data = ray_trial(config, label, dispatcher_constructor, project_path, output_path, submit)
+        data = ray_trial(config=config, label=label, dispatcher_constructor=dispatcher_constructor,
+                         project_path=project_path, output_path=output_path, submit_constructor=submit_constructor,
+                         submit_kwargs=run_config, log=None)
         if isinstance(metric, str):#TODO only Optuna supports multiobjective?
             metrics = {'config': config, 'data': data, metric: data[metric]}
             session.report(metrics)
@@ -144,8 +158,22 @@ seed – Seed to initialize sampler with. This parameter is only used when sampl
 evaluated_rewards –
 If you have previously evaluated the parameters passed in as points_to_evaluate you can avoid re-running those trials by passing in the reward attributes as a list so the optimiser can be told the results without needing to re-compute the trial. Must be the same length as points_to_evaluate.
 """
+def prune_dataframe(results: pandas.DataFrame) -> pandas.DataFrame:
+    #def process_column(column):
+    #    expanded_column = column.apply(lambda x: pandas.read_csv(StringIO(x), sep='\s\s+', header=None))
+    #    return pandas.DataFrame([c.values.T[1] for c in expanded_column], columns=expanded_column[0].values.T[0]).drop(columns=['dtype:'])
+    # call process_column instead, with both 'config' and 'data'
+    try:
+        data   = results['data'].apply(lambda x: pandas.read_csv(StringIO(x), sep='\s\s+', header=None))
+        df     = pandas.DataFrame([d.values.T[1] for d in data], columns=data[0].values.T[0]).iloc[ :, :-1]
+    except Exception as e:
+        df = results
+    # use >=2 whitespace delimiter for compatibility with lists, dictionaries, where single whitespace character is placed between
+    # objects.
+    #config = results['config'].apply(lambda x: pandas.read_csv(StringIO(x), sep='\s+', header=None))
+    return df
 
-
+study = namedtuple('Study', ['results', 'data'])
 def ray_search(dispatcher_constructor: Callable, # constructor for the dispatcher (e.g. INETDispatcher)
                submit_constructor: Callable, # constructor for the submit (e.g. SHubmitSOCK)
                run_config: Dict, # batch configuration, (keyword: string pairs to customize the submit template)
@@ -164,13 +192,16 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
                ray_config: Optional[dict] = None, # additional configuration for the ray initialization
                attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
                clean_checkpoint = True, # whether to clean the checkpoint directory after a completed successful search, errored searches will skip cleanup.
+               report_config = ('path', 'config', 'data'), # what to report back to the user
                prune_metadata = True, # whether to prune the metadata from the results.csv
                remote_dir: Optional[str] = None, # absolute path for directory to run the search on (for submissions over SSH)
                host: Optional[str] = None,  # host to run the search on
                key: Optional[str] = None  # key for TOTP generator...
-               ) -> tune.ResultGrid:
+               ) -> study:
 
-    if dispatcher_constructor == runtk.dispatchers.SSHDispatcher:
+    expected_total = params.pop('_expected_trials_per_sample') * num_samples
+    if (dispatcher_constructor == runtk.dispatchers.SSHDispatcher) or \
+       (dispatcher_constructor == SSHGridDispatcher):
         if submit_constructor == submits.SGESubmitSFS:
             from fabric import connection
             dispatcher_kwargs = {'connection': connection.Connection(host)}
@@ -197,7 +228,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
     } | algorithm_config
 
     if metric is None:
-        algorithm_config['metric'] = 'data'
+        algorithm_config['metric'] = '_none_placeholder'
 
     #TODO class this object for self calls? cleaner? vs nested functions
     #TODO clean up working_dir and excludes
@@ -213,29 +244,30 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
     except:
         pass
 
-    submit = submit_constructor()
-    submit.update_templates(
-        **run_config
-    )
+    #submit = submit_constructor()
+    #submit.update_templates(
+    #    **run_config
+    #)
     project_path = remote_dir or os.getcwd() # if remote_dir is None, then use the current working directory
     def run(config):
         config.update({'saveFolder': output_path, 'simLabel': LABEL_POINTER})
         data = ray_trial(config=config, label=label, dispatcher_constructor=dispatcher_constructor,
-                         project_path=project_path, output_path=output_path, submit=submit,
-                         dispatcher_kwargs=dispatcher_kwargs, interval=sample_interval)
+                         project_path=project_path, output_path=output_path, submit_constructor=submit_constructor,
+                         dispatcher_kwargs=dispatcher_kwargs, submit_kwargs=run_config,
+                         interval=sample_interval, log=None, report=report_config)
         if metric is None:
-            metrics = {'config': config, 'data': numpy.nan}
+            metrics = {'data': data, '_none_placeholder': 0} #TODO, should include 'config' now with purge_metadata?
             session.report(metrics)
         elif isinstance(metric, str):
-            metrics = {'config': config, 'data': data, metric: data[metric]}
+            metrics = {'data': data, metric: data[metric]}
             session.report(metrics)
         elif isinstance(metric, (list, tuple)):
             metrics = {k: data[k] for k in metric}
             metrics['data'] = data
-            metrics['config'] = config
+            #metrics['config'] = config
             session.report(metrics)
         else:
-            session.report({'data': data, 'config': config})
+            session.report({'data': data, '_none_placeholder': 0})
     if attempt_restore and tune.Tuner.can_restore(load_path):#TODO check restore
         print("resuming previous run from {}".format(load_path))
         tuner = tune.Tuner.restore(path=load_path,
@@ -261,50 +293,60 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
             ),
             param_space=params,
         )
-
-
     results = tuner.fit()
     errors = results.errors
-    if errors:
-        print("errors occured during execution: {}".format(errors))
+    df = results.get_dataframe() # note that results.num_terminated DOES NOT CURRENTLY reflect collected datapoints.
+    num_total = len(df)
+    if errors or num_total < expected_total:
+        print("errors/SIGINT occurred during execution: {}".format(errors))
+        print("only {} of {} expected trials completed successfully".format(num_total, expected_total))
         print("see {} for more information".format(output_path))
-        print("keeping {} for checkpointing".format(storage_path))
-        print("rerunning the same search again will keep any valid checkpointed data")
-        return results
-    # only execute if tuner.fit() is completed...
-    resultsdf = results.get_dataframe()
+        print("keeping {} checkpoint directory".format(load_path))
+        print("rerunning the same search again will restore valid checkpointed data in {}".format(load_path))
+        if prune_metadata:
+            df = prune_dataframe(df)
+        print("saving current results to {}.csv".format(label))
+        df.to_csv("{}.csv".format(label))
+        return study( results, df)
+    #df = results.get_dataframe()
     if prune_metadata:
-        if metric is None:
-            regex_pattern = '^config|^data'
-        else:
-            if isinstance(metric, str):
-                metric = [metric]
-            metric_pattern = '|'.join(metric)
-            regex_pattern = '^config|^data|^{}'.format(metric_pattern)
-        resultsdf = resultsdf.filter(regex=regex_pattern)
-    resultsdf.to_csv("{}.csv".format(label))
+        df = prune_dataframe(df)
+    print("saving results to {}.csv".format(label))
+    df.to_csv("{}.csv".format(label))
     if clean_checkpoint:
-        os.system("rm -r {}".format(storage_path))
-    return results
-
+        os.system("rm -r {}".format(load_path))
+    return study( results, df)
 
 #should be constant?
 constructors = namedtuple('constructors', 'dispatcher, submit')
 constructor_tuples = {
     ('sge', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SGESubmitSOCK),
     ('sge', 'sfs' ): constructors(runtk.dispatchers.LocalDispatcher , submits.SGESubmitSFS ),
-    ('sge', None): constructors(GridDispatcher, submits.SGESubmit),
-    ('sge', 'ssh'): constructors(runtk.dispatchers.SSHDispatcher, submits.SGESubmitSSH), #TODO, both of these need comm types
-    ('slurm', 'ssh'): constructors(runtk.dispatchers.SSHDispatcher, submits.SlurmSubmitSSH),
+    ('sge', None): constructors(LocalGridDispatcher, submits.SGESubmit),
+    ('ssh_sge', 'sftp'): constructors(runtk.dispatchers.SSHDispatcher, submits.SGESubmitSSH), #TODO, both of these need comm types
+    ('ssh_slurm', 'sftp'): constructors(runtk.dispatchers.SSHDispatcher, submits.SlurmSubmitSSH),
+    ('ssh_sge', None): constructors(SSHGridDispatcher, submits.SGESubmitSSH), #don't need to worry about changing the handl
+    ('ssh_slurm', None): constructors(SSHGridDispatcher, submits.SlurmSubmitSSH),
     #('zsh', 'inet'): constructors(runtk.dispatchers.INETDispatcher, runtk.submits.ZSHSubmitSOCK), #TODO preferable to use AF_UNIX sockets on local machines
     #('slurm', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SlurmSubmitSOCK),
     #('slurm', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SlurmSubmitSFS),
     ('sh', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SHSubmitSOCK), #
     ('sh', 'sfs' ): constructors(runtk.dispatchers.LocalDispatcher , submits.SHSubmitSFS),
-    ('sh', None): constructors(GridDispatcher, submits.SHSubmit),
+    ('sh', None): constructors(LocalGridDispatcher, submits.SHSubmit),
 }#TODO, just say "socket"?
 
-
+def load_search(path: str, prune_metadata=True) -> pandas.DataFrame:
+    def run(config):
+        pass
+    path = get_path(path)
+    try:
+        tuner = tune.Tuner.restore(path, run)
+    except Exception as e:
+        raise e
+    df = tuner.get_results().get_dataframe()
+    if prune_metadata:
+        df = prune_dataframe(df)
+    return df
 """
 some shim functions before ray_search
 """
@@ -327,9 +369,11 @@ def generate_parameters(params, algorithm, **kwargs):
     #TODO: check coverage of conditional statements (looks okay?)
     """
     ray_params = {}
+    _expected_trials_per_sample = 1
     for param, space in params.items():
         if   isinstance(space, (list, tuple, range, numpy.ndarray)) and algorithm in {'variant_generator'}:
             ray_params[param] = tune.grid_search(space) #specify random for uniform and choice.
+            _expected_trials_per_sample *= len(space)
         elif isinstance(space, (list, tuple)) and algorithm in SEARCH_ALG_IMPORT.keys():
             if len(space) == 2: #if 2 sample from uniform lb, ub
                 ray_params[param] = tune.uniform(*space)
@@ -337,6 +381,9 @@ def generate_parameters(params, algorithm, **kwargs):
                 ray_params[param] = tune.choice(space)
         else: #assume a tune search space was defined
             ray_params[param] = space
+            if isinstance(space, dict):
+                _expected_trials_per_sample *= len(space['grid_search'])
+    ray_params['_expected_trials_per_sample'] = _expected_trials_per_sample
     return ray_params
 
 
@@ -360,11 +407,12 @@ def shim(dispatcher_constructor: Optional[Callable] = None, # constructor for th
          ray_config: Optional[dict] = None,  # additional configuration for the ray initialization
          attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
          clean_checkpoint: Optional[bool] = True, # whether to clean the checkpoint directory after the search
+         report_config=('path', 'config', 'data'),  # what to report back to the user
          prune_metadata: Optional[bool] = True, # whether to prune the metadata from the results.csv
          remote_dir: Optional[str] = None, # absolute path for directory to run the search on (for submissions over SSH)
          host: Optional[str] = None,  # host to run the search on
          key: Optional[str] = None  # key for TOTP generator...
-         ):
+         ) -> Dict:
     kwargs = locals()
     if metric is None and algorithm not in ['variant_generator', 'random', 'grid']:
         raise ValueError("a metric (string) must be specified for optimization searches")
@@ -412,11 +460,12 @@ def search(dispatcher_constructor: Optional[Callable] = None, # constructor for 
            ray_config: Optional[dict] = None,  # additional configuration for the ray initialization
            attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
            clean_checkpoint: Optional[bool] = True, # whether to clean the checkpoint directory after the search
+           report_config=('path', 'config', 'data'),  # what to report back to the user within data.
            prune_metadata: Optional[bool] = True, # whether to prune the metadata from the results.csv
            remote_dir: Optional[str] = None, # absolute path for directory to run the search on (for submissions over SSH)
            host: Optional[str] = None, # host to run the search on
-           key: Optional[str] = None # key for TOTP generator...
-           ) -> tune.ResultGrid: # results of the search
+           key: Optional[str] = None # key for TOTP generator.
+           ) -> study: # results of the search -> study.results (raw tune.ResultGrid), study.data (pandas.DataFrame conversion)
     """
     search(...)
 
@@ -453,7 +502,9 @@ def search(dispatcher_constructor: Optional[Callable] = None, # constructor for 
 
     Returns
     -------
-    ResultGrid: tune.ResultGrid # results of the search
+    study instance with two attributes
+        .results : tune.ResultGrid # raw data yielded from the search
+        .data    : pandas.DataFrame # pandas dataframe containing the results of the search
     """
     kwargs = locals()
     kwargs = shim(**kwargs)

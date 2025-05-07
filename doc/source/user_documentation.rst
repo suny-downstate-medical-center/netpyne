@@ -2786,61 +2786,93 @@ The code for neural network optimization through evolutionary algorithm used in 
 .. Adding cell classes
 .. --------------------
 
-Running a Batch Job
-===================
+Running a Batch Job (Beta)
+--------------------------
 
-The NetPyNE batchtools subpackage provides a new method of automating submission of simulations and collating results
+The NetPyNE batchtools subpackage provides a new method of automating submission of simulations and collating results, built as a dispatcher <-> runner communication. Currently it uses the ``Ray Tune`` parameter optimization and checkpointing package`
 
-While objects and interfaces can be handled directly, we have integrated and automated everything into simple wrapper commands applicable to most use-cases.
-automatic parameter searches can be done by specifying a search space and algorithm through `netpyne.batchtools.search`, and
-parameter to model translation and result communication is handled through `netpyne.specs` and `netpyne.sim.comm` respectively.
+While objects and interfaces can be handled directly, we have integrated and automated everything into simple wrapper commands applicable to this use-case.
+automatic parameter searches can be done by specifying a search space and algorithm through ``netpyne.batchtools.search``, and
+parameter to model translation and result communication is handled through ``netpyne.specs`` and ``netpyne.sim`` respectively.
 
 A diagram of the wrapper interactions...
 
-::
-
- netpyne.batchtools.search.search(   ) ----------------------------\                 host
-        |                                                          |
-        | search(   )                                              |
- ==============================================================================================
-        |                                                        ^     ^
-        |                                                        |     |
-        |  cfg = netpyne.specs.SimConfig(   )                    |     |
-        |            |                                           |     |
-        v            v                                           |     |
-        cfg.update_cfg() ----------------------------------------/     |
-                                                                       |
-        send(   )                                               netpyne.sim.send(   )
-                                                                                    simulation
+.. image:: figs/batchtools_netpyne.png
+    :width: 90%
+    :align: center
 
 1. Setting up batchtools
-------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^
 Beyond the necessary dependency installations for NetPyNE and NEURON, the following `pip` installations are preferred.
 
-The NetPyNE installation should be handled as a development installation to allow for up to date fixes::
+The NetPyNE installation should be handled as a development installation to allow for up to date fixes
+
+.. code-block::
 
     git clone https://github.com/Neurosim-lab/netpyne.git
     cd netpyne
     pip install -e .
 
-A development install of the batchtools subpackage::
+A development install of the batchtools subpackage
+
+.. code-block::
 
     git clone https://github.com/jchen6727/batchtk.git
     cd batchtk
     pip install -e .
 
-Ray is a dependency for batchtools, and should be installed with the following command::
+Ray is a dependency for batchtools, and should be installed with the following command
+
+.. code-block::
 
     pip install -U ray[default]
 
+You can validate that the correct packages are installed by checking the ``sim.send`` and ``cfg.update`` methods in an interactive python instance
+
+.. code-block::
+
+    In [1]: from netpyne import sim, specs
+    Warning: no DISPLAY environment variable.
+    --No graphics will be displayed.
+    numprocs=1
+
+    In [2]: help(sim.send)
+    Help on method send in module netpyne.batchtools.comm:
+
+    send(data) method of netpyne.batchtools.comm.Comm instance
+
+
+    In [3]: cfg = specs.SimConfig()
+
+    In [4]: help(cfg.update)
+    Help on method update in module netpyne.batchtools.runners:
+    ...
+
+If there is an issue with installation, the following message will be presented instead when calling help on either function
+
+.. code-block::
+
+    In [2]: help(sim.send)
+    Help on function send in module netpyne.sim:
+
+    send(*args, **kwargs)
+    This method is implemented in batchtools,
+    which requires the batchtk package to be
+    installed. If you are seeing this message
+    when calling help, it indicates there is
+    an issue with your current batchtools
+    installation
+
+Though the relevant methods can be called without raising an exception, they only act as placeholders.
+
 2. Examples
------------
+^^^^^^^^^^^
 Examples of NetPyNE batchtools usage can be found in the ``examples`` directory `on the NetPyNE github <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples>`_.
 
 Examples of the underlying batchtk package can be in the ``examples`` directory `on the batchtk github <https://github.com/jchen6727/batchtk/tree/release/examples>`_.
 
 3. Retrieving batch configuration values through the ``specs`` object
----------------------------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Each simulation is able to retrieve relevant configurations through the ``specs`` object, and communicate with
 the dispatcher through the ``send`` function within ``netpyne.sim``.
 
@@ -2868,7 +2900,7 @@ Truncated output of the above code block...:
 
     class Runner_SimConfig(batchtk.runtk.runners.Runner, netpyne.specs.simConfig.SimConfig)
 
-* This updated ``cfg`` instance automatically captures relevant configuration mappings created by upon initialization
+* This updated ``cfg`` instance automatically captures relevant configuration mappings created upon initialization
 
    * these mappings can be retrieved via ``cfg.get_mappings()``
 
@@ -2894,12 +2926,12 @@ The ``update`` method will update the ``SimConfig`` object ``first`` with values
         assert cfg.bar == 1                                      # cfg.bar remains unchanged
         assert cfg.baz == 2                                      # cfg.baz remains unchanged
 
-This REPLACES the previous idiom for updating the SimConfig object with mappings from the batched job submission
+This REPLACES the previous NetPyNE code idiom for updating the SimConfig object with mappings from the batched job submission
 
 4. Additional functionality within the simConfig object
--------------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``cfg.update()`` supports also supports the optional argument ``force_match``, which forces values in the update dictionary to match existing attributes within the ``SimConfig`` object. This setting is recommended to be set to ``True`` in order to prevent the unanticipated creation of new attributes within the ``SimConfig`` object at runtime ...
+``cfg.update()`` also supports the optional argument ``force_match``, which forces values in the update dictionary to match existing attributes within the ``SimConfig`` object. This setting is recommended to be set to ``True`` during debugging to check for accidental creation of new attributes within the ``SimConfig`` object at runtime ...
 
 .. code-block:: python
 
@@ -2910,7 +2942,7 @@ This REPLACES the previous idiom for updating the SimConfig object with mappings
             cfg.update({'typo': 1}, force_match=True)            # cfg.typo is not defined, so this line will raise an AttributeError
         except Exception as e:
             print(e)
-        cfg.update({'typo': 1})                                  # without force_match, the typo attribute cfg.fooo is created and set to 1
+        cfg.update({'typo': 1})                                  # without force_match, the typo attribute is created and set to 1
         assert cfg.type == 0                                     # cfg.type remains unchanged due to a typo in the attribute name 'type' -> 'typo'
         assert cfg.typo == 1                                     # instead, cfg.typo is created and set to the value 1
 
@@ -2933,18 +2965,18 @@ Both the initialization of the ``cfg`` object with ``specs.SimConfig()`` and the
 updating the ``cfg`` object with the supplied dictionary will occur before updating it with parameters specified by the batch search
 
 5. Communicating results to the search algorithm through the ``sim.send`` function
------------------------------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Prior batched simulations relied on ``.pkl`` files to communicate data. In order to facilitate collation, specific data values can be sent at the end of the simulation via: ``netpyne.sim.send(...)``
 
 In terms of the simulation, the following functions are available to the user:
 
-* **sim.send(<data>)**: sends ``<data>`` to the batch ``dispatcher``
+* **sim.send(<data>)**: sends ``<data>`` to the batch ``dispatcher``, esp.
 
-    * for ``search`` jobs, it is important to match the data sent with the metric specified in the search function
+    * for ``search`` jobs, it is important to match the data sent with the metric specified in the search function. For instance, if the search call specifies a metric "loss", then ``sim.send`` should specify a key: value pair: ``{'loss': <value>}``
 
 6. Specifying a batch job
--------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^
 Batch job handling is implemented from ``netpyne.batchtools.search``. Below is a selection of relevant arguments for the ``search`` function, the full list of arguments can be referenced by calling:
 
 .. code-block:: python
@@ -2956,29 +2988,50 @@ Batch job handling is implemented from ``netpyne.batchtools.search``. Below is a
 
 .. code-block:: python
 
-    def search(job_type: Optional[str] = None, # the submission engine to run a single simulation (e.g. 'sge', 'sh')
-               comm_type: Optional[str] = None, # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'filesystem')
-               run_config: Optional[dict] = None,  # batch configuration, (keyword: string pairs to customize the submit template)
-               params: Optional[dict] = None,  # search space (dictionary of parameter keys: tune search spaces)
-               algorithm: Optional[str] = "variant_generator", # search algorithm to use, see SEARCH_ALG_IMPORT for available options
-               label: Optional[str] = 'search',  # label for the search
-               output_path: Optional[str] = './batch',  # directory for storing generated files
-               checkpoint_path: Optional[str] = './checkpoint',  # directory for storing checkpoint files
-               max_concurrent: Optional[int] = 1,  # number of concurrent trials to run at one time
-               num_samples: Optional[int] = 1,  # number of trials to run
-               metric: Optional[str] = None, # metric to optimize (this should match some key: value pair in the returned data
-               mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
-               attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
-               ) -> tune.ResultGrid: # results of the search
+     def search(
+           job_type: Optional[str] = None, # the submission engine to run a single simulation (e.g. 'sge', 'sh')
+           comm_type: Optional[str] = None, # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'filesystem')
+           run_config: Optional[dict] = None,  # batch configuration, (keyword: string pairs to customize the submit template)
+           params: Optional[dict] = None,  # search space (dictionary of parameter keys: tune search spaces)
+           algorithm: Optional[str] = "variant_generator", # search algorithm to use, see SEARCH_ALG_IMPORT for available options
+           label: Optional[str] = 'search',  # label for the search, any files generated will be prefixed with this string
+           output_path: Optional[str] = './batch',  # directory for storing generated files, either relative to the current working directory if starting with '.' or an absolute path if starting with '/'
+           checkpoint_path: Optional[str] = './checkpoint',  # directory for storing checkpoint files, either relative to the current working directory if starting with '.' or an absolute path if starting with '/'
+           max_concurrent: Optional[int] = 1,  # number of concurrent trials to run at one time
+           num_samples: Optional[int] = 1,  # number of trials to run, for parameter grids, a value of 1 means that the search will sample the parameter space of each value in the grid
+           metric: Optional[str] = None, # metric to optimize (this should match some key: value pair in the returned data
+           mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
+           sample_interval: Optional[int] = 15,  # interval to poll for new results (in seconds)
+           attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
+           ) -> study: # results of the search
 
-The basic search implemented with the ``search`` function uses ``ray.tune`` as the search algorithm backend, creates a `.csv` storing the results, and returning a ``tune.ResultGrid``. It takes the following parameters;
+The basic search implemented with the ``search`` function uses ``ray.tune`` as the search algorithm backend, creates a `.csv` storing the results, and returning a ``study`` object containing. It takes the following parameters;
 
-* **job_type**: either "``sge``" or "``sh``", specifying how the job should be submitted, "``sge``" will submit batch jobs through the Sun Grid Engine. "``sh``" will submit bach jobs through the shell on a local machine
-* **comm_type**: either "``socket``", "``filesystem``" or ``None``, specifying how the job should communicate with the dispatcher. If the ``comm_type`` is specified as ``None``, the search will not await or receive any data from the simulation before executing the next job submission. This is only applicable to searches that are executed in `"grid"`, `"variant_generator"` or `"random"` algorithms where results are not used to infer subsequent search suggestions...
-* **run_config**: a dictionary of keyword: string pairs to customize the submit template, the expected keyword: string pairs are dependent on the job_type::
+* **job_type**: "``sge``", "``sh``", "``ssh_slurm``", "``ssh_sge``" specifies how the job should be submitted, "``sge``" will submit batch jobs through the Sun Grid Engine. "``sh``" will submit bach jobs through the shell on a local machine, "``ssh_slurm``" or "``ssh_sge``" will submit batch jobs through Slurm workload manager or Sun Grid Engine through an SSH connection.
+* **comm_type**: either "``socket``" (INET socket), "``sfs``" (shared file system), "``sftp``" (secure file transfer protocol for jobs run through SSH) or ``None``, specifying how the job should communicate with the dispatcher. If the ``comm_type`` is specified as ``None``, the search will not await or receive any data from the simulation before executing the next job submission. This is only applicable to searches that are executed in `"grid"`, `"variant_generator"` or `"random"` algorithms where results are not used to infer subsequent search suggestions...
+
+Currently, the following argument pairs are acceptable for ``job_type`` and ``comm_type``::
+
+    =======================
+    job_type    , comm_type
+    =======================
+    'sge'       , 'socket'    -> job submission through Sun Grid Engine, INET socket based communication
+    'sge'       , 'sfs'       -> job submission through Sun Grid Engine, communication via shared file system
+    'sge'       , None        -> job submission through Sun Grid Engine, no communication (only grid or random searches)
+    'ssh_sge'   , 'sftp'      -> remote SSH onto a gateway, job submission through Sun Grid Engine, communication via Secure FTP
+    'ssh_slurm' , 'sftp'      -> remote SSH onto a gateway, job submission through Slurm, communication via Secure FTP
+    'ssh_sge'   , None        -> remote SSH onto a gateway, job submission through Sun Grid Engine, no communication (only grid or random searches)
+    'ssh_slurm' , None        -> remote SSH onto a gateway, job submission through Slurm, no communication (only grid or random searches)
+    'sh'        , 'socket'    -> job run directly on local shell, INET socket based communication
+    'sh'        , 'sfs'       -> job run directly on local shell, communication via shared file system
+    'sh'        , None        -> job run directly on local shell, no communication (only grid or random searches)
+
+* **run_config**: a dictionary of keyword: string pairs to customize the submit template, the expected keyword: string pairs are dependent on the job_type
+
+.. code-block::
 
     =======
-    sge
+    sge (job_type as sge or ssh_sge)
     =======
     queue: the queue to submit the job to (#$ -q {queue})
     cores: the number of cores to request for the job (#$ -pe smp {cores})
@@ -2996,7 +3049,7 @@ The basic search implemented with the ``search`` function uses ``ray.tune`` as t
     } # set the command to be run to 'mpiexec -n $NSLOTS -hosts $(hostname) nrniv -python -mpi init.py'
 
     =======
-    sh
+    sh (job_type is sh)
     =======
     command: the command to run for the job
 
@@ -3005,9 +3058,35 @@ The basic search implemented with the ``search`` function uses ``ray.tune`` as t
         'command': 'mpiexec -n 8 nrniv -python -mpi init.py'
     } # set the command to be run
 
+    =======
+    slurm (job_type as ssh_slurm)
+    =======
+    allocation:   the allocation for the job (#SBATCH -A {allocation})
+    partition:    the partition for the job (#SBATCH --partition={partition})
+    nodes:        the number of nodes to distribute the job (#SBATCH --nodes={nodes})
+    coresPerNode: the number of cores per node (#SBATCH --ntasks-per-node={coresPerNode})
+    mem:          the amount of memory to request for the job (#SBATCH --mem={mem})
+    email:        the user's email for status communication (#SBATCH --mail-user={email})
+    custom:       any commands to run before the job command
+    command:      the command to run for the job
+
+    example:
+    run_config = {
+        'allocation': 'aaa111',
+        'partition': 'cpu.q',
+        'nodes': 1,
+        'coresPerNode': 4,
+        'mem': '8G',
+        'email': 'a.b.c@email.com,
+        'custom': 'conda activate myenv',
+        'command': 'mpiexec -n 4 nrniv -python -mpi init.py'
+    }
+
+
+
 * **params**: a dictionary of config values to perform the search over. The keys of the dictionary should match the keys of the config object to be updated. Lists or numpy generators >2 values will enforce a grid or choice search over the values; otherwise, a list of two values will create a uniform distribution sample space except when the search algorithm is explicitly set to `"grid"`
 
-    **usage 1**: updating a constant value specified in the ``SimConfig`` object
+**usage 1**: updating a constant value specified in the ``SimConfig`` object
 
 .. code-block:: python
 
@@ -3028,7 +3107,7 @@ The basic search implemented with the ``search`` function uses ``ray.tune`` as t
             'foo': range(10)
         }
 
-    **usage 2**: updating a nested object in the ``SimConfig`` object
+**usage 2**: updating a nested object in the ``SimConfig`` object
 
 .. code-block:: python
 
@@ -3055,7 +3134,7 @@ The basic search implemented with the ``search`` function uses ``ray.tune`` as t
         # cfg.foo = {'bar': {'baz': 0}}
         # params = {'foo.bar.baz': range(10)}
 
-    **usage 3**: updating a list object in the ``SimConfig`` object
+**usage 3**: updating a list object in the ``SimConfig`` object
 
 .. code-block:: python
 
@@ -3102,20 +3181,23 @@ The basic search implemented with the ``search`` function uses ``ray.tune`` as t
 
 * **output_path**: the directory for storing generated files, can be a relative or absolute path
 
-* **checkpoint_path**: the directory for storing checkpoint files (maintained by ``ray.tune``)in case the search needs to be restored, can be a relative or absolute path
+* **checkpoint_path**: the directory for storing internal ray checkpoint files (maintained by ``ray.tune``)in case the search needs to be restored, can be a relative or absolute path. This checkpoint path maintains search state and allows for restoring searches. On successful completion of a search, the default behavior of the search is to delete the checkpoint directory.
 
-* **max_concurrent**: the number of concurrent trials to run at one time, it is recommended to keep in mind the resource usage of each trial to avoid overscheduling
+* **max_concurrent**: the number of concurrent trials to run at one time
 
-* **num_samples**: the number of trials to run, for any grid search, each value in the grid will be sampled ``num_samples`` times.
+* **num_samples**: the number of trials to run, for parameter grids, a value of 1 means that the search will sample the parameter space of each value in the grid
 
 * **metric**: the metric to optimize (this should match some key: value pair in the returned data). Optional for ``"grid"``, ``"variant_generator"`` and ``"random"`` algorithms with ``None`` specified as the ``comm_type``, but required for optimization algorithms
 
 * **mode**: either 'min' or 'max' (whether to minimize or maximize the metric). Optional as above.
 
+* **sample_interval**: interval in seconds to poll for new results (polling for file system based communication methods).
+
 * **attempt_restore**: If True, the search will first attempt to restore from the checkpoint at **checkpoint_path**, useful for restoring interrupted batch jobs (simply rerun the same script again)
 
+
 7. Batch searches on the Rosenbrock function (some simple examples)
--------------------------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The ``examples`` directory `on the NetPyNE github <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples/rosenbrock>`_ contains multiple methods of performing automatic parameter search of a
 2 dimensional Rosenbrock function.  These examples are used to quickly demonstrate some of the functionality of batch communications rather than the full process of running parameter searches on a detailed
 NEURON simulation (see 7. Performing parameter optimization searches (CA3 example)) and therefore only contain the a `batch.py` file containing the script detailing the parameter space and search method, and a
@@ -3189,7 +3271,7 @@ By using ``xn.0`` and ``xn.1`` we can reference the 0th and 1st elements of the 
 
 
 8. Performing parameter optimization searches (CA3 example)
------------------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The ``examples`` directory `on the NetPyNE github <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples>`_ shows both a ``grid`` based search as well as an ``optuna`` based optimization.
 
 In the ``CA3`` example, we tune the ``PYR->BC`` ``NMDA`` and ``AMPA`` synaptic weights, as well as the ``BC->PYR`` ``GABA`` synaptic weight. Note the search space is defined
@@ -3233,8 +3315,13 @@ The ``out_json`` output contains a dictionary which includes the ``loss`` metric
 
 In a multi-objective optimization, the relevant ``PYR_loss``, ``BC_loss``, and ``OLM_loss`` components are additionally included (see ``mo_optuna_search.py``)
 
-9. Parameter Importance Evaluation Using fANOVA
------------------------------------------------
+9. Ray Checkpointing and Resuming Interrupted Searches
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+A new feature in this beta release is the checkpointing and saving of search progress via the ``ray`` backend. This data is saved in the ``checkpoint_path`` directory specified in the ``search`` function, (which defaults to a newly created ``checkpoint`` folder within the source directory, and the default behavior of ``search`` is to automatically attempt a restore if the batch job is interrupted.
+Upon successful completion of the search, the default behavior is to delete these checkpoint files. If the user manually ends the search due to coding error and wishes to restart the search, the ``checkpoint_path`` should be deleted first.
+
+10. Parameter Importance Evaluation Using fANOVA (unstable)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 A new feature in this beta release is the ability to evaluate parameter importance using a functional ANOVA inspired algorithm via the ``Optuna`` and ``scikit-learn`` libraries.
 (See `the original Hutter paper <http://proceedings.mlr.press/v32/hutter14.pdf>`_  and its `citation <https://automl.github.io/fanova/cite.html>`_)
 
@@ -3253,7 +3340,4 @@ To run the example, generate an output ``grid.csv`` using ``batch.py``, then loa
         results = analyzer.run_analysis() # run fANOVA analysis and store the importance values in a results dictionary
 
 
-10. Ray Checkpointing and Resuming Interrupted Searches
--------------------------------------------------------
-A new feature in this beta release is the checkpointing and saving of search progress via the ``ray`` backend. This data is saved in the ``checkpoint_path`` directory specified in the ``search`` function, (which defaults to a newly created ``checkpoint`` folder within the source directory, and the default behavior of ``search`` is to automatically attempt a restore if the batch job is interrupted.
-Upon successful completion of the search, the default behavior is to delete these checkpoint files. If the user manually ends the search due to coding error and wishes to restart the search, the ``checkpoint_path`` should be deleted first.
+

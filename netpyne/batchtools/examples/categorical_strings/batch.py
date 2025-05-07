@@ -4,11 +4,9 @@ params = {
           'param_str': [ 'string0', 'string1', 'string2' ]
           }
 
-search(job_type = 'sh',
+search(job_type = 'sh', # grid based search with no communication (only works for grid or random searches)
        label = 'categorical',
        params = params,
-       output_path = './grid_batch',
-       checkpoint_path = './ray',
        run_config = {'command': 'python categorical.py'},
        num_samples = 1,
        algorithm = 'variant_generator',

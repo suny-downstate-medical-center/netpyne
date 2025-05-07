@@ -29,7 +29,6 @@ cfg.update()
 # calculation and result transmission  #
 
 
-out_json = json.dumps({'x0': cfg.x0, 'x1': cfg.x1, 'fx': rosenbrock(cfg.x0, cfg.x1)})
-sim.send(out_json)
-
+data = {'x0': cfg.x0, 'x1': cfg.x1, 'fx': rosenbrock(cfg.x0, cfg.x1)}
+sim.send(data)
 

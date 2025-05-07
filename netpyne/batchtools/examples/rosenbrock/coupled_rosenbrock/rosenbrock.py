@@ -33,7 +33,7 @@ x0, x1 = cfg.x0_x1
 # calculation and result transmission  #
 
 
-out_json = json.dumps({'x0': x0, 'x1': x1, 'fx': rosenbrock(x0, x1)})
-sim.send(out_json)
+data = {'x0': x0, 'x1': x1, 'fx': rosenbrock(x0, x1)}
+sim.send(data)
 
 

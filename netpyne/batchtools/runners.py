@@ -81,5 +81,24 @@ class Runner_SimConfig(specs.simConfig.SimConfig):
                 raise Exception("failed on mapping: cfg.{} with value: {}\n{}".format(assign_path, value, e))
         return True
 
+    def save(self, filename):
+        """
+        Saves the SimConfig instance to a file
+
+        Parameters
+        ----------
+        filename - string, name of the file to save to
+
+        Returns
+        -------
+        None
+        """
+        _tmp = self.__dict__.pop('_runner', None)
+        try:
+            super().save(filename) # if save breaks, ensure _runner is not lost
+            # otherwise super().save( ) could produce an error, and lose _runner
+        finally:
+            self.__dict__['_runner'] = _tmp
+
     def get_mappings(self):
         return self._runner.mappings

@@ -81,6 +81,7 @@ class SimConfig(object):
         self.recordLFP = []  # list of 3D locations to record LFP from
         self.recordDipole = False  # record dipoles using lfpykit method
         self.recordDipolesHNN = False  # record dipoles using HNN method
+        self.saveIMembrane = False  # Store transmembrane current by each cell
         self.saveLFPCells = False  # Store LFP generated individually by each cell
         self.saveLFPPops = False  # Store LFP generated individually by each population
         self.saveDipoleCells = False  # Store LFP generated individually by each cell

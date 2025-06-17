@@ -2789,13 +2789,13 @@ The code for neural network optimization through evolutionary algorithm used in 
 Running a Batch Job (Beta)
 --------------------------
 
-The NetPyNE batchtools subpackage provides a new method of automating submission of simulations and collating results, built as a dispatcher <-> runner communication. Currently it uses the ``Ray Tune`` parameter optimization and checkpointing package`
+The NetPyNE ``batchtools`` subpackage provides a new method of automating submission of simulations and combining results for analysis, based on a dispatcher <-> runner communication model. It currently uses the ``Ray Tune`` package for parameter optimization and checkpointing, which provides a wide range of state-of-the-art optimization algorithms and efficient parallelization and scalability.
 
-While objects and interfaces can be handled directly, we have integrated and automated everything into simple wrapper commands applicable to this use-case.
-automatic parameter searches can be done by specifying a search space and algorithm through ``netpyne.batchtools.search``, and
-parameter to model translation and result communication is handled through ``netpyne.specs`` and ``netpyne.sim`` respectively.
+While the ``batchtools`` objects and interfaces can be handled directly, we have integrated and automated everything into simple wrapper commands applicable to our general use-case.
+Automatic parameter searches can be implemented by specifying a search space and algorithm through ``netpyne.batchtools.search``. The 
+definition of model parameters is still handled by ``netpyne.specs`` and simulation result communication is handled through ``netpyne.sim``.
 
-A diagram of the wrapper interactions...
+Below is a diagram of the interactions between the wrapper commands in the four main files required for a NetPyNE model: netParams.py, cfg.py, init.py and search.py (used to define the batch paramater optimization/search).
 
 .. image:: figs/batchtools_netpyne.png
     :width: 90%

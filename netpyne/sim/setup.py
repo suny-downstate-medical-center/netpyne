@@ -98,9 +98,9 @@ def initialize(netParams=None, simConfig=None, net=None):
             if failed:
                 failedComps = [err.component for err in failed] # get failed component name
                 failedComps = list(set(failedComps)) # keep unique elements only
-                print(f"\nNetParams validation identified some potential issues in {', '.join(failedComps)}. See above for details.")
+                print(f"\n✋ NetParams validation identified some potential issues in {', '.join(failedComps)}. See above for details.")
             else:
-                print("\nNetParams validation successful.")
+                print("\n✅ NetParams validation successful.")
         except Exception as e:
             sim.timing('stop', 'validationTime')
             print("\nAn exception occurred during the netParams validation process.")

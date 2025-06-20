@@ -164,7 +164,6 @@ def _addRegions(self, params):
                 secs=nrnSecs,
                 nrn_region=param['nrn_region'],
                 geometry=geometry,
-                dimension=param['dimension'],
                 dx=param['dx'],
                 name=label,
             )

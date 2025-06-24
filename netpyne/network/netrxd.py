@@ -140,10 +140,6 @@ def _addRegions(self, params):
             # class neuron.rxd.geometry.Shell(lo=None, hi=None)
 
         # geomery
-        if 'dimension' not in param:
-            param['dimension'] = None
-
-        # geomery
         if 'dx' not in param:
             param['dx'] = None
 

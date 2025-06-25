@@ -1,6 +1,16 @@
-- Solve minor bug in the uniform field for extracelular stimulation (sign). Deposited the xtra.mod in support module.
+# Version in development
+
+**New features**
 
 - Added extracellular stimulation with a supporting xtra.mod (which includes a global variable defining the temporal modulation and a pointer to link the extracellular mechanism in NEURON). Useful for large networks
+
+- Improved netParams validation (mechs validation, improved error messages)
+
+- added ability to save transmembrane current for each segment
+
+**Bug fixes**
+
+- Solve minor bug in the uniform field for extracelular stimulation (sign). Deposited the xtra.mod in support module.
 
 - Solved small bug when plotting colorbar in the raster plot colored by the LFP phase 
 
@@ -10,6 +20,13 @@
 
 - Update of documentation (stimSourceParams and stimTargetParams) incorporating how to define extracellular stimulations
 
+- Fixed recording from variables of Point process
+
+- Fixed time slicing on pre-loaded data in plotCSD() (credit: Nikita Novikov)
+
+- Fixed sbi deprecation error. Fixes in docs formatting
+
+- Fixes, refactoring and fail-fast checks in multisinaptic connections
 
 # Version 1.0.7
 

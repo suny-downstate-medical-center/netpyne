@@ -26,7 +26,7 @@ class Network(object):
         self.connStringFuncParams = ['weight', 'delay', 'synsPerConn', 'loc']
 
         # params that can be expressed using string-based functions in stims
-        self.stimStringFuncParams = [
+        self.stimStringFuncParams = [ # TODO: why this limited list and not all possible params for custom stims?
             'del',
             'dur',
             'amp',

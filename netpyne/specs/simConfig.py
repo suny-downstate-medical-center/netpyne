@@ -81,6 +81,7 @@ class SimConfig(object):
         self.recordLFP = []  # list of 3D locations to record LFP from
         self.recordDipole = False  # record dipoles using lfpykit method
         self.recordDipolesHNN = False  # record dipoles using HNN method
+        self.saveIMembrane = False  # Store transmembrane current by each cell
         self.saveLFPCells = False  # Store LFP generated individually by each cell
         self.saveLFPPops = False  # Store LFP generated individually by each population
         self.saveDipoleCells = False  # Store LFP generated individually by each cell
@@ -106,9 +107,7 @@ class SimConfig(object):
         self.backupCfgFile = []  # copy cfg file, list with [sourceFile,destFolder] (eg. ['cfg.py', 'backupcfg/'])
 
         # error checking
-        self.validateNetParams = (
-            False  # whether to validate the input parameters (will be turned off if num processors > 1)
-        )
+        self.validateNetParams = False # whether to validate the input parameters (will be turned off if num processors > 1)
         # self.checkErrors = False # whether to validate the input parameters (will be turned off if num processors > 1)
         # self.checkErrorsVerbose = False # whether to print detailed errors during input parameter validation
         # self.exitOnError = False # whether to hard exit on error

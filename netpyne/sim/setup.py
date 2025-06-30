@@ -98,9 +98,9 @@ def initialize(netParams=None, simConfig=None, net=None):
             if failed:
                 failedComps = [err.component for err in failed] # get failed component name
                 failedComps = list(set(failedComps)) # keep unique elements only
-                print(f"\nNetParams validation identified some potential issues in {', '.join(failedComps)}. See above for details.")
+                print(f"\n✋ NetParams validation identified some potential issues in {', '.join(failedComps)}. See above for details.")
             else:
-                print("\nNetParams validation successful.")
+                print("\n✅ NetParams validation successful.")
         except Exception as e:
             sim.timing('stop', 'validationTime')
             print("\nAn exception occurred during the netParams validation process.")
@@ -341,12 +341,24 @@ def setupRecordLFP():
     sim.net.calcSegCoords()  # calculate segment coords for each cell
     sim.net.recXElectrode = RecXElectrode.fromConfig(sim.cfg)  # create exctracellular recording electrode
 
+    if sim.cfg.saveIMembrane:
+        if sim.cfg.saveIMembrane == True:
+            cellsRecordIMembrane = utils.getCellsList(['all'])
+        elif isinstance(sim.cfg.saveIMembrane, list):
+            cellsRecordIMembrane = utils.getCellsList(sim.cfg.saveIMembrane)
+
+        for c in cellsRecordIMembrane:
+            sim.simData['iMembrane'][c.gid] = np.zeros((saveSteps, c.getNumberOfSegments()))
+
     if sim.cfg.createNEURONObj:
         for cell in sim.net.compartCells:
-            nseg = cell._segCoords['p0'].shape[1]
-            sim.net.recXElectrode.calcTransferResistance(
-                cell.gid, cell._segCoords
-            )  # transfer resistance for each cell
+            nseg = cell.getNumberOfSegments()
+
+            if sim.cfg.recordLFP:
+                sim.net.recXElectrode.calcTransferResistance(
+                    cell.gid, cell._segCoords
+                )  # transfer resistance for each cell
+
             cell.imembPtr = h.PtrVector(nseg)  # pointer vector
             cell.imembPtr.ptr_update_callback(
                 cell.setImembPtr
@@ -411,7 +423,7 @@ def setupRecordDipole():
             cell.M = cdm.get_transformation_matrix()
 
             # set up recording of membrane currents (duplicate with setupRecordLFP -- unifiy and avoid calling twice)
-            nseg = cell._segCoords['p0'].shape[1]
+            nseg = cell.getNumberOfSegments()
             cell.imembPtr = h.PtrVector(nseg)  # pointer vector
             cell.imembPtr.ptr_update_callback(
                 cell.setImembPtr
@@ -532,7 +544,7 @@ def setupRecording():
         print(("Recording %s traces of %s types on node %i" % (total, cat, sim.rank)))
 
     # set LFP recording
-    if sim.cfg.recordLFP:
+    if sim.cfg.recordLFP or sim.cfg.saveIMembrane:
         setupRecordLFP()
 
     # set dipole recording

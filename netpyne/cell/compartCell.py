@@ -1841,6 +1841,11 @@ If this cell is expected to be a point cell instead, make sure the correspondent
             self._segCoords['p0'] = p3dsoma
             self._segCoords['p1'] = p3dsoma
 
+    def getNumberOfSegments(self) -> int:
+        if hasattr(self, '_segCoords'):
+            return self._segCoords['p0'].shape[1]
+        else:
+            return sum(sec['hObj'].nseg for sec in self.secs.values())
 
     def setImembPtr(self):
         """Set PtrVector to point to the `i_membrane_`"""

@@ -8,6 +8,8 @@
 
 - added ability to save transmembrane current for each segment
 
+- Updated options for batch communication (see netpyne documentation: http://doc.netpyne.org/user_documentation.html#running-a-batch-job-beta)
+
 **Bug fixes**
 
 - Solve minor bug in the uniform field for extracelular stimulation (sign). Deposited the xtra.mod in support module.

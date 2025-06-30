@@ -2971,7 +2971,7 @@ Prior batched simulations relied on ``.pkl`` files to communicate data. In order
 
 In terms of the simulation, the following functions are available to the user:
 
-* **sim.send(<data>)**: sends ``<data>`` to the batch ``dispatcher``, esp.
+* **sim.send(<data>)**: sends ``<data>`` (a dict) to the batch ``dispatcher``, esp.
 
     * for ``search`` jobs, it is important to match the data sent with the metric specified in the search function. For instance, if the search call specifies a metric "loss", then ``sim.send`` should specify a key: value pair: ``{'loss': <value>}``
 

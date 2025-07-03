@@ -3191,10 +3191,7 @@ Currently, the following argument pairs are acceptable for ``job_type`` and ``co
 
 7. Batch searches on the Rosenbrock function (some simple examples)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The ``examples`` directory `on the NetPyNE github <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples/rosenbrock>`_ contains multiple methods of performing automatic parameter search of a
-2 dimensional Rosenbrock function.  These examples are used to quickly demonstrate some of the functionality of batch communications rather than the full process of running parameter searches on a detailed
-NEURON simulation (see 7. Performing parameter optimization searches (CA3 example)) and therefore only contain the a `batch.py` file containing the script detailing the parameter space and search method, and a
-`rosenbrock.py` file containing the function to explore, and the appropriate declarations and calls for batch automation and communication (rather than the traditional `cfg.py`, `netParams.py`, and `init.py` files).
+The ``examples`` directory `on the NetPyNE github <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples/rosenbrock>`_ contains multiple methods of performing automatic parameter search of a 2-dimensional Rosenbrock function.  These examples are used to quickly demonstrate some of the functionality of batch communications rather than the full process of running parameter searches on a detailed NEURON simulation (see 7. Performing parameter optimization searches (CA3 example)) and therefore only contain the a `batch.py` file containing the script detailing the parameter space and search method, and a `rosenbrock.py` file containing the function to explore, and the appropriate declarations and calls for batch automation and communication (rather than the traditional `cfg.py`, `netParams.py`, and `init.py` files).
 
 1. `basic_rosenbrock <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples/rosenbrock/basic_rosenbrock>`_
 
@@ -3267,7 +3264,9 @@ By using ``xn.0`` and ``xn.1`` we can reference the 0th and 1st elements of the 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The ``examples`` directory `on the NetPyNE github <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples>`_ shows both a ``grid`` based search as well as an ``optuna`` based optimization.
 
-In the ``CA3`` example, we tune the ``PYR->BC`` ``NMDA`` and ``AMPA`` synaptic weights, as well as the ``BC->PYR`` ``GABA`` synaptic weight. Note the search space is defined
+In the ``CA3`` example, we tune the ``PYR->BC`` ``NMDA`` and ``AMPA`` synaptic weights, as well as the ``BC->PYR`` ``GABA`` synaptic weight. 
+
+For the optuna-based parameter optimization, the search space upper and lower bounds are defined in ``optuna_search.py`` as:
 
 .. code-block:: python
 
@@ -3277,7 +3276,7 @@ In the ``CA3`` example, we tune the ``PYR->BC`` ``NMDA`` and ``AMPA`` synaptic w
                   'gaba.BC->PYR' : [0.4e-3, 1.0e-3],
                  }
 
-in both ``optuna_search.py``, defining the upper and lower bounds of the search space, while in ``grid_search.py`` the search space is defined
+In contrast, for the grid-based parameter explorations, the ``3x3x3`` specific values to search over are defined in ``grid_search.py`` as:
 
 .. code-block:: python
 
@@ -3287,9 +3286,7 @@ in both ``optuna_search.py``, defining the upper and lower bounds of the search 
                   'gaba.BC->PYR' : numpy.linspace(0.4e-3, 1.0e-3, 3),
                  }
 
-which defines ``3x3x3`` specific values to search over
-
-Note that the ``metric`` specifies a specific ``string`` (``loss``) to report and optimize around. This value is generated and ``sent`` by the ``init.py`` simulation
+Note that the ``metric`` sets a specific ``string`` (``loss``) to report and optimize around. This value is generated and sent by the ``init.py`` simulation:
 
 .. code-block:: python
 
@@ -3311,17 +3308,18 @@ In a multi-objective optimization, the relevant ``PYR_loss``, ``BC_loss``, and `
 9. Ray Checkpointing and Resuming Interrupted Searches
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 A new feature in this beta release is the checkpointing and saving of search progress via the ``ray`` backend. This data is saved in the ``checkpoint_path`` directory specified in the ``search`` function, (which defaults to a newly created ``checkpoint`` folder within the source directory, and the default behavior of ``search`` is to automatically attempt a restore if the batch job is interrupted.
+
 Upon successful completion of the search, the default behavior is to delete these checkpoint files. If the user manually ends the search due to coding error and wishes to restart the search, the ``checkpoint_path`` should be deleted first.
 
 10. Parameter Importance Evaluation Using fANOVA (unstable)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-A new feature in this beta release is the ability to evaluate parameter importance using a functional ANOVA inspired algorithm via the ``Optuna`` and ``scikit-learn`` libraries.
+Another new feature in this beta release is the ability to evaluate parameter importance using a functional ANOVA inspired algorithm via the ``Optuna`` and ``scikit-learn`` libraries.
 (See `the original Hutter paper <http://proceedings.mlr.press/v32/hutter14.pdf>`_  and its `citation <https://automl.github.io/fanova/cite.html>`_)
 
 Currently, only unpaired single parameter importance to a single metric score is supported through the ``NetPyNE.batchtools.analysis`` ``Analyzer`` object, with an example of its usage
 `here <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples/rosenbrock/fanova_rosenbrock>`_:
 
-To run the example, generate an output ``grid.csv`` using ``batch.py``, then loading that ``grid.csv`` into the ``Analyzer`` object. Then, using ``run_analysis`` will generate, per parameter, a single score indicative of the estimated ``importance`` of the parameter: that is, the estimated effect on the total variance of the model within the given bounds.
+To run the example, generate an output ``grid.csv`` using ``batch.py``, and then load that ``grid.csv`` into the ``Analyzer`` object. Finally, executing ``run_analysis`` will generate a single score per parameter indicative of the estimated ``importance`` of the parameter: that is, the estimated effect on the total variance of the model within the given bounds:
 
 .. code-block:: python
 

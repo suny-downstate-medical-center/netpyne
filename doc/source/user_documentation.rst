@@ -2803,29 +2803,26 @@ Below is a diagram of the interactions between the wrapper commands in the four 
 
 1. Setting up batchtools
 ^^^^^^^^^^^^^^^^^^^^^^^^
-Beyond the necessary dependency installations for NetPyNE and NEURON, the following `pip` installations are preferred.
-
-The NetPyNE installation should be handled as a development installation to allow for up to date fixes
+Beyond the necessary installation of NetPyNE and NEURON, the following `pip` installations are required:
 
 .. code-block::
 
-    git clone https://github.com/Neurosim-lab/netpyne.git
+    pip install -U ray
+    pip install -U batchtk
+
+``batchtk`` is the NetPyNE ``batchtools`` subpackage, and ``ray`` is the Ray Tune package, a dependency for batchtools. 
+
+To allow for up to date fixes of these packages, NetPyNE and batchtk should be set up as development installations:
+
+.. code-block::
+
+    git clone https://github.com/suny-downstate-medical-center/netpyne.git
     cd netpyne
     pip install -e .
 
-A development install of the batchtools subpackage
-
-.. code-block::
-
-    git clone https://github.com/jchen6727/batchtk.git
+    git clone https://github.com/suny-downstate-medical-center/batchtk.git
     cd batchtk
     pip install -e .
-
-Ray is a dependency for batchtools, and should be installed with the following command
-
-.. code-block::
-
-    pip install -U ray[default]
 
 You can validate that the correct packages are installed by checking the ``sim.send`` and ``cfg.update`` methods in an interactive python instance
 
@@ -2848,7 +2845,7 @@ You can validate that the correct packages are installed by checking the ``sim.s
     Help on method update in module netpyne.batchtools.runners:
     ...
 
-If there is an issue with installation, the following message will be presented instead when calling help on either function
+If there is an issue with the installation, the following message will be presented instead when calling help on either function
 
 .. code-block::
 

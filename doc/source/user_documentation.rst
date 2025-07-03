@@ -2866,14 +2866,14 @@ Though the relevant methods can be called without raising an exception, they onl
 ^^^^^^^^^^^
 Examples of NetPyNE batchtools usage can be found in the ``examples`` directory `on the NetPyNE github <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples>`_.
 
-Examples of the underlying batchtk package can be in the ``examples`` directory `on the batchtk github <https://github.com/jchen6727/batchtk/tree/release/examples>`_.
+Examples of the underlying batchtk package can be in the ``examples`` directory `on the batchtk github <https://github.com/suny-downstate-medical-center/batchtk/tree/release/examples>`_.
 
 3. Retrieving batch configuration values through the ``specs`` object
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Each simulation is able to retrieve relevant configurations through the ``specs`` object, and communicate with
-the dispatcher through the ``send`` function within ``netpyne.sim``.
+Each simulation is able to retrieve relevant batch configurations through the ``specs`` object, and communicate with
+the batch dispatcher through the ``send`` function within ``netpyne.sim``.
 
-importing the relevant objects
+First, import the relevant objects:
 
 .. code-block:: python
 
@@ -2881,14 +2881,14 @@ importing the relevant objects
      cfg = specs.SimConfig()  # create a SimConfig object, can be provided with a dictionary on initial call to set initial values
      netParams = specs.NetParams()  # create a netParams object
 
-if the ``batchtk`` module is properly installed, then it automatically replaces the original ``specs.SimConfig`` object with the developmental ``batchtools`` version which can be queried through ``help()`` or ``type()``:
+If the ``batchtk`` module is properly installed, then it automatically replaces the original ``specs.SimConfig`` object with the developmental ``batchtools`` version which can be queried through ``help()`` or ``type()``:
 
 .. code-block:: python
 
     cfg = specs.SimConfig()
     help(cfg)
 
-Truncated output of the above code block...:
+Truncated output of the above code block:
 
 .. code-block:: python
 
@@ -2897,11 +2897,9 @@ Truncated output of the above code block...:
 
     class Runner_SimConfig(batchtk.runtk.runners.Runner, netpyne.specs.simConfig.SimConfig)
 
-* This updated ``cfg`` instance automatically captures relevant configuration mappings created upon initialization
+This updated ``cfg`` instance automatically captures relevant configuration mappings created upon initialization for this particular batch job. These mappings can be retrieved via ``cfg.get_mappings()``.
 
-   * these mappings can be retrieved via ``cfg.get_mappings()``
-
-* then, upon calling ``cfg.update()``, it will update its values with the relevant mappings through the ``update()`` method.
+The next step is to update the cfg values with the relevant mappings for this batch job by calling ``cfg.update()``:
 
 .. code-block:: python
 
@@ -2909,7 +2907,7 @@ Truncated output of the above code block...:
     cfg = specs.SimConfig()              # create a SimConfig object
     cfg.update()                         # update the cfg object with any relevant mappings for this particular batch job
 
-The ``update`` method will update the ``SimConfig`` object ``first`` with values supplied in the argument call, and ``then`` with the configuration mappings (i.e. retrieved by ``cfg.get_mappings()``)
+The ``update`` method will update the ``SimConfig`` object *first* with values supplied in the argument call, and *then* with the configuration mappings for the batch job (i.e. retrieved by ``cfg.get_mappings()``), as illustrated below:
 
 .. code-block:: python
 
@@ -2923,12 +2921,12 @@ The ``update`` method will update the ``SimConfig`` object ``first`` with values
         assert cfg.bar == 1                                      # cfg.bar remains unchanged
         assert cfg.baz == 2                                      # cfg.baz remains unchanged
 
-This REPLACES the previous NetPyNE code idiom for updating the SimConfig object with mappings from the batched job submission
+This REPLACES the previous NetPyNE code for updating the SimConfig object with mappings from the batch job submission.
 
 4. Additional functionality within the simConfig object
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``cfg.update()`` also supports the optional argument ``force_match``, which forces values in the update dictionary to match existing attributes within the ``SimConfig`` object. This setting is recommended to be set to ``True`` during debugging to check for accidental creation of new attributes within the ``SimConfig`` object at runtime ...
+The method ``cfg.update()`` also supports the optional argument ``force_match``, which forces values in the update dictionary to match existing attributes within the ``SimConfig`` object. This setting is recommended to be set to ``True`` during debugging to check for accidental creation of new attributes within the ``SimConfig`` object at runtime:
 
 .. code-block:: python
 
@@ -2943,7 +2941,7 @@ This REPLACES the previous NetPyNE code idiom for updating the SimConfig object 
         assert cfg.type == 0                                     # cfg.type remains unchanged due to a typo in the attribute name 'type' -> 'typo'
         assert cfg.typo == 1                                     # instead, cfg.typo is created and set to the value 1
 
-Both the initialization of the ``cfg`` object with ``specs.SimConfig()`` and the subsequent call to ``cfg.update()`` handle both dot notation and nested containers...
+Both the initialization of the ``cfg`` object with ``specs.SimConfig()`` and the subsequent call to ``cfg.update()`` handle both dot notation and nested containers:
 
 .. code-block:: python
 
@@ -2964,13 +2962,11 @@ updating the ``cfg`` object with the supplied dictionary will occur before updat
 5. Communicating results to the search algorithm through the ``sim.send`` function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Prior batched simulations relied on ``.pkl`` files to communicate data. In order to facilitate collation, specific data values can be sent at the end of the simulation via: ``netpyne.sim.send(...)``
+Prior batch simulations relied on ``.pkl`` files to communicate data. In order to facilitate collation, specific data values can be sent directly via runtime memory at the end of the simulation via: 
 
-In terms of the simulation, the following functions are available to the user:
+* **sim.send(<data>)**: sends ``<data>`` to the batch ``dispatcher``
 
-* **sim.send(<data>)**: sends ``<data>`` to the batch ``dispatcher``, esp.
-
-    * for ``search`` jobs, it is important to match the data sent with the metric specified in the search function. For instance, if the search call specifies a metric "loss", then ``sim.send`` should specify a key: value pair: ``{'loss': <value>}``
+For ``search`` jobs, it is important to match the data sent with the metric specified in the search function. For instance, if the search call specifies a metric "loss", then ``sim.send`` should specify a key: value pair: ``{'loss': <value>}``.
 
 6. Specifying a batch job
 ^^^^^^^^^^^^^^^^^^^^^^^^^

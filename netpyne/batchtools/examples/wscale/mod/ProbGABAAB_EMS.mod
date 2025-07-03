@@ -316,7 +316,7 @@ ENDVERBATIM
                 : independent of nhost or which host this instance is on
                 : is desired, since each instance on this cpu draws from
                 : the same stream
-                urand = scop_random(1)
+                urand = scop_random()
 VERBATIM
         }
 ENDVERBATIM

@@ -2959,10 +2959,10 @@ Both the initialization of the ``cfg`` object with ``specs.SimConfig()`` and the
 
 updating the ``cfg`` object with the supplied dictionary will occur before updating it with parameters specified by the batch search
 
-5. Communicating results to the search algorithm through the ``sim.send`` function
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+5. Communicating results to the search algorithm via sockets using the ``sim.send`` function
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Prior batch simulations relied on ``.pkl`` files to communicate data. In order to facilitate collation, specific data values can be sent directly via runtime memory at the end of the simulation via: 
+Prior batch simulations relied on ``.pkl`` files to communicate data. In order to facilitate collation, specific data values can be sent directly via sockets at the end of the simulation via: 
 
 * **sim.send(<data>)**: sends ``<data>`` to the batch ``dispatcher``
 
@@ -2970,14 +2970,14 @@ For ``search`` jobs, it is important to match the data sent with the metric spec
 
 6. Specifying a batch job
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-Batch job handling is implemented from ``netpyne.batchtools.search``. Below is a selection of relevant arguments for the ``search`` function, the full list of arguments can be referenced by calling:
+Batch job handling is implemented from ``netpyne.batchtools.search``. Below is a selection of relevant arguments for the ``search`` function, the full list of arguments is available by calling:
 
 .. code-block:: python
 
     from netpyne.batchtools import search
     help(search)
 
-**search (truncated API)**
+**Search API (truncated):**
 
 .. code-block:: python
 
@@ -2987,21 +2987,22 @@ Batch job handling is implemented from ``netpyne.batchtools.search``. Below is a
            run_config: Optional[dict] = None,  # batch configuration, (keyword: string pairs to customize the submit template)
            params: Optional[dict] = None,  # search space (dictionary of parameter keys: tune search spaces)
            algorithm: Optional[str] = "variant_generator", # search algorithm to use, see SEARCH_ALG_IMPORT for available options
-           label: Optional[str] = 'search',  # label for the search, any files generated will be prefixed with this string
+           label: Optional[str] = "search",  # label for the search, any files generated will be prefixed with this string
            output_path: Optional[str] = './batch',  # directory for storing generated files, either relative to the current working directory if starting with '.' or an absolute path if starting with '/'
            checkpoint_path: Optional[str] = './checkpoint',  # directory for storing checkpoint files, either relative to the current working directory if starting with '.' or an absolute path if starting with '/'
            max_concurrent: Optional[int] = 1,  # number of concurrent trials to run at one time
-           num_samples: Optional[int] = 1,  # number of trials to run, for parameter grids, a value of 1 means that the search will sample the parameter space of each value in the grid
-           metric: Optional[str] = None, # metric to optimize (this should match some key: value pair in the returned data
-           mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
+           num_samples: Optional[int] = 1,  # number of trials to run; for parameter grids, a value of 1 means that the search will sample the parameter space of each value in the grid
+           metric: Optional[str] = None, # metric to optimize (this should match some key: value pair in the returned data)
+           mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric)
            sample_interval: Optional[int] = 15,  # interval to poll for new results (in seconds)
            attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
            ) -> study: # results of the search
 
-The basic search implemented with the ``search`` function uses ``ray.tune`` as the search algorithm backend, creates a `.csv` storing the results, and returning a ``study`` object containing. It takes the following parameters;
+The default parameter search implemented with the ``search`` function uses ``ray.tune`` as the search algorithm backend, creates a `.csv` storing the results, and returns a ``study`` object containing the output. It takes the following two parameters:
 
-* **job_type**: "``sge``", "``sh``", "``ssh_slurm``", "``ssh_sge``" specifies how the job should be submitted, "``sge``" will submit batch jobs through the Sun Grid Engine. "``sh``" will submit bach jobs through the shell on a local machine, "``ssh_slurm``" or "``ssh_sge``" will submit batch jobs through Slurm workload manager or Sun Grid Engine through an SSH connection.
-* **comm_type**: either "``socket``" (INET socket), "``sfs``" (shared file system), "``sftp``" (secure file transfer protocol for jobs run through SSH) or ``None``, specifying how the job should communicate with the dispatcher. If the ``comm_type`` is specified as ``None``, the search will not await or receive any data from the simulation before executing the next job submission. This is only applicable to searches that are executed in `"grid"`, `"variant_generator"` or `"random"` algorithms where results are not used to infer subsequent search suggestions...
+* **job_type**: specifies how the job should be submitted; **"sge"** will submit batch jobs through the Sun Grid Engine; **"sh"** will submit bach jobs through the shell on a local machine; **"ssh_slurm"** or "ssh_sge" will submit batch jobs through Slurm workload manager or Sun Grid Engine through an SSH connection.
+
+* **comm_type**: specifies how the job should communicate with the dispatcher either; **"socket"** (INET socket), **"sfs"** (shared file system), **"sftp"** (secure file transfer protocol for jobs run through SSH) or **"None"**. If the ``comm_type`` is specified as "None", the search will not await or receive any data from the simulation before executing the next job submission. This is only applicable to searches that are executed in "grid", "variant_generator" or "random" algorithms, where results are not used to infer subsequent search suggestions.
 
 Currently, the following argument pairs are acceptable for ``job_type`` and ``comm_type``::
 
@@ -3019,7 +3020,7 @@ Currently, the following argument pairs are acceptable for ``job_type`` and ``co
     'sh'        , 'sfs'       -> job run directly on local shell, communication via shared file system
     'sh'        , None        -> job run directly on local shell, no communication (only grid or random searches)
 
-* **run_config**: a dictionary of keyword: string pairs to customize the submit template, the expected keyword: string pairs are dependent on the job_type
+* **run_config**: a dictionary of keyword: string pairs to customize the submit template, the expected keyword: string pairs are dependent on the job_type:
 
 .. code-block::
 
@@ -3077,9 +3078,9 @@ Currently, the following argument pairs are acceptable for ``job_type`` and ``co
 
 
 
-* **params**: a dictionary of config values to perform the search over. The keys of the dictionary should match the keys of the config object to be updated. Lists or numpy generators >2 values will enforce a grid or choice search over the values; otherwise, a list of two values will create a uniform distribution sample space except when the search algorithm is explicitly set to `"grid"`
+* **params**: a dictionary of config values to perform the search over. The keys of the dictionary should match the keys of the config object to be updated. Lists or numpy generators > 2 values will enforce a grid or choice search over the values; otherwise, a list of two values will create a uniform distribution sample space except when the search algorithm is explicitly set to `"grid"`
 
-**usage 1**: updating a constant value specified in the ``SimConfig`` object
+**Usage 1**: updating a constant value specified in the ``SimConfig`` object:
 
 .. code-block:: python
 
@@ -3100,7 +3101,7 @@ Currently, the following argument pairs are acceptable for ``job_type`` and ``co
             'foo': range(10)
         }
 
-**usage 2**: updating a nested object in the ``SimConfig`` object
+**Usage 2**: updating a nested object in the ``SimConfig`` object:
 
 .. code-block:: python
 
@@ -3127,7 +3128,7 @@ Currently, the following argument pairs are acceptable for ``job_type`` and ``co
         # cfg.foo = {'bar': {'baz': 0}}
         # params = {'foo.bar.baz': range(10)}
 
-**usage 3**: updating a list object in the ``SimConfig`` object
+**Usage 3**: updating a list object in the ``SimConfig`` object:
 
 .. code-block:: python
 
@@ -3160,21 +3161,20 @@ Currently, the following argument pairs are acceptable for ``job_type`` and ``co
         * "grid": forces grid based search over the parameter space, but otherwise functions similar to "variant generator"
         * "variant_generator": grid and random based search of the parameter space (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
         * "random": grid and random based search of the parameter space (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
-        * "axe": optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
-        * "bayesopt": optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
-        * "hyperopt": optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
-        * "bohb": optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
-        * "nevergrad": optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
-        * "optuna": optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
-        * "hebo": optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
-        * "sigopt": optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
-        * "zoopt": optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
+        * "axe": Ax optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
+        * "bayesopt": Bayesian optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
+        * "hyperopt": Hyper optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
+        * "bohb": Bayesian Optimization HyperBand algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
+        * "nevergrad": Nevergrad optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
+        * "optuna": Optuna hyperparameter optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
+        * "hebo": Heteroscedastic Evolutionary Bayesian Optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
+        * "zoopt": Derivateive-free optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
 
 * **label**: a label for the search, used for output file naming
 
 * **output_path**: the directory for storing generated files, can be a relative or absolute path
 
-* **checkpoint_path**: the directory for storing internal ray checkpoint files (maintained by ``ray.tune``)in case the search needs to be restored, can be a relative or absolute path. This checkpoint path maintains search state and allows for restoring searches. On successful completion of a search, the default behavior of the search is to delete the checkpoint directory.
+* **checkpoint_path**: the directory for storing internal ray checkpoint files (maintained by ``ray.tune``) in case the search needs to be restored; can be a relative or absolute path. This checkpoint path maintains search state and allows for restoring searches. On successful completion of a search, the default behavior of the search is to delete the checkpoint directory.
 
 * **max_concurrent**: the number of concurrent trials to run at one time
 

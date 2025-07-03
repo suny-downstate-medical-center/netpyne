@@ -4,7 +4,7 @@ Module for running simulations
 """
 
 import numpy as np
-from neuron import h, init  # Import NEURON
+from neuron import h  # Import NEURON
 from . import utils
 
 

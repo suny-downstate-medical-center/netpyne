@@ -87,14 +87,14 @@ def compare(source_file, target_file, source_key=None, target_key=None):
     from deepdiff import DeepDiff
     with open(source_file, 'r') as fileObj:
         if source_file.endswith('.json'):
-            source = json.load(fileObj, object_pairs_hook=specs.OrderedDict)
+            source = json.load(fileObj, object_pairs_hook=specs.ODict)
         elif source_file.endswith('.pkl'):
             source = pickle.load(fileObj)
     if source_key: source = source[source_key]
 
     with open(target_file, 'r') as fileObj:
         if target_file.endswith('.json'):
-            target = json.load(fileObj, object_pairs_hook=specs.OrderedDict)
+            target = json.load(fileObj, object_pairs_hook=specs.ODict)
         elif source_file.endswith('.pkl'):
             target = pickle.load(fileObj)
     if target_key: target = target[target_key]

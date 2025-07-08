@@ -14,6 +14,8 @@
 
 - Solve minor bug in the uniform field for extracelular stimulation (sign). Deposited the xtra.mod in support module.
 
+- Fixed batch SGE example (credit: Adam Newton)
+
 - Solved small bug when plotting colorbar in the raster plot colored by the LFP phase 
 
 - Solved conflict between diversity and segment coordinates (per population), used in LFP setups
@@ -22,6 +24,10 @@
 
 - Update of documentation (stimSourceParams and stimTargetParams) incorporating how to define extracellular stimulations
 
+- Fixed ODict in examples/batchCell (credit: Hyunsu Lee)
+
+- Fix in RxD to support NEURON 9 (credit: Adam Newton)
+
 - Fixed recording from variables of Point process
 
 - Fixed time slicing on pre-loaded data in plotCSD() (credit: Nikita Novikov)
@@ -29,6 +35,8 @@
 - Fixed sbi deprecation error. Fixes in docs formatting
 
 - Fixes, refactoring and fail-fast checks in multisinaptic connections
+
+- Fix verbatim function defs in mod files (credit: Ankur Sinha)
 
 # Version 1.0.7
 

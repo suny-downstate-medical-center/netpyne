@@ -1,4 +1,4 @@
-from netpyne.batchtools import specs, comm
+from netpyne import specs
 import json
 
 
@@ -11,16 +11,12 @@ cfg.saveFolder = '.'
 
 cfg.param_str = ['default']
 
-cfg.update_cfg()
+cfg.update()
 
 # --------------------------------------------------- #
 
 # comm creation, calculation and result transmission  #
-comm.initialize()
 
-out_json = json.dumps({'return': 0, 'param_str': str(cfg.param_str), 'type': str(type(cfg.param_str))})
-if comm.is_host():
-    print(out_json)
-    comm.send(out_json)
-    comm.close()
-
+out_json = json.dumps({'param_str': str(cfg.param_str), 'type': str(type(cfg.param_str))})
+print(out_json)
+cfg.save("{}/{}_cfg.json".format(cfg.saveFolder, cfg.simLabel))

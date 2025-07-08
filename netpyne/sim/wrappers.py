@@ -39,9 +39,9 @@ def create(netParams=None, simConfig=None, output=False, clearAll=False):
 
     import __main__ as top
 
-    if not netParams:
+    if netParams is None:
         netParams = top.netParams
-    if not simConfig:
+    if simConfig is None:
         simConfig = top.simConfig
 
     sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
@@ -583,9 +583,9 @@ def createExportNeuroML2(
     from .. import sim
     import __main__ as top
 
-    if not netParams:
+    if netParams is None:
         netParams = top.netParams
-    if not simConfig:
+    if simConfig is None:
         simConfig = top.simConfig
 
     sim.initialize(netParams, simConfig)  # create network object and set cfg and net params

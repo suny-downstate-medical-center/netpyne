@@ -376,10 +376,11 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 * **sec** (optional) - Name of target section on the postsynaptic neuron (e.g. ``'soma'``) 
 	If omitted, defaults to 'soma' if it exists, otherwise to the first section in the cell sections list.
 
-	If ``synsPerConn`` > 1, and a list of sections or sectionList is specified, synapses will be distributed uniformly along the specified section(s), taking into account the length of each section.
+	Can be defined as a name of a single section, a list of sections, e.g. ``['soma', 'dend']``, or key from **secList** dictionary of post-synaptic cellParams.
 
-	If ``synsPerConn`` == 1, and list of sections or sectionList is specified, synapses (one per presynaptic cell) will be placed in sections randomly selected from the list. To enforce using always the first section from the list set ``cfg.connRandomSecFromList = False``.
+	If ``synsPerConn`` > 1 and a list of sections is specified, synapses will be distributed uniformly along the specified section(s), taking into account the length of each section. This is a default behavior, but it can be modified - see :ref:`Multisynapse connections<multisynapse_conn>` for details and examples.
 
+	If ``synsPerConn`` == 1 and a list of sections is specified, synapses (one per cell-to-cell connection) will be placed in sections randomly selected from the list. To enforce using always the first section from the list, set :ref:`connRandomSecFromList<conn_rand_sec>`.
 
 * **loc** (optional) - Location of target synaptic mechanism (e.g. ``0.3``)
 	If omitted, defaults to 0.5.
@@ -390,16 +391,16 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 
 	If you have both a list of ``synMechs`` and ``synsPerConn`` > 1, you can have a 2D list for each synapse of each synMech (e.g. for two synMechs and ``synsPerConn`` = 3: ``[[0.2, 0.3, 0.5], [0.5, 0.6, 0.7]]``)
 
-	If ``synsPerConn`` == 1, and a list of ``loc``s is specified, synapses (one per presynaptic cell) will be placed in locations randomly selected from the list (note that the random section and location will go hand in hand, i.e. the same random index is used for both). 
+	In these multisynapse scenarios, additional parameters become available - see :ref:`Multisynapse connections<multisynapse_conn>` for more details.
 
-	.. The above only applies for a single target section, ``sec``. If a list of target sections is specified, the ``loc`` value has no effect, and synapses will be distributed uniformly along the specified section(s), taking into account the length of each section. To enforce using always the first location from the list set ``cfg.connRandomSecFromList = False``.
+	If ``synsPerConn`` == 1 and both ``loc`` and ``sec`` are lists, synapses (one per presynaptic cell) will be placed in locations and sections randomly selected from the lists (note that the random section and location will go hand in hand, i.e. the same random index is used for both). To enforce using always the first section and location from their respective lists, set :ref:`connRandomSecFromList<conn_rand_sec>`, or keep either ``loc`` or ``sec`` as a single value.
 
 
 * **synMech** (optional) - Label (or list of labels) of target synaptic mechanism(s) on the postsynaptic neuron (e.g. ``'AMPA'`` or ``['AMPA', 'NMDA']``)
 
 	If omitted, employs first synaptic mechanism in the cell's synaptic mechanisms list.
 
-	If you have a list, a separate connection is created to each synMech; and a list of weights, delays and/or locs can be provided.  
+	When using a list of synaptic mechanisms, a separate connection is created for each mechanism. You can optionally provide corresponding lists of weights, delays, and/or locations. See :ref:`Multisynapse connections<multisynapse_conn>` for more details.
 
 * **synsPerConn** (optional) - Number of individual synaptic connections (*synapses*) per cell-to-cell connection (*connection*)
 
@@ -409,11 +410,25 @@ Each item of the ``connParams`` ordered dictionary consists of a key and value. 
 
 	The weights, delays and/or locs for each synapse can be specified as a list, or a single value can be used for all.
 
-	When ``synsPerConn`` > 1 and a single section is specified, the locations of synapses can be specified as a list in ``loc``.
+	When ``synsPerConn`` > 1 and a *single section* is specified, the locations of synapses can be specified as a list in ``loc``. If a *list of target sections* is specified, ``loc`` should be omitted, and synapses will be distributed uniformly along the specified section(s), taking into account the length of each section. This is a default behavior, but it can be modified - see :ref:`Multisynapse connections<multisynapse_conn>` for more details.
 
-	When ``synsPerConn`` > 1, if ``loc`` is a single value or omitted, or if a list of target sections is specified, synapses will be distributed uniformly along the specified section(s), taking into account the length of each section.
+	If you have a list of ``synMechs``, you can have single ``synsPerConn`` value for all, or a list of values, one per synaptic mechanism in the list:
 
-	
+	.. code-block:: python
+
+		# 2 AMPA synapses and 2 GABA synapses per each cell-to-cell connection:
+		netParams.connParams[...] = {
+			'synMech': ['AMPA', 'GABA'],
+			'synsPerConn': 2,
+		# ...
+		
+		# 2 AMPA synapses and 1 GABA synapse per each cell-to-cell connection:
+		netParams.connParams[...] = {
+			'synMech': ['AMPA', 'GABA'],
+			'synsPerConn': [2, 1],
+		# ...
+		
+
 * **weight** (optional) - Strength of synaptic connection (e.g. ``0.01``)
 	Associated with a change in conductance, but has different meaning and scale depending on the synaptic mechanism and cell model.
 
@@ -535,6 +550,108 @@ Here is an example of connectivity rules:
 	    'delay': [5, 10],                             # different delays for each of 3 synapses per synMech 
 	    'loc': [[0.1, 0.5, 0.7], [0.3, 0.4, 0.5]]}    # different locations for each of the 6 synapses
 
+.. _multisynapse_conn:
+
+**Connectivity Rules with Multiple Synapses per Connection**
+
+By default, there is only one synapse created per cell-to-cell connection. However, a connection can include multiple individual synaptic contacts, e.g., a presynaptic cell axon can branch and form multiple synaptic contacts at different locations of the postsynaptic cell dendrite. This can be achieved by setting ``synsPerConn`` to a value greater than 1, or by defining ``synMech`` as a list, or both.
+
+* Setting ``synsPerConn`` > 1 with ``synMech`` as a single value
+	If ``synsPerConn`` is > 1, then for each connection, this number of synapses will be created. The weights and delays can be specified as lists, or a single value can be used for all (see example below).
+
+	* When a **single section** is specified, all synapses will be created within that section, and their locations can be specified as a list in ``loc`` (one per synapse).
+
+		.. code-block:: python
+
+			netParams.connParams[...] = {
+				'synsPerConn': 2,
+				'sec': 'soma',
+				'synMech': 'AMPA',
+				'weight': [0.1, 0.2], # individual weights for each synapse
+				'delay': 0.1, # single delay for all synapses
+				'loc': [0.5, 1.0] # individual locations for each synapse
+			# ...
+
+			# This will create 2 synapses: one with weight 0.1, delay 0.1, and loc 0.5
+			# and another with weight 0.2, delay 0.1, and loc 1.0.
+
+		A single value for ``loc`` is not accepted. If it is omitted, synapses are placed at equal distances along the section (e.g. with ``synsPerConn`` = 3, synapses will be placed at 0.1666, 0.5 and 0.8333).
+
+	* When a **list of sections** is specified (either explicitly or as a key from ``secLists``), the connection logic depends on ``distributeSynsUniformly`` and ``connRandomSecFromList`` attributes. These can be set globally through :ref:`simConfig<conn_rand_sec>`, or individually for each connParams entry (e.g. ``netParams.connParams[...] = {..., 'distributeSynsUniformly': False}``), with individual settings taking precedence. The following options are available:
+
+		* ``distributeSynsUniformly`` = True (Default)
+			Synapses will be distributed uniformly along the specified section(s), taking into account the length of each section. (E.g., if you specify ``'sec': ['soma', 'dend']`` with lengths of 10 and 20 respectively, and set ``synsPerConn`` = 5, the resulting distribution of synapses will be in the sections and locations illustrated in the figure below). Providing location explicitly is not possible in th is case.
+
+			.. image:: figs/multisyn_0.png
+				:width: 50%
+				:align: center
+
+		* ``distributeSynsUniformly`` = False
+			* If ``connRandomSecFromList`` is ``True`` (default), a random section will be picked from the sections list for each synapse. The ``loc`` value should also be a list, and the values will be picked from it randomly and independently from section choice. If the length of sections or locations list is greater or equal to ``synsPerConn``, random choice is guaranteed to be without replacement. If ``loc`` is omitted, the value for each synapse is randomly sampled from uniform[0, 1].
+
+			* If ``connRandomSecFromList`` is ``False``, sections and locations are assigned deterministically: the N-th synapse receives the N-th section and N-th location from their respective lists (or if ``loc`` is a single value, it is used for all synapses). Ensure that lists of sections and locations both have the length equal to ``synsPerConn``.
+
+* Setting ``synMech`` as a list
+	If ``synMech`` is a list, then for each mechanism in the list, a synapse will be created. The weights, delays, and locs can be specified as lists of the same length as ``synMech``, or a single value can be used for all.
+
+	.. code-block:: python
+
+		netParams.connParams[...] = {
+			'synMech': ['AMPA', 'GABA'],
+			'weight': [0.1, 0.2], # individual weights for each synapse
+			'delay': 0.1, # single delay for all synapses
+		# ...
+
+		# This will create 2 synapses: one with AMPA synMech and weight 0.1
+		# and another with GABA synMech and weight 0.2. Both will have the same delay of 0.1.
+
+
+	However, for the sections, no such one-to-one correspondence to ``synMech`` elements applies. Instead, contents of ``secs`` are repeated for each synMech.
+
+	.. code-block:: python
+
+		netParams.connParams[...] = {
+			'synMech': ['AMPA', 'GABA'],
+			'sec': ['soma', 'dend']
+		# ...
+		# Both AMPA and GABA synapses will span 'soma' and 'dend' sections
+
+	If you want to have different sections, separate connectivity rules (``connParams`` entries) should be defined for each synaptic mechanism.
+
+* Setting both ``synMech`` as a list and ``synsPerConn`` > 1
+	If you have both a N-element list of ``synMechs`` and ``synsPerConn`` > 1, weights and delays can still be specified as a single value for all synapses, as a list of length N (each value corresponding to ``synMech`` list index), or a 2D list with outer dimension N corresponding to ``synMechs`` and inner dimension corresponding to ``synsPerConn``.
+
+	.. image:: figs/multisyn_1.png
+		:width: 35%
+		:align: right
+
+	.. code-block:: python
+
+		netParams.connParams[...] = {
+			'synMech': ['AMPA', 'GABA'],
+			'sec': 'dend',
+			'synsPerConn': [2, 1],
+			'loc': [[0.5, 0.75], [0.3]],
+			'distributeSynsUniformly': False,
+		# ...
+
+	Note that, as shown in the example, ``synsPerConn`` itself can be a list, so that each ``synMech`` can correspond to a distinct number of synapses.
+
+* Usage with **'connList'**
+	If, in addition, you want to use **'connList'**-based connectivity (explicit list of connections between individual pre- and post-synaptic cells), then weights, delays, locs, and secs can be described as lists of up to three dimensions. The outermost dimension will now correspond to the length of ``connList`` (i.e., the number of cell-to-cell connections). The same logic described above will apply to each element of this outer list.
+
+	.. code-block:: python
+
+		netParams.connParams[...] = {
+			'connList': [[0,0], [1,0]],
+			'synMech': ['AMPA', 'GABA'],
+			'synsPerConn': 3,
+			'weight': [[[1, 2, 3], [4, 5, 6]], # first conn: AMPA, GABA, 3 synsPerConn each
+					[[7, 8, 9], [10, 11, 12]]],  # second conn: AMPA, GABA (...)
+
+			'delay': [[0.1, 0.2], # first conn: AMPA, GABA, same for all syns in synsPerConn
+					[0.3, 0.4]],  # second conn: AMPA, GABA (...)
+		# ...
 
 .. _function_string:
 
@@ -851,7 +968,7 @@ The code below shows an example of how to create different types of stimulation 
 
 		* ``signal`` (optional): when the stimulation is uploaded externally (``type``: ``external``), then this entry specifies either a pickle file with a list of values corresponding to the amplitudes (mA for point source stimulation - V/m for uniform electrical field) of the external signal, paired to the ``time`` list, or a numpy array with the same information.
 
-	* ``mod_based``: Boolean (default: False). It specifies if the simulation is based an external mod file (xtra.mod with a POINTER/RANGE called "ex" and a GLOBAL called "is"), following the guidelines in the NEURON forum. It is appropriate for large networks, althought is restricted to a single temporal modulation. With ``mod_based``: False, you can set superposition of many sources.
+	* ``mod_based``: Boolean (default: False). It specifies if the simulation is based an external mod file (xtra.mod with a POINTER/RANGE called "ex" and a GLOBAL called "is"), following the guidelines in the NEURON forum. It is appropriate for large networks, althought is restricted to a single temporal modulation. With ``mod_based``: False, you can set superposition of many sources. A NetPyNE-compatible ``xtra.mod`` can be downloaded from the ``support`` module. 
 
 
 In addition, in ``stimSourceParams`` we should set the ``source`` (the label of the stimulation source specifying the extracellular stimulation) and ``conds`` with the conditions that should satisfy target cells, typically ``'conds': {'cellList': 'all'}`` would provide the global stimulation represented by an extracellular (ubiquitous) source.
@@ -1057,8 +1174,9 @@ Related to the simulation and NetPyNE framework:
 * **addSynMechs** - Whether to add synaptic mechanisms or not (default: True)
 * **gatherOnlySimData** - Omits gathering of net and cell data thus reducing gatherData time (default: False)
 * **compactConnFormat** - Replace dict format with compact list format for conns (need to provide list of keys to include) (default: False)
-* **connRandomSecFromList** - Select random section (and location) from list even when synsPerConn=1 (default: True) 
-* **distributeSynsUniformly** - Locate synapses uniformly across section list; if false, place one syn per section in section list (default: True)
+.. _conn_rand_sec:
+* **connRandomSecFromList** - Select random section (and location) from list even when synsPerConn=1 (default: True). Can be overridden for individual connParams entries. See :ref:`Multisynapse connections<multisynapse_conn>` for more details.
+* **distributeSynsUniformly** - Locate synapses uniformly across section list; if false, place one syn per section in section list (default: True). Can be overridden for individual connParams entries. See :ref:`Multisynapse connections<multisynapse_conn>` for more details.
 * **pt3dRelativeToCellLocation** - True  # Make cell 3d points relative to the cell x,y,z location (default: True)
 * **invertedYCoord** - Make y-axis coordinate negative so they represent depth when visualized (0 at the top) (default: True)
 * **allowSelfConns** - Allow connections from a cell to itself (default: False)
@@ -1079,7 +1197,9 @@ Related to recording:
 * **recordSpikesGids** - List of cells to record spike times from  (-1 to record from all). Can include cell gids (e.g. 5), population labels (e.g. 'S' to record from one cell of the 'S' population), or 'all', to record from all cells. (default: -1)
 * **recordStim** - Record spikes of cell stims (default: False)
 * **recordLFP** - 3D locations of local field potential (LFP) electrodes, e.g. [[50, 100, 50], [50, 200, 50]] (note the y coordinate represents depth, so will be represented as a negative value when plotted). The LFP signal in each electrode is obtained by summing the extracellular potential contributed by each neuronal segment, calculated using the "line source approximation" and assuming an Ohmic medium with conductivity sigma = 0.3 mS/mm. Stored in ``sim.allSimData['LFP']``. (default: False).
-* **saveLFPCells** - Store LFP generated individually by each cell in ``sim.allSimData['LFPCells']``; can select a subset of cells to save e.g. [3, 'PYR', ('PV2', 5)] 
+* **saveLFPCells** - Store LFP generated individually by each cell in ``sim.allSimData['LFPCells']``; can select a subset of cells to save e.g. [3, 'PYR', ('PV2', 5)] (default: False). 
+* **saveLFPPops** - Store LFP generated by each population in ``sim.allSimData['LFPPops']``; can select a subset of populations to save e.g. ['PYR', 'PV2'] (default: False).
+* **saveIMembrane** - Store the transmembrane current contributing to LFP from each segment of each cell. Stored in ``sim.allSimData['iMembrane']``. Can select a subset of cells to save e.g. [3, 'PYR', ('PV2', 5)] (default: False).
 * **recordStep** - Step size in ms for data recording (default: 0.1)
 
 Related to file saving:
@@ -1288,9 +1408,7 @@ Example:
  
 .. code-block:: python
 
-   : $Id: MyExp2SynBB.mod,v 1.4 2010/12/13 21:27:51 samn Exp $ 
    NEURON {
-   :  THREADSAFE
      POINT_PROCESS MyExp2SynBB
      RANGE tau1, tau2, e, i, g, Vwt, gmax
      NONSPECIFIC_CURRENT i
@@ -1869,6 +1987,7 @@ Only available if ``simConfig.recordStim`` is ``True``.
 - ``LFP`` - is an np.array of LFP values of shape ``(num timesteps, num electrodes)``
 - ``LFPCells`` - dictionary of LFP data recorded from each cell (LFP data is in format as above)
 - ``LFPPops`` - dictionary of average LFP data recorded from each population (LFP data is in format as above)
+- ``iMembrane`` - dictionary of transmembrane current of each cell. An np.array of shape ``(num timesteps, num segments)``, where num segments is the total number of segments accross all sections of the cell.
 
 **5. Dipole-related data**
 
@@ -2268,7 +2387,7 @@ connections from the sensory to the motor population.
 inspyred allows customization of the various components of the
 evolutionary algorithm, including:
 
--   a selector that determines which sets of parameter values become
+-  a selector that determines which sets of parameter values become
    parents and thus which parameter values will be used to form the next
    generation in the evolutionary iteration,
 -  a variator that determines how each current iteration of parameter
@@ -2668,124 +2787,132 @@ The code for neural network optimization through evolutionary algorithm used in 
 .. Adding cell classes
 .. --------------------
 
-Running a Batch Job
-===================
+Running a Batch Job (Beta)
+--------------------------
 
-The NetPyNE batchtools subpackage provides a method of automating job submission and reporting
+The NetPyNE ``batchtools`` subpackage provides a new method of automating submission of simulations and combining results for analysis, based on a dispatcher <-> runner communication model. It currently uses the ``Ray Tune`` package for parameter optimization and checkpointing, which provides a wide range of state-of-the-art optimization algorithms and efficient parallelization and scalability.
 
-A diagram of the object interfaces...
+While the ``batchtools`` objects and interfaces can be handled directly, we have integrated and automated everything into simple wrapper commands applicable to our general use-case.
+Automatic parameter searches can be implemented by specifying a search space and algorithm through ``netpyne.batchtools.search``. The 
+definition of model parameters is still handled by ``netpyne.specs`` and simulation result communication is handled through ``netpyne.sim``.
 
-::
+Below is a diagram of the interactions between the wrapper commands in the four main files required for a NetPyNE model: netParams.py, cfg.py, init.py and search.py (used to define the batch paramater optimization/search).
 
- batch<-->\               /---> configuration_0 >---\
-           \             /                         specs---\
-           \<--->dispatcher_0                               sim_0
-           \             \                         comm ---/
-           \              \---<    results_0    <---/
-            \
-            \               /---> configuration_1 >---\
-            \              /                         specs---\
-            \<--->dispatcher_1                                sim_1
-             \             \                         comm ---/
-             \              \---<    results_1    <---/
-             \
-             \
-             ...
-
-While objects and interfaces can be handled directly, batchtools offers simple wrapper commands applicable to most use-cases, where
-automatic parameter searches can be done by specifying a search space and algorithm through `netpyne.batchtools.search`, and
-parameter to model translation and result communication is handled through `netpyne.batchtools.specs` and `netpyne.batchtools.comm` respectively.
-
-A diagram of the wrapper interactions...
-
-::
-
- netpyne.batchtools.search.search(   ) ----------------------------\                 host
-        |                                                          |
-        | search(   )                                              |
- ==============================================================================================
-        |                                                      comm.initialize(   )
-        |                                                      comm.send(   )
-        |  cfg = netpyne.batchtools.specs.SimConfig(   )       comm.close(   )
-        |            |                                           ^     ^
-        v            v                                           |     |
-        cfg.update_cfg() ----------------------------------------/     |
-                                                                       |
-        send(   )                                               netpyne.batchtools.comm(   )
-                                                                                    simulation
+.. image:: figs/batchtools_netpyne.png
+    :width: 90%
+    :align: center
 
 1. Setting up batchtools
-------------------------
-Beyond the necessary dependency installations for NetPyNE and NEURON, the following `pip` installations are preferred.
+^^^^^^^^^^^^^^^^^^^^^^^^
+Beyond the necessary installation of NetPyNE and NEURON, the following `pip` installations are required:
 
-The NetPyNE installation should be handled as a development installation to allow for up to date fixes::
+.. code-block::
 
-    git clone https://github.com/Neurosim-lab/netpyne.git
+    pip install -U ray
+    pip install -U batchtk
+
+``batchtk`` is the NetPyNE ``batchtools`` subpackage, and ``ray`` is the Ray Tune package, a dependency for batchtools. 
+
+To allow for up to date fixes of these packages, NetPyNE and batchtk should be set up as development installations:
+
+.. code-block::
+
+    git clone https://github.com/suny-downstate-medical-center/netpyne.git
     cd netpyne
     pip install -e .
 
-A development install of the batchtools subpackage::
-
-    git clone https://github.com/jchen6727/batchtk.git
+    git clone https://github.com/suny-downstate-medical-center/batchtk.git
     cd batchtk
     pip install -e .
 
-Ray is a dependency for batchtools, and should be installed with the following command::
+You can validate that the correct packages are installed by checking the ``sim.send`` and ``cfg.update`` methods in an interactive python instance
 
-    pip install -U ray[default]
+.. code-block::
+
+    In [1]: from netpyne import sim, specs
+    Warning: no DISPLAY environment variable.
+    --No graphics will be displayed.
+    numprocs=1
+
+    In [2]: help(sim.send)
+    Help on method send in module netpyne.batchtools.comm:
+
+    send(data) method of netpyne.batchtools.comm.Comm instance
+
+
+    In [3]: cfg = specs.SimConfig()
+
+    In [4]: help(cfg.update)
+    Help on method update in module netpyne.batchtools.runners:
+    ...
+
+If there is an issue with the installation, the following message will be presented instead when calling help on either function
+
+.. code-block::
+
+    In [2]: help(sim.send)
+    Help on function send in module netpyne.sim:
+
+    send(*args, **kwargs)
+    This method is implemented in batchtools,
+    which requires the batchtk package to be
+    installed. If you are seeing this message
+    when calling help, it indicates there is
+    an issue with your current batchtools
+    installation
+
+Though the relevant methods can be called without raising an exception, they only act as placeholders.
 
 2. Examples
------------
+^^^^^^^^^^^
 Examples of NetPyNE batchtools usage can be found in the ``examples`` directory `on the NetPyNE github <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples>`_.
 
-Examples of the underlying batchtk package can be in the ``examples`` directory `on the batchtk github <https://github.com/jchen6727/batchtk/tree/release/examples>`_.
+Examples of the underlying batchtk package can be in the ``examples`` directory `on the batchtk github <https://github.com/suny-downstate-medical-center/batchtk/tree/release/examples>`_.
 
 3. Retrieving batch configuration values through the ``specs`` object
----------------------------------------------------------------------
-Each simulation is able to retrieve relevant configurations through the ``specs`` object, and communicate with
-the dispatcher through the ``comm`` object.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Each simulation is able to retrieve relevant batch configurations through the ``specs`` object, and communicate with
+the batch dispatcher through the ``send`` function within ``netpyne.sim``.
 
-importing the relevant objects
+First, import the relevant objects:
 
 .. code-block:: python
 
-     from netpyne.batchtools import specs, comm
+     from netpyne import specs, sim
      cfg = specs.SimConfig()  # create a SimConfig object, can be provided with a dictionary on initial call to set initial values
      netParams = specs.NetParams()  # create a netParams object
 
-``netpyne.batchtools.specs`` behaves similarly to ``netpyne.sim.specs`` except in the following cases:
-
-* ``netpyne.batchtools.specs`` automatically captures relevant configuration mappings created by the ``dispatcher`` upon initialization
-
-   * these mappings can be retrieved via ``specs.get_mappings()``
-
-* the SimConfig object created by ``netpyne.batch.specs.SimConfig()`` will update itself with relevant configuration mappings through the ``update()`` method
+If the ``batchtk`` module is properly installed, then it automatically replaces the original ``specs.SimConfig`` object with the developmental ``batchtools`` version which can be queried through ``help()`` or ``type()``:
 
 .. code-block:: python
 
-    from netpyne.batchtools import specs # import the custom batch specs
+    cfg = specs.SimConfig()
+    help(cfg)
+
+Truncated output of the above code block:
+
+.. code-block:: python
+
+    # Output
+    Help on Runner_SimConfig in module netpyne.batchtools.runners object:
+
+    class Runner_SimConfig(batchtk.runtk.runners.Runner, netpyne.specs.simConfig.SimConfig)
+
+This updated ``cfg`` instance automatically captures relevant configuration mappings created upon initialization for this particular batch job. These mappings can be retrieved via ``cfg.get_mappings()``.
+
+The next step is to update the cfg values with the relevant mappings for this batch job by calling ``cfg.update()``:
+
+.. code-block:: python
+
+    from netpyne  import specs           # import the custom batch specs
     cfg = specs.SimConfig()              # create a SimConfig object
     cfg.update()                         # update the cfg object with any relevant mappings for this particular batch job
 
-The ``update`` method will update the ``SimConfig`` object ``first`` with values supplied in the argument call, and ``then`` with the configuration mappings captured in ``specs`` (see: ``specs.get_mappings()``)
-
-This replaces the previous idiom for updating the SimConfig object with mappings from the batched job submission
+The ``update`` method will update the ``SimConfig`` object *first* with values supplied in the argument call, and *then* with the configuration mappings for the batch job (i.e. retrieved by ``cfg.get_mappings()``), as illustrated below:
 
 .. code-block:: python
 
-    try:
-        from __main__ import cfg  # import SimConfig object with params from parent module
-    except:
-        from cfg import cfg  # if no simConfig in parent module, import directly from tut8_cfg module
-
-4. Additional functionality within the simConfig object
--------------------------------------------------------
-
-Rather than handling custom ``SimConfig`` object attribute declaration through the ``batch`` ``initCfg`` argument, the new NetPyNE batchtools subpackage moves the custom declaration of ``SimConfig`` attributes to the actual ``SimConfig`` object, allowing them both during instantiation of the object as well as when calling ``cfg.update()``
-
-.. code-block:: python
-
-        from netpyne.batchtools import specs                     # import the custom batch specs
+        from netpyne import specs                     # import the custom batch specs
         cfg = specs.SimConfig({'foo': 0, 'bar': 1, 'baz': 2})    # create a SimConfig object, initializes it with a dictionary {'foo': 0} such that
         assert cfg.foo == 0                                      # cfg.foo == 0
         assert cfg.bar == 1                                      # cfg.bar == 1
@@ -2795,7 +2922,12 @@ Rather than handling custom ``SimConfig`` object attribute declaration through t
         assert cfg.bar == 1                                      # cfg.bar remains unchanged
         assert cfg.baz == 2                                      # cfg.baz remains unchanged
 
-``cfg.update()`` supports also supports the optional argument ``force_match``, which forces values in the update dictionary to match existing attributes within the ``SimConfig`` object. This setting is recommended to be set to ``True`` in order to prevent the unanticipated creation of new attributes within the ``SimConfig`` object at runtime ...
+This REPLACES the previous NetPyNE code for updating the SimConfig object with mappings from the batch job submission.
+
+4. Additional functionality within the simConfig object
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The method ``cfg.update()`` also supports the optional argument ``force_match``, which forces values in the update dictionary to match existing attributes within the ``SimConfig`` object. This setting is recommended to be set to ``True`` during debugging to check for accidental creation of new attributes within the ``SimConfig`` object at runtime:
 
 .. code-block:: python
 
@@ -2806,11 +2938,11 @@ Rather than handling custom ``SimConfig`` object attribute declaration through t
             cfg.update({'typo': 1}, force_match=True)            # cfg.typo is not defined, so this line will raise an AttributeError
         except Exception as e:
             print(e)
-        cfg.update({'typo': 1})                                  # without force_match, the typo attribute cfg.fooo is created and set to 1
+        cfg.update({'typo': 1})                                  # without force_match, the typo attribute is created and set to 1
         assert cfg.type == 0                                     # cfg.type remains unchanged due to a typo in the attribute name 'type' -> 'typo'
         assert cfg.typo == 1                                     # instead, cfg.typo is created and set to the value 1
 
-Both the initialization of the ``cfg`` object with ``specs.SimConfig()`` and the subsequent call to ``cfg.update()`` handle nested containers...
+Both the initialization of the ``cfg`` object with ``specs.SimConfig()`` and the subsequent call to ``cfg.update()`` handle both dot notation and nested containers:
 
 .. code-block:: python
 
@@ -2826,56 +2958,75 @@ Both the initialization of the ``cfg`` object with ``specs.SimConfig()`` and the
         assert cfg.foo['arr0'][1] == 30
         assert cfg.foo['arr0'][2] == 2            # cfg.arr0[2] remains unchanged
 
-After updating the ``cfg`` object with the supplied dictionary, further updates will be made as appropriate by the calling ``batch`` processes search parameters...
+updating the ``cfg`` object with the supplied dictionary will occur before updating it with parameters specified by the batch search
 
-5. Communicating results to the ``dispatcher`` with the ``comm`` object
------------------------------------------------------------------------
+5. Communicating results to the search algorithm via sockets using the ``sim.send`` function
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Prior batched simulations relied on ``.pkl`` files to communicate data. The ``netpyne.batch`` subpackage uses a specific ``comm`` object to send custom data back
-The ``comm`` object determines the method of communication based on the batch job submission type.
+Prior batch simulations relied on ``.pkl`` files to communicate data. In order to facilitate collation, specific data values can be sent directly via sockets at the end of the simulation via: 
 
-In terms of the simulation, the following functions are available to the user:
+* **sim.send(<data>)**: sends ``<data>`` to the batch ``dispatcher``
 
-* **comm.initialize()**: establishes a connection with the batch ``dispatcher`` for sending data
-
-* **comm.send(<data>)**: sends ``<data>`` to the batch ``dispatcher``
-
-    * for ``search`` jobs, it is important to match the data sent with the metric specified in the search function
-
-* **comm.close()**: closes and cleans up the connection with the batch ``dispatcher``
+For ``search`` jobs, it is important to match the data sent with the metric specified in the search function. For instance, if the search call specifies a metric "loss", then ``sim.send`` should specify a key: value pair: ``{'loss': <value>}``.
 
 6. Specifying a batch job
--------------------------
-Batch job handling is implemented with methods from ``netpyne.batchtools.search``
-
-**search**
+^^^^^^^^^^^^^^^^^^^^^^^^^
+Batch job handling is implemented from ``netpyne.batchtools.search``. Below is a selection of relevant arguments for the ``search`` function, the full list of arguments is available by calling:
 
 .. code-block:: python
 
-    def search(job_type: str, # the submission engine to run a single simulation (e.g. 'sge', 'sh')
-               comm_type: str, # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'filesystem')
-               run_config: Dict,  # batch configuration, (keyword: string pairs to customize the submit template)
-               params: Dict,  # search space (dictionary of parameter keys: tune search spaces)
-               algorithm: Optional[str] = "variant_generator", # search algorithm to use, see SEARCH_ALG_IMPORT for available options
-               label: Optional[str] = 'search',  # label for the search
-               output_path: Optional[str] = '../batch',  # directory for storing generated files
-               checkpoint_path: Optional[str] = '../ray',  # directory for storing checkpoint files
-               max_concurrent: Optional[int] = 1,  # number of concurrent trials to run at one time
-               batch: Optional[bool] = True,  # whether concurrent trials should run synchronously or asynchronously
-               num_samples: Optional[int] = 1,  # number of trials to run
-               metric: Optional[str] = "loss", # metric to optimize (this should match some key: value pair in the returned data
-               mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
-               algorithm_config: Optional[dict] = None,  # additional configuration for the search algorithm
-               ) -> tune.ResultGrid: # results of the search
+    from netpyne.batchtools import search
+    help(search)
 
-The basic search implemented with the ``search`` function uses ``ray.tune`` as the search algorithm backend, returning a ``tune.ResultGrid`` which can be used to evaluate the search space and results. It takes the following parameters;
+**Search API (truncated):**
 
-* **job_type**: either "``sge``" or "``sh``", specifying how the job should be submitted, "``sge``" will submit batch jobs through the Sun Grid Engine. "``sh``" will submit bach jobs through the shell on a local machine
-* **comm_type**: either "``socket``" or "``filesystem``", specifying how the job should communicate with the dispatcher
-* **run_config**: a dictionary of keyword: string pairs to customize the submit template, the expected keyword: string pairs are dependent on the job_type::
+.. code-block:: python
+
+     def search(
+           job_type: Optional[str] = None, # the submission engine to run a single simulation (e.g. 'sge', 'sh')
+           comm_type: Optional[str] = None, # the method of communication between host dispatcher and the simulation (e.g. 'socket', 'filesystem')
+           run_config: Optional[dict] = None,  # batch configuration, (keyword: string pairs to customize the submit template)
+           params: Optional[dict] = None,  # search space (dictionary of parameter keys: tune search spaces)
+           algorithm: Optional[str] = "variant_generator", # search algorithm to use, see SEARCH_ALG_IMPORT for available options
+           label: Optional[str] = "search",  # label for the search, any files generated will be prefixed with this string
+           output_path: Optional[str] = './batch',  # directory for storing generated files, either relative to the current working directory if starting with '.' or an absolute path if starting with '/'
+           checkpoint_path: Optional[str] = './checkpoint',  # directory for storing checkpoint files, either relative to the current working directory if starting with '.' or an absolute path if starting with '/'
+           max_concurrent: Optional[int] = 1,  # number of concurrent trials to run at one time
+           num_samples: Optional[int] = 1,  # number of trials to run; for parameter grids, a value of 1 means that the search will sample the parameter space of each value in the grid
+           metric: Optional[str] = None, # metric to optimize (this should match some key: value pair in the returned data)
+           mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric)
+           sample_interval: Optional[int] = 15,  # interval to poll for new results (in seconds)
+           attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
+           ) -> study: # results of the search
+
+The default parameter search implemented with the ``search`` function uses ``ray.tune`` as the search algorithm backend, creates a `.csv` storing the results, and returns a ``study`` object containing the output. It takes the following two parameters:
+
+* **job_type**: specifies how the job should be submitted; **"sge"** will submit batch jobs through the Sun Grid Engine; **"sh"** will submit bach jobs through the shell on a local machine; **"ssh_slurm"** or "ssh_sge" will submit batch jobs through Slurm workload manager or Sun Grid Engine through an SSH connection.
+
+* **comm_type**: specifies how the job should communicate with the dispatcher either; **"socket"** (INET socket), **"sfs"** (shared file system), **"sftp"** (secure file transfer protocol for jobs run through SSH) or **"None"**. If the ``comm_type`` is specified as "None", the search will not await or receive any data from the simulation before executing the next job submission. This is only applicable to searches that are executed in "grid", "variant_generator" or "random" algorithms, where results are not used to infer subsequent search suggestions.
+
+Currently, the following argument pairs are acceptable for ``job_type`` and ``comm_type``::
+
+    =======================
+    job_type    , comm_type
+    =======================
+    'sge'       , 'socket'    -> job submission through Sun Grid Engine, INET socket based communication
+    'sge'       , 'sfs'       -> job submission through Sun Grid Engine, communication via shared file system
+    'sge'       , None        -> job submission through Sun Grid Engine, no communication (only grid or random searches)
+    'ssh_sge'   , 'sftp'      -> remote SSH onto a gateway, job submission through Sun Grid Engine, communication via Secure FTP
+    'ssh_slurm' , 'sftp'      -> remote SSH onto a gateway, job submission through Slurm, communication via Secure FTP
+    'ssh_sge'   , None        -> remote SSH onto a gateway, job submission through Sun Grid Engine, no communication (only grid or random searches)
+    'ssh_slurm' , None        -> remote SSH onto a gateway, job submission through Slurm, no communication (only grid or random searches)
+    'sh'        , 'socket'    -> job run directly on local shell, INET socket based communication
+    'sh'        , 'sfs'       -> job run directly on local shell, communication via shared file system
+    'sh'        , None        -> job run directly on local shell, no communication (only grid or random searches)
+
+* **run_config**: a dictionary of keyword: string pairs to customize the submit template, the expected keyword: string pairs are dependent on the job_type:
+
+.. code-block::
 
     =======
-    sge
+    sge (job_type as sge or ssh_sge)
     =======
     queue: the queue to submit the job to (#$ -q {queue})
     cores: the number of cores to request for the job (#$ -pe smp {cores})
@@ -2893,7 +3044,7 @@ The basic search implemented with the ``search`` function uses ``ray.tune`` as t
     } # set the command to be run to 'mpiexec -n $NSLOTS -hosts $(hostname) nrniv -python -mpi init.py'
 
     =======
-    sh
+    sh (job_type is sh)
     =======
     command: the command to run for the job
 
@@ -2902,9 +3053,35 @@ The basic search implemented with the ``search`` function uses ``ray.tune`` as t
         'command': 'mpiexec -n 8 nrniv -python -mpi init.py'
     } # set the command to be run
 
-* **params**: a dictionary of config values to perform the search over. The keys of the dictionary should match the keys of the config object to be updated. Lists or numpy generators >2 values will force a grid search over the values; otherwise, a list of two values will create a uniform distribution sample space.
+    =======
+    slurm (job_type as ssh_slurm)
+    =======
+    allocation:   the allocation for the job (#SBATCH -A {allocation})
+    partition:    the partition for the job (#SBATCH --partition={partition})
+    nodes:        the number of nodes to distribute the job (#SBATCH --nodes={nodes})
+    coresPerNode: the number of cores per node (#SBATCH --ntasks-per-node={coresPerNode})
+    mem:          the amount of memory to request for the job (#SBATCH --mem={mem})
+    email:        the user's email for status communication (#SBATCH --mail-user={email})
+    custom:       any commands to run before the job command
+    command:      the command to run for the job
 
-    **usage 1**: updating a constant value specified in the ``SimConfig`` object
+    example:
+    run_config = {
+        'allocation': 'aaa111',
+        'partition': 'cpu.q',
+        'nodes': 1,
+        'coresPerNode': 4,
+        'mem': '8G',
+        'email': 'a.b.c@email.com,
+        'custom': 'conda activate myenv',
+        'command': 'mpiexec -n 4 nrniv -python -mpi init.py'
+    }
+
+
+
+* **params**: a dictionary of config values to perform the search over. The keys of the dictionary should match the keys of the config object to be updated. Lists or numpy generators > 2 values will enforce a grid or choice search over the values; otherwise, a list of two values will create a uniform distribution sample space except when the search algorithm is explicitly set to `"grid"`
+
+**Usage 1**: updating a constant value specified in the ``SimConfig`` object:
 
 .. code-block:: python
 
@@ -2925,7 +3102,7 @@ The basic search implemented with the ``search`` function uses ``ray.tune`` as t
             'foo': range(10)
         }
 
-    **usage 2**: updating a nested object in the ``SimConfig`` object
+**Usage 2**: updating a nested object in the ``SimConfig`` object:
 
 .. code-block:: python
 
@@ -2952,7 +3129,7 @@ The basic search implemented with the ``search`` function uses ``ray.tune`` as t
         # cfg.foo = {'bar': {'baz': 0}}
         # params = {'foo.bar.baz': range(10)}
 
-    **usage 3**: updating a list object in the ``SimConfig`` object
+**Usage 3**: updating a list object in the ``SimConfig`` object:
 
 .. code-block:: python
 
@@ -2982,42 +3159,40 @@ The basic search implemented with the ``search`` function uses ``ray.tune`` as t
 
 .. code-block:: python
 
+        * "grid": forces grid based search over the parameter space, but otherwise functions similar to "variant generator"
         * "variant_generator": grid and random based search of the parameter space (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
         * "random": grid and random based search of the parameter space (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
-        * "axe": optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
-        * "bayesopt": optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
-        * "hyperopt": optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
-        * "bohb": optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
-        * "nevergrad": optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
-        * "optuna": optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
-        * "hebo": optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
-        * "sigopt": optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
-        * "zoopt": optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
+        * "axe": Ax optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
+        * "bayesopt": Bayesian optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
+        * "hyperopt": Hyper optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
+        * "bohb": Bayesian Optimization HyperBand algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
+        * "nevergrad": Nevergrad optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
+        * "optuna": Optuna hyperparameter optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
+        * "hebo": Heteroscedastic Evolutionary Bayesian Optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
+        * "zoopt": Derivateive-free optimization algorithm (see: https://docs.ray.io/en/latest/tune/api/suggestion.html)
 
 * **label**: a label for the search, used for output file naming
 
 * **output_path**: the directory for storing generated files, can be a relative or absolute path
 
-* **checkpoint_path**: the directory for storing checkpoint files (maintained by ``ray.tune``)in case the search needs to be restored, can be a relative or absolute path
+* **checkpoint_path**: the directory for storing internal ray checkpoint files (maintained by ``ray.tune``) in case the search needs to be restored; can be a relative or absolute path. This checkpoint path maintains search state and allows for restoring searches. On successful completion of a search, the default behavior of the search is to delete the checkpoint directory.
 
-* **max_concurrent**: the number of concurrent trials to run at one time, it is recommended to keep in mind the resource usage of each trial to avoid overscheduling
+* **max_concurrent**: the number of concurrent trials to run at one time
 
-* **batch**: whether concurrent trials should run synchronously or asynchronously
+* **num_samples**: the number of trials to run, for parameter grids, a value of 1 means that the search will sample the parameter space of each value in the grid
 
-* **num_samples**: the number of trials to run, for any grid search, each value in the grid will be sampled ``num_samples`` times.
+* **metric**: the metric to optimize (this should match some key: value pair in the returned data). Optional for ``"grid"``, ``"variant_generator"`` and ``"random"`` algorithms with ``None`` specified as the ``comm_type``, but required for optimization algorithms
 
-* **metric**: the metric to optimize (this should match some key: value pair in the returned data)
+* **mode**: either 'min' or 'max' (whether to minimize or maximize the metric). Optional as above.
 
-* **mode**: either 'min' or 'max' (whether to minimize or maximize the metric)
+* **sample_interval**: interval in seconds to poll for new results (polling for file system based communication methods).
 
-* **algorithm_config**: additional configuration for the search algorithm (see the `optuna docs <https://docs.ray.io/en/latest/tune/api/suggestion.html>`_)
+* **attempt_restore**: If True, the search will first attempt to restore from the checkpoint at **checkpoint_path**, useful for restoring interrupted batch jobs (simply rerun the same script again)
+
 
 7. Batch searches on the Rosenbrock function (some simple examples)
--------------------------------------------------------------------
-The ``examples`` directory `on the NetPyNE github <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples/rosenbrock>`_ contains multiple methods of performing automatic parameter search of a
-2 dimensional Rosenbrock function.  These examples are used to quickly demonstrate some of the functionality of batch communications rather than the full process of running parameter searches on a detailed
-NEURON simulation (see 7. Performing parameter optimization searches (CA3 example)) and therefore only contain the a `batch.py` file containing the script detailing the parameter space and search method, and a
-`rosenbrock.py` file containing the function to explore, and the appropriate declarations and calls for batch automation and communication (rather than the traditional `cfg.py`, `netParams.py`, and `init.py` files).
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The ``examples`` directory `on the NetPyNE github <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples/rosenbrock>`_ contains multiple methods of performing automatic parameter search of a 2-dimensional Rosenbrock function.  These examples are used to quickly demonstrate some of the functionality of batch communications rather than the full process of running parameter searches on a detailed NEURON simulation (see 7. Performing parameter optimization searches (CA3 example)) and therefore only contain the a `batch.py` file containing the script detailing the parameter space and search method, and a `rosenbrock.py` file containing the function to explore, and the appropriate declarations and calls for batch automation and communication (rather than the traditional `cfg.py`, `netParams.py`, and `init.py` files).
 
 1. `basic_rosenbrock <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples/rosenbrock/basic_rosenbrock>`_
 
@@ -3087,10 +3262,12 @@ By using ``xn.0`` and ``xn.1`` we can reference the 0th and 1st elements of the 
 
 
 8. Performing parameter optimization searches (CA3 example)
------------------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The ``examples`` directory `on the NetPyNE github <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples>`_ shows both a ``grid`` based search as well as an ``optuna`` based optimization.
 
-In the ``CA3`` example, we tune the ``PYR->BC`` ``NMDA`` and ``AMPA`` synaptic weights, as well as the ``BC->PYR`` ``GABA`` synaptic weight. Note the search space is defined
+In the ``CA3`` example, we tune the ``PYR->BC`` ``NMDA`` and ``AMPA`` synaptic weights, as well as the ``BC->PYR`` ``GABA`` synaptic weight. 
+
+For the optuna-based parameter optimization, the search space upper and lower bounds are defined in ``optuna_search.py`` as:
 
 .. code-block:: python
 
@@ -3100,7 +3277,7 @@ In the ``CA3`` example, we tune the ``PYR->BC`` ``NMDA`` and ``AMPA`` synaptic w
                   'gaba.BC->PYR' : [0.4e-3, 1.0e-3],
                  }
 
-in both ``optuna_search.py``, defining the upper and lower bounds of the search space, while in ``grid_search.py`` the search space is defined
+In contrast, for the grid-based parameter explorations, the ``3x3x3`` specific values to search over are defined in ``grid_search.py`` as:
 
 .. code-block:: python
 
@@ -3110,12 +3287,11 @@ in both ``optuna_search.py``, defining the upper and lower bounds of the search 
                   'gaba.BC->PYR' : numpy.linspace(0.4e-3, 1.0e-3, 3),
                  }
 
-which defines ``3x3x3`` specific values to search over
-
-Note that the ``metric`` specifies a specific ``string`` (``loss``) to report and optimize around. This value is generated and ``sent`` by the ``init.py`` simulation
+Note that the ``metric`` sets a specific ``string`` (``loss``) to report and optimize around. This value is generated and sent by the ``init.py`` simulation:
 
 .. code-block:: python
 
+    if sim.rank == 0: # after simulation, handle calculations on the host core.
         # from init.py
         results['PYR_loss'] = (results['PYR'] - 3.33875)**2
         results['BC_loss']  = (results['BC']  - 19.725 )**2
@@ -3124,35 +3300,27 @@ Note that the ``metric`` specifies a specific ``string`` (``loss``) to report an
         out_json = json.dumps({**inputs, **results})
 
         print(out_json)
-        #TODO put all of this in a single function.
-        comm.send(out_json)
-        comm.close()
+        sim.send(out_json))
 
 The ``out_json`` output contains a dictionary which includes the ``loss`` metric (calculated as the MSE between observed and expected values)
 
 In a multi-objective optimization, the relevant ``PYR_loss``, ``BC_loss``, and ``OLM_loss`` components are additionally included (see ``mo_optuna_search.py``)
 
-9. Multiprocessing and parallelization
---------------------------------------
-When using ``mpiexec`` to run simulations, it is important to only have one thread handle communications with the ``dispatcher`` host. To do this, encapsulate calls to ``comm.send()`` and ``comm.close()`` within
-a conditional block which checks that the proper thread (set as the 0th thread) executes communication calls as follows...
+9. Ray Checkpointing and Resuming Interrupted Searches
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+A new feature in this beta release is the checkpointing and saving of search progress via the ``ray`` backend. This data is saved in the ``checkpoint_path`` directory specified in the ``search`` function, (which defaults to a newly created ``checkpoint`` folder within the source directory, and the default behavior of ``search`` is to automatically attempt a restore if the batch job is interrupted.
 
-.. code-block:: python
+Upon successful completion of the search, the default behavior is to delete these checkpoint files. If the user manually ends the search due to coding error and wishes to restart the search, the ``checkpoint_path`` should be deleted first.
 
-    out_json = json.dumps({**inputs, **results}) # prepare message to send to host...
-    if comm.is_host():                           # only single thread enters this execution block...
-        comm.send(out_json)
-        comm.close()
-
-9. Parameter Importance Evaluation Using fANOVA
------------------------------------------------
-A new feature in the batchtools beta release is the ability to evaluate parameter importance using a functional ANOVA inspired algorithm via the ``Optuna`` and ``scikit-learn`` libraries.
+10. Parameter Importance Evaluation Using fANOVA (unstable)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Another new feature in this beta release is the ability to evaluate parameter importance using a functional ANOVA inspired algorithm via the ``Optuna`` and ``scikit-learn`` libraries.
 (See `the original Hutter paper <http://proceedings.mlr.press/v32/hutter14.pdf>`_  and its `citation <https://automl.github.io/fanova/cite.html>`_)
 
 Currently, only unpaired single parameter importance to a single metric score is supported through the ``NetPyNE.batchtools.analysis`` ``Analyzer`` object, with an example of its usage
 `here <https://github.com/suny-downstate-medical-center/netpyne/tree/batch/netpyne/batchtools/examples/rosenbrock/fanova_rosenbrock>`_:
 
-To run the example, generate an output ``grid.csv`` using ``batch.py``, then loading that ``grid.csv`` into the ``Analyzer`` object. Then, using ``run_analysis`` will generate, per parameter, a single score indicative of the estimated ``importance`` of the parameter: that is, the estimated effect on the total variance of the model within the given bounds.
+To run the example, generate an output ``grid.csv`` using ``batch.py``, and then load that ``grid.csv`` into the ``Analyzer`` object. Finally, executing ``run_analysis`` will generate a single score per parameter indicative of the estimated ``importance`` of the parameter: that is, the estimated effect on the total variance of the model within the given bounds:
 
 .. code-block:: python
 
@@ -3162,4 +3330,6 @@ To run the example, generate an output ``grid.csv`` using ``batch.py``, then loa
         analyzer = Analyzer(params = ['x.0', 'x.1', 'x.2', 'x.3'], metrics = ['fx']) # specify the parameter space and metrics of the batch function
         analyzer.load_file('grid.csv') # load the grid file generated by the batch run
         results = analyzer.run_analysis() # run fANOVA analysis and store the importance values in a results dictionary
+
+
 

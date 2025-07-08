@@ -1008,7 +1008,7 @@ def clearAll():
     sim.pc.barrier()
     sim.pc.gid_clear()  # clear previous gid settings
 
-def close(clear=True):
+def close(message=None, clear=True):
     """
     Function to close simulation
 
@@ -1085,5 +1085,7 @@ class NpSerializer(json.JSONEncoder):
             return obj.to_python()
         elif isinstance(obj, RecXElectrode):
             return obj.toJSON()
+        elif callable(obj):
+            return obj.__name__
         else:
             return super(NpSerializer, self).default(obj)

@@ -31,8 +31,8 @@ echo $pid >&1
     def set_handles(self):
         pass
 
-    def submit_job(self):
-        proc = super().submit_job()
+    def submit_job(self, **kwargs):
+        proc = super().submit_job(**kwargs)
         try:
             self.job_id = int(proc.stdout)
         except Exception as e:
@@ -47,7 +47,7 @@ class SHSubmitSFS(SHSubmit):
         """\
 #!/bin/sh
 cd {project_path}
-export OUTFILE="{output_path}/{label}.out"
+export MSGFILE="{output_path}/{label}.out"
 export SGLFILE="{output_path}/{label}.sgl"
 export JOBID=$$
 {env}
@@ -88,8 +88,8 @@ class SGESubmit(Submit):
 #$ -l h_vmem={vmem}
 #$ -l h_rt={realtime}
 #$ -o {output_path}/{label}.run
-cd {project_path}
 source ~/.bashrc
+cd {project_path}
 export JOBID=$JOB_ID
 {env}
 {command}
@@ -106,16 +106,108 @@ export JOBID=$JOB_ID
             )
 
     def submit_job(self, **kwargs):
-        proc = super().submit_job()
-        try:
-            self.job_id = proc.stdout.split(' ')[2]
-        except Exception as e: #not quite sure how this would occur
-            raise(Exception("{}\nJob submission failed:\n{}\n{}\n{}\n{}".format(e, self.submit, self.script, proc.stdout, proc.stderr)))
-        return self.job_id
+        proc = super().submit_job(**kwargs)
+        #raise(Exception("Job submission failed:\n{}\n{}\n{}".format(self.submit, self.script, proc)))
+        return proc
+
 
     def set_handles(self):
-        pass
+        pass #TODO get rid of this in both NetPyNE and batchtk
 
+
+class SGESubmitSSH(Submit):
+    script_args = {'label', 'queue', 'cores', 'vmem' 'realtime', 'output_path', 'project_path', 'env', 'command', }
+    script_template = \
+        """\
+#!/bin/bash
+#$ -N job{label}
+#$ -q {queue}
+#$ -pe smp {cores}
+#$ -l h_vmem={vmem}
+#$ -l h_rt={realtime}
+#$ -o {output_path}/{label}.run
+source ~/.bashrc
+cd {project_path}
+export JOBID=$JOB_ID
+export MSGFILE="{output_path}/{label}.out"
+export SGLFILE="{output_path}/{label}.sgl"
+{env}
+touch $MSGFILE
+{command}
+"""
+    script_handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
+                      runtk.STDOUT: '{output_path}/{label}.run',
+                      runtk.MSGOUT: '{output_path}/{label}.out',
+                      runtk.SGLOUT: '{output_path}/{label}.sgl',
+                      }
+    def __init__(self, **kwargs):
+        super().__init__(
+            submit_template = Template(template="source ~/.bash_profile; /ddn/age/bin/lx-amd64/qsub {output_path}/{label}.sh",
+                                       key_args={'output_path',  'label'}),
+            script_template = Template(template=self.script_template,
+                                       key_args=self.script_args),
+            handles = self.script_handles,
+            )
+
+    def submit_job(self, **kwargs):
+        proc = super().submit_job(**kwargs)
+        #raise(Exception("Job submission failed:\n{}\n{}\n{}".format(self.submit, self.script, proc)))
+        return proc
+
+
+    def set_handles(self):
+        pass #TODO get rid of this in both NetPyNE and batchtk
+
+class SlurmSubmitSSH(Submit):
+    script_args = {'label', 'allocation', 'realtime', 'nodes', 'coresPerNode',
+                   'partition', 'output_path', 'email', 'env', 'custom', 'project_path', 'command'}
+    script_template = \
+        """\
+#!/bin/bash
+#SBATCH --job-name={label}
+#SBATCH -A {allocation}
+#SBATCH -t {realtime}
+#SBATCH --nodes={nodes}
+#SBATCH --ntasks-per-node={coresPerNode}
+#SBATCH --cpus-per-task=1
+#SBATCH --mem={mem}
+#SBATCH --partition={partition}
+#SBATCH -o {output_path}/{label}.run
+#SBATCH -e {output_path}/{label}.err
+#SBATCH --mail-user={email}
+#SBATCH --mail-type=end
+#SBATCH --export=ALL
+export JOBID=$SLURM_JOB_ID
+export MSGFILE="{output_path}/{label}.out"
+export SGLFILE="{output_path}/{label}.sgl"
+{env}
+{custom}
+cd {project_path}
+{command}
+wait
+"""
+    script_handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
+                      runtk.STDOUT: '{output_path}/{label}.run',
+                      runtk.MSGOUT: '{output_path}/{label}.out',
+                      runtk.SGLOUT: '{output_path}/{label}.sgl',
+                      }
+    def __init__(self, **kwargs):
+        super().__init__(
+            submit_template = Template(template="/cm/shared/apps/slurm/current/bin/sbatch {output_path}/{label}.sh",
+                                       key_args={'output_path',  'label'}),
+            script_template = Template(template=self.script_template,
+                                       key_args=self.script_args),
+            handles = self.script_handles,
+            )
+
+    def submit_job(self, **kwargs):
+        proc = super().submit_job(**kwargs)
+        #raise(Exception("Job submission failed:\n{}\n{}\n{}".format(self.submit, self.script, proc)))
+        return proc
+
+
+    def set_handles(self):
+        pass #TODO get rid of this in both NetPyNE and batchtk
 
 class SGESubmitSFS(SGESubmit):
     script_args = {'label', 'queue', 'cores', 'vmem' 'realtime', 'output_path', 'project_path', 'env', 'command', }
@@ -128,12 +220,13 @@ class SGESubmitSFS(SGESubmit):
 #$ -l h_vmem={vmem}
 #$ -l h_rt={realtime}
 #$ -o {output_path}/{label}.run
-cd {project_path}
 source ~/.bashrc
+cd {project_path}
 export JOBID=$JOB_ID
-export OUTFILE="{output_path}/{label}.out"
+export MSGFILE="{output_path}/{label}.out"
 export SGLFILE="{output_path}/{label}.sgl"
 {env}
+touch $MSGFILE
 {command}
 """
     script_handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
@@ -153,8 +246,8 @@ class SGESubmitSOCK(SGESubmit):
 #$ -l h_vmem={vmem}
 #$ -l h_rt={realtime}
 #$ -o {output_path}/{label}.run
-cd {project_path}
 source ~/.bashrc
+cd {project_path}
 export JOBID=$JOB_ID
 export SOCNAME="{sockname}"
 {env}
@@ -164,6 +257,7 @@ export SOCNAME="{sockname}"
                       runtk.STDOUT: '{output_path}/{label}.run',
                       runtk.SOCKET: '{sockname}'
                       }
+
 
 class SlurmSubmit(Submit):
     script_args = {'label', 'allocation', 'walltime', 'nodes', 'coresPerNode', 'output_path', 'email', 'reservation', 'custom', 'project_path', 'command'}
@@ -179,17 +273,16 @@ class SlurmSubmit(Submit):
 #SBATCH --mail-user={email}
 #SBATCH --mail-type=end
 export JOBID=$SLURM_JOB_ID
-{env}
 {custom}
+{env}
 cd {project_path}
 {command}
-wait
 """
     script_handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
                       runtk.STDOUT: '{output_path}/{label}.run'}
     def __init__(self, **kwargs):
         super().__init__(
-            submit_template = Template(template="sbatch {output_path}/{label}.sh",
+            submit_template = Template(template="/cm/shared/apps/slurm/current/bin/sbatch {output_path}/{label}.sh",
                                        key_args={'output_path',  'label'}),
             script_template = Template(template=self.script_template,
                                        key_args=self.script_args),
@@ -197,46 +290,13 @@ wait
             )
 
     def submit_job(self, **kwargs):
-        proc = super().submit_job()
-        self.job_id = 0 #TODO, what is the output of an sbatch command?
-        return self.job_id
-        #validate job id
-        #try:
-        #    self.job_id = proc.stdout.split(' ')[2]
-        #except Exception as e: #not quite sure how this would occur
-        #    raise(Exception("{}\nJob submission failed:\n{}\n{}\n{}\n{}".format(e, self.submit, self.script, proc.stdout, proc.stderr)))
-        #return self.job_id
+        proc = super().submit_job(**kwargs)
+        return proc
+
 
     def set_handles(self):
         pass
 
-class SlurmSubmitSFS(SlurmSubmit):
-    script_args = {'label', 'allocation', 'walltime', 'nodes', 'coresPerNode', 'output_path', 'email', 'custom', 'project_path', 'command'}
-    script_template = \
-        """\
-#SBATCH --job-name={label}
-#SBATCH -A {allocation}
-#SBATCH -t {walltime}
-#SBATCH --nodes={nodes}
-#SBATCH --ntasks-per-node={coresPerNode}
-#SBATCH -o {output_path}/{label}.run
-#SBATCH -e {output_path}/{label}.err
-#SBATCH --mail-user={email}
-#SBATCH --mail-type=end
-export JOBID=$SLURM_JOB_ID
-export OUTFILE="{output_path}/{label}.out"
-export SGLFILE="{output_path}/{label}.sgl"
-{env}
-{custom}
-cd {project_path}
-{command}
-wait
-"""
-    script_handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
-                      runtk.STDOUT: '{output_path}/{label}.run',
-                      runtk.MSGOUT: '{output_path}/{label}.out',
-                      runtk.SGLOUT: '{output_path}/{label}.sgl',
-                      }
 
 class SlurmSubmitSOCK(SlurmSubmit):
     script_args = {'label', 'allocation', 'walltime', 'nodes', 'coresPerNode', 'output_path', 'email', 'reservation', 'custom', 'project_path', 'command'}
@@ -253,11 +313,10 @@ class SlurmSubmitSOCK(SlurmSubmit):
 #SBATCH --mail-type=end
 export JOBID=$SLURM_JOB_ID
 export SOCNAME="{sockname}"
-{env}
 {custom}
+{env}
 cd {project_path}
 {command}
-wait
 """
     script_handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
                       runtk.STDOUT: '{output_path}/{label}.run',

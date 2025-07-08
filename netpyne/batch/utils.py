@@ -107,7 +107,6 @@ def jobStringHPCSGE(jobName, walltime, vmem, queueName, cores, pre, command, pos
 #$ -o {log}.run
 #$ -e {log}.err
 {pre}
-source ~/.bashrc
 {command}
 {post}
         """

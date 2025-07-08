@@ -360,14 +360,14 @@ def generate_constructors(job_type, comm_type, **kwargs):
 
 def generate_parameters(params, algorithm, **kwargs):
     """
-    returns a dictionary of parameters for ray_search based on the input dictionary
-    from NOTES Salvador:
-    params = {'synMechTau2': [3.0, 5.0, 7.0], # assumes list of values by default if grid search-like algo
-		  #'synMechTau2': [3.0, 7.0], # assumes lower/upper bounds by default if evol-like algo
-          'connWeight' : paramtypes.sample_from(lambda _: numpy.random.uniform(0.005, 0.15))} # can optionally pass any of the paramtypes (= ray.tune data types)
-
-    #TODO: check coverage of conditional statements (looks okay?)
+    Returns a dictionary of parameters for ray_search based on the input dictionary from:
+    params = {
+    'synMechTau2': [3.0, 5.0, 7.0], # assumes list of values by default if grid search-like algo
+    #'synMechTau2': [3.0, 7.0], # assumes lower/upper bounds by default if evol-like algo
+    'connWeight' : paramtypes.sample_from(lambda _: numpy.random.uniform(0.005, 0.15))
+    } # can optionally pass any of the paramtypes (= ray.tune data types)
     """
+    #TODO: check coverage of conditional statements (looks okay?)
     ray_params = {}
     _expected_trials_per_sample = 1
     for param, space in params.items():

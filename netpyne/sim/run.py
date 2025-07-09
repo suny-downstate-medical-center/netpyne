@@ -4,7 +4,7 @@ Module for running simulations
 """
 
 import numpy as np
-from neuron import h, init  # Import NEURON
+from neuron import h  # Import NEURON
 from . import utils
 
 
@@ -95,7 +95,7 @@ def preRun():
                             stim['hObj'].noiseFromRandom(stim['hRandom'])
 
     # handler for recording LFP
-    if sim.cfg.recordLFP:
+    if sim.cfg.recordLFP or sim.cfg.saveIMembrane:
 
         def recordLFPHandler():
             sim.cvode.event(h.t + float(sim.cfg.recordStep), sim.calculateLFP)
@@ -305,20 +305,25 @@ def calculateLFP():
     for cell in sim.net.compartCells:  # compute ecp only from the biophysical cells
         gid = cell.gid
         im = cell.getImemb()  # in nA
-        tr = sim.net.recXElectrode.getTransferResistance(gid)  # in MOhm
-        ecp = np.dot(tr, im)  # in mV (= R * I = MOhm * nA)
 
-        if sim.cfg.saveLFPPops:
-            if cell.gid in sim.net.popForEachGid:
-                pop = sim.net.popForEachGid[cell.gid]
-                sim.simData['LFPPops'][pop][
-                    saveStep - 1, :
-                ] += ecp  # contribution of individual cells (stored optionally)
+        if sim.cfg.saveIMembrane and gid in sim.simData['iMembrane']:
+            sim.simData['iMembrane'][gid][saveStep - 1, :] = im
 
-        if sim.cfg.saveLFPCells and gid in sim.simData['LFPCells']:
-            sim.simData['LFPCells'][gid][saveStep - 1, :] = ecp  # contribution of individual cells (stored optionally)
+        if sim.cfg.recordLFP:
+            tr = sim.net.recXElectrode.getTransferResistance(gid)  # in MOhm
+            ecp = np.dot(tr, im)  # in mV (= R * I = MOhm * nA)
 
-        sim.simData['LFP'][saveStep - 1, :] += ecp  # sum of all cells
+            if sim.cfg.saveLFPPops:
+                if cell.gid in sim.net.popForEachGid:
+                    pop = sim.net.popForEachGid[cell.gid]
+                    sim.simData['LFPPops'][pop][
+                        saveStep - 1, :
+                    ] += ecp  # contribution of individual cells (stored optionally)
+
+            if sim.cfg.saveLFPCells and gid in sim.simData['LFPCells']:
+                sim.simData['LFPCells'][gid][saveStep - 1, :] = ecp  # contribution of individual cells (stored optionally)
+
+            sim.simData['LFP'][saveStep - 1, :] += ecp  # sum of all cells
 
 
 # ------------------------------------------------------------------------------

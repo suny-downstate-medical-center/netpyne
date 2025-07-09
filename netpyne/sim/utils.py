@@ -13,6 +13,7 @@ except NameError:
 from time import time
 import hashlib
 import array
+import sys
 from numbers import Number
 from collections import OrderedDict
 from neuron import h  # Import NEURON
@@ -914,7 +915,8 @@ def clearAll():
 
     # clean up
     sim.pc.barrier()
-    sim.pc.gid_clear()  # clear previous gid settings
+    #TODO are the references within containers cleared before the containers are?
+
 
     # clean cells and simData in all nodes
     if hasattr(sim, 'net'):
@@ -963,53 +965,60 @@ def clearAll():
             matplotlib.pyplot.clf()
             matplotlib.pyplot.close('all')
 
-    # clean rxd components
-    if hasattr(sim.net, 'rxd'):
-
-        sim.clearObj(sim.net.rxd)
-
-        if 'rxd' not in globals():
-            try:
-                from neuron import crxd as rxd
-            except:
-                pass
-        # try:
-        for r in rxd.rxd._all_reactions[:]:
-            if r():
-                rxd.rxd._unregister_reaction(r)
-
-        for s in rxd.species._all_species:
-            if s():
-                s().__del__()
-
-        rxd.region._all_regions = []
-        rxd.region._region_count = 0
-        rxd.region._c_region_lookup = None
-        rxd.species._species_counts = 0
-        rxd.section1d._purge_cptrs()
-        rxd.initializer.has_initialized = False
-        rxd.rxd.free_conc_ptrs()
-        rxd.rxd.free_curr_ptrs()
-        rxd.rxd.rxd_include_node_flux1D(0, None, None, None)
-        rxd.species._has_1d = False
-        rxd.species._has_3d = False
-        rxd.rxd._zero_volume_indices = np.ndarray(0, dtype=np.int_)
-        rxd.set_solve_type(dimension=1)
-        # clear reactions in case next sim does not use rxd
-        rxd.rxd.clear_rates()
-
-        for obj in rxd.__dict__:
-            sim.clearObj(obj)
-
-        # except:
-        #    pass
-
     if hasattr(sim, 'net'):
+        if hasattr(sim.net, 'rxd'): # check that 'net' exists before checking sim.net.rxd
+            sim.clearObj(sim.net.rxd)
+            # clean rxd components
+            if 'rxd' not in globals():
+                try:
+                    from neuron import crxd as rxd
+                except:
+                    pass
+            # try:
+            for r in rxd.rxd._all_reactions[:]:
+                if r():
+                    rxd.rxd._unregister_reaction(r)
+
+            for s in rxd.species._all_species:
+                if s():
+                    s().__del__()
+
+            rxd.region._all_regions = []
+            rxd.region._region_count = 0
+            rxd.region._c_region_lookup = None
+            rxd.species._species_counts = 0
+            rxd.section1d._purge_cptrs()
+            rxd.initializer.has_initialized = False
+            rxd.rxd.free_conc_ptrs()
+            rxd.rxd.free_curr_ptrs()
+            rxd.rxd.rxd_include_node_flux1D(0, None, None, None)
+            rxd.species._has_1d = False
+            rxd.species._has_3d = False
+            rxd.rxd._zero_volume_indices = np.ndarray(0, dtype=np.int_)
+            rxd.set_solve_type(dimension=1)
+            # clear reactions in case next sim does not use rxd
+            rxd.rxd.clear_rates()
+
+            for obj in rxd.__dict__:
+                sim.clearObj(obj)
         del sim.net
-
     import gc
-
     gc.collect()
+
+    sim.pc.barrier()
+    sim.pc.gid_clear()  # clear previous gid settings
+
+def close(message=None, clear=True):
+    """
+    Function to close simulation
+
+    """
+    from .. import sim
+    if clear:
+        clearAll()
+    else:
+        sim.pc.barrier()
+    sys.exit()
 
 
 def checkConditions(conditions, against, cellGid=None):
@@ -1076,5 +1085,7 @@ class NpSerializer(json.JSONEncoder):
             return obj.to_python()
         elif isinstance(obj, RecXElectrode):
             return obj.toJSON()
+        elif callable(obj):
+            return obj.__name__
         else:
             return super(NpSerializer, self).default(obj)

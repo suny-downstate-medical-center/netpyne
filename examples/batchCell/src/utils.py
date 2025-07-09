@@ -19,7 +19,7 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
         print('\nLoading single file with all data...')
         filename = '%s/%s/%s_allData.json' % (dataFolder, batchLabel, batchLabel)
         with open(filename, 'r') as fileObj:
-            dataLoad = json.load(fileObj, object_pairs_hook=specs.OrderedDict)
+            dataLoad = json.load(fileObj, object_pairs_hook=specs.ODict)
         params = dataLoad['params']
         data = dataLoad['data']
         return params, data
@@ -52,10 +52,10 @@ def readBatchData(dataFolder, batchLabel, loadAll=False, saveAll=True, vars=None
                 # read output file
                 iCombStr = ''.join([''.join('_'+str(i)) for i in iComb])
                 simLabel = b['batchLabel']+iCombStr
-                outFile = b['saveFolder']+'/'+simLabel+'.json'
+                outFile = b['saveFolder']+'/'+simLabel+'_data.json'
                 try:
                     with open(outFile, 'r') as fileObj:
-                        output = json.load(fileObj, object_pairs_hook=specs.OrderedDict)
+                        output = json.load(fileObj, object_pairs_hook=specs.ODict)
 
                     # save output file in data dict
                     data[iCombStr] = {}
@@ -87,14 +87,14 @@ def compare(source_file, target_file, source_key=None, target_key=None):
     from deepdiff import DeepDiff
     with open(source_file, 'r') as fileObj:
         if source_file.endswith('.json'):
-            source = json.load(fileObj, object_pairs_hook=specs.OrderedDict)
+            source = json.load(fileObj, object_pairs_hook=specs.ODict)
         elif source_file.endswith('.pkl'):
             source = pickle.load(fileObj)
     if source_key: source = source[source_key]
 
     with open(target_file, 'r') as fileObj:
         if target_file.endswith('.json'):
-            target = json.load(fileObj, object_pairs_hook=specs.OrderedDict)
+            target = json.load(fileObj, object_pairs_hook=specs.ODict)
         elif source_file.endswith('.pkl'):
             target = pickle.load(fileObj)
     if target_key: target = target[target_key]

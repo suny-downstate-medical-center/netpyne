@@ -81,6 +81,7 @@ class SimConfig(object):
         self.recordLFP = []  # list of 3D locations to record LFP from
         self.recordDipole = False  # record dipoles using lfpykit method
         self.recordDipolesHNN = False  # record dipoles using HNN method
+        self.saveIMembrane = False  # Store transmembrane current by each cell
         self.saveLFPCells = False  # Store LFP generated individually by each cell
         self.saveLFPPops = False  # Store LFP generated individually by each population
         self.saveDipoleCells = False  # Store LFP generated individually by each cell
@@ -106,9 +107,7 @@ class SimConfig(object):
         self.backupCfgFile = []  # copy cfg file, list with [sourceFile,destFolder] (eg. ['cfg.py', 'backupcfg/'])
 
         # error checking
-        self.validateNetParams = (
-            False  # whether to validate the input parameters (will be turned off if num processors > 1)
-        )
+        self.validateNetParams = False # whether to validate the input parameters (will be turned off if num processors > 1)
         # self.checkErrors = False # whether to validate the input parameters (will be turned off if num processors > 1)
         # self.checkErrorsVerbose = False # whether to print detailed errors during input parameter validation
         # self.exitOnError = False # whether to hard exit on error
@@ -116,6 +115,8 @@ class SimConfig(object):
         # Analysis and plotting
         self.analysis = ODict()
 
+
+        # Analysis and plotting
         # fill in params from dict passed as argument
         if simConfigDict:
             for k, v in simConfigDict.items():
@@ -190,6 +191,17 @@ class SimConfig(object):
         from ..sim import replaceDictODict
 
         return replaceDictODict(self.__dict__)
+
+    def update(self, *args, **kwargs):
+        """
+        This method is implemented in batchtools,
+        which requires the batchtk package to be
+        installed. If you are seeing this message
+        when calling help, it indicates there is
+        an issue with your current batchtools
+        installation
+        """
+        pass
 
     def validateDataSaveOptions(self, printWarning=True):
 

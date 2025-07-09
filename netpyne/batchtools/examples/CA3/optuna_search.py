@@ -14,7 +14,7 @@ params = {'nmda.PYR->BC' : [1e-3, 1.8e-3],
 # use batch_shell_config if running directly on the machine
 shell_config = {'command': 'mpiexec -np 4 nrniv -python -mpi init.py',}
 
-# use batch_sge_config if running on a
+# use batch_sge_config if running through SGE
 sge_config = {
     'queue': 'cpu.q',
     'cores': 5,
@@ -25,12 +25,12 @@ sge_config = {
 
 run_config = sge_config
 
-search(job_type = 'sge', # or sh
-       comm_type = 'socket',
+search(job_type = 'sge', # 'sh', and ssh based options
+       comm_type = 'socket', # 'socket', 'sfs', None
        label = 'optuna',
        params = params,
-       output_path = '../optuna_batch',
-       checkpoint_path = '../ray',
+#       output_path = './batch', # defaults to ./batch
+#       checkpoint_path = './checkpoint', # defaults to ./checkpoint
        run_config = run_config,
        num_samples = 27,
        metric = 'loss',

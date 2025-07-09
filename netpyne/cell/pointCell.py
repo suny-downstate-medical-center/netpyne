@@ -41,14 +41,6 @@ class PointCell(Cell):
     def __init__(self, gid, tags, create=True, associateGid=True):
         from .. import sim
 
-        # enable defining pointCell properties directly in cellParams
-        exclude = ['cellType']
-
-        # import IPython; IPython.embed()
-
-        if 'cellType' in tags and tags['cellType'] in sim.net.params.cellParams:
-            tags.update({k: v for k, v in sim.net.params.cellParams[tags['cellType']].items() if k not in exclude})
-
         # call parent calls (Cell) constructor to set gid and tags
         super(PointCell, self).__init__(gid, tags)
         self.hPointp = None
@@ -351,27 +343,6 @@ class PointCell(Cell):
             del nc  # discard netcon
         sim.net.gid2lid[self.gid] = len(sim.net.gid2lid)
 
-    def _setConnWeights(self, params, netStimParams):
-        from .. import sim
-
-        if netStimParams:
-            scaleFactor = sim.net.params.scaleConnWeightNetStims
-        elif (
-            isinstance(sim.net.params.scaleConnWeightModels, dict)
-            and sim.net.params.scaleConnWeightModels.get(self.tags['cellModel'], None) is not None
-        ):
-            scaleFactor = sim.net.params.scaleConnWeightModels[
-                self.tags['cellModel']
-            ]  # use scale factor specific for this cell model
-        else:
-            scaleFactor = sim.net.params.scaleConnWeight  # use global scale factor
-
-        if isinstance(params['weight'], list):
-            weights = [scaleFactor * w for w in params['weight']]
-        else:
-            weights = [scaleFactor * params['weight']] * params['synsPerConn']
-
-        return weights
 
     def addConn(self, params, netStimParams=None):
         from .. import sim
@@ -393,18 +364,12 @@ class PointCell(Cell):
                 )
             return  # if self-connection return
 
-        # Weight
-        weights = self._setConnWeights(params, netStimParams)
+        # Weights and delays
+        weights, delays = self._connWeightsAndDelays(params, netStimParams)
 
         if params.get('weightIndex') is None:
             params['weightIndex'] = 0  # set default weight matrix index
         weightIndex = params.get('weightIndex')  # note that loop below will overwrite the weights value in weights[i]
-
-        # Delays
-        if isinstance(params['delay'], list):
-            delays = params['delay']
-        else:
-            delays = [params['delay']] * params['synsPerConn']
 
         # Create connections
         for i in range(params['synsPerConn']):

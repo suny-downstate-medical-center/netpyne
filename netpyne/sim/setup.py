@@ -10,6 +10,7 @@ from neuron import h  # Import NEURON
 from .. import specs
 from ..specs import Dict, ODict
 from . import utils, validator
+from netpyne.specs.simConfig import SimConfig
 
 try:
     from datetime import datetime
@@ -90,16 +91,18 @@ def initialize(netParams=None, simConfig=None, net=None):
 
     if hasattr(sim.cfg, 'validateNetParams') and sim.cfg.validateNetParams:  # whether to validate the input parameters
         try:
-            print('Validating NetParams ...')
+            print('\nValidating NetParams ...')
             sim.timing('start', 'validationTime')
             valid, failed = validator.validateNetParams(netParams)
             sim.timing('stop', 'validationTime')
             if failed:
                 failedComps = [err.component for err in failed] # get failed component name
                 failedComps = list(set(failedComps)) # keep unique elements only
-                print(f"\nNetParams validation identified some potential issues in {', '.join(failedComps)}. See above for details.")
+                BOLD = "\033[1m"
+                RESET = "\033[0m"
+                print(f"\n✋ NetParams validation identified some potential issues in {BOLD}{', '.join(failedComps)}{RESET}. See above for details.")
             else:
-                print("\nNetParams validation successful.")
+                print("\n✅ NetParams validation successful.")
         except Exception as e:
             sim.timing('stop', 'validationTime')
             print("\nAn exception occurred during the netParams validation process.")
@@ -182,6 +185,10 @@ def setSimCfg(cfg):
     """
 
     from .. import sim
+
+    #if sim._batch_specs is True:
+    #    cfg = SimConfig(cfg.__dict__)
+    #    print("setup SimCfg, now is {}".format(type(cfg)))
 
     if cfg and isinstance(cfg, specs.SimConfig):
         sim.cfg = cfg  # set
@@ -336,12 +343,24 @@ def setupRecordLFP():
     sim.net.calcSegCoords()  # calculate segment coords for each cell
     sim.net.recXElectrode = RecXElectrode.fromConfig(sim.cfg)  # create exctracellular recording electrode
 
+    if sim.cfg.saveIMembrane:
+        if sim.cfg.saveIMembrane == True:
+            cellsRecordIMembrane = utils.getCellsList(['all'])
+        elif isinstance(sim.cfg.saveIMembrane, list):
+            cellsRecordIMembrane = utils.getCellsList(sim.cfg.saveIMembrane)
+
+        for c in cellsRecordIMembrane:
+            sim.simData['iMembrane'][c.gid] = np.zeros((saveSteps, c.getNumberOfSegments()))
+
     if sim.cfg.createNEURONObj:
         for cell in sim.net.compartCells:
-            nseg = cell._segCoords['p0'].shape[1]
-            sim.net.recXElectrode.calcTransferResistance(
-                cell.gid, cell._segCoords
-            )  # transfer resistance for each cell
+            nseg = cell.getNumberOfSegments()
+
+            if sim.cfg.recordLFP:
+                sim.net.recXElectrode.calcTransferResistance(
+                    cell.gid, cell._segCoords
+                )  # transfer resistance for each cell
+
             cell.imembPtr = h.PtrVector(nseg)  # pointer vector
             cell.imembPtr.ptr_update_callback(
                 cell.setImembPtr
@@ -406,7 +425,7 @@ def setupRecordDipole():
             cell.M = cdm.get_transformation_matrix()
 
             # set up recording of membrane currents (duplicate with setupRecordLFP -- unifiy and avoid calling twice)
-            nseg = cell._segCoords['p0'].shape[1]
+            nseg = cell.getNumberOfSegments()
             cell.imembPtr = h.PtrVector(nseg)  # pointer vector
             cell.imembPtr.ptr_update_callback(
                 cell.setImembPtr
@@ -527,7 +546,7 @@ def setupRecording():
         print(("Recording %s traces of %s types on node %i" % (total, cat, sim.rank)))
 
     # set LFP recording
-    if sim.cfg.recordLFP:
+    if sim.cfg.recordLFP or sim.cfg.saveIMembrane:
         setupRecordLFP()
 
     # set dipole recording

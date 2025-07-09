@@ -584,9 +584,20 @@ def probConn(self, preCellsTags, postCellsTags, connParam):
         if sim.rank == 0 and not sim.cfg.verbose and sim.cfg.progressBar: pbar.close()
 
 # -----------------------------------------------------------------------------
-# Generate random unique integers
+# Generate random integers
 # -----------------------------------------------------------------------------
-def randUniqueInt(self, r, N, vmin, vmax):
+def randInt(r, N, vmin, vmax, unique=False):
+
+    if unique:
+        return randUniqueInt(r, N, vmin, vmax)
+    else:
+        from neuron import h
+        r.discunif(vmin, vmax)
+        v = h.Vector(N)
+        v.setrand(r)
+        return np.array(v, dtype=int)
+
+def randUniqueInt(r, N, vmin, vmax):
     """
     Function for/to <short description of `netpyne.network.conn.randUniqueInt`>
 
@@ -614,7 +625,8 @@ def randUniqueInt(self, r, N, vmin, vmax):
 
 
     """
-
+    assert N <= (vmax - vmin) + 1, \
+        f"Error in randUniqueInt: impossible to generate {N} unique integers from [{vmin}, {vmax}]"
     r.discunif(vmin, vmax)
     out = []
     while len(out) < N:
@@ -686,7 +698,7 @@ def convConn(self, preCellsTags, postCellsTags, connParam):
             )  # num of presyn conns / postsyn cell
             convergence = max(min(int(round(convergence)), len(preCellsTags) - 1), 0)
             self.rand.Random123(hashPreCells, postCellGid, sim.cfg.seeds['conn'])  # init randomizer
-            randSample = self.randUniqueInt(self.rand, convergence + 1, 0, len(preCellsTags) - 1)
+            randSample = randUniqueInt(self.rand, convergence + 1, 0, len(preCellsTags) - 1)
 
             # note: randSample[divergence] is an extra value used only if one of the random postGids coincided with the preGid
             preCellsSample = {
@@ -772,7 +784,7 @@ def divConn(self, preCellsTags, postCellsTags, connParam):
         )  # num of presyn conns / postsyn cell
         divergence = max(min(int(round(divergence)), len(postCellsTags) - 1), 0)
         self.rand.Random123(hashPostCells, preCellGid, sim.cfg.seeds['conn'])  # init randomizer
-        randSample = self.randUniqueInt(self.rand, divergence + 1, 0, len(postCellsTags) - 1)
+        randSample = randUniqueInt(self.rand, divergence + 1, 0, len(postCellsTags) - 1)
 
         # note: randSample[divergence] is an extra value used only if one of the random postGids coincided with the preGid
         postCellsSample = {
@@ -848,44 +860,48 @@ def fromListConn(self, preCellsTags, postCellsTags, connParam):
             )
             for preId, postId in connParam['connList']
         }
+    numConns = len(connParam['connList'])
 
-    if 'weight' in connParam and isinstance(connParam['weight'], list):
-        connParam['weightFromList'] = list(connParam['weight'])  # if weight is a list, copy to weightFromList
-    if 'delay' in connParam and isinstance(connParam['delay'], list):
-        connParam['delayFromList'] = list(connParam['delay'])  # if delay is a list, copy to delayFromList
-    if 'loc' in connParam and isinstance(connParam['loc'], list):
-        connParam['locFromList'] = list(connParam['loc'])  # if delay is a list, copy to locFromList
+    weights, delays, secs, locs = [], [], [], []
+    preLocs, preSecs = [], [] # for pointer connections (e.g. gap junctions) only
+    for paramName, paramValList in zip(['weight', 'delay', 'sec', 'loc', 'preLocs', 'preSecs'], 
+                                       [weights, delays, secs, locs, preLocs, preSecs]):
+        paramVal = connParam.get(paramName)
+        if not paramVal:
+            continue
+        
+        if type(paramVal) in (list, tuple):
+            _ensure(len(paramVal) == numConns, connParam['label'], f"'{paramName}' has to be of the exact same length as 'connList'. Aborting..")
+            paramValList.extend(paramVal)
+        else:
+            paramValList.append(paramVal)
 
-    if connParam.get('synsPerConn', 1) == 1:
-        if isinstance(connParam.get('sec'), list):
-            connParam['secFromList'] = list(connParam['sec'])
-    else:
-        pass # TODO: needs consistent handling
+    connList = connParam.pop('connList')
 
-    # for pointer connections (e.g. gap junctions) only:
-    if isinstance(connParam.get('preLoc'), list):
-        connParam['preLocFromList'] = list(connParam['preLoc'])
-    if isinstance(connParam.get('preSec'), list):
-        connParam['preSecFromList'] = list(connParam['preSec'])
-
-    for iconn, (relativePreId, relativePostId) in enumerate(connParam['connList']):  # for each postsyn cell
+    for iconn, (relativePreId, relativePostId) in enumerate(connList):  # for each postsyn cell
         if sim.rank == 0 and not sim.cfg.verbose and sim.cfg.progressBar: pbar.update(1)
+
+        _ensure(relativePreId < len(orderedPreGids), connParam['label'], f"cell index in pre population in connection {iconn} is out of range. Aborting..")
+        _ensure(relativePostId < len(orderedPostGids), connParam['label'], f"cell index in post population in connection {iconn} is out of range. Aborting..")
+
         preCellGid = orderedPreGids[relativePreId]
         postCellGid = orderedPostGids[relativePostId]
+
         if postCellGid in self.gid2lid:  # check if postsyn is in this node's list of gids
 
-            if 'weightFromList' in connParam:
-                connParam['weight'] = connParam['weightFromList'][iconn]
-            if 'delayFromList' in connParam:
-                connParam['delay'] = connParam['delayFromList'][iconn]
-            if 'locFromList' in connParam:
-                connParam['loc'] = connParam['locFromList'][iconn]
-            if 'secFromList' in connParam:
-                connParam['sec'] = connParam['secFromList'][iconn]
-            if 'preLocFromList' in connParam:
-                connParam['preLoc'] = connParam['preLocFromList'][iconn]
-            if 'preSecFromList' in connParam:
-                connParam['preSec'] = connParam['preSecFromList'][iconn]
+            def setConnValFromList(lst, iConn, connKey):
+                if not lst: return # this param not specified, skip it to use default value later
+                if len(lst) == 1: # this means the same value is used for all connections
+                    connParam[connKey] = lst[0]
+                else:
+                    connParam[connKey] = lst[iConn]
+            
+            setConnValFromList(weights, iconn, 'weight')
+            setConnValFromList(delays, iconn, 'delay')
+            setConnValFromList(locs, iconn, 'loc')
+            setConnValFromList(secs, iconn, 'sec')
+            setConnValFromList(preLocs, iconn, 'preLoc')
+            setConnValFromList(preSecs, iconn, 'preSec')
 
             # TODO: consider cfg.allowSelfConns?
             if preCellGid != postCellGid:  # if not self-connection
@@ -901,7 +917,7 @@ def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags={}):
     from ..specs.netParams import SynMechParams
 
     # set final param values
-    paramStrFunc = self.connStringFuncParams
+    paramStrFunc = self.connStringFuncParams # [weight, delay, synsPerConn, loc]
     finalParam = {}
 
     # Set final parameter values; initialize randomizer for string-based funcs that use rand to ensue replicability
@@ -928,28 +944,47 @@ def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags={}):
     if not isinstance(connParam.get('synMech'), list):
         connParam['synMech'] = [connParam.get('synMech')]
 
-    # generate dict with final params for each synMech
-    paramPerSynMech = ['weight', 'delay', 'loc']
-    for i, synMech in enumerate(connParam.get('synMech')):
+    synMechs = connParam['synMech']
+    numSynMechs = len(synMechs)
 
-        for param in paramPerSynMech:
-            finalParam[param + 'SynMech'] = finalParam.get(param)
-            if len(connParam['synMech']) > 1:
-                if isinstance(finalParam.get(param), list):  # get weight from list for each synMech
-                    finalParam[param + 'SynMech'] = finalParam[param][i]
-                elif 'synMech' + param.title() + 'Factor' in connParam:  # adapt weight for each synMech
-                    finalParam[param + 'SynMech'] = (
-                        finalParam[param] * connParam['synMech' + param.title() + 'Factor'][i]
-                    )
+    for i, synMech in enumerate(synMechs):
+
+        # weight, delay and loc (and also sec - if corresp. flag is set) are either single value or list of values. If single value, use it for all synMechs. If it is a list, use the value at index i
+        if connParam.get('distinctSecsPerSynMech', False):
+            paramNames = ['weight', 'delay', 'loc', 'synsPerConn', 'sec']
+        else:
+            paramNames = ['weight', 'delay', 'loc', 'synsPerConn']
+            # keep sec as is to be handled later in CompartCell.addConn()
+            sec = connParam.get('sec')
+
+        for param in paramNames:
+            if numSynMechs == 1:
+                finalParamVal = finalParam.get(param)
+            else:
+                if isinstance(finalParam.get(param), list):  # get weight/delay/loc from list for each synMech
+
+                    _ensure(len(finalParam[param]) == numSynMechs, connParam['label'], f"{param} should be {numSynMechs}-element list or a single value")
+                    finalParamVal = finalParam[param][i]
+
+                elif (f'synMech{param}Factor' in connParam) and (param is not 'sec'):  # adapt weight/delay/loc for each synMech
+                    factors = connParam[f'synMech{param}Factor']
+                    _ensure(len(factors) == numSynMechs, connParam['label'], f"{f'synMech{param}Factor'} should be {numSynMechs}-element list")
+                    _ensure((type(finalParam[param]) in int, float), connParam['label'], f"{params} should be list of numbers")
+                    finalParamVal = finalParam[param] * factors[i]
+
+                else:
+                    finalParamVal = finalParam.get(param)
+
+            finalParam[param + 'SynMech'] = finalParamVal
 
         params = {
             'preGid': preCellGid,
-            'sec': connParam.get('sec'),
+            'sec': sec, # TODO: will not work with `distinctSecsPerSynMech`?
             'loc': finalParam['locSynMech'],
             'synMech': synMech,
             'weight': finalParam['weightSynMech'],
             'delay': finalParam['delaySynMech'],
-            'synsPerConn': finalParam['synsPerConn'],
+            'synsPerConn': finalParam['synsPerConnSynMech'],
         }
 
         # if 'threshold' in connParam: params['threshold'] = connParam.get('threshold')  # deprecated, use threshold in preSyn cell sec
@@ -987,3 +1022,9 @@ def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags={}):
             params['label'] = connParam.get('label')
 
         postCell.addConn(params=params)
+
+
+def _ensure(condition, connLabel, message):
+    connLabelStr = f'[{connLabel}]' if connLabel else ''
+    assert condition, f"  Error in connParams{connLabelStr}: {message}"
+

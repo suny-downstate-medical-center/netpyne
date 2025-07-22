@@ -202,12 +202,15 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
     expected_total = params.pop('_expected_trials_per_sample') * num_samples
     if (dispatcher_constructor == runtk.dispatchers.SSHDispatcher) or \
        (dispatcher_constructor == SSHGridDispatcher):
-        if submit_constructor == submits.SGESubmitSFS:
+        dispatcher_kwargs = None
+        if submit_constructor == submits.SGESubmitSSH:
             from fabric import connection
             dispatcher_kwargs = {'connection': connection.Connection(host)}
         if submit_constructor == submits.SlurmSubmitSSH:
             from batchtk.utils import TOTPConnection
             dispatcher_kwargs = {'connection': TOTPConnection(host, key)}
+        if dispatcher_kwargs == None:
+            raise ValueError("for SSH based methods, please provide either 'sftp' or None as the comm_type")
     else:
         dispatcher_kwargs = {}
     if ray_config is None:
@@ -514,20 +517,20 @@ def search(dispatcher_constructor: Optional[Callable] = None, # constructor for 
 """
 SEE:
 'variant_generator'
-'random' -> points to variant_generator
+'random' <- deprecated -> points to variant_generator
 'ax'
-'dragonfly'
-'skopt'
+'dragonfly' <- deprecated
+'skopt' <- deprecated
 'hyperopt'
 'bayesopt'
 'bohb'
 'nevergrad'
 'optuna'
 'zoopt'
-'sigopt'
+'sigopt' <- deprecated
 'hebo'
-'blendsearch'
-'cfo'
+'blendsearch' <- deprecated
+'cfo' <- deprecated
 """
 
 

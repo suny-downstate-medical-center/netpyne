@@ -47,7 +47,6 @@ MECH_PARAM_ERROR = "Parameter '{0}' is not valid for mechanism '{1}'."
 MECH_PARAM_TYPE_ERROR = "Parameter '{0}' of '{1}' must be a number, a list of numbers (per segment), or a function as string."
 POINTP_PARAM_ERROR = "Parameter '{0}' is not valid for point process '{1}'."
 POINTP_PARAM_TYPE_ERROR = "Parameter '{0}' of '{1}' must be a number, boolean, or function as string."
-RXD_DIMENSION_ERROR = 'Dimension must be 1, 2, or 3.'
 COND_PARAM_ERROR = 'Condition value must be a string, a list of strings, or a list of two numbers (from, to).'
 INVALID_VALUE_ERROR = 'Invalid value.'
 NUMBER_OR_3NUMS_ERROR = 'Expected a number or a list of three numbers.'
@@ -823,7 +822,7 @@ def rxd_specs():
                         ),
                         None,
                     ),
-                    Optional('dimension'): Or(lambda s: s in [1, 2, 3], None, error=RXD_DIMENSION_ERROR),
+                    Optional('dimension'): object, # no longer used. Kept here for backward compatibility
                     Optional('dx'): numberOrNone,
                 },
             )

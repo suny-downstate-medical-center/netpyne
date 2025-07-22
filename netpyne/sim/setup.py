@@ -91,14 +91,16 @@ def initialize(netParams=None, simConfig=None, net=None):
 
     if hasattr(sim.cfg, 'validateNetParams') and sim.cfg.validateNetParams:  # whether to validate the input parameters
         try:
-            print('Validating NetParams ...')
+            print('\nValidating NetParams ...')
             sim.timing('start', 'validationTime')
             valid, failed = validator.validateNetParams(netParams)
             sim.timing('stop', 'validationTime')
             if failed:
                 failedComps = [err.component for err in failed] # get failed component name
                 failedComps = list(set(failedComps)) # keep unique elements only
-                print(f"\n✋ NetParams validation identified some potential issues in {', '.join(failedComps)}. See above for details.")
+                BOLD = "\033[1m"
+                RESET = "\033[0m"
+                print(f"\n✋ NetParams validation identified some potential issues in {BOLD}{', '.join(failedComps)}{RESET}. See above for details.")
             else:
                 print("\n✅ NetParams validation successful.")
         except Exception as e:

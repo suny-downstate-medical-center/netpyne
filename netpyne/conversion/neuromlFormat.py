@@ -1723,10 +1723,8 @@ try:
                 # connParam = {'delay':delay,'weight':weight,'synsPerConn':1, 'sec':post_seg, 'loc':post_fract, 'threshold':threshold}
                 connParam = {'delay': delay, 'weight': weight, 'synsPerConn': 1, 'sec': post_seg, 'loc': post_fract}
 
-                if ptype == 'electricalProjection':
+                if ptype == 'electricalProjection' or ptype == 'electricalProjectionW':
 
-                    if weight != 1:
-                        raise Exception('Cannot yet support inputs where weight !=1!')
                     connParam = {
                         'synsPerConn': 1,
                         'sec': post_seg,

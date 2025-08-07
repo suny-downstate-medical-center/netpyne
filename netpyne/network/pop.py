@@ -31,9 +31,10 @@ class Pop(object):
         self.tags['pop'] = label
         self.cellGids = []  # list of cell gids beloging to this pop
 
-        self._setCellClass()  # set type of cell
+        self.cellModelClass, cellRuleForPointCell = self._resolveCellClass()
+
         if self.cellModelClass == sim.PointCell:
-            self.__handlePointCellParams()
+            self.__handlePointCellParams(cellRuleForPointCell)
 
         self.rand = h.Random()  # random number generator
 
@@ -481,18 +482,22 @@ class Pop(object):
 
         return cellTags
 
-    def _setCellClass(self):
+    def _resolveCellClass(self):
         """
-        Set cell class (CompartCell, PointCell, etc)
+        Determines cell class (CompartCell, PointCell, etc). Returns it, and a cellRule for PointCell if it refers to cellParams entry.
         """
+        cellRule = None
 
         # Check whether it's a NeuroML2 based cell
         # ! needs updating to read cellModel info from cellParams
-        if 'originalFormat' in self.tags:
-            if self.tags['originalFormat'] == 'NeuroML2':
-                self.cellModelClass = sim.NML2Cell
-            if self.tags['originalFormat'] == 'NeuroML2_SpikeSource':
-                self.cellModelClass = sim.NML2SpikeSource
+        if origFormat := self.tags.get('originalFormat'):
+            if origFormat == 'NeuroML2':
+                cellClass = sim.NML2Cell
+            elif origFormat == 'NeuroML2_SpikeSource':
+                cellClass = sim.NML2SpikeSource
+            else:
+                print(f"Warning: unknown original format {origFormat} for population {self.tags['pop']}")
+                cellClass = None
         else:
             # obtain cellModel either from popParams..
             cellModel = self.tags.get('cellModel')
@@ -504,16 +509,15 @@ class Pop(object):
                     cellRule = sim.net.params.cellParams.get(cellType, {})
                     cellModel = cellRule.get('cellModel')
                 else:
-                    # TODO: or throw error?
-                    pass
+                    print(f"Warning: no 'cellType' or 'cellModel' found for population {self.tags['pop']}. Cells will be created as CompartCell, but with no sections.")
 
             # set cell class: CompartCell for compartmental cells of PointCell for point neurons (NetStims, IntFire1,...)
             if cellModel and hasattr(h, cellModel):
                 # check if cellModel corresponds to an existing point process mechanism; if so, use PointCell
-                self.cellModelClass = sim.PointCell
+                cellClass = sim.PointCell
             else:
                 # otherwise assume has sections and some cellParam rules apply to it; use CompartCell
-                self.cellModelClass = sim.CompartCell
+                cellClass = sim.CompartCell
                 # if model is known but wasn't recognized, issue warning
                 knownPointps = ['NetStim', 'DynamicNetStim', 'VecStim', 'IntFire1', 'IntFire2', 'IntFire4']
                 if getattr(self.tags, 'cellModel', None) in knownPointps:
@@ -521,8 +525,9 @@ class Pop(object):
                         'Warning: could not find %s point process mechanism required for population %s'
                         % (cellModel, self.tags['pop'])
                     )
+        return cellClass, cellRule
 
-    def __handlePointCellParams(self):
+    def __handlePointCellParams(self, cellRule=None):
 
         if 'params' in self.tags and isinstance(self.tags['params'], dict):
             # in some cases, params for point cell may already be grouped in the nested 'params' dict.
@@ -559,6 +564,15 @@ class Pop(object):
 
             CellParams.updateStringFuncsWithPopParams(self.tags['pop'], params)
 
+        # if popParams for PointCell contain 'cellType' and it exists in cellParams, take from there cellModel and params (if any)
+        if cellRule:
+            self.tags['cellModel'] = cellRule['cellModel']
+
+            for k,v in cellRule.get('params', {}).items():
+                # But don't override! If param is already there, it comes from popParams, which takes precedence
+                if k not in self.tags['params']:
+                    self.tags['params'][k] = v
+
 
     def calcRelativeSegCoords(self):
         """Calculate segment coordinates from 3d point coordinates
@@ -566,67 +580,96 @@ class Pop(object):
 
         localPopGids = list(set(sim.net.gid2lid.keys()).intersection(set(self.cellGids)))
         if localPopGids:
-            cell = sim.net.cells[sim.net.gid2lid[localPopGids[0]]]
+            cells = []
+            cellLabels_Ids = {}
+            # consider diversity
+            if 'diversity' not in self.tags.keys():
+                label = ['no_diversity']
+                cellLabels_Ids.update({label[0]: localPopGids})
+                cells.append(sim.net.cells[sim.net.gid2lid[localPopGids[0]]])              # single cell per pop
+            else:
+                # enumerate the different cell labels (corresponding to the different cell variants)
+                for nn in localPopGids:
+                    for label in sim.net.cells[sim.net.gid2lid[nn]].tags['label']:
+                        if label not in cellLabels_Ids.keys():
+                            cellLabels_Ids.update({label:[]})
+                        cellLabels_Ids[label].append(nn)
+                # obtain cells with these cell rules (one per subpopulation)
+                for label in cellLabels_Ids.keys():
+                    cells.append(sim.net.cells[sim.net.gid2lid[cellLabels_Ids[label][0]]])
         else:
             return -1
 
-        ix = 0  # segment index
-
-        p3dsoma = cell.getSomaPos()
-        nseg = sum([sec['hObj'].nseg for sec in list(cell.secs.values())])
-
-        p0 = np.zeros((3, nseg))  # hold the coordinates of segment starting points
-        p1 = np.zeros((3, nseg))  # hold the coordinates of segment end points
-        d0 = np.zeros(nseg)
-        d1 = np.zeros(nseg)
-
-        for sec in list(cell.secs.values()):
-            hSec = sec['hObj']
-            hSec.push()
-            n3d = int(h.n3d())  # get number of n3d points in each section
-            p3d = np.zeros((3, n3d))  # to hold locations of 3D morphology for the current section
-            l3d = np.zeros(n3d)  # to hold locations of 3D morphology for the current section
-            diam3d = np.zeros(n3d)  # to diameters
-
-            for i in range(n3d):
-                p3d[0, i] = h.x3d(i) - p3dsoma[0]
-                p3d[1, i] = h.y3d(i) - p3dsoma[1]  # shift coordinates such to place soma at the origin.
-                p3d[2, i] = h.z3d(i) - p3dsoma[2]
-                diam3d[i] = h.diam3d(i)
-                l3d[i] = h.arc3d(i)
-
-            l3d /= hSec.L  # normalize
-            nseg = hSec.nseg
-
-            l0 = np.zeros(nseg)  # keep range of segment starting point
-            l1 = np.zeros(nseg)  # keep range of segment ending point
-
-            for iseg, seg in enumerate(hSec):
-                l0[iseg] = (
-                    seg.x - 0.5 * 1 / nseg
-                )  # x (normalized distance along the section) for the beginning of the segment
-                l1[iseg] = seg.x + 0.5 * 1 / nseg  # x for the end of the segment
-
-            p0[0, ix : ix + nseg] = np.interp(l0, l3d, p3d[0, :])
-            p0[1, ix : ix + nseg] = np.interp(l0, l3d, p3d[1, :])
-            p0[2, ix : ix + nseg] = np.interp(l0, l3d, p3d[2, :])
-            d0[ix : ix + nseg] = np.interp(l0, l3d, diam3d[:])
-
-            p1[0, ix : ix + nseg] = np.interp(l1, l3d, p3d[0, :])
-            p1[1, ix : ix + nseg] = np.interp(l1, l3d, p3d[1, :])
-            p1[2, ix : ix + nseg] = np.interp(l1, l3d, p3d[2, :])
-            d1[ix : ix + nseg] = np.interp(l1, l3d, diam3d[:])
-            ix += nseg
-            h.pop_section()
-
         self._morphSegCoords = {}
+        #print(cellLabels_Ids)
+        for cell,label in zip(cells,cellLabels_Ids.keys()):
+            ix = 0  # segment index
 
-        self._morphSegCoords['p0'] = p0
-        self._morphSegCoords['p1'] = p1
+            p3dsoma = cell.getSomaPos()
+            nseg = sum([sec['hObj'].nseg for sec in list(cell.secs.values())])
 
-        self._morphSegCoords['d0'] = d0
-        self._morphSegCoords['d1'] = d1
+            p0 = np.zeros((3, nseg))  # hold the coordinates of segment starting points
+            p1 = np.zeros((3, nseg))  # hold the coordinates of segment end points
+            d0 = np.zeros(nseg)
+            d1 = np.zeros(nseg)
 
+            for sec in list(cell.secs.values()):
+                hSec = sec['hObj']
+                hSec.push()
+                n3d = int(h.n3d())  # get number of n3d points in each section
+                p3d = np.zeros((3, n3d))  # to hold locations of 3D morphology for the current section
+                l3d = np.zeros(n3d)  # to hold locations of 3D morphology for the current section
+                diam3d = np.zeros(n3d)  # to diameters
+
+                for i in range(n3d):
+                    p3d[0, i] = h.x3d(i) - p3dsoma[0]
+                    p3d[1, i] = h.y3d(i) - p3dsoma[1]  # shift coordinates such to place soma at the origin.
+                    p3d[2, i] = h.z3d(i) - p3dsoma[2]
+                    diam3d[i] = h.diam3d(i)
+                    l3d[i] = h.arc3d(i)
+
+                l3d /= hSec.L  # normalize
+                nseg = hSec.nseg
+
+                l0 = np.zeros(nseg)  # keep range of segment starting point
+                l1 = np.zeros(nseg)  # keep range of segment ending point
+
+                for iseg, seg in enumerate(hSec):
+                    l0[iseg] = (
+                        seg.x - 0.5 * 1 / nseg
+                        )  # x (normalized distance along the section) for the beginning of the segment
+                    l1[iseg] = seg.x + 0.5 * 1 / nseg  # x for the end of the segment
+
+                p0[0, ix : ix + nseg] = np.interp(l0, l3d, p3d[0, :])
+                p0[1, ix : ix + nseg] = np.interp(l0, l3d, p3d[1, :])
+                p0[2, ix : ix + nseg] = np.interp(l0, l3d, p3d[2, :])
+                d0[ix : ix + nseg] = np.interp(l0, l3d, diam3d[:])
+
+                p1[0, ix : ix + nseg] = np.interp(l1, l3d, p3d[0, :])
+                p1[1, ix : ix + nseg] = np.interp(l1, l3d, p3d[1, :])
+                p1[2, ix : ix + nseg] = np.interp(l1, l3d, p3d[2, :])
+                d1[ix : ix + nseg] = np.interp(l1, l3d, diam3d[:])
+                ix += nseg
+                h.pop_section()
+
+            if len(cells)==1:
+                self._morphSegCoords['p0'] = p0
+                self._morphSegCoords['p1'] = p1
+
+                self._morphSegCoords['d0'] = d0
+                self._morphSegCoords['d1'] = d1
+
+            else:  # diversity
+                self._morphSegCoords[label] = {} 
+
+                self._morphSegCoords[label]['p0'] = p0
+                self._morphSegCoords[label]['p1'] = p1
+
+                self._morphSegCoords[label]['d0'] = d0
+                self._morphSegCoords[label]['d1'] = d1
+
+
+        #print(self._morphSegCoords)
         return self._morphSegCoords
 
     def __getstate__(self):

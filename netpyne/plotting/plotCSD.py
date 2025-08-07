@@ -148,10 +148,16 @@ def plotCSD(
             getAllData=True,
             **kwargs)
     else:
-        pass # TODO: ensure time slicing works properly in case CSDData is passed as an argument
+        nsamples = CSDData.shape[1]
+        tt = np.arange(nsamples) * dt
+        if timeRange is not None:
+            mask = (tt >= timeRange[0]) & (tt < timeRange[1])
+            LFPData = LFPData[mask, :]
+            CSDData = CSDData[:, mask]
 
     npcsd = CSDData
-    if pad > 0: npcsd = getPaddedCSD(CSDData, pad) # apply padding (replicate first,last rows)
+    if pad > 0:
+        npcsd = getPaddedCSD(CSDData, pad) # apply padding (replicate first,last rows)
 
     if timeRange is None:
         timeRange = [0, sim.cfg.duration]

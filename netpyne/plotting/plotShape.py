@@ -176,7 +176,10 @@ def plotShape(
 
         shapeax.elev = elev  # 90
         shapeax.azim = azim  # -90
-        shapeax.dist = dist * shapeax.dist
+        #shapeax.dist = dist * shapeax.dist  # dist is deprecated in latest Matplotlib releases
+        # in theory, the new way to zoom in/out is by the following, but it's not working properly:
+        # shapeax.set_box_aspect(None, zoom = 1/dist)
+
         plt.axis(aspect)
         cmap = plt.cm.viridis  # plt.cm.jet  #plt.cm.rainbow #plt.cm.jet #YlOrBr_r
         morph.shapeplot(h, shapeax, sections=secs, cvals=cvals, cmap=cmap, clim=clim)

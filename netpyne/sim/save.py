@@ -156,7 +156,9 @@ def saveData(include=None, filename=None, saveLFP=True):
         if net:
             dataSave['net'] = net
         if 'simConfig' in include:
-            dataSave['simConfig'] = sim.cfg.__dict__
+            # exclude from dataSave due to pickling but keep in simConfig later, for integrity
+            savedict = {k: v for k, v in sim.cfg.__dict__.items() if k not in ['_runner']}
+            dataSave['simConfig'] = savedict
         if 'simData' in include:
             if saveLFP:
                 if 'LFP' in sim.allSimData:
@@ -546,7 +548,8 @@ def intervalSave(simTime, gatherLFP=True):
         if net:
             dataSave['net'] = net
         if 'simConfig' in include:
-            dataSave['simConfig'] = sim.cfg.__dict__
+            savedict = {k: v for k, v in sim.cfg.__dict__.items() if k not in ['_runner']}
+            dataSave['simConfig'] = savedict
         if 'simData' in include:
             if 'LFP' in sim.allSimData:
                 sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist()
@@ -680,7 +683,8 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
         else:
             saveSimData[key] = val  # update simData dicts which are not Vectors
 
-    dataSave['simConfig'] = sim.cfg.__dict__
+    savedict = {k: v for k, v in sim.cfg.__dict__.items() if k not in ['_runner']}
+    dataSave['simConfig'] = savedict
     dataSave['simData'] = saveSimData
     dataSave['cells'] = [c.__getstate__() for c in sim.net.cells]  # sim.net.cells
     dataSave['pops'] = {}

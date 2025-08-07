@@ -1,27 +1,27 @@
-from netpyne.batchtools import specs, comm
 from netpyne import sim
 from netParams import netParams, cfg
 import json
 
-comm.initialize()
+
 
 sim.createSimulate(netParams=netParams, simConfig=cfg)
-print('completed simulation...')
-#comm.pc.barrier()
-#sim.gatherData()
-if comm.is_host():
-    netParams.save("{}/{}_params.json".format(cfg.saveFolder, cfg.simLabel))
+if sim.rank == 0:
+    print('completed simulation...')
+
+results=sim.analysis.popAvgRates(show=False)
+inputs = cfg.get_mappings()
+
+results['PYR_loss'] = (results['PYR'] - 3.33875) ** 2
+results['BC_loss'] = (results['BC'] - 19.725) ** 2
+results['OLM_loss'] = (results['OLM'] - 3.470) ** 2
+results['loss'] = (results['PYR_loss'] + results['BC_loss'] + results['OLM_loss']) / 3
+
+data = inputs | results
+
+if sim.rank == 0:
     print('transmitting data...')
-    inputs = specs.get_mappings()
-    #print(json.dumps({**inputs}))
-    results = sim.analysis.popAvgRates(show=False)
+    print(json.dumps(data))
 
-    results['PYR_loss'] = (results['PYR'] - 3.33875)**2
-    results['BC_loss']  = (results['BC']  - 19.725 )**2
-    results['OLM_loss'] = (results['OLM'] - 3.470  )**2
-    results['loss'] = (results['PYR_loss'] + results['BC_loss'] + results['OLM_loss']) / 3
-    out_json = json.dumps({**inputs, **results})
+sim.send(data)
 
-    print(out_json)
-    comm.send(out_json)
-    comm.close()
+

@@ -124,6 +124,38 @@ class Cell(object):
         stimvecs = deepcopy([fulltime, fulloutput, events])  # Combine vectors into a matrix
 
         return stimvecs
+    
+    def _connWeightsAndDelays(self, params, netStimParams):
+        from .. import sim
+
+        # Scale factor for connection weights
+        if netStimParams:
+            scaleFactor = sim.net.params.scaleConnWeightNetStims
+        else:
+            connWeights = sim.net.params.scaleConnWeightModels
+            if isinstance(connWeights, dict) and (self.tags['cellModel'] in connWeights):
+                # use scale factor specific for this cell model
+                scaleFactor = connWeights[self.tags['cellModel']]
+            else:
+                scaleFactor = sim.net.params.scaleConnWeight # use global scale factor
+
+        synsPerConn = params['synsPerConn']
+
+        # Weights
+        if isinstance(params['weight'], list):
+            assert len(params['weight']) == synsPerConn, 'Number of weights must match synsPerConn'
+            weights = [scaleFactor * w for w in params['weight']]
+        else:
+            weights = [scaleFactor * params['weight']] * synsPerConn
+
+        # Delays
+        if isinstance(params['delay'], list):
+            assert len(params['delay']) == synsPerConn, 'Number of delays must match synsPerConn'
+            delays = params['delay']
+        else:
+            delays = [params['delay']] * synsPerConn
+
+        return weights, delays
 
     def addNetStim(self, params, stimContainer=None):
         from .. import sim
@@ -223,6 +255,12 @@ class Cell(object):
                                     else:
                                         stim = stimList[0]  # 0th one which would have been returned by next()
                                         ptr = getattr(stim['hObj'], '_ref_' + params['var'])
+                        elif 'pointp' in params:  # eg. soma.izh._ref_u
+                            if params['pointp'] in self.secs[params['sec']]['pointps']:
+                                ptr = getattr(
+                                    self.secs[params['sec']]['pointps'][params['pointp']]['hObj'],
+                                    '_ref_' + params['var'],
+                                )
                         else:  # eg. soma(0.5)._ref_v
                             ptr = getattr(self.secs[params['sec']]['hObj'](params['loc']), '_ref_' + params['var'])
                     elif 'synMech' in params:  # special case where want to record from multiple synMechs
@@ -243,33 +281,7 @@ class Cell(object):
                                 ptr.extend([getattr(synMech['hObj'], '_ref_' + params['var']) for synMech in synMechs])
                                 secLocs.extend([secName + '_' + str(synMech['loc']) for synMech in synMechs])
 
-                    else:
-                        if 'pointp' in params:  # eg. soma.izh._ref_u
-                            if params['pointp'] in self.secs[params['sec']]['pointps']:
-                                ptr = getattr(
-                                    self.secs[params['sec']]['pointps'][params['pointp']]['hObj'],
-                                    '_ref_' + params['var'],
-                                )
-                        elif 'conns' in params:  # e.g. cell.conns
-                            if 'mech' in params:
-                                ptr = []
-                                secLocs = []
-                                for conn_idx, conn in enumerate(self.conns):
-                                    if params['mech'] in conn.keys():
-                                        if (
-                                            isinstance(conn[params['mech']], dict)
-                                            and 'hObj' in conn[params['mech']].keys()
-                                        ):
-                                            ptr.extend(
-                                                [getattr(conn[params['mech']]['hObj'], '_ref_' + params['var'])]
-                                            )
-                                        else:
-                                            ptr.extend([getattr(conn[params['mech']], '_ref_' + params['var'])])
-                                        secLocs.extend([params['sec'] + '_conn_' + str(conn_idx)])
-                            else:
-                                print("Error recording conn trace, you need to specify the conn mech to record from.")
-
-                        elif 'var' in params:  # point process cell eg. cell._ref_v
+                    elif 'var' in params:  # point process cell eg. cell._ref_v
                             ptr = getattr(self.hPointp, '_ref_' + params['var'])
 
                     if ptr:  # if pointer has been created, then setup recording

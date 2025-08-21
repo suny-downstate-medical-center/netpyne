@@ -101,25 +101,24 @@ extern unsigned int  iscrsz;
 extern int *iscr;
 extern int *iscrset(int);
 extern double BVBASE;
-extern double* hoc_pgetarg();
+extern double* hoc_pgetarg(int);
 extern void hoc_notify_iv();
 extern double hoc_call_func(Symbol*, int narg);
 extern FILE* hoc_obj_file_arg(int narg);
-extern Object** hoc_objgetarg();
-char *gargstr();
-char** hoc_pgargstr();
-extern void vector_resize();
-extern int vector_instance_px();
-extern void* vector_arg();
-extern double* vector_vec();
+extern Object** hoc_objgetarg(int);
+char *gargstr(int);
+char** hoc_pgargstr(int);
+extern void vector_resize(void *, int);
+extern int vector_instance_px(void *, double **);
+extern void* vector_arg(int);
+extern double* vector_vec(void *);
 extern int vector_buffer_size(void*);
 extern double hoc_epsilon;
 extern int stoprun;
-extern void set_seed();
+extern void set_seed(double);
 extern void dshuffle(double* x,int nx);
-extern void mcell_ran4_init(u_int32_t);
-extern double mcell_ran4(u_int32_t *idx1, double *x, unsigned int n, double range);
-extern int nrn_mlh_gsort();
+extern void mcell_ran4_init(uint32_t);
+extern double mcell_ran4(uint32_t *idx1, double *x, unsigned int n, double range);
 extern int ivoc_list_count(Object*);
 extern Object* ivoc_list_item(Object*, int);
 extern int list_vector_px2();
@@ -127,12 +126,12 @@ extern int hoc_is_double_arg(int narg);
 extern int hoc_is_str_arg(int narg);
 extern int hoc_is_object_arg(int narg);
 extern int hoc_is_pdouble_arg(int narg);
-extern Symbol *hoc_get_symbol(char *);
+extern Symbol *hoc_get_symbol(const char *);
 extern Symbol *hoc_lookup(const char*);
 extern Point_process* ob2pntproc(Object*);
 
 extern char* hoc_object_name(Object*);
-extern int cmpdfn();
+extern int cmpdfn(double, double);
 extern int openvec(int, double **);
 int list_vector_px();
 double *list_vector_resize();
@@ -188,8 +187,8 @@ int *iscrset (int nx) {
 
 
 // from stats.mod
-static u_int32_t ilow=0;  
-static u_int32_t ihigh=0;
+static uint32_t ilow=0;  
+static uint32_t ihigh=0;
 
 //shuffle array of unsigned ints
 void ishuffle(int* x,int nx) {
@@ -207,7 +206,7 @@ void ishuffle(int* x,int nx) {
 // end of stats.mod
 
 static const double* ITsortdata = NULL; /* used in the quicksort algorithm */
-static double tetrospks2(double*, double*, double*, int, int, int), pdfpr(), tetrospks3(double*, double*, double*, double*, int ,int, int);
+static double tetrospks2(double*, double*, double*, int, int, int), pdfpr(double*, int, int, char*), tetrospks3(double*, double*, double*, double*, int ,int, int);
 static int dbxi[10];
 
 

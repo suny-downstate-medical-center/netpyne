@@ -1,4 +1,3 @@
-import imp
 from netpyne import specs
 
 # Simulation options

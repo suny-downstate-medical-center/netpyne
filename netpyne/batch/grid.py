@@ -3,20 +3,6 @@ Module for grid search parameter optimization and exploration
 
 """
 
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import division
-from __future__ import absolute_import
-
-from builtins import zip
-
-from builtins import range
-from builtins import open
-from builtins import str
-from future import standard_library
-
-standard_library.install_aliases()
-
 # required to make json saving work in Python 2/3
 try:
     to_unicode = unicode
@@ -24,7 +10,6 @@ except NameError:
     to_unicode = str
 
 import pandas as pd
-import imp
 import os, sys
 import glob
 from time import sleep
@@ -341,7 +326,8 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
             'vmem': '32G',
             'queueName': 'cpu.q',
             'cores': 2,
-            'pre': '', 'post': '',
+            'pre': 'source ~/.bashrc',
+            'post': '',
             'mpiCommand': 'mpiexec',
             #'log': "~/qsub/{}".format(jobName)
             'log': "{}/{}".format(os.getcwd(), jobName)
@@ -350,8 +336,9 @@ def gridSubmit(batch, pc, netParamsSavePath, jobName, simLabel, processes, proce
         sge_args.update(batch.runCfg)
 
         #(batch, pc, netParamsSavePath, jobName, simLabel, processes, processFiles):
-        sge_args['command'] = '%s -n $NSLOTS -hosts $(hostname) nrniv -python -mpi %s simConfig=%s netParams=%s' % (
+        sge_args['command'] = '%s -n %i nrniv -python -mpi %s simConfig=%s netParams=%s' % (
             sge_args['mpiCommand'],
+            sge_args['cores'],
             script,
             cfgSavePath,
             netParamsSavePath,

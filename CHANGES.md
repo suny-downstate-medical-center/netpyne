@@ -1,3 +1,83 @@
+# Version 1.1.0
+
+**New features**
+
+- Added extracellular stimulation with a supporting xtra.mod (which includes a global variable defining the temporal modulation and a pointer to link the extracellular mechanism in NEURON). Useful for large networks
+
+- Improved netParams validation (mechs validation, improved error messages)
+
+- added ability to save transmembrane current for each segment
+
+- Updated options for batch communication (see netpyne documentation: "running a batch job (beta)")
+
+**Bug fixes**
+
+- Solve minor bug in the uniform field for extracelular stimulation (sign). Deposited the xtra.mod in support module.
+
+- Fixed batch SGE example (credit: Adam Newton)
+
+- Solved small bug when plotting colorbar in the raster plot colored by the LFP phase 
+
+- Solved conflict between diversity and segment coordinates (per population), used in LFP setups
+
+- Added extracellular stimulation (option: without compiling an additional .mod file - large memory requirements-)
+
+- Update of documentation (stimSourceParams and stimTargetParams) incorporating how to define extracellular stimulations
+
+- Fixed ODict in examples/batchCell (credit: Hyunsu Lee)
+
+- Fix in RxD to support NEURON 9 (credit: Adam Newton)
+
+- Fixed recording from variables of Point process
+
+- Fixed time slicing on pre-loaded data in plotCSD() (credit: Nikita Novikov)
+
+- Fixed sbi deprecation error. Fixes in docs formatting
+
+- Fixes, refactoring and fail-fast checks in multisinaptic connections
+
+- Fix verbatim function defs in mod files (credit: Ankur Sinha)
+
+# Version 1.0.7
+
+**New features**
+
+- Introducing `batchtools` subpackage for parameters exploration and optimization
+
+- Added progress-bar indicating network creation progress. Toggle the progress bar with cfg.progressBar
+
+- cfg.connRandomSecFromList and cfg.distributeSynsUniformly can now be overriden in individual conn rule
+
+- Added ability to use `sec`, `loc`, `preSec` and `preLoc` from list in connList-type connParams
+
+- Updated tests.examples.utils to allow for dynamic pathing
+
+- Dropped python2 support
+
+**Bug fixes**
+
+- Better handling of exceptions in `importCellParams()` (incl. `h.load_file()` - issue 782)
+
+- Pandas deprecated parameter fix
+
+- Fixed pointer id overflow on MPI (e.g. for gap junctions)
+
+- preSec and preLoc are no longer lost for inverse pointer connection
+
+- Fixed crash due to use of matplotlib.TextArea deprecated param (credit: Christian O'Reilly)
+
+- syncLines in rasterPlot restored
+
+- Fixed a bug in `gatherDataFromFiles()` where cellGids for node 0 were lost
+
+- Fixed generating rhythmic spiking pattern with 'uniform' option
+
+- Fixed misleading console output when cfg.recordStims is On
+
+- The colors in CSD plots are now properly aligned vertically with the CSD time-series overlays (credit: Sam Neymotin)
+
+- Update mkdir to makedirs (credit: Jacob Sprouse)
+
 # Version 1.0.6
 
 **New features**

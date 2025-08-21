@@ -3,23 +3,11 @@ Module for adding reaction-diffusion to network models
 
 """
 
-from __future__ import print_function
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
-from builtins import dict
-from builtins import range
-
-from builtins import round
-
 try:
     basestring
 except NameError:
     basestring = str
-from future import standard_library
 
-standard_library.install_aliases()
 import copy
 
 try:
@@ -152,10 +140,6 @@ def _addRegions(self, params):
             # class neuron.rxd.geometry.Shell(lo=None, hi=None)
 
         # geomery
-        if 'dimension' not in param:
-            param['dimension'] = None
-
-        # geomery
         if 'dx' not in param:
             param['dx'] = None
 
@@ -176,7 +160,6 @@ def _addRegions(self, params):
                 secs=nrnSecs,
                 nrn_region=param['nrn_region'],
                 geometry=geometry,
-                dimension=param['dimension'],
                 dx=param['dx'],
                 name=label,
             )

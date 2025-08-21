@@ -3,15 +3,6 @@ Module for loading of data and simulations
 
 """
 
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import division
-from __future__ import absolute_import
-
-from builtins import open
-from builtins import range
-
-# required to make json saving work in Python 2/3
 try:
     to_unicode = unicode
 except NameError:
@@ -21,9 +12,6 @@ try:
 except NameError:
     basestring = str
 
-from future import standard_library
-
-standard_library.install_aliases()
 import sys
 from collections import OrderedDict
 from ..specs import Dict, ODict

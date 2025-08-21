@@ -3,17 +3,6 @@ Module related to saving
 
 """
 
-from __future__ import print_function
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
-from builtins import range
-from builtins import open
-from future import standard_library
-
-standard_library.install_aliases()
-
 # required to make json saving work in Python 2/3
 try:
     to_unicode = unicode
@@ -114,26 +103,30 @@ def saveData(include=None, filename=None, saveLFP=True):
             print(('Copying cfg file %s ... ' % simName))
             source = sim.cfg.backupCfgFile[0]
             targetFolder = sim.cfg.backupCfgFile[1]
-            # make dir
+
+            # make directories required to make the target folder
             try:
-                os.mkdir(targetFolder)
-            except OSError:
-                if not os.path.exists(targetFolder):
-                    print(' Could not create target folder: %s' % (targetFolder))
+                os.makedirs(targetFolder, exist_ok=True)
+            except Exception as e:
+                print('%s: Exception: %s,' % (os.path.abspath(__file__), e))
+                raise SystemExit('Could not create %s' % (targetFolder))
+                
             # copy file
             targetFile = targetFolder + '/' + simName + '_cfg.py'
             if os.path.exists(targetFile):
                 print(' Removing prior cfg file', targetFile)
                 os.system('rm ' + targetFile)
             os.system('cp ' + source + ' ' + targetFile)
-
-        # create folder if missing
+        # looks like the logic for sim.cfg.filename and targetFolder is not entirely there,
+        # could be calling os.path.dirname(None) ? #TODO
+        # create the missing folder & directory for folder if one or both are missing
         targetFolder = os.path.dirname(sim.cfg.filename)
-        if targetFolder and not os.path.exists(targetFolder):
+        if targetFolder:
             try:
-                os.mkdir(targetFolder)
-            except OSError:
-                print(' Could not create target folder: %s' % (targetFolder))
+                os.makedirs(targetFolder, exist_ok=True)
+            except Exception as e:
+                print('%s: Exception: %s,' % (os.path.abspath(__file__), e))
+                raise SystemExit('Could not create %s' % (targetFolder))
 
         # saving data
         if not include:
@@ -163,7 +156,9 @@ def saveData(include=None, filename=None, saveLFP=True):
         if net:
             dataSave['net'] = net
         if 'simConfig' in include:
-            dataSave['simConfig'] = sim.cfg.__dict__
+            # exclude from dataSave due to pickling but keep in simConfig later, for integrity
+            savedict = {k: v for k, v in sim.cfg.__dict__.items() if k not in ['_runner']}
+            dataSave['simConfig'] = savedict
         if 'simData' in include:
             if saveLFP:
                 if 'LFP' in sim.allSimData:
@@ -186,14 +181,14 @@ def saveData(include=None, filename=None, saveLFP=True):
                 if hasattr(sim.cfg, 'simLabel') and sim.cfg.simLabel:
                     filePath = os.path.join(sim.cfg.saveFolder, sim.cfg.simLabel + '_data' + timestampStr)
 
-            # create folder if missing
+            # also strange conditional ^^^, filePath must exist or an error occurs. make directories for the target folder if they do not already exist
             targetFolder = os.path.dirname(filePath)
-            if targetFolder and not os.path.exists(targetFolder):
+            if targetFolder:
                 try:
-                    os.mkdir(targetFolder)
-                except OSError:
-                    print(' Could not create target folder: %s' % (targetFolder))
-
+                    os.makedirs(targetFolder, exist_ok=True)
+                except Exception as e:
+                    print('%s: Exception: %s,' % (os.path.abspath(__file__), e))
+                    raise SystemExit('Could not create %s' % (targetFolder))
             # Save to pickle file
             if sim.cfg.savePickle:
                 import pickle
@@ -401,12 +396,12 @@ def intervalSave(simTime, gatherLFP=True):
             targetFolder = os.path.join(sim.cfg.saveFolder, 'interval_data')
         else:
             targetFolder = 'interval_data'
-
-        if targetFolder and not os.path.exists(targetFolder):
-            try:
-                os.makedirs(targetFolder)
-            except OSError:
-                print(' Could not create target folder: %s' % (targetFolder))
+        # how can targetFolder ^^^ NOT have a value within this conditional 
+        try:
+            os.makedirs(targetFolder, exist_ok=True)
+        except Exception as e:
+            print('%s: Exception: %s,' % (os.path.abspath(__file__), e))
+            raise SystemExit('Could not create %s' % (targetFolder))
 
         include = sim.cfg.saveDataInclude
 
@@ -553,7 +548,8 @@ def intervalSave(simTime, gatherLFP=True):
         if net:
             dataSave['net'] = net
         if 'simConfig' in include:
-            dataSave['simConfig'] = sim.cfg.__dict__
+            savedict = {k: v for k, v in sim.cfg.__dict__.items() if k not in ['_runner']}
+            dataSave['simConfig'] = savedict
         if 'simData' in include:
             if 'LFP' in sim.allSimData:
                 sim.allSimData['LFP'] = sim.allSimData['LFP'].tolist()
@@ -635,8 +631,11 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
     else:
         saveFolder = os.path.join(saveFolder, sim.cfg.simLabel + '_node_data')  # YES saveFolder
 
-    if not os.path.exists(saveFolder):
+    try:
         os.makedirs(saveFolder, exist_ok=True)
+    except Exception as e:
+        print('%s: Exception: %s,' % (os.path.abspath(__file__), e))
+        raise SystemExit('Could not create %s' % (saveFolder))
 
     sim.pc.barrier()
     if sim.rank == 0:
@@ -684,7 +683,8 @@ def saveDataInNodes(filename=None, saveLFP=True, removeTraces=False, saveFolder=
         else:
             saveSimData[key] = val  # update simData dicts which are not Vectors
 
-    dataSave['simConfig'] = sim.cfg.__dict__
+    savedict = {k: v for k, v in sim.cfg.__dict__.items() if k not in ['_runner']}
+    dataSave['simConfig'] = savedict
     dataSave['simData'] = saveSimData
     dataSave['cells'] = [c.__getstate__() for c in sim.net.cells]  # sim.net.cells
     dataSave['pops'] = {}
@@ -787,7 +787,7 @@ def saveModel(netParams, simConfig, srcPath, dstPath=None, exportNetParamsAsPyth
             shutil.rmtree(dstDir)
 
         # (re)create dstDir and create /src dir in it where files will be stored by default
-        os.makedirs(os.path.join(dstDir, 'src'))
+        os.makedirs(os.path.join(dstDir, 'src'), exist_ok=True)
         # create default index
         indexData = {
             'netParams': f"src/netParams{'.py' if exportNetParamsAsPython else '.json'}",

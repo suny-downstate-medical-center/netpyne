@@ -3,21 +3,11 @@ Module containing SimConfig class including simulation configuration and methods
 
 """
 
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import division
-from __future__ import absolute_import
-
 # required to make json saving work in Python 2/3
 try:
     to_unicode = unicode
 except NameError:
     to_unicode = str
-
-from builtins import open
-from future import standard_library
-
-standard_library.install_aliases()
 
 from collections import OrderedDict
 from .dicts import Dict, ODict
@@ -82,7 +72,7 @@ class SimConfig(object):
         self.printPopAvgRates = False  # print population avg firing rates after run
         self.printSynsAfterRule = False  # print total of connections after each conn rule is applied
         self.verbose = False  # show detailed messages
-
+        self.progressBar = 2 # (0: no progress bar; 1: progress bar w/ leave = False; 2: progress bar w/ leave = True)
         # Recording
         self.recordCells = []  # what cells to record traces from (eg. 'all', 5, or 'PYR')
         self.recordTraces = {}  # Dict of traces to record
@@ -91,6 +81,7 @@ class SimConfig(object):
         self.recordLFP = []  # list of 3D locations to record LFP from
         self.recordDipole = False  # record dipoles using lfpykit method
         self.recordDipolesHNN = False  # record dipoles using HNN method
+        self.saveIMembrane = False  # Store transmembrane current by each cell
         self.saveLFPCells = False  # Store LFP generated individually by each cell
         self.saveLFPPops = False  # Store LFP generated individually by each population
         self.saveDipoleCells = False  # Store LFP generated individually by each cell
@@ -116,9 +107,7 @@ class SimConfig(object):
         self.backupCfgFile = []  # copy cfg file, list with [sourceFile,destFolder] (eg. ['cfg.py', 'backupcfg/'])
 
         # error checking
-        self.validateNetParams = (
-            False  # whether to validate the input parameters (will be turned off if num processors > 1)
-        )
+        self.validateNetParams = False # whether to validate the input parameters (will be turned off if num processors > 1)
         # self.checkErrors = False # whether to validate the input parameters (will be turned off if num processors > 1)
         # self.checkErrorsVerbose = False # whether to print detailed errors during input parameter validation
         # self.exitOnError = False # whether to hard exit on error
@@ -126,6 +115,8 @@ class SimConfig(object):
         # Analysis and plotting
         self.analysis = ODict()
 
+
+        # Analysis and plotting
         # fill in params from dict passed as argument
         if simConfigDict:
             for k, v in simConfigDict.items():
@@ -135,6 +126,25 @@ class SimConfig(object):
                     setattr(self, k, Dict(v))
                 else:
                     setattr(self, k, v)
+
+    def __repr__(self): #functions to make the cfg function more like a dictionary
+        return str(self.__dict__)
+
+
+    def __contains__(self, item):
+        return item in self.__dict__
+
+
+    def __iter__(self):
+        return iter(self.__dict__)
+
+
+    def get(self, k, d=None):
+        try:
+            return self.__getitem__(k)
+        except:
+            return d
+
 
     def __getitem__(self, k):
         try:
@@ -155,12 +165,12 @@ class SimConfig(object):
         folder = filename.split(basename)[0]
         ext = basename.split('.')[1]
 
-        # make dir
+        # make directories if they do not already exist: 
         try:
-            os.mkdir(folder)
-        except OSError:
-            if not os.path.exists(folder):
-                print(' Could not create', folder)
+            os.makedirs(folder, exist_ok=True)
+        except Exception as e:
+            print('%s: Exception: %s,' % (os.path.abspath(__file__), e))
+            raise SystemExit('Could not create %s' % (folder))
 
         dataSave = {'simConfig': self.__dict__}
 
@@ -181,6 +191,17 @@ class SimConfig(object):
         from ..sim import replaceDictODict
 
         return replaceDictODict(self.__dict__)
+
+    def update(self, *args, **kwargs):
+        """
+        This method is implemented in batchtools,
+        which requires the batchtk package to be
+        installed. If you are seeing this message
+        when calling help, it indicates there is
+        an issue with your current batchtools
+        installation
+        """
+        pass
 
     def validateDataSaveOptions(self, printWarning=True):
 

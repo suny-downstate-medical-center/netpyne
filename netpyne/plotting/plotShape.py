@@ -3,26 +3,11 @@ Module for generating a shape plot (3D network layout)
 
 """
 
-from __future__ import print_function
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
-from builtins import open
-from builtins import next
-from builtins import range
-from builtins import str
-
 try:
     basestring
 except NameError:
     basestring = str
-from builtins import zip
 
-from builtins import round
-from future import standard_library
-
-standard_library.install_aliases()
 from netpyne import __gui__
 
 if __gui__:
@@ -191,7 +176,10 @@ def plotShape(
 
         shapeax.elev = elev  # 90
         shapeax.azim = azim  # -90
-        shapeax.dist = dist * shapeax.dist
+        #shapeax.dist = dist * shapeax.dist  # dist is deprecated in latest Matplotlib releases
+        # in theory, the new way to zoom in/out is by the following, but it's not working properly:
+        # shapeax.set_box_aspect(None, zoom = 1/dist)
+
         plt.axis(aspect)
         cmap = plt.cm.viridis  # plt.cm.jet  #plt.cm.rainbow #plt.cm.jet #YlOrBr_r
         morph.shapeplot(h, shapeax, sections=secs, cvals=cvals, cmap=cmap, clim=clim)

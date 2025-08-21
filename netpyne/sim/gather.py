@@ -3,18 +3,10 @@ Module for gathering data from nodes after a simulation
 
 """
 
-from __future__ import print_function
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
 import os, pickle
-from builtins import zip
-from future import standard_library
 
 from netpyne.support.recxelectrode import RecXElectrode
 
-standard_library.install_aliases()
 import numpy as np
 from ..specs import Dict, ODict
 from . import setup
@@ -507,9 +499,9 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
                         for key in singleNodeVecs:
                             allSimData[key] = list(fileData['simData'][key])
                         allPopsCellGids = {popLabel: [] for popLabel in nodePopsCellGids}
-                    else:
-                        for popLabel, popCellGids in nodePopsCellGids.items():
-                            allPopsCellGids[popLabel].extend(popCellGids)
+
+                    for popLabel, popCellGids in nodePopsCellGids.items():
+                        allPopsCellGids[popLabel].extend(popCellGids)
 
                     mergedFiles.append(file)
 

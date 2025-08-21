@@ -3,14 +3,15 @@ Package of classes to define high-level model specifications
 
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-
-from future import standard_library
-
-standard_library.install_aliases()
 from .dicts import Dict, ODict
-from .netParams import NetParams, CellParams
 from .simConfig import SimConfig
+try:# this SimConfig occurs before Runner_SimConfig
+    from netpyne.batchtools import Runner_SimConfig as SimConfig # inherits and replaces prior class
+    from netpyne.batchtools import comm
+    _batch_specs = True
+    comm.initialize()
+except Exception as e:
+    #print(e)
+    #from .simConfig import SimConfig
+    _batch_specs = False
+from .netParams import CellParams, NetParams

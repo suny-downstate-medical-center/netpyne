@@ -3,23 +3,11 @@ Module for adding reaction-diffusion to network models
 
 """
 
-from __future__ import print_function
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
-from builtins import dict
-from builtins import range
-
-from builtins import round
-
 try:
     basestring
 except NameError:
     basestring = str
-from future import standard_library
 
-standard_library.install_aliases()
 import copy
 
 try:
@@ -51,6 +39,7 @@ def addRxD(self, nthreads=None):
     if len(self.params.rxdParams):
         try:
             global rxd
+            global numpy
             from neuron import crxd as rxd
 
             sim.net.rxd = {'species': {}, 'regions': {}}  # dictionary for rxd
@@ -151,10 +140,6 @@ def _addRegions(self, params):
             # class neuron.rxd.geometry.Shell(lo=None, hi=None)
 
         # geomery
-        if 'dimension' not in param:
-            param['dimension'] = None
-
-        # geomery
         if 'dx' not in param:
             param['dx'] = None
 
@@ -175,7 +160,6 @@ def _addRegions(self, params):
                 secs=nrnSecs,
                 nrn_region=param['nrn_region'],
                 geometry=geometry,
-                dimension=param['dimension'],
                 dx=param['dx'],
                 name=label,
             )
@@ -264,7 +248,7 @@ def _addSpecies(self, params):
             funcStr = self._replaceRxDStr(param['initial'], constants=True, regions=True, species=False)
 
             # create final function dynamically from string
-            importStr = ' from neuron import crxd as rxd \n from netpyne import sim'
+            importStr = ' from neuron import crxd as rxd \n from netpyne import sim \n import numpy'
             afterDefStr = 'sim.net.rxd["species"]["%s"]["initialFunc"] = initial' % (label)
             funcStr = 'def initial (node): \n%s \n return %s \n%s' % (
                 importStr,
@@ -274,10 +258,9 @@ def _addSpecies(self, params):
             try:
                 exec(funcStr, {'rxd': rxd}, {'sim': sim})
                 initial = sim.net.rxd["species"][label]["initialFunc"]
-            except:
+            except Exception as e:
                 print(
-                    '  Error creating Species %s: cannot evaluate "initial" expression -- "%s"'
-                    % (label, param['initial'])
+                    f"  Error creating Species {label}: cannot evaluate \"initial\" expression -- \"{param['initial']}\": {e.msg}. See above for more details"
                 )
                 continue
         else:
@@ -342,7 +325,7 @@ def _addStates(self, params):
             funcStr = self._replaceRxDStr(param['initial'], constants=True, regions=True, species=False)
 
             # create final function dynamically from string
-            importStr = ' from neuron import crxd as rxd \n from netpyne import sim'
+            importStr = ' from neuron import crxd as rxd \n from netpyne import sim \n import numpy'
             afterDefStr = 'sim.net.rxd["states"]["%s"]["initialFunc"] = initial' % (label)
             funcStr = 'def initial (node): \n%s \n return %s \n%s' % (
                 importStr,
@@ -394,7 +377,7 @@ def _addParameters(self, params):
             print('  Error creating State %s: could not find regions %s' % (label, param['regions']))
 
         if 'name' not in param:
-            param['name'] = None
+            param['name'] = label
 
         if 'charge' not in param:
             param['charge'] = 0
@@ -405,7 +388,7 @@ def _addParameters(self, params):
             funcStr = self._replaceRxDStr(param['value'], constants=True, regions=True, species=True)
 
             # create final function dynamically from string
-            importStr = ' from neuron import crxd as rxd \n from netpyne import sim'
+            importStr = ' from neuron import crxd as rxd \n from netpyne import sim \n import numpy'
             afterDefStr = 'sim.net.rxd["parameters"]["%s"]["initialFunc"] = value' % (label)
             funcStr = 'def value (node): \n%s \n return %s \n%s' % (
                 importStr,
@@ -628,6 +611,7 @@ def _replaceRxDStr(self, origStr, constants=True, regions=True, species=True, pa
     replacedStr = str(origStr)
 
     mapping = {}
+    mappingCategories = {}
 
     # replace constants
     if constants and 'constants' in self.rxd:
@@ -636,24 +620,31 @@ def _replaceRxDStr(self, origStr, constants=True, regions=True, species=True, pa
         ]  # get list of variables used (eg. post_ynorm or dist_xyz)
         for constantLabel in constantsList:
             mapping[constantLabel] = 'sim.net.rxd["constants"]["%s"]' % (constantLabel)
+            mappingCategories[constantLabel] = 'constants'
 
     # replace regions
     if regions and 'regions' in self.rxd:
         for regionLabel in self.rxd['regions']:
             mapping[regionLabel] = 'sim.net.rxd["regions"]["%s"]["hObj"]' % (regionLabel)
+            mappingCategories[regionLabel] = 'regions'
 
     # replace species
     if species and 'species' in self.rxd:
         for speciesLabel in self.rxd['species']:
             mapping[speciesLabel] = 'sim.net.rxd["species"]["%s"]["hObj"]' % (speciesLabel)
+            mappingCategories[speciesLabel] = 'species'
 
     if species and 'states' in self.rxd:
         for statesLabel in self.rxd['states']:
             mapping[statesLabel] = 'sim.net.rxd["states"]["%s"]["hObj"]' % (statesLabel)
+            mappingCategories[statesLabel] = 'states'
 
     if parameters and 'parameters' in self.rxd:
         for paramLabel in self.rxd['parameters']:
             mapping[paramLabel] = 'sim.net.rxd["parameters"]["%s"]["hObj"]' % (paramLabel)
+            mappingCategories[paramLabel] = 'parameters'
+
+    _validateSyntax(origStr, mapping, mappingCategories)
 
     # Place longer ones first to keep shorter substrings from matching where the longer ones should take place
     substrs = sorted(mapping, key=len, reverse=True)
@@ -665,3 +656,15 @@ def _replaceRxDStr(self, origStr, constants=True, regions=True, species=True, pa
     replacedStr = regexp.sub(lambda match: mapping[match.group(0)], replacedStr)
 
     return replacedStr
+
+def _validateSyntax(origStr, mapping, categories):
+    import re
+    for key in mapping:
+        # check if part of bigger alphanumeric token
+        pattern = re.compile(f'.*[\w]+{key}.*|.*{key}[\w]+.*')
+
+        if pattern.match(origStr):
+            if any([(key in m) and (key != m) for m in mapping]):
+                pass # exclude the case where key is substring in some other key
+            else:
+                print(f"  WARNING: Potential issue in RxD specification! Key \"{key}\" of \"{categories[key]}\" appears as part of syntax in \"{origStr}\". If it leads to error, pick another name for this key.")

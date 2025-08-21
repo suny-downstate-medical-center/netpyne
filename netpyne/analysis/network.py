@@ -3,26 +3,11 @@ Module for analyzing and plotting connectivity-related results
 
 """
 
-from __future__ import print_function
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
-from builtins import open
-from builtins import next
-from builtins import range
-from builtins import str
-
 try:
     basestring
 except NameError:
     basestring = str
-from builtins import zip
 
-from builtins import round
-from future import standard_library
-
-standard_library.install_aliases()
 from netpyne import __gui__
 
 if __gui__:
@@ -51,6 +36,14 @@ def _plotConnCalculateFromSim(
     removeWeightNorm,
     logPlot=False,
 ):
+    # params validation
+    if groupBy == 'cell':
+        supportedFeatures = ['weight', 'delay', 'numConns']
+    else:
+        supportedFeatures = ['weight', 'delay', 'numConns', 'probability', 'strength', 'convergence', 'divergence']
+    if feature not in supportedFeatures:
+        print(f'  Unsupported feauture "{feature}". Conn matrix with groupBy="{groupBy}" only supports features in {supportedFeatures}')
+        return None, None, None
 
     from .. import sim
 
@@ -100,12 +93,9 @@ def _plotConnCalculateFromSim(
 
     # Calculate matrix if grouped by cell
     if groupBy == 'cell':
-        if feature in ['weight', 'delay', 'numConns']:
-            connMatrix = np.zeros((len(cellGidsPre), len(cellGidsPost)))
-            countMatrix = np.zeros((len(cellGidsPre), len(cellGidsPost)))
-        else:
-            print('  Conn matrix with groupBy="cell" only supports features= "weight", "delay" or "numConns"')
-            return None, None, None
+        connMatrix = np.zeros((len(cellGidsPre), len(cellGidsPost)))
+        countMatrix = np.zeros((len(cellGidsPre), len(cellGidsPost)))
+
         cellIndsPre = {cell['gid']: ind for ind, cell in enumerate(cellsPre)}
         cellIndsPost = {cell['gid']: ind for ind, cell in enumerate(cellsPost)}
 
@@ -239,6 +229,8 @@ def _plotConnCalculateFromSim(
                 if feature == 'divergence':
                     maxPreConnMatrix[popIndsPre[prePop], popIndsPost[postPop]] = numCellsPopPre[prePop]
 
+        preCellPops = {cell.gid: cell['tags']['pop'] for cell in cellsPre}
+
         # Calculate conn matrix
         for cell in cellsPost:  # for each postsyn cell
 
@@ -254,8 +246,7 @@ def _plotConnCalculateFromSim(
                 if conn[preGidIndex] == 'NetStim':
                     prePopLabel = conn[preLabelIndex] if preLabelIndex in conn else 'NetStim'
                 else:
-                    preCell = next((cell for cell in cellsPre if cell['gid'] == conn[preGidIndex]), None)
-                    prePopLabel = preCell['tags']['pop'] if preCell else None
+                    prePopLabel = preCellPops.get(conn[preGidIndex])
 
                 if prePopLabel in popIndsPre:
                     if feature in ['weight', 'strength']:

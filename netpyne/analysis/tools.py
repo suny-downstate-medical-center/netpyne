@@ -3,19 +3,6 @@ Module for utilities to help analyze and plot results
 
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-
-from future import standard_library
-
-standard_library.install_aliases()
-
-from builtins import round
-from builtins import open
-from builtins import range
-
 try:
     to_unicode = unicode
 except NameError:
@@ -49,8 +36,9 @@ def exception(function):
         try:
             return function(*args, **kwargs)
         except Exception as e:
-            err = "There was an exception in %s():" % (function.__name__)
-            print(("  %s \n    %s \n    %s" % (err, e, sys.exc_info())))
+            import traceback
+            print(f"\nThere was an exception in {function.__name__}()")
+            traceback.print_exc()
             return -1
 
     return wrapper
@@ -234,16 +222,15 @@ def plotData(sim=None):
                 kwargs = {}
             elif kwargs == False:
                 continue
-            func = None
-            try:
-                func = getattr(sim.plotting, funcName)
-                out = func(**kwargs)  # call function with user arguments
-            except:
-                try:
-                    func = getattr(sim.analysis, funcName)
-                    out = func(**kwargs)  # call function with user arguments
-                except Exception as e:
-                    print('Unable to run', funcName, 'from sim.plotting and sim.analysis. Reason:', e)
+
+            func = getattr(sim.plotting, funcName, None)
+            if func is None:
+                func = getattr(sim.analysis, funcName, None)
+
+            if func:
+                func(**kwargs) # call function with user arguments
+            else:
+                print(f'Unable to run {funcName} from sim.plotting and sim.analysis (no such function)')
 
         # Print timings
         if sim.cfg.timing:
@@ -256,10 +243,10 @@ def plotData(sim=None):
             if sim.timingData['totalTime'] <= 1.2 * sumTime:  # Print total time (only if makes sense)
                 print(('\nTotal time = %0.2f s' % sim.timingData['totalTime']))
 
-        try:
-            print('\nEnd time: ', datetime.now())
-        except:
-            pass
+        # try:
+        #     print('\nEnd time: ', datetime.now())
+        # except:
+        #     pass
 
 
 def saveData(data, fileName=None, fileDesc=None, fileType=None, fileDir=None, sim=None, **kwargs):

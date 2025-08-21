@@ -1,7 +1,10 @@
 # Generate a spike histogram
 
+from netpyne import __gui__
+
+if __gui__:
+    import matplotlib.patches as mpatches
 import numpy as np
-import matplotlib.patches as mpatches
 from ..analysis.utils import exception
 from ..analysis.tools import loadData
 from .plotter import HistPlotter

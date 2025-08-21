@@ -3,16 +3,9 @@ Module with helper functions for high-level specifications
 
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-from future import standard_library
-
-standard_library.install_aliases()
 from numbers import Number
 from neuron import h
-from numpy import array, sin, cos, tan, exp, sqrt, mean, inf, dstack, unravel_index, argsort, zeros, ceil, copy
+from numpy import array, sin, cos, tan, exp, remainder, sqrt, arctan2, pi, mean, inf, dstack, unravel_index, argsort, zeros, ceil, copy, log, log10
 
 try:
     basestring
@@ -75,7 +68,7 @@ def validateFunction(strFunc, netParamsVars):
     Returns True if "strFunc" can be evaluated
     """
     # TODO: beware to avoid potential conflicts with similar functions imported from numpy globally
-    from math import exp, log, sqrt, sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, pi, e
+    from math import exp, log, sqrt, sin, cos, tan, asin, acos, atan, atan2, sinh, cosh, tanh, pi, e
 
     rand = h.Random()
     stringFuncRandMethods = [
@@ -129,6 +122,7 @@ def validateFunction(strFunc, netParamsVars):
         "asin": asin,
         "acos": acos,
         "atan": atan,
+        "atan2": atan2,
         "sinh": sinh,
         "cosh": cosh,
         "tanh": tanh,

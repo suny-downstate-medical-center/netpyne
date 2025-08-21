@@ -3,14 +3,6 @@ Package for plotting
 
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-
-from future import standard_library
-
-standard_library.install_aliases()
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -19,8 +11,8 @@ from .plotter import MetaFigure, GeneralPlotter, ScatterPlotter, LinePlotter, Hi
 from .plotRaster import plotRaster
 from .plotSpikeHist import plotSpikeHist
 from .plotSpikeFreq import plotSpikeFreq
-from .plotLFPTimeSeries import plotLFPTimeSeries
-from .plotLFPPSD import plotLFPPSD
+from .plotTimeSeries import plotLFPTimeSeries, plotCSDTimeSeries
+from .plotTimeSeriesPSD import plotLFPPSD, plotCSDPSD
 from .plotLFPSpectrogram import plotLFPSpectrogram
 from .plotLFPLocations import plotLFPLocations
 from .plotShape import plotShape

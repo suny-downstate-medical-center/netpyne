@@ -38,7 +38,7 @@ def saveWeights(simTime):
 
 print("Starting sim ...")
 
-(pops, cells, conns, stims, rxd, simData) = sim.create(netParams, cfg, output=True)
+(pops, cells, conns, rxd, stims, simData) = sim.create(netParams, cfg, output=True)
 
 # we run with an interval function defined above
 # if you just want to save the data and not the wieghts you can use the sim.intervalSave function instead of saveWeights

@@ -3,18 +3,6 @@ Module for importing cells, synapses, and networks from NEURON
 
 """
 
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import division
-from __future__ import absolute_import
-from builtins import range
-from builtins import dict
-
-from builtins import zip
-from builtins import str
-from future import standard_library
-
-standard_library.install_aliases()
 import os, sys, signal
 from numbers import Number
 from neuron import h
@@ -286,17 +274,22 @@ def importCell(fileName, cellName, cellArgs=None, cellInstance=False):
         cellArgs = []  # Define as empty list if not otherwise defined
 
     if fileName.endswith('.hoc') or fileName.endswith('.tem'):
-        h.load_file(fileName)
-        if not cellInstance:
-            if isinstance(cellArgs, dict):
-                cell = getattr(h, cellName)(**cellArgs)  # create cell using template, passing dict with args
+        resultCode = h.load_file(fileName)
+        if resultCode == 0: # error
+            raise Exception(f"Error occured in h.load_file() when loading {fileName}. See above for details.")
+        try:
+            if not cellInstance:
+                if isinstance(cellArgs, dict):
+                    cell = getattr(h, cellName)(**cellArgs)  # create cell using template, passing dict with args
+                else:
+                    cell = getattr(h, cellName)(*cellArgs)  # create cell using template, passing list with args
             else:
-                cell = getattr(h, cellName)(*cellArgs)  # create cell using template, passing list with args
-        else:
-            try:
-                cell = getattr(h, cellName)
-            except:
-                cell = None
+                try:
+                    cell = getattr(h, cellName)
+                except:
+                    cell = None
+        except AttributeError as e:
+            raise AttributeError(f"{e}\nError occured while creating cell cellName:{cellName}, please check file:{fileName} for the specific template you would like to import.")
     elif fileName.endswith('.py'):
         filePath, fileNameOnly = os.path.split(fileName)  # split path from filename
         if filePath not in sys.path:  # add to path if not there (need to import module)
@@ -318,9 +311,7 @@ def importCell(fileName, cellName, cellArgs=None, cellInstance=False):
 
         cell = load(fileName)
     else:
-        print("File name should end in '.hoc', '.py', or '.swc'")
-        return
-
+        raise Exception("File name should end in '.hoc', '.py', or '.swc'")
     secDic, secListDic, synMechs, globs = getCellParams(cell, varList, origGlob)
 
     if fileName.endswith('.py'):

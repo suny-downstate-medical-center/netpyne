@@ -1,5 +1,6 @@
 {
-    "simConfig": "src/cfg.py",
+    "simConfig": "src/HHTut.py",
+    "simConfig_variable": "simConfig",
     "python_run": "src/init.py",
-    "netParams": "src/netParams.py"
+    "netParams": "src/HHTut.py"
 }

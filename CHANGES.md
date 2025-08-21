@@ -1,12 +1,202 @@
-# Version in development
+# Version 1.1.0
+
+**New features**
+
+- Added extracellular stimulation with a supporting xtra.mod (which includes a global variable defining the temporal modulation and a pointer to link the extracellular mechanism in NEURON). Useful for large networks
+
+- Improved netParams validation (mechs validation, improved error messages)
+
+- added ability to save transmembrane current for each segment
+
+- Updated options for batch communication (see netpyne documentation: "running a batch job (beta)")
+
+**Bug fixes**
+
+- Solve minor bug in the uniform field for extracelular stimulation (sign). Deposited the xtra.mod in support module.
+
+- Fixed batch SGE example (credit: Adam Newton)
+
+- Solved small bug when plotting colorbar in the raster plot colored by the LFP phase 
+
+- Solved conflict between diversity and segment coordinates (per population), used in LFP setups
+
+- Added extracellular stimulation (option: without compiling an additional .mod file - large memory requirements-)
+
+- Update of documentation (stimSourceParams and stimTargetParams) incorporating how to define extracellular stimulations
+
+- Fixed ODict in examples/batchCell (credit: Hyunsu Lee)
+
+- Fix in RxD to support NEURON 9 (credit: Adam Newton)
+
+- Fixed recording from variables of Point process
+
+- Fixed time slicing on pre-loaded data in plotCSD() (credit: Nikita Novikov)
+
+- Fixed sbi deprecation error. Fixes in docs formatting
+
+- Fixes, refactoring and fail-fast checks in multisinaptic connections
+
+- Fix verbatim function defs in mod files (credit: Ankur Sinha)
+
+# Version 1.0.7
+
+**New features**
+
+- Introducing `batchtools` subpackage for parameters exploration and optimization
+
+- Added progress-bar indicating network creation progress. Toggle the progress bar with cfg.progressBar
+
+- cfg.connRandomSecFromList and cfg.distributeSynsUniformly can now be overriden in individual conn rule
+
+- Added ability to use `sec`, `loc`, `preSec` and `preLoc` from list in connList-type connParams
+
+- Updated tests.examples.utils to allow for dynamic pathing
+
+- Dropped python2 support
+
+**Bug fixes**
+
+- Better handling of exceptions in `importCellParams()` (incl. `h.load_file()` - issue 782)
+
+- Pandas deprecated parameter fix
+
+- Fixed pointer id overflow on MPI (e.g. for gap junctions)
+
+- preSec and preLoc are no longer lost for inverse pointer connection
+
+- Fixed crash due to use of matplotlib.TextArea deprecated param (credit: Christian O'Reilly)
+
+- syncLines in rasterPlot restored
+
+- Fixed a bug in `gatherDataFromFiles()` where cellGids for node 0 were lost
+
+- Fixed generating rhythmic spiking pattern with 'uniform' option
+
+- Fixed misleading console output when cfg.recordStims is On
+
+- The colors in CSD plots are now properly aligned vertically with the CSD time-series overlays (credit: Sam Neymotin)
+
+- Update mkdir to makedirs (credit: Jacob Sprouse)
+
+# Version 1.0.6
+
+**New features**
+
+- Raster plot colored by phase
+
+- Examples based on the CA3 model using the 'colorbyPhase' option in the plotRaster
+
+- API for loading .mod files selectively
+
+- Ability to specify custom executor to run batch with (defaults to `sh`)
+
+**Bug fixes**
+
+- Fixed loading point cell params from legacy models (issue 607)
+
+- Fix voltage movie tutorial
+
+- Fix to automatically include netstims in the sim.allSimData object when plotRaster 'include' selects 'all'
+
+- Fixed loading netParams in some scenarios (bug caused by srting functions pre-processing)
+
+- Fix of `plotRaster` pops coloring if ordered not by gid
+
+- Made cells diversity work with popParams based on `cellsList` and `gridSpacing`
+
+- Fixed handling of output of `sim.create()` - was wrong order (credit: Kate Doxey)
+
+- Fixed undeclared var `dpi` in `plotShape()`
+
+- Fixes in batch utils
+
+- Added some missing math functions to use with 'Functions as string' functionality
+
+- Switch file copying method to shutil to be compatible over all operating systems (credit: Henrik Podeus)
+
+# Version 1.0.5
+
+**New features**
+
+- Time series and PSD plots for current source density (CSD)
+
+- Added colorbar to CSD plot
+
+- Support for Sun Grid Engine HPC
+
+- Extended sim.gatherData() with more optional arguments for flexibility
+
+- Specify linear/log scale in `plotRatePSD()`
+
+- Print more info about exceptions in plotting functions
+
+- Check RxD specification for potential syntax issues
+
+- Prevent zero population size in scaled-down models
+
+- Better messages for validation errors
+
+**Bug fixes**
+
+- Fixed errors in plotting with sim.cfg.gatherOnlySimData=True
+
+- Support saving and loading data in .mat and .hdf5 formats
+
+- Multiple fixes in `plotRatePSD()` - popColors, fft, minFreq
+
+- Fixed sync lines in `plotRaster()`
+
+- Fixed performance issue in `plotConn()` with `groupBy='pop'` (default)
+
+- Fixed `recordTraces` to not require more presicion than segment size (for stim and synMech)
+
+# Version 1.0.4.2
+
+**Bug fixes**
+
+- Unpin matplotlib version (params copying issue fixed)
+
+# Version 1.0.4.1
+
+**New features**
+
+- Added env variable to define head model placement
+
+# Version 1.0.4
 
 **New features**
 
 - Added 'linewidth' as argument of plotting.plotSpikeHist()
 
+- More detailed validation of netParams
+
+- Save and load model in native NetPyNE format
+
+- Converted most of examples to new NetPyNE model structure
+
+- Complex stimulation ('rhythmic', 'evoked', 'poisson' and 'gauss') for VecStim created as pointCell (as a population rule)
+
+- Codebase brought into compliance with PEP8 conventions
+
+- Updates in NeuroML examples and tests
+
 **Bug fixes**
 
 - fixed handling filenames with multiple dots in `MetaFigure.saveFig()`
+
+- Fixed readCmdLimeArgs() default arguments for backward-compatibility
+
+- Cleaned up example models to drop some legacy/irrelevant params
+
+- RxD module: Parameters defined before reactions + names given by default when missing (by the key)
+
+- Analysis: try ... except call in plotDipole
+
+- Save hObj of gap junction to connParams
+
+- Removed duplicated or unused code from gridSearch()
+
+- Fixes in batch utilities to make OS-agnostic
 
 # Version 1.0.3.1
 
@@ -19,28 +209,6 @@
 **New features**
 
 - Added ability to load PointCell from saved network
-
-- Added MultiPlotter class to allow plotting line data on multiple axes
-
-- Added option to use separate axis for each PSD trace (set axis='multi')
-
-- Added new Batch method named SBI (Simulation Based Inference) with example folder (sbiOptim)
-
-- Added support for string functions in properties of cell mechanism, in cell geometry (in netParams.cellParams)
-
-- Added support for string functions in synMech parameters
-
-- Massive update of schemas (validator.py and setup.py) 
-
-- More control over POINTER variables through synMechParams (e.g. for gap junctions)
-
-- Introduced cell variables in cellParams
-
-- Added plotRateSpectrogram to utils.py
-
-- Functions prepareCSD() and plotCSD() are now available
-
-- Updated documentation on install and about
 
 **Bug fixes**
 
@@ -60,9 +228,9 @@
 
 - Fixed some misinformation in reference.rst about the subconn
 
-- Fixed bug in dipole calculation units - changed from mA to uA 
+- Fixed bug in dipole calculation units - changed from mA to uA
 
-- Fixed bug in conditional logic when gathering LFP / dipoles 
+- Fixed bug in conditional logic when gathering LFP / dipoles
 
 - Allow tuples to specify population's cells in 'include' for plotSpike
 

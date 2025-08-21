@@ -3,19 +3,6 @@ Module for analysis of spiking-related results
 
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-
-from future import standard_library
-
-standard_library.install_aliases()
-
-from builtins import round
-from builtins import open
-from builtins import range
-
 try:
     to_unicode = unicode
 except NameError:
@@ -49,7 +36,7 @@ def prepareSpikeData(
     fileDesc=None,
     fileType=None,
     fileDir=None,
-    calculatePhase=False,
+    colorbyPhase=None,
     **kwargs
 ):
     """
@@ -83,7 +70,7 @@ def prepareSpikeData(
             orderBy = 'gid'
         elif orderBy == 'pop':
             df['popInd'] = df['pop'].astype('category')
-            df['popInd'].cat.set_categories(sim.net.pops.keys(), inplace=True)
+            df['popInd'] = df['popInd'].cat.set_categories(sim.net.pops.keys())
             orderBy = 'popInd'
         elif isinstance(orderBy, basestring) and not isinstance(cells[0]['tags'][orderBy], Number):
             orderBy = 'gid'
@@ -91,7 +78,7 @@ def prepareSpikeData(
         if isinstance(orderBy, list):
             if 'pop' in orderBy:
                 df['popInd'] = df['pop'].astype('category')
-                df['popInd'].cat.set_categories(sim.net.pops.keys(), inplace=True)
+                df['popInd'] = df['popInd'].cat.set_categories(sim.net.pops.keys())
                 orderBy[orderBy.index('pop')] = 'popInd'
             keep = keep + list(set(orderBy) - set(keep))
         elif orderBy not in keep:
@@ -156,6 +143,105 @@ def prepareSpikeData(
             ns['pop'] = ['NetStims'] * len(spikesNew)
             sel = pd.concat([sel, ns])
             numNetStims += len(spkindsNew)
+
+    # Calculating Phase of spikes
+    if isinstance(colorbyPhase,dict):
+
+        try:
+            Signal = colorbyPhase['signal']
+        except:
+            print("Importing signal for coloring spikes - No information about the signal")
+            Signal = 'LFP'
+
+        if isinstance(Signal, basestring) or isinstance(Signal,np.ndarray):
+            from scipy import signal, stats, interpolate
+            from scipy.signal import hilbert
+            from math import fmod, pi
+ 
+            rawSignal = []
+            if isinstance(Signal, basestring):
+                # signal provided as a list packed in a pkl
+                if Signal.endswith('.pkl'):
+                    import pickle
+
+                    with open(Signal, 'rb') as input_file:
+                        rawSignal = pickle.load(input_file)
+                
+                    try:
+                        fs = colorbyPhase['fs']
+                    except:
+                        print("Importing signal for coloring spikes - No frequency sampling provided")
+                        fs = 1000.0 # assumes data sampled in ms
+
+                    time = np.linspace(0,len(rawSignal)*1000/fs,len(rawSignal)+1)   # in milliseconds
+
+                elif Signal == 'LFP':
+                    try:
+                        electrode = colorbyPhase['electrode']
+                        if electrode > sim.net.recXElectrode.nsites:
+                            print('Wrong electrode number for coloring spikes according to LFP phase - Assigning first element in LFP recording setup')
+                            electrode = 1
+                    except:
+                        electrode = 1
+
+                    rawSignal = [sim.allSimData['LFP'][n][electrode-1] for n in range(len(sim.allSimData['LFP']))]
+                    fs = 1000.0/sim.cfg.recordStep
+                    time = np.linspace(0,len(rawSignal)*1000/fs,len(rawSignal)+1)   # in milliseconds
+
+                else:
+                    print('No signal recovered to color spikes according to its phase')
+
+            # it is an array
+            else:
+                rawSignal = Signal.tolist()
+                try:
+                    fs = colorbyPhase['fs']
+                except:
+                    print("Importing signal for coloring spikes - No frequency sampling provided")
+                    fs = 1000.0 # assumes data sampled in ms
+
+                time = np.linspace(0,len(rawSignal)*1000/fs,len(rawSignal)+1)   # in milliseconds
+
+            # Processing rawSignal
+            rawSignal.append(2*rawSignal[-1]-rawSignal[-2]) # extrapolation for the last element
+            rawSignal = stats.zscore(np.float32(rawSignal))
+            rawSignal_ = np.r_[rawSignal[-1::-1],rawSignal,rawSignal[-1::-1]] # Reflect signal to minimize edge artifacts
+
+            nyquist = fs/2.0
+
+            # parameters provided to filter the signal - setting defaults otherwise
+            try:
+                filtOrder = colorbyPhase['filtOrder']
+            except:
+                filtOrder = 3
+            
+            try:
+                filtFreq = colorbyPhase['filtFreq']
+            except:
+                filtFreq = [1,500]
+      
+            if isinstance(filtFreq, list): # bandpass
+                Wn = [filtFreq[0]/nyquist, filtFreq[1]/nyquist]
+                b, a = signal.butter(filtOrder, Wn, btype='bandpass')
+                
+            elif isinstance(filtFreq, Number): # lowpass
+                Wn = filtFreq/nyquist
+                b, a = signal.butter(filtOrder, Wn)
+
+            rawSignalFiltered_ = signal.filtfilt(b, a, rawSignal_)
+                        
+            analytic_signal = hilbert(rawSignalFiltered_)[len(rawSignal):-len(rawSignal)]
+            amplitude_envelope = np.abs(analytic_signal)
+            instantaneous_phase = np.unwrap(np.angle(analytic_signal))
+            instantaneous_phase_mod = [(fmod(instantaneous_phase[nn]+pi,2*pi)-pi)*(180/pi) for nn in range(len(instantaneous_phase))]
+            instantaneous_phase = np.r_[instantaneous_phase_mod]
+
+            f_Rhythm = interpolate.interp1d(time,instantaneous_phase)
+
+            sel['spkPhase'] = sel['spkt'].apply(f_Rhythm)
+
+        else:
+            print('No signal recovered to color spikes according to its phase')
 
     if len(cellGids) > 0 and numNetStims:
         ylabelText = ylabelText + ' and NetStims (at the end)'
@@ -276,7 +362,15 @@ def prepareSpikeData(
         'orderBy': orderBy,
         'axisArgs': axisArgs,
         'legendLabels': legendLabels,
+        'cellGids': df['pop'].index.tolist(),
+        'cellPops': df['pop'].tolist(),
     }
+    
+    if colorbyPhase:
+        spikeData.update({'spkPhases': sel['spkPhase'].tolist()})
+        if 'include_signal' in colorbyPhase and colorbyPhase['include_signal']==True:
+            spikeData.update({'signal': analytic_signal})
+            spikeData.update({'time': time})
 
     if saveData:
         saveFigData(spikeData, fileName=fileName, fileDesc='spike_data', fileType=fileType, fileDir=fileDir, sim=sim)
@@ -292,6 +386,7 @@ def prepareRaster(
     maxSpikes=1e8,
     orderBy='gid',
     popRates=True,
+    colorbyPhase=None,
     saveData=False,
     fileName=None,
     fileDesc=None,
@@ -311,6 +406,7 @@ def prepareRaster(
         maxSpikes=maxSpikes,
         orderBy=orderBy,
         popRates=popRates,
+        colorbyPhase=colorbyPhase,
         saveData=saveData,
         fileName=fileName,
         fileDesc=fileDesc if fileDesc else 'raster_data',

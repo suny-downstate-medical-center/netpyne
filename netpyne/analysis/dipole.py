@@ -3,23 +3,13 @@ Module for analyzing and plotting LFP-related results
 
 """
 
-from __future__ import print_function
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
-from builtins import range
-from builtins import round
-from builtins import str
+import os
 
 try:
     basestring
 except NameError:
     basestring = str
 
-from future import standard_library
-
-standard_library.install_aliases()
 from netpyne import __gui__
 
 if __gui__:
@@ -39,6 +29,10 @@ def plotDipole(showCell=None, showPop=None, timeRange=None, dpi=300, figSize=(6,
             p = sim.allSimData['dipolePops'][showPop]
         else:
             p = sim.allSimData['dipoleSum']
+        
+        # if list (as a result of side-effect of some of save-load operations), make sure to convert to np.array
+        if isinstance(p, list):
+            p = np.array(p)
 
         p = p / 1000.0  # convert from nA to uA
     except:
@@ -89,7 +83,7 @@ def plotEEG(
 
     from lfpykit.eegmegcalc import NYHeadModel
 
-    nyhead = NYHeadModel()
+    nyhead = NYHeadModel(nyhead_file=os.getenv('NP_LFPYKIT_HEAD_FILE', None))
 
     # dipole_location = 'parietal_lobe'  # predefined location from NYHead class
     nyhead.set_dipole_pos(dipole_location)

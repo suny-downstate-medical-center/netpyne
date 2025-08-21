@@ -18,7 +18,7 @@ cfg, netParams = sim.loadFromIndexFile('index.npjson')
 
 print("Starting sim ...")
 
-(pops, cells, conns, stims, rxd, simData) = sim.create(netParams, cfg, output=True)
+(pops, cells, conns, rxd, stims, simData) = sim.create(netParams, cfg, output=True)
 
 # saveInterval defines how often the data is saved
 sim.runSimWithIntervalFunc(cfg.saveInterval, sim.intervalSave)

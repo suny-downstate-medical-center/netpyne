@@ -3,23 +3,11 @@ Module for analyzing LFP-related results
 
 """
 
-from __future__ import print_function
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
-from builtins import range
-from builtins import round
-from builtins import str
-
 try:
     basestring
 except NameError:
     basestring = str
 
-from future import standard_library
-
-standard_library.install_aliases()
 from netpyne import __gui__
 
 if __gui__:
@@ -38,7 +26,6 @@ def prepareLFP(
     electrodes=['avg', 'all'],
     pop=None,
     LFPData=None,
-    logy=False,
     normSignal=False,
     filtFreq=False,
     filtOrder=3,
@@ -55,34 +42,20 @@ def prepareLFP(
     if not sim:
         from .. import sim
 
-    # create the output data dictionary
-    data = {}
-    data['electrodes'] = {}
-    data['electrodes']['names'] = []
-    data['electrodes']['locs'] = []
-    data['electrodes']['lfps'] = []
-
     # set time range
     if timeRange is None:
         timeRange = [0, sim.cfg.duration]
 
-    # create an array of the time steps
-    t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
-    data['t'] = t
-
     # accept input lfp data
     if LFPData is not None:
         # loading LFPData is not yet functional
-        lfp = LFPData[int(timeRange[0] / sim.cfg.recordStep) : int(timeRange[1] / sim.cfg.recordStep), :]
+        lfp = LFPData
     else:
         if pop and pop in sim.allSimData['LFPPops']:
-            lfp = np.array(sim.allSimData['LFPPops'][pop])[
-                int(timeRange[0] / sim.cfg.recordStep) : int(timeRange[1] / sim.cfg.recordStep), :
-            ]
+            lfp = np.array(sim.allSimData['LFPPops'][pop])
         else:
-            lfp = np.array(sim.allSimData['LFP'])[
-                int(timeRange[0] / sim.cfg.recordStep) : int(timeRange[1] / sim.cfg.recordStep), :
-            ]
+            lfp = np.array(sim.allSimData['LFP'])
+    lfp = lfp[int(timeRange[0] / sim.cfg.recordStep) : int(timeRange[1] / sim.cfg.recordStep), :]
 
     # filter the signals
     if filtFreq:
@@ -115,52 +88,56 @@ def prepareLFP(
             lfp[:, i] /= max(lfp[:, i])
 
     # electrode preparation
+    data = prepareDataPerElectrode(lfp, electrodes, timeRange, sim)
+
+    # data['electrodes']['lfps'] = np.transpose(np.array(data['electrodes']['lfps']))
+
+    return data
+
+def prepareDataPerElectrode(signalPerElectrode, electrodes, timeRange, sim):
+
+    # create the output data dictionary
+    data = {}
+    data['electrodes'] = {}
+    data['electrodes']['names'] = []
+    data['electrodes']['locs'] = []
+    data['electrodes']['data'] = []
+
+    # create an array of the time steps
+    t = np.arange(timeRange[0], timeRange[1], sim.cfg.recordStep)
+    data['t'] = t
+
     if 'all' in electrodes:
         electrodes.remove('all')
         electrodes.extend(list(range(int(sim.net.recXElectrode.nsites))))
 
-    # if 'avg' in electrodes:
-    #     electrodes.remove('avg')
-    #     data['electrodes']['names'].append('avg')
-    #     data['electrodes']['locs'].append(None)
-    #     data['electrodes']['lfps'].append(np.mean(lfp, axis=1))
-
     for i, elec in enumerate(electrodes):
 
-        if isinstance(elec, Number) and (LFPData is not None or elec <= sim.net.recXElectrode.nsites):
-            lfpSignal = lfp[:, elec]
+        loc = None
+        if isinstance(elec, Number) and (elec <= sim.net.recXElectrode.nsites):
+            signal = signalPerElectrode[:, elec]
             loc = sim.cfg.recordLFP[elec]
         elif elec == 'avg':
-            lfpSignal = np.mean(lfp, axis=1)
-            loc = None
-        elif isinstance(elec, list) and (
-            LFPData is not None or all([x <= sim.net.recXElectrode.nsites for x in elec])
-        ):
-            lfpSignal = np.mean(lfp[:, elec], axis=1)
-            loc = None
-
-        if len(t) < len(lfpSignal):
-            lfpSignal = lfpSignal[: len(t)]
+            signal = np.mean(signalPerElectrode, axis=1)
+        elif isinstance(elec, list) and (all([x <= sim.net.recXElectrode.nsites for x in elec])):
+            signal = np.mean(signalPerElectrode[:, elec], axis=1)
 
         data['electrodes']['names'].append(str(elec))
         data['electrodes']['locs'].append(loc)
-        data['electrodes']['lfps'].append(lfpSignal)
-
-    # data['electrodes']['lfps'] = np.transpose(np.array(data['electrodes']['lfps']))
-
+        data['electrodes']['data'].append(signal)
     return data
 
 
 @exception
 def preparePSD(
     LFPData=None,
+    CSD=False,
     sim=None,
     timeRange=None,
     electrodes=['avg', 'all'],
     pop=None,
     NFFT=256,
     noverlap=128,
-    nperseg=256,
     minFreq=1,
     maxFreq=100,
     stepFreq=1,
@@ -181,24 +158,35 @@ def preparePSD(
     if not sim:
         from .. import sim
 
-    data = prepareLFP(
-        sim=sim,
-        timeRange=timeRange,
-        electrodes=electrodes,
-        pop=pop,
-        LFPData=LFPData,
-        logy=logy,
-        normSignal=normSignal,
-        filtFreq=filtFreq,
-        filtOrder=filtOrder,
-        detrend=detrend,
-        **kwargs
-    )
+    if not CSD:
+        data = prepareLFP(
+            sim=sim,
+            timeRange=timeRange,
+            electrodes=electrodes,
+            pop=pop,
+            LFPData=LFPData,
+            logy=logy,
+            normSignal=normSignal,
+            filtFreq=filtFreq,
+            filtOrder=filtOrder,
+            detrend=detrend,
+            **kwargs
+        )
+    else:
+        data = sim.analysis.prepareCSD(
+            sim=sim,
+            timeRange=timeRange, 
+            electrodes=electrodes,
+            pop=pop,
+            getAllData=False,
+            **kwargs
+        )
+
 
     print('Preparing PSD data...')
 
     names = data['electrodes']['names']
-    lfps = data['electrodes']['lfps']
+    lfps = data['electrodes']['data']
 
     allFreqs = []
     allSignal = []
@@ -331,7 +319,7 @@ def prepareSpectrogram(
     if not timeRange:
         timeRange = [0, sim.cfg.duration]
 
-    lfps = np.array(data['electrodes']['lfps'])
+    lfps = np.array(data['electrodes']['data'])
     names = data['electrodes']['names']
     electrodes = data['electrodes']
 

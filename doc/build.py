@@ -11,11 +11,7 @@ The following are required:
 5) Twine packager: https://twine.readthedocs.io/en/latest/
 
 Which can be installed with:
-python3 -m pip install -U sphinx
-python3 -m pip install -U sphinx_rtd_theme
-python3 -m pip install -U autodocsumm
-python3 -m pip install -U wheel
-python3 -m pip install -U twine
+python3 -m pip install -U sphinx sphinx_rtd_theme autodocsumm wheel twine
 
 Here are the steps to release a new version of NetPyNE
 (step 10 is completed by executing this file):
@@ -42,18 +38,25 @@ Here are the steps to release a new version of NetPyNE
     10d) It will fix the Package Index file
     10e) It will build the html files
 11) Post the documentation
-    11a) ssh gkaue9v7ctjf@107.180.3.236 "rm -r ~/public_html"
-    11b) scp -r build gkaue9v7ctjf@107.180.3.236:///home/gkaue9v7ctjf/public_html
-    11c) ssh gkaue9v7ctjf@107.180.3.236 "cp -r ~/redirect_html/. ~/public_html/"
+    11a) ssh gkaue9v7ctjf@107.180.3.236 "cp -r ~/public_html ~/public_html_backup"
+        NOTE: it may give the error "... no matching host key type found ...". In this case, try using the "-oHostKeyAlgorithms=+ssh-rsa" argument in ssh command and in scp command below (as well as in 11c)
+    11b) scp -r build gkaue9v7ctjf@107.180.3.236:///home/gkaue9v7ctjf/public_html_new
+        NOTE: it may give the error "path canonocalization failed", then use the argument "-O" in scp call - it rolls back to legacy mode (see also NOTE in 11a)
+        NOTE: faster command?::
+        NOTE: rsync -r --progress build/ gkaue9v7ctjf@107.180.3.236:/home/gkaue9v7ctjf/public_html_new
+    11c) ssh gkaue9v7ctjf@107.180.3.236 "cp -r ~/redirect_html/. ~/public_html_new/ && rm -r ~/public_html && mv ~/public_html_new ~/public_html"
+    11d) Make sure new documentation is up and running
+    11e) ssh gkaue9v7ctjf@107.180.3.236 "rm -r ~/public_html_backup/"
 12) Update PYPI (pip) with the latest release
     12a) cd netpyne
     12b) python3 setup.py bdist_wheel --universal
     12c) python setup.py upload_via_twine
-         Username: salvadord
+        (outdated) Username: salvadord
+        Enter the token (https://dura-bernallab.slack.com/archives/D02A30N4Z50/p1707862380181609)
 13) Announce the new release
     13a) New release announcement text:
-         NetPyNE v#.#.# is now available. For a complete list of changes and bug fixes see: https://github.com/Neurosim-lab/netpyne/releases/tag/v#.#.#
-         See here for instructions to install or update to the latest version: http://www.netpyne.org/install.html
+         NetPyNE v#.#.# is now available. For a complete list of changes and bug fixes see: https://github.com/suny-downstate-medical-center/netpyne/releases/tag/v#.#.#
+         See here for instructions to install or update to the latest version: https://www.netpyne.org/documentation/installation
     13b) Announce on NEURON forum:
          https://www.neuron.yale.edu/phpBB/viewtopic.php?f=45&t=3685&sid=9c380fe3a835babd47148c81ae71343e
     13c) Announce to Google group:
@@ -72,7 +75,7 @@ print('Deleting build directory.')
 shutil.rmtree('build', ignore_errors=True)
 
 # All .rst files but those listed here will be deleted during this process
-keep = ['about.rst', 'advanced.rst', 'index.rst', 'install.rst', 'reference.rst', 'tutorial.rst', 'contrib.rst', 'modeling-specification-v1.0.rst']
+keep = ['about.rst', 'index.rst', 'install.rst', 'user_documentation.rst', 'tutorial.rst', 'contrib.rst', 'modeling-specification-v1.0.rst']
 
 print('Deleting old .rst files.')
 for file in os.listdir('source'):
@@ -92,12 +95,12 @@ os.system('sphinx-apidoc -f -e -M -T --templatedir=source/apidoc/ -o source/ ../
 
 # sphinx-apidoc produces a file called "netpyne" that we want to call "Package Index"
 print('Fixing Package Index file.')
-os.system('mv source/netpyne.rst source/package_index.rst')
-with open('source/package_index.rst') as f:
+os.system('mv source/netpyne.rst source/package_reference.rst')
+with open('source/package_reference.rst') as f:
     lines = f.readlines()
-    lines[0] = 'Package Index\n'
+    lines[0] = 'Package Reference\n'
     lines[1] = '=============\n'
-with open('source/package_index.rst', 'w') as f:
+with open('source/package_reference.rst', 'w') as f:
     f.writelines(lines)
 
 # Generate the html files

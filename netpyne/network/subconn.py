@@ -3,20 +3,6 @@ Module for distributing synapses at the subcellular level in networks
 
 """
 
-from __future__ import print_function
-from __future__ import division
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
-from builtins import zip
-from builtins import range
-
-from builtins import round
-from builtins import next
-from builtins import str
-from future import standard_library
-
-standard_library.install_aliases()
 import numpy as np
 from neuron import h
 
@@ -238,7 +224,13 @@ def subcellularConn(self, allCellTags, allPopTags):
 
                         gridY = subConnParam['density']['gridY']
                         gridSigma = subConnParam['density']['gridValues']
-                        somaX, somaY, _ = posFromLoc(postCell.secs['soma'], 0.5)  # get cell pos move method to Cell!
+                         #TODO jchen.6727@gmail.com 241247 'soma' is not always the name of the soma section
+                        try:
+                            somaX, somaY, _ = posFromLoc(postCell.secs['soma'], 0.5)  # get cell pos move method to Cell!
+                        except KeyError:
+                            raise KeyError(
+                                "Error in subcellularConn: there is no section named soma in cell {}".format(postCell.gid)
+                            )
                         if 'fixedSomaY' in subConnParam['density']:  # is fixed cell soma y, adjust y grid accordingly
                             fixedSomaY = subConnParam['density'].get('fixedSomaY')
                             gridY = [

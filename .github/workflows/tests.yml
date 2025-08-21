@@ -7,15 +7,15 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        #python-version: [2.7, 3.7]
-        python-version: [3.7]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+      fail-fast: false
 
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -23,7 +23,7 @@ jobs:
         run: sudo apt-get update
 
       - name: Install packages
-        run: sudo apt-get install python-tk python3-tables
+        run: sudo apt-get install python3-tables
 
       - name: Install dependencies
         run: |

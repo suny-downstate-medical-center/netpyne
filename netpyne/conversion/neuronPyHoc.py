@@ -277,16 +277,19 @@ def importCell(fileName, cellName, cellArgs=None, cellInstance=False):
         resultCode = h.load_file(fileName)
         if resultCode == 0: # error
             raise Exception(f"Error occured in h.load_file() when loading {fileName}. See above for details.")
-        if not cellInstance:
-            if isinstance(cellArgs, dict):
-                cell = getattr(h, cellName)(**cellArgs)  # create cell using template, passing dict with args
+        try:
+            if not cellInstance:
+                if isinstance(cellArgs, dict):
+                    cell = getattr(h, cellName)(**cellArgs)  # create cell using template, passing dict with args
+                else:
+                    cell = getattr(h, cellName)(*cellArgs)  # create cell using template, passing list with args
             else:
-                cell = getattr(h, cellName)(*cellArgs)  # create cell using template, passing list with args
-        else:
-            try:
-                cell = getattr(h, cellName)
-            except:
-                cell = None
+                try:
+                    cell = getattr(h, cellName)
+                except:
+                    cell = None
+        except AttributeError as e:
+            raise AttributeError(f"{e}\nError occured while creating cell cellName:{cellName}, please check file:{fileName} for the specific template you would like to import.")
     elif fileName.endswith('.py'):
         filePath, fileNameOnly = os.path.split(fileName)  # split path from filename
         if filePath not in sys.path:  # add to path if not there (need to import module)

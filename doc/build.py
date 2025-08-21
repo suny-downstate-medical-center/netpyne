@@ -42,6 +42,8 @@ Here are the steps to release a new version of NetPyNE
         NOTE: it may give the error "... no matching host key type found ...". In this case, try using the "-oHostKeyAlgorithms=+ssh-rsa" argument in ssh command and in scp command below (as well as in 11c)
     11b) scp -r build gkaue9v7ctjf@107.180.3.236:///home/gkaue9v7ctjf/public_html_new
         NOTE: it may give the error "path canonocalization failed", then use the argument "-O" in scp call - it rolls back to legacy mode (see also NOTE in 11a)
+        NOTE: faster command?::
+        NOTE: rsync -r --progress build/ gkaue9v7ctjf@107.180.3.236:/home/gkaue9v7ctjf/public_html_new
     11c) ssh gkaue9v7ctjf@107.180.3.236 "cp -r ~/redirect_html/. ~/public_html_new/ && rm -r ~/public_html && mv ~/public_html_new ~/public_html"
     11d) Make sure new documentation is up and running
     11e) ssh gkaue9v7ctjf@107.180.3.236 "rm -r ~/public_html_backup/"

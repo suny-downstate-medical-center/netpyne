@@ -31,9 +31,10 @@ class Pop(object):
         self.tags['pop'] = label
         self.cellGids = []  # list of cell gids beloging to this pop
 
-        self._setCellClass()  # set type of cell
+        self.cellModelClass, cellRuleForPointCell = self._resolveCellClass()
+
         if self.cellModelClass == sim.PointCell:
-            self.__handlePointCellParams()
+            self.__handlePointCellParams(cellRuleForPointCell)
 
         self.rand = h.Random()  # random number generator
 
@@ -481,18 +482,22 @@ class Pop(object):
 
         return cellTags
 
-    def _setCellClass(self):
+    def _resolveCellClass(self):
         """
-        Set cell class (CompartCell, PointCell, etc)
+        Determines cell class (CompartCell, PointCell, etc). Returns it, and a cellRule for PointCell if it refers to cellParams entry.
         """
+        cellRule = None
 
         # Check whether it's a NeuroML2 based cell
         # ! needs updating to read cellModel info from cellParams
-        if 'originalFormat' in self.tags:
-            if self.tags['originalFormat'] == 'NeuroML2':
-                self.cellModelClass = sim.NML2Cell
-            if self.tags['originalFormat'] == 'NeuroML2_SpikeSource':
-                self.cellModelClass = sim.NML2SpikeSource
+        if origFormat := self.tags.get('originalFormat'):
+            if origFormat == 'NeuroML2':
+                cellClass = sim.NML2Cell
+            elif origFormat == 'NeuroML2_SpikeSource':
+                cellClass = sim.NML2SpikeSource
+            else:
+                print(f"Warning: unknown original format {origFormat} for population {self.tags['pop']}")
+                cellClass = None
         else:
             # obtain cellModel either from popParams..
             cellModel = self.tags.get('cellModel')
@@ -504,16 +509,15 @@ class Pop(object):
                     cellRule = sim.net.params.cellParams.get(cellType, {})
                     cellModel = cellRule.get('cellModel')
                 else:
-                    # TODO: or throw error?
-                    pass
+                    print(f"Warning: no 'cellType' or 'cellModel' found for population {self.tags['pop']}. Cells will be created as CompartCell, but with no sections.")
 
             # set cell class: CompartCell for compartmental cells of PointCell for point neurons (NetStims, IntFire1,...)
             if cellModel and hasattr(h, cellModel):
                 # check if cellModel corresponds to an existing point process mechanism; if so, use PointCell
-                self.cellModelClass = sim.PointCell
+                cellClass = sim.PointCell
             else:
                 # otherwise assume has sections and some cellParam rules apply to it; use CompartCell
-                self.cellModelClass = sim.CompartCell
+                cellClass = sim.CompartCell
                 # if model is known but wasn't recognized, issue warning
                 knownPointps = ['NetStim', 'DynamicNetStim', 'VecStim', 'IntFire1', 'IntFire2', 'IntFire4']
                 if getattr(self.tags, 'cellModel', None) in knownPointps:
@@ -521,8 +525,9 @@ class Pop(object):
                         'Warning: could not find %s point process mechanism required for population %s'
                         % (cellModel, self.tags['pop'])
                     )
+        return cellClass, cellRule
 
-    def __handlePointCellParams(self):
+    def __handlePointCellParams(self, cellRule=None):
 
         if 'params' in self.tags and isinstance(self.tags['params'], dict):
             # in some cases, params for point cell may already be grouped in the nested 'params' dict.
@@ -558,6 +563,15 @@ class Pop(object):
             from ..specs.netParams import CellParams
 
             CellParams.updateStringFuncsWithPopParams(self.tags['pop'], params)
+
+        # if popParams for PointCell contain 'cellType' and it exists in cellParams, take from there cellModel and params (if any)
+        if cellRule:
+            self.tags['cellModel'] = cellRule['cellModel']
+
+            for k,v in cellRule.get('params', {}).items():
+                # But don't override! If param is already there, it comes from popParams, which takes precedence
+                if k not in self.tags['params']:
+                    self.tags['params'][k] = v
 
 
     def calcRelativeSegCoords(self):

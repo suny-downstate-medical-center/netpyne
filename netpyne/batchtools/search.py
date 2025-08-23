@@ -8,11 +8,14 @@ from ray.tune.search import create_searcher, ConcurrencyLimiter, SEARCH_ALG_IMPO
 from netpyne.batchtools import runtk
 from collections import namedtuple
 from batchtk.raytk.search import ray_trial, LABEL_POINTER
-from batchtk.utils import get_path
+from batchtk.utils import get_path, SQLiteStorage, ScriptLogger
 from io import StringIO
 import numpy
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from netpyne.batchtools import submits
+from batchtk import runtk
+from batchtk.runtk import trial
+
 #import signal #incompatible with signal and threading from ray
 #import threading
 
@@ -183,7 +186,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
                output_path: Optional[str] = './batch', # directory for storing generated files
                checkpoint_path: Optional[str] = './checkpoint', # directory for storing checkpoint files
                max_concurrent: Optional[int] = 1, # number of concurrent trials to run at one time
-               batch: Optional[bool] = True, # whether concurrent trials should run synchronously or asynchronously
+               batch: Optional[bool] = True, # whether concurrent trials should run synch\ronously or asynchronously
                num_samples: Optional[int] = 1, # number of trials to run
                metric: Optional[str] = None, # metric to optimize, if not supplied, no data will be collated.
                mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric
@@ -196,7 +199,9 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
                prune_metadata = True, # whether to prune the metadata from the results.csv
                remote_dir: Optional[str] = None, # absolute path for directory to run the search on (for submissions over SSH)
                host: Optional[str] = None,  # host to run the search on
-               key: Optional[str] = None  # key for TOTP generator...
+               key: Optional[str] = None,  # key for TOTP generator...
+               file_cleanup: Optional[bool|list|tuple] = True, # whether to clean up accessory files after the search is completed
+               advanced_logging: Optional[bool|str] = True,
                ) -> study:
 
     expected_total = params.pop('_expected_trials_per_sample') * num_samples
@@ -236,6 +241,20 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
     #TODO class this object for self calls? cleaner? vs nested functions
     #TODO clean up working_dir and excludes
     storage_path = get_path(checkpoint_path)
+    data_storage = None
+    debug_log = None
+    if advanced_logging:
+        if advanced_logging is True:
+            advanced_logging = "./" #follows from os.getcwd()
+        log_path = get_path(advanced_logging)
+        os.makedirs(log_path, exist_ok=True)
+        db_file = get_path("{}/trials.sqlite.db".format(log_path))
+        log_file = get_path("{}/trials.log".format(log_path))
+        data_storage = SQLiteStorage(db_file, entries=('path', 'config', 'data'))
+        debug_log = ScriptLogger(file_out=log_file)
+
+    if file_cleanup is True:
+        file_cleanup = (runtk.SGLOUT, runtk.MSGOUT)
     load_path = "{}/{}".format(storage_path, label)
     algo = create_searcher(algorithm, **algorithm_config) #concurrency may not be accepted by all algo
     #search_alg – The search algorithm to use.
@@ -251,13 +270,25 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
     #submit.update_templates(
     #    **run_config
     #)
+    def ray_trial(config, label, dispatcher_constructor, project_path, output_path, submit_constructor,
+                  dispatcher_kwargs=None, submit_kwargs=None, interval=60, data_storage=None, debug_log=None,
+                  report=('path', 'config', 'data'), cleanup=(runtk.SGLOUT, runtk.MSGOUT), check_storage=False):
+        tid = tune.get_context().get_trial_id()
+        tid = tid.split('_')[-1]  # value for trial (can be int/string)
+        return trial(
+            config=config, label=label, tid=tid, dispatcher_constructor=dispatcher_constructor,
+            project_path=project_path, output_path=output_path, submit_constructor=submit_constructor,
+            dispatcher_kwargs=dispatcher_kwargs, submit_kwargs=submit_kwargs, interval=interval,
+            data_storage=data_storage, debug_log=debug_log, report=report, cleanup=cleanup, check_storage=check_storage)
+
     project_path = remote_dir or os.getcwd() # if remote_dir is None, then use the current working directory
     def run(config):
         config.update({'saveFolder': output_path, 'simLabel': LABEL_POINTER})
         data = ray_trial(config=config, label=label, dispatcher_constructor=dispatcher_constructor,
                          project_path=project_path, output_path=output_path, submit_constructor=submit_constructor,
                          dispatcher_kwargs=dispatcher_kwargs, submit_kwargs=run_config,
-                         interval=sample_interval, log=None, report=report_config)
+                         interval=sample_interval, data_storage=data_storage, debug_log=debug_log, report=report_config,
+                         cleanup=file_cleanup, check_storage=False)
         if metric is None:
             metrics = {'data': data, '_none_placeholder': 0} #TODO, should include 'config' now with purge_metadata?
             session.report(metrics)
@@ -414,7 +445,9 @@ def shim(dispatcher_constructor: Optional[Callable] = None, # constructor for th
          prune_metadata: Optional[bool] = True, # whether to prune the metadata from the results.csv
          remote_dir: Optional[str] = None, # absolute path for directory to run the search on (for submissions over SSH)
          host: Optional[str] = None,  # host to run the search on
-         key: Optional[str] = None  # key for TOTP generator...
+         key: Optional[str] = None,  # key for TOTP generator...
+         file_cleanup: Optional[bool] = True,  # whether to clean up accessory files after the search is completed
+         advanced_logging: Optional[bool|str] = True,
          ) -> Dict:
     kwargs = locals()
     if metric is None and algorithm not in ['variant_generator', 'random', 'grid']:
@@ -467,7 +500,9 @@ def search(dispatcher_constructor: Optional[Callable] = None, # constructor for 
            prune_metadata: Optional[bool] = True, # whether to prune the metadata from the results.csv
            remote_dir: Optional[str] = None, # absolute path for directory to run the search on (for submissions over SSH)
            host: Optional[str] = None, # host to run the search on
-           key: Optional[str] = None # key for TOTP generator.
+           key: Optional[str] = None, # key for TOTP generator.
+           file_cleanup: Optional[bool] = True, # whether to clean up accessory files after the search is completed
+           advanced_logging: Optional[bool|str] = True,
            ) -> study: # results of the search -> study.results (raw tune.ResultGrid), study.data (pandas.DataFrame conversion)
     """
     search(...)
@@ -498,6 +533,10 @@ def search(dispatcher_constructor: Optional[Callable] = None, # constructor for 
     remote_dir: Optional[str] = None, # absolute path for directory to run the search on (for submissions over SSH)
     host: Optional[str] = None, # host to run the search on (for submissions over SSH)
     key: Optional[str] = None # key for TOTP generator (for submissions over SSH)
+    file_cleanup: Optional[bool] = True, # whether to clean up accessory files after the search is completed
+    advanced_logging: Optional[bool] = True, # enables advanced logging features, checkpoint_db and log_file.
+    checkpoint_db: Optional[str] = None, # path for checkpoint db file.
+    log_file: Optional[str] = None, # path for the log file
     Creates (upon completed fitting run...)
     -------
     <label>.csv: file containing the results of the search

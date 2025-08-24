@@ -14,7 +14,7 @@ import numpy
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from netpyne.batchtools import submits
 from batchtk import runtk
-from batchtk.runtk import trial
+from batchtk.runtk.trial import trial
 
 #import signal #incompatible with signal and threading from ray
 #import threading
@@ -247,11 +247,11 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
         if advanced_logging is True:
             advanced_logging = "./" #follows from os.getcwd()
         log_path = get_path(advanced_logging)
+        print(log_path)
         os.makedirs(log_path, exist_ok=True)
-        db_file = get_path("{}/trials.sqlite.db".format(log_path))
-        log_file = get_path("{}/trials.log".format(log_path))
-        data_storage = SQLiteStorage(db_file, entries=('path', 'config', 'data'))
-        debug_log = ScriptLogger(file_out=log_file)
+        log_file = "{}/trials.log".format(log_path)
+        #data_storage = SQLiteStorage(path=log_path, entries=('path', 'config', 'data'))
+        #debug_log = ScriptLogger(file_out=log_file)
 
     if file_cleanup is True:
         file_cleanup = (runtk.SGLOUT, runtk.MSGOUT)
@@ -273,6 +273,8 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
     def ray_trial(config, label, dispatcher_constructor, project_path, output_path, submit_constructor,
                   dispatcher_kwargs=None, submit_kwargs=None, interval=60, data_storage=None, debug_log=None,
                   report=('path', 'config', 'data'), cleanup=(runtk.SGLOUT, runtk.MSGOUT), check_storage=False):
+        debug_log = ScriptLogger(file_out=log_file)
+        data_storage = SQLiteStorage(path=log_path, entries=('path', 'config', 'data'))
         tid = tune.get_context().get_trial_id()
         tid = tid.split('_')[-1]  # value for trial (can be int/string)
         return trial(

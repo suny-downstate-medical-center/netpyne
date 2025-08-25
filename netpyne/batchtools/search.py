@@ -7,15 +7,14 @@ from ray.tune.search.basic_variant import BasicVariantGenerator
 from ray.tune.search import create_searcher, ConcurrencyLimiter, SEARCH_ALG_IMPORT
 from netpyne.batchtools import runtk
 from collections import namedtuple
-from batchtk.raytk.search import ray_trial, LABEL_POINTER
 from batchtk.utils import get_path, SQLiteStorage, ScriptLogger
 from io import StringIO
 import numpy
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from netpyne.batchtools import submits
 from batchtk import runtk
-from batchtk.runtk.trial import trial
-
+from batchtk.runtk.trial import trial, LABEL_POINTER
+import datetime
 #import signal #incompatible with signal and threading from ray
 #import threading
 
@@ -87,62 +86,8 @@ def ray_optuna_search(dispatcher_constructor: Callable, # constructor for the di
     -------
     Study: namedtuple('Study', ['algo', 'results'])(algo, results), # named tuple containing the created algorithm and the results of the search
     """
-    from ray.tune.search.optuna import OptunaSearch
-
-    if ray_config is None:
-        ray_config = {}
-    ray_init_kwargs = ray_config#{"runtime_env": {"working_dir:": "."}} | ray_config # do not actually need to specify a working dir, can
-    ray.init(**ray_init_kwargs)# TODO needed for python import statements ?
-    if optuna_config == None:
-        optuna_config = {}
-
-    storage_path = get_path(checkpoint_path)
-    algo = ConcurrencyLimiter(searcher=OptunaSearch(metric=metric, mode=mode, **optuna_config),
-                              max_concurrent=max_concurrent,
-                              batch=batch) #TODO does max_concurrent and batch work?
-
-    #submit = submit_constructor()
-    #submit.update_templates(
-    #    **run_config
-    #)
-    project_path = os.getcwd()
-
-    def run(config):
-        config.update({'saveFolder': output_path, 'simLabel': LABEL_POINTER})
-        data = ray_trial(config=config, label=label, dispatcher_constructor=dispatcher_constructor,
-                         project_path=project_path, output_path=output_path, submit_constructor=submit_constructor,
-                         submit_kwargs=run_config, log=None)
-        if isinstance(metric, str):#TODO only Optuna supports multiobjective?
-            metrics = {'config': config, 'data': data, metric: data[metric]}
-            session.report(metrics)
-        elif isinstance(metric, (list, tuple)):
-            metrics = {k: data[k] for k in metric}
-            metrics['config'] = config
-            metrics['data'] = data
-            session.report(metrics)
-        else:
-            raise ValueError("metric must be a string or a list/tuple of strings")
-    tuner = tune.Tuner(
-        run,
-        tune_config=tune.TuneConfig(
-            search_alg=algo,
-            num_samples=num_samples,
-        ),
-        run_config=RunConfig(
-            storage_path=storage_path,
-            name=label,
-        ),
-        param_space=params,
-    )
-
-    results = tuner.fit()
-    resultsdf = results.get_dataframe()
-    resultsdf.to_csv("{}.csv".format(label))
-    #return namedtuple('Study', ['algo', 'results'])(algo, results)
-    if clean_checkpoint:
-        os.system("rm -r {}".format(storage_path))
-    return namedtuple('Study', ['algo', 'results'])(algo.searcher._ot_study, results)
-
+    from warnings import warn
+    warn("ray_optuna_search is deprecated, please use ray_search with algorithm='optuna' instead", DeprecationWarning)
 """
 Parameters
 :
@@ -241,17 +186,13 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
     #TODO class this object for self calls? cleaner? vs nested functions
     #TODO clean up working_dir and excludes
     storage_path = get_path(checkpoint_path)
-    data_storage = None
-    debug_log = None
+    adv_path = None
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     if advanced_logging:
         if advanced_logging is True:
             advanced_logging = "./" #follows from os.getcwd()
-        log_path = get_path(advanced_logging)
-        print(log_path)
-        os.makedirs(log_path, exist_ok=True)
-        log_file = "{}/trials.log".format(log_path)
-        #data_storage = SQLiteStorage(path=log_path, entries=('path', 'config', 'data'))
-        #debug_log = ScriptLogger(file_out=log_file)
+        adv_path = get_path("{}/run_{}".format(advanced_logging, timestamp))
+        os.makedirs(adv_path, exist_ok=True)
 
     if file_cleanup is True:
         file_cleanup = (runtk.SGLOUT, runtk.MSGOUT)
@@ -273,8 +214,10 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
     def ray_trial(config, label, dispatcher_constructor, project_path, output_path, submit_constructor,
                   dispatcher_kwargs=None, submit_kwargs=None, interval=60, data_storage=None, debug_log=None,
                   report=('path', 'config', 'data'), cleanup=(runtk.SGLOUT, runtk.MSGOUT), check_storage=False):
-        debug_log = ScriptLogger(file_out=log_file)
-        data_storage = SQLiteStorage(path=log_path, entries=('path', 'config', 'data'))
+        debug_log, data_storage = None, None
+        if adv_path:
+            debug_log = ScriptLogger(file_out="{}/trials.log".format(adv_path))
+            data_storage = SQLiteStorage(label='trials', path=adv_path, entries=('path', 'config', 'data'))
         tid = tune.get_context().get_trial_id()
         tid = tid.split('_')[-1]  # value for trial (can be int/string)
         return trial(

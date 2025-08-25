@@ -232,7 +232,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
         data = ray_trial(config=config, label=label, dispatcher_constructor=dispatcher_constructor,
                          project_path=project_path, output_path=output_path, submit_constructor=submit_constructor,
                          dispatcher_kwargs=dispatcher_kwargs, submit_kwargs=run_config,
-                         interval=sample_interval, data_storage=data_storage, debug_log=debug_log, report=report_config,
+                         interval=sample_interval, report=report_config,
                          cleanup=file_cleanup, check_storage=False)
         if metric is None:
             metrics = {'data': data, '_none_placeholder': 0} #TODO, should include 'config' now with purge_metadata?

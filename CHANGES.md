@@ -10,6 +10,8 @@
 
 - Updated options for batch communication (see netpyne documentation: "running a batch job (beta)")
 
+- new batchtools subpackage includes data and trial logging features.
+
 **Bug fixes**
 
 - Solve minor bug in the uniform field for extracelular stimulation (sign). Deposited the xtra.mod in support module.

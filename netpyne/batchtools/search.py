@@ -191,7 +191,9 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
     if advanced_logging:
         if advanced_logging is True:
             advanced_logging = "./" #follows from os.getcwd()
-        adv_path = get_path("{}/run_{}".format(advanced_logging, timestamp))
+            adv_path = get_path("{}/run_{}".format(advanced_logging, timestamp))
+        if isinstance(advanced_logging, str):
+            adv_path = get_path(advanced_logging)
         os.makedirs(adv_path, exist_ok=True)
 
     if file_cleanup is True:

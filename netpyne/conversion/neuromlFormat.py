@@ -1216,8 +1216,7 @@ try:
             """
             if temperature:
                 self.simConfig.hParams["celsius"] = round(
-                    pynml.convert_to_units(temperature, "degC"),
-                    ROUND_PRECISION
+                    pynml.convert_to_units(temperature, "degC"), ROUND_PRECISION
                 )
                 logger.info(
                     "Setting global temperature to %s"
@@ -1588,16 +1587,16 @@ try:
                     group = "all" if not cm.segment_groups else cm.segment_groups
                     for section_name in seg_grps_vs_nrn_sections[group]:
                         gmax = round(
-                            pynml.convert_to_units(cm.cond_density,
-                                                   "S_per_cm2"),
-                            ROUND_PRECISION
+                            pynml.convert_to_units(cm.cond_density, "S_per_cm2"),
+                            ROUND_PRECISION,
                         )
                         if cm.ion_channel == "pas":
                             mech = {"g": gmax}
                         else:
                             mech = {"gmax": gmax}
-                        erev = round(pynml.convert_to_units(cm.erev, "mV"),
-                                     ROUND_PRECISION)
+                        erev = round(
+                            pynml.convert_to_units(cm.erev, "mV"), ROUND_PRECISION
+                        )
 
                         cellRule["secs"][section_name]["mechs"][cm.ion_channel] = mech
 
@@ -1615,16 +1614,16 @@ try:
                     group = "all" if not cm.segment_groups else cm.segment_groups
                     for section_name in seg_grps_vs_nrn_sections[group]:
                         gmax = round(
-                            pynml.convert_to_units(cm.cond_density,
-                                                   "S_per_cm2"),
-                            ROUND_PRECISION
+                            pynml.convert_to_units(cm.cond_density, "S_per_cm2"),
+                            ROUND_PRECISION,
                         )
                         if cm.ion_channel == "pas":
                             mech = {"g": gmax}
                         else:
                             mech = {"gmax": gmax}
-                        erev = round(pynml.convert_to_units(cm.erev, "mV"),
-                                     ROUND_PRECISION)
+                        erev = round(
+                            pynml.convert_to_units(cm.erev, "mV"), ROUND_PRECISION
+                        )
 
                         cellRule["secs"][section_name]["mechs"][cm.ion_channel] = mech
 
@@ -1643,9 +1642,8 @@ try:
                     group = "all" if not cm.segment_groups else cm.segment_groups
                     for section_name in seg_grps_vs_nrn_sections[group]:
                         gmax = round(
-                            pynml.convert_to_units(cm.cond_density,
-                                                   "S_per_cm2"),
-                            ROUND_PRECISION
+                            pynml.convert_to_units(cm.cond_density, "S_per_cm2"),
+                            ROUND_PRECISION,
                         )
                         if cm.ion_channel == "pas":
                             mech = {"g": gmax}
@@ -1669,8 +1667,8 @@ try:
                     group = "all" if not cm.segment_groups else cm.segment_groups
                     for section_name in seg_grps_vs_nrn_sections[group]:
                         permeability = round(
-                            pynml.convert_to_units(cm.permeability,
-                                                   "cm_per_s"), ROUND_PRECISION
+                            pynml.convert_to_units(cm.permeability, "cm_per_s"),
+                            ROUND_PRECISION,
                         )
                         mech = {"permeability": permeability}
 
@@ -1689,9 +1687,8 @@ try:
                     group = "all" if not cm.segment_groups else cm.segment_groups
                     for section_name in seg_grps_vs_nrn_sections[group]:
                         gmax = round(
-                            pynml.convert_to_units(cm.cond_density,
-                                                   "S_per_cm2"),
-                            ROUND_PRECISION
+                            pynml.convert_to_units(cm.cond_density, "S_per_cm2"),
+                            ROUND_PRECISION,
                         )
                         if cm.ion_channel == "pas":
                             mech = {"g": gmax}
@@ -1723,8 +1720,9 @@ try:
                     ):
                         logger.debug("Processing channel density non uniform %s", cm.id)
                         set_erev = True
-                        erev = round(pynml.convert_to_units(cm.erev, "mV"),
-                                     ROUND_PRECISION)
+                        erev = round(
+                            pynml.convert_to_units(cm.erev, "mV"), ROUND_PRECISION
+                        )
                     elif (
                         cm
                         in cell.biophysical_properties.membrane_properties.channel_density_non_uniform_nernsts
@@ -2333,8 +2331,6 @@ try:
                 }
 
                 if ptype == "electricalProjection":
-                    if weight != 1:
-                        raise Exception("Cannot yet support inputs where weight !=1!")
                     connParam = {
                         "synsPerConn": 1,
                         "sec": post_seg,

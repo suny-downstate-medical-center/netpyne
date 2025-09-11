@@ -1,3 +1,9 @@
+# Version in development
+
+**Bug fixes**
+
+- Fixed ignored synMech[Weight/Delay/Loc]Factor
+
 # Version 1.1.0
 
 **New features**

@@ -1,3 +1,11 @@
+# Version 1.1.1
+
+**Bug fixes**
+
+- Fixed ignored synMech[Weight/Delay/Loc]Factor
+- Fixed issue with SSH based searches
+- Fixed issue with data and trial logging file creation
+
 # Version 1.1.0
 
 **New features**
@@ -9,6 +17,8 @@
 - added ability to save transmembrane current for each segment
 
 - Updated options for batch communication (see netpyne documentation: "running a batch job (beta)")
+
+- new batchtools subpackage includes data and trial logging features.
 
 **Bug fixes**
 

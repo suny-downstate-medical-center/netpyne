@@ -2997,6 +2997,8 @@ Batch job handling is implemented from ``netpyne.batchtools.search``. Below is a
            mode: Optional[str] = "min",  # either 'min' or 'max' (whether to minimize or maximize the metric)
            sample_interval: Optional[int] = 15,  # interval to poll for new results (in seconds)
            attempt_restore: Optional[bool] = True, # whether to attempt to restore from a checkpoint
+           file_cleanup: Optional[bool] = True, # whether to clean up accessory files after the search is completed
+           advanced_logging: Optional[bool|str] = True, # advanced logging including generation of a batch .log file and an sqlite .db file (will be created in a timestamped directory by default).
            ) -> study: # results of the search
 
 The default parameter search implemented with the ``search`` function uses ``ray.tune`` as the search algorithm backend, creates a `.csv` storing the results, and returns a ``study`` object containing the output. It takes the following two parameters:

@@ -130,9 +130,18 @@ else:
         This method is implemented in batchtools,
         which requires the batchtk package to be
         installed. If you are seeing this message
-        when calling help, it indicates there is
-        an issue with your current batchtools
+        when calling the function, it indicates
+        there is an issue with your current batchtools
         installation
         """
+        print(help(send))
+        print("additional debug info: when attempting to import batchtools")
+        try:  # this SimConfig occurs before Runner_SimConfig
+            from netpyne.batchtools import Runner_SimConfig as SimConfig  # inherits and replaces prior class
+            from netpyne.batchtools import comm
+            _batch_specs = True
+            comm.initialize()
+        except Exception as e:
+            print("exception: {}".format(e))
         pass
 

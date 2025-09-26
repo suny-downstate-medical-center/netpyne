@@ -949,15 +949,8 @@ def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags={}):
 
     for i, synMech in enumerate(synMechs):
 
-        # weight, delay and loc (and also sec - if corresp. flag is set) are either single value or list of values. If single value, use it for all synMechs. If it is a list, use the value at index i
-        if connParam.get('distinctSecsPerSynMech', False):
-            paramNames = ['weight', 'delay', 'loc', 'synsPerConn', 'sec']
-        else:
-            paramNames = ['weight', 'delay', 'loc', 'synsPerConn']
-            # keep sec as is to be handled later in CompartCell.addConn()
-            sec = connParam.get('sec')
-
-        for param in paramNames:
+        # synsPerConn, weight, delay and loc are either single value or list of values. If single value, use it for all synMechs. If it is a list, use the value at index i
+        for param in ['weight', 'delay', 'loc', 'synsPerConn']:
             if numSynMechs == 1:
                 finalParamVal = finalParam.get(param)
             else:
@@ -966,10 +959,11 @@ def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags={}):
                     _ensure(len(finalParam[param]) == numSynMechs, connParam['label'], f"{param} should be {numSynMechs}-element list or a single value")
                     finalParamVal = finalParam[param][i]
 
-                elif (f'synMech{param}Factor' in connParam) and (param is not 'sec'):  # adapt weight/delay/loc for each synMech
-                    factors = connParam[f'synMech{param}Factor']
-                    _ensure(len(factors) == numSynMechs, connParam['label'], f"{f'synMech{param}Factor'} should be {numSynMechs}-element list")
-                    _ensure((type(finalParam[param]) in int, float), connParam['label'], f"{params} should be list of numbers")
+                elif (param in ['weight', 'delay', 'loc']) and (synMechFactorParam := f'synMech{param.capitalize()}Factor') in connParam:
+                    # adapt weight/delay/loc for each synMech (e.g. 'synMechWeightFactor')
+                    factors = connParam[synMechFactorParam]
+                    _ensure(len(factors) == numSynMechs, connParam['label'], f"{synMechFactorParam} should be {numSynMechs}-element list")
+                    _ensure(isinstance(finalParam[param], Number), connParam['label'], f"'{param}' should be numeric")
                     finalParamVal = finalParam[param] * factors[i]
 
                 else:
@@ -979,7 +973,7 @@ def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags={}):
 
         params = {
             'preGid': preCellGid,
-            'sec': sec, # TODO: will not work with `distinctSecsPerSynMech`?
+            'sec': connParam.get('sec'), # keep sec as is to be handled later in CompartCell.addConn()
             'loc': finalParam['locSynMech'],
             'synMech': synMech,
             'weight': finalParam['weightSynMech'],

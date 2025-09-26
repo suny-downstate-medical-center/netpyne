@@ -1,3 +1,11 @@
+# Version 1.1.1
+
+**Bug fixes**
+
+- Fixed ignored synMech[Weight/Delay/Loc]Factor
+- Fixed issue with SSH based searches
+- Fixed issue with data and trial logging file creation
+
 # Version 1.1.0
 
 **New features**

@@ -313,6 +313,7 @@ constructor_tuples = {
     #('slurm', 'sfs' ): constructors(runtk.dispatchers.SFSDispatcher , submits.SlurmSubmitSFS),
     ('sh', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SHSubmitSOCK), #
     ('sh', 'sfs' ): constructors(runtk.dispatchers.LocalDispatcher , submits.SHSubmitSFS),
+    ('slurm', 'sfs' ): constructors(runtk.dispatchers.LocalDispatcher , submits.SlurmSubmitSFS),
     ('sh', None): constructors(LocalGridDispatcher, submits.SHSubmit),
 }#TODO, just say "socket"?
 
@@ -403,6 +404,8 @@ def shim(dispatcher_constructor: Optional[Callable] = None, # constructor for th
         kwargs['algorithm'] = 'variant_generator'
     if job_type is not None and (comm_type is not None or metric is None):
         kwargs['dispatcher_constructor'], kwargs['submit_constructor'] = generate_constructors(job_type, comm_type)
+    if (job_type, comm_type) in (('slurm', 'sfs'),): # check unsupported options
+        raise ValueError("slurm with shared filesystem is not currently supported by this ray implementation, please use ssh_slurm with sftp or None as the comm_type")
     if dispatcher_constructor is not None and (submit_constructor is not None or metric is None):
         kwargs['dispatcher_constructor'] = dispatcher_constructor
         kwargs['submit_constructor'] = submit_constructor

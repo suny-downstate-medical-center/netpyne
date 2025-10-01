@@ -7,7 +7,7 @@ from netpyne.batchtools.search import generate_constructors
 # dispatcher, submit = generate_constructors('sh', 'sfs')
 
 #option for slurm run
-dispatcher, submit = generate_constructors('sh', 'sfs')
+dispatcher, submit = generate_constructors('slurm', 'sfs')
 slurm_args = {
     'allocation': 'csd403',
     'realtime': '00:30:00',

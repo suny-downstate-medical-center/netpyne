@@ -15,7 +15,7 @@ slurm_args = {
     'coresPerNode': '1',
     'mem': '4G',
     'partition': 'shared',
-    'email': 'jchen.6727@gmail.com',
+    'email': '<user_email_here>',
     'custom': '',
     'command': 'python single_opt.py',
 }

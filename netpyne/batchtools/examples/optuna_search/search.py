@@ -20,6 +20,17 @@ slurm_args = {
     'command': 'python single_opt.py',
 }
 
+slurm_args = {
+    'allocation': 'csd403',
+    'realtime': '00:30:00',
+    'nodes': '1',
+    'coresPerNode': '1',
+    'mem': '4G',
+    'partition': 'shared',
+    'email': 'jchen.6727@gmail.com',
+    'custom': '',
+    'command': 'python single_opt.py',
+}
 results = optuna_search(
     study_label='rosenbrock',
     param_space={'x0': (-5, 5), 'x1': (-5, 5)},

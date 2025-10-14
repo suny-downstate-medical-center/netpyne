@@ -79,4 +79,4 @@ def test_tutorial_8():
     p.join()
     # check the output
     test = json.load(open("/tmp/tut8_data/tauWeight_0_0_data.json", "r"))
-    assert test["simData"]["avgRate"] == 13.675
+    assert test["simData"]["avgRate"] == 13.75

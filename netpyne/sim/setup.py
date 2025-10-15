@@ -6,7 +6,7 @@ Module for setting up simulations
 import sys
 import os
 import numpy as np
-from neuron import h  # Import NEURON
+from neuron import h, __version__ as neuron_version # Import NEURON
 from .. import specs
 from ..specs import Dict, ODict
 from . import utils, validator
@@ -362,9 +362,10 @@ def setupRecordLFP():
                 )  # transfer resistance for each cell
 
             cell.imembPtr = h.PtrVector(nseg)  # pointer vector
-            cell.imembPtr.ptr_update_callback(
-                cell.setImembPtr
-            )  # used for gathering an array of  i_membrane values from the pointer vector
+            if neuron_version < '9.0.0':
+                cell.imembPtr.ptr_update_callback(
+                    cell.setImembPtr
+                )  # used for gathering an array of  i_membrane values from the pointer vector
             cell.imembVec = h.Vector(nseg)
 
         sim.cvode.use_fast_imem(True)  # make i_membrane_ a range variable
@@ -427,9 +428,10 @@ def setupRecordDipole():
             # set up recording of membrane currents (duplicate with setupRecordLFP -- unifiy and avoid calling twice)
             nseg = cell.getNumberOfSegments()
             cell.imembPtr = h.PtrVector(nseg)  # pointer vector
-            cell.imembPtr.ptr_update_callback(
-                cell.setImembPtr
-            )  # used for gathering an array of  i_membrane values from the pointer vector
+            if neuron_version < '9.0.0':
+                cell.imembPtr.ptr_update_callback(
+                    cell.setImembPtr
+                )  # used for gathering an array of  i_membrane values from the pointer vector
             cell.imembVec = h.Vector(nseg)
 
         sim.cvode.use_fast_imem(True)  # make i_membrane_ a range variable

@@ -73,10 +73,14 @@ def batch_example():
 
 def test_tutorial_8():
     """test tutorial 8 grid parameter search"""
+    from neuron import __version__
 
     p = Process(target=batch_example)
     p.start()
     p.join()
     # check the output
     test = json.load(open("/tmp/tut8_data/tauWeight_0_0_data.json", "r"))
-    assert test["simData"]["avgRate"] == 13.75
+    if __version__ < '9.0.0':
+        assert test["simData"]["avgRate"] == 13.675
+    else:
+        assert test["simData"]["avgRate"] == 13.75

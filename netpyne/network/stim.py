@@ -60,7 +60,7 @@ def addStims(self):
             if 'sec' not in target:
                 target['sec'] = None  # if section not specified, make None (will be assigned to first section in cell)
             if 'loc' not in target:
-                target['loc'] = None  # if location not specified, make None
+                target['loc'] = 0.5
 
             source = sources.get(target['source'])
 

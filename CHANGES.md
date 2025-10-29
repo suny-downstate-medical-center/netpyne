@@ -1,3 +1,9 @@
+# Version in development
+
+**Bug fixes**
+
+- fixed crash where stimTargetParams provided with no `loc` (for IClamp and other cases)
+
 # Version 1.1.1
 
 **Bug fixes**

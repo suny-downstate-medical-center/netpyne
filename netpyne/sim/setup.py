@@ -6,7 +6,7 @@ Module for setting up simulations
 import sys
 import os
 import numpy as np
-from neuron import h  # Import NEURON
+from neuron import h, __version__ as neuron_version # Import NEURON
 from .. import specs
 from ..specs import Dict, ODict
 from . import utils, validator
@@ -328,14 +328,19 @@ def setupRecordLFP():
             sim.simData['LFPCells'][c.gid] = np.zeros((saveSteps, nsites))
 
     if sim.cfg.saveLFPPops:
+        if not hasattr(sim.net, 'popForEachGid'):
+            sim.net.popForEachGid = {}
+
         if sim.cfg.saveLFPPops == True:
             popsRecordLFP = list(sim.net.pops.keys())  # record all pops
         elif isinstance(sim.cfg.saveLFPPops, list):
             popsRecordLFP = [p for p in sim.cfg.saveLFPPops if p in list(sim.net.pops.keys())]  # only pops that exist
-            sim.net.popForEachGid = {}
-            for pop in popsRecordLFP:
-                sim.net.popForEachGid.update({gid: pop for gid in sim.net.pops[pop].cellGids})
+        else:
+            print(f"Warning: `True` or list of population labels expected in cfg.saveLFPPops, but {type(sim.cfg.saveLFPPops)} provided. Ignoring.")
+            popsRecordLFP = []
+
         for pop in popsRecordLFP:
+            sim.net.popForEachGid.update({gid: pop for gid in sim.net.pops[pop].cellGids})
             sim.simData['LFPPops'][pop] = np.zeros((saveSteps, nsites))
 
     if not sim.net.params.defineCellShapes:
@@ -362,9 +367,10 @@ def setupRecordLFP():
                 )  # transfer resistance for each cell
 
             cell.imembPtr = h.PtrVector(nseg)  # pointer vector
-            cell.imembPtr.ptr_update_callback(
-                cell.setImembPtr
-            )  # used for gathering an array of  i_membrane values from the pointer vector
+            if neuron_version < '9.0.0':
+                cell.imembPtr.ptr_update_callback(
+                    cell.setImembPtr
+                )  # used for gathering an array of  i_membrane values from the pointer vector
             cell.imembVec = h.Vector(nseg)
 
         sim.cvode.use_fast_imem(True)  # make i_membrane_ a range variable
@@ -396,16 +402,21 @@ def setupRecordDipole():
             sim.simData['dipoleCells'][c.gid] = np.zeros((saveSteps, 3))
 
     if sim.cfg.saveDipolePops:
+        if not hasattr(sim.net, 'popForEachGid'):
+            sim.net.popForEachGid = {}
+
         if sim.cfg.saveDipolePops == True:
             popsRecordDipole = list(sim.net.pops.keys())  # record all pops
         elif isinstance(sim.cfg.saveDipolePops, list):
             popsRecordDipole = [
                 p for p in sim.cfg.saveDipolePops if p in list(sim.net.pops.keys())
             ]  # only pops that exist
-            sim.net.popForEachGid = {}
-            for pop in popsRecordDipole:
-                sim.net.popForEachGid.update({gid: pop for gid in sim.net.pops[pop].cellGids})
+        else:
+            print(f"Warning: `True` or list of population labels expected in cfg.saveDipolePops, but {type(sim.cfg.saveDipolePops)} provided. Ignoring.")
+            popsRecordDipole = []
+
         for pop in popsRecordDipole:
+            sim.net.popForEachGid.update({gid: pop for gid in sim.net.pops[pop].cellGids})
             sim.simData['dipolePops'][pop] = np.zeros((saveSteps, 3))
 
     if not sim.net.params.defineCellShapes:
@@ -427,9 +438,10 @@ def setupRecordDipole():
             # set up recording of membrane currents (duplicate with setupRecordLFP -- unifiy and avoid calling twice)
             nseg = cell.getNumberOfSegments()
             cell.imembPtr = h.PtrVector(nseg)  # pointer vector
-            cell.imembPtr.ptr_update_callback(
-                cell.setImembPtr
-            )  # used for gathering an array of  i_membrane values from the pointer vector
+            if neuron_version < '9.0.0':
+                cell.imembPtr.ptr_update_callback(
+                    cell.setImembPtr
+                )  # used for gathering an array of  i_membrane values from the pointer vector
             cell.imembVec = h.Vector(nseg)
 
         sim.cvode.use_fast_imem(True)  # make i_membrane_ a range variable

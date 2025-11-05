@@ -1,3 +1,10 @@
+# Version in development
+
+**Bug fixes**
+
+- fixed crash where stimTargetParams provided with no `loc` (for IClamp and other cases)
+- restore proper functioning of `cfg.saveLFPPops` and `cfg.saveDipolePops` as `True`, and their combined use
+
 # Version 1.1.1
 
 **Bug fixes**

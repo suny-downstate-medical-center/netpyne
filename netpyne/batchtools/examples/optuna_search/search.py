@@ -4,10 +4,10 @@ from batchtk.utils import expand_path
 from netpyne.batchtools.search import generate_constructors
 
 #option for local run
-# dispatcher, submit = generate_constructors('sh', 'sfs')
+dispatcher, submit = generate_constructors('sh', 'sfs')
 
 #option for slurm run
-dispatcher, submit = generate_constructors('slurm', 'sfs')
+#dispatcher, submit = generate_constructors('slurm', 'sfs')
 slurm_args = {
     'allocation': 'csd403',
     'realtime': '00:30:00',
@@ -27,8 +27,8 @@ results = optuna_search(
     num_trials=12, num_workers=3,
     dispatcher_constructor=dispatcher,
     submit_constructor=submit,
-    #submit_kwargs={'command': 'python single_opt.py'}, # normal run
-    submit_kwargs=slurm_args,
+    submit_kwargs={'command': 'python single_opt.py'}, # normal run
+    #submit_kwargs=slurm_args,
     interval=10,
     project_path='.',
     output_path=expand_path('./optimization', create_dirs=True),

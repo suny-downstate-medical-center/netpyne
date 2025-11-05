@@ -1,29 +1,29 @@
 from batchtk.runtk import Submit, Template
 from batchtk import runtk
 
-SFS_HANDLES = {runtk.SUBMIT: '{output_path}/{label}.sh',
-               runtk.STDOUT: '{output_path}/{label}.run',
-               runtk.MSGOUT: '{output_path}/{label}.out',
-               runtk.SGLOUT: '{output_path}/{label}.sgl'}
+SFS_HANDLES = {runtk.SUBMIT: '{output_dir}/{label}.sh',
+               runtk.STDOUT: '{output_dir}/{label}.run',
+               runtk.MSGOUT: '{output_dir}/{label}.out',
+               runtk.SGLOUT: '{output_dir}/{label}.sgl'}
 class SHSubmit(Submit):
-    script_args = {'label', 'project_path', 'output_path', 'env', 'command'}
+    script_args = {'label', 'project_dir', 'output_dir', 'env', 'command'}
     script_template = \
         """\
 #!/bin/sh
-cd {project_path}
+cd {project_dir}
 export JOBID=$$
 {env}
-nohup {command} > {output_path}/{label}.run 2>&1 &
+nohup {command} > {output_dir}/{label}.run 2>&1 &
 pid=$!
 echo $pid >&1
 """
     script_handles = {
-        runtk.STDOUT: '{output_path}/{label}.run',
-        runtk.SUBMIT: '{output_path}/{label}.sh'}
+        runtk.STDOUT: '{output_dir}/{label}.run',
+        runtk.SUBMIT: '{output_dir}/{label}.sh'}
     def __init__(self, **kwargs):
         super().__init__(
-            submit_template = Template(template="sh {output_path}/{label}.sh",
-                                       key_args={'project_path', 'output_path', 'label'}),
+            submit_template = Template(template="sh {output_dir}/{label}.sh",
+                                       key_args={'project_dir', 'output_dir', 'label'}),
             script_template = Template(template=self.script_template,
                                        key_args=self.script_args),
             handles = self.script_handles,
@@ -42,43 +42,43 @@ echo $pid >&1
         return self.job_id
 
 class SHSubmitSFS(SHSubmit):
-    script_args = {'label', 'project_path', 'output_path', 'env', 'command'}
+    script_args = {'label', 'project_dir', 'output_dir', 'env', 'command'}
     script_template = \
         """\
 #!/bin/sh
-cd {project_path}
-export MSGFILE="{output_path}/{label}.out"
-export SGLFILE="{output_path}/{label}.sgl"
+cd {project_dir}
+export MSGFILE="{output_dir}/{label}.out"
+export SGLFILE="{output_dir}/{label}.sgl"
 export JOBID=$$
 {env}
-nohup {command} > {output_path}/{label}.run 2>&1 &
+nohup {command} > {output_dir}/{label}.run 2>&1 &
 pid=$!
 echo $pid >&1
 """
-    script_handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
-                      runtk.STDOUT: '{output_path}/{label}.run',
-                      runtk.MSGOUT: '{output_path}/{label}.out',
-                      runtk.SGLOUT: '{output_path}/{label}.sgl'}
+    script_handles = {runtk.SUBMIT: '{output_dir}/{label}.sh',
+                      runtk.STDOUT: '{output_dir}/{label}.run',
+                      runtk.MSGOUT: '{output_dir}/{label}.out',
+                      runtk.SGLOUT: '{output_dir}/{label}.sgl'}
 
 class SHSubmitSOCK(SHSubmit):
-    script_args = {'label', 'project_path', 'output_path', 'env', 'command', 'sockname'}
+    script_args = {'label', 'project_dir', 'output_dir', 'env', 'command', 'sockname'}
     script_template = \
         """\
 #!/bin/sh
-cd {project_path}
+cd {project_dir}
 export SOCNAME="{sockname}"
 export JOBID=$$
 {env}
-nohup {command} > {output_path}/{label}.run 2>&1 &
+nohup {command} > {output_dir}/{label}.run 2>&1 &
 pid=$!
 echo $pid >&1
 """
-    script_handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
-                      runtk.STDOUT: '{output_path}/{label}.run',
+    script_handles = {runtk.SUBMIT: '{output_dir}/{label}.sh',
+                      runtk.STDOUT: '{output_dir}/{label}.run',
                       runtk.SOCKET: '{sockname}'}
 
 class SGESubmit(Submit):
-    script_args = {'label', 'queue', 'cores', 'vmem' 'realtime', 'output_path', 'project_path', 'env', 'command', }
+    script_args = {'label', 'queue', 'cores', 'vmem' 'realtime', 'output_dir', 'project_dir', 'env', 'command', }
     script_template = \
         """\
 #!/bin/bash
@@ -87,19 +87,19 @@ class SGESubmit(Submit):
 #$ -pe smp {cores}
 #$ -l h_vmem={vmem}
 #$ -l h_rt={realtime}
-#$ -o {output_path}/{label}.run
+#$ -o {output_dir}/{label}.run
 source ~/.bashrc
-cd {project_path}
+cd {project_dir}
 export JOBID=$JOB_ID
 {env}
 {command}
 """
-    script_handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
-                      runtk.STDOUT: '{output_path}/{label}.run'}
+    script_handles = {runtk.SUBMIT: '{output_dir}/{label}.sh',
+                      runtk.STDOUT: '{output_dir}/{label}.run'}
     def __init__(self, **kwargs):
         super().__init__(
-            submit_template = Template(template="qsub {output_path}/{label}.sh",
-                                       key_args={'output_path',  'label'}),
+            submit_template = Template(template="qsub {output_dir}/{label}.sh",
+                                       key_args={'output_dir',  'label'}),
             script_template = Template(template=self.script_template,
                                        key_args=self.script_args),
             handles = self.script_handles,
@@ -116,7 +116,7 @@ export JOBID=$JOB_ID
 
 
 class SGESubmitSSH(Submit):
-    script_args = {'label', 'queue', 'cores', 'vmem' 'realtime', 'output_path', 'project_path', 'env', 'command', }
+    script_args = {'label', 'queue', 'cores', 'vmem' 'realtime', 'output_dir', 'project_dir', 'env', 'command', }
     script_template = \
         """\
 #!/bin/bash
@@ -125,25 +125,25 @@ class SGESubmitSSH(Submit):
 #$ -pe smp {cores}
 #$ -l h_vmem={vmem}
 #$ -l h_rt={realtime}
-#$ -o {output_path}/{label}.run
+#$ -o {output_dir}/{label}.run
 source ~/.bashrc
-cd {project_path}
+cd {project_dir}
 export JOBID=$JOB_ID
-export MSGFILE="{output_path}/{label}.out"
-export SGLFILE="{output_path}/{label}.sgl"
+export MSGFILE="{output_dir}/{label}.out"
+export SGLFILE="{output_dir}/{label}.sgl"
 {env}
 touch $MSGFILE
 {command}
 """
-    script_handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
-                      runtk.STDOUT: '{output_path}/{label}.run',
-                      runtk.MSGOUT: '{output_path}/{label}.out',
-                      runtk.SGLOUT: '{output_path}/{label}.sgl',
+    script_handles = {runtk.SUBMIT: '{output_dir}/{label}.sh',
+                      runtk.STDOUT: '{output_dir}/{label}.run',
+                      runtk.MSGOUT: '{output_dir}/{label}.out',
+                      runtk.SGLOUT: '{output_dir}/{label}.sgl',
                       }
     def __init__(self, **kwargs):
         super().__init__(
-            submit_template = Template(template="source ~/.bash_profile; /ddn/age/bin/lx-amd64/qsub {output_path}/{label}.sh",
-                                       key_args={'output_path',  'label'}),
+            submit_template = Template(template="source ~/.bash_profile; /ddn/age/bin/lx-amd64/qsub {output_dir}/{label}.sh",
+                                       key_args={'output_dir',  'label'}),
             script_template = Template(template=self.script_template,
                                        key_args=self.script_args),
             handles = self.script_handles,
@@ -160,7 +160,7 @@ touch $MSGFILE
 
 class SlurmSubmitSSH(Submit):
     script_args = {'label', 'allocation', 'realtime', 'nodes', 'coresPerNode',
-                   'partition', 'output_path', 'email', 'env', 'custom', 'project_path', 'command'}
+                   'partition', 'output_dir', 'email', 'env', 'custom', 'project_dir', 'command'}
     script_template = \
         """\
 #!/bin/bash
@@ -172,29 +172,29 @@ class SlurmSubmitSSH(Submit):
 #SBATCH --cpus-per-task=1
 #SBATCH --mem={mem}
 #SBATCH --partition={partition}
-#SBATCH -o {output_path}/{label}.run
-#SBATCH -e {output_path}/{label}.err
+#SBATCH -o {output_dir}/{label}.run
+#SBATCH -e {output_dir}/{label}.err
 #SBATCH --mail-user={email}
 #SBATCH --mail-type=end
 #SBATCH --export=ALL
 export JOBID=$SLURM_JOB_ID
-export MSGFILE="{output_path}/{label}.out"
-export SGLFILE="{output_path}/{label}.sgl"
+export MSGFILE="{output_dir}/{label}.out"
+export SGLFILE="{output_dir}/{label}.sgl"
 {env}
 {custom}
-cd {project_path}
+cd {project_dir}
 {command}
 wait
 """
-    script_handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
-                      runtk.STDOUT: '{output_path}/{label}.run',
-                      runtk.MSGOUT: '{output_path}/{label}.out',
-                      runtk.SGLOUT: '{output_path}/{label}.sgl',
+    script_handles = {runtk.SUBMIT: '{output_dir}/{label}.sh',
+                      runtk.STDOUT: '{output_dir}/{label}.run',
+                      runtk.MSGOUT: '{output_dir}/{label}.out',
+                      runtk.SGLOUT: '{output_dir}/{label}.sgl',
                       }
     def __init__(self, **kwargs):
         super().__init__(
-            submit_template = Template(template="/cm/shared/apps/slurm/current/bin/sbatch {output_path}/{label}.sh",
-                                       key_args={'output_path',  'label'}),
+            submit_template = Template(template="/cm/shared/apps/slurm/current/bin/sbatch {output_dir}/{label}.sh",
+                                       key_args={'output_dir',  'label'}),
             script_template = Template(template=self.script_template,
                                        key_args=self.script_args),
             handles = self.script_handles,
@@ -213,7 +213,7 @@ SlurmSubmitSFS = SlurmSubmitSSH # not really any different. No sockets for now..
 
 
 class SGESubmitSFS(SGESubmit):
-    script_args = {'label', 'queue', 'cores', 'vmem' 'realtime', 'output_path', 'project_path', 'env', 'command', }
+    script_args = {'label', 'queue', 'cores', 'vmem' 'realtime', 'output_dir', 'project_dir', 'env', 'command', }
     script_template = \
         """\
 #!/bin/bash
@@ -222,24 +222,24 @@ class SGESubmitSFS(SGESubmit):
 #$ -pe smp {cores}
 #$ -l h_vmem={vmem}
 #$ -l h_rt={realtime}
-#$ -o {output_path}/{label}.run
+#$ -o {output_dir}/{label}.run
 source ~/.bashrc
-cd {project_path}
+cd {project_dir}
 export JOBID=$JOB_ID
-export MSGFILE="{output_path}/{label}.out"
-export SGLFILE="{output_path}/{label}.sgl"
+export MSGFILE="{output_dir}/{label}.out"
+export SGLFILE="{output_dir}/{label}.sgl"
 {env}
 touch $MSGFILE
 {command}
 """
-    script_handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
-                      runtk.STDOUT: '{output_path}/{label}.run',
-                      runtk.MSGOUT: '{output_path}/{label}.out',
-                      runtk.SGLOUT: '{output_path}/{label}.sgl',
+    script_handles = {runtk.SUBMIT: '{output_dir}/{label}.sh',
+                      runtk.STDOUT: '{output_dir}/{label}.run',
+                      runtk.MSGOUT: '{output_dir}/{label}.out',
+                      runtk.SGLOUT: '{output_dir}/{label}.sgl',
                       }
 
 class SGESubmitSOCK(SGESubmit):
-    script_args = {'label', 'queue', 'cores', 'vmem' 'realtime', 'output_path', 'project_path', 'sockname', 'env', 'command', }
+    script_args = {'label', 'queue', 'cores', 'vmem' 'realtime', 'output_dir', 'project_dir', 'sockname', 'env', 'command', }
     script_template = \
         """\
 #!/bin/bash
@@ -248,22 +248,22 @@ class SGESubmitSOCK(SGESubmit):
 #$ -pe smp {cores}
 #$ -l h_vmem={vmem}
 #$ -l h_rt={realtime}
-#$ -o {output_path}/{label}.run
+#$ -o {output_dir}/{label}.run
 source ~/.bashrc
-cd {project_path}
+cd {project_dir}
 export JOBID=$JOB_ID
 export SOCNAME="{sockname}"
 {env}
 {command}
 """
-    script_handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
-                      runtk.STDOUT: '{output_path}/{label}.run',
+    script_handles = {runtk.SUBMIT: '{output_dir}/{label}.sh',
+                      runtk.STDOUT: '{output_dir}/{label}.run',
                       runtk.SOCKET: '{sockname}'
                       }
 
 
 class SlurmSubmit(Submit):
-    script_args = {'label', 'allocation', 'walltime', 'nodes', 'coresPerNode', 'output_path', 'email', 'reservation', 'custom', 'project_path', 'command'}
+    script_args = {'label', 'allocation', 'walltime', 'nodes', 'coresPerNode', 'output_dir', 'email', 'reservation', 'custom', 'project_dir', 'command'}
     script_template = \
         """\
 #SBATCH --job-name={label}
@@ -271,22 +271,22 @@ class SlurmSubmit(Submit):
 #SBATCH -t {walltime}
 #SBATCH --nodes={nodes}
 #SBATCH --ntasks-per-node={coresPerNode}
-#SBATCH -o {output_path}/{label}.run
-#SBATCH -e {output_path}/{label}.err
+#SBATCH -o {output_dir}/{label}.run
+#SBATCH -e {output_dir}/{label}.err
 #SBATCH --mail-user={email}
 #SBATCH --mail-type=end
 export JOBID=$SLURM_JOB_ID
 {custom}
 {env}
-cd {project_path}
+cd {project_dir}
 {command}
 """
-    script_handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
-                      runtk.STDOUT: '{output_path}/{label}.run'}
+    script_handles = {runtk.SUBMIT: '{output_dir}/{label}.sh',
+                      runtk.STDOUT: '{output_dir}/{label}.run'}
     def __init__(self, **kwargs):
         super().__init__(
-            submit_template = Template(template="/cm/shared/apps/slurm/current/bin/sbatch {output_path}/{label}.sh",
-                                       key_args={'output_path',  'label'}),
+            submit_template = Template(template="/cm/shared/apps/slurm/current/bin/sbatch {output_dir}/{label}.sh",
+                                       key_args={'output_dir',  'label'}),
             script_template = Template(template=self.script_template,
                                        key_args=self.script_args),
             handles = self.script_handles,
@@ -302,7 +302,7 @@ cd {project_path}
 
 
 class SlurmSubmitSOCK(SlurmSubmit):
-    script_args = {'label', 'allocation', 'walltime', 'nodes', 'coresPerNode', 'output_path', 'email', 'reservation', 'custom', 'project_path', 'command'}
+    script_args = {'label', 'allocation', 'walltime', 'nodes', 'coresPerNode', 'output_dir', 'email', 'reservation', 'custom', 'project_dir', 'command'}
     script_template = \
         """\
 #SBATCH --job-name={label}
@@ -310,19 +310,19 @@ class SlurmSubmitSOCK(SlurmSubmit):
 #SBATCH -t {walltime}
 #SBATCH --nodes={nodes}
 #SBATCH --ntasks-per-node={coresPerNode}
-#SBATCH -o {output_path}/{label}.run
-#SBATCH -e {output_path}/{label}.err
+#SBATCH -o {output_dir}/{label}.run
+#SBATCH -e {output_dir}/{label}.err
 #SBATCH --mail-user={email}
 #SBATCH --mail-type=end
 export JOBID=$SLURM_JOB_ID
 export SOCNAME="{sockname}"
 {custom}
 {env}
-cd {project_path}
+cd {project_dir}
 {command}
 """
-    script_handles = {runtk.SUBMIT: '{output_path}/{label}.sh',
-                      runtk.STDOUT: '{output_path}/{label}.run',
+    script_handles = {runtk.SUBMIT: '{output_dir}/{label}.sh',
+                      runtk.STDOUT: '{output_dir}/{label}.run',
                       runtk.SOCKET: '{sockname}'
                       }
 

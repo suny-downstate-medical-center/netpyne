@@ -6,6 +6,8 @@ cfg = specs.SimConfig()
 cfg.x0 = 0.0
 cfg.x1 = 0.0
 
+cfg.saveFolder = '.'
+cfg.simLabel = 'rosenbrock_default'
 cfg.saveDataInclude = ['simConfig']
 cfg.saveJson = True
 cfg.update()

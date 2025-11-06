@@ -1,86 +1,11 @@
-from batchtk.runtk import Submit, Template
 from batchtk import runtk
-
-SFS_HANDLES = {runtk.SUBMIT: '{output_dir}/{label}.sh',
-               runtk.STDOUT: '{output_dir}/{label}.run',
-               runtk.MSGOUT: '{output_dir}/{label}.out',
-               runtk.SGLOUT: '{output_dir}/{label}.sgl'}
-class SHSubmit(Submit):
-    script_args = {'label', 'project_dir', 'output_dir', 'env', 'command'}
-    script_template = \
-        """\
-#!/bin/sh
-cd {project_dir}
-export JOBID=$$
-{env}
-nohup {command} > {output_dir}/{label}.run 2>&1 &
-pid=$!
-echo $pid >&1
-"""
-    script_handles = {
-        runtk.STDOUT: '{output_dir}/{label}.run',
-        runtk.SUBMIT: '{output_dir}/{label}.sh'}
-    def __init__(self, **kwargs):
-        super().__init__(
-            submit_template = Template(template="sh {output_dir}/{label}.sh",
-                                       key_args={'project_dir', 'output_dir', 'label'}),
-            script_template = Template(template=self.script_template,
-                                       key_args=self.script_args),
-            handles = self.script_handles,
-        )
-    def set_handles(self):
-        pass
-
-    def submit_job(self, **kwargs):
-        proc = super().submit_job(**kwargs)
-        try:
-            self.job_id = int(proc.stdout)
-        except Exception as e:
-            raise(Exception("{}\nJob submission failed:\n{}\n{}\n{}\n{}".format(e, self.submit, self.script, proc.stdout, proc.stderr)))
-        if self.job_id < 0:
-            raise(Exception("Job submission failed:\n{}\n{}\n{}\n{}".format(self.submit, self.script, proc.stdout, proc.stderr)))
-        return self.job_id
-
-class SHSubmitSFS(SHSubmit):
-    script_args = {'label', 'project_dir', 'output_dir', 'env', 'command'}
-    script_template = \
-        """\
-#!/bin/sh
-cd {project_dir}
-export MSGFILE="{output_dir}/{label}.out"
-export SGLFILE="{output_dir}/{label}.sgl"
-export JOBID=$$
-{env}
-nohup {command} > {output_dir}/{label}.run 2>&1 &
-pid=$!
-echo $pid >&1
-"""
-    script_handles = {runtk.SUBMIT: '{output_dir}/{label}.sh',
-                      runtk.STDOUT: '{output_dir}/{label}.run',
-                      runtk.MSGOUT: '{output_dir}/{label}.out',
-                      runtk.SGLOUT: '{output_dir}/{label}.sgl'}
-
-class SHSubmitSOCK(SHSubmit):
-    script_args = {'label', 'project_dir', 'output_dir', 'env', 'command', 'sockname'}
-    script_template = \
-        """\
-#!/bin/sh
-cd {project_dir}
-export SOCNAME="{sockname}"
-export JOBID=$$
-{env}
-nohup {command} > {output_dir}/{label}.run 2>&1 &
-pid=$!
-echo $pid >&1
-"""
-    script_handles = {runtk.SUBMIT: '{output_dir}/{label}.sh',
-                      runtk.STDOUT: '{output_dir}/{label}.run',
-                      runtk.SOCKET: '{sockname}'}
+from batchtk.runtk import Submit, Template, SHSubmit
+from batchtk import SOCKET_HANDLES, FILE_HANDLES, ALL_HANDLES
 
 class SGESubmit(Submit):
-    script_args = {'label', 'queue', 'cores', 'vmem' 'realtime', 'output_dir', 'project_dir', 'env', 'command', }
-    script_template = \
-        """\
+    SCRIPT_TEMPLATE = Template(
+        template = \
+"""\
 #!/bin/bash
 #$ -N job{label}
 #$ -q {queue}
@@ -88,12 +13,27 @@ class SGESubmit(Submit):
 #$ -l h_vmem={vmem}
 #$ -l h_rt={realtime}
 #$ -o {output_dir}/{label}.run
+{handles}
 source ~/.bashrc
 cd {project_dir}
 export JOBID=$JOB_ID
 {env}
 {command}
-"""
+""",
+        key_args = {'label', 'queue', 'cores', 'vmem', 'realtime', 'output_dir', 'label', 'project_dir', 'output_dir', 'socket_name', 'stdout', 'stderr', 'env', 'command',
+                     'handles'}
+    )
+    SUBMIT_TEMPLATE  = Template(
+        template = "qsub {output_dir}/{label}.sh",
+        key_args = {'output_dir', 'label'}
+    )
+    SCRIPT_TEMPLATE  = _DEFAULT_SCRIPT
+    PATH_TEMPLATE    = _DEFAULT_PATH
+    HANDLES          = _DEFAULT_HANDLES
+    KEY_ARGS         = _DEFAULT_KEY_ARGS
+
+    script_args = {'label', 'queue', 'cores', 'vmem' 'realtime', 'output_dir', 'project_dir', 'env', 'command', }
+    script_template = \
     script_handles = {runtk.SUBMIT: '{output_dir}/{label}.sh',
                       runtk.STDOUT: '{output_dir}/{label}.run'}
     def __init__(self, **kwargs):

@@ -1,6 +1,6 @@
 from batchtk import runtk
 from batchtk.runtk import Submit, Template, SHSubmit
-from batchtk import SOCKET_HANDLES, FILE_HANDLES, ALL_HANDLES
+from batchtk.runtk import SOCKET_HANDLES, FILE_HANDLES, ALL_HANDLES
 
 class SGESubmit(Submit):
     SCRIPT_TEMPLATE = Template(
@@ -82,7 +82,15 @@ wait
     def set_handles(self):
         pass #TODO get rid of this in both NetPyNE and batchtk
 
+SHSubmitSOCK = SHSubmit
+SHSubmitSFS = SHSubmit
+
 SlurmSubmitSSH = SlurmSubmit
-SlurmSubmitSFS = SlurmSubmitSSH # not really any different. No sockets for now...
+SlurmSubmitSFS = SlurmSubmit # not really any different. No sockets for now...
+SGESubmitSSH = SGESubmit
 SGESubmitSFS = SGESubmit
 SGESubmitSOCK = SGESubmit
+
+
+
+

@@ -66,6 +66,7 @@ from .utils import (
     _init_stim_randomizer,
     unique,
     checkMemory,
+    close,
 )
 
 # import utils functions to manipulate objects
@@ -116,3 +117,22 @@ from ..tests.tests import SimTestObj
 # import export/import-related functions
 from .. import conversion
 from ..conversion.neuromlFormat import *
+
+# comm imports
+from netpyne.specs import _batch_specs
+if _batch_specs is True:
+    from netpyne.specs import comm
+    send = comm.send
+    end_comm = comm.close # send automatically closes comm now #TODO remove.
+else:
+    def send(*args, **kwargs):
+        """
+        This method is implemented in batchtools,
+        which requires the batchtk package to be
+        installed. If you are seeing this message
+        when calling help, it indicates there is
+        an issue with your current batchtools
+        installation
+        """
+        pass
+

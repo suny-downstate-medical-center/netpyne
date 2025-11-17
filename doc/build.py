@@ -38,16 +38,21 @@ Here are the steps to release a new version of NetPyNE
     10d) It will fix the Package Index file
     10e) It will build the html files
 11) Post the documentation
-    11a) ssh gkaue9v7ctjf@107.180.3.236 "rm -r ~/public_html"
+    11a) ssh gkaue9v7ctjf@107.180.3.236 "cp -r ~/public_html ~/public_html_backup"
         NOTE: it may give the error "... no matching host key type found ...". In this case, try using the "-oHostKeyAlgorithms=+ssh-rsa" argument in ssh command and in scp command below (as well as in 11c)
-    11b) scp -r build gkaue9v7ctjf@107.180.3.236:///home/gkaue9v7ctjf/public_html
+    11b) scp -r build gkaue9v7ctjf@107.180.3.236:///home/gkaue9v7ctjf/public_html_new
         NOTE: it may give the error "path canonocalization failed", then use the argument "-O" in scp call - it rolls back to legacy mode (see also NOTE in 11a)
-    11c) ssh gkaue9v7ctjf@107.180.3.236 "cp -r ~/redirect_html/. ~/public_html/"
+        NOTE: faster command?::
+        NOTE: rsync -r --progress build/ gkaue9v7ctjf@107.180.3.236:/home/gkaue9v7ctjf/public_html_new
+    11c) ssh gkaue9v7ctjf@107.180.3.236 "cp -r ~/redirect_html/. ~/public_html_new/ && rm -r ~/public_html && mv ~/public_html_new ~/public_html"
+    11d) Make sure new documentation is up and running
+    11e) ssh gkaue9v7ctjf@107.180.3.236 "rm -r ~/public_html_backup/"
 12) Update PYPI (pip) with the latest release
     12a) cd netpyne
     12b) python3 setup.py bdist_wheel --universal
     12c) python setup.py upload_via_twine
-         Username: salvadord
+        (outdated) Username: salvadord
+        Enter the token (https://dura-bernallab.slack.com/archives/D02A30N4Z50/p1707862380181609)
 13) Announce the new release
     13a) New release announcement text:
          NetPyNE v#.#.# is now available. For a complete list of changes and bug fixes see: https://github.com/suny-downstate-medical-center/netpyne/releases/tag/v#.#.#

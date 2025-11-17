@@ -1,4 +1,4 @@
-from netpyne.batchtools import specs
+from netpyne import specs
 
 ### config ###
 

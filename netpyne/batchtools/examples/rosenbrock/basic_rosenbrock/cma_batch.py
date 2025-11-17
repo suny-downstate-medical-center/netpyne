@@ -8,6 +8,7 @@ Submit = submits.SHSubmitSOCK
 
 cwd = os.getcwd()
 
+# evaluation
 def eval_rosenbrock(x0, x1, tid):
     cfg = {
         'x0': x0,
@@ -18,8 +19,10 @@ def eval_rosenbrock(x0, x1, tid):
     label = 'rosenbrock'
     return float(trial(cfg, label, tid, Dispatcher, cwd, '../cma', submit)['fx'])
 
-#data = eval_rosenbrock(1, 1, "x11")
 
+
+
+# suggestor
 optimizer = CMA(mean=numpy.zeros(2), sigma=1.0)
 for generation in range(3):
     solutions = []

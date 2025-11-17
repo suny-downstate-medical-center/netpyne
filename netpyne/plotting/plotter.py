@@ -353,10 +353,10 @@ class MetaFigure:
             if kwargs['suptitle']:
                 self.addSuptitle(**kwargs['suptitle'])
 
-        if 'tightLayout' not in kwargs:
+        if 'tightLayout' in kwargs:
             plt.tight_layout()
-        elif kwargs['tightLayout']:
-            plt.tight_layout()
+        #elif kwargs['tightLayout']:
+        #    plt.tight_layout()
 
         if 'saveFig' in kwargs:
             if kwargs['saveFig']:

@@ -410,8 +410,7 @@ class PointCell(Cell):
 
                 # Add plasticity
                 if self.conns[-1].get('plast'):
-                    self.conns[-1]['dummySec'] = {'hObj': h.Section(name='dummySec', cell=self)}
-                    self._addConnPlasticity(self.conns[-1], self.conns[-1]['dummySec'], netcon, weightIndex)
+                    self._addConnPlasticity(self.conns[-1], None, netcon, weightIndex)
 
                 # Add time-dependent weight shaping
                 if 'shape' in params and params['shape']:
@@ -491,10 +490,12 @@ class PointCell(Cell):
 
         plasticity = params.get('plast')
         if plasticity and sim.cfg.createNEURONObj:
-            try:
-                plastMech = getattr(h, plasticity['mech'], None)(
-                    0, sec=sec['hObj']
-                )  # create plasticity mechanism (eg. h.STDP)
+            try:                
+                if sec is None:
+                    plastMech = getattr(h, plasticity['mech'], None)() # create plasticity mechanism (eg. h.STDP)
+                else:
+                    plastMech = getattr(h, plasticity['mech'], None)(0, sec=sec['hObj'])  # create plasticity mechanism (eg. h.STDP)                
+              
                 for plastParamName, plastParamValue in plasticity[
                     'params'
                 ].items():  # add params of the plasticity mechanism

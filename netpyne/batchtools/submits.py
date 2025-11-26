@@ -2,7 +2,7 @@ from batchtk import runtk
 from batchtk.runtk import Submit, Template, SHSubmit
 from batchtk.runtk import SOCKET_HANDLES, FILE_HANDLES, ALL_HANDLES
 
-class SGESubmit(Submit):
+class SGESubmit(SHSubmit):
     SCRIPT_TEMPLATE = Template(
         template = \
 """\
@@ -36,7 +36,7 @@ export JOBID=$JOB_ID
     def set_handles(self):
         pass #TODO get rid of this in both NetPyNE and batchtk
 
-class SlurmSubmit(Submit):
+class SlurmSubmit(SHSubmit):
     SCRIPT_TEMPLATE = Template(
         template = \
 """\

@@ -7,7 +7,7 @@ from ray.tune.search.basic_variant import BasicVariantGenerator
 from ray.tune.search import create_searcher, ConcurrencyLimiter, SEARCH_ALG_IMPORT
 from netpyne.batchtools import runtk
 from collections import namedtuple
-from batchtk.utils import get_path, SQLiteStorage, ScriptLogger
+from batchtk.utils import get_path, SQLiteStorage
 from io import StringIO
 import numpy
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
@@ -218,7 +218,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
                   report=('path', 'config', 'data'), cleanup=(runtk.SGLOUT, runtk.MSGOUT), check_storage=False):
         debug_log, data_storage = None, None
         if adv_path:
-            debug_log = ScriptLogger(file_out="{}/trials.log".format(adv_path))
+            #debug_log = ScriptLogger(file_out="{}/trials.log".format(adv_path)) #TODO plan to slowly remove ray
             data_storage = SQLiteStorage(label='trials', path=adv_path, entries=('path', 'config', 'data'))
         tid = tune.get_context().get_trial_id()
         tid = tid.split('_')[-1]  # value for trial (can be int/string)

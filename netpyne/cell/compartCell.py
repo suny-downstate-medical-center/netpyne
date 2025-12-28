@@ -369,11 +369,11 @@ If this cell is expected to be a point cell instead, make sure the correspondent
                 if 'mechs' in sectParams and 'dipole' in sectParams['mechs']:
                     self.__dipoleInsert(sectName, sec)  # add dipole mechanisms to each section
 
-        # Print message about error inserting mechanisms
-        if mechInsertError:
-            print(
-                "ERROR: Some mechanisms and/or ions were not inserted (for details run with cfg.verbose=True). Make sure the required mod files are compiled."
-            )
+        # Raise runtime about error inserting mechanisms and stop the execution instantly
+        raise RuntimeError(
+                    "Some mechanisms and/or ions were not inserted. "
+                    "Check if your .mod files are compiled (run 'nrnivmodl mod')."
+                       )
 
     def _setGeometryParams(self, sectName, sectParams, cellType, cellVars):
         sec = self.secs[sectName]

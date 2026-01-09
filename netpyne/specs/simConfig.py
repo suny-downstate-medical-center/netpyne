@@ -161,9 +161,10 @@ class SimConfig(object):
     def save(self, filename):
         import os
 
-        basename = os.path.basename(filename)
-        folder = filename.split(basename)[0]
-        ext = basename.split('.')[1]
+        folder = os.path.dirname(filename)
+        _, ext = os.path.splitext(filename)
+        if ext.startswith('.'):
+            ext = ext[1:]
 
         # make directories if they do not already exist: 
         try:

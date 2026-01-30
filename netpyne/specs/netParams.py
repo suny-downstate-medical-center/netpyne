@@ -640,7 +640,7 @@ class NetParams(object):
         # adjust cell 3d points so that soma is at location 0,0,0
         if somaAtOrigin:
             somaSec = next((sec for sec in cellRule['secs'] if 'soma' in sec), None)
-            if not somaSec or not 'pt3d' in cellRule['secs'][somaSec]['geom']:
+            if not somaSec or 'pt3d' not in cellRule['secs'][somaSec]['geom']:
                 pass
                 # print('Warning: cannot place soma at origin because soma does not exist or does not contain pt3d')
             else:
@@ -726,7 +726,8 @@ class NetParams(object):
         self.cellParams.rename(oldSec, newSec, (label, 'secs'))
 
     def addCellParamsWeightNorm(self, label, fileName, threshold=1000):
-        import pickle, sys
+        import pickle
+        import sys
 
         if label in self.cellParams:
             cellRule = self.cellParams[label]
@@ -774,7 +775,8 @@ class NetParams(object):
         self.cellParams[label] = {'conds': conds, 'secs': secs}
 
     def saveCellParamsRule(self, label, fileName):
-        import pickle, json, os
+        import pickle
+        import os
 
         ext = os.path.basename(fileName).split('.')[1]
 

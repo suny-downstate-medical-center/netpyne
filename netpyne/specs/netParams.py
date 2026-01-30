@@ -80,7 +80,7 @@ class CellParams(ODict):
                     if sec['topol'].get('parentSec') == old:
                         sec['topol']['parentSec'] = new
             return success
-        except:
+        except Exception:
             return False
 
     @staticmethod
@@ -154,7 +154,7 @@ class CellParams(ODict):
 
         try:
             cellStringFuncs = sim.net.params._cellParamStringFuncs
-        except:
+        except Exception:
             cellStringFuncs = sim.net.params._cellParamStringFuncs = {}
         popKey = (
             '__pop__' + popLabel
@@ -530,13 +530,13 @@ class NetParams(object):
     def __getitem__(self, k):
         try:
             return object.__getattribute__(self, k)
-        except:
+        except Exception:
             raise KeyError(k)
 
     def __setitem__(self, k, v):
         try:
             setattr(self, k, v)
-        except:
+        except Exception:
             raise KeyError(v)
 
     def save(self, filename):
@@ -743,7 +743,7 @@ class NetParams(object):
         try:
             somaSec = next((k for k in list(weightNorm.keys()) if k.startswith('soma')), None)
             somaWeightNorm = weightNorm[somaSec][0]
-        except:
+        except Exception:
             print('Error setting weightNorm: no soma section available to set threshold')
             return
         for sec, wnorm in weightNorm.items():

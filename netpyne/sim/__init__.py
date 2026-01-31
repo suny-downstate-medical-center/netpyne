@@ -21,14 +21,14 @@ from neuron import h
 # import setup functions
 from .setup import (
     initialize,
-    setNet,
-    setNetParams,
-    setSimCfg,
-    createParallelContext,
+    _setNet,
+    _setNetParams,
+    _setSimCfg,
+    _createParallelContext,
     readCmdLineArgs,
     setupRecording,
-    setupRecordLFP,
-    setGlobals,
+    _setupRecordLFP,
+    _setGlobals,
 )
 
 # import run functions

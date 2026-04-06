@@ -391,7 +391,10 @@ def cell_specs(context):
                         Hook(str, handler=lambda s, d, _: validateMechs(s, d, context)): object,
                         str: object # This allows any string key that matches the Hook validation above (complains about extra keys otherwise)
                     },
-                    Optional('ions'): {str: {'e': numberExpected, 'o': numberExpected, 'i': numberExpected}},
+                    Optional('ions'): {str: {
+                        Optional('e'): numberOrListOfNumbers, # here and below: if list, N should be equal to nseg
+                        Optional('o'): numberOrListOfNumbers,
+                        Optional('i'): numberOrListOfNumbers}},
                     # not used from programmatic definitions - only for loading (and creating structure)
                     # Optional('synMechs'): [{'label': str, 'loc': Or(int,float)}]
                     Optional('pointps'): {

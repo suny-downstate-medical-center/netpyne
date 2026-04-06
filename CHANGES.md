@@ -1,5 +1,9 @@
 # Version in development
 
+**New features**
+
+- Optimized plasticity implementation by removing the dummy section used for STDP mech (credit: Sam Neymotin)
+
 **Bug fixes**
 
 - fixed crash where stimTargetParams provided with no `loc` (for IClamp and other cases)

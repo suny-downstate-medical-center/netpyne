@@ -157,6 +157,40 @@ class Cell(object):
 
         return weights, delays
 
+    def _addConnPlasticity(self, params, netcon, weightIndex):
+        from .. import sim
+
+        plasticity = params.get('plast')
+        if plasticity and sim.cfg.createNEURONObj:
+            try:
+                plastMech = getattr(h, plasticity['mech'], None)() # create plasticity mechanism (eg. h.STDP)
+                for plastParamName, plastParamValue in plasticity[
+                    'params'
+                ].items():  # add params of the plasticity mechanism
+                    setattr(plastMech, plastParamName, plastParamValue)
+                if plasticity['mech'] == 'STDP':  # specific implementation steps required for the STDP mech
+                    precon = sim.pc.gid_connect(params['preGid'], plastMech)
+                    precon.weight[0] = 1  # Send presynaptic spikes to the STDP adjuster
+                    pstcon = sim.pc.gid_connect(self.gid, plastMech)
+                    pstcon.weight[0] = -1  # Send postsynaptic spikes to the STDP adjuster
+                    h.setpointer(
+                        netcon._ref_weight[weightIndex], 'synweight', plastMech
+                    )  # Associate the STDP adjuster with this weight
+                    # self.conns[-1]['hPlastSection'] = plastSection
+                    self.conns[-1]['hSTDP'] = plastMech
+                    self.conns[-1]['hSTDPprecon'] = precon
+                    self.conns[-1]['hSTDPpstcon'] = pstcon
+                    self.conns[-1]['STDPdata'] = {
+                        'preGid': params['preGid'],
+                        'postGid': self.gid,
+                        'receptor': weightIndex,
+                    }  # Not used; FYI only; store here just so it's all in one place
+                    if sim.cfg.verbose:
+                        print('  Added STDP plasticity to synaptic mechanism')
+            except:
+                print('Error: exception when adding plasticity using %s mechanism' % (plasticity['mech']))
+
+
     def addNetStim(self, params, stimContainer=None):
         from .. import sim
 

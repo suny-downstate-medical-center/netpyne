@@ -217,16 +217,16 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
                   dispatcher_kwargs=None, submit_kwargs=None, interval=60, data_storage=None, debug_log=None,
                   report=('path', 'config', 'data'), cleanup=(runtk.SGLOUT, runtk.MSGOUT), check_storage=False):
         debug_log, data_storage = None, None
-        if adv_path:
-            debug_log = ScriptLogger(file_out="{}/trials.log".format(adv_path))
-            data_storage = SQLiteStorage(label='trials', path=adv_path, entries=('path', 'config', 'data'))
+        #if adv_path:
+        #    debug_log = ScriptLogger(file_out="{}/trials.log".format(adv_path))
+        #    data_storage = SQLiteStorage(label='trials', path=adv_path, entries=('path', 'config', 'data'))
         tid = tune.get_context().get_trial_id()
         tid = tid.split('_')[-1]  # value for trial (can be int/string)
         return trial(
             config=config, label=label, tid=tid, dispatcher_constructor=dispatcher_constructor,
             project_path=project_path, output_path=output_path, submit_constructor=submit_constructor,
             dispatcher_kwargs=dispatcher_kwargs, submit_kwargs=submit_kwargs, interval=interval,
-            data_storage=data_storage, debug_log=debug_log, report=report, cleanup=cleanup, check_storage=check_storage)
+            data_storage=data_storage, debug_log=debug_log, report=report, cleanup=cleanup, check_storage=False)
 
     project_path = remote_dir or os.getcwd() # if remote_dir is None, then use the current working directory
     def run(config):

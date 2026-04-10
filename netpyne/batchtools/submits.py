@@ -1,6 +1,6 @@
 from batchtk import runtk
-from batchtk.runtk import Submit, Template, SHSubmit
-from batchtk.runtk import SOCKET_HANDLES, FILE_HANDLES, ALL_HANDLES
+from batchtk.runtk.submits import Submit, Template, SHSubmit
+from batchtk.header.header import SOCKET_HANDLES, FILE_HANDLES, ALL_HANDLES
 
 class SGESubmit(SHSubmit):
     SCRIPT_TEMPLATE = Template(
@@ -23,10 +23,57 @@ export JOBID=$JOB_ID
         key_args = {'label', 'queue', 'cores', 'vmem', 'realtime', 'output_dir', 'label', 'project_dir', 'output_dir', 'socket_name', 'stdout', 'stderr', 'env', 'command',
                      'handles'}
     )
-    SUBMIT_TEMPLATE  = Template(
+    COMMAND_TEMPLATE  = Template(
         template = "qsub {output_dir}/{label}.sh",
         key_args = {'output_dir', 'label'}
     )
+    SUBMIT_TEMPLATE  = Template(
+        template = "qsub {output_dir}/{label}.sh",
+        key_args = {'output_dir', 'label'}
+    ) # SUBMIT_TEMPLATE deprecated
+
+    def submit_job(self, **kwargs):
+        proc = super().submit_job(**kwargs)
+        #raise(Exception("Job submission failed:\n{}\n{}\n{}".format(self.submit, self.script, proc)))
+        return proc
+
+
+    def set_handles(self):
+        pass #TODO get rid of this in both NetPyNE and batchtk
+
+
+class SUNYSubmit(SHSubmit):
+    SCRIPT_TEMPLATE = Template(
+        template = \
+"""\
+#!/bin/sh
+#SBATCH --job-name=search_{label}
+#SBATCH --nodes=1
+#SBATCH --ntasks={cores}
+#SBATCH --mem={mem}
+#SBATCH --time={realtime}
+#SBATCH --output={stdout}
+#SBATCH --error={stderr}
+{handles}
+{env}
+cd {project_dir}
+source ~/.bashrc
+srun --mpi=pmi2 nrniv -python -mpi {script} # doesn't work with Ray
+""",
+        key_args = {'label', 'allocation', 'realtime', 'nodes', 'cores', 'mem',
+                    'partition', 'stdout', 'stderr', 'output_dir', 'email', 'handles',
+                    'env', 'custom', 'project_dir', 'command', 'script'}
+    )
+
+    COMMAND_TEMPLATE = Template(
+        template = "sbatch {output_dir}/{label}.sh",
+        key_args = {'output_dir', 'label'}
+    )
+    SUBMIT_TEMPLATE = Template(
+        template = "sbatch {output_dir}/{label}.sh",
+        key_args = {'output_dir', 'label'}
+    )
+
     def submit_job(self, **kwargs):
         proc = super().submit_job(**kwargs)
         #raise(Exception("Job submission failed:\n{}\n{}\n{}".format(self.submit, self.script, proc)))
@@ -67,11 +114,14 @@ wait
                     'env', 'custom', 'project_dir', 'command'}
     )
 
-
-    SUBMIT_TEMPLATE = Template(
+    COMMAND_TEMPLATE = Template(
         template = "/cm/shared/apps/slurm/current/bin/sbatch {output_dir}/{label}.sh",
         key_args = {'output_dir', 'label'}
     )
+    SUBMIT_TEMPLATE = Template(
+        template = "/cm/shared/apps/slurm/current/bin/sbatch {output_dir}/{label}.sh",
+        key_args = {'output_dir', 'label'}
+    ) #submit template deprecated
 
     def submit_job(self, **kwargs):
         proc = super().submit_job(**kwargs)
@@ -84,6 +134,7 @@ wait
 
 SHSubmitSOCK = SHSubmit
 SHSubmitSFS = SHSubmit
+SUNYSubmitSFS = SUNYSubmit
 
 SlurmSubmitSSH = SlurmSubmit
 SlurmSubmitSFS = SlurmSubmit # not really any different. No sockets for now...

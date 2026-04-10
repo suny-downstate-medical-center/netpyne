@@ -5,14 +5,17 @@ from ray import tune, train
 from ray.air import session, RunConfig
 from ray.tune.search.basic_variant import BasicVariantGenerator
 from ray.tune.search import create_searcher, ConcurrencyLimiter, SEARCH_ALG_IMPORT
-from netpyne.batchtools import runtk
+from batchtk import runtk
 from collections import namedtuple
-from batchtk.utils import get_path, SQLiteStorage, ScriptLogger
+try:
+    from batchtk.utils.file import get_path
+except:
+    from batchtk.utils import get_path
+from batchtk.utils.storage import SQLiteStorage
 from io import StringIO
 import numpy
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from netpyne.batchtools import submits
-from batchtk import runtk
 from batchtk.runtk.trial import trial, LABEL_POINTER
 import datetime
 #import signal #incompatible with signal and threading from ray
@@ -157,14 +160,14 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
             from fabric import connection
             dispatcher_kwargs = {'connection': connection.Connection(host)}
         if submit_constructor == submits.SlurmSubmitSSH:
-            from batchtk.utils import TOTPConnection
+            from batchtk.utils.utils import TOTPConnection
             dispatcher_kwargs = {'connection': TOTPConnection(host, key)}
         if dispatcher_kwargs == None:
             raise ValueError("for SSH based methods, please provide either 'sftp' or None as the comm_type")
     else:
         dispatcher_kwargs = {}
     if ray_config is None:
-        ray_config = {}
+        ray_config = {"_temp_dir": get_path('./ray_temp')}
 
     ray_init_kwargs = ray_config#{"runtime_env": {"working_dir:": "."}} | ray_config
 
@@ -214,19 +217,20 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
     #    **run_config
     #)
     def ray_trial(config, label, dispatcher_constructor, project_path, output_path, submit_constructor,
-                  dispatcher_kwargs=None, submit_kwargs=None, interval=60, data_storage=None, debug_log=None,
+                  dispatcher_kwargs=None, submit_kwargs=None, interval=60,
                   report=('path', 'config', 'data'), cleanup=(runtk.SGLOUT, runtk.MSGOUT), check_storage=False):
         debug_log, data_storage = None, None
-        if adv_path:
-            debug_log = ScriptLogger(file_out="{}/trials.log".format(adv_path))
-            data_storage = SQLiteStorage(label='trials', path=adv_path, entries=('path', 'config', 'data'))
+        #if adv_path:
+        #    debug_log = ScriptLogger(file_out="{}/trials.log".format(adv_path))
+        #    data_storage = SQLiteStorage(label='trials', path=adv_path, entries=('path', 'config', 'data'))
         tid = tune.get_context().get_trial_id()
         tid = tid.split('_')[-1]  # value for trial (can be int/string)
         return trial(
             config=config, label=label, tid=tid, dispatcher_constructor=dispatcher_constructor,
             project_path=project_path, output_path=output_path, submit_constructor=submit_constructor,
             dispatcher_kwargs=dispatcher_kwargs, submit_kwargs=submit_kwargs, interval=interval,
-            data_storage=data_storage, debug_log=debug_log, report=report, cleanup=cleanup, check_storage=check_storage)
+            data_storage=None, debug_log=None, storage_constructor=None, log_kwargs={'file_out': get_path('./ray_search.log')},
+            report=report, cleanup=cleanup, check_storage=False) # many args retained for back compatibility
 
     project_path = remote_dir or os.getcwd() # if remote_dir is None, then use the current working directory
     def run(config):
@@ -235,7 +239,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
                          project_path=project_path, output_path=output_path, submit_constructor=submit_constructor,
                          dispatcher_kwargs=dispatcher_kwargs, submit_kwargs=run_config,
                          interval=sample_interval, report=report_config,
-                         cleanup=file_cleanup, check_storage=False)
+                         cleanup=file_cleanup, check_storage=True)
         if metric is None:
             metrics = {'data': data, '_none_placeholder': 0} #TODO, should include 'config' now with purge_metadata?
             session.report(metrics)
@@ -304,6 +308,7 @@ constructor_tuples = {
     ('sge', 'socket'): constructors(runtk.dispatchers.INETDispatcher, submits.SGESubmitSOCK),
     ('sge', 'sfs' ): constructors(runtk.dispatchers.LocalDispatcher , submits.SGESubmitSFS ),
     ('sge', None): constructors(LocalGridDispatcher, submits.SGESubmit),
+    ('suny', 'sfs'): constructors(runtk.dispatchers.LocalDispatcher, submits.SUNYSubmit),
     ('ssh_sge', 'sftp'): constructors(runtk.dispatchers.SSHDispatcher, submits.SGESubmitSSH), #TODO, both of these need comm types
     ('ssh_slurm', 'sftp'): constructors(runtk.dispatchers.SSHDispatcher, submits.SlurmSubmitSSH),
     ('ssh_sge', None): constructors(SSHGridDispatcher, submits.SGESubmitSSH), #don't need to worry about changing the handl

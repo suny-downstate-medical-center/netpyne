@@ -166,10 +166,18 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
             raise ValueError("for SSH based methods, please provide either 'sftp' or None as the comm_type")
     else:
         dispatcher_kwargs = {}
-    if ray_config is None:
-        ray_config = {"_temp_dir": get_path('./ray_temp')}
 
-    ray_init_kwargs = ray_config#{"runtime_env": {"working_dir:": "."}} | ray_config
+    # get path for ray (final path cannot exceed 107 characters...)
+    _temp_dir = get_path('~/ray')
+
+    if ray_config is None:
+        ray_config = {}
+
+    ray_init_kwargs = {"_temp_dir": _temp_dir} | ray_config
+    print(f"storing ray checkpoints in {_temp_dir}, you can modify this by supplying a ray_config dictionary to search")
+    print(f"ray_config = {ray_init_kwargs}")
+    
+    #{"runtime_env": {"working_dir:": "."}} | ray_config
 
     ray.init(**ray_init_kwargs) # TODO needed for python import statements ?
 

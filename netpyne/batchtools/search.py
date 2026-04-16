@@ -233,6 +233,7 @@ def ray_search(dispatcher_constructor: Callable, # constructor for the dispatche
         #    data_storage = SQLiteStorage(label='trials', path=adv_path, entries=('path', 'config', 'data'))
         tid = tune.get_context().get_trial_id()
         tid = tid.split('_')[-1]  # value for trial (can be int/string)
+        submit_kwargs = {'custom': ''} | submit_kwargs # default injection to trial ...
         return trial(
             config=config, label=label, tid=tid, dispatcher_constructor=dispatcher_constructor,
             project_path=project_path, output_path=output_path, submit_constructor=submit_constructor,

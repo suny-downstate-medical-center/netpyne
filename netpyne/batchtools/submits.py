@@ -54,6 +54,7 @@ class SUNYSubmit(SHSubmit):
 #SBATCH --time={realtime}
 #SBATCH --output={stdout}
 #SBATCH --error={stderr}
+{custom}
 {handles}
 {env}
 cd {project_dir}

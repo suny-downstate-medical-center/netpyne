@@ -59,7 +59,7 @@ class SUNYSubmit(SHSubmit):
 {env}
 cd {project_dir}
 source ~/.bashrc
-srun --mpi=pmi2 nrniv -python -mpi {script} # doesn't work with Ray
+srun --mpi=pmi2 nrniv -python -mpi {script}
 """,
         key_args = {'label', 'allocation', 'realtime', 'nodes', 'cores', 'mem',
                     'partition', 'stdout', 'stderr', 'output_dir', 'email', 'handles',

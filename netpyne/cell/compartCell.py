@@ -817,7 +817,8 @@ If this cell is expected to be a point cell instead, make sure the correspondent
 
                         # then check the rest of conds
                         synMechConds = deepcopy(params['conds'])
-                        synMechConds.pop('sec')
+                        synMechConds.pop('sec', None) # already handled above
+
                         conditionsMet = sim.utils.checkConditions(synMechConds, against=synMech)
 
                     if conditionsMet:  # if all conditions are met, set values for this cell

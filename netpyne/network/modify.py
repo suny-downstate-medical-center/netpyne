@@ -33,7 +33,7 @@ def modifyCells(self, params, updateMasterAllCells=False):
 
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'modifyCellsTime')
-    if sim.rank == 0:
+    if sim.rank == 0 and sim.cfg.verbose:
         print('Modfying cell parameters...')
 
     for cell in self.cells:
@@ -43,7 +43,7 @@ def modifyCells(self, params, updateMasterAllCells=False):
         sim._gatherCells()  # update allCells
 
     sim.timing('stop', 'modifyCellsTime')
-    if sim.rank == 0 and sim.cfg.timing:
+    if sim.rank == 0 and sim.cfg.timing and sim.cfg.verbose:
         print(('  Done; cells modification time = %0.2f s.' % sim.timingData['modifyCellsTime']))
 
 
@@ -76,8 +76,8 @@ def modifySynMechs(self, params, updateMasterAllCells=False):
 
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'modifySynMechsTime')
-    if sim.rank == 0:
-        print('Modfying synaptic mech parameters...')
+    if sim.rank == 0 and sim.cfg.verbose:
+        print('Modifying synaptic mech parameters...')
 
     for cell in self.cells:
         cell.modifySynMechs(params)
@@ -86,7 +86,7 @@ def modifySynMechs(self, params, updateMasterAllCells=False):
         sim._gatherCells()  # update allCells
 
     sim.timing('stop', 'modifySynMechsTime')
-    if sim.rank == 0 and sim.cfg.timing:
+    if sim.rank == 0 and sim.cfg.timing and sim.cfg.verbose:
         print(('  Done; syn mechs modification time = %0.2f s.' % sim.timingData['modifySynMechsTime']))
 
 
@@ -119,7 +119,7 @@ def modifyConns(self, params, updateMasterAllCells=False):
 
     # Instantiate network connections based on the connectivity rules defined in params
     sim.timing('start', 'modifyConnsTime')
-    if sim.rank == 0:
+    if sim.rank == 0 and sim.cfg.verbose:
         print('Modfying connection parameters...')
 
     for cell in self.cells:
@@ -129,7 +129,7 @@ def modifyConns(self, params, updateMasterAllCells=False):
         sim._gatherCells()  # update allCells
 
     sim.timing('stop', 'modifyConnsTime')
-    if sim.rank == 0 and sim.cfg.timing:
+    if sim.rank == 0 and sim.cfg.timing and sim.cfg.verbose:
         print(('  Done; connections modification time = %0.2f s.' % sim.timingData['modifyConnsTime']))
 
 

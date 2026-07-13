@@ -1152,8 +1152,9 @@ If this cell is expected to be a point cell instead, make sure the correspondent
                     if cell:
                         conditionsMet = cell.checkConditions(params['preConds'])
                 except:
+                    if sim.cfg.verbose:
+                        print('Warning: modifyConns() does not yet support conditions of presynaptic cells when running parallel sims')
                     pass
-                    # print('Warning: modifyConns() does not yet support conditions of presynaptic cells when running parallel sims')
 
             if conditionsMet:  # if all conditions are met, set values for this cell
                 if sim.cfg.createPyStruct:

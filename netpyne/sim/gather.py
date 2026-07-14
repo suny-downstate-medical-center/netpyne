@@ -440,7 +440,7 @@ def gatherDataFromFiles(gatherLFP=True, saveFolder=None, simLabel=None, sim=None
                                 allPops[popLabel] = pop['tags']
 
                     if 'simConfig' in data.keys():
-                        setup.setSimCfg(data['simConfig'])
+                        setup._setSimCfg(data['simConfig'])
                     if 'net' in data and gatherLFP:
                         if 'recXElectrode' in data['net']:
                             xElectrode = data['net']['recXElectrode']

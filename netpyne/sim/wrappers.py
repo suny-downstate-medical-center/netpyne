@@ -428,7 +428,7 @@ def load(
         sim.cfg.createNEURONObj = createNEURONObj
         sim.loadAll(filename, instantiate=instantiate, createNEURONObj=createNEURONObj)
         if simConfig:
-            sim.setSimCfg(simConfig)  # set after to replace potentially loaded cfg
+            sim._setSimCfg(simConfig)  # set after to replace potentially loaded cfg
 
     if len(sim.net.cells) == 0 and instantiate:
         pops = sim.net.createPops()  # instantiate network populations

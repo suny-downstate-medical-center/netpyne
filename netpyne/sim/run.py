@@ -31,7 +31,7 @@ def preRun():
     sim.cvode.use_fast_imem(sim.cfg.use_fast_imem)
 
     # set h global params
-    sim.setGlobals()
+    sim._setGlobals()
 
     # set h.dt
     h.dt = sim.cfg.dt

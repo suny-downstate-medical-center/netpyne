@@ -158,7 +158,7 @@ def loadSimCfg(filename, data=None, variable='simConfig', setLoaded=True):
     if variable in data:
         rawSimConfig = data[variable]
         if setLoaded:
-            setup.setSimCfg(rawSimConfig)
+            setup._setSimCfg(rawSimConfig)
         else:
             return specs.SimConfig(rawSimConfig)
     else:
@@ -204,7 +204,7 @@ def loadNetParams(filename, data=None, variable=None, setLoaded=True):
         return
 
     if setLoaded:
-        setup.setNetParams(rawNetParams)
+        setup._setNetParams(rawNetParams)
     else:
         return specs.NetParams(rawNetParams)
 

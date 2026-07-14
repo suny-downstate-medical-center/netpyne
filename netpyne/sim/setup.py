@@ -62,10 +62,10 @@ def initialize(netParams=None, simConfig=None, net=None):
     sim.nextHost = 0  # initialize next host
     sim.timingData = Dict()  # dict to store timing
 
-    sim.createParallelContext()  # inititalize PC, nhosts and rank
+    sim._createParallelContext()  # inititalize PC, nhosts and rank
     sim.cvode = h.CVode()
 
-    sim.setSimCfg(simConfig)  # set simulation configuration
+    sim._setSimCfg(simConfig)  # set simulation configuration
 
     # for testing validation
     # if simConfig.exitOnError:
@@ -80,11 +80,11 @@ def initialize(netParams=None, simConfig=None, net=None):
         sim.timing('start', 'totalTime')
 
     if net:
-        sim.setNet(net)  # set existing external network
+        sim._setNet(net)  # set existing external network
     else:
-        sim.setNet(sim.Network())  # or create new network
+        sim._setNet(sim.Network())  # or create new network
 
-    sim.setNetParams(netParams)  # set network parameters
+    sim._setNetParams(netParams)  # set network parameters
 
     if sim.nhosts > 1:
         sim.cfg.validateNetParams = False  # turn of error chceking if using multiple cores
@@ -113,9 +113,9 @@ def initialize(netParams=None, simConfig=None, net=None):
 # ------------------------------------------------------------------------------
 # Set network object to use in simulation
 # ------------------------------------------------------------------------------
-def setNet(net):
+def _setNet(net):
     """
-    Function for/to <short description of `netpyne.sim.setup.setNet`>
+    Function for/to <short description of `netpyne.sim.setup._setNet`>
 
     Parameters
     ----------
@@ -134,9 +134,9 @@ def setNet(net):
 # ------------------------------------------------------------------------------
 # Set network params to use in simulation
 # ------------------------------------------------------------------------------
-def setNetParams(params):
+def _setNetParams(params):
     """
-    Function for/to <short description of `netpyne.sim.setup.setNetParams`>
+    Function for/to <short description of `netpyne.sim.setup._setNetParams`>
 
     Parameters
     ----------
@@ -150,7 +150,7 @@ def setNetParams(params):
     from .. import sim
 
     if not hasattr(sim, 'net'):
-        sim.setNet(sim.Network())  # create new network if one doesn't exist
+        sim._setNet(sim.Network())  # create new network if one doesn't exist
 
     if params and isinstance(params, specs.NetParams):
         paramsDict = utils.replaceKeys(params.todict(), 'popLabel', 'pop')  # for backward compatibility
@@ -171,9 +171,9 @@ def setNetParams(params):
 # ------------------------------------------------------------------------------
 # Set simulation config
 # ------------------------------------------------------------------------------
-def setSimCfg(cfg):
+def _setSimCfg(cfg):
     """
-    Function for/to <short description of `netpyne.sim.setup.setSimCfg`>
+    Function for/to <short description of `netpyne.sim.setup._setSimCfg`>
 
     Parameters
     ----------
@@ -207,9 +207,9 @@ def setSimCfg(cfg):
 # ------------------------------------------------------------------------------
 # Create parallel context
 # ------------------------------------------------------------------------------
-def createParallelContext():
+def _createParallelContext():
     """
-    Function for/to <short description of `netpyne.sim.setup.createParallelContext`>
+    Function for/to <short description of `netpyne.sim.setup._createParallelContext`>
 
 
     """
@@ -306,9 +306,9 @@ def readCmdLineArgs(simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
 # ------------------------------------------------------------------------------
 # Setup LFP Recording
 # ------------------------------------------------------------------------------
-def setupRecordLFP():
+def _setupRecordLFP():
     """
-    Function for/to <short description of `netpyne.sim.setup.setupRecordLFP`>
+    Function for/to <short description of `netpyne.sim.setup._setupRecordLFP`>
 
 
     """
@@ -380,9 +380,9 @@ def setupRecordLFP():
 # ------------------------------------------------------------------------------
 # Setup Dipoles Recording (needed for EEG/MEG)
 # ------------------------------------------------------------------------------
-def setupRecordDipole():
+def _setupRecordDipole():
     """
-    Function for/to <short description of `netpyne.sim.setup.setupRecordDipole`>
+    Function for/to <short description of `netpyne.sim.setup._setupRecordDipole`>
 
 
     """
@@ -435,7 +435,7 @@ def setupRecordDipole():
             cdm = lfpykit.CurrentDipoleMoment(cell=lfpykitCell)
             cell.M = cdm.get_transformation_matrix()
 
-            # set up recording of membrane currents (duplicate with setupRecordLFP -- unifiy and avoid calling twice)
+            # set up recording of membrane currents (duplicate with _setupRecordLFP -- unifiy and avoid calling twice)
             nseg = cell.getNumberOfSegments()
             cell.imembPtr = h.PtrVector(nseg)  # pointer vector
             if neuron_version < '9.0.0':
@@ -559,11 +559,11 @@ def setupRecording():
 
     # set LFP recording
     if sim.cfg.recordLFP or sim.cfg.saveIMembrane:
-        setupRecordLFP()
+        _setupRecordLFP()
 
     # set dipole recording
     if sim.cfg.recordDipole:
-        setupRecordDipole()
+        _setupRecordDipole()
 
     sim.timing('stop', 'setrecordTime')
 
@@ -573,9 +573,9 @@ def setupRecording():
 # ------------------------------------------------------------------------------
 # Get cells list for recording based on set of conditions
 # ------------------------------------------------------------------------------
-def setGlobals():
+def _setGlobals():
     """
-    Function for/to <short description of `netpyne.sim.setup.setGlobals`>
+    Function for/to <short description of `netpyne.sim.setup._setGlobals`>
 
 
     """

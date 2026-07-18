@@ -73,10 +73,10 @@ def addRxD(self, nthreads=None):
             self._addSpecies(rxdParams['species'])
         if 'states' in rxdParams:
             self._addStates(rxdParams['states'])
-        if 'reactions' in rxdParams:
-            self._addReactions(rxdParams['reactions'])
         if 'parameters' in rxdParams:
             self._addParameters(rxdParams['parameters'])
+        if 'reactions' in rxdParams:
+            self._addReactions(rxdParams['reactions'])
         if 'multicompartmentReactions' in rxdParams:
             self._addReactions(rxdParams['multicompartmentReactions'], multicompartment=True)
         if 'rates' in rxdParams:

@@ -37,6 +37,14 @@ class Dict(dict):
             # Throws exception if not in prototype chain
             return object.__getattribute__(self, k)
         except AttributeError:
+            # Special ("dunder") attributes are probed by the interpreter and by the
+            # standard library, e.g. copy.deepcopy() looks for __deepcopy__ on the
+            # instance. Falling through to item access for those would create the key
+            # via __missing__ and hand back a Dict, which the caller then uses as if it
+            # were the special method itself (raising e.g. "'Dict' object is not
+            # callable"), and silently leaves the bogus key behind in the data.
+            if k.startswith('__') and k.endswith('__'):
+                raise
             try:
                 return self[k]
             except KeyError:

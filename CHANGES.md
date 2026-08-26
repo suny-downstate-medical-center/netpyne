@@ -9,6 +9,7 @@
 - fixed crash where stimTargetParams provided with no `loc` (for IClamp and other cases)
 - restore proper functioning of `cfg.saveLFPPops` and `cfg.saveDipolePops` as `True`, and their combined use
 - fixed crash in `modifySynMechs()`
+- fixed crash when saving with `cfg.saveMat`, caused by `Dict` resolving special attributes (e.g. `__deepcopy__`) from its keys
 
 # Version 1.1.1
 

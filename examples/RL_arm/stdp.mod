@@ -35,7 +35,7 @@ Version: 2013oct24 by cliffk
 ENDCOMMENT
 
 NEURON {
-    POINT_PROCESS STDP : Definition of mechanism
+    ARTIFICIAL_CELL STDP : Definition of mechanism
     POINTER synweight : Pointer to the weight (in a NetCon object) to be adjusted.
     RANGE tauhebb, tauanti : LTP/LTD decay time constants (in ms) for the Hebbian (pre-before-post-synaptic spikes), and anti-Hebbian (post-before-pre-synaptic) cases. 
     RANGE hebbwt, antiwt : Maximal adjustment (can be positive or negative) for Hebbian and anti-Hebbian cases (i.e., as inter-spike interval approaches zero).  This should be set positive for LTP and negative for LTD.

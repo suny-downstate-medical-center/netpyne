@@ -36,6 +36,9 @@ def update_items(d, u, force_match = False):
 class Runner_SimConfig(specs.simConfig.SimConfig):
     def __init__(self, *args, **kwargs):
         specs.simConfig.SimConfig.__init__(self, *args, **kwargs)
+        self._batchtk_label_pointer = None
+        self._batchtk_path_pointer = None
+        self._batchtk_dir_pointer = None
         self._runner = RS()
 
     def update(self, simConfigDict=None, force_match=False):  # intended to take `cfg` instance as self
@@ -55,12 +58,19 @@ class Runner_SimConfig(specs.simConfig.SimConfig):
         if simConfigDict:
             update_items(self, simConfigDict, force_match)
         update_config(self.__dict__, **self._runner.mappings)
-
+        if self._batchtk_label_pointer:
+            self.simLabel = self._batchtk_label_pointer
+        if self._batchtk_path_pointer:
+            self.saveFolder = self._batchtk_path_pointer
+        if self._batchtk_dir_pointer:
+            self.saveFolder = self._batchtk_dir_pointer
         #for assign_path, value in self.mappings.items():
         #    try:
         #        set_map(self, assign_path, value)
         #    except Exception as e:
         #        raise Exception("failed on mapping: cfg.{} with value: {}\n{}".format(assign_path, value, e))
+
+    # no longer need test_mappings since update_config performs the check--
     def test_mappings(self, mappings):
         """
         Tests mappings for validity

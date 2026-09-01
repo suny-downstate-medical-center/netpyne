@@ -63,7 +63,7 @@ def checkOutput(modelName, verbose=False):
                 'cell_lfp': 1,
                 'saving': 3699,
             }
-        else:
+        elif neuron.__version__ >= '8.1.0' and neuron.__version__ < '9.0.0':
             expectedSpikes = {
                 'tut1': 2053,
                 'tut2': 930,
@@ -81,6 +81,30 @@ def checkOutput(modelName, verbose=False):
                 'cell_lfp': 1,
                 'saving': 3624,
             }
+        else:
+            # NEURON 9 has a modified netstim.mod which uses a better RNG
+            # it also reintroduces the TABLE statement in hh.mod
+            # for more details, see the following links:
+            # - https://github.com/neuronsimulator/nrn/pull/2627
+            # - https://github.com/neuronsimulator/nrn/pull/3093
+            expectedSpikes = {
+                'tut1': 2067,
+                'tut2': 933,
+                'tut3': 572,
+                'tut4': 1186,
+                'tut5': 4871,
+                'tut6': 137,
+                'tut7': 328,
+                'tut_import': 3135,
+                'HHTut': 2067,
+                'HybridTut': 2664,
+                'M1': 14572,
+                'M1detailed': 2880,
+                'PTcell': 4,
+                'cell_lfp': 1,
+                'saving': 3750,
+            }
+
         expectedAll = {'numSyns': expectedSyns, 'numSpikes': expectedSpikes}
 
         # compare all features

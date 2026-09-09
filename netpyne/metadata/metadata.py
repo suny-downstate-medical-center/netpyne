@@ -2285,6 +2285,12 @@ metadata = {
                 "suggestions": "",
                 "type": "list(list(float))",
             },
+            "recordLFPSourcePops": {
+                "label": "Select source populations for each LFP electrode",
+                "help": "Optional list parallel to recordLFP. Each entry is None (all populations), a population label, or a list of population labels whose compartmental cells contribute to that electrode.",
+                "suggestions": "",
+                "type": "list",
+            },
             "recordDipolesHNN": {
                 "label": "Record dipoles using HNN method",
                 "help": "Store dipoles HNN generated individually by each cell in sim.allSimData['recordDipolesHNN'].",

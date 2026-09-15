@@ -79,6 +79,7 @@ class SimConfig(object):
         self.recordCellsSpikes = -1  # cells to record spike times from (-1 to record from all)
         self.recordStim = False  # record spikes of cell stims
         self.recordLFP = []  # list of 3D locations to record LFP from
+        self.recordLFPSourcePops = None  # optional population sources for each LFP electrode
         self.recordDipole = False  # record dipoles using lfpykit method
         self.recordDipolesHNN = False  # record dipoles using HNN method
         self.saveIMembrane = False  # Store transmembrane current by each cell

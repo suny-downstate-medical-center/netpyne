@@ -306,6 +306,41 @@ def readCmdLineArgs(simConfigDefault='cfg.py', netParamsDefault='netParams.py'):
 # ------------------------------------------------------------------------------
 # Setup LFP Recording
 # ------------------------------------------------------------------------------
+def _normalizeLFPSourcePops(recordLFP, recordLFPSourcePops, populationLabels):
+    """Validate and normalize optional per-electrode LFP population sources."""
+    if recordLFPSourcePops is None:
+        return None
+    if not isinstance(recordLFPSourcePops, (list, tuple)):
+        raise ValueError('cfg.recordLFPSourcePops must be a list with one entry per cfg.recordLFP electrode')
+    if len(recordLFPSourcePops) != len(recordLFP):
+        raise ValueError(
+            'cfg.recordLFPSourcePops must have the same length as cfg.recordLFP '
+            f'({len(recordLFPSourcePops)} != {len(recordLFP)})'
+        )
+
+    known = set(populationLabels)
+    normalized = []
+    for index, sources in enumerate(recordLFPSourcePops):
+        if sources is None:
+            normalized.append(None)
+            continue
+        if isinstance(sources, str):
+            sources = [sources]
+        elif not isinstance(sources, (list, tuple)):
+            raise ValueError(
+                f'cfg.recordLFPSourcePops[{index}] must be None, a population label, or a list of labels'
+            )
+        if not all(isinstance(pop, str) and pop for pop in sources):
+            raise ValueError(f'cfg.recordLFPSourcePops[{index}] contains an invalid population label')
+        unknown = sorted(set(sources) - known)
+        if unknown:
+            raise ValueError(
+                f'cfg.recordLFPSourcePops[{index}] contains unknown population label(s): {unknown}'
+            )
+        normalized.append(tuple(dict.fromkeys(sources)))
+    return normalized
+
+
 def setupRecordLFP():
     """
     Function for/to <short description of `netpyne.sim.setup.setupRecordLFP`>
@@ -317,6 +352,20 @@ def setupRecordLFP():
     from netpyne.support.recxelectrode import RecXElectrode
 
     nsites = len(sim.cfg.recordLFP)
+    sourcePops = _normalizeLFPSourcePops(
+        sim.cfg.recordLFP,
+        sim.cfg.recordLFPSourcePops,
+        sim.net.pops.keys(),
+    )
+    sim.net.recordLFPSourcePops = sourcePops
+    if sourcePops is not None:
+        sim.net.recordLFPSourcePopsForEachPop = {
+            pop: np.asarray(
+                [index for index, sources in enumerate(sourcePops) if sources is None or pop in sources],
+                dtype=int,
+            )
+            for pop in sim.net.pops
+        }
     saveSteps = int(np.ceil(sim.cfg.duration / sim.cfg.recordStep))
     sim.simData['LFP'] = np.zeros((saveSteps, nsites))
     if sim.cfg.saveLFPCells:

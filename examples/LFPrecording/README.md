@@ -10,7 +10,14 @@ Two examples of using LFP recording in NetPyNE:
 
 ![lfp_net](https://raw.githubusercontent.com/suny-downstate-medical-center/netpyne/development/doc/source/figs/lfp_net.png)
 
-To record LFP just set the list of 3D locations of the LFP electrodes in the `simConfig` attribute `recordLFP` e.g. ``simConfig.recordLFP = e.g. [[50, 100, 50], [50, 200, 50]]`` (note the y coordinate represents depth, so will be represented as a negative value whehn plotted). The LFP signal in each electrode is obtained by summing the extracellular potential contributed by each segment of each neuron. Extracellular potentials are calculated using the "line source approximation" and assuming an Ohmic medium with conductivity sigma = 0.3 mS/mm. For more information on modeling LFPs see http://www.scholarpedia.org/article/Local_field_potential or https://doi.org/10.3389/fncom.2016.00065 .
+To record LFP just set the list of 3D locations of the LFP electrodes in the `simConfig` attribute `recordLFP` e.g. ``simConfig.recordLFP = [[50, 100, 50], [50, 200, 50]]`` (note the y coordinate represents depth, so will be represented as a negative value when plotted). The LFP signal in each electrode is obtained by summing the extracellular potential contributed by each segment of each neuron. Extracellular potentials are calculated using the "line source approximation" and assuming an Ohmic medium with conductivity sigma = 0.3 mS/mm. For more information on modeling LFPs see http://www.scholarpedia.org/article/Local_field_potential or https://doi.org/10.3389/fncom.2016.00065 .
+
+An optional list parallel to `recordLFP` can select source populations independently for each channel, without storing a full signal for every population::
+
+    simConfig.recordLFP = [[50, 100, 50], [50, 100, 50], [50, 100, 50]]
+    simConfig.recordLFPSourcePops = [['E'], ['I'], None]
+
+Here the duplicated location records E-only, I-only, and all-population signals. `None` preserves the historical all-population behavior. `saveLFPPops`, when also enabled, retains its historical unfiltered per-population semantics.
 
 To plot the LFP use the ``sim.analysis.plotLFP()`` method. This allows to plot for each electrode: 1) the time-resolved LFP signal ('timeSeries'), 2) the power spectral density ('PSD'), 3) the spectrogram / time-frequency profile ('spectrogram'), 4) and the 3D locations of the electrodes overlayed over the model neurons ('locations'). See :ref:`analysis_functions` for the full list of ``plotLFP()`` arguments.
 
@@ -38,4 +45,3 @@ Requires NEURON with Python and MPI support.
 
 
 For further information please contact: salvadordura@gmail.com 
-

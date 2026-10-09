@@ -1725,8 +1725,6 @@ try:
 
                 if ptype == 'electricalProjection':
 
-                    if weight != 1:
-                        raise Exception('Cannot yet support inputs where weight !=1!')
                     connParam = {
                         'synsPerConn': 1,
                         'sec': post_seg,

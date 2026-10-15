@@ -3,7 +3,10 @@ Module for adding stimulations to networks
 
 """
 
+import hashlib
+import re
 from numbers import Number
+import numpy as np
 
 try:
     basestring
@@ -378,3 +381,258 @@ def _stimStrToFunc(self, postCellsTags, sourceParams, targetParams):
         }
 
     return strParams
+
+
+# -----------------------------------------------------------------------------
+# Experimental Jaxley stim helpers
+# -----------------------------------------------------------------------------
+def _stable_u32_jaxley(s):
+    return int(hashlib.md5(s.encode()).hexdigest()[:8], 16)
+
+
+def _as_mapping_jaxley_stim(obj):
+    if obj is None:
+        return {}
+    if isinstance(obj, dict):
+        return obj
+    try:
+        return dict(obj)
+    except Exception:
+        return {}
+
+
+def _match_targets_jaxley(gid_pop, conds):
+    conds = _as_mapping_jaxley_stim(conds)
+    pop = conds.get('pop', None)
+    if pop is None:
+        return sorted(gid_pop.keys())
+    if isinstance(pop, (list, tuple, set)):
+        allowed = set(pop)
+    else:
+        allowed = {pop}
+    return sorted(g for g, p in gid_pop.items() if p in allowed)
+
+
+def _resolve_delay_ms_jaxley(value, rng):
+    if value is None:
+        return 1.0
+    if isinstance(value, (int, float, np.floating, np.integer)):
+        return float(value)
+    if isinstance(value, str):
+        s = value.strip()
+        m = re.match(r'uniform\s*\(\s*([-\d.eE]+)\s*,\s*([-\d.eE]+)\s*\)', s)
+        if m:
+            return float(rng.uniform(float(m.group(1)), float(m.group(2))))
+        try:
+            return float(s)
+        except ValueError:
+            print(f"  [jxl] Warning: cannot parse delay={value!r}; using 1.0 ms")
+            return 1.0
+    return 1.0
+
+
+def netstimSpikeTimesJaxley(rate_hz, noise, start_ms, t_max, number, rng):
+    """NEURON NetStim-like spike times (ms)."""
+    if rate_hz <= 0:
+        return []
+    mean = 1000.0 / float(rate_hz)
+    noise = float(np.clip(noise, 0.0, 1.0))
+    times = []
+    t = float(start_ms)
+    n_max = int(number) if number < 1e12 else 10**9
+    while t < t_max and len(times) < n_max:
+        times.append(t)
+        if noise <= 0.0:
+            isi = mean
+        elif noise >= 1.0:
+            isi = float(rng.exponential(mean))
+        else:
+            isi = (1.0 - noise) * mean + noise * float(rng.exponential(mean))
+        t += isi
+    return times
+
+
+def spikeTrainClampJaxley(spike_times, dt, t_max, v_rest=-70.0, v_spike=40.0, width_ms=1.0):
+    """Voltage waveform for ``clamp('v', ...)``.
+
+    Default ``v_spike=40`` so rising-edge detection in ``Exp2Synapse`` fires for
+    typical NetCon thresholds (e.g. 0–10 mV).
+    """
+    n = int(t_max // dt) + 2
+    v = np.full(n, v_rest, dtype=np.float32)
+    w = max(1, int(round(width_ms / dt)))
+    for st in spike_times:
+        i0 = int(round(float(st) / dt))
+        if 0 <= i0 < n:
+            v[i0 : min(n, i0 + w)] = v_spike
+    return v
+
+
+def planStimsJaxley(gid_pop, stim_source_params, stim_target_params, syn_mech_params, stim_seed=1):
+    """
+    Expand ``stimSourceParams``/``stimTargetParams`` into per-target Jaxley attachments.
+    """
+    stim_source_params = _as_mapping_jaxley_stim(stim_source_params)
+    stim_target_params = _as_mapping_jaxley_stim(stim_target_params)
+    syn_mech_params = _as_mapping_jaxley_stim(syn_mech_params)
+    attachments = []
+
+    for tgt_label, raw in stim_target_params.items():
+        rule = _as_mapping_jaxley_stim(raw)
+        source_name = rule.get('source')
+        source = _as_mapping_jaxley_stim(stim_source_params.get(source_name, {}))
+        stype = source.get('type', 'NetStim')
+        targets = _match_targets_jaxley(gid_pop, rule.get('conds', {}))
+
+        if stype != 'NetStim':
+            attachments.append(
+                {
+                    'kind': stype,
+                    'label': tgt_label,
+                    'source': source_name,
+                    'source_params': source,
+                    'targets': targets,
+                    'rule': rule,
+                }
+            )
+            continue
+
+        syn_label = rule.get('synMech')
+        if not syn_label and syn_mech_params:
+            syn_label = next(iter(syn_mech_params))
+            print(
+                f"  [jxl] stim {tgt_label}: no synMech specified; using first synMechParams key {syn_label!r} (NetPyNE default)"
+            )
+        syn_mech = _as_mapping_jaxley_stim(syn_mech_params.get(syn_label, {})) if syn_label else {}
+
+        rate = float(source.get('rate', 10.0))
+        noise = float(source.get('noise', 0.0))
+        start = float(source.get('start', 0.0))
+        number = float(source.get('number', 1e9))
+        weight = float(rule.get('weight', 1.0))
+        e_syn = float(syn_mech['e']) if 'e' in syn_mech else 0.0
+        syn_name = f"stim_{tgt_label.replace('->', '_').replace('-', '_')}"
+
+        for post_gid in targets:
+            rng_delay = np.random.default_rng([int(stim_seed), int(post_gid), _stable_u32_jaxley(tgt_label), 0])
+            delay = _resolve_delay_ms_jaxley(rule.get('delay', 1.0), rng_delay)
+            attachments.append(
+                {
+                    'kind': 'NetStim',
+                    'label': tgt_label,
+                    'source': source_name,
+                    'post_gid': int(post_gid),
+                    'rate': rate,
+                    'noise': noise,
+                    'start': start,
+                    'number': number,
+                    'weight': weight,
+                    'delay': delay,
+                    'syn_label': syn_label,
+                    'syn_name': syn_name,
+                    'syn_mech': syn_mech,
+                    'e_syn': e_syn,
+                    'rng_seed': [int(stim_seed), int(post_gid), _stable_u32_jaxley(tgt_label), 1],
+                }
+            )
+
+    return attachments
+
+
+def countNetStimDummiesJaxley(attachments):
+    return sum(1 for a in attachments if a.get('kind') == 'NetStim')
+
+
+def makeNetStimDummyCellsJaxley(n):
+    import jaxley as jx
+
+    return [jx.Cell() for _ in range(int(n))]
+
+
+def addStimsJaxley(net, attachments, cell_offset, duration, dt, verbose=True):
+    """
+    Experimental Jaxley stim application: dummy cell + clamped spike train + synapse.
+    """
+    from jaxley.connect import connect as jx_connect
+    from ..support.jaxley_synapses import applyJaxleySynapseParams, makeJaxleySynapse
+    import jaxley as jx
+
+    records = []
+    dummy_idx = 0
+    syn_meta = {}
+
+    n_netstim = countNetStimDummiesJaxley(attachments)
+    if n_netstim and verbose:
+        sample = next(a for a in attachments if a.get('kind') == 'NetStim')
+        print(
+            f"  [jxl] NetStim {sample['label']}: rate={sample['rate']} Hz, noise={sample['noise']}, "
+            f"start={sample['start']} ms, weight={sample['weight']}, delay~from target rule, "
+            f"n_sources={n_netstim} (one dummy clamp per target cell)"
+        )
+
+    for att in attachments:
+        if att.get('kind') != 'NetStim':
+            if att.get('kind') in ('IClamp',):
+                source = _as_mapping_jaxley_stim(att.get('source_params', {}))
+                amp = float(source.get('amp', 0.1))
+                delay = float(source.get('del', 0.0))
+                dur = float(source.get('dur', duration))
+                current = jx.step_current(delay, dur, amp, dt, duration)
+                for gid in att.get('targets', []):
+                    net.cell(cell_offset + int(gid)).stimulate(current)
+                    records.append({'kind': 'IClamp', 'gid': gid, 'amp': amp})
+            else:
+                print(f"  [jxl] Warning: stim type {att.get('kind')!r} not implemented; skipping")
+            continue
+
+        post_jx = cell_offset + int(att['post_gid'])
+        pre_jx = dummy_idx
+        syn_name = att['syn_name']
+        syn_mech = att.get('syn_mech') or {}
+        syn_obj, syn_kind = makeJaxleySynapse(syn_mech, name=syn_name)
+        jx_connect(
+            net.cell(pre_jx).branch(0).comp(0),
+            net.cell(post_jx).branch(0).comp(0),
+            syn_obj,
+        )
+        syn_meta[syn_name] = (syn_kind, float(att['weight']), float(att['e_syn']), syn_mech)
+
+        rng = np.random.default_rng(att['rng_seed'])
+        spike_times = netstimSpikeTimesJaxley(
+            rate_hz=att['rate'],
+            noise=att['noise'],
+            start_ms=att['start'],
+            t_max=duration,
+            number=att['number'],
+            rng=rng,
+        )
+        delayed = [t + float(att['delay']) for t in spike_times if t + float(att['delay']) < duration]
+        net.cell(pre_jx).clamp('v', spikeTrainClampJaxley(delayed, dt=dt, t_max=duration), verbose=False)
+
+        records.append(
+            {
+                'kind': 'NetStim',
+                'label': att['label'],
+                'source': att['source'],
+                'gid': att['post_gid'],
+                'dummy_index': pre_jx,
+                'n_spikes': len(delayed),
+                'delay': att['delay'],
+                'weight': att['weight'],
+                'rate': att['rate'],
+                'noise': att['noise'],
+            }
+        )
+        dummy_idx += 1
+
+    for syn_name, (kind, w, e, syn_mech) in syn_meta.items():
+        applyJaxleySynapseParams(net, syn_name, kind, w, e, syn_mech=syn_mech, v_th=0.0)
+        if verbose:
+            print(f"  [jxl] Stim synapse {syn_name}: {kind} (e={e}, gS={w})")
+
+    if records and verbose:
+        nsp = [r['n_spikes'] for r in records if r.get('kind') == 'NetStim']
+        if nsp:
+            print(f"  [jxl] NetStim spike counts per target: min={min(nsp)}, max={max(nsp)}, mean={np.mean(nsp):.1f}")
+
+    return records

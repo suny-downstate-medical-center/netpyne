@@ -414,3 +414,82 @@ def loadBalance(printNodeTimes=False):
         print('\nspike exchange time (run_time-comp_time): ', sim.timingData['runTime'] - max_comp_time)
 
     return [max_comp_time, min_comp_time, avg_comp_time, load_balance]
+
+
+# ------------------------------------------------------------------------------
+# Experimental Jaxley run helpers
+# ------------------------------------------------------------------------------
+def _cfgGetJaxley(sim_config, key, default=None):
+    if hasattr(sim_config, key):
+        return getattr(sim_config, key)
+    try:
+        return dict(sim_config).get(key, default)
+    except Exception:
+        return default
+
+
+def setupRecordingJaxley(jx_net, record_gids=None, cell_offset=0, n_network_cells=None):
+    """
+    Record membrane voltage from Jaxley network cells (not NetStim dummies).
+    """
+    if n_network_cells is None:
+        total = int(jx_net.nodes['global_cell_index'].max()) + 1 if len(jx_net.nodes) else 0
+        n_network_cells = max(0, total - int(cell_offset))
+    if record_gids is None:
+        record_gids = list(range(int(n_network_cells)))
+    for gid in record_gids:
+        jx_net.cell(int(cell_offset) + int(gid)).record('v')
+    return list(record_gids)
+
+
+def detectSpikesJaxley(v_trace, dt, threshold=0.0):
+    """Simple upward threshold crossings (ms)."""
+    v = np.asarray(v_trace).ravel()
+    crossed = np.where((v[:-1] < threshold) & (v[1:] >= threshold))[0]
+    return crossed.astype(float) * float(dt)
+
+
+def runSimJaxley(jx_net, sim_config, record_gids=None, spike_threshold=0.0, cell_offset=0, n_network_cells=None):
+    """
+    Integrate a Jaxley network and return a NetPyNE-like ``simData`` dict.
+    """
+    import jaxley as jx
+
+    duration = float(_cfgGetJaxley(sim_config, 'duration', 1000.0))
+    dt = float(_cfgGetJaxley(sim_config, 'dt', 0.025))
+    record_step = float(_cfgGetJaxley(sim_config, 'recordStep', dt))
+
+    record_gids = setupRecordingJaxley(
+        jx_net, record_gids=record_gids, cell_offset=cell_offset, n_network_cells=n_network_cells
+    )
+
+    print(f'Running Jaxley simulate (t={duration} ms, dt={dt} ms)...')
+    v = np.asarray(jx.integrate(jx_net, t_max=duration, delta_t=dt))
+    t = np.arange(v.shape[1]) * dt
+
+    stride = max(1, int(round(record_step / dt))) if record_step > dt else 1
+    t_out = t[::stride]
+
+    spkt = []
+    spkid = []
+    traces = {}
+    for i, gid in enumerate(record_gids):
+        vi = v[i]
+        spikes = detectSpikesJaxley(vi, dt, threshold=spike_threshold)
+        spkt.extend(spikes.tolist())
+        spkid.extend([int(gid)] * len(spikes))
+        traces[f'cell_{gid}'] = vi[::stride].tolist()
+
+    order = np.argsort(spkt) if spkt else []
+    spkt = [spkt[i] for i in order]
+    spkid = [spkid[i] for i in order]
+
+    sim_data = {
+        'spkt': spkt,
+        'spkid': spkid,
+        't': t_out.tolist(),
+        'Vsoma': traces,
+        'record_gids': list(record_gids),
+    }
+    print(f'  [jxl] Done; {len(spkt)} spikes from {len(set(spkid))} cells')
+    return sim_data

@@ -43,6 +43,7 @@ class SimConfig(object):
         self.rand123GlobalIndex = (
             None  # Sets the global index used by all instances of the Random123 instances of Random
         )
+        self.simulator = 'neuron'  # execution backend: 'neuron' (default) or experimental 'jaxley'
         self.createNEURONObj = True  #  create runnable network in NEURON when instantiating netpyne network metadata
         self.createPyStruct = True  # create Python structure (simulator-independent) when instantiating network
         self.addSynMechs = True  # whether to add synaptich mechanisms or not

@@ -196,3 +196,109 @@ class Network(object):
     # Import modify methods
     # -----------------------------------------------------------------------------
     from .modify import modifyCells, modifySynMechs, modifyConns, modifyStims
+
+    # -----------------------------------------------------------------------------
+    # Experimental backend helpers
+    # -----------------------------------------------------------------------------
+    def buildJaxley(self, sim_config, num_cells_override=None):
+        """
+        Experimental builder that instantiates a Jaxley-backed network from the
+        current ``self.params``.
+        """
+        import jaxley as jx
+        from ..cell.compartCell import createJaxleyCell
+        from .conn import connectCellsJaxley
+        from .stim import (
+            addStimsJaxley,
+            countNetStimDummiesJaxley,
+            makeNetStimDummyCellsJaxley,
+            planStimsJaxley,
+        )
+
+        def _as_mapping_jaxley(obj):
+            if obj is None:
+                return {}
+            if isinstance(obj, dict):
+                return obj
+            try:
+                return dict(obj)
+            except Exception:
+                return {}
+
+        def _get_param_dict(name):
+            if hasattr(self.params, name):
+                return _as_mapping_jaxley(getattr(self.params, name))
+            return _as_mapping_jaxley(_as_mapping_jaxley(self.params).get(name, {}))
+
+        class JaxleyNet(object):
+            def __init__(self, jx_net, gid_pop, pops, conns, stims, cell_offset=0, params=None):
+                self.jx_net = jx_net
+                self.gid_pop = gid_pop
+                self.pops = pops
+                self.allPops = pops
+                self.conns = conns
+                self.stims = stims
+                self.cell_offset = int(cell_offset)
+                self.params = params
+                # NetPyNE analysis expects list of dicts with gid/tags/conns
+                self.allCells = [
+                    {'gid': int(gid), 'tags': {'pop': pop}, 'conns': []}
+                    for gid, pop in sorted(gid_pop.items())
+                ]
+                self.cells = list(self.allCells)
+
+        print('Building Jaxley network from NetPyNE specs...')
+        pop_params = _get_param_dict('popParams')
+        cell_params = _get_param_dict('cellParams')
+        num_cells_override = num_cells_override or {}
+
+        cells = []
+        gid_pop = {}
+        pops = {}
+        next_gid = 0
+        for pop_label, raw in pop_params.items():
+            pop = _as_mapping_jaxley(raw)
+            cell_type = pop.get('cellType', pop_label)
+            n = int(num_cells_override.get(pop_label, pop.get('numCells', 0)))
+            if n <= 0:
+                raise ValueError(f"popParams[{pop_label!r}] needs numCells > 0 (got {n})")
+            if cell_type not in cell_params:
+                raise KeyError(
+                    f"popParams[{pop_label!r}] cellType={cell_type!r} not in cellParams {list(cell_params)}"
+                )
+
+            rule = _as_mapping_jaxley(cell_params[cell_type])
+            gids = []
+            for _ in range(n):
+                cells.append(createJaxleyCell(rule, cellLabel=cell_type))
+                gid_pop[next_gid] = pop_label
+                gids.append(next_gid)
+                next_gid += 1
+            pops[pop_label] = {'cellGids': gids, 'cellType': cell_type, 'numCells': n, 'tags': {'pop': pop_label}}
+            print(f"  [jxl] Created pop {pop_label}: {n} cells (cellType={cell_type})")
+
+        duration = float(getattr(sim_config, 'duration', _as_mapping_jaxley(sim_config).get('duration', 1000.0)))
+        dt = float(getattr(sim_config, 'dt', _as_mapping_jaxley(sim_config).get('dt', 0.025)))
+        seeds = getattr(sim_config, 'seeds', None) or _as_mapping_jaxley(sim_config).get('seeds', {})
+        stim_seed = int(_as_mapping_jaxley(seeds).get('stim', 1))
+        stim_source = _get_param_dict('stimSourceParams')
+        stim_target = _get_param_dict('stimTargetParams')
+        syn_mech_params = _get_param_dict('synMechParams')
+
+        print('Planning stims...')
+        attachments = planStimsJaxley(gid_pop, stim_source, stim_target, syn_mech_params, stim_seed=stim_seed)
+        n_dummies = countNetStimDummiesJaxley(attachments)
+        dummies = makeNetStimDummyCellsJaxley(n_dummies)
+        cell_offset = n_dummies
+        if n_dummies:
+            print(f"  [jxl] Allocating {n_dummies} NetStim dummy cells (clamp sources)")
+
+        jx_net = jx.Network(dummies + cells)
+        conn_params = _get_param_dict('connParams')
+        print('Making connections...')
+        conns = connectCellsJaxley(jx_net, gid_pop, conn_params, syn_mech_params, cell_offset=cell_offset)
+        print('Adding stims...')
+        stims = addStimsJaxley(jx_net, attachments, cell_offset=cell_offset, duration=duration, dt=dt)
+        return JaxleyNet(
+            jx_net, gid_pop, pops, conns, stims, cell_offset=cell_offset, params=self.params
+        )

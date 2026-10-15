@@ -9,6 +9,7 @@ except NameError:
     basestring = str
 
 import numpy as np
+import re
 from array import array as arrayFast
 from numbers import Number
 from tqdm import tqdm
@@ -1021,4 +1022,167 @@ def _addCellConn(self, connParam, preCellGid, postCellGid, preCellsTags={}):
 def _ensure(condition, connLabel, message):
     connLabelStr = f'[{connLabel}]' if connLabel else ''
     assert condition, f"  Error in connParams{connLabelStr}: {message}"
+
+
+# -----------------------------------------------------------------------------
+# Experimental Jaxley connectivity helpers
+# -----------------------------------------------------------------------------
+def _as_mapping_jaxley_conn(obj):
+    if obj is None:
+        return {}
+    if isinstance(obj, dict):
+        return obj
+    try:
+        return dict(obj)
+    except Exception:
+        return {}
+
+
+def _resolve_number_jaxley(value, default, kind='param'):
+    """Turn NetPyNE numeric or string expressions into a single float (no RNG)."""
+    if value is None:
+        return float(default)
+    if isinstance(value, (int, float, np.floating, np.integer)):
+        return float(value)
+    if isinstance(value, str):
+        s = value.strip()
+        m = re.match(r'uniform\s*\(\s*([-\d.eE]+)\s*,\s*([-\d.eE]+)\s*\)', s)
+        if m:
+            a, b = float(m.group(1)), float(m.group(2))
+            resolved = 0.5 * (a + b)
+            print(f"  [jxl] {kind}: {value!r} -> {resolved} (uniform midpoint, no RNG)")
+            return resolved
+        m = re.match(r'normal\s*\(\s*([-\d.eE]+)\s*,\s*([-\d.eE]+)\s*\)', s)
+        if m:
+            resolved = float(m.group(1))
+            print(f"  [jxl] {kind}: {value!r} -> {resolved} (normal mean, no RNG)")
+            return resolved
+        m = re.match(r'([-\d.eE]+)\s*\+\s*normal\s*\(\s*([-\d.eE]+)\s*,\s*([-\d.eE]+)\s*\)', s)
+        if m:
+            resolved = float(m.group(1)) + float(m.group(2))
+            print(f"  [jxl] {kind}: {value!r} -> {resolved} (const+normal mean, no RNG)")
+            return resolved
+        try:
+            return float(s)
+        except ValueError:
+            print(f"  [jxl] Warning: cannot parse {kind}={value!r}; using default {default}")
+            return float(default)
+    return float(default)
+
+
+def _match_pop_cells_jaxley(gid_pop, conds):
+    """Return gids whose pop matches preConds/postConds (pop-only for PoC)."""
+    conds = _as_mapping_jaxley_conn(conds)
+    pop = conds.get('pop', None)
+    if pop is None:
+        return sorted(gid_pop.keys())
+    if isinstance(pop, (list, tuple, set)):
+        allowed = set(pop)
+    else:
+        allowed = {pop}
+    return sorted(g for g, p in gid_pop.items() if p in allowed)
+
+
+def connectCellsJaxley(net, gid_pop, conn_params, syn_mech_params, default_convergence=8, cell_offset=0):
+    """
+    Experimental Jaxley connection builder from NetPyNE ``connParams``.
+    """
+    from jaxley.connect import connect as jx_connect
+    from ..support.jaxley_synapses import applyJaxleySynapseParams, makeJaxleySynapse
+
+    conn_params = _as_mapping_jaxley_conn(conn_params)
+    syn_mech_params = _as_mapping_jaxley_conn(syn_mech_params)
+    edge_records = []
+
+    for label, raw in conn_params.items():
+        rule = _as_mapping_jaxley_conn(raw)
+        pre_gids = _match_pop_cells_jaxley(gid_pop, rule.get('preConds', {}))
+        post_gids = _match_pop_cells_jaxley(gid_pop, rule.get('postConds', {}))
+        if not pre_gids or not post_gids:
+            print(f"  [jxl] Skipping conn rule {label!r}: no matching pre/post cells")
+            continue
+
+        weight = _resolve_number_jaxley(rule.get('weight', 0.001), 0.001, kind=f'{label}.weight')
+        if 'delay' in rule:
+            _ = _resolve_number_jaxley(rule.get('delay'), 0.0, kind=f'{label}.delay')
+            print(f"  [jxl] {label}: synaptic delay ignored in Jaxley PoC")
+
+        syn_label = rule.get('synMech', None)
+        if syn_label is None and syn_mech_params:
+            syn_label = next(iter(syn_mech_params))
+        syn_mech = _as_mapping_jaxley_conn(syn_mech_params.get(syn_label, {})) if syn_label else {}
+        e_syn = float(syn_mech['e']) if 'e' in syn_mech else 0.0
+        syn_name = str(syn_label) if syn_label else 'conn'
+        v_th = float(rule.get('threshold', 0.0))
+        _, syn_kind = makeJaxleySynapse(syn_mech, name=syn_name)
+
+        if 'connList' in rule:
+            pairs = list(rule['connList'])
+            print(f"  [jxl] {label}: fromListConn ({len(pairs)} pairs)")
+        elif 'probability' in rule:
+            p = _resolve_number_jaxley(rule['probability'], 0.1, kind=f'{label}.probability')
+            pairs = []
+            for i, post in enumerate(post_gids):
+                for j, pre in enumerate(pre_gids):
+                    if pre == post:
+                        continue
+                    if ((i * len(pre_gids) + j) % max(1, int(round(1.0 / max(p, 1e-9))))) == 0:
+                        pairs.append((pre, post))
+            print(f"  [jxl] {label}: probability~{p} -> {len(pairs)} deterministic edges")
+        elif 'convergence' in rule:
+            conv = int(round(_resolve_number_jaxley(rule['convergence'], default_convergence, kind=f'{label}.convergence')))
+            conv = max(1, conv)
+            pairs = []
+            for post in post_gids:
+                chosen = []
+                idx = post % len(pre_gids)
+                while len(chosen) < conv and len(chosen) < len(pre_gids):
+                    pre = pre_gids[idx % len(pre_gids)]
+                    idx += 1
+                    if pre == post:
+                        continue
+                    if pre not in chosen:
+                        chosen.append(pre)
+                for pre in chosen:
+                    pairs.append((pre, post))
+            print(f"  [jxl] {label}: convergence={conv} -> {len(pairs)} edges")
+        elif 'divergence' in rule:
+            div = int(round(_resolve_number_jaxley(rule['divergence'], 8, kind=f'{label}.divergence')))
+            pairs = []
+            for pre in pre_gids:
+                chosen = []
+                idx = pre % len(post_gids)
+                while len(chosen) < div and len(chosen) < len(post_gids):
+                    post = post_gids[idx % len(post_gids)]
+                    idx += 1
+                    if pre == post:
+                        continue
+                    if post not in chosen:
+                        chosen.append(post)
+                for post in chosen:
+                    pairs.append((pre, post))
+            print(f"  [jxl] {label}: divergence={div} -> {len(pairs)} edges")
+        else:
+            pairs = [(pre, post) for pre in pre_gids for post in post_gids if pre != post]
+            print(f"  [jxl] {label}: fullConn -> {len(pairs)} edges")
+
+        for pre, post in pairs:
+            # Fresh synapse instance per edge (Jaxley stores name/params on the object)
+            syn_i, _ = makeJaxleySynapse(syn_mech, name=syn_name)
+            jx_connect(
+                net.cell(cell_offset + pre).branch(0).comp(0),
+                net.cell(cell_offset + post).branch(0).comp(0),
+                syn_i,
+            )
+            edge_records.append(
+                {'preGid': pre, 'postGid': post, 'weight': weight, 'label': label, 'synMech': syn_label}
+            )
+
+        if pairs:
+            applyJaxleySynapseParams(
+                net, syn_name, syn_kind, float(weight), float(e_syn), syn_mech=syn_mech, v_th=v_th
+            )
+            print(f"  [jxl] {label}: {syn_kind} synapse (e={e_syn}, gS={weight})")
+
+    return edge_records
 

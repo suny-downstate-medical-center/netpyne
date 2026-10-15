@@ -3,6 +3,26 @@ Module containing wrappers to create, load, simulate, analyze networks
 
 """
 
+
+def _getSimulatorName(simConfig=None):
+    """
+    Return the configured simulator backend name.
+
+    Defaults to ``'neuron'`` to preserve current NetPyNE behavior.
+    """
+    if simConfig is not None and hasattr(simConfig, 'simulator'):
+        return getattr(simConfig, 'simulator')
+
+    try:
+        from .. import sim
+
+        if hasattr(sim, 'cfg') and hasattr(sim.cfg, 'simulator'):
+            return sim.cfg.simulator
+    except Exception:
+        pass
+
+    return 'neuron'
+
 # ------------------------------------------------------------------------------
 # Wrapper to create network
 # ------------------------------------------------------------------------------
@@ -32,17 +52,20 @@ def create(netParams=None, simConfig=None, output=False, clearAll=False):
 
     """
 
-    from .. import sim
-
-    if clearAll:
-        sim.clearAll()
-
     import __main__ as top
 
     if netParams is None:
         netParams = top.netParams
     if simConfig is None:
         simConfig = top.simConfig
+
+    if _getSimulatorName(simConfig) == 'jaxley':
+        return createJaxley(netParams=netParams, simConfig=simConfig, output=output, clearAll=clearAll)
+
+    from .. import sim
+
+    if clearAll:
+        sim.clearAll()
 
     sim.initialize(netParams, simConfig)  # create network object and set cfg and net params
     pops = sim.net.createPops()  # instantiate network populations
@@ -66,6 +89,9 @@ def simulate():
     """
 
     from .. import sim
+
+    if _getSimulatorName() == 'jaxley':
+        return simulateJaxley()
 
     sim.runSim()
     sim.gatherData()  # gather spiking data and cell info from each node
@@ -129,6 +155,9 @@ def analyze():
 
     from .. import sim
 
+    if _getSimulatorName() == 'jaxley':
+        return analyzeJaxley()
+
     sim.saveData()
     sim.analysis.plotData()
 
@@ -161,6 +190,9 @@ def createSimulate(netParams=None, simConfig=None, output=False):
         If ``output`` is ``True``, returns ``(pops, cells, conns, stims, simData)``
 
     """
+
+    if _getSimulatorName(simConfig) == 'jaxley':
+        return createSimulateJaxley(netParams=netParams, simConfig=simConfig, output=output)
 
     from .. import sim
 
@@ -200,6 +232,9 @@ def createSimulateAnalyze(netParams=None, simConfig=None, output=False):
 
     """
 
+    if _getSimulatorName(simConfig) == 'jaxley':
+        return createSimulateAnalyzeJaxley(netParams=netParams, simConfig=simConfig, output=output)
+
     from .. import sim
 
     (pops, cells, conns, rxd, stims, simData) = sim.create(netParams, simConfig, output=True)
@@ -207,6 +242,157 @@ def createSimulateAnalyze(netParams=None, simConfig=None, output=False):
     sim.analyze()
     if output:
         return (pops, cells, conns, stims, simData)
+
+
+# ------------------------------------------------------------------------------
+# Experimental Jaxley backend wrappers
+# ------------------------------------------------------------------------------
+def createJaxley(netParams=None, simConfig=None, output=False, clearAll=False, num_cells_override=None):
+    """
+    Experimental wrapper to create a Jaxley-backed simulation from NetPyNE specs.
+    """
+    from .. import sim
+
+    if clearAll:
+        sim.clearAll()
+
+    sim.simData = {}
+    sim.rank = 0
+    sim.nhosts = 1
+    sim.nextHost = 0
+    sim.setSimCfg(simConfig)
+    sim.setNet(sim.Network())
+    sim.setNetParams(netParams)
+    sim.net = sim.net.buildJaxley(sim.cfg, num_cells_override=num_cells_override)
+    sim.cfg.simulator = 'jaxley'
+    net = sim.net
+    if output:
+        return (net.pops, net.cells, net.conns, None, net.stims, None)
+
+
+def simulateJaxley():
+    """
+    Experimental wrapper to simulate a Jaxley-backed network.
+    """
+    from .. import sim
+
+    sim.simData = sim.runSimJaxley(
+        sim.net.jx_net,
+        sim.cfg,
+        cell_offset=sim.net.cell_offset,
+        n_network_cells=len(sim.net.cells),
+    )
+    # NetPyNE plotting/analysis reads sim.allSimData
+    sim.allSimData = sim.simData
+    return sim.simData
+
+
+def analyzeJaxley(outDir=None, show=False, includeTraces=None):
+    """
+    Analyze a Jaxley-backed run using standard NetPyNE plotting (raster + traces).
+
+    Formats Jaxley ``simData`` into ``sim.allSimData`` / ``sim.net.allCells`` and
+    calls ``sim.analysis.plotData()`` for entries in ``sim.cfg.analysis``.
+    Geometry plots (e.g. ``plot2Dnet``) are skipped unless cell positions exist.
+    """
+    from pathlib import Path as _Path
+    from .. import sim
+
+    import matplotlib
+
+    if not show:
+        matplotlib.use('Agg')
+
+    outDir = _Path(outDir) if outDir else _Path('.')
+    outDir.mkdir(parents=True, exist_ok=True)
+
+    if not getattr(sim, 'simData', None):
+        print('  [jxl] No simData to analyze')
+        return {}
+
+    sim.allSimData = sim.simData
+    sim.rank = getattr(sim, 'rank', 0)
+
+    # Point NetPyNE figure outputs into outDir
+    base_name = _Path(getattr(sim.cfg, 'filename', 'HHTut')).name
+    sim.cfg.filename = str(outDir / base_name)
+
+    # Headless-friendly defaults; preserve user saveFig paths when absolute
+    analysis = dict(getattr(sim.cfg, 'analysis', {}) or {})
+    skip = {'plot2Dnet', 'plotShape', 'plotConn'}  # need morphology / positions
+    filtered = {}
+    for funcName, kwargs in analysis.items():
+        if funcName in skip:
+            print(f'  [jxl] Skipping {funcName} (needs cell geometry)')
+            continue
+        if kwargs is False:
+            continue
+        if kwargs is True:
+            kwargs = {}
+        else:
+            kwargs = dict(kwargs)
+        kwargs['showFig'] = bool(show)
+        if kwargs.get('saveFig') is True:
+            kwargs['saveFig'] = True
+        filtered[funcName] = kwargs
+
+    # If analysis has no raster/traces, add sensible defaults
+    if 'plotRaster' not in filtered and 'plotTraces' not in filtered:
+        filtered['plotRaster'] = {'saveFig': True, 'showFig': bool(show)}
+        include = includeTraces if includeTraces is not None else [2]
+        filtered['plotTraces'] = {'include': include, 'saveFig': True, 'showFig': bool(show)}
+
+    orig_analysis = sim.cfg.analysis
+    orig_timing = getattr(sim.cfg, 'timing', False)
+    sim.cfg.analysis = filtered
+    sim.cfg.timing = False  # avoid needing full NEURON timingData
+    try:
+        sim.analysis.plotData()
+    finally:
+        sim.cfg.analysis = orig_analysis
+        sim.cfg.timing = orig_timing
+
+    return {'allSimData_keys': list(sim.allSimData.keys())}
+
+
+def createSimulateJaxley(netParams=None, simConfig=None, output=False, num_cells_override=None):
+    """
+    Experimental wrapper to create and simulate a Jaxley-backed network.
+    """
+    from .. import sim
+
+    createJaxley(netParams=netParams, simConfig=simConfig, num_cells_override=num_cells_override)
+    simulateJaxley()
+    if output:
+        return (sim.net.pops, sim.net.cells, sim.net.conns, sim.net.stims, sim.simData)
+
+
+def createSimulateAnalyzeJaxley(
+    netParams=None,
+    simConfig=None,
+    output=False,
+    outDir=None,
+    show=False,
+    num_cells_override=None,
+    spike_threshold=0.0,
+):
+    """
+    Experimental wrapper to create, simulate, and analyze with Jaxley.
+    """
+    from .. import sim
+
+    createJaxley(netParams=netParams, simConfig=simConfig, num_cells_override=num_cells_override)
+    sim.simData = sim.runSimJaxley(
+        sim.net.jx_net,
+        sim.cfg,
+        spike_threshold=spike_threshold,
+        cell_offset=sim.net.cell_offset,
+        n_network_cells=len(sim.net.cells),
+    )
+    sim.allSimData = sim.simData
+    analyzeJaxley(outDir=outDir, show=show)
+    if output:
+        return (sim.net.pops, sim.net.cells, sim.net.conns, sim.net.stims, sim.simData)
 
 
 # ------------------------------------------------------------------------------
@@ -485,10 +671,7 @@ def loadSimulate(filename, simConfig=None, output=False):
     sim.simulate()
 
     if output:
-        try:
-            return (pops, cells, conns, stims, rxd, simData)
-        except:
-            pass
+        return (getattr(sim, 'net', None), getattr(sim, 'simData', None))
 
 
 # ------------------------------------------------------------------------------
@@ -527,10 +710,7 @@ def loadSimulateAnalyze(filename, simConfig=None, output=False):
     sim.analyze()
 
     if output:
-        try:
-            return (pops, cells, conns, stims, rxd, simData)
-        except:
-            pass
+        return (getattr(sim, 'net', None), getattr(sim, 'simData', None))
 
 
 # ------------------------------------------------------------------------------

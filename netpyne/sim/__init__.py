@@ -32,7 +32,7 @@ from .setup import (
 )
 
 # import run functions
-from .run import preRun, runSim, runSimWithIntervalFunc, loadBalance, calculateLFP, calculateDipole
+from .run import preRun, runSim, runSimJaxley, runSimWithIntervalFunc, loadBalance, calculateLFP, calculateDipole
 
 # import gather functions
 from .gather import gatherData, _gatherAllCellTags, _gatherAllCellConnPreGids, _gatherCells, gatherDataFromFiles
@@ -75,12 +75,17 @@ from .utils import copyReplaceItemObj, copyRemoveItemObj, replaceFuncObj, replac
 # import wrapper functions
 from .wrappers import (
     create,
+    createJaxley,
     simulate,
+    simulateJaxley,
     intervalSimulate,
     distributedSimulate,
     analyze,
+    analyzeJaxley,
     createSimulate,
+    createSimulateJaxley,
     createSimulateAnalyze,
+    createSimulateAnalyzeJaxley,
     createSimulateAnalyzeInterval,
     createSimulateAnalyzeDistributed,
     runFromIndexFile,

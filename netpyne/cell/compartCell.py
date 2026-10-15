@@ -1868,3 +1868,88 @@ def _ensure(condition, params, message):
     connLabel = params.get('label')
     connLabelStr = f'[{connLabel}]' if connLabel else ''
     assert condition, f"  Error in connParams{connLabelStr}: {message}"
+
+
+# -----------------------------------------------------------------------------
+# Experimental Jaxley cell builder
+# -----------------------------------------------------------------------------
+_JAXLEY_HH_PARAM_MAP = {
+    'gnabar': 'gNa',
+    'gkbar': 'gK',
+    'gl': 'gLeak',
+    'el': 'eLeak',
+    'ena': 'eNa',
+    'ek': 'eK',
+}
+
+
+def _as_mapping_jaxley(obj):
+    if obj is None:
+        return {}
+    if isinstance(obj, dict):
+        return obj
+    try:
+        return dict(obj)
+    except Exception:
+        return {}
+
+
+def createJaxleyCell(cellRule, cellLabel=None):
+    """
+    Experimental builder that maps one NetPyNE cell rule to a ``jaxley.Cell``.
+
+    Current PoC scope: single-compartment HH or passive soma.
+    """
+    import jaxley as jx
+    from jaxley.channels import HH, Leak
+
+    secs = _as_mapping_jaxley(cellRule.get('secs', cellRule))
+    if not secs:
+        raise ValueError("cellParams[%r] has no 'secs'" % (cellLabel,))
+
+    secName = 'soma' if 'soma' in secs else next(iter(secs))
+    sec = _as_mapping_jaxley(secs[secName])
+    geom = _as_mapping_jaxley(sec.get('geom', {}))
+    mechs = _as_mapping_jaxley(sec.get('mechs', {}))
+
+    cell = jx.Cell()
+    if 'diam' in geom:
+        cell.set('radius', float(geom['diam']) / 2.0)
+    if 'L' in geom:
+        cell.set('length', float(geom['L']))
+    if 'Ra' in geom:
+        cell.set('axial_resistivity', float(geom['Ra']))
+    if 'cm' in geom:
+        cell.set('capacitance', float(geom['cm']))
+
+    if 'hh' in mechs:
+        hh = HH()
+        cell.insert(hh)
+        hhParams = _as_mapping_jaxley(mechs['hh'])
+        for npName, jxName in _JAXLEY_HH_PARAM_MAP.items():
+            if npName in hhParams:
+                cell.set('HH_%s' % (jxName,), float(hhParams[npName]))
+    elif 'pas' in mechs:
+        cell.insert(Leak())
+        pas = _as_mapping_jaxley(mechs['pas'])
+        if 'g' in pas:
+            cell.set('Leak_gLeak', float(pas['g']))
+        if 'e' in pas:
+            cell.set('Leak_eLeak', float(pas['e']))
+    else:
+        raise NotImplementedError(
+            "cellParams[%r] sec %r has no supported mechs (need 'hh' or 'pas'; got %s)"
+            % (cellLabel, secName, list(mechs))
+        )
+
+    unsupported = [m for m in mechs if m not in ('hh', 'pas')]
+    if unsupported:
+        print(
+            "  [jxl] Warning: ignoring unsupported mechs %s in cellParams[%r] (no NMODL port yet)"
+            % (unsupported, cellLabel)
+        )
+
+    if sec.get('vinit', None) is not None:
+        cell.set('v', float(sec['vinit']))
+
+    return cell

@@ -176,7 +176,7 @@ def getGlobals(mechNames, origGlob={}):
     for k in dir(h):
         if k.endswith(endings) or k in includeGlobs:
             try:
-                v = float(h.__getattribute__(k))
+                v = float(getattr(h, k))
                 if k not in origGlob or origGlob[k] != v:
                     glob[k] = float(v)
             except:
@@ -490,7 +490,7 @@ def getCellParams(cell, varList={}, origGlob={}):
         for geomParam in standardGeomParams:
             # if geomParam in secDir:
             try:
-                secDic[secName]['geom'][geomParam] = sec.__getattribute__(geomParam)
+                secDic[secName]['geom'][geomParam] = getattr(sec, geomParam)
             except:
                 pass
 
@@ -523,7 +523,7 @@ def getCellParams(cell, varList={}, origGlob={}):
                     for varName in varNames:
                         if varName not in ignoreVars:
                             try:
-                                varVals = [seg.__getattribute__(mech).__getattribute__(varName) for seg in sec]
+                                varVals = [getattr(getattr(seg, mech), varName) for seg in sec]
                                 if len(set(varVals)) == 1:
                                     varVals = varVals[0]
                                 mechDic[mech][varName] = varVals
@@ -545,9 +545,9 @@ def getCellParams(cell, varList={}, origGlob={}):
                         if varName not in ignoreVars:
                             try:
                                 if varNameSplit in ['i', 'o']:  # var name after ion name (eg. 'nai', 'nao')
-                                    varVals = [seg.__getattribute__(ionName + varNameSplit) for seg in sec]
+                                    varVals = [getattr(seg, ionName + varNameSplit) for seg in sec]
                                 else:  # var name before ion name (eg. 'ena')
-                                    varVals = [seg.__getattribute__(varNameSplit + ionName) for seg in sec]
+                                    varVals = [getattr(seg, varNameSplit + ionName) for seg in sec]
                                 if len(set(varVals)) == 1:
                                     varVals = varVals[0]
                                 ionDic[ionName][varNameSplit] = varVals
@@ -574,7 +574,7 @@ def getCellParams(cell, varList={}, origGlob={}):
                     # synMech['loc'] = seg.x
                     for varName in varNames:
                         try:
-                            synMech[varName] = point.__getattribute__(varName)
+                            synMech[varName] = getattr(point, varName)
                         except:
                             print('Could not read variable %s from synapse %s' % (varName, synMech['label']))
 
@@ -588,7 +588,7 @@ def getCellParams(cell, varList={}, origGlob={}):
                     pointps[pointpName]['loc'] = seg.x
                     for varName in varNames:
                         try:
-                            pointps[pointpName][varName] = point.__getattribute__(varName)
+                            pointps[pointpName][varName] = getattr(point, varName)
                             # special condition for Izhi model, to set vinit=vr
                             # if varName == 'vr': secDic[secName]['vinit'] = point.__getattribute__(varName)
                         except:
